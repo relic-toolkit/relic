@@ -128,6 +128,9 @@ size_t ep4_size_bin(const ep4_t a, int pack) {
 	ep4_t t;
 	size_t size = 0;
 
+	/* Point compression is not supported in this extension. */
+	(void)pack;
+
 	ep4_null(t);
 
 	if (ep4_is_infty(a)) {
@@ -186,6 +189,9 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len) {
 
 void ep4_write_bin(uint8_t *bin, size_t len, const ep4_t a, int pack) {
 	ep4_t t;
+
+	/* Point compression is not supported in this extension. */
+	(void)pack;
 
 	ep4_null(t);
 

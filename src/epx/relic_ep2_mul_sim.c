@@ -197,13 +197,13 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
+			for (size_t j = 0; j < l0; j++) {
+				naf0[j] = -naf0[j];
 			}
 		}
 		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
+			for (size_t j = 0; j < l1; j++) {
+				naf1[j] = -naf1[j];
 			}
 		}
 
@@ -328,7 +328,7 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 
 		ep2_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
-			for (int j = 0; j < w; j++) {
+			for (size_t j = 0; j < w; j++) {
 				ep2_dbl(r, r);
 			}
 			ep2_add(r, r, t[(w0[i] << w) + w1[i]]);

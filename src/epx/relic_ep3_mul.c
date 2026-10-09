@@ -223,72 +223,7 @@ TMPL_EP_MUL_BASIC(ep3);
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
-void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
-	ep3_t t[1 << (RLC_WIDTH - 1)], q;
-	int i, j;
-	size_t l;
-	uint8_t win[RLC_FP_BITS + 1];
-
-	ep3_null(q);
-
-	if (bn_is_zero(k) || ep3_is_infty(p)) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		for (i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
-			ep3_null(t[i]);
-			ep3_new(t[i]);
-		}
-
-		ep3_new(q);
-
-		ep3_copy(t[0], p);
-		ep3_dbl(q, p);
-
-#if defined(EP_MIXED)
-		ep3_norm(q, q);
-#endif
-
-		/* Create table. */
-		for (i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep3_add(t[i], t[i - 1], q);
-		}
-
-#if defined(EP_MIXED)
-		ep3_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH - 1)) - 1);
-#endif
-
-		ep3_set_infty(q);
-		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, k, RLC_WIDTH);
-		for (i = 0; i < l; i++) {
-			if (win[i] == 0) {
-				ep3_dbl(q, q);
-			} else {
-				for (j = 0; j < util_bits_dig(win[i]); j++) {
-					ep3_dbl(q, q);
-				}
-				ep3_add(q, q, t[win[i] >> 1]);
-			}
-		}
-
-		ep3_norm(r, q);
-		if (bn_sign(k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep3_free(t[i]);
-		}
-		ep3_free(q);
-	}
-}
+TMPL_EP_MUL_SLIDE(ep3);
 
 #endif
 

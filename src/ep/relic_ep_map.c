@@ -140,6 +140,9 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
+	/* The length is fixed by the hash-to-curve method. */
+	(void)len;
+
 	bn_null(k);
 	fp_null(t);
 	ep_null(q);

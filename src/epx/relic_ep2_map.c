@@ -95,7 +95,7 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 	ep2_t q;
 	int neg;
 	/* enough space for two extension field elements plus extra bytes for uniformity */
-	const int lpe = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t lpe = (FP_PRIME + ep_param_level() + 7) / 8;
 
 	bn_null(k);
 	fp2_null(t);
@@ -221,7 +221,7 @@ void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len) {
 
 void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const int lpe = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t lpe = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 4 * lpe);
 
 	RLC_TRY {

@@ -130,6 +130,9 @@ size_t ep8_size_bin(const ep8_t a, int pack) {
 	ep8_t t;
 	size_t size = 0;
 
+	/* Point compression is not supported in this extension. */
+	(void)pack;
+
 	ep8_null(t);
 
 	if (ep8_is_infty(a)) {
@@ -188,6 +191,9 @@ void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len) {
 
 void ep8_write_bin(uint8_t *bin, size_t len, const ep8_t a, int pack) {
 	ep8_t t;
+
+	/* Point compression is not supported in this extension. */
+	(void)pack;
 
 	ep8_null(t);
 

@@ -91,13 +91,13 @@ static void ep8_mul_sim_plain(ep8_t r, const ep8_t p, const bn_t k,
 		_k = naf0 + l - 1;
 		_m = naf1 + l - 1;
 		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
+			for (size_t j = 0; j < l0; j++) {
+				naf0[j] = -naf0[j];
 			}
 		}
 		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
+			for (size_t j = 0; j < l1; j++) {
+				naf1[j] = -naf1[j];
 			}
 		}
 
@@ -223,7 +223,7 @@ void ep8_mul_sim_trick(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q,
 
 		ep8_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
-			for (int j = 0; j < w; j++) {
+			for (size_t j = 0; j < w; j++) {
 				ep8_dbl(r, r);
 			}
 			ep8_add(r, r, t[(w0[i] << w) + w1[i]]);

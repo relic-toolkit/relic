@@ -128,6 +128,9 @@ size_t ep3_size_bin(const ep3_t a, int pack) {
 	ep3_t t;
 	size_t size = 0;
 
+	/* Point compression is not supported in this extension. */
+	(void)pack;
+
 	ep3_null(t);
 
 	if (ep3_is_infty(a)) {
@@ -186,6 +189,9 @@ void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len) {
 
 void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack) {
 	ep3_t t;
+
+	/* Point compression is not supported in this extension. */
+	(void)pack;
 
 	ep3_null(t);
 

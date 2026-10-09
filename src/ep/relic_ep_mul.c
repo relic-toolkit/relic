@@ -262,7 +262,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 			c1 = (n1 >> 7);
 			n1 = ((n1 ^ c1) - c1) >> 1;
 
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+			for (int j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 				fp_copy_sec(u->x, t[j]->x, j == n0);
 				fp_copy_sec(w->x, t[j]->x, j == n1);
 				fp_copy_sec(u->y, t[j]->y, j == n0);
@@ -391,77 +391,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
-void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
-	bn_t m, n;
-	ep_t t[1 << (RLC_WIDTH - 1)], q;
-	uint8_t win[RLC_FP_BITS + 1];
-	size_t l;
-
-	if (bn_is_zero(k) || ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	ep_null(q);
-	bn_null(n);
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
-			ep_null(t[i]);
-			ep_new(t[i]);
-		}
-		ep_new(q);
-
-		ep_copy(t[0], p);
-		ep_dbl(q, p);
-
-#if defined(EP_MIXED)
-		ep_norm(q, q);
-#endif
-
-		ep_curve_get_ord(n);
-		bn_mod(m, k, n);
-
-		/* Create table. */
-		for (size_t i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep_add(t[i], t[i - 1], q);
-		}
-
-#if defined(EP_MIXED)
-		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (RLC_WIDTH - 1)) - 1);
-#endif
-
-		ep_set_infty(q);
-		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, m, RLC_WIDTH);
-		for (size_t i = 0; i < l; i++) {
-			if (win[i] == 0) {
-				ep_dbl(q, q);
-			} else {
-				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
-					ep_dbl(q, q);
-				}
-				ep_add(q, q, t[win[i] >> 1]);
-			}
-		}
-
-		ep_norm(r, q);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep_free(t[i]);
-		}
-		ep_free(q);
-	}
-}
+TMPL_EP_MUL_SLIDE(ep);
 
 #endif
 

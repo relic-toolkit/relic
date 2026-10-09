@@ -132,19 +132,19 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		t3 = naf3 + l - 1;
 
 		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
+			for (size_t j = 0; j < l0; j++) {
+				naf0[j] = -naf0[j];
 			}
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
+			for (size_t j = 0; j < l1; j++) {
+				naf1[j] = -naf1[j];
 			}
 		}
 		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l2; i++) {
-				naf2[i] = -naf2[i];
+			for (size_t j = 0; j < l2; j++) {
+				naf2[j] = -naf2[j];
 			}
-			for (i =  0; i < l3; i++) {
-				naf3[i] = -naf3[i];
+			for (size_t j = 0; j < l3; j++) {
+				naf3[j] = -naf3[j];
 			}
 		}
 
@@ -375,8 +375,8 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 					_l[j] = len;
 					bn_rec_naf(&naf[(2*i + j)*len], &_l[j], _k[j], w);
 					if (bn_sign(_k[j]) == RLC_NEG) {
-						for (m = 0; m < _l[j]; m++) {
-							naf[(2*i + j)*len + m] = -naf[(2*i + j)*len + m];
+						for (size_t s = 0; s < _l[j]; s++) {
+							naf[(2*i + j)*len + s] = -naf[(2*i + j)*len + s];
 						}
 					}
 					l = RLC_MAX(l, _l[j]);
@@ -495,13 +495,13 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
+			for (size_t j = 0; j < l0; j++) {
+				naf0[j] = -naf0[j];
 			}
 		}
 		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
+			for (size_t j = 0; j < l1; j++) {
+				naf1[j] = -naf1[j];
 			}
 		}
 
@@ -695,7 +695,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		ep_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
-			for (int j = 0; j < w; j++) {
+			for (size_t j = 0; j < w; j++) {
 				ep_dbl(r, r);
 			}
 			ep_add(r, r, t[(w0[i] << w) + w1[i]]);

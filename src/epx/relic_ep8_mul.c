@@ -121,71 +121,7 @@ TMPL_EP_MUL_BASIC(ep8);
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
-void ep8_mul_slide(ep8_t r, const ep8_t p, const bn_t k) {
-	ep8_t t[1 << (RLC_WIDTH - 1)], q;
-	uint8_t win[RLC_FP_BITS + 1];
-	size_t l;
-
-	ep8_null(q);
-
-	if (bn_is_zero(k) || ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
-			ep8_null(t[i]);
-			ep8_new(t[i]);
-		}
-
-		ep8_new(q);
-
-		ep8_copy(t[0], p);
-		ep8_dbl(q, p);
-
-#if defined(EP_MIXED)
-		ep8_norm(q, q);
-#endif
-
-		/* Create table. */
-		for (size_t i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep8_add(t[i], t[i - 1], q);
-		}
-
-#if defined(EP_MIXED)
-		ep8_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH - 1)) - 1);
-#endif
-
-		ep8_set_infty(q);
-		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, k, RLC_WIDTH);
-		for (size_t i = 0; i < l; i++) {
-			if (win[i] == 0) {
-				ep8_dbl(q, q);
-			} else {
-				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
-					ep8_dbl(q, q);
-				}
-				ep8_add(q, q, t[win[i] >> 1]);
-			}
-		}
-
-		ep8_norm(r, q);
-		if (bn_sign(k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
-			ep8_free(t[i]);
-		}
-		ep8_free(q);
-	}
-}
+TMPL_EP_MUL_SLIDE(ep8);
 
 #endif
 

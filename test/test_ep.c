@@ -749,7 +749,10 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_gen(q, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_gen(r, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -775,13 +778,16 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_basic(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_basic(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
+#if EP_MUL == SLIDE || !defined(STRIP)
 		TEST_CASE("sliding window point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_slide(r, p, k);
@@ -802,7 +808,10 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_slide(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_slide(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		}
@@ -830,7 +839,10 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_monty(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_monty(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		}
@@ -858,7 +870,10 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_lwnaf(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		}
@@ -886,7 +901,10 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_lwreg(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_lwreg(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		}
