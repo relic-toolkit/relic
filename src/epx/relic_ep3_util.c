@@ -103,19 +103,6 @@ void ep3_rhs(fp3_t rhs, const fp3_t x) {
 	}
 }
 
-void ep3_tab(ep3_t *t, const ep3_t p, int w) {
-	if (w > 2) {
-		ep3_dbl(t[0], p);
-		ep3_norm(t[0], t[0]);
-		ep3_add(t[1], t[0], p);
-		for (int i = 2; i < (1 << (w - 2)); i++) {
-			ep3_add(t[i], t[i - 1], t[0]);
-		}
-		ep3_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
-	}
-	ep3_norm(t[0], p);
-}
-
 size_t ep3_size_bin(const ep3_t a, int pack) {
 	ep3_t t;
 	size_t size = 0;

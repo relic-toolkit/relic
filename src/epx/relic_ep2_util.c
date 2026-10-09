@@ -103,19 +103,6 @@ void ep2_rhs(fp2_t rhs, const fp2_t x) {
 	}
 }
 
-void ep2_tab(ep2_t *t, const ep2_t p, int w) {
-	if (w > 2) {
-		ep2_dbl(t[0], p);
-		ep2_norm(t[0], t[0]);
-		ep2_add(t[1], t[0], p);
-		for (int i = 2; i < (1 << (w - 2)); i++) {
-			ep2_add(t[i], t[i - 1], t[0]);
-		}
-		ep2_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
-	}
-	ep2_norm(t[0], p);
-}
-
 size_t ep2_size_bin(const ep2_t a, int pack) {
 	ep2_t t;
 	size_t size = 0;

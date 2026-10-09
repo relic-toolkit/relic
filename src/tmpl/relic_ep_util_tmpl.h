@@ -91,8 +91,8 @@
 
 /**
  * Defines a template for basic utilities: testing for and setting the
- * point at infinity, copying, sampling, blinding, validating and printing
- * points.
+ * point at infinity, copying, sampling, blinding, validating, tabulating
+ * multiples and printing points.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -177,6 +177,19 @@
 			C##_free(t);													\
 		}																	\
 		return r;															\
+	}																		\
+																			\
+	void C##_tab(C##_t *t, const C##_t p, int w) {							\
+		if (w > 2) {														\
+			C##_dbl(t[0], p);												\
+			C##_norm(t[0], t[0]);											\
+			C##_add(t[1], p, t[0]);											\
+			for (int i = 2; i < (1 << (w - 2)); i++) {						\
+				C##_add(t[i], t[i - 1], t[0]);								\
+			}																\
+			C##_norm_sim(t + 1, (const C##_t *)t + 1, (1 << (w - 2)) - 1);	\
+		}																	\
+		C##_norm(t[0], p);													\
 	}																		\
 																			\
 	void C##_print(const C##_t p) {											\
