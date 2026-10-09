@@ -105,6 +105,8 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	return even;
 }
 
+#if BN_GCD == LEHME || !defined(STRIP)
+
 /*
  * Extends whatever transformation (a, b; c, d) already holds with further
  * single-precision continued fraction steps on x, y, for as long as they
@@ -168,6 +170,8 @@ static void lehme_mat(bn_t p, bn_t q, dis_t a, dis_t b, dis_t c, dis_t d,
 	bn_add(q, q, t1);
 	bn_copy(p, t0);
 }
+
+#endif
 
 /*
  * Disposes of the two cases every bn_gcd_ext_* variant must handle before

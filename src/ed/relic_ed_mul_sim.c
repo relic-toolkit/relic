@@ -230,9 +230,6 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 			}
 		}
 
-#if defined(ED_MIXED)
-		ed_norm_sim(t + 2, (const ed_t *)t + 2, (1 << ((w + w))) - 2);
-#endif
 
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
@@ -316,9 +313,6 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 		ed_add(t[3], t[2], t[1]);
 		ed_sub(t[4], t[2], t[1]);
-#if defined(ED_MIXED)
-		ed_norm_sim(t + 3, (const ed_t *)t + 3, 2);
-#endif
 
 		l = 2 * (RLC_FP_BITS + 1);
 		bn_rec_jsf(jsf, &l, k, m);

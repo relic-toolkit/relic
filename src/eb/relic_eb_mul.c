@@ -232,9 +232,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		eb_copy(r, t[0]);
 
-#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
-#endif
 
 #if RLC_WIDTH == 3
 		eb_frb(t[0], t[1]);
@@ -450,9 +447,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_sub(t[15], t[0], t[15]);
 #endif
 
-#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
-#endif
 
 		/* Add accumulators */
 		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
@@ -890,13 +884,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 #endif
 
 #if defined(EB_PLAIN)
-#if defined(EB_MIXED) && defined(STRIP)
-	/* It is impossible to run a right-to-left algorithm using ordinary curves
-	 * and only mixed additions. */
-	RLC_THROW(ERR_NO_CONFIG);
-#else
 	eb_mul_rnaf_imp(r, p, k);
-#endif
 #endif
 }
 

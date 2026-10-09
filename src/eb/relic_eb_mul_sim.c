@@ -360,7 +360,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			}
 		}
 
-#if RLC_WIDTH > 2 && defined(EB_MIXED)
+#if RLC_WIDTH > 2
 		eb_norm_sim(t + 2, (const eb_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
@@ -455,9 +455,7 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 		eb_add(t[3], t[2], t[1]);
 		eb_sub(t[4], t[2], t[1]);
-#if defined(EB_MIXED)
 		eb_norm_sim(t + 3, (const eb_t*)(t + 3), 2);
-#endif
 
 		len = 2 * (RLC_FB_BITS + 1);
 		bn_rec_jsf(jsf, &len, k, m);

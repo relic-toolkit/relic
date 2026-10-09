@@ -193,22 +193,14 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 	if (!eb_curve_is_kbltz()) {
 		if (w > 2) {
 			eb_dbl(t[0], p);
-#if defined(EB_MIXED)
 			eb_norm(t[0], t[0]);
-#endif
 			eb_add(t[1], t[0], p);
 			for (int i = 2; i < (1 << (w - 2)); i++) {
 				eb_add(t[i], t[i - 1], t[0]);
 			}
-#if defined(EB_MIXED)
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
-#endif
 		}
-#if defined(EB_MIXED)
 		eb_norm(t[0], p);
-#else
-		eb_copy(t[0], p);
-#endif
 	}
 #endif /* EB_PLAIN */
 
@@ -474,11 +466,9 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				break;
 #endif
 		}
-#if defined(EB_MIXED)
 		if (w > 2) {
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
 		}
-#endif
 	}
 #endif /* EB_KBLTZ */
 }

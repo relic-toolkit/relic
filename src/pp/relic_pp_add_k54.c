@@ -37,6 +37,8 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+#if EP_ADD == BASIC || !defined(STRIP)
+
 static void ep9_add_basic(fp9_t s, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t qy) {
 	fp9_t t0, t1, t2;
 
@@ -97,6 +99,8 @@ static void ep9_add_basic(fp9_t s, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9
 		fp9_free(t2);
 	}
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */

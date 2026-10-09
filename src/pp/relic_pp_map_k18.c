@@ -133,6 +133,8 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 	}
 }
 
+#if PP_MAP == TATEP || PP_MAP == WEILP || !defined(STRIP)
+
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -188,6 +190,8 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 		RLC_FREE(_q);
 	}
 }
+
+#endif
 
 /**
  * Compute the final lines for optimal ate pairings.

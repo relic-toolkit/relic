@@ -101,6 +101,8 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	}
 }
 
+#if PP_MAP == WEILP || !defined(STRIP)
+
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -172,6 +174,8 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		RLC_FREE(_q);
 	}
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */

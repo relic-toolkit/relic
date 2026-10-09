@@ -175,16 +175,10 @@ int ed_on_curve(const ed_t p) {
 void ed_tab(ed_t * t, const ed_t p, int w) {
 	if (w > 2) {
 		ed_dbl(t[0], p);
-#if defined(ED_MIXED)
-		ed_norm(t[0], t[0]);
-#endif
 		ed_add(t[1], t[0], p);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ed_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(ED_MIXED)
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
 	ed_copy(t[0], p);
 }

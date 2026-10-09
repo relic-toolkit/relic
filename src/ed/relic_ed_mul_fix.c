@@ -228,9 +228,6 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 			for (i = 1; i < l; i++) {
 				ed_dbl(t[1 << j], t[1 << j]);
 			}
-#if defined(ED_MIXED)
-			ed_norm(t[1 << j], t[1 << j]);
-#endif
 			for (i = 1; i < (1 << j); i++) {
 				ed_add(t[(1 << j) + i], t[i], t[1 << j]);
 			}
@@ -274,9 +271,6 @@ void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 			for (i = 1; i < d; i++) {
 				ed_dbl(t[1 << j], t[1 << j]);
 			}
-#if defined(ED_MIXED)
-			ed_norm(t[1 << j], t[1 << j]);
-#endif
 			for (i = 1; i < (1 << j); i++) {
 				ed_add(t[(1 << j) + i], t[i], t[1 << j]);
 			}

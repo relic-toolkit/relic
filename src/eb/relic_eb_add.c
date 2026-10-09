@@ -126,7 +126,6 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 
 #if EB_ADD == PROJC || !defined(STRIP)
 
-#if defined(EB_MIXED) || !defined(STRIP)
 
 /**
  * Adds a point represented in affine coordinates to a point represented in
@@ -262,7 +261,6 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 	}
 }
 
-#endif /* EB_MIXED */
 
 /**
  * Adds two points represented in projective coordinates on an ordinary binary
@@ -273,18 +271,12 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
  * @param[in] q					- the second point to add.
  */
 static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
-#if defined(EB_MIXED) && defined(STRIP)
-	/* If code size is a problem, leave only the mixed version. */
-	eb_add_projc_mix(r, p, q);
-#else /* General addition. */
 
-#if defined(EB_MIXED) || !defined(STRIP)
 	/* Test if z2 = 1 only if mixed coordinates are turned on. */
 	if (q->coord == BASIC) {
 		eb_add_projc_mix(r, p, q);
 		return;
 	}
-#endif
 	fb_t t0, t1, t2, t3, t4, t5, t6, t7;
 
 	fb_null(t0);
@@ -388,7 +380,6 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 		fb_free(t6);
 		fb_free(t7);
 	}
-#endif
 }
 
 #endif /* EB_ADD == PROJC */
