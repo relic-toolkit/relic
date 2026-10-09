@@ -140,6 +140,113 @@
 	}
 
 /**
+ * Defines a template for point multiplication using the GLS endomorphism. The
+ * scalar is decomposed in S subscalars, each recoded in w-NAF form and
+ * processed by interleaving.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] S			- the number of subscalars.
+ */
+#define TMPL_EP_MUL_GLS_IMP(C, S)											\
+	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
+		size_t l, _l[S], w = RLC_WIDTH;										\
+		bn_t n, _k[S], u;													\
+		int8_t naf[S][RLC_FP_BITS + 1];										\
+		C##_t q, t[S][1 << (RLC_WIDTH - 2)];								\
+																			\
+		bn_null(n);															\
+		bn_null(u);															\
+		C##_null(q);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(u);														\
+			C##_new(q);														\
+			for (size_t i = 0; i < S; i++) {								\
+				bn_null(_k[i]);												\
+				bn_new(_k[i]);												\
+				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {		\
+					C##_null(t[i][j]);										\
+					C##_new(t[i][j]);										\
+				}															\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			fp_prime_get_par(u);											\
+			bn_mod(_k[0], k, n);											\
+			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+																			\
+			l = 0;															\
+			for (size_t i = 0; i < S; i++) {								\
+				l = RLC_MAX(l, bn_bits(_k[i]));								\
+			}																\
+			if (l < bn_bits(u) / 2) {										\
+				w = 2;														\
+			}																\
+																			\
+			l = 0;															\
+			for (size_t i = 0; i < S; i++) {								\
+				_l[i] = RLC_FP_BITS + 1;									\
+				bn_rec_naf(naf[i], &_l[i], _k[i], w);						\
+				l = RLC_MAX(l, _l[i]);										\
+				if (i == 0) {												\
+					C##_norm(q, p);											\
+					if (bn_sign(_k[0]) == RLC_NEG) {						\
+						C##_neg(q, q);										\
+					}														\
+					C##_tab(t[0], q, w);									\
+				} else if (ep_curve_is_pairf() == EP_K16 ||					\
+						ep_curve_is_pairf() == EP_AFG16) {					\
+					/* Minimize use of endomorphism when it's expensive. */	\
+					C##_psi(q, t[i - 1][0]);								\
+					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
+						C##_neg(q, q);										\
+					}														\
+					C##_tab(t[i], q, w);									\
+				} else {													\
+					for (size_t j = 0; j < (1 << (w - 2)); j++) {			\
+						C##_psi(t[i][j], t[i - 1][j]);						\
+						if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {			\
+							C##_neg(t[i][j], t[i][j]);						\
+						}													\
+					}														\
+				}															\
+			}																\
+																			\
+			C##_set_infty(r);												\
+			for (int j = l - 1; j >= 0; j--) {								\
+				C##_dbl(r, r);												\
+																			\
+				for (size_t i = 0; i < S; i++) {							\
+					if (naf[i][j] > 0) {									\
+						C##_add(r, r, t[i][naf[i][j] / 2]);					\
+					}														\
+					if (naf[i][j] < 0) {									\
+						C##_sub(r, r, t[i][-naf[i][j] / 2]);				\
+					}														\
+				}															\
+			}																\
+																			\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(u);														\
+			C##_free(q);													\
+			for (size_t i = 0; i < S; i++) {								\
+				bn_free(_k[i]);												\
+				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {		\
+					C##_free(t[i][j]);										\
+				}															\
+			}																\
+		}																	\
+	}
+
+/**
  * Defines a template for regular point multiplication using the GLS
  * endomorphism. The scalar is decomposed in S subscalars, which are split in T
  * groups recoded with the sign-aligned column method, each with its own
