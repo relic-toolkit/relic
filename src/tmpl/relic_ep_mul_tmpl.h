@@ -834,6 +834,554 @@
 	}
 
 /**
+ * Defines a template for simultaneous point multiplication by interleaving
+ * w-NAFs, optionally using a precomputation table for the first point.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_PLAIN(C)											\
+	static void C##_mul_sim_plain(C##_t r, const C##_t p, const bn_t k,		\
+			const C##_t q, const bn_t m, const C##_t *t) {					\
+		int i, w, gen = (t == NULL ? 0 : 1);								\
+		int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], n0, n1, *u, *v;\
+		C##_t t0[1 << (RLC_WIDTH - 2)];										\
+		C##_t t1[1 << (RLC_WIDTH - 2)];										\
+		size_t l, l0, l1;													\
+																			\
+		RLC_TRY {															\
+			if (!gen) {														\
+				for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
+					C##_null(t0[i]);										\
+					C##_new(t0[i]);											\
+				}															\
+				C##_tab(t0, p, RLC_WIDTH);									\
+				t = (const C##_t *)t0;										\
+			}																\
+																			\
+			/* Prepare the precomputation table. */							\
+			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
+				C##_null(t1[i]);											\
+				C##_new(t1[i]);												\
+			}																\
+																			\
+			/* Compute the precomputation table. */							\
+			C##_tab(t1, q, RLC_WIDTH);										\
+																			\
+			/* Compute the w-TNAF representation of k. */					\
+			if (gen) {														\
+				w = RLC_DEPTH;												\
+			} else {														\
+				w = RLC_WIDTH;												\
+			}																\
+			l0 = l1 = RLC_FP_BITS + 1;										\
+			bn_rec_naf(naf0, &l0, k, w);									\
+			bn_rec_naf(naf1, &l1, m, RLC_WIDTH);							\
+																			\
+			l = RLC_MAX(l0, l1);											\
+			if (bn_sign(k) == RLC_NEG) {									\
+				for (size_t j = 0; j < l0; j++) {							\
+					naf0[j] = -naf0[j];										\
+				}															\
+			}																\
+			if (bn_sign(m) == RLC_NEG) {									\
+				for (size_t j = 0; j < l1; j++) {							\
+					naf1[j] = -naf1[j];										\
+				}															\
+			}																\
+																			\
+			u = naf0 + l - 1;												\
+			v = naf1 + l - 1;												\
+			C##_set_infty(r);												\
+			for (i = l - 1; i >= 0; i--, u--, v--) {						\
+				C##_dbl(r, r);												\
+																			\
+				n0 = *u;													\
+				n1 = *v;													\
+				if (n0 > 0) {												\
+					C##_add(r, r, t[n0 / 2]);								\
+				}															\
+				if (n0 < 0) {												\
+					C##_sub(r, r, t[-n0 / 2]);								\
+				}															\
+				if (n1 > 0) {												\
+					C##_add(r, r, t1[n1 / 2]);								\
+				}															\
+				if (n1 < 0) {												\
+					C##_sub(r, r, t1[-n1 / 2]);								\
+				}															\
+			}																\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			/* Free the precomputation tables. */							\
+			if (!gen) {														\
+				for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {				\
+					C##_free(t0[i]);										\
+				}															\
+			}																\
+			for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {					\
+				C##_free(t1[i]);											\
+			}																\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous point multiplication by interleaving
+ * w-NAFs of the subscalars produced by the GLS endomorphism.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] S			- the number of subscalars.
+ */
+#define TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)										\
+	static void C##_mul_sim_endom(C##_t r, const C##_t p, const bn_t k,		\
+			const C##_t q, const bn_t m, const C##_t *t) {					\
+		size_t l, _l[S];													\
+		bn_t _k[S], _m[S], n, u;											\
+		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
+		C##_t _p[S], _q[S];													\
+																			\
+		/* Width-2 NAFs need no precomputed table. */						\
+		(void)t;															\
+																			\
+		bn_null(n);															\
+		bn_null(u);															\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(u);														\
+			for (int i = 0; i < S; i++) {									\
+				bn_null(_k[i]);												\
+				bn_new(_k[i]);												\
+				bn_null(_m[i]);												\
+				bn_new(_m[i]);												\
+				C##_null(_p[i]);											\
+				C##_null(_q[i]);											\
+				C##_new(_p[i]);												\
+				C##_new(_q[i]);												\
+			}																\
+																			\
+			C##_norm(_p[0], p);												\
+			C##_norm(_q[0], q);												\
+			for (int i = 1; i < S; i++) {									\
+				C##_psi(_p[i], _p[i - 1]);									\
+				C##_psi(_q[i], _q[i - 1]);									\
+			}																\
+			/* Normalize if the endomorphism returns projective points. */	\
+			if (_p[1]->coord != BASIC) {									\
+				C##_norm_sim(_p + 1, (const C##_t *)_p + 1, S - 1);			\
+				C##_norm_sim(_q + 1, (const C##_t *)_q + 1, S - 1);			\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			fp_prime_get_par(u);											\
+			if (ep_curve_is_pairf() == EP_SG18) {							\
+				/* The endomorphism acts as multiplication by -3u. */		\
+				bn_mul_dig(u, u, 3);										\
+				bn_neg(u, u);												\
+			}																\
+			bn_mod(_k[0], k, n);											\
+			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+			bn_mod(_m[0], m, n);											\
+			bn_rec_frb(_m, S, _m[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+																			\
+			l = 0;															\
+			for (int i = 0; i < S; i++) {									\
+				_l[i] = RLC_FP_BITS + 1;									\
+				bn_rec_naf(naf0[i], &_l[i], _k[i], 2);						\
+				if (bn_sign(_k[i]) == RLC_NEG) {							\
+					C##_neg(_p[i], _p[i]);									\
+				}															\
+				l = RLC_MAX(l, _l[i]);										\
+				_l[i] = RLC_FP_BITS + 1;									\
+				bn_rec_naf(naf1[i], &_l[i], _m[i], 2);						\
+				if (bn_sign(_m[i]) == RLC_NEG) {							\
+					C##_neg(_q[i], _q[i]);									\
+				}															\
+				l = RLC_MAX(l, _l[i]);										\
+			}																\
+																			\
+			C##_set_infty(r);												\
+			for (int i = l - 1; i >= 0; i--) {								\
+				C##_dbl(r, r);												\
+				for (int j = 0; j < S; j++) {								\
+					if (naf0[j][i] > 0) {									\
+						C##_add(r, r, _p[j]);								\
+					}														\
+					if (naf0[j][i] < 0) {									\
+						C##_sub(r, r, _p[j]);								\
+					}														\
+					if (naf1[j][i] > 0) {									\
+						C##_add(r, r, _q[j]);								\
+					}														\
+					if (naf1[j][i] < 0) {									\
+						C##_sub(r, r, _q[j]);								\
+					}														\
+				}															\
+			}																\
+																			\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(u);														\
+			for (int i = 0; i < S; i++) {									\
+				bn_free(_k[i]);												\
+				bn_free(_m[i]);												\
+				C##_free(_p[i]);											\
+				C##_free(_q[i]);											\
+			}																\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous point multiplication using Shamir's
+ * trick.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_TRICK(C)											\
+	void C##_mul_sim_trick(C##_t r, const C##_t p, const bn_t k,			\
+			const C##_t q, const bn_t m) {									\
+		C##_t t0[1 << (RLC_WIDTH / 2)], t1[1 << (RLC_WIDTH / 2)];			\
+		C##_t t[1 << RLC_WIDTH];											\
+		bn_t n, _k, _m;														\
+		size_t l0, l1, w = RLC_WIDTH / 2;									\
+		uint8_t w0[RLC_FP_BITS + 1], w1[RLC_FP_BITS + 1];					\
+																			\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_mul(r, q, m);												\
+			return;															\
+		}																	\
+		if (bn_is_zero(m) || C##_is_infty(q)) {								\
+			C##_mul(r, p, k);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(n);															\
+		bn_null(_k);														\
+		bn_null(_m);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(_k);														\
+			bn_new(_m);														\
+																			\
+			for (int i = 0; i < (1 << w); i++) {							\
+				C##_null(t0[i]);											\
+				C##_null(t1[i]);											\
+				C##_new(t0[i]);												\
+				C##_new(t1[i]);												\
+			}																\
+			for (int i = 0; i < (1 << RLC_WIDTH); i++) {					\
+				C##_null(t[i]);												\
+				C##_new(t[i]);												\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			bn_mod(_m, m, n);												\
+																			\
+			C##_set_infty(t0[0]);											\
+			C##_copy(t0[1], p);												\
+			for (int i = 2; i < (1 << w); i++) {							\
+				C##_add(t0[i], t0[i - 1], t0[1]);							\
+			}																\
+																			\
+			C##_set_infty(t1[0]);											\
+			C##_copy(t1[1], q);												\
+			for (int i = 2; i < (1 << w); i++) {							\
+				C##_add(t1[i], t1[i - 1], t1[1]);							\
+			}																\
+																			\
+			for (int i = 0; i < (1 << w); i++) {							\
+				for (int j = 0; j < (1 << w); j++) {						\
+					C##_add(t[(i << w) + j], t0[i], t1[j]);					\
+				}															\
+			}																\
+																			\
+			if (RLC_WIDTH > 2) {											\
+				C##_norm_sim(t + 2, (const C##_t *)(t + 2),					\
+						(1 << (w + w)) - 2);								\
+			}																\
+																			\
+			l0 = l1 = RLC_CEIL(RLC_FP_BITS + 1, w);							\
+			bn_rec_win(w0, &l0, _k, w);										\
+			bn_rec_win(w1, &l1, _m, w);										\
+																			\
+			C##_set_infty(r);												\
+			for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {				\
+				for (size_t j = 0; j < w; j++) {							\
+					C##_dbl(r, r);											\
+				}															\
+				C##_add(r, r, t[(w0[i] << w) + w1[i]]);						\
+			}																\
+			C##_norm(r, r);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(_k);													\
+			bn_free(_m);													\
+			for (int i = 0; i < (1 << w); i++) {							\
+				C##_free(t0[i]);											\
+				C##_free(t1[i]);											\
+			}																\
+			for (int i = 0; i < (1 << RLC_WIDTH); i++) {					\
+				C##_free(t[i]);												\
+			}																\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous point multiplication by interleaving,
+ * using the endomorphism when the curve has one.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_INTER(C)											\
+	void C##_mul_sim_inter(C##_t r, const C##_t p, const bn_t k,			\
+			const C##_t q, const bn_t m) {									\
+		bn_t n, _k, _m;														\
+																			\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_mul(r, q, m);												\
+			return;															\
+		}																	\
+		if (bn_is_zero(m) || C##_is_infty(q)) {								\
+			C##_mul(r, p, k);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(n);															\
+		bn_null(_k);														\
+		bn_null(_m);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(_k);														\
+			bn_new(_m);														\
+																			\
+			/* Reduce the scalars here to simplify the static functions. */	\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			bn_mod(_m, m, n);												\
+																			\
+			if (ep_curve_is_endom()) {										\
+				C##_mul_sim_endom(r, p, _k, q, _m, NULL);					\
+			} else {														\
+				C##_mul_sim_plain(r, p, _k, q, _m, NULL);					\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(_k);													\
+			bn_free(_m);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous point multiplication using the joint
+ * sparse form.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_JOINT(C)											\
+	void C##_mul_sim_joint(C##_t r, const C##_t p, const bn_t k,			\
+			const C##_t q, const bn_t m) {									\
+		bn_t n, _k, _m;														\
+		C##_t t[5];															\
+		int i, u_i, offset;													\
+		int8_t jsf[2 * (RLC_FP_BITS + 1)];									\
+		size_t l;															\
+																			\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_mul(r, q, m);												\
+			return;															\
+		}																	\
+		if (bn_is_zero(m) || C##_is_infty(q)) {								\
+			C##_mul(r, p, k);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(n);															\
+		bn_null(_k);														\
+		bn_null(_m);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(_k);														\
+			bn_new(_m);														\
+			for (i = 0; i < 5; i++) {										\
+				C##_null(t[i]);												\
+				C##_new(t[i]);												\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			bn_mod(_m, m, n);												\
+																			\
+			C##_set_infty(t[0]);											\
+			C##_copy(t[1], q);												\
+			if (bn_sign(_m) == RLC_NEG) {									\
+				C##_neg(t[1], t[1]);										\
+			}																\
+			C##_copy(t[2], p);												\
+			if (bn_sign(_k) == RLC_NEG) {									\
+				C##_neg(t[2], t[2]);										\
+			}																\
+			C##_add(t[3], t[2], t[1]);										\
+			C##_sub(t[4], t[2], t[1]);										\
+			C##_norm_sim(t + 3, (const C##_t *)t + 3, 2);					\
+																			\
+			l = 2 * (RLC_FP_BITS + 1);										\
+			bn_rec_jsf(jsf, &l, _k, _m);									\
+																			\
+			C##_set_infty(r);												\
+																			\
+			offset = RLC_MAX(bn_bits(_k), bn_bits(_m)) + 1;					\
+			for (i = l - 1; i >= 0; i--) {									\
+				C##_dbl(r, r);												\
+				if (jsf[i] != 0 && jsf[i] == -jsf[i + offset]) {			\
+					u_i = jsf[i] * 2 + jsf[i + offset];						\
+					if (u_i < 0) {											\
+						C##_sub(r, r, t[4]);								\
+					} else {												\
+						C##_add(r, r, t[4]);								\
+					}														\
+				} else {													\
+					u_i = jsf[i] * 2 + jsf[i + offset];						\
+					if (u_i < 0) {											\
+						C##_sub(r, r, t[-u_i]);								\
+					} else {												\
+						C##_add(r, r, t[u_i]);								\
+					}														\
+				}															\
+			}																\
+			C##_norm(r, r);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(_k);													\
+			bn_free(_m);													\
+			for (i = 0; i < 5; i++) {										\
+				C##_free(t[i]);												\
+			}																\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous multiplication of the generator and
+ * another point, using the precomputation table of the generator when the
+ * configured methods allow.
+ *
+ * @param[in] C			- the curve.
+ */
+#if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)
+
+#define TMPL_EP_MUL_SIM_GEN(C)												\
+	void C##_mul_sim_gen(C##_t r, const bn_t k, const C##_t q,				\
+			const bn_t m) {													\
+		C##_t g;															\
+		bn_t n, _k, _m;														\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_mul(r, q, m);												\
+			return;															\
+		}																	\
+		if (bn_is_zero(m) || C##_is_infty(q)) {								\
+			C##_mul_gen(r, k);												\
+			return;															\
+		}																	\
+																			\
+		C##_null(g);														\
+		bn_null(n);															\
+		bn_null(_k);														\
+		bn_null(_m);														\
+																			\
+		RLC_TRY {															\
+			C##_new(g);														\
+			bn_new(n);														\
+			bn_new(_k);														\
+			bn_new(_m);														\
+																			\
+			C##_curve_get_gen(g);											\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			bn_mod(_m, m, n);												\
+																			\
+			if (ep_curve_is_endom()) {										\
+				C##_mul_sim_endom(r, g, _k, q, _m, C##_curve_get_tab());	\
+			} else {														\
+				C##_mul_sim_plain(r, g, _k, q, _m, C##_curve_get_tab());	\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free(g);													\
+			bn_free(n);														\
+			bn_free(_k);													\
+			bn_free(_m);													\
+		}																	\
+	}
+
+#else
+
+#define TMPL_EP_MUL_SIM_GEN(C)												\
+	void C##_mul_sim_gen(C##_t r, const bn_t k, const C##_t q,				\
+			const bn_t m) {													\
+		C##_t g;															\
+		bn_t n, _k, _m;														\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_mul(r, q, m);												\
+			return;															\
+		}																	\
+		if (bn_is_zero(m) || C##_is_infty(q)) {								\
+			C##_mul_gen(r, k);												\
+			return;															\
+		}																	\
+																			\
+		C##_null(g);														\
+		bn_null(n);															\
+		bn_null(_k);														\
+		bn_null(_m);														\
+																			\
+		RLC_TRY {															\
+			C##_new(g);														\
+			bn_new(n);														\
+			bn_new(_k);														\
+			bn_new(_m);														\
+																			\
+			C##_curve_get_gen(g);											\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			bn_mod(_m, m, n);												\
+																			\
+			C##_mul_sim(r, g, _k, q, _m);									\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free(g);													\
+			bn_free(n);														\
+			bn_free(_k);													\
+			bn_free(_m);													\
+		}																	\
+	}
+
+#endif
+
+/**
  * Defines a template for simultaneous point multiplication using two
  * independent multiplications.
  *
