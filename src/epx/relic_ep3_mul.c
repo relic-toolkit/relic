@@ -37,7 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
@@ -148,56 +147,9 @@ TMPL_EP_MUL_REG_GLS(ep3, fp3, 6, 1);
 
 #endif /* EP_MUL == LWREG */
 
-
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FP_BITS + 1];
-	ep3_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep3_null(t[i]);
-			ep3_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		ep3_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		ep3_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			ep3_dbl(r, r);
-
-			n = naf[i];
-			if (n > 0) {
-				ep3_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				ep3_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		ep3_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep3_free(t[i]);
-		}
-	}
-}
+TMPL_EP_MUL_NAF_IMP(ep3);
 
 #endif /* EP_MUL == LWNAF */
 
@@ -221,83 +173,7 @@ TMPL_EP_MUL_SLIDE(ep3);
 
 #if EP_MUL == MONTY || !defined(STRIP)
 
-void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
-	ep3_t t[2];
-	bn_t n, l, _k;
-	size_t bits;
-
-	bn_null(n);
-	bn_null(l);
-	bn_null(_k);
-	ep3_null(t[0]);
-	ep3_null(t[1]);
-
-	if (bn_is_zero(k) || ep3_is_infty(p)) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(l);
-		bn_new(_k);
-		ep3_new(t[0]);
-		ep3_new(t[1]);
-
-		ep3_curve_get_ord(n);
-		bits = bn_bits(n);
-
-		bn_mod(_k, k, n);
-		bn_abs(l, _k);
-		bn_add(l, l, n);
-		bn_add(n, l, n);
-		dv_swap_sec(l->dp, n->dp, RLC_MAX(l->used, n->used),
-			bn_get_bit(l, bits) == 0);
-		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
-
-		ep3_norm(t[0], p);
-		ep3_dbl(t[1], t[0]);
-
-		/* Blind both points independently. */
-		ep3_blind(t[0], t[0]);
-		ep3_blind(t[1], t[1]);
-
-		for (int i = bits - 1; i >= 0; i--) {
-			int j = bn_get_bit(l, i);
-			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
-			ep3_add(t[0], t[0], t[1]);
-			ep3_dbl(t[1], t[1]);
-			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
-		}
-
-		ep3_norm(r, t[0]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(l);
-		bn_free(_k);
-		ep3_free(t[1]);
-		ep3_free(t[0]);
-	}
-}
+TMPL_EP_MUL_MONTY(ep3, fp3);
 
 #endif
 

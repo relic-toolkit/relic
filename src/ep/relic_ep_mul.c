@@ -38,7 +38,6 @@
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-
 static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, n0, n1, s0, s1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
@@ -130,66 +129,9 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-
-
-static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
-	/* Some of the supported prime curves have order > field. */
-	int8_t u, naf[RLC_FP_BITS + 2];
-	ep_t t[1 << (RLC_WIDTH - 2)];
-	bn_t m, n;
-	size_t l;
-
-	bn_null(n);
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-		/* Prepare the precomputation table. */
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_null(t[i]);
-			ep_new(t[i]);
-		}
-
-		ep_curve_get_ord(n);
-		bn_mod(m, k, n);
-
-		/* Compute the precomputation table. */
-		ep_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = RLC_FP_BITS + 2;
-		bn_rec_naf(naf, &l, m, RLC_WIDTH);
-
-		ep_set_infty(r);
-		for (int i = l - 1; i >= 0; i--) {
-			ep_dbl(r, r);
-
-			u = naf[i];
-			if (u > 0) {
-				ep_add(r, r, t[u / 2]);
-			} else if (u < 0) {
-				ep_sub(r, r, t[-u / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		ep_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-		/* Free the precomputation table. */
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_free(t[i]);
-		}
-	}
-}
+TMPL_EP_MUL_NAF_IMP(ep);
 
 #endif /* EP_MUL == LWNAF */
-
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	int8_t reg[2][RLC_FP_BITS + 1], s[2], b[2], c0, c1, n0, n1;
@@ -303,10 +245,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-
-
 TMPL_EP_MUL_REG_IMP(ep, fp);
-
 
 /*============================================================================*/
 /* Public definitions                                                         */
