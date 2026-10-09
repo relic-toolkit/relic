@@ -985,6 +985,14 @@ static int simultaneous2(void) {
 			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep2_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
+			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
+			/* Add a multiple of n beyond the bit length of the scalars. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
+			bn_rsh(n, n, RLC_DIG);
+			ep2_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
@@ -2262,6 +2270,14 @@ static int simultaneous3(void) {
 			ep3_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep3_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
+			ep3_mul_sim(r, p[0], k[0], p[1], k[1]);
+			/* Add a multiple of n beyond the bit length of the scalars. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
@@ -3448,6 +3464,14 @@ static int simultaneous4(void) {
 			ep4_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep4_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
+			ep4_mul_sim(r, p[0], k[0], p[1], k[1]);
+			/* Add a multiple of n beyond the bit length of the scalars. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
@@ -4632,6 +4656,14 @@ static int simultaneous8(void) {
 			ep8_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep8_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			/* Add a multiple of n beyond the bit length of the scalars. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
+			bn_rsh(n, n, RLC_DIG);
 			ep8_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;

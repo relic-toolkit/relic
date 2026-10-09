@@ -415,7 +415,8 @@ void ep8_mul_sim_lot(ep8_t r, const ep8_t p[], const bn_t k[], size_t n) {
 
 			l = 0;
 			for (i = 0; i < n; i++) {
-				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf() == EP_BN);
+				bn_mod(_k[0], k[i], q);
+				bn_rec_frb(_k, 8, _k[0], q, x, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 8; j++) {
 					_l[8*i + j] = len;
 					bn_rec_naf(&naf[(8*i + j)*len], &_l[8*i + j], _k[j], 2);
@@ -490,7 +491,8 @@ void ep8_mul_sim_lot(ep8_t r, const ep8_t p[], const bn_t k[], size_t n) {
 
 			l = 0;
 			for (i = 0; i < n; i++) {
-				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf() == EP_BN);
+				bn_mod(_k[0], k[i], q);
+				bn_rec_frb(_k, 8, _k[0], q, x, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 8; j++) {
 					_l[8*i + j] = len;
 					bn_rec_naf(&naf[(8*i + j)*len], &_l[8*i + j], _k[j], w);
