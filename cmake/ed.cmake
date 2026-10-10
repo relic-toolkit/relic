@@ -6,15 +6,14 @@ message("      RLC_DEPTH=w        Width w in [2,6] of precomputation table for f
 
 message("   ** Available prime elliptic Edwards curve methods (default = PROJC;LWNAF;COMBS;INTER):")
 message("      ED_METHD=BASIC    Affine coordinates.")
-message("      EP_METHD=PROJC  	 Simple projective twisted Edwards coordinates.")
-message("      EP_METHD=EXTND 	 Extended projective twisted Edwards coordinates.\n")
+message("      ED_METHD=PROJC  	 Simple projective twisted Edwards coordinates.")
+message("      ED_METHD=EXTND 	 Extended projective twisted Edwards coordinates.\n")
 
 message("      *** variable-base multiplication method ***")
 message("      ED_METHD=BASIC    Binary method.")
-message("      ED_METHD=SLIDE    Sliding window method.")
 message("      ED_METHD=MONTY    Montgomery ladder method.")
 message("      ED_METHD=LWNAF    Left-to-right window NAF method.")
-message("      EP_METHD=LWREG    Left-to-right regular recoding method (GLV for curves with endomorphisms).\n")
+message("      ED_METHD=LWREG    Left-to-right regular recoding method (GLV for curves with endomorphisms).\n")
 
 message("      *** fixed-base multiplication method ***")
 message("      ED_METHD=BASIC    Binary method for fixed point multiplication.")

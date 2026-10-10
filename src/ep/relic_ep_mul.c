@@ -312,12 +312,6 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep);
-
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {

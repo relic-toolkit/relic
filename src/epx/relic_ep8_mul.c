@@ -76,12 +76,6 @@ TMPL_EP_MUL_SIM_PLAIN(ep8);
 
 TMPL_EP_MUL_BASIC(ep8);
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep8);
-
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 
 TMPL_EP_MUL_MONTY(ep8, fp8);

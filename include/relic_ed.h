@@ -504,8 +504,6 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  */
 #if ED_MUL == BASIC
 #define ed_mul(R, P, K)   ed_mul_basic(R, P, K)
-#elif ED_MUL == SLIDE
-#define ed_mul(R, P, K)   ed_mul_slide(R, P, K)
 #elif ED_MUL == MONTY
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
 #elif ED_MUL == LWNAF
@@ -823,16 +821,6 @@ void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack);
  * @param[in] k				- the integer.
  */
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k);
-
-/**
- * Multiplies an Edwards elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
 
 /**
  * Multiplies an Edwards elliptic point by an integer using the constant-time

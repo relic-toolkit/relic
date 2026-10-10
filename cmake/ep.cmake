@@ -14,7 +14,6 @@ message("      EP_METHD=JACOB    Jacobian projective coordinates.\n")
 
 message("      Variable-base scalar multiplication:")
 message("      EB_METHD=BASIC    Binary double-and-add method.")
-message("      EP_METHD=SLIDE    Sliding window method.")
 message("      EP_METHD=MONTY    Montgomery ladder method.")
 message("      EP_METHD=LWNAF    Left-to-right window NAF method.")
 message("      EP_METHD=LWREG    Left-to-right regular recoding method (GLV for curves with endomorphisms).\n")

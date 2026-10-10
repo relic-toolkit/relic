@@ -184,12 +184,6 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 
 TMPL_EP_MUL_BASIC(ep9);
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep9);
-
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 
 TMPL_EP_MUL_MONTY(ep9, fp9);

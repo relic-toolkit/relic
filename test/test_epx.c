@@ -574,37 +574,6 @@ static int multiplication2(void) {
 		} TEST_END;
 #endif
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ep2_mul_slide(r, p, k);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep2_mul_slide(r, p, k);
-			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
-			ep2_rand(p);
-			ep2_mul_slide(r, p, n);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep2_mul(q, p, k);
-			ep2_mul_slide(r, p, k);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep2_mul_slide(r, p, k);
-			ep2_neg(r, r);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			ep2_mul_slide(q, p, k);
-			/* Add a multiple of n beyond the bit length of the field. */
-			bn_lsh(n, n, RLC_DIG);
-			bn_add(k, k, n);
-			bn_rsh(n, n, RLC_DIG);
-			ep2_mul_slide(r, p, k);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
@@ -1921,37 +1890,6 @@ static int multiplication3(void) {
 		} TEST_END;
 #endif
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ep3_mul_slide(r, p, k);
-			TEST_ASSERT(ep3_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep3_mul_slide(r, p, k);
-			TEST_ASSERT(ep3_cmp(p, r) == RLC_EQ, end);
-			ep3_rand(p);
-			ep3_mul(r, p, n);
-			TEST_ASSERT(ep3_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep3_mul(q, p, k);
-			ep3_mul_slide(r, p, k);
-			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep3_mul_slide(r, p, k);
-			ep3_neg(r, r);
-			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			ep3_mul_slide(q, p, k);
-			/* Add a multiple of n beyond the bit length of the field. */
-			bn_lsh(n, n, RLC_DIG);
-			bn_add(k, k, n);
-			bn_rsh(n, n, RLC_DIG);
-			ep3_mul_slide(r, p, k);
-			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
@@ -3172,37 +3110,6 @@ static int multiplication4(void) {
 		} TEST_END;
 #endif
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ep4_mul_slide(r, p, k);
-			TEST_ASSERT(ep4_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep4_mul_slide(r, p, k);
-			TEST_ASSERT(ep4_cmp(p, r) == RLC_EQ, end);
-			ep4_rand(p);
-			ep4_mul(r, p, n);
-			TEST_ASSERT(ep4_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep4_mul(q, p, k);
-			ep4_mul_slide(r, p, k);
-			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep4_mul_slide(r, p, k);
-			ep4_neg(r, r);
-			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			ep4_mul_slide(q, p, k);
-			/* Add a multiple of n beyond the bit length of the field. */
-			bn_lsh(n, n, RLC_DIG);
-			bn_add(k, k, n);
-			bn_rsh(n, n, RLC_DIG);
-			ep4_mul_slide(r, p, k);
-			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
@@ -4419,37 +4326,6 @@ static int multiplication8(void) {
 		} TEST_END;
 #endif
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ep8_mul_slide(r, p, k);
-			TEST_ASSERT(ep8_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep8_mul_slide(r, p, k);
-			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
-			ep8_rand(p);
-			ep8_mul(r, p, n);
-			TEST_ASSERT(ep8_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep8_mul(q, p, k);
-			ep8_mul_slide(r, p, k);
-			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep8_mul_slide(r, p, k);
-			ep8_neg(r, r);
-			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			ep8_mul_slide(q, p, k);
-			/* Add a multiple of n beyond the bit length of the field. */
-			bn_lsh(n, n, RLC_DIG);
-			bn_add(k, k, n);
-			bn_rsh(n, n, RLC_DIG);
-			ep8_mul_slide(r, p, k);
-			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
@@ -5664,37 +5540,6 @@ static int multiplication9(void) {
 			ep9_mul_basic(r, p, k);
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
-
-#if EP_MUL == SLIDE || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ep9_mul_slide(r, p, k);
-			TEST_ASSERT(ep9_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep9_mul_slide(r, p, k);
-			TEST_ASSERT(ep9_cmp(p, r) == RLC_EQ, end);
-			ep9_rand(p);
-			ep9_mul(r, p, n);
-			TEST_ASSERT(ep9_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep9_mul(q, p, k);
-			ep9_mul_slide(r, p, k);
-			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep9_mul_slide(r, p, k);
-			ep9_neg(r, r);
-			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			ep9_mul_slide(q, p, k);
-			/* Add a multiple of n beyond the bit length of the field. */
-			bn_lsh(n, n, RLC_DIG);
-			bn_add(k, k, n);
-			bn_rsh(n, n, RLC_DIG);
-			ep9_mul_slide(r, p, k);
-			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
 #endif
 
 #if EP_MUL == MONTY || !defined(STRIP)

@@ -1047,7 +1047,6 @@
 #undef ep_tpl_jacob
 #undef ep_psi
 #undef ep_mul_basic
-#undef ep_mul_slide
 #undef ep_mul_monty
 #undef ep_mul_lwnaf
 #undef ep_mul_lwreg
@@ -1143,7 +1142,6 @@
 #define ep_tpl_jacob 	RLC_PREFIX(ep_tpl_jacob)
 #define ep_psi 	RLC_PREFIX(ep_psi)
 #define ep_mul_basic 	RLC_PREFIX(ep_mul_basic)
-#define ep_mul_slide 	RLC_PREFIX(ep_mul_slide)
 #define ep_mul_monty 	RLC_PREFIX(ep_mul_monty)
 #define ep_mul_lwnaf 	RLC_PREFIX(ep_mul_lwnaf)
 #define ep_mul_lwreg 	RLC_PREFIX(ep_mul_lwreg)
@@ -1238,7 +1236,6 @@
 #undef ed_read_bin
 #undef ed_write_bin
 #undef ed_mul_basic
-#undef ed_mul_slide
 #undef ed_mul_monty
 #undef ed_mul_lwnaf
 #undef ed_mul_lwreg
@@ -1303,7 +1300,6 @@
 #define ed_read_bin 	RLC_PREFIX(ed_read_bin)
 #define ed_write_bin 	RLC_PREFIX(ed_write_bin)
 #define ed_mul_basic 	RLC_PREFIX(ed_mul_basic)
-#define ed_mul_slide 	RLC_PREFIX(ed_mul_slide)
 #define ed_mul_monty 	RLC_PREFIX(ed_mul_monty)
 #define ed_mul_lwnaf 	RLC_PREFIX(ed_mul_lwnaf)
 #define ed_mul_lwreg 	RLC_PREFIX(ed_mul_lwreg)
@@ -1497,7 +1493,6 @@
 #undef ep2_dbl_projc
 #undef ep2_dbl_jacob
 #undef ep2_mul_basic
-#undef ep2_mul_slide
 #undef ep2_mul_monty
 #undef ep2_mul_lwnaf
 #undef ep2_mul_lwreg
@@ -1570,7 +1565,6 @@
 #define ep2_dbl_projc 	RLC_PREFIX(ep2_dbl_projc)
 #define ep2_dbl_jacob 	RLC_PREFIX(ep2_dbl_jacob)
 #define ep2_mul_basic 	RLC_PREFIX(ep2_mul_basic)
-#define ep2_mul_slide 	RLC_PREFIX(ep2_mul_slide)
 #define ep2_mul_monty 	RLC_PREFIX(ep2_mul_monty)
 #define ep2_mul_lwnaf 	RLC_PREFIX(ep2_mul_lwnaf)
 #define ep2_mul_lwreg 	RLC_PREFIX(ep2_mul_lwreg)
@@ -1646,7 +1640,6 @@
 #undef ep3_dbl_projc
 #undef ep3_dbl_jacob
 #undef ep3_mul_basic
-#undef ep3_mul_slide
 #undef ep3_mul_monty
 #undef ep3_mul_lwnaf
 #undef ep3_mul_lwreg
@@ -1713,7 +1706,6 @@
 #define ep3_dbl_projc 	RLC_PREFIX(ep3_dbl_projc)
 #define ep3_dbl_jacob 	RLC_PREFIX(ep3_dbl_jacob)
 #define ep3_mul_basic 	RLC_PREFIX(ep3_mul_basic)
-#define ep3_mul_slide 	RLC_PREFIX(ep3_mul_slide)
 #define ep3_mul_monty 	RLC_PREFIX(ep3_mul_monty)
 #define ep3_mul_lwnaf 	RLC_PREFIX(ep3_mul_lwnaf)
 #define ep3_mul_lwreg 	RLC_PREFIX(ep3_mul_lwreg)
@@ -1785,7 +1777,6 @@
 #undef ep4_dbl_projc
 #undef ep4_dbl_jacob
 #undef ep4_mul_basic
-#undef ep4_mul_slide
 #undef ep4_mul_monty
 #undef ep4_mul_lwnaf
 #undef ep4_mul_lwreg
@@ -1852,7 +1843,6 @@
 #define ep4_dbl_projc 	RLC_PREFIX(ep4_dbl_projc)
 #define ep4_dbl_jacob 	RLC_PREFIX(ep4_dbl_jacob)
 #define ep4_mul_basic 	RLC_PREFIX(ep4_mul_basic)
-#define ep4_mul_slide 	RLC_PREFIX(ep4_mul_slide)
 #define ep4_mul_monty 	RLC_PREFIX(ep4_mul_monty)
 #define ep4_mul_lwnaf 	RLC_PREFIX(ep4_mul_lwnaf)
 #define ep4_mul_lwreg 	RLC_PREFIX(ep4_mul_lwreg)
@@ -1924,7 +1914,6 @@
 #undef ep8_dbl_projc
 #undef ep8_dbl_jacob
 #undef ep8_mul_basic
-#undef ep8_mul_slide
 #undef ep8_mul_monty
 #undef ep8_mul_lwnaf
 #undef ep8_mul_lwreg
@@ -1991,7 +1980,6 @@
 #define ep8_dbl_projc 	RLC_PREFIX(ep8_dbl_projc)
 #define ep8_dbl_jacob 	RLC_PREFIX(ep8_dbl_jacob)
 #define ep8_mul_basic 	RLC_PREFIX(ep8_mul_basic)
-#define ep8_mul_slide 	RLC_PREFIX(ep8_mul_slide)
 #define ep8_mul_monty 	RLC_PREFIX(ep8_mul_monty)
 #define ep8_mul_lwnaf 	RLC_PREFIX(ep8_mul_lwnaf)
 #define ep8_mul_lwreg 	RLC_PREFIX(ep8_mul_lwreg)
@@ -2062,7 +2050,6 @@
 #undef ep9_dbl_projc
 #undef ep9_dbl_jacob
 #undef ep9_mul_basic
-#undef ep9_mul_slide
 #undef ep9_mul_monty
 #undef ep9_mul_lwnaf
 #undef ep9_mul_lwreg
@@ -2128,7 +2115,6 @@
 #define ep9_dbl_projc 	RLC_PREFIX(ep9_dbl_projc)
 #define ep9_dbl_jacob 	RLC_PREFIX(ep9_dbl_jacob)
 #define ep9_mul_basic 	RLC_PREFIX(ep9_mul_basic)
-#define ep9_mul_slide 	RLC_PREFIX(ep9_mul_slide)
 #define ep9_mul_monty 	RLC_PREFIX(ep9_mul_monty)
 #define ep9_mul_lwnaf 	RLC_PREFIX(ep9_mul_lwnaf)
 #define ep9_mul_lwreg 	RLC_PREFIX(ep9_mul_lwreg)

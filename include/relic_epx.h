@@ -547,8 +547,6 @@ typedef iso2_st *iso2_t;
  */
 #if EP_MUL == BASIC
 #define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep2_mul(R, P, K)		ep2_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -681,8 +679,6 @@ typedef iso2_st *iso2_t;
  */
 #if EP_MUL == BASIC
 #define ep3_mul(R, P, K)		ep3_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep3_mul(R, P, K)		ep3_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep3_mul(R, P, K)		ep3_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -799,8 +795,6 @@ typedef iso2_st *iso2_t;
  */
 #if EP_MUL == BASIC
 #define ep4_mul(R, P, K)		ep4_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep4_mul(R, P, K)		ep4_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -917,8 +911,6 @@ typedef iso2_st *iso2_t;
  */
 #if EP_MUL == BASIC
 #define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep8_mul(R, P, K)		ep8_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -1035,8 +1027,6 @@ typedef iso2_st *iso2_t;
  */
 #if EP_MUL == BASIC
 #define ep9_mul(R, P, K)		ep9_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep9_mul(R, P, K)		ep9_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep9_mul(R, P, K)		ep9_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -1454,16 +1444,6 @@ void ep2_dbl_jacob(ep2_t r, const ep2_t p);
  * @param[in] k				- the integer.
  */
 void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -2093,16 +2073,6 @@ void ep3_dbl_jacob(ep3_t r, const ep3_t p);
 void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k);
 
 /**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k);
-
-/**
  * Multiplies a prime elliptic point by an integer using the constant-time
  * Montgomery ladder point multiplication method.
  *
@@ -2688,16 +2658,6 @@ void ep4_dbl_jacob(ep4_t r, const ep4_t p);
  * @param[in] k				- the integer.
  */
 void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -3288,16 +3248,6 @@ void ep8_dbl_jacob(ep8_t r, const ep8_t p);
 void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k);
 
 /**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep8_mul_slide(ep8_t r, const ep8_t p, const bn_t k);
-
-/**
  * Multiplies a prime elliptic point by an integer using the constant-time
  * Montgomery ladder point multiplication method.
  *
@@ -3877,16 +3827,6 @@ void ep9_dbl_jacob(ep9_t r, const ep9_t p);
  * @param[in] k				- the integer.
  */
 void ep9_mul_basic(ep9_t r, const ep9_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep9_mul_slide(ep9_t r, const ep9_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time

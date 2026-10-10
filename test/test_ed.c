@@ -582,29 +582,6 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == MONTY || !defined(STRIP)
-		TEST_CASE("sliding window point multiplication is correct") {
-			bn_zero(k);
-			ed_mul_slide(r, p, k);
-			TEST_ASSERT(ed_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ed_mul_slide(r, p, k);
-			TEST_ASSERT(ed_cmp(p, r) == RLC_EQ, end);
-			ed_rand(p);
-			ed_mul(r, p, n);
-			TEST_ASSERT(ed_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ed_mul(q, p, k);
-			ed_mul_slide(r, p, k);
-			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ed_mul_slide(r, p, k);
-			ed_neg(r, r);
-			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
-		}
-		TEST_END;
-#endif
-
-#if ED_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_monty(r, p, k);

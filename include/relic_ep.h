@@ -423,8 +423,6 @@ typedef iso_st *iso_t;
  */
 #if EP_MUL == BASIC
 #define ep_mul(R, P, K)		ep_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep_mul(R, P, K)		ep_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep_mul(R, P, K)		ep_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
@@ -1028,16 +1026,6 @@ void ep_psi(ep_t r, const ep_t p);
  * @param[in] k				- the integer.
  */
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep_mul_slide(ep_t r, const ep_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time

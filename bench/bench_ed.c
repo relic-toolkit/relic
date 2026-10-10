@@ -425,14 +425,6 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if ED_MUL == SLIDE || !defined(STRIP)
-	BENCH_RUN("ed_mul_slide") {
-		bn_rand_mod(k, n);
-		ed_rand(p);
-		BENCH_ADD(ed_mul_slide(q, p, k));
-	} BENCH_END;
-#endif
-
 #if ED_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ed_mul_monty") {
 		bn_rand_mod(k, n);

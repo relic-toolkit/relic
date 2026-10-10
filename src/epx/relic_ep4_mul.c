@@ -382,12 +382,6 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 
 TMPL_EP_MUL_BASIC(ep4);
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep4);
-
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 
 TMPL_EP_MUL_MONTY(ep4, fp4);

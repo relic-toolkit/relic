@@ -425,12 +425,6 @@ static void ep3_mul_cof_fm18(ep3_t r, const ep3_t p) {
 
 TMPL_EP_MUL_BASIC(ep3);
 
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep3);
-
-#endif
-
 #if EP_MUL == MONTY || !defined(STRIP)
 
 TMPL_EP_MUL_MONTY(ep3, fp3);
