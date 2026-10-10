@@ -114,6 +114,7 @@
  * "Complete addition formulas for prime order elliptic curves"
  * by Joost Renes, Craig Costello, and Lejla Batina
  * https://eprint.iacr.org/2015/1060.pdf
+ * with the six final products computed in 5M instead of 6M.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -144,107 +145,84 @@
 			F##_mul(t3, t3, t4);											\
 			F##_add(t4, t0, t1);											\
 			F##_sub(t3, t3, t4);											\
+			if (p->coord == BASIC) {										\
+				/* Save 2M if z1 = 1. */									\
+				F##_add(t4, q->x, p->x);									\
+				F##_add(t5, q->y, p->y);									\
+			} else {														\
+				F##_mul(t4, q->x, p->z);									\
+				F##_add(t4, t4, p->x);										\
+				F##_mul(t5, q->y, p->z);									\
+				F##_add(t5, t5, p->y);										\
+			}																\
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
-				/* Cost of 11M + 2m_3b + 13a. */							\
+				/* Cost of 10M + 2m_3b. */									\
 				if (p->coord == BASIC) {									\
-					/* Save 1M + 1m_3b if z1 = 1. */						\
-					F##_add(t4, q->y, p->y);								\
-					F##_add(r->y, q->x, p->x);								\
-					F##_dbl(t5, C##_curve_get_b());							\
-					F##_add(t5, t5, C##_curve_get_b());						\
-					F##_add(r->z, t1, t5);									\
-					F##_sub(t1, t1, t5);									\
+					/* Save 1m_3b if z1 = 1. */								\
+					F##_dbl(r->y, C##_curve_get_b());						\
+					F##_add(r->y, r->y, C##_curve_get_b());					\
 				} else {													\
-					F##_mul(t4, q->y, p->z);								\
-					F##_add(t4, t4, p->y);									\
-					F##_mul(r->y, q->x, p->z);								\
-					F##_add(r->y, r->y, p->x);								\
-					F##_dbl(t2, p->z);										\
-					F##_add(t2, t2, p->z);									\
-					C##_curve_mul_b(t2, t2);								\
-					F##_add(r->z, t1, t2);									\
-					F##_sub(t1, t1, t2);									\
+					F##_dbl(r->y, p->z);									\
+					F##_add(r->y, r->y, p->z);								\
+					C##_curve_mul_b(r->y, r->y);							\
 				}															\
-				F##_dbl(r->x, t0);											\
-				F##_add(t0, t0, r->x);										\
-				F##_dbl(t5, r->y);											\
-				F##_add(r->y, r->y, t5);									\
-				C##_curve_mul_b(r->y, r->y);								\
-				F##_mul(r->x, t4, r->y);									\
-				F##_mul(t2, t3, t1);										\
-				F##_sub(r->x, t2, r->x);									\
-				F##_mul(r->y, t0, r->y);									\
-				F##_mul(t1, t1, r->z);										\
-				F##_add(r->y, t1, r->y);									\
-				F##_mul(t0, t0, t3);										\
-				F##_mul(r->z, r->z, t4);									\
-				F##_add(r->z, r->z, t0);									\
+				/* B = t1 - 3b * z1, F = t1 + 3b * z1. */					\
+				F##_sub(r->x, t1, r->y);									\
+				F##_add(r->z, t1, r->y);									\
+				/* D = 3b * t4, E = 3 * t0. */								\
+				F##_dbl(t2, t4);											\
+				F##_add(t2, t2, t4);										\
+				C##_curve_mul_b(t2, t2);									\
+				F##_dbl(t1, t0);											\
+				F##_add(t1, t1, t0);										\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
-				/* Cost of 11M + 2m_b + 23a. */								\
+				/* Cost of 10M + 2m_b. */									\
 				if (p->coord == BASIC) {									\
-					/* Save 2M + 3a if z1 = 1. */							\
+					/* Save 1m_b if z1 = 1. */								\
 					F##_set_dig(t2, 3);										\
-					F##_add(t4, q->y, p->y);								\
-					F##_add(r->y, q->x, p->x);								\
-					F##_sub(r->x, r->y, C##_curve_get_b());					\
+					F##_sub(r->y, t4, C##_curve_get_b());					\
 				} else {													\
 					F##_dbl(t2, p->z);										\
 					F##_add(t2, t2, p->z);									\
-					F##_mul(t4, q->y, p->z);								\
-					F##_add(t4, t4, p->y);									\
-					F##_mul(r->y, q->x, p->z);								\
-					F##_add(r->y, r->y, p->x);								\
 					C##_curve_mul_b(r->z, p->z);							\
-					F##_sub(r->x, r->y, r->z);								\
+					F##_sub(r->y, t4, r->z);								\
 				}															\
-				F##_dbl(r->z, r->x);										\
-				F##_add(r->x, r->x, r->z);									\
-				F##_sub(r->z, t1, r->x);									\
-				F##_add(r->x, t1, r->x);									\
-				C##_curve_mul_b(r->y, r->y);								\
+				/* B = t1 + 3 * (t4 - b * z1), F = t1 - 3 * (t4 - b * z1). */\
+				F##_dbl(r->z, r->y);										\
+				F##_add(r->y, r->y, r->z);									\
+				F##_add(r->x, t1, r->y);									\
+				F##_sub(r->z, t1, r->y);									\
+				/* D = 3 * (b * t4 - 3 * z1 - t0), E = 3 * t0 - 3 * z1. */	\
+				C##_curve_mul_b(r->y, t4);									\
 				F##_sub(r->y, r->y, t2);									\
 				F##_sub(r->y, r->y, t0);									\
-				F##_dbl(t1, r->y);											\
-				F##_add(r->y, t1, r->y);									\
 				F##_dbl(t1, t0);											\
-				F##_add(t0, t1, t0);										\
-				F##_sub(t0, t0, t2);										\
-				F##_mul(t1, t4, r->y);										\
-				F##_mul(t2, t0, r->y);										\
-				F##_mul(r->y, r->x, r->z);									\
-				F##_add(r->y, r->y, t2);									\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t1);									\
-				F##_mul(r->z, t4, r->z);									\
-				F##_mul(t1, t3, t0);										\
-				F##_add(r->z, r->z, t1);									\
+				F##_add(t1, t1, t0);										\
+				F##_sub(t1, t1, t2);										\
+				F##_dbl(t2, r->y);											\
+				F##_add(t2, t2, r->y);										\
 			} else {														\
-				/* Cost of 11M + 3m_a + 2m_3b + 17a. */						\
+				/* Cost of 10M + 3m_a + 2m_3b. */							\
 				if (p->coord == BASIC) {									\
-					/* Save 1M + 1m_a + 1m_3b if z1 = 1. */					\
+					/* Save 1m_a + 1m_3b if z1 = 1. */						\
 					F##_copy(t2, C##_curve_get_a());						\
-					F##_add(t4, q->x, p->x);								\
-					F##_add(t5, q->y, p->y);								\
 					C##_curve_mul_a(r->z, t4);								\
 					F##_dbl(r->y, C##_curve_get_b());						\
 					F##_add(r->y, r->y, C##_curve_get_b());					\
 					F##_add(r->z, r->z, r->y);								\
 				} else {													\
 					C##_curve_mul_a(t2, p->z);								\
-					F##_mul(t4, q->x, p->z);								\
-					F##_add(t4, t4, p->x);									\
-					F##_mul(t5, q->y, p->z);								\
-					F##_add(t5, t5, p->y);									\
 					F##_dbl(r->x, p->z);									\
 					F##_add(r->x, r->x, p->z);								\
 					C##_curve_mul_b(r->x, r->x);							\
 					C##_curve_mul_a(r->z, t4);								\
 					F##_add(r->z, r->x, r->z);								\
 				}															\
+				/* B = t1 - a * t4 - 3b * z1, F = t1 + a * t4 + 3b * z1. */	\
 				F##_sub(r->x, t1, r->z);									\
 				F##_add(r->z, t1, r->z);									\
-				F##_mul(r->y, r->x, r->z);									\
+				/* D = a * (t0 - a * z1) + 3b * t4, E = 3 * t0 + a * z1. */	\
 				F##_dbl(t1, t4);											\
 				F##_add(t1, t1, t4);										\
 				C##_curve_mul_b(t4, t1);									\
@@ -253,16 +231,25 @@
 				F##_add(t1, t1, t2);										\
 				F##_sub(t2, t0, t2);										\
 				C##_curve_mul_a(t2, t2);									\
-				F##_add(t4, t4, t2);										\
-				F##_mul(t0, t1, t4);										\
-				F##_add(r->y, r->y, t0);									\
-				F##_mul(t0, t5, t4);										\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t0);									\
-				F##_mul(t0, t3, t1);										\
-				F##_mul(r->z, t5, r->z);									\
-				F##_add(r->z, r->z, t0);									\
+				F##_add(t2, t4, t2);										\
 			}																\
+																			\
+			/* X3 = A * B - C * D, Y3 = B * F + D * E and Z3 = C * F + A * E\
+			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and F = z. */\
+			F##_add(t0, r->z, t2);											\
+			F##_mul(r->z, r->z, t5);										\
+			F##_sub(t4, r->x, t5);											\
+			F##_mul(t4, t0, t4);											\
+			F##_add(r->y, t5, t1);											\
+			F##_sub(r->y, r->y, r->x);										\
+			F##_mul(r->y, t2, r->y);										\
+			F##_sub(t0, t3, t0);											\
+			F##_mul(t0, t0, r->x);											\
+			F##_mul(t3, t3, t1);											\
+			F##_add(r->x, t4, r->z);										\
+			F##_add(r->y, r->x, r->y);										\
+			F##_add(r->x, r->x, t0);										\
+			F##_add(r->z, r->z, t3);										\
 																			\
 			r->coord = PROJC;												\
 		}																	\
@@ -277,16 +264,17 @@
 			F##_free(t4);													\
 			F##_free(t5);													\
 		}																	\
-	}																		\
+	}
 
 /**
  * Defines a template for point addition in homogeneous projective
  * coordinates.
  *
- * Formulas for mixed addition from
+ * Formulas for addition from
  * "Complete addition formulas for prime order elliptic curves"
  * by Joost Renes, Craig Costello, and Lejla Batina
  * https://eprint.iacr.org/2015/1060.pdf
+ * with the six final products computed in 5M instead of 6M.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -324,113 +312,90 @@
 			F##_mul(t3, t3, t4);											\
 			F##_add(t4, t0, t1);											\
 			F##_sub(t3, t3, t4);											\
+			F##_add(t4, p->y, p->z);										\
+			F##_add(t5, q->y, q->z);										\
+			F##_mul(t5, t4, t5);											\
+			F##_add(t4, t1, t2);											\
+			F##_sub(t5, t5, t4);											\
+			F##_add(t4, p->x, p->z);										\
+			F##_add(r->x, q->x, q->z);										\
+			F##_mul(t4, t4, r->x);											\
+			F##_add(r->x, t0, t2);											\
+			F##_sub(t4, t4, r->x);											\
+																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
-				/* Cost of 12M + 2m_3b + 19a. */							\
-				F##_add(t4, p->y, p->z);									\
-				F##_add(t5, q->y, q->z);									\
-				F##_mul(t4, t4, t5);										\
-				F##_add(t5, t1, t2);										\
-				F##_sub(t4, t4, t5);										\
-				F##_add(r->y, q->x, q->z);									\
-				F##_add(r->x, p->x, p->z);									\
-				F##_mul(r->x, r->x, r->y);									\
-				F##_add(r->y, t0, t2);										\
-				F##_sub(r->y, r->x, r->y);									\
-				F##_dbl(r->x, t0);											\
-				F##_add(t0, t0, r->x);										\
-				F##_dbl(t5, t2);											\
-				F##_add(t2, t2, t5);										\
-				C##_curve_mul_b(t2, t2);									\
-				F##_add(r->z, t1, t2);										\
-				F##_sub(t1, t1, t2);										\
-				F##_dbl(t5, r->y);											\
-				F##_add(r->y, r->y, t5);									\
-				C##_curve_mul_b(r->y, r->y);								\
-				F##_mul(r->x, t4, r->y);									\
-				F##_mul(t2, t3, t1);										\
-				F##_sub(r->x, t2, r->x);									\
-				F##_mul(r->y, t0, r->y);									\
-				F##_mul(t1, t1, r->z);										\
-				F##_add(r->y, t1, r->y);									\
-				F##_mul(t0, t0, t3);										\
-				F##_mul(r->z, r->z, t4);									\
-				F##_add(r->z, r->z, t0);									\
-			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
-				/* Cost of 12M + 2m_b + 29a. */								\
-				F##_add(t4, p->y, p->z);									\
-				F##_add(t5, q->y, q->z);									\
-				F##_mul(t4, t4, t5);										\
-				F##_add(t5, t1, t2);										\
-				F##_sub(t4, t4, t5);										\
-				F##_add(r->x, p->x, p->z);									\
-				F##_add(r->y, q->x, q->z);									\
-				F##_mul(r->x, r->x, r->y);									\
-				F##_add(r->y, t0, t2);										\
-				F##_sub(r->y, r->x, r->y);									\
-				C##_curve_mul_b(r->z, t2);									\
-				F##_sub(r->x, r->y, r->z);									\
-				F##_dbl(r->z, r->x);										\
-				F##_add(r->x, r->x, r->z);									\
-				F##_sub(r->z, t1, r->x);									\
-				F##_add(r->x, t1, r->x);									\
-				C##_curve_mul_b(r->y, r->y);								\
-				F##_dbl(t1, t2);											\
-				F##_add(t2, t1, t2);										\
-				F##_sub(r->y, r->y, t2);									\
-				F##_sub(r->y, r->y, t0);									\
-				F##_dbl(t1, r->y);											\
-				F##_add(r->y, t1, r->y);									\
-				F##_dbl(t1, t0);											\
-				F##_add(t0, t1, t0);										\
-				F##_sub(t0, t0, t2);										\
-				F##_mul(t1, t4, r->y);										\
-				F##_mul(t2, t0, r->y);										\
-				F##_mul(r->y, r->x, r->z);									\
+				/* Cost of 11M + 2m_3b. */									\
+				/* B = t1 - 3b * t2, F = t1 + 3b * t2. */					\
+				F##_dbl(r->y, t2);											\
 				F##_add(r->y, r->y, t2);									\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t1);									\
-				F##_mul(r->z, t4, r->z);									\
-				F##_mul(t1, t3, t0);										\
-				F##_add(r->z, r->z, t1);									\
-			} else {														\
-				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
-				F##_add(t4, p->x, p->z);									\
-				F##_add(t5, q->x, q->z);									\
-				F##_mul(t4, t4, t5);										\
-				F##_add(t5, t0, t2);										\
-				F##_sub(t4, t4, t5);										\
-				F##_add(t5, p->y, p->z);									\
-				F##_add(r->x, q->y, q->z);									\
-				F##_mul(t5, t5, r->x);										\
-				F##_add(r->x, t1, t2);										\
-				F##_sub(t5, t5, r->x);										\
-				C##_curve_mul_a(r->z, t4);									\
-				F##_dbl(r->x, t2);											\
-				F##_add(r->x, r->x, t2);									\
-				C##_curve_mul_b(r->x, r->x);								\
-				F##_add(r->z, r->x, r->z);									\
-				F##_sub(r->x, t1, r->z);									\
-				F##_add(r->z, t1, r->z);									\
-				F##_mul(r->y, r->x, r->z);									\
-				F##_dbl(t1, t4);											\
-				F##_add(t1, t1, t4);										\
-				C##_curve_mul_b(t4, t1);									\
+				C##_curve_mul_b(r->y, r->y);								\
+				F##_sub(r->x, t1, r->y);									\
+				F##_add(r->z, t1, r->y);									\
+				/* D = 3b * t4, E = 3 * t0. */								\
+				F##_dbl(t2, t4);											\
+				F##_add(t2, t2, t4);										\
+				C##_curve_mul_b(t2, t2);									\
 				F##_dbl(t1, t0);											\
 				F##_add(t1, t1, t0);										\
-				C##_curve_mul_a(t2, t2);									\
-				F##_add(t1, t1, t2);										\
-				F##_sub(t2, t0, t2);										\
-				C##_curve_mul_a(t2, t2);									\
+			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
+				/* Cost of 11M + 2m_b. */									\
+				/* B = t1 + 3 * (t4 - b * t2), F = t1 - 3 * (t4 - b * t2). */\
+				C##_curve_mul_b(r->z, t2);									\
+				F##_sub(r->y, t4, r->z);									\
+				F##_dbl(r->z, r->y);										\
+				F##_add(r->y, r->y, r->z);									\
+				F##_add(r->x, t1, r->y);									\
+				F##_sub(r->z, t1, r->y);									\
+				/* D = 3 * (b * t4 - 3 * t2 - t0), E = 3 * t0 - 3 * t2. */	\
+				C##_curve_mul_b(r->y, t4);									\
+				F##_dbl(t4, t2);											\
 				F##_add(t4, t4, t2);										\
-				F##_mul(t0, t1, t4);										\
-				F##_add(r->y, r->y, t0);									\
-				F##_mul(t0, t5, t4);										\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t0);									\
-				F##_mul(t0, t3, t1);										\
-				F##_mul(r->z, t5, r->z);									\
-				F##_add(r->z, r->z, t0);									\
+				F##_sub(r->y, r->y, t4);									\
+				F##_sub(r->y, r->y, t0);									\
+				F##_dbl(t1, t0);											\
+				F##_add(t1, t1, t0);										\
+				F##_sub(t1, t1, t4);										\
+				F##_dbl(t2, r->y);											\
+				F##_add(t2, t2, r->y);										\
+			} else {														\
+				/* Cost of 11M + 3m_a + 2m_3b. */							\
+				/* B = t1 - a * t4 - 3b * t2, F = t1 + a * t4 + 3b * t2. */	\
+				C##_curve_mul_a(r->x, t4);									\
+				F##_dbl(r->y, t2);											\
+				F##_add(r->y, r->y, t2);									\
+				C##_curve_mul_b(r->y, r->y);								\
+				F##_add(r->z, r->x, r->y);									\
+				F##_sub(r->x, t1, r->z);									\
+				F##_add(r->z, t1, r->z);									\
+				/* D = a * (t0 - a * t2) + 3b * t4, E = 3 * t0 + a * t2. */	\
+				C##_curve_mul_a(r->y, t2);									\
+				F##_sub(t2, t0, r->y);										\
+				C##_curve_mul_a(t2, t2);									\
+				F##_dbl(t1, t4);											\
+				F##_add(t1, t1, t4);										\
+				C##_curve_mul_b(t1, t1);									\
+				F##_add(t2, t2, t1);										\
+				F##_dbl(t1, t0);											\
+				F##_add(t1, t1, t0);										\
+				F##_add(t1, t1, r->y);										\
 			}																\
+																			\
+			/* X3 = A * B - C * D, Y3 = B * F + D * E and Z3 = C * F + A * E\
+			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and F = z. */\
+			F##_add(t0, r->z, t2);											\
+			F##_mul(r->z, r->z, t5);										\
+			F##_sub(t4, r->x, t5);											\
+			F##_mul(t4, t0, t4);											\
+			F##_add(r->y, t5, t1);											\
+			F##_sub(r->y, r->y, r->x);										\
+			F##_mul(r->y, t2, r->y);										\
+			F##_sub(t0, t3, t0);											\
+			F##_mul(t0, t0, r->x);											\
+			F##_mul(t3, t3, t1);											\
+			F##_add(r->x, t4, r->z);										\
+			F##_add(r->y, r->x, r->y);										\
+			F##_add(r->x, r->x, t0);										\
+			F##_add(r->z, r->z, t3);										\
 			r->coord = PROJC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -442,7 +407,7 @@
 			F##_free(t4);													\
 			F##_free(t5);													\
 		}																	\
-	}																		\
+	}
 
 /**
  * Defines a template for mixed point addition in Jacobian coordinates.
