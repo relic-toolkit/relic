@@ -70,118 +70,6 @@ TMPL_EP_MUL_SIM_PLAIN(ep4);
 
 #endif /* EP_SIM == INTER */
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-TMPL_EP_MUL_BASIC(ep4);
-
-#if EP_MUL == SLIDE || !defined(STRIP)
-
-TMPL_EP_MUL_SLIDE(ep4);
-
-#endif
-
-#if EP_MUL == MONTY || !defined(STRIP)
-
-TMPL_EP_MUL_MONTY(ep4, fp4);
-
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
-
-void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep4_mul_gls_imp(r, p, k);
-		return;
-	}
-
-	ep4_mul_naf_imp(r, p, k);
-}
-
-#endif
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
-void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep4_mul_reg_gls(r, p, k);
-		return;
-	}
-
-	ep4_mul_reg_imp(r, p, k);
-}
-
-#endif
-
-TMPL_EP_MUL_GEN(ep4);
-
-TMPL_EP_MUL_DIG(ep4);
-
-#if EP_FIX == BASIC || !defined(STRIP)
-
-TMPL_EP_MUL_FIX_BASIC(ep4);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
-
-TMPL_EP_MUL_COMBS(ep4);
-
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
-
-TMPL_EP_MUL_COMBD(ep4);
-
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
-
-TMPL_EP_MUL_FIX_LWNAF(ep4);
-
-#endif
-
-#if EP_SIM == BASIC || !defined(STRIP)
-
-TMPL_EP_MUL_SIM_BASIC(ep4);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
-
-TMPL_EP_MUL_SIM_TRICK(ep4);
-
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
-TMPL_EP_MUL_SIM_INTER(ep4);
-
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
-TMPL_EP_MUL_SIM_JOINT(ep4);
-
-#endif
-
-TMPL_EP_MUL_SIM_GEN(ep4);
-
-TMPL_EP_MUL_SIM_DIG(ep4);
-
-TMPL_EP_MUL_SIM_LOT(ep4, 8);
-
 /**
  * Multiplies a point by the cofactor in a KSS16 curve.
  *
@@ -487,6 +375,119 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 
 	}
 }
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+TMPL_EP_MUL_BASIC(ep4);
+
+#if EP_MUL == SLIDE || !defined(STRIP)
+
+TMPL_EP_MUL_SLIDE(ep4);
+
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+
+TMPL_EP_MUL_MONTY(ep4, fp4);
+
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+
+void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
+
+	if (ep_curve_is_endom()) {
+		ep4_mul_gls_imp(r, p, k);
+		return;
+	}
+
+	ep4_mul_naf_imp(r, p, k);
+}
+
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+
+void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
+
+	if (ep_curve_is_endom()) {
+		ep4_mul_reg_gls(r, p, k);
+		return;
+	}
+
+	ep4_mul_reg_imp(r, p, k);
+}
+
+#endif
+
+TMPL_EP_MUL_GEN(ep4);
+
+TMPL_EP_MUL_DIG(ep4);
+
+#if EP_FIX == BASIC || !defined(STRIP)
+
+TMPL_EP_MUL_FIX_BASIC(ep4);
+
+#endif
+
+#if EP_FIX == COMBS || !defined(STRIP)
+
+TMPL_EP_MUL_COMBS(ep4);
+
+#endif
+
+#if EP_FIX == COMBD || !defined(STRIP)
+
+TMPL_EP_MUL_COMBD(ep4);
+
+#endif
+
+#if EP_FIX == LWNAF || !defined(STRIP)
+
+TMPL_EP_MUL_FIX_LWNAF(ep4);
+
+#endif
+
+#if EP_SIM == BASIC || !defined(STRIP)
+
+TMPL_EP_MUL_SIM_BASIC(ep4);
+
+#endif
+
+#if EP_SIM == TRICK || !defined(STRIP)
+
+TMPL_EP_MUL_SIM_TRICK(ep4);
+
+#endif
+
+#if EP_SIM == INTER || !defined(STRIP)
+
+TMPL_EP_MUL_SIM_INTER(ep4);
+
+#endif
+
+#if EP_SIM == JOINT || !defined(STRIP)
+
+TMPL_EP_MUL_SIM_JOINT(ep4);
+
+#endif
+
+TMPL_EP_MUL_SIM_GEN(ep4);
+
+TMPL_EP_MUL_SIM_DIG(ep4);
+
+TMPL_EP_MUL_SIM_LOT(ep4, 8);
+
 void ep4_mul_cof(ep4_t r, const ep4_t p) {
 	bn_t k;
 
