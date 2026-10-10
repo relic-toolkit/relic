@@ -415,7 +415,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 
 #endif
 
-#if FP_PRIME < 1536
+#if FP_PRIME < 1536 && FP_PRIME != 544
 
 /**
  * Exponentiates an element from G_T in constant time using the GLS-SAC method.
@@ -538,7 +538,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 
 #endif
 
-#if FP_PRIME == 1536
+#if FP_PRIME == 1536 || FP_PRIME == 544
 
 /**
  * Exponentiates an element from G_T in constant time.
@@ -596,10 +596,15 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		if (bn_sign(b) == RLC_NEG) {
 			bn_neg(_b[0], _b[0]);
 		}
-		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+		if (f > 1) {
+			bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+			len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
+		} else {
+			/* Without a decomposition, recode the full exponent. */
+			len = bn_bits(n);
+		}
 
 		l = 0;
-		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
 		gt_copy(t[0], a);
 		for (size_t i = 0; i < f; i++) {
 			s[i] = bn_sign(_b[i]);
@@ -824,7 +829,7 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME < 1536
+#if FP_PRIME < 1536 && FP_PRIME != 544
 	size_t d = ep_curve_frdim();
 	d = (d > 4 ? d / 4 : 1);
 	/* The subscalars are split evenly into d groups. */
@@ -832,7 +837,8 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		d++;
 	}
 	gt_exp_reg_sac(c, a, b, d, ep_curve_frdim());
-#elif FP_PRIME == 1536
+#elif FP_PRIME == 1536 || FP_PRIME == 544
+	/* There is no decomposition for these curves. */
 	gt_exp_reg_gls(c, a, b, 1);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp_monty)(c, a, b);

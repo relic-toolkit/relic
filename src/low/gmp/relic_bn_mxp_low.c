@@ -54,14 +54,6 @@ extern void __gmpn_powm(mp_limb_t *rp, const mp_limb_t *bp, mp_size_t bn,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-size_t bn_mxpn_itch_low(size_t sm) {
-	/*
-	 * Room for the window table at the largest window the routine uses, plus
-	 * the accumulator, the double width product and the reduction.
-	 */
-	return (sm << 5) + 8 * sm + 32;
-}
-
 void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		const dig_t *m, size_t sm, dig_t u) {
 	dig_t *t = RLC_ALLOCA(dig_t, RLC_MAX(__gmpn_binvert_itch(sm), 2 * sm));

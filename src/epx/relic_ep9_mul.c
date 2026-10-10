@@ -70,6 +70,22 @@ TMPL_EP_MUL_SIM_PLAIN(ep9);
 
 #endif /* EP_SIM == INTER */
 
+/**
+ * Applies the automorphism (x, y) -> (beta * x, y) of an elliptic curve over a
+ * nonic extension with a = 0, where beta is a cube root of unity in Fp.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+static void ep9_omega(ep9_t r, const ep9_t p) {
+	ep9_copy(r, p);
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			fp_mul(r->x[i][j], r->x[i][j], ep_curve_get_beta());
+		}
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -181,22 +197,6 @@ TMPL_EP_MUL_SIM_GEN(ep9);
 TMPL_EP_MUL_SIM_DIG(ep9);
 
 TMPL_EP_MUL_SIM_LOT(ep9, 10);
-
-/**
- * Applies the automorphism (x, y) -> (beta * x, y) of an elliptic curve over a
- * nonic extension with a = 0, where beta is a cube root of unity in Fp.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to map.
- */
-static void ep9_omega(ep9_t r, const ep9_t p) {
-	ep9_copy(r, p);
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			fp_mul(r->x[i][j], r->x[i][j], ep_curve_get_beta());
-		}
-	}
-}
 
 /**
  * Multiplies a point in an elliptic curve over a nonic extension of an SG54
