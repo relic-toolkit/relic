@@ -1055,14 +1055,10 @@
 #undef ep_mul_dig
 #undef ep_mul_cof
 #undef ep_mul_pre_basic
-#undef ep_mul_pre_yaowi
-#undef ep_mul_pre_nafwi
 #undef ep_mul_pre_combs
 #undef ep_mul_pre_combd
 #undef ep_mul_pre_lwnaf
 #undef ep_mul_fix_basic
-#undef ep_mul_fix_yaowi
-#undef ep_mul_fix_nafwi
 #undef ep_mul_fix_combs
 #undef ep_mul_fix_combd
 #undef ep_mul_fix_lwnaf
@@ -1155,14 +1151,10 @@
 #define ep_mul_dig 	RLC_PREFIX(ep_mul_dig)
 #define ep_mul_cof 	RLC_PREFIX(ep_mul_cof)
 #define ep_mul_pre_basic 	RLC_PREFIX(ep_mul_pre_basic)
-#define ep_mul_pre_yaowi 	RLC_PREFIX(ep_mul_pre_yaowi)
-#define ep_mul_pre_nafwi 	RLC_PREFIX(ep_mul_pre_nafwi)
 #define ep_mul_pre_combs 	RLC_PREFIX(ep_mul_pre_combs)
 #define ep_mul_pre_combd 	RLC_PREFIX(ep_mul_pre_combd)
 #define ep_mul_pre_lwnaf 	RLC_PREFIX(ep_mul_pre_lwnaf)
 #define ep_mul_fix_basic 	RLC_PREFIX(ep_mul_fix_basic)
-#define ep_mul_fix_yaowi 	RLC_PREFIX(ep_mul_fix_yaowi)
-#define ep_mul_fix_nafwi 	RLC_PREFIX(ep_mul_fix_nafwi)
 #define ep_mul_fix_combs 	RLC_PREFIX(ep_mul_fix_combs)
 #define ep_mul_fix_combd 	RLC_PREFIX(ep_mul_fix_combd)
 #define ep_mul_fix_lwnaf 	RLC_PREFIX(ep_mul_fix_lwnaf)
@@ -1223,14 +1215,10 @@
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
-#undef ed_mul_pre_yaowi
-#undef ed_mul_pre_nafwi
 #undef ed_mul_pre_combs
 #undef ed_mul_pre_combd
 #undef ed_mul_pre_lwnaf
 #undef ed_mul_fix_basic
-#undef ed_mul_fix_yaowi
-#undef ed_mul_fix_nafwi
 #undef ed_mul_fix_combs
 #undef ed_mul_fix_combd
 #undef ed_mul_fix_lwnaf
@@ -1292,14 +1280,10 @@
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
-#define ed_mul_pre_yaowi 	RLC_PREFIX(ed_mul_pre_yaowi)
-#define ed_mul_pre_nafwi 	RLC_PREFIX(ed_mul_pre_nafwi)
 #define ed_mul_pre_combs 	RLC_PREFIX(ed_mul_pre_combs)
 #define ed_mul_pre_combd 	RLC_PREFIX(ed_mul_pre_combd)
 #define ed_mul_pre_lwnaf 	RLC_PREFIX(ed_mul_pre_lwnaf)
 #define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
-#define ed_mul_fix_yaowi 	RLC_PREFIX(ed_mul_fix_yaowi)
-#define ed_mul_fix_nafwi 	RLC_PREFIX(ed_mul_fix_nafwi)
 #define ed_mul_fix_combs 	RLC_PREFIX(ed_mul_fix_combs)
 #define ed_mul_fix_combd 	RLC_PREFIX(ed_mul_fix_combd)
 #define ed_mul_fix_lwnaf 	RLC_PREFIX(ed_mul_fix_lwnaf)
@@ -1381,14 +1365,10 @@
 #undef eb_mul_gen
 #undef eb_mul_dig
 #undef eb_mul_pre_basic
-#undef eb_mul_pre_yaowi
-#undef eb_mul_pre_nafwi
 #undef eb_mul_pre_combs
 #undef eb_mul_pre_combd
 #undef eb_mul_pre_lwnaf
 #undef eb_mul_fix_basic
-#undef eb_mul_fix_yaowi
-#undef eb_mul_fix_nafwi
 #undef eb_mul_fix_combs
 #undef eb_mul_fix_combd
 #undef eb_mul_fix_lwnaf
@@ -1453,14 +1433,10 @@
 #define eb_mul_gen 	RLC_PREFIX(eb_mul_gen)
 #define eb_mul_dig 	RLC_PREFIX(eb_mul_dig)
 #define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
-#define eb_mul_pre_yaowi 	RLC_PREFIX(eb_mul_pre_yaowi)
-#define eb_mul_pre_nafwi 	RLC_PREFIX(eb_mul_pre_nafwi)
 #define eb_mul_pre_combs 	RLC_PREFIX(eb_mul_pre_combs)
 #define eb_mul_pre_combd 	RLC_PREFIX(eb_mul_pre_combd)
 #define eb_mul_pre_lwnaf 	RLC_PREFIX(eb_mul_pre_lwnaf)
 #define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
-#define eb_mul_fix_yaowi 	RLC_PREFIX(eb_mul_fix_yaowi)
-#define eb_mul_fix_nafwi 	RLC_PREFIX(eb_mul_fix_nafwi)
 #define eb_mul_fix_combs 	RLC_PREFIX(eb_mul_fix_combs)
 #define eb_mul_fix_combd 	RLC_PREFIX(eb_mul_fix_combd)
 #define eb_mul_fix_lwnaf 	RLC_PREFIX(eb_mul_fix_lwnaf)
@@ -1529,14 +1505,10 @@
 #undef ep2_mul_dig
 #undef ep2_mul_cof
 #undef ep2_mul_pre_basic
-#undef ep2_mul_pre_yaowi
-#undef ep2_mul_pre_nafwi
 #undef ep2_mul_pre_combs
 #undef ep2_mul_pre_combd
 #undef ep2_mul_pre_lwnaf
 #undef ep2_mul_fix_basic
-#undef ep2_mul_fix_yaowi
-#undef ep2_mul_fix_nafwi
 #undef ep2_mul_fix_combs
 #undef ep2_mul_fix_combd
 #undef ep2_mul_fix_lwnaf
@@ -1606,14 +1578,10 @@
 #define ep2_mul_dig 	RLC_PREFIX(ep2_mul_dig)
 #define ep2_mul_cof 	RLC_PREFIX(ep2_mul_cof)
 #define ep2_mul_pre_basic 	RLC_PREFIX(ep2_mul_pre_basic)
-#define ep2_mul_pre_yaowi 	RLC_PREFIX(ep2_mul_pre_yaowi)
-#define ep2_mul_pre_nafwi 	RLC_PREFIX(ep2_mul_pre_nafwi)
 #define ep2_mul_pre_combs 	RLC_PREFIX(ep2_mul_pre_combs)
 #define ep2_mul_pre_combd 	RLC_PREFIX(ep2_mul_pre_combd)
 #define ep2_mul_pre_lwnaf 	RLC_PREFIX(ep2_mul_pre_lwnaf)
 #define ep2_mul_fix_basic 	RLC_PREFIX(ep2_mul_fix_basic)
-#define ep2_mul_fix_yaowi 	RLC_PREFIX(ep2_mul_fix_yaowi)
-#define ep2_mul_fix_nafwi 	RLC_PREFIX(ep2_mul_fix_nafwi)
 #define ep2_mul_fix_combs 	RLC_PREFIX(ep2_mul_fix_combs)
 #define ep2_mul_fix_combd 	RLC_PREFIX(ep2_mul_fix_combd)
 #define ep2_mul_fix_lwnaf 	RLC_PREFIX(ep2_mul_fix_lwnaf)
@@ -1686,14 +1654,10 @@
 #undef ep3_mul_dig
 #undef ep3_mul_cof
 #undef ep3_mul_pre_basic
-#undef ep3_mul_pre_yaowi
-#undef ep3_mul_pre_nafwi
 #undef ep3_mul_pre_combs
 #undef ep3_mul_pre_combd
 #undef ep3_mul_pre_lwnaf
 #undef ep3_mul_fix_basic
-#undef ep3_mul_fix_yaowi
-#undef ep3_mul_fix_nafwi
 #undef ep3_mul_fix_combs
 #undef ep3_mul_fix_combd
 #undef ep3_mul_fix_lwnaf
@@ -1709,8 +1673,6 @@
 #undef ep3_map
 #undef ep3_frb
 #undef ep3_psi
-#undef ep3_pck
-#undef ep3_upk
 
 #define ep3_curve_init 	RLC_PREFIX(ep3_curve_init)
 #define ep3_curve_clean 	RLC_PREFIX(ep3_curve_clean)
@@ -1759,14 +1721,10 @@
 #define ep3_mul_dig 	RLC_PREFIX(ep3_mul_dig)
 #define ep3_mul_cof 	RLC_PREFIX(ep3_mul_cof)
 #define ep3_mul_pre_basic 	RLC_PREFIX(ep3_mul_pre_basic)
-#define ep3_mul_pre_yaowi 	RLC_PREFIX(ep3_mul_pre_yaowi)
-#define ep3_mul_pre_nafwi 	RLC_PREFIX(ep3_mul_pre_nafwi)
 #define ep3_mul_pre_combs 	RLC_PREFIX(ep3_mul_pre_combs)
 #define ep3_mul_pre_combd 	RLC_PREFIX(ep3_mul_pre_combd)
 #define ep3_mul_pre_lwnaf 	RLC_PREFIX(ep3_mul_pre_lwnaf)
 #define ep3_mul_fix_basic 	RLC_PREFIX(ep3_mul_fix_basic)
-#define ep3_mul_fix_yaowi 	RLC_PREFIX(ep3_mul_fix_yaowi)
-#define ep3_mul_fix_nafwi 	RLC_PREFIX(ep3_mul_fix_nafwi)
 #define ep3_mul_fix_combs 	RLC_PREFIX(ep3_mul_fix_combs)
 #define ep3_mul_fix_combd 	RLC_PREFIX(ep3_mul_fix_combd)
 #define ep3_mul_fix_lwnaf 	RLC_PREFIX(ep3_mul_fix_lwnaf)
@@ -1782,8 +1740,6 @@
 #define ep3_map 	RLC_PREFIX(ep3_map)
 #define ep3_frb 	RLC_PREFIX(ep3_frb)
 #define ep3_psi 	RLC_PREFIX(ep3_psi)
-#define ep3_pck 	RLC_PREFIX(ep3_pck)
-#define ep3_upk 	RLC_PREFIX(ep3_upk)
 
 #undef ep4_st
 #undef ep4_t
@@ -1837,14 +1793,10 @@
 #undef ep4_mul_dig
 #undef ep4_mul_cof
 #undef ep4_mul_pre_basic
-#undef ep4_mul_pre_yaowi
-#undef ep4_mul_pre_nafwi
 #undef ep4_mul_pre_combs
 #undef ep4_mul_pre_combd
 #undef ep4_mul_pre_lwnaf
 #undef ep4_mul_fix_basic
-#undef ep4_mul_fix_yaowi
-#undef ep4_mul_fix_nafwi
 #undef ep4_mul_fix_combs
 #undef ep4_mul_fix_combd
 #undef ep4_mul_fix_lwnaf
@@ -1860,8 +1812,6 @@
 #undef ep4_map
 #undef ep4_frb
 #undef ep4_psi
-#undef ep4_pck
-#undef ep4_upk
 
 #define ep4_curve_init 	RLC_PREFIX(ep4_curve_init)
 #define ep4_curve_clean 	RLC_PREFIX(ep4_curve_clean)
@@ -1910,14 +1860,10 @@
 #define ep4_mul_dig 	RLC_PREFIX(ep4_mul_dig)
 #define ep4_mul_cof 	RLC_PREFIX(ep4_mul_cof)
 #define ep4_mul_pre_basic 	RLC_PREFIX(ep4_mul_pre_basic)
-#define ep4_mul_pre_yaowi 	RLC_PREFIX(ep4_mul_pre_yaowi)
-#define ep4_mul_pre_nafwi 	RLC_PREFIX(ep4_mul_pre_nafwi)
 #define ep4_mul_pre_combs 	RLC_PREFIX(ep4_mul_pre_combs)
 #define ep4_mul_pre_combd 	RLC_PREFIX(ep4_mul_pre_combd)
 #define ep4_mul_pre_lwnaf 	RLC_PREFIX(ep4_mul_pre_lwnaf)
 #define ep4_mul_fix_basic 	RLC_PREFIX(ep4_mul_fix_basic)
-#define ep4_mul_fix_yaowi 	RLC_PREFIX(ep4_mul_fix_yaowi)
-#define ep4_mul_fix_nafwi 	RLC_PREFIX(ep4_mul_fix_nafwi)
 #define ep4_mul_fix_combs 	RLC_PREFIX(ep4_mul_fix_combs)
 #define ep4_mul_fix_combd 	RLC_PREFIX(ep4_mul_fix_combd)
 #define ep4_mul_fix_lwnaf 	RLC_PREFIX(ep4_mul_fix_lwnaf)
@@ -1933,8 +1879,6 @@
 #define ep4_map 	RLC_PREFIX(ep4_map)
 #define ep4_frb 	RLC_PREFIX(ep4_frb)
 #define ep4_psi 	RLC_PREFIX(ep4_psi)
-#define ep4_pck 	RLC_PREFIX(ep4_pck)
-#define ep4_upk 	RLC_PREFIX(ep4_upk)
 
 #undef ep8_st
 #undef ep8_t
@@ -1988,14 +1932,10 @@
 #undef ep8_mul_dig
 #undef ep8_mul_cof
 #undef ep8_mul_pre_basic
-#undef ep8_mul_pre_yaowi
-#undef ep8_mul_pre_nafwi
 #undef ep8_mul_pre_combs
 #undef ep8_mul_pre_combd
 #undef ep8_mul_pre_lwnaf
 #undef ep8_mul_fix_basic
-#undef ep8_mul_fix_yaowi
-#undef ep8_mul_fix_nafwi
 #undef ep8_mul_fix_combs
 #undef ep8_mul_fix_combd
 #undef ep8_mul_fix_lwnaf
@@ -2011,8 +1951,6 @@
 #undef ep8_map
 #undef ep8_frb
 #undef ep8_psi
-#undef ep8_pck
-#undef ep8_upk
 
 #define ep8_curve_init 	RLC_PREFIX(ep8_curve_init)
 #define ep8_curve_clean 	RLC_PREFIX(ep8_curve_clean)
@@ -2061,14 +1999,10 @@
 #define ep8_mul_dig 	RLC_PREFIX(ep8_mul_dig)
 #define ep8_mul_cof 	RLC_PREFIX(ep8_mul_cof)
 #define ep8_mul_pre_basic 	RLC_PREFIX(ep8_mul_pre_basic)
-#define ep8_mul_pre_yaowi 	RLC_PREFIX(ep8_mul_pre_yaowi)
-#define ep8_mul_pre_nafwi 	RLC_PREFIX(ep8_mul_pre_nafwi)
 #define ep8_mul_pre_combs 	RLC_PREFIX(ep8_mul_pre_combs)
 #define ep8_mul_pre_combd 	RLC_PREFIX(ep8_mul_pre_combd)
 #define ep8_mul_pre_lwnaf 	RLC_PREFIX(ep8_mul_pre_lwnaf)
 #define ep8_mul_fix_basic 	RLC_PREFIX(ep8_mul_fix_basic)
-#define ep8_mul_fix_yaowi 	RLC_PREFIX(ep8_mul_fix_yaowi)
-#define ep8_mul_fix_nafwi 	RLC_PREFIX(ep8_mul_fix_nafwi)
 #define ep8_mul_fix_combs 	RLC_PREFIX(ep8_mul_fix_combs)
 #define ep8_mul_fix_combd 	RLC_PREFIX(ep8_mul_fix_combd)
 #define ep8_mul_fix_lwnaf 	RLC_PREFIX(ep8_mul_fix_lwnaf)
@@ -2084,8 +2018,6 @@
 #define ep8_map 	RLC_PREFIX(ep8_map)
 #define ep8_frb 	RLC_PREFIX(ep8_frb)
 #define ep8_psi 	RLC_PREFIX(ep8_psi)
-#define ep8_pck 	RLC_PREFIX(ep8_pck)
-#define ep8_upk 	RLC_PREFIX(ep8_upk)
 
 #undef ep9_st
 #undef ep9_t

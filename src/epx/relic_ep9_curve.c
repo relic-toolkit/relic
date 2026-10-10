@@ -227,7 +227,17 @@ void ep9_curve_mul_b(fp9_t c, const fp9_t a) {
 			fp9_copy(c, a);
 			break;
 		default:
-			fp9_mul(c, a, ctx->ep9_b);
+			if (ep9_curve_is_twist() == RLC_EP_MTYPE) {
+				/* Multiply by b' = b * j as b times the adjoined root. */
+				for (int i = 0; i < 3; i++) {
+					for (int j = 0; j < 3; j++) {
+						fp_mul(c[i][j], a[i][j], ep_curve_get_b());
+					}
+				}
+				fp9_mul_art(c, c);
+			} else {
+				fp9_mul(c, a, ctx->ep9_b);
+			}
 			break;
 	}
 }

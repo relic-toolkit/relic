@@ -1104,24 +1104,6 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep_mul_pre_yaowi(ep_t *t, const ep_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep_mul_pre_nafwi(ep_t *t, const ep_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -1156,26 +1138,6 @@ void ep_mul_pre_lwnaf(ep_t *t, const ep_t p);
  * @param[in] k				- the integer.
  */
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep_mul_fix_yaowi(ep_t r, const ep_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep_mul_fix_nafwi(ep_t r, const ep_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and

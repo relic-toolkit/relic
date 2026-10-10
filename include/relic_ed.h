@@ -593,24 +593,6 @@ void ed_mul_pre_basic(ed_t *t, const ed_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed Edwards elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ed_mul_pre_yaowi(ed_t *t, const ed_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed Edwards elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ed_mul_pre_nafwi(ed_t *t, const ed_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed Edwards elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -645,26 +627,6 @@ void ed_mul_pre_lwnaf(ed_t *t, const ed_t p);
  * @param[in] k				- the integer.
  */
 void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed Edwards elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ed_mul_fix_yaowi(ed_t r, const ed_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed Edwards elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ed_mul_fix_nafwi(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed Edwards elliptic point using a precomputation table and

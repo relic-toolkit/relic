@@ -738,24 +738,6 @@ void eb_mul_pre_basic(eb_t *t, const eb_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed binary elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void eb_mul_pre_yaowi(eb_t *t, const eb_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed binary elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void eb_mul_pre_nafwi(eb_t *t, const eb_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed binary elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -790,26 +772,6 @@ void eb_mul_pre_lwnaf(eb_t *t, const eb_t p);
  * @param[in] k				- the integer.
  */
 void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed binary elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void eb_mul_fix_yaowi(eb_t r, const eb_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed binary elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void eb_mul_fix_nafwi(eb_t r, const eb_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed binary elliptic point using a precomputation table and

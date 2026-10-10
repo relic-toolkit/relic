@@ -409,6 +409,14 @@ int g2_is_valid(const g2_t a) {
 				g2_frb(v, a, 5);
 				r &= g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
+			case EP_SG54:
+				/* Check that \psi^11(P) == [3u^2]P, whose kernel in the
+				 * twist over Fp^9 is exactly the subgroup of order r. */
+				ep_curve_frbase(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, a, 11);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
 			default:
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);

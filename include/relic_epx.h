@@ -1532,24 +1532,6 @@ void ep2_mul_pre_basic(ep2_t *t, const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep2_mul_pre_yaowi(ep2_t *t, const ep2_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep2_mul_pre_nafwi(ep2_t *t, const ep2_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -1584,26 +1566,6 @@ void ep2_mul_pre_lwnaf(ep2_t *t, const ep2_t p);
  * @param[in] k				- the integer.
  */
 void ep2_mul_fix_basic(ep2_t r, const ep2_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep2_mul_fix_yaowi(ep2_t r, const ep2_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep2_mul_fix_nafwi(ep2_t r, const ep2_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2208,24 +2170,6 @@ void ep3_mul_pre_basic(ep3_t *t, const ep3_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep3_mul_pre_yaowi(ep3_t *t, const ep3_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep3_mul_pre_nafwi(ep3_t *t, const ep3_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -2260,26 +2204,6 @@ void ep3_mul_pre_lwnaf(ep3_t *t, const ep3_t p);
  * @param[in] k				- the integer.
  */
 void ep3_mul_fix_basic(ep3_t r, const ep3_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep3_mul_fix_yaowi(ep3_t r, const ep3_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep3_mul_fix_nafwi(ep3_t r, const ep3_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2441,23 +2365,6 @@ void ep3_frb(ep3_t r, const ep3_t p, int i);
  * @param[in] p				- the point to map.
  */
 void ep3_psi(ep3_t r, const ep3_t p);
-
-/**
- * Compresses a point in an elliptic curve over a cubic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to compress.
- */
-void ep3_pck(ep3_t r, const ep3_t p);
-
-/**
- * Decompresses a point in an elliptic curve over a cubic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to decompress.
- * @return if the decompression was successful
- */
-int ep3_upk(ep3_t r, const ep3_t p);
 
 /**
  * Initializes the elliptic curve over quartic extension.
@@ -2863,24 +2770,6 @@ void ep4_mul_pre_basic(ep4_t *t, const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep4_mul_pre_yaowi(ep4_t *t, const ep4_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep4_mul_pre_nafwi(ep4_t *t, const ep4_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -2915,26 +2804,6 @@ void ep4_mul_pre_lwnaf(ep4_t *t, const ep4_t p);
  * @param[in] k				- the integer.
  */
 void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep4_mul_fix_yaowi(ep4_t r, const ep4_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep4_mul_fix_nafwi(ep4_t r, const ep4_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -3096,23 +2965,6 @@ void ep4_frb(ep4_t r, const ep4_t p, int i);
  * @param[in] p				- the point to map.
  */
 void ep4_psi(ep4_t r, const ep4_t p);
-
-/**
- * Compresses a point in an elliptic curve over a quartic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to compress.
- */
-void ep4_pck(ep4_t r, const ep4_t p);
-
-/**
- * Decompresses a point in an elliptic curve over a quartic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to decompress.
- * @return if the decompression was successful
- */
-int ep4_upk(ep4_t r, const ep4_t p);
 
 /**
  * Initializes the elliptic curve over octic extension.
@@ -3518,24 +3370,6 @@ void ep8_mul_pre_basic(ep8_t *t, const ep8_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep8_mul_pre_yaowi(ep8_t *t, const ep8_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep8_mul_pre_nafwi(ep8_t *t, const ep8_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -3570,26 +3404,6 @@ void ep8_mul_pre_lwnaf(ep8_t *t, const ep8_t p);
  * @param[in] k				- the integer.
  */
 void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep8_mul_fix_yaowi(ep8_t r, const ep8_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep8_mul_fix_nafwi(ep8_t r, const ep8_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -3751,23 +3565,6 @@ void ep8_frb(ep8_t r, const ep8_t p, int i);
  * @param[in] p				- the point to map.
  */
 void ep8_psi(ep8_t r, const ep8_t p);
-
-/**
- * Compresses a point in an elliptic curve over an octic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to compress.
- */
-void ep8_pck(ep8_t r, const ep8_t p);
-
-/**
- * Decompresses a point in an elliptic curve over an octic extension.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to decompress.
- * @return if the decompression was successful
- */
-int ep8_upk(ep8_t r, const ep8_t p);
 
 /**
  * Initializes the elliptic curve over nonic extension.

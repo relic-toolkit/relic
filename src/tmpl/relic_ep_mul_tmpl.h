@@ -1149,6 +1149,35 @@
 	}
 
 /**
+ * Builds the table for the i-th subscalar of a simultaneous GLS
+ * multiplication, applying the endomorphism to the previous table.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[out] T		- the tables, each with E points.
+ * @param[in] K			- the subscalars.
+ * @param[in] P			- the point to multiply.
+ * @param[in] V			- a temporary point.
+ * @param[in] I			- the index of the subscalar.
+ * @param[in] E			- the number of points in each table.
+ * @param[in] W			- the window width.
+ */
+#define TMPL_EP_MUL_SIM_ENDOM_TAB(C, T, K, P, V, I, E, W)					\
+	if (I == 0) {															\
+		C##_norm(V, P);														\
+		if (bn_sign(K[0]) == RLC_NEG) {										\
+			C##_neg(V, V);													\
+		}																	\
+		C##_tab(T, V, W);													\
+	} else {																\
+		for (int _j = 0; _j < E; _j++) {									\
+			C##_psi(T[I * E + _j], T[(I - 1) * E + _j]);					\
+			if (bn_sign(K[I]) != bn_sign(K[I - 1])) {						\
+				C##_neg(T[I * E + _j], T[I * E + _j]);						\
+			}																\
+		}																	\
+	}
+
+/**
  * Defines a template for simultaneous point multiplication by interleaving
  * w-NAFs of the subscalars produced by the GLS endomorphism.
  *
@@ -1158,41 +1187,33 @@
 #define TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)										\
 	static void C##_mul_sim_endom(C##_t r, const C##_t p, const bn_t k,		\
 			const C##_t q, const bn_t m, const C##_t *t) {					\
-		size_t l, _l[S];													\
+		size_t l, _l[S], w = RLC_WIDTH, e;									\
 		bn_t _k[S], _m[S], n, u;											\
 		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
-		C##_t _p[S], _q[S];													\
+		C##_t _p[S << (RLC_WIDTH - 2)], _q[S << (RLC_WIDTH - 2)], v;		\
 																			\
-		/* Width-2 NAFs need no precomputed table. */						\
+		/* The tables are derived from the points with the endomorphism. */	\
 		(void)t;															\
 																			\
 		bn_null(n);															\
 		bn_null(u);															\
+		C##_null(v);														\
 																			\
 		RLC_TRY {															\
 			bn_new(n);														\
 			bn_new(u);														\
+			C##_new(v);														\
 			for (int i = 0; i < S; i++) {									\
 				bn_null(_k[i]);												\
 				bn_new(_k[i]);												\
 				bn_null(_m[i]);												\
 				bn_new(_m[i]);												\
+			}																\
+			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
 				C##_null(_p[i]);											\
 				C##_null(_q[i]);											\
 				C##_new(_p[i]);												\
 				C##_new(_q[i]);												\
-			}																\
-																			\
-			C##_norm(_p[0], p);												\
-			C##_norm(_q[0], q);												\
-			for (int i = 1; i < S; i++) {									\
-				C##_psi(_p[i], _p[i - 1]);									\
-				C##_psi(_q[i], _q[i - 1]);									\
-			}																\
-			/* Normalize if the endomorphism returns projective points. */	\
-			if (_p[1]->coord != BASIC) {									\
-				C##_norm_sim(_p + 1, (const C##_t *)_p + 1, S - 1);			\
-				C##_norm_sim(_q + 1, (const C##_t *)_q + 1, S - 1);			\
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
@@ -1204,18 +1225,33 @@
 																			\
 			l = 0;															\
 			for (int i = 0; i < S; i++) {									\
+				l = RLC_MAX(l, bn_bits(_k[i]));								\
+				l = RLC_MAX(l, bn_bits(_m[i]));								\
+			}																\
+			/* Windows do not pay off for short subscalars or when the		\
+			 * endomorphism is expensive, since each table entry needs it. */\
+			if (l < bn_bits(u) / 2 || ep_curve_is_pairf() == EP_K16 ||		\
+					ep_curve_is_pairf() == EP_AFG16 ||						\
+					ep_curve_embed() == 18) {								\
+				w = 2;														\
+			}																\
+			e = (1 << (w - 2));												\
+																			\
+			l = 0;															\
+			for (int i = 0; i < S; i++) {									\
 				_l[i] = RLC_FP_BITS + 1;									\
-				bn_rec_naf(naf0[i], &_l[i], _k[i], 2);						\
-				if (bn_sign(_k[i]) == RLC_NEG) {							\
-					C##_neg(_p[i], _p[i]);									\
-				}															\
+				bn_rec_naf(naf0[i], &_l[i], _k[i], w);						\
 				l = RLC_MAX(l, _l[i]);										\
 				_l[i] = RLC_FP_BITS + 1;									\
-				bn_rec_naf(naf1[i], &_l[i], _m[i], 2);						\
-				if (bn_sign(_m[i]) == RLC_NEG) {							\
-					C##_neg(_q[i], _q[i]);									\
-				}															\
+				bn_rec_naf(naf1[i], &_l[i], _m[i], w);						\
 				l = RLC_MAX(l, _l[i]);										\
+				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _p, _k, p, v, i, e, w);		\
+				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
+			}																\
+			/* Normalize if the endomorphism returns projective points. */	\
+			if (_p[e]->coord != BASIC) {									\
+				C##_norm_sim(_p + e, (const C##_t *)_p + e, (S - 1) * e);	\
+				C##_norm_sim(_q + e, (const C##_t *)_q + e, (S - 1) * e);	\
 			}																\
 																			\
 			C##_set_infty(r);												\
@@ -1223,16 +1259,16 @@
 				C##_dbl(r, r);												\
 				for (int j = 0; j < S; j++) {								\
 					if (naf0[j][i] > 0) {									\
-						C##_add(r, r, _p[j]);								\
+						C##_add(r, r, _p[j * e + naf0[j][i] / 2]);			\
 					}														\
 					if (naf0[j][i] < 0) {									\
-						C##_sub(r, r, _p[j]);								\
+						C##_sub(r, r, _p[j * e - naf0[j][i] / 2]);			\
 					}														\
 					if (naf1[j][i] > 0) {									\
-						C##_add(r, r, _q[j]);								\
+						C##_add(r, r, _q[j * e + naf1[j][i] / 2]);			\
 					}														\
 					if (naf1[j][i] < 0) {									\
-						C##_sub(r, r, _q[j]);								\
+						C##_sub(r, r, _q[j * e - naf1[j][i] / 2]);			\
 					}														\
 				}															\
 			}																\
@@ -1244,9 +1280,12 @@
 		} RLC_FINALLY {														\
 			bn_free(n);														\
 			bn_free(u);														\
+			C##_free(v);													\
 			for (int i = 0; i < S; i++) {									\
 				bn_free(_k[i]);												\
 				bn_free(_m[i]);												\
+			}																\
+			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
 				C##_free(_p[i]);											\
 				C##_free(_q[i]);											\
 			}																\
