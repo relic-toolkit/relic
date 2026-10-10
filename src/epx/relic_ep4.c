@@ -34,125 +34,28 @@
 #include "relic_ep_util_tmpl.h"
 #include "relic_ep_add_tmpl.h"
 #include "relic_ep_dbl_tmpl.h"
+#include "relic_ep_map_tmpl.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/**
- * Adds two points represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_BASIC_IMP(ep4, fp4);
+TMPL_EP_MAP_INPUT(ep4, fp4);
 
-/**
- * Adds a point represented in homogeneous coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_PROJC_MIX(ep4, fp4);
+TMPL_EP_MAP_A0(ep4, fp4);
 
-/**
- * Adds two points represented in homogeneous coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_PROJC_IMP(ep4, fp4);
-
-/**
- * Adds a point represented in Jacobian coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_JACOB_MIX(ep4, fp4);
-
-/**
- * Adds two points represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_JACOB_IMP(ep4, fp4);
-
-/*============================================================================*/
-	/* Public definitions                                                         */
-/*============================================================================*/
-
-TMPL_ADD_BASIC(ep4, fp4);
-
-TMPL_ADD(ep4, projc);
-
-TMPL_ADD(ep4, jacob);
-
-TMPL_SUB(ep4);
-
-/**
- * Doubles a point represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the point to double.
- */
-TMPL_DBL_BASIC_IMP(ep4, fp4);
-
-/**
- * Doubles a point represented in projective coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_PROJC_IMP(ep4, fp4);
-
-/**
- * Doubles a point represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_JACOB_IMP(ep4, fp4);
-
-TMPL_EP_NORM_IMP(ep4, fp4);
+TMPL_EP_MAP_B0(ep4, fp4);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_UTIL(ep4, fp4);
+TMPL_EP_ARITH(ep4, fp4);
 
 TMPL_EP_RHS(ep4, fp4);
 
 TMPL_EP_BIN(ep4, fp4);
-
-TMPL_EP_CMP(ep4, fp4);
-
-TMPL_EP_NEG(ep4, fp4);
-
-TMPL_DBL_BASIC(ep4, fp4);
-
-TMPL_DBL(ep4, projc);
-
-TMPL_DBL(ep4, jacob);
-
-TMPL_EP_NORM(ep4, fp4);
 
 void ep4_frb(ep4_t r, const ep4_t p, int i) {
 	ep4_copy(r, p);
@@ -164,7 +67,6 @@ void ep4_frb(ep4_t r, const ep4_t p, int i) {
 		fp4_mul_frb(r->y, r->y, 1, 3);
 	}
 }
-
 
 void ep4_psi(ep4_t r, const ep4_t p) {
 	ep4_t q;
@@ -209,5 +111,30 @@ void ep4_psi(ep4_t r, const ep4_t p) {
 	}
 }
 
+void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
+	fp4_t u, t;
+	uint8_t sign;
 
+	fp4_null(u);
+	fp4_null(t);
 
+	RLC_TRY {
+		fp4_new(u);
+		fp4_new(t);
+		sign = ep4_map_input(u, t, msg, len);
+		if (ep_curve_opt_b() == RLC_ZERO) {
+			ep4_map_b0(p, u, t, sign);
+		} else {
+			/* Otherwise, assume that a = 0. */
+			ep4_map_a0(p, u, t, sign);
+		}
+		ep4_mul_cof(p, p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp4_free(u);
+		fp4_free(t);
+	}
+}

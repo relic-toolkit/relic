@@ -1886,3 +1886,90 @@
 	}
 
 #endif
+
+/**
+ * Defines a template for point multiplication using the left-to-right w-NAF
+ * method, with an endomorphism when the curve has one.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] E			- the endomorphism method, glv or gls.
+ */
+#define TMPL_EP_MUL_LWNAF(C, E)												\
+	void C##_mul_lwnaf(C##_t r, const C##_t p, const bn_t k) {				\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (ep_curve_is_endom()) {											\
+			C##_mul_##E##_imp(r, p, k);										\
+			return;															\
+		}																	\
+																			\
+		C##_mul_naf_imp(r, p, k);											\
+	}
+
+/**
+ * Defines a template for point multiplication using the left-to-right regular
+ * recoding method, with an endomorphism when the curve has one.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] E			- the endomorphism method, glv or gls.
+ */
+#define TMPL_EP_MUL_LWREG(C, E)												\
+	void C##_mul_lwreg(C##_t r, const C##_t p, const bn_t k) {				\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (ep_curve_is_endom()) {											\
+			C##_mul_reg_##E(r, p, k);										\
+			return;															\
+		}																	\
+																			\
+		C##_mul_reg_imp(r, p, k);											\
+	}
+
+/**
+ * Selects the GLS multiplication: the w-NAF template, or the curve's own
+ * implementation defined before the bundle.
+ */
+#define TMPL_EP_MUL_GLS_IMP_WNAF	TMPL_EP_MUL_GLS_IMP
+#define TMPL_EP_MUL_GLS_IMP_OWN(C, S)	/* Provided by the curve. */
+
+/**
+ * Defines a template for all point multiplications of an elliptic curve over
+ * an extension field with a GLS endomorphism: variable-base, fixed-base and
+ * simultaneous methods, and their dispatchers.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ * @param[in] S			- the dimension of the GLS decomposition.
+ * @param[in] T			- the number of groups for regular recoding.
+ * @param[in] G			- the GLS multiplication, WNAF or OWN.
+ */
+#define TMPL_EPX_MUL(C, F, S, T, G)											\
+	TMPL_EP_MUL_GLS_IMP_##G(C, S)											\
+	TMPL_EP_MUL_REG_GLS(C, F, S, T)											\
+	TMPL_EP_MUL_NAF_IMP(C)													\
+	TMPL_EP_MUL_REG_IMP(C, F)												\
+	TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)											\
+	TMPL_EP_MUL_SIM_PLAIN(C)												\
+	TMPL_EP_MUL_BASIC(C)													\
+	TMPL_EP_MUL_MONTY(C, F)													\
+	TMPL_EP_MUL_LWNAF(C, gls)												\
+	TMPL_EP_MUL_LWREG(C, gls)												\
+	TMPL_EP_MUL_GEN(C)														\
+	TMPL_EP_MUL_DIG(C)														\
+	TMPL_EP_MUL_FIX_BASIC(C)												\
+	TMPL_EP_MUL_COMBS(C)													\
+	TMPL_EP_MUL_COMBD(C)													\
+	TMPL_EP_MUL_FIX_LWNAF(C)												\
+	TMPL_EP_MUL_SIM_BASIC(C)												\
+	TMPL_EP_MUL_SIM_TRICK(C)												\
+	TMPL_EP_MUL_SIM_INTER(C)												\
+	TMPL_EP_MUL_SIM_JOINT(C)												\
+	TMPL_EP_MUL_SIM_GEN(C)													\
+	TMPL_EP_MUL_SIM_DIG(C)													\
+	TMPL_EP_MUL_SIM_LOT(C, S)

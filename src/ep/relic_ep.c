@@ -41,131 +41,37 @@
 /*============================================================================*/
 
 /**
- * Adds two points represented in affine coordinates on an ordinary prime
+ * Triples a point represented in affine coordinates on an ordinary prime
  * elliptic curve.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_BASIC_IMP(ep, fp);
-
-/**
- * Adds a point represented in homogeneous coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_PROJC_MIX(ep, fp);
-
-/**
- * Adds two points represented in homogeneous coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_PROJC_IMP(ep, fp);
-
-/**
- * Adds a point represented in Jacobian coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_JACOB_MIX(ep, fp);
-
-/**
- * Adds two points represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_JACOB_IMP(ep, fp);
-
-/*============================================================================*/
-	/* Public definitions                                                         */
-/*============================================================================*/
-
-TMPL_ADD_BASIC(ep, fp);
-
-TMPL_ADD(ep, projc);
-
-TMPL_ADD(ep, jacob);
-
-TMPL_SUB(ep);
-
-/**
- * Doubles a point represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the point to double.
- */
-TMPL_DBL_BASIC_IMP(ep, fp);
-
-/**
- * Doubles a point represented in projective coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_PROJC_IMP(ep, fp);
-
-/**
- * Doubles a point represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_JACOB_IMP(ep, fp);
-
-/**
- * Doubles a point represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the point to double.
+ * @param[in] p				- the point to triple.
  */
 TMPL_TPL_BASIC_IMP(ep, fp);
 
 /**
- * Doubles a point represented in projective coordinates on an ordinary prime
+ * Triples a point represented in projective coordinates on an ordinary prime
  * elliptic curve.
  *
  * @param r					- the result.
- * @param p					- the point to double.
+ * @param p					- the point to triple.
  */
 TMPL_TPL_PROJC_IMP(ep, fp);
 
 /**
- * Doubles a point represented in Jacobian coordinates on an ordinary prime
+ * Triples a point represented in Jacobian coordinates on an ordinary prime
  * elliptic curve.
  *
  * @param r					- the result.
- * @param p					- the point to double.
+ * @param p					- the point to triple.
  */
 TMPL_TPL_JACOB_IMP(ep, fp);
-
-TMPL_EP_NORM_IMP(ep, fp);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_UTIL(ep, fp);
+TMPL_EP_ARITH(ep, fp);
 
 void ep_rhs(fp_t rhs, const fp_t x) {
 	fp_t t0;
@@ -346,16 +252,6 @@ void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack) {
 	}
 }
 
-TMPL_EP_CMP(ep, fp);
-
-TMPL_EP_NEG(ep, fp);
-
-TMPL_DBL_BASIC(ep, fp);
-
-TMPL_DBL(ep, projc);
-
-TMPL_DBL(ep, jacob);
-
 void ep_tpl_basic(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -383,9 +279,6 @@ void ep_tpl_jacob(ep_t r, const ep_t p) {
 	ep_tpl_jacob_imp(r, p);
 }
 
-TMPL_EP_NORM(ep, fp);
-
-
 void ep_psi(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -402,7 +295,6 @@ void ep_psi(ep_t r, const ep_t p) {
 	 	fp_mul(r->y, r->y, ep_curve_get_beta());
  	}
 }
-
 
 void ep_pck(ep_t r, const ep_t p) {
 	int b;

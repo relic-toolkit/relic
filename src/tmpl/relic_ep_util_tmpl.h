@@ -565,3 +565,33 @@
 			C##_free(t);													\
 		}																	\
 	}
+
+/**
+ * Defines a template for the point arithmetic shared by all prime elliptic
+ * curves: addition, subtraction and doubling in every coordinate system,
+ * normalization, utilities, comparison and negation.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_ARITH(C, F)													\
+	TMPL_ADD_BASIC_IMP(C, F)												\
+	TMPL_ADD_PROJC_MIX(C, F)												\
+	TMPL_ADD_PROJC_IMP(C, F)												\
+	TMPL_ADD_JACOB_MIX(C, F)												\
+	TMPL_ADD_JACOB_IMP(C, F)												\
+	TMPL_ADD_BASIC(C, F)													\
+	TMPL_ADD(C, projc)														\
+	TMPL_ADD(C, jacob)														\
+	TMPL_SUB(C)																\
+	TMPL_DBL_BASIC_IMP(C, F)												\
+	TMPL_DBL_PROJC_IMP(C, F)												\
+	TMPL_DBL_JACOB_IMP(C, F)												\
+	TMPL_EP_NORM_IMP(C, F)													\
+	TMPL_EP_UTIL(C, F)														\
+	TMPL_EP_CMP(C, F)														\
+	TMPL_EP_NEG(C, F)														\
+	TMPL_DBL_BASIC(C, F)													\
+	TMPL_DBL(C, projc)														\
+	TMPL_DBL(C, jacob)														\
+	TMPL_EP_NORM(C, F)

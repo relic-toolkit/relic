@@ -38,18 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-TMPL_EP_MUL_GLS_IMP(ep2, 4);
-
-TMPL_EP_MUL_REG_GLS(ep2, fp2, 4, 1);
-
-TMPL_EP_MUL_NAF_IMP(ep2);
-
-TMPL_EP_MUL_REG_IMP(ep2, fp2);
-
-TMPL_EP_MUL_SIM_ENDOM_GLS(ep2, 4);
-
-TMPL_EP_MUL_SIM_PLAIN(ep2);
-
 /**
  * Multiplies a point by the cofactor in a Barreto-Naehrig curve.
  *
@@ -162,63 +150,7 @@ static void ep2_mul_cof_b12(ep2_t r, const ep2_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_BASIC(ep2);
-
-TMPL_EP_MUL_MONTY(ep2, fp2);
-
-void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep2_mul_gls_imp(r, p, k);
-		return;
-	}
-
-	ep2_mul_naf_imp(r, p, k);
-}
-
-void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep2_mul_reg_gls(r, p, k);
-		return;
-	}
-
-	ep2_mul_reg_imp(r, p, k);
-}
-
-TMPL_EP_MUL_GEN(ep2);
-
-TMPL_EP_MUL_DIG(ep2);
-
-TMPL_EP_MUL_FIX_BASIC(ep2);
-
-TMPL_EP_MUL_COMBS(ep2);
-
-TMPL_EP_MUL_COMBD(ep2);
-
-TMPL_EP_MUL_FIX_LWNAF(ep2);
-
-TMPL_EP_MUL_SIM_BASIC(ep2);
-
-TMPL_EP_MUL_SIM_TRICK(ep2);
-
-TMPL_EP_MUL_SIM_INTER(ep2);
-
-TMPL_EP_MUL_SIM_JOINT(ep2);
-
-TMPL_EP_MUL_SIM_GEN(ep2);
-
-TMPL_EP_MUL_SIM_DIG(ep2);
-
-TMPL_EP_MUL_SIM_LOT(ep2, 4);
+TMPL_EPX_MUL(ep2, fp2, 4, 1, WNAF);
 
 void ep2_mul_cof(ep2_t r, const ep2_t p) {
 	bn_t k;

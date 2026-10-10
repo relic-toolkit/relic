@@ -35,82 +35,10 @@
 #include "relic_md.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-TMPL_EP_MUL_GLS_IMP(ep8, 16);
-
-TMPL_EP_MUL_REG_GLS(ep8, fp8, 16, 4);
-
-TMPL_EP_MUL_NAF_IMP(ep8);
-
-TMPL_EP_MUL_REG_IMP(ep8, fp8);
-
-TMPL_EP_MUL_SIM_ENDOM_GLS(ep8, 16);
-
-TMPL_EP_MUL_SIM_PLAIN(ep8);
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_BASIC(ep8);
-
-TMPL_EP_MUL_MONTY(ep8, fp8);
-
-void ep8_mul_lwnaf(ep8_t r, const ep8_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep8_mul_gls_imp(r, p, k);
-		return;
-	}
-
-	ep8_mul_naf_imp(r, p, k);
-}
-
-void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep8_mul_reg_gls(r, p, k);
-		return;
-	}
-
-	ep8_mul_reg_imp(r, p, k);
-}
-
-TMPL_EP_MUL_GEN(ep8);
-
-TMPL_EP_MUL_DIG(ep8);
-
-TMPL_EP_MUL_FIX_BASIC(ep8);
-
-TMPL_EP_MUL_COMBS(ep8);
-
-TMPL_EP_MUL_COMBD(ep8);
-
-TMPL_EP_MUL_FIX_LWNAF(ep8);
-
-TMPL_EP_MUL_SIM_BASIC(ep8);
-
-TMPL_EP_MUL_SIM_TRICK(ep8);
-
-TMPL_EP_MUL_SIM_INTER(ep8);
-
-TMPL_EP_MUL_SIM_JOINT(ep8);
-
-TMPL_EP_MUL_SIM_GEN(ep8);
-
-TMPL_EP_MUL_SIM_DIG(ep8);
-
-TMPL_EP_MUL_SIM_LOT(ep8, 16);
+TMPL_EPX_MUL(ep8, fp8, 16, 4, WNAF);
 
 void ep8_mul_cof(ep8_t r, const ep8_t p) {
 	bn_t z;

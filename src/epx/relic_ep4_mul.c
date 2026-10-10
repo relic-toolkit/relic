@@ -38,18 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-TMPL_EP_MUL_GLS_IMP(ep4, 8);
-
-TMPL_EP_MUL_REG_GLS(ep4, fp4, 8, 2);
-
-TMPL_EP_MUL_NAF_IMP(ep4);
-
-TMPL_EP_MUL_REG_IMP(ep4, fp4);
-
-TMPL_EP_MUL_SIM_ENDOM_GLS(ep4, 8);
-
-TMPL_EP_MUL_SIM_PLAIN(ep4);
-
 /**
  * Multiplies a point by the cofactor in a KSS16 curve.
  *
@@ -360,63 +348,7 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_BASIC(ep4);
-
-TMPL_EP_MUL_MONTY(ep4, fp4);
-
-void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep4_mul_gls_imp(r, p, k);
-		return;
-	}
-
-	ep4_mul_naf_imp(r, p, k);
-}
-
-void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep4_mul_reg_gls(r, p, k);
-		return;
-	}
-
-	ep4_mul_reg_imp(r, p, k);
-}
-
-TMPL_EP_MUL_GEN(ep4);
-
-TMPL_EP_MUL_DIG(ep4);
-
-TMPL_EP_MUL_FIX_BASIC(ep4);
-
-TMPL_EP_MUL_COMBS(ep4);
-
-TMPL_EP_MUL_COMBD(ep4);
-
-TMPL_EP_MUL_FIX_LWNAF(ep4);
-
-TMPL_EP_MUL_SIM_BASIC(ep4);
-
-TMPL_EP_MUL_SIM_TRICK(ep4);
-
-TMPL_EP_MUL_SIM_INTER(ep4);
-
-TMPL_EP_MUL_SIM_JOINT(ep4);
-
-TMPL_EP_MUL_SIM_GEN(ep4);
-
-TMPL_EP_MUL_SIM_DIG(ep4);
-
-TMPL_EP_MUL_SIM_LOT(ep4, 8);
+TMPL_EPX_MUL(ep4, fp4, 8, 2, WNAF);
 
 void ep4_mul_cof(ep4_t r, const ep4_t p) {
 	bn_t k;

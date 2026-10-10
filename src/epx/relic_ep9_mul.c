@@ -38,18 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-TMPL_EP_MUL_GLS_IMP(ep9, 10);
-
-TMPL_EP_MUL_REG_GLS(ep9, fp9, 10, 2);
-
-TMPL_EP_MUL_NAF_IMP(ep9);
-
-TMPL_EP_MUL_REG_IMP(ep9, fp9);
-
-TMPL_EP_MUL_SIM_ENDOM_GLS(ep9, 10);
-
-TMPL_EP_MUL_SIM_PLAIN(ep9);
-
 /**
  * Applies the automorphism (x, y) -> (beta * x, y) of an elliptic curve over a
  * nonic extension with a = 0, where beta is a cube root of unity in Fp.
@@ -162,63 +150,7 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_BASIC(ep9);
-
-TMPL_EP_MUL_MONTY(ep9, fp9);
-
-void ep9_mul_lwnaf(ep9_t r, const ep9_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep9_is_infty(p)) {
-		ep9_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep9_mul_gls_imp(r, p, k);
-		return;
-	}
-
-	ep9_mul_naf_imp(r, p, k);
-}
-
-void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep9_is_infty(p)) {
-		ep9_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep9_mul_reg_gls(r, p, k);
-		return;
-	}
-
-	ep9_mul_reg_imp(r, p, k);
-}
-
-TMPL_EP_MUL_GEN(ep9);
-
-TMPL_EP_MUL_DIG(ep9);
-
-TMPL_EP_MUL_FIX_BASIC(ep9);
-
-TMPL_EP_MUL_COMBS(ep9);
-
-TMPL_EP_MUL_COMBD(ep9);
-
-TMPL_EP_MUL_FIX_LWNAF(ep9);
-
-TMPL_EP_MUL_SIM_BASIC(ep9);
-
-TMPL_EP_MUL_SIM_TRICK(ep9);
-
-TMPL_EP_MUL_SIM_INTER(ep9);
-
-TMPL_EP_MUL_SIM_JOINT(ep9);
-
-TMPL_EP_MUL_SIM_GEN(ep9);
-
-TMPL_EP_MUL_SIM_DIG(ep9);
-
-TMPL_EP_MUL_SIM_LOT(ep9, 10);
+TMPL_EPX_MUL(ep9, fp9, 10, 2, WNAF);
 
 void ep9_mul_cof(ep9_t r, const ep9_t p) {
 	switch (ep_curve_is_pairf()) {

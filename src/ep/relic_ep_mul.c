@@ -374,35 +374,11 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep_mul_glv_imp(r, p, k);
-		return;
-	}
-
-	ep_mul_naf_imp(r, p, k);
-}
+TMPL_EP_MUL_LWNAF(ep, glv);
 
 /* Conditional compilation of the function below was turned off because it
  * is used by the default for protected scalar multiplication in G1. */
-void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
-	if (bn_is_zero(k) || ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (ep_curve_is_endom()) {
-		ep_mul_reg_glv(r, p, k);
-		return;
-	}
-
-	ep_mul_reg_imp(r, p, k);
-}
+TMPL_EP_MUL_LWREG(ep, glv);
 
 TMPL_EP_MUL_GEN(ep);
 

@@ -34,125 +34,18 @@
 #include "relic_ep_util_tmpl.h"
 #include "relic_ep_add_tmpl.h"
 #include "relic_ep_dbl_tmpl.h"
-
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Adds two points represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_BASIC_IMP(ep9, fp9);
-
-/**
- * Adds a point represented in homogeneous coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_PROJC_MIX(ep9, fp9);
-
-/**
- * Adds two points represented in homogeneous coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_PROJC_IMP(ep9, fp9);
-
-/**
- * Adds a point represented in Jacobian coordinates to a point represented in
- * affine coordinates on an ordinary prime elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the projective point.
- * @param[in] q				- the affine point.
- */
-TMPL_ADD_JACOB_MIX(ep9, fp9);
-
-/**
- * Adds two points represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to add.
- * @param[in] q				- the second point to add.
- */
-TMPL_ADD_JACOB_IMP(ep9, fp9);
+#include "relic_ep_map_tmpl.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_ADD_BASIC(ep9, fp9);
-
-TMPL_ADD(ep9, projc);
-
-TMPL_ADD(ep9, jacob);
-
-TMPL_SUB(ep9);
-
-/**
- * Doubles a point represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[out] s			- the slope.
- * @param[in] p				- the point to double.
- */
-TMPL_DBL_BASIC_IMP(ep9, fp9);
-
-/**
- * Doubles a point represented in projective coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_PROJC_IMP(ep9, fp9);
-
-/**
- * Doubles a point represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to double.
- */
-TMPL_DBL_JACOB_IMP(ep9, fp9);
-
-TMPL_EP_NORM_IMP(ep9, fp9);
-
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-TMPL_EP_UTIL(ep9, fp9);
+TMPL_EP_ARITH(ep9, fp9);
 
 TMPL_EP_RHS(ep9, fp9);
 
 TMPL_EP_BIN(ep9, fp9);
-
-TMPL_EP_CMP(ep9, fp9);
-
-TMPL_EP_NEG(ep9, fp9);
-
-TMPL_DBL_BASIC(ep9, fp9);
-
-TMPL_DBL(ep9, projc);
-
-TMPL_DBL(ep9, jacob);
-
-TMPL_EP_NORM(ep9, fp9);
 
 void ep9_frb(ep9_t r, const ep9_t p, int i) {
 	ctx_t *ctx = core_get();
@@ -183,3 +76,5 @@ void ep9_psi(ep9_t r, const ep9_t p) {
 	fp9_mul(r->y, r->y, ctx->ep9_frb[3]);
 	r->coord = p->coord;
 }
+
+TMPL_EP_MAP(ep9, fp9);
