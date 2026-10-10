@@ -1381,7 +1381,7 @@ void pp_exp_k54(fp54_t c, fp54_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k1(ep_t c, const ep_t a);
+void pp_norm_k1(ep_t r, const ep_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1390,7 +1390,7 @@ void pp_norm_k1(ep_t c, const ep_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k2(ep_t c, const ep_t a);
+void pp_norm_k2(ep_t r, const ep_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1399,7 +1399,7 @@ void pp_norm_k2(ep_t c, const ep_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k8(ep2_t c, const ep2_t a);
+void pp_norm_k8(ep2_t r, const ep2_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1408,7 +1408,7 @@ void pp_norm_k8(ep2_t c, const ep2_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k12(ep2_t c, const ep2_t a);
+void pp_norm_k12(ep2_t r, const ep2_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1417,7 +1417,7 @@ void pp_norm_k12(ep2_t c, const ep2_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k16(ep4_t c, const ep4_t a);
+void pp_norm_k16(ep4_t r, const ep4_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1426,7 +1426,7 @@ void pp_norm_k16(ep4_t c, const ep4_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k18(ep3_t c, const ep3_t a);
+void pp_norm_k18(ep3_t r, const ep3_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1435,7 +1435,7 @@ void pp_norm_k18(ep3_t c, const ep3_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k24(ep4_t c, const ep4_t a);
+void pp_norm_k24(ep4_t r, const ep4_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1444,7 +1444,7 @@ void pp_norm_k24(ep4_t c, const ep4_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k48(ep8_t c, const ep8_t a);
+void pp_norm_k48(ep8_t r, const ep8_t p);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1453,7 +1453,7 @@ void pp_norm_k48(ep8_t c, const ep8_t a);
  * @param[out] r			- the resulting point.
  * @param[in] p				- the point to normalize.
  */
-void pp_norm_k54(ep9_t c, const ep9_t a);
+void pp_norm_k54(ep9_t r, const ep9_t p);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve

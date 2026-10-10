@@ -1271,7 +1271,7 @@ void fp_luc(fp_t c, const fp_t a, const bn_t b);
  * Tests if a prime field element is a quadratic residue.
  *
  * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp_is_sqr(const fp_t a);
 
@@ -1289,7 +1289,7 @@ int fp_srt(fp_t c, const fp_t a);
  * Tests if a prime field element is a cubic residue.
  *
  * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @return 1 if the argument is a cube, 0 otherwise.
  */
 int fp_is_cub(const fp_t a);
 

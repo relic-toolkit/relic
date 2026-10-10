@@ -1949,8 +1949,8 @@ void fp2_frb(fp2_t c, const fp2_t a, int i);
 /**
  * Tests if a quadratic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quadratic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp2_is_sqr(const fp2_t a);
 
@@ -1968,8 +1968,8 @@ int fp2_crt(fp2_t c, const fp2_t a);
 /**
  * Tests if a quadratic extension field element is a cubic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quadratic extension field element to test.
+ * @return 1 if the argument is a cube, 0 otherwise.
  */
 int fp2_is_cub(const fp2_t a);
 
@@ -2313,8 +2313,8 @@ void fp3_frb(fp3_t c, const fp3_t a, int i);
 /**
  * Tests if a cubic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the cubic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp3_is_sqr(const fp3_t a);
 
@@ -2636,8 +2636,8 @@ void fp4_frb(fp4_t c, const fp4_t a, int i);
 /**
  * Tests if a quartic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quartic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp4_is_sqr(const fp4_t a);
 
@@ -3272,8 +3272,8 @@ void fp8_frb(fp8_t c, const fp8_t a, int i);
 /**
  * Tests if an octic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the octic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp8_is_sqr(const fp8_t a);
 
@@ -4352,8 +4352,8 @@ void fp16_frb(fp16_t c, const fp16_t a, int i);
 /**
  * Tests if an sextadecic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the sextadecic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp16_is_sqr(const fp16_t a);
 

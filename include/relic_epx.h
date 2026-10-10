@@ -1232,7 +1232,7 @@ void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep2_curve_set_twist(int type);
 
@@ -1727,12 +1727,10 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len);
 void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quadratic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quadratic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quadratic exension. Computes Frob^i(P) = (p^i)P.
+ * quadratic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -1871,7 +1869,7 @@ void ep3_curve_set(const fp3_t a, const fp3_t b, const ep3_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep3_curve_set_twist(int type);
 
@@ -2343,12 +2341,10 @@ void ep3_norm_sim(ep3_t *r, const ep3_t *t, int n);
 void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * cubic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a cubic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a cubic exension. Computes Frob^i(P) = (p^i)P.
+ * cubic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -2470,7 +2466,7 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep4_curve_set_twist(int type);
 
@@ -2943,12 +2939,10 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n);
 void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quartic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quartic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quartic exension. Computes Frob^i(P) = (p^i)P.
+ * quartic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -3070,7 +3064,7 @@ void ep8_curve_set(const fp8_t a, const fp8_t b, const ep8_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep8_curve_set_twist(int type);
 
@@ -3543,12 +3537,10 @@ void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n);
 void ep8_map(ep8_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
- * represented in affine coordinates on a twisted elliptic curve over a
- * octic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of an octic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over an octic exension. Computes Frob^i(P) = (p^i)P.
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
+ * represented in affine coordinates on a twisted elliptic curve over an
+ * octic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -3661,8 +3653,9 @@ void ep9_curve_set(const fp9_t a, const fp9_t b, const ep9_t g,
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
+ * The twist is sextic, so the curve over the base field must have a = 0.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep9_curve_set_twist(int type);
 
@@ -4134,12 +4127,10 @@ void ep9_norm_sim(ep9_t *r, const ep9_t *t, int n);
 void ep9_map(ep9_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * nonic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a nonic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a nonic exension. Computes Frob^i(P) = (p^i)P.
+ * nonic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
