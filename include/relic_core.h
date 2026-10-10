@@ -178,12 +178,12 @@ typedef struct _ctx_t {
 	fb_st fb_tab_srz[256];
 #endif /* FB_PRECO */
 #endif /* FB_SRT == QUICK */
-#if FB_INV == ITOHT || !defined(STRIP)
 	/** Stores an addition chain for (RLC_FB_BITS - 1). */
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
 	int chain_len;
-	/** Tables for repeated squarings. */
+#if FB_INV == ITOHT || FB_INV == LOWER
+	/** Tables for repeated squarings, only kept for the selected method. */
 	fb_st fb_tab_sqr[RLC_TERMS][RLC_FB_TABLE];
 #endif /* FB_INV == ITOHT */
 #endif /* WITH_FB */

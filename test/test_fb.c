@@ -775,17 +775,6 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == BRUCH || !defined(STRIP)
-		TEST_CASE("brunner inversion is correct") {
-			do {
-				fb_rand(a);
-			} while (fb_is_zero(a));
-			fb_inv(b, a);
-			fb_inv_bruch(c, a);
-			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
 #if FB_INV == ITOHT || !defined(STRIP)
 		TEST_CASE("itoh-tsuji inversion is correct") {
 			do {

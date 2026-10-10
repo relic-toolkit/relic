@@ -438,14 +438,6 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == BRUCH || !defined(STRIP)
-	BENCH_RUN("fb_inv_bruch") {
-		fb_rand(a);
-		BENCH_ADD(fb_inv_bruch(c, a));
-	}
-	BENCH_END;
-#endif
-
 #if FB_INV == ITOHT || !defined(STRIP)
 	BENCH_RUN("fb_inv_itoht") {
 		fb_rand(a);

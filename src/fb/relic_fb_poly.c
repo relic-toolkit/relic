@@ -175,8 +175,6 @@ static void find_srz(void) {
 
 #endif
 
-#if FB_INV == ITOHT || !defined(STRIP)
-
 /**
  * Finds an addition chain for (RLC_FB_BITS - 1).
  */
@@ -279,12 +277,14 @@ static void find_chain(void) {
 		}
 	}
 
+#if FB_INV == ITOHT || FB_INV == LOWER
 	for (i = 0; i <= ctx->chain_len; i++) {
 		fb_itr_pre((fb_st *)fb_poly_tab_sqr(i), u[i]);
 	}
-}
-
+#else
+	(void)u;
 #endif
+}
 
 /**
  * Configures the irreducible polynomial of the binary field.
@@ -302,9 +302,7 @@ static void fb_poly_set(const fb_t f) {
 #if FB_SRT == QUICK || !defined(STRIP)
 	find_srz();
 #endif
-#if FB_INV == ITOHT || !defined(STRIP)
 	find_chain();
-#endif
 }
 
 /*============================================================================*/
@@ -431,7 +429,7 @@ dig_t *fb_poly_get_srz(void) {
 }
 
 const fb_st *fb_poly_tab_sqr(int i) {
-#if FB_INV == ITOHT || !defined(STRIP)
+#if FB_INV == ITOHT || FB_INV == LOWER
 	/* If ITOHT inversion is used and tables are precomputed, return them. */
 	return (const fb_st *)core_get()->fb_tab_sqr[i];
 #else
@@ -480,7 +478,6 @@ const dig_t *fb_poly_get_slv(void) {
 }
 
 const int *fb_poly_get_chain(int *len) {
-#if FB_INV == ITOHT || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	if (ctx->chain_len > 0 && ctx->chain_len < RLC_TERMS) {
 		if (len != NULL) {
@@ -493,7 +490,4 @@ const int *fb_poly_get_chain(int *len) {
 		}
 		return NULL;
 	}
-#else
-	return NULL;
-#endif
 }

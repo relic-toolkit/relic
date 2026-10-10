@@ -254,7 +254,7 @@
 /** Constant-time inversion by Bernstein-Yang jump division steps. */
 #define JMPDS    6
 /** Use implementation provided by the lower layer. */
-#define LOWER    8
+#define LOWER    7
 /** Chosen prime field inversion method. */
 #define FP_INV   @FP_INV@
 
@@ -267,7 +267,7 @@
 /** Constant-time inversion by Bernstein-Yang jump division steps. */
 #define JMPDS    6
 /** Use implementation provided by the lower layer. */
-#define LOWER    8
+#define LOWER    7
 /** Chosen prime field inversion method. */
 #define FP_SMB   @FP_SMB@
 
@@ -374,12 +374,10 @@
 #define EXGCD    4
 /** Itoh-Tsuji inversion. */
 #define ITOHT    5
-/** Hardware-friendly inversion by Brunner-Curiger-Hofstetter.*/
-#define BRUCH    6
 /** Constant-time version of almost inverse. */
-#define CTAIA    7
+#define CTAIA    6
 /** Use implementation provided by the lower layer. */
-#define LOWER    8
+#define LOWER    7
 /** Chosen binary field inversion method. */
 #define FB_INV   @FB_INV@
 

@@ -846,7 +846,6 @@
 #undef fb_inv_exgcd
 #undef fb_inv_almos
 #undef fb_inv_itoht
-#undef fb_inv_bruch
 #undef fb_inv_ctaia
 #undef fb_inv_lower
 #undef fb_inv_sim
@@ -918,7 +917,6 @@
 #define fb_inv_exgcd 	RLC_PREFIX(fb_inv_exgcd)
 #define fb_inv_almos 	RLC_PREFIX(fb_inv_almos)
 #define fb_inv_itoht 	RLC_PREFIX(fb_inv_itoht)
-#define fb_inv_bruch 	RLC_PREFIX(fb_inv_bruch)
 #define fb_inv_ctaia 	RLC_PREFIX(fb_inv_ctaia)
 #define fb_inv_lower 	RLC_PREFIX(fb_inv_lower)
 #define fb_inv_sim 	RLC_PREFIX(fb_inv_sim)

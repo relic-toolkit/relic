@@ -306,8 +306,6 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #define fb_inv(C, A)		fb_inv_almos(C, A)
 #elif FB_INV == ITOHT
 #define fb_inv(C, A)		fb_inv_itoht(C, A)
-#elif FB_INV == BRUCH
-#define fb_inv(C, A)		fb_inv_bruch(C, A)
 #elif FB_INV == CTAIA
 #define fb_inv(C, A)		fb_inv_ctaia(C, A)
 #elif FB_INV == LOWER
@@ -870,16 +868,6 @@ void fb_inv_almos(fb_t c, const fb_t a);
  * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_itoht(fb_t c, const fb_t a);
-
-/**
- * Inverts a binary field element using the hardware-friendly
- * Brunner-Curiger-Hofstetter algorithm.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the binary field element to invert.
- * @throw ERR_NO_VALID		- if the field element is not invertible.
- */
-void fb_inv_bruch(fb_t c, const fb_t a);
 
 /**
  * Inverts a binary field element in constant-time using

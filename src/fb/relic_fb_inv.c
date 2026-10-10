@@ -483,7 +483,12 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 			} else {
 				u[i] = u[x] + u[y];
 			}
-			fb_itr(table[i], table[x], u[y], fb_poly_tab_sqr(y));
+			if (fb_poly_tab_sqr(y) == NULL) {
+				/* The tables are only kept when this method is selected. */
+				fb_itr_basic(table[i], table[x], u[y]);
+			} else {
+				fb_itr(table[i], table[x], u[y], fb_poly_tab_sqr(y));
+			}
 			fb_mul(table[i], table[i], table[y]);
 		}
 		fb_sqr(c, table[len]);
@@ -498,78 +503,6 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 		}
 		RLC_FREE(u);
 		RLC_FREE(table);
-	}
-}
-
-#endif
-
-#if FB_INV == BRUCH || !defined(STRIP)
-
-void fb_inv_bruch(fb_t c, const fb_t a) {
-	fb_t _r, _s, _u, _v;
-	dig_t *r = NULL, *s = NULL, *t = NULL, *u = NULL, *v = NULL;
-	int delta = 0;
-
-	fb_null(_r);
-	fb_null(_s);
-	fb_null(_u);
-	fb_null(_v);
-
-	if (fb_is_zero(a)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	RLC_TRY {
-		fb_new(_r);
-		fb_new(_s);
-		fb_new(_u);
-		fb_new(_v);
-
-		fb_copy(_r, a);
-		fb_copy(_s, fb_poly_get());
-		fb_zero(_v);
-		fb_set_dig(_u, 1);
-
-		r = _r;
-		s = _s;
-		u = _u;
-		v = _v;
-
-		for (int i = 1; i <= 2 * RLC_FB_BITS; i++) {
-			if ((r[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG))) == 0) {
-				fb_lsh(r, r, 1);
-				fb_lsh(u, u, 1);
-				delta++;
-			} else {
-				if ((s[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG)))) {
-					fb_add(s, s, r);
-					fb_add(v, v, u);
-				}
-				fb_lsh(s, s, 1);
-				if (delta == 0) {
-					t = r;
-					r = s;
-					s = t;
-					t = u;
-					u = v;
-					v = t;
-					fb_lsh(u, u, 1);
-					delta++;
-				} else {
-					fb_rsh(u, u, 1);
-					delta--;
-				}
-			}
-		}
-		fb_copy(c, u);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fb_free(_r);
-		fb_free(_s);
-		fb_free(_u);
-		fb_free(_v);
 	}
 }
 
