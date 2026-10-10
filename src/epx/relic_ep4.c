@@ -38,16 +38,6 @@
 #include "relic_md.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-TMPL_EP_MAP_INPUT(ep4, fp4);
-
-TMPL_EP_MAP_A0(ep4, fp4);
-
-TMPL_EP_MAP_B0(ep4, fp4);
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -111,30 +101,4 @@ void ep4_psi(ep4_t r, const ep4_t p) {
 	}
 }
 
-void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
-	fp4_t u, t;
-	uint8_t sign;
-
-	fp4_null(u);
-	fp4_null(t);
-
-	RLC_TRY {
-		fp4_new(u);
-		fp4_new(t);
-		sign = ep4_map_input(u, t, msg, len);
-		if (ep_curve_opt_b() == RLC_ZERO) {
-			ep4_map_b0(p, u, t, sign);
-		} else {
-			/* Otherwise, assume that a = 0. */
-			ep4_map_a0(p, u, t, sign);
-		}
-		ep4_mul_cof(p, p);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp4_free(u);
-		fp4_free(t);
-	}
-}
+TMPL_EP_MAP_AB(ep4, fp4, ep4_map);

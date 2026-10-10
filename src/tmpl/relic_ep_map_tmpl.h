@@ -692,3 +692,44 @@
 			F##_free(t);													\
 		}																	\
 	}
+
+/**
+ * Defines a template for hashing to an elliptic curve with a = 0 or b = 0
+ * over an extension field, clearing the cofactor of the resulting point.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ * @param[in] N			- the name of the hash function.
+ */
+#define TMPL_EP_MAP_AB(C, F, N)												\
+	TMPL_EP_MAP_INPUT(C, F)													\
+	TMPL_EP_MAP_A0(C, F)													\
+	TMPL_EP_MAP_B0(C, F)													\
+	void N(C##_t p, const uint8_t *msg, size_t len) {						\
+		F##_t u, t;															\
+		uint8_t sign;														\
+																			\
+		F##_null(u);														\
+		F##_null(t);														\
+																			\
+		RLC_TRY {															\
+			F##_new(u);														\
+			F##_new(t);														\
+			sign = C##_map_input(u, t, msg, len);							\
+			if (C##_curve_opt_b() == RLC_ZERO) {							\
+				C##_map_b0(p, u, t, sign);									\
+			} else if (C##_curve_opt_a() == RLC_ZERO) {						\
+				C##_map_a0(p, u, t, sign);									\
+			} else {														\
+				RLC_THROW(ERR_NO_VALID);									\
+			}																\
+			C##_mul_cof(p, p);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			F##_free(u);													\
+			F##_free(t);													\
+		}																	\
+	}

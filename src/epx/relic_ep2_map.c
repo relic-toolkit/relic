@@ -64,16 +64,6 @@ TMPL_MAP_SSWU(ep2, fp2, fp_t)
 TMPL_MAP_SVDW(ep2, fp2, fp_t)
 
 /**
- * Maps two quadratic extension field elements to an elliptic curve with
- * b = 0 or a = 0 with the SwiftEC method.
- */
-TMPL_EP_MAP_INPUT(ep2, fp2)
-
-TMPL_EP_MAP_A0(ep2, fp2)
-
-TMPL_EP_MAP_B0(ep2, fp2)
-
-/**
  * Maps a byte array to a point in an elliptic curve over a quadratic extension
  * using an explicit domain separation tag.
  *
@@ -232,31 +222,4 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
 	}
 }
 
-void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
-	fp2_t u, t;
-	uint8_t sign;
-
-	fp2_null(u);
-	fp2_null(t);
-
-	RLC_TRY {
-		fp2_new(u);
-		fp2_new(t);
-		sign = ep2_map_input(u, t, msg, len);
-		if (ep2_curve_opt_b() == RLC_ZERO) {
-			ep2_map_b0(p, u, t, sign);
-		} else if (ep2_curve_opt_a() == RLC_ZERO) {
-			ep2_map_a0(p, u, t, sign);
-		} else {
-			RLC_THROW(ERR_NO_VALID);
-		}
-		ep2_mul_cof(p, p);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(u);
-		fp2_free(t);
-	}
-}
+TMPL_EP_MAP_AB(ep2, fp2, ep2_map_swift);
