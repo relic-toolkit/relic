@@ -1166,6 +1166,38 @@ static int test_##C##_simultaneous(void) {									\
 	return code;															\
 }																			\
 																			\
+static int test_##C##_compression(void) {									\
+	int code = RLC_ERR;														\
+	C##_t a, b, c;															\
+																			\
+	C##_null(a);															\
+	C##_null(b);															\
+	C##_null(c);															\
+																			\
+	RLC_TRY {																\
+		C##_new(a);															\
+		C##_new(b);															\
+		C##_new(c);															\
+																			\
+		TEST_CASE("point compression is correct") {							\
+			C##_rand(a);													\
+			C##_pck(b, a);													\
+			TEST_ASSERT(C##_upk(c, b) == 1, end);							\
+			TEST_ASSERT(C##_cmp(a, c) == RLC_EQ, end);						\
+		}																	\
+		TEST_END;															\
+	}																		\
+	RLC_CATCH_ANY {															\
+		RLC_ERROR(end);														\
+	}																		\
+	code = RLC_OK;															\
+  end:																		\
+	C##_free(a);															\
+	C##_free(b);															\
+	C##_free(c);															\
+	return code;															\
+}																			\
+																			\
 static int test_##C##_hashing(void) {										\
 	int code = RLC_ERR;														\
 	bn_t n;																	\
@@ -1266,38 +1298,6 @@ TMPL_TEST_EPX(ep4, fp4)
 TMPL_TEST_EPX(ep8, fp8)
 
 TMPL_TEST_EPX(ep9, fp9)
-
-static int compression2(void) {
-	int code = RLC_ERR;
-	ep2_t a, b, c;
-
-	ep2_null(a);
-	ep2_null(b);
-	ep2_null(c);
-
-	RLC_TRY {
-		ep2_new(a);
-		ep2_new(b);
-		ep2_new(c);
-
-		TEST_CASE("point compression is correct") {
-			ep2_rand(a);
-			ep2_pck(b, a);
-			TEST_ASSERT(ep2_upk(c, b) == 1, end);
-			TEST_ASSERT(ep2_cmp(a, c) == RLC_EQ, end);
-		}
-		TEST_END;
-	}
-	RLC_CATCH_ANY {
-		RLC_ERROR(end);
-	}
-	code = RLC_OK;
-  end:
-	ep2_free(a);
-	ep2_free(b);
-	ep2_free(c);
-	return code;
-}
 
 static int hashing2(void) {
 	int code = RLC_ERR;
@@ -1422,7 +1422,7 @@ int main(void) {
 			return 1;
 		}
 
-		if (compression2() != RLC_OK) {
+		if (test_ep2_compression() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -1490,6 +1490,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (test_ep3_compression() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (test_ep3_hashing() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1544,6 +1549,11 @@ int main(void) {
 		}
 
 		if (test_ep4_simultaneous() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (test_ep4_compression() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -1606,6 +1616,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (test_ep8_compression() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (test_ep8_hashing() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1660,6 +1675,11 @@ int main(void) {
 		}
 
 		if (test_ep9_simultaneous() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (test_ep9_compression() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

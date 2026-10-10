@@ -479,21 +479,118 @@
 	}
 
 /**
- * Defines a template for serialization of points in a twisted curve over an
- * extension field, without point compression.
+ * Computes the sign of an extension field element used in point compression:
+ * whether its highest nonzero coefficient is larger than (p - 1)/2.
  *
- * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[in] Y			- the extension field element.
+ * @param[in] H			- the value (p - 1)/2.
+ * @param[in] K			- a temporary multiple precision integer.
+ * @param[out] S		- the sign.
+ */
+#define TMPL_EP_PCK_SIGN(F, Y, H, K, S)										\
+	S = 0;																	\
+	for (int _i = 0; _i < (int)(sizeof(F##_t) / sizeof(fp_t)); _i++) {		\
+		fp_prime_back(K, ((fp_t *)Y)[_i]);									\
+		if (!bn_is_zero(K)) {												\
+			S = (bn_cmp(K, H) == RLC_GT);									\
+		}																	\
+	}
+
+/**
+ * Defines a template for point compression and decompression, keeping the
+ * abscissa and the sign of the ordinate as in the IETF pairing-friendly
+ * curves specification.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_PCK(C, F)													\
+	void C##_pck(C##_t r, const C##_t p) {									\
+		bn_t h, k;															\
+		int b;																\
+																			\
+		bn_null(h);															\
+		bn_null(k);															\
+																			\
+		RLC_TRY {															\
+			bn_new(h);														\
+			bn_new(k);														\
+																			\
+			h->used = RLC_FP_DIGS;											\
+			dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);					\
+			bn_hlv(h, h);													\
+			TMPL_EP_PCK_SIGN(F, p->y, h, k, b);								\
+																			\
+			F##_copy(r->x, p->x);											\
+			F##_zero(r->y);													\
+			fp_set_bit(((fp_t *)r->y)[0], 0, b);							\
+			F##_set_dig(r->z, 1);											\
+			r->coord = BASIC;												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(h);														\
+			bn_free(k);														\
+		}																	\
+	}																		\
+																			\
+	int C##_upk(C##_t r, const C##_t p) {									\
+		F##_t t;															\
+		bn_t h, k;															\
+		int b, result = 0;													\
+																			\
+		F##_null(t);														\
+		bn_null(h);															\
+		bn_null(k);															\
+																			\
+		RLC_TRY {															\
+			F##_new(t);														\
+			bn_new(h);														\
+			bn_new(k);														\
+																			\
+			C##_rhs(t, p->x);												\
+			result = F##_srt(t, t);											\
+			if (result) {													\
+				h->used = RLC_FP_DIGS;										\
+				dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);				\
+				bn_hlv(h, h);												\
+				TMPL_EP_PCK_SIGN(F, t, h, k, b);							\
+				if (b != fp_get_bit(((fp_t *)p->y)[0], 0)) {				\
+					F##_neg(t, t);											\
+				}															\
+				F##_copy(r->x, p->x);										\
+				F##_copy(r->y, t);											\
+				F##_set_dig(r->z, 1);										\
+				r->coord = BASIC;											\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			F##_free(t);													\
+			bn_free(h);														\
+			bn_free(k);														\
+		}																	\
+		return result;														\
+	}
+
+/**
+ * Defines a template for reading and writing points in compressed or
+ * uncompressed form, including point compression itself.
+ *
+ * @param[in] C			- the curve prefix.
  * @param[in] F			- the field prefix.
  */
 #define TMPL_EP_BIN(C, F)													\
+	TMPL_EP_PCK(C, F)														\
+																			\
 	size_t C##_size_bin(const C##_t a, int pack) {							\
-		/* Point compression is not supported in this extension. */			\
-		(void)pack;															\
+		const size_t l = (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
 																			\
 		if (C##_is_infty(a)) {												\
 			return 1;														\
 		}																	\
-		return 1 + 2 * (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
+		return (pack ? 1 + l : 1 + 2 * l);									\
 	}																		\
 																			\
 	void C##_read_bin(C##_t a, const uint8_t *bin, size_t len) {			\
@@ -509,20 +606,35 @@
 			}																\
 		}																	\
 																			\
-		if (len != 2 * l + 1) {												\
+		if (len != l + 1 && len != 2 * l + 1) {								\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
-		}																	\
-																			\
-		if (bin[0] != 4) {													\
-			RLC_THROW(ERR_NO_VALID);										\
 			return;															\
 		}																	\
 																			\
 		a->coord = BASIC;													\
 		F##_set_dig(a->z, 1);												\
 		F##_read_bin(a->x, bin + 1, l);										\
-		F##_read_bin(a->y, bin + l + 1, l);									\
+		if (len == l + 1) {													\
+			switch (bin[0]) {												\
+				case 2:														\
+					F##_zero(a->y);											\
+					break;													\
+				case 3:														\
+					F##_zero(a->y);											\
+					fp_set_bit(((fp_t *)a->y)[0], 0, 1);					\
+					break;													\
+				default:													\
+					RLC_THROW(ERR_NO_VALID);								\
+					return;													\
+			}																\
+			C##_upk(a, a);													\
+		} else {															\
+			if (bin[0] != 4) {												\
+				RLC_THROW(ERR_NO_VALID);									\
+				return;														\
+			}																\
+			F##_read_bin(a->y, bin + l + 1, l);								\
+		}																	\
 																			\
 		if (!C##_on_curve(a)) {												\
 			RLC_THROW(ERR_NO_VALID);										\
@@ -532,9 +644,6 @@
 	void C##_write_bin(uint8_t *bin, size_t len, const C##_t a, int pack) {	\
 		const size_t l = (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
 		C##_t t;															\
-																			\
-		/* Point compression is not supported in this extension. */			\
-		(void)pack;															\
 																			\
 		C##_null(t);														\
 																			\
@@ -552,12 +661,22 @@
 																			\
 			C##_norm(t, a);													\
 																			\
-			if (len < 2 * l + 1) {											\
-				RLC_THROW(ERR_NO_BUFFER);									\
+			if (pack) {														\
+				if (len < l + 1) {											\
+					RLC_THROW(ERR_NO_BUFFER);								\
+				} else {													\
+					C##_pck(t, t);											\
+					bin[0] = 2 | fp_get_bit(((fp_t *)t->y)[0], 0);			\
+					F##_write_bin(bin + 1, l, t->x, 0);						\
+				}															\
 			} else {														\
-				bin[0] = 4;													\
-				F##_write_bin(bin + 1, l, t->x, 0);							\
-				F##_write_bin(bin + l + 1, l, t->y, 0);						\
+				if (len < 2 * l + 1) {										\
+					RLC_THROW(ERR_NO_BUFFER);								\
+				} else {													\
+					bin[0] = 4;												\
+					F##_write_bin(bin + 1, l, t->x, 0);						\
+					F##_write_bin(bin + l + 1, l, t->y, 0);					\
+				}															\
 			}																\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\

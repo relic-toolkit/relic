@@ -2329,6 +2329,23 @@ void ep3_frb(ep3_t r, const ep3_t p, int i);
 void ep3_psi(ep3_t r, const ep3_t p);
 
 /**
+ * Compresses a point in an elliptic curve over a cubic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep3_pck(ep3_t r, const ep3_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over a cubic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep3_upk(ep3_t r, const ep3_t p);
+
+/**
  * Initializes the elliptic curve over quartic extension.
  */
 void ep4_curve_init(void);
@@ -2917,6 +2934,23 @@ void ep4_frb(ep4_t r, const ep4_t p, int i);
 void ep4_psi(ep4_t r, const ep4_t p);
 
 /**
+ * Compresses a point in an elliptic curve over a quartic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep4_pck(ep4_t r, const ep4_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over a quartic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep4_upk(ep4_t r, const ep4_t p);
+
+/**
  * Initializes the elliptic curve over octic extension.
  */
 void ep8_curve_init(void);
@@ -3496,13 +3530,30 @@ void ep8_frb(ep8_t r, const ep8_t p, int i);
 
 /**
  * Computes the endomorphism used for GLS scalar multiplication of a point in
- * an elliptic curve over a octic extension. The endomorphism acts as
+ * an elliptic curve over an octic extension. The endomorphism acts as
  * multiplication by u, where u is the curve parameter.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to map.
  */
 void ep8_psi(ep8_t r, const ep8_t p);
+
+/**
+ * Compresses a point in an elliptic curve over an octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep8_pck(ep8_t r, const ep8_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over an octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep8_upk(ep8_t r, const ep8_t p);
 
 /**
  * Initializes the elliptic curve over nonic extension.
@@ -4083,5 +4134,22 @@ void ep9_frb(ep9_t r, const ep9_t p, int i);
  * @param[in] p				- the point to map.
  */
 void ep9_psi(ep9_t r, const ep9_t p);
+
+/**
+ * Compresses a point in an elliptic curve over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep9_pck(ep9_t r, const ep9_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep9_upk(ep9_t r, const ep9_t p);
 
 #endif /* !RLC_EPX_H */

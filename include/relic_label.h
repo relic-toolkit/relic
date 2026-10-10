@@ -859,6 +859,7 @@
 #undef fb_itr_pre_quick
 #undef fb_itr_quick
 
+  This bounds the binary chain and the shorter chains #define fb_poly_set 	RLC_PREFIX(fb_poly_set)
 #define fb_poly_init 	RLC_PREFIX(fb_poly_init)
 #define fb_poly_clean 	RLC_PREFIX(fb_poly_clean)
 #define fb_poly_get 	RLC_PREFIX(fb_poly_get)
@@ -1664,6 +1665,8 @@
 #undef ep3_map
 #undef ep3_frb
 #undef ep3_psi
+#undef ep3_pck
+#undef ep3_upk
 
 #define ep3_curve_init 	RLC_PREFIX(ep3_curve_init)
 #define ep3_curve_clean 	RLC_PREFIX(ep3_curve_clean)
@@ -1730,6 +1733,8 @@
 #define ep3_map 	RLC_PREFIX(ep3_map)
 #define ep3_frb 	RLC_PREFIX(ep3_frb)
 #define ep3_psi 	RLC_PREFIX(ep3_psi)
+#define ep3_pck 	RLC_PREFIX(ep3_pck)
+#define ep3_upk 	RLC_PREFIX(ep3_upk)
 
 #undef ep4_st
 #undef ep4_t
@@ -1801,6 +1806,8 @@
 #undef ep4_map
 #undef ep4_frb
 #undef ep4_psi
+#undef ep4_pck
+#undef ep4_upk
 
 #define ep4_curve_init 	RLC_PREFIX(ep4_curve_init)
 #define ep4_curve_clean 	RLC_PREFIX(ep4_curve_clean)
@@ -1867,6 +1874,8 @@
 #define ep4_map 	RLC_PREFIX(ep4_map)
 #define ep4_frb 	RLC_PREFIX(ep4_frb)
 #define ep4_psi 	RLC_PREFIX(ep4_psi)
+#define ep4_pck 	RLC_PREFIX(ep4_pck)
+#define ep4_upk 	RLC_PREFIX(ep4_upk)
 
 #undef ep8_st
 #undef ep8_t
@@ -1938,6 +1947,8 @@
 #undef ep8_map
 #undef ep8_frb
 #undef ep8_psi
+#undef ep8_pck
+#undef ep8_upk
 
 #define ep8_curve_init 	RLC_PREFIX(ep8_curve_init)
 #define ep8_curve_clean 	RLC_PREFIX(ep8_curve_clean)
@@ -2004,6 +2015,8 @@
 #define ep8_map 	RLC_PREFIX(ep8_map)
 #define ep8_frb 	RLC_PREFIX(ep8_frb)
 #define ep8_psi 	RLC_PREFIX(ep8_psi)
+#define ep8_pck 	RLC_PREFIX(ep8_pck)
+#define ep8_upk 	RLC_PREFIX(ep8_upk)
 
 #undef ep9_st
 #undef ep9_t
@@ -2074,6 +2087,8 @@
 #undef ep9_map
 #undef ep9_frb
 #undef ep9_psi
+#undef ep9_pck
+#undef ep9_upk
 
 #define ep9_curve_init 	RLC_PREFIX(ep9_curve_init)
 #define ep9_curve_clean 	RLC_PREFIX(ep9_curve_clean)
@@ -2139,6 +2154,8 @@
 #define ep9_map 	RLC_PREFIX(ep9_map)
 #define ep9_frb 	RLC_PREFIX(ep9_frb)
 #define ep9_psi 	RLC_PREFIX(ep9_psi)
+#define ep9_pck 	RLC_PREFIX(ep9_pck)
+#define ep9_upk 	RLC_PREFIX(ep9_upk)
 
 #undef fp2_st
 #undef fp2_t

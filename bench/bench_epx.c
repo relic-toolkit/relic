@@ -45,9 +45,9 @@
 static void bench_##C##_memory(void) {										\
 	C##_t a[BENCH];															\
 																			\
-	BENCH_FEW("C##_null", C##_null(a[i]), 1);								\
+	BENCH_FEW(#C "_null", C##_null(a[i]), 1);								\
 																			\
-	BENCH_FEW("C##_new", C##_new(a[i]), 1);									\
+	BENCH_FEW(#C "_new", C##_new(a[i]), 1);									\
 	for (int i = 0; i < BENCH; i++) {										\
 		C##_free(a[i]);														\
 	}																		\
@@ -55,7 +55,7 @@ static void bench_##C##_memory(void) {										\
 	for (int i = 0; i < BENCH; i++) {										\
 		C##_new(a[i]);														\
 	}																		\
-	BENCH_FEW("C##_free", C##_free(a[i]), 1);								\
+	BENCH_FEW(#C "_free", C##_free(a[i]), 1);								\
 																			\
 	(void)a;																\
 }																			\
@@ -75,26 +75,26 @@ static void bench_##C##_util(void) {										\
 	C##_new(t[0]);															\
 	C##_new(t[1]);															\
 																			\
-	BENCH_RUN("C##_is_infty") {												\
+	BENCH_RUN(#C "_is_infty") {												\
 		C##_rand(p);														\
 		BENCH_ADD(C##_is_infty(p));											\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_set_infty") {											\
+	BENCH_RUN(#C "_set_infty") {											\
 		C##_rand(p);														\
 		BENCH_ADD(C##_set_infty(p));										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_copy") {													\
+	BENCH_RUN(#C "_copy") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_copy(p, q));											\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_cmp") {													\
+	BENCH_RUN(#C "_cmp") {													\
 		C##_rand(p);														\
 		C##_dbl(p, p);														\
 		C##_rand(q);														\
@@ -102,13 +102,13 @@ static void bench_##C##_util(void) {										\
 		BENCH_ADD(C##_cmp(p, q));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_norm") {													\
+	BENCH_RUN(#C "_norm") {													\
 		C##_rand(p);														\
 		C##_dbl(p, p);														\
 		BENCH_ADD(C##_norm(p, p));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_norm_sim (2)") {											\
+	BENCH_RUN(#C "_norm_sim (2)") {											\
 		C##_rand(t[0]);														\
 		C##_rand(t[1]);														\
 		C##_dbl(t[0], t[0]);												\
@@ -116,64 +116,64 @@ static void bench_##C##_util(void) {										\
 		BENCH_ADD(C##_norm_sim(t, t, 2));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_cmp (1 norm)") {											\
+	BENCH_RUN(#C "_cmp (1 norm)") {											\
 		C##_rand(p);														\
 		C##_dbl(p, p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_cmp(p, q));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_cmp (2 norm)") {											\
+	BENCH_RUN(#C "_cmp (2 norm)") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_cmp(p, q));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_rand") {													\
+	BENCH_RUN(#C "_rand") {													\
 		BENCH_ADD(C##_rand(p));												\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_blind") {												\
+	BENCH_RUN(#C "_blind") {												\
 		BENCH_ADD(C##_blind(p, p));											\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_on_curve") {												\
+	BENCH_RUN(#C "_on_curve") {												\
 		C##_rand(p);														\
 		BENCH_ADD(C##_on_curve(p));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_size_bin (0)") {											\
+	BENCH_RUN(#C "_size_bin (0)") {											\
 		C##_rand(p);														\
 		BENCH_ADD(C##_size_bin(p, 0));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_size_bin (1)") {											\
+	BENCH_RUN(#C "_size_bin (1)") {											\
 		C##_rand(p);														\
 		BENCH_ADD(C##_size_bin(p, 1));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_write_bin (0)") {										\
+	BENCH_RUN(#C "_write_bin (0)") {										\
 		C##_rand(p);														\
 		l = C##_size_bin(p, 0);												\
 		BENCH_ADD(C##_write_bin(bin, l, p, 0));								\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_write_bin (1)") {										\
+	BENCH_RUN(#C "_write_bin (1)") {										\
 		C##_rand(p);														\
 		l = C##_size_bin(p, 1);												\
 		BENCH_ADD(C##_write_bin(bin, l, p, 1));								\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_read_bin (0)") {											\
+	BENCH_RUN(#C "_read_bin (0)") {											\
 		C##_rand(p);														\
 		l = C##_size_bin(p, 0);												\
 		C##_write_bin(bin, l, p, 0);										\
 		BENCH_ADD(C##_read_bin(p, bin, l));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_read_bin (1)") {											\
+	BENCH_RUN(#C "_read_bin (1)") {											\
 		C##_rand(p);														\
 		l = C##_size_bin(p, 1);												\
 		C##_write_bin(bin, l, p, 1);										\
@@ -212,7 +212,7 @@ static void bench_##C##_arith(void) {										\
 																			\
 	C##_curve_get_ord(n);													\
 																			\
-	BENCH_RUN("C##_add") {													\
+	BENCH_RUN(#C "_add") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add(p, p, q);													\
@@ -223,21 +223,21 @@ static void bench_##C##_arith(void) {										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_add_basic") {											\
+	BENCH_RUN(#C "_add_basic") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_add_basic(r, p, q));									\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_add_slp_basic") {										\
+	BENCH_RUN(#C "_add_slp_basic") {										\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_add_slp_basic(r, s, p, q));							\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_add_projc") {											\
+	BENCH_RUN(#C "_add_projc") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_projc(p, p, q);												\
@@ -247,7 +247,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_projc(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_add_projc (z2 = 1)") {									\
+	BENCH_RUN(#C "_add_projc (z2 = 1)") {									\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_projc(p, p, q);												\
@@ -256,7 +256,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_projc(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_add_projc (z1,z2 = 1)") {								\
+	BENCH_RUN(#C "_add_projc (z1,z2 = 1)") {								\
 		C##_rand(p);														\
 		C##_norm(p, p);														\
 		C##_rand(q);														\
@@ -264,7 +264,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_projc(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_add_jacob") {											\
+	BENCH_RUN(#C "_add_jacob") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_jacob(p, p, q);												\
@@ -274,7 +274,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_jacob(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_add_jacob (z2 = 1)") {									\
+	BENCH_RUN(#C "_add_jacob (z2 = 1)") {									\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_jacob(p, p, q);												\
@@ -283,7 +283,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_jacob(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_add_jacob (z1,z2 = 1)") {								\
+	BENCH_RUN(#C "_add_jacob (z1,z2 = 1)") {								\
 		C##_rand(p);														\
 		C##_norm(p, p);														\
 		C##_rand(q);														\
@@ -291,7 +291,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_add_jacob(r, p, q));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_sub") {													\
+	BENCH_RUN(#C "_sub") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add(p, p, q);													\
@@ -302,7 +302,7 @@ static void bench_##C##_arith(void) {										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_dbl") {													\
+	BENCH_RUN(#C "_dbl") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add(p, p, q);													\
@@ -310,45 +310,45 @@ static void bench_##C##_arith(void) {										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_dbl_basic") {											\
+	BENCH_RUN(#C "_dbl_basic") {											\
 		C##_rand(p);														\
 		BENCH_ADD(C##_dbl_basic(r, p));										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_dbl_slp_basic") {										\
+	BENCH_RUN(#C "_dbl_slp_basic") {										\
 		C##_rand(p);														\
 		BENCH_ADD(C##_dbl_slp_basic(r, s, p));								\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_dbl_projc") {											\
+	BENCH_RUN(#C "_dbl_projc") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_projc(p, p, q);												\
 		BENCH_ADD(C##_dbl_projc(r, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_dbl_projc (z1 = 1)") {									\
+	BENCH_RUN(#C "_dbl_projc (z1 = 1)") {									\
 		C##_rand(p);														\
 		C##_norm(p, p);														\
 		BENCH_ADD(C##_dbl_projc(r, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_dbl_jacob") {											\
+	BENCH_RUN(#C "_dbl_jacob") {											\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add_jacob(p, p, q);												\
 		BENCH_ADD(C##_dbl_jacob(r, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_dbl_jacob (z1 = 1)") {									\
+	BENCH_RUN(#C "_dbl_jacob (z1 = 1)") {									\
 		C##_rand(p);														\
 		C##_norm(p, p);														\
 		BENCH_ADD(C##_dbl_jacob(r, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_neg") {													\
+	BENCH_RUN(#C "_neg") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		C##_add(p, p, q);													\
@@ -356,45 +356,45 @@ static void bench_##C##_arith(void) {										\
 	}																		\
 	BENCH_END;																\
 																			\
-	BENCH_RUN("C##_mul") {													\
+	BENCH_RUN(#C "_mul") {													\
 		bn_rand_mod(k, n);													\
 		BENCH_ADD(C##_mul(q, p, k));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_basic") {											\
+	BENCH_RUN(#C "_mul_basic") {											\
 		bn_rand_mod(k, n);													\
 		BENCH_ADD(C##_mul_basic(q, p, k));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_monty") {											\
+	BENCH_RUN(#C "_mul_monty") {											\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_monty(q, p, k));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_lwnaf") {											\
+	BENCH_RUN(#C "_mul_lwnaf") {											\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_lwnaf(q, p, k));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_lwreg") {											\
+	BENCH_RUN(#C "_mul_lwreg") {											\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_lwreg(q, p, k));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_gen") {												\
+	BENCH_RUN(#C "_mul_gen") {												\
 		bn_rand_mod(k, n);													\
 		BENCH_ADD(C##_mul_gen(q, k));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_cof") {												\
+	BENCH_RUN(#C "_mul_cof") {												\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_cof(q, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_dig") {												\
+	BENCH_RUN(#C "_mul_dig") {												\
 		bn_rand(k, RLC_POS, RLC_DIG);										\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_dig(q, p, k->dp[0]));								\
@@ -405,12 +405,12 @@ static void bench_##C##_arith(void) {										\
 		C##_new(t[i]);														\
 	}																		\
 																			\
-	BENCH_RUN("C##_mul_pre") {												\
+	BENCH_RUN(#C "_mul_pre") {												\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_pre(t, p));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_fix") {												\
+	BENCH_RUN(#C "_mul_fix") {												\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		C##_mul_pre(t, p);													\
@@ -424,12 +424,12 @@ static void bench_##C##_arith(void) {										\
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {							\
 		C##_new(t[i]);														\
 	}																		\
-	BENCH_RUN("C##_mul_pre_basic") {										\
+	BENCH_RUN(#C "_mul_pre_basic") {										\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_pre_basic(t, p));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_fix_basic") {										\
+	BENCH_RUN(#C "_mul_fix_basic") {										\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		C##_mul_pre_basic(t, p);											\
@@ -442,12 +442,12 @@ static void bench_##C##_arith(void) {										\
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {							\
 		C##_new(t[i]);														\
 	}																		\
-	BENCH_RUN("C##_mul_pre_combs") {										\
+	BENCH_RUN(#C "_mul_pre_combs") {										\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_pre_combs(t, p));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_fix_combs") {										\
+	BENCH_RUN(#C "_mul_fix_combs") {										\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		C##_mul_pre_combs(t, p);											\
@@ -460,11 +460,11 @@ static void bench_##C##_arith(void) {										\
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {							\
 		C##_new(t[i]);														\
 	}																		\
-	BENCH_RUN("C##_mul_pre_combd") {										\
+	BENCH_RUN(#C "_mul_pre_combd") {										\
 		BENCH_ADD(C##_mul_pre_combd(t, p));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_fix_combd") {										\
+	BENCH_RUN(#C "_mul_fix_combd") {										\
 		bn_rand_mod(k, n);													\
 		C##_mul_pre_combd(t, p);											\
 		BENCH_ADD(C##_mul_fix_combd(q, t, k));								\
@@ -476,12 +476,12 @@ static void bench_##C##_arith(void) {										\
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {							\
 		C##_new(t[i]);														\
 	}																		\
-	BENCH_RUN("C##_mul_pre_lwnaf") {										\
+	BENCH_RUN(#C "_mul_pre_lwnaf") {										\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_pre_lwnaf(t, p));									\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_fix_lwnaf") {										\
+	BENCH_RUN(#C "_mul_fix_lwnaf") {										\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		C##_mul_pre_lwnaf(t, p);											\
@@ -491,7 +491,7 @@ static void bench_##C##_arith(void) {										\
 		C##_free(t[i]);														\
 	}																		\
 																			\
-	BENCH_RUN("C##_mul_sim") {												\
+	BENCH_RUN(#C "_mul_sim") {												\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
@@ -499,7 +499,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_mul_sim(r, p, l[0], q, l[1]));						\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_sim_basic") {										\
+	BENCH_RUN(#C "_mul_sim_basic") {										\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
@@ -507,7 +507,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_mul_sim_basic(r, p, l[0], q, l[1]));					\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_sim_trick") {										\
+	BENCH_RUN(#C "_mul_sim_trick") {										\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
@@ -515,7 +515,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_mul_sim_trick(r, p, l[0], q, l[1]));					\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_sim_inter") {										\
+	BENCH_RUN(#C "_mul_sim_inter") {										\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
@@ -523,7 +523,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_mul_sim_inter(r, p, l[0], q, l[1]));					\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_sim_joint") {										\
+	BENCH_RUN(#C "_mul_sim_joint") {										\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
@@ -531,7 +531,7 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_mul_sim_joint(r, p, l[0], q, l[1]));					\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_mul_sim_gen") {											\
+	BENCH_RUN(#C "_mul_sim_gen") {											\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(q);														\
@@ -542,7 +542,7 @@ static void bench_##C##_arith(void) {										\
 		C##_new(t[i]);														\
 	}																		\
 																			\
-	BENCH_RUN("C##_mul_sim_lot (2)") {										\
+	BENCH_RUN(#C "_mul_sim_lot (2)") {										\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(t[0]);														\
@@ -554,17 +554,17 @@ static void bench_##C##_arith(void) {										\
 		C##_free(t[i]);														\
 	}																		\
 																			\
-	BENCH_RUN("C##_frb") {													\
+	BENCH_RUN(#C "_frb") {													\
 		C##_rand(q);														\
 		BENCH_ADD(C##_frb(r, q, 1));										\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_psi") {													\
+	BENCH_RUN(#C "_psi") {													\
 		C##_rand(q);														\
 		BENCH_ADD(C##_psi(r, q));											\
 	} BENCH_END;															\
 																			\
-	BENCH_RUN("C##_map") {													\
+	BENCH_RUN(#C "_map") {													\
 		uint8_t msg[5];														\
 		rand_bytes(msg, 5);													\
 		BENCH_ADD(C##_map(p, msg, 5));										\
@@ -573,6 +573,16 @@ static void bench_##C##_arith(void) {										\
 	C##_free(p);															\
 	C##_free(q);															\
 	C##_free(r);															\
+	BENCH_RUN(#C "_pck") {													\
+		C##_rand(p);														\
+		BENCH_ADD(C##_pck(q, p));											\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_upk") {													\
+		C##_rand(p);														\
+		BENCH_ADD(C##_upk(q, p));											\
+	} BENCH_END;															\
+																			\
 	bn_free(k);																\
 	bn_free(n);																\
 	bn_free(l[0]);															\
@@ -591,13 +601,11 @@ TMPL_BENCH_EPX(ep8, fp8)
 TMPL_BENCH_EPX(ep9, fp9)
 
 static void arith2(void) {
-	ep2_t p, q;
+	ep2_t p;
 
 	ep2_null(p);
-	ep2_null(q);
 
 	ep2_new(p);
-	ep2_new(q);
 
 	BENCH_RUN("ep2_map_basic") {
 		uint8_t msg[5];
@@ -617,18 +625,7 @@ static void arith2(void) {
 		BENCH_ADD(ep2_map_swift(p, msg, 5));
 	} BENCH_END;
 
-	BENCH_RUN("ep2_pck") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_pck(q, p));
-	} BENCH_END;
-
-	BENCH_RUN("ep2_upk") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_upk(q, p));
-	} BENCH_END;
-
 	ep2_free(p);
-	ep2_free(q);
 }
 
 int main(void) {
