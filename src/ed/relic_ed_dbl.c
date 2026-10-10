@@ -37,8 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_ADD == BASIC || !defined(STRIP)
-
 void ed_dbl_basic(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2;
 
@@ -87,10 +85,6 @@ void ed_dbl_basic(ed_t r, const ed_t p) {
 		fp_free(t2);
 	}
 }
-
-#endif /* ED_ADD == BASIC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
 
 void ed_dbl_projc(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2, t3, t4, t5, t6;
@@ -161,10 +155,6 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 	}
 }
 
-#endif /* ED_PROJC */
-
-#if ED_ADD == EXTND || !defined(STRIP)
-
 void ed_dbl_extnd(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2, t3, t4;
 
@@ -225,5 +215,3 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_free(t4);
 	}
 }
-
-#endif /* ED_EXTND */

@@ -37,8 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_SIM == INTER || !defined(STRIP)
-
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
@@ -139,13 +137,9 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	}
 }
 
-#endif /* ED_SIM == INTER */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if ED_SIM == BASIC || !defined(STRIP)
 
 void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
@@ -167,10 +161,6 @@ void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		ed_free(t);
 	}
 }
-
-#endif
-
-#if ED_SIM == TRICK || !defined(STRIP)
 
 void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
@@ -257,9 +247,6 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 	}
 }
-#endif
-
-#if ED_SIM == INTER || !defined(STRIP)
 
 void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
@@ -275,10 +262,6 @@ void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 
 	ed_mul_sim_plain(r, p, k, q, m, NULL);
 }
-
-#endif
-
-#if ED_SIM == JOINT || !defined(STRIP)
 
 void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
@@ -349,8 +332,6 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 	}
 }
-
-#endif
 
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 	ed_t g;

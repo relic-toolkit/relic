@@ -137,8 +137,6 @@ static void pp_mil_k24(fp24_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_MAP == OATEP || !defined(STRIP)
-
 void pp_map_k24(fp24_t r, const ep_t p, const ep4_t q) {
 	ep_t _p[1];
 	ep4_t t[1], _q[1];
@@ -245,5 +243,3 @@ void pp_map_sim_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
-
-#endif

@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_FIX == LWNAF || !defined(STRIP)
-
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-NAF mixed coordinate
  * method.
@@ -83,10 +81,6 @@ static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 		ed_neg(r, r);
 	}
 }
-
-#endif /* ED_FIX == LWNAF */
-
-#if ED_FIX == COMBS || !defined(STRIP)
 
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
@@ -151,13 +145,9 @@ static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 	}
 }
 
-#endif /* ED_FIX == COMBS */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if ED_FIX == BASIC || !defined(STRIP)
 
 void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 	bn_t n;
@@ -203,10 +193,6 @@ void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
 	}
 }
 
-#endif
-
-#if ED_FIX == COMBS || !defined(STRIP)
-
 void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 	int i, j, l;
 	bn_t n;
@@ -246,9 +232,6 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 void ed_mul_fix_combs(ed_t r, const ed_t * t, const bn_t k) {
 	ed_mul_combs_plain(r, t, k);
 }
-#endif
-
-#if ED_FIX == COMBD || !defined(STRIP)
 
 void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 	int i, j, d, e;
@@ -350,10 +333,6 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 	}
 }
 
-#endif
-
-#if ED_FIX == LWNAF || !defined(STRIP)
-
 void ed_mul_pre_lwnaf(ed_t * t, const ed_t p) {
 	ed_tab(t, p, RLC_DEPTH);
 }
@@ -361,5 +340,3 @@ void ed_mul_pre_lwnaf(ed_t * t, const ed_t p) {
 void ed_mul_fix_lwnaf(ed_t r, const ed_t * t, const bn_t k) {
 	ed_mul_fix_plain(r, t, k);
 }
-
-#endif

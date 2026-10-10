@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 /**
  * Doubles a point represented in affine coordinates on an ordinary binary
  * elliptic curve.
@@ -109,10 +107,6 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 		fb_free(t2);
 	}
 }
-
-#endif /* EB_ADD == BASIC */
-
-#if EB_ADD == PROJC || !defined(STRIP)
 
 /**
  * Doubles a point represented in projective coordinates on an ordinary binary
@@ -193,13 +187,9 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 	}
 }
 
-#endif /* EB_ADD == PROJC */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_ADD == BASIC || !defined(STRIP)
 
 void eb_dbl_basic(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
@@ -210,10 +200,6 @@ void eb_dbl_basic(eb_t r, const eb_t p) {
 	eb_dbl_basic_imp(r, p);
 }
 
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
 void eb_dbl_projc(eb_t r, const eb_t p) {
 
 	if (eb_is_infty(p)) {
@@ -223,5 +209,3 @@ void eb_dbl_projc(eb_t r, const eb_t p) {
 
 	eb_dbl_projc_imp(r, p);
 }
-
-#endif

@@ -38,8 +38,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if MD_MAP == SH256 || !defined(STRIP)
-
 void md_map_sh256(uint8_t *hash, const uint8_t *msg, size_t len) {
 	SHA256Context ctx;
 
@@ -56,5 +54,3 @@ void md_map_sh256(uint8_t *hash, const uint8_t *msg, size_t len) {
 		return;
 	}
 }
-
-#endif

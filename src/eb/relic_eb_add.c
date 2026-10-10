@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 /**
  * Adds two points represented in affine coordinates on an ordinary binary
  * elliptic curve.
@@ -121,10 +119,6 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 		fb_free(t2);
 	}
 }
-
-#endif /* EB_ADD == BASIC */
-
-#if EB_ADD == PROJC || !defined(STRIP)
 
 
 /**
@@ -382,13 +376,9 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 	}
 }
 
-#endif /* EB_ADD == PROJC */
-
 /*============================================================================*/
 	/* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_ADD == BASIC || !defined(STRIP)
 
 void eb_add_basic(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
@@ -430,10 +420,6 @@ void eb_sub_basic(eb_t r, const eb_t p, const eb_t q) {
 	}
 }
 
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
 void eb_add_projc(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
 		eb_copy(r, q);
@@ -471,5 +457,3 @@ void eb_sub_projc(eb_t r, const eb_t p, const eb_t q) {
 		eb_free(t);
 	}
 }
-
-#endif

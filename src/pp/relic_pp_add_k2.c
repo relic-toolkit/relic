@@ -39,8 +39,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 void pp_add_k2_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t s;
 	ep_t t;
@@ -65,12 +63,6 @@ void pp_add_k2_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		ep_free(t);
 	}
 }
-
-#endif
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-
-#if PP_EXT == BASIC || !defined(STRIP)
 
 void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
@@ -149,10 +141,6 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		fp_free(t5);
 	}
 }
-
-#endif
-
-#if PP_EXT == LAZYR || !defined(STRIP)
 
 void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
@@ -239,7 +227,3 @@ void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		dv_free(u1);
 	}
 }
-
-#endif
-
-#endif

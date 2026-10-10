@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_MUL == LWNAF || !defined(STRIP)
-
 static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	int i, n;
 	int8_t naf[RLC_FP_BITS + 1];
@@ -104,10 +102,6 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 		}
 	}
 }
-
-#endif /* ED_MUL == LWNAF */
-
-#if ED_MUL == LWREG || !defined(STRIP)
 
 static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	bn_t _k;
@@ -192,13 +186,9 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_MUL == LWNAF */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if ED_MUL == BASIC || !defined(STRIP)
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t;
@@ -246,10 +236,6 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 		RLC_FREE(naf);
 	}
 }
-
-#endif
-
-#if ED_MUL == MONTY || !defined(STRIP)
 
 void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t[2];
@@ -301,10 +287,6 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif
-
-#if ED_MUL == LWNAF || !defined(STRIP)
-
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
@@ -314,10 +296,6 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 	ed_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if ED_MUL == LWREG || !defined(STRIP)
-
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
@@ -326,8 +304,6 @@ void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 
 	ed_mul_reg_imp(r, p, k);
 }
-
-#endif
 
 void ed_mul_gen(ed_t r, const bn_t k) {
 	if (bn_is_zero(k)) {

@@ -49,7 +49,7 @@
 #cmakedefine OVERH
 /** Build documentation. */
 #cmakedefine DOCUM
-/** Build only the selected algorithms. */
+/** Remove unused code and tables of unselected algorithms. */
 #cmakedefine STRIP
 /** Build with printing disabled. */
 #cmakedefine QUIET

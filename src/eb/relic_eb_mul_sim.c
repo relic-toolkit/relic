@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_SIM == INTER || !defined(STRIP)
-
 
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
@@ -266,13 +264,9 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 }
 
 
-#endif /* EB_SIM == INTER */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_SIM == BASIC || !defined(STRIP)
 
 void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
@@ -293,10 +287,6 @@ void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		eb_free(t);
 	}
 }
-
-#endif
-
-#if EB_SIM == TRICK || !defined(STRIP)
 
 void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
@@ -386,9 +376,6 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 	}
 }
-#endif
-
-#if EB_SIM == INTER || !defined(STRIP)
 
 void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
@@ -409,10 +396,6 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 	eb_mul_sim_plain(r, p, k, q, m, NULL);
 }
-
-#endif
-
-#if EB_SIM == JOINT || !defined(STRIP)
 
 void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
@@ -483,8 +466,6 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 	}
 }
-
-#endif
 
 void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 	eb_t g;

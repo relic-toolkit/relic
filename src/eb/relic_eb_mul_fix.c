@@ -35,8 +35,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_FIX == LWNAF || !defined(STRIP)
-
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -141,13 +139,9 @@ static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
 }
 
 
-#endif /* EB_FIX == LWNAF */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_FIX == BASIC || !defined(STRIP)
 
 void eb_mul_pre_basic(eb_t *t, const eb_t p) {
 	bn_t n;
@@ -191,10 +185,6 @@ void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k) {
 		eb_neg(r, r);
 	}
 }
-
-#endif
-
-#if EB_FIX == COMBS || !defined(STRIP)
 
 void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 	int i, j, l;
@@ -289,10 +279,6 @@ void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
 		bn_free(ord);
 	}
 }
-
-#endif
-
-#if EB_FIX == COMBD || !defined(STRIP)
 
 void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 	int i, j, d, e;
@@ -398,10 +384,6 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 	}
 }
 
-#endif
-
-#if EB_FIX == LWNAF || !defined(STRIP)
-
 void eb_mul_pre_lwnaf(eb_t *t, const eb_t p) {
 	eb_tab(t, p, RLC_DEPTH);
 }
@@ -414,4 +396,3 @@ void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k) {
 
 	eb_mul_fix_plain(r, t, k);
 }
-#endif

@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_MUL == LWNAF || !defined(STRIP)
-
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -172,10 +170,6 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 	}
 }
-
-#endif /* EB_MUL == LWNAF */
-
-#if EB_MUL == RWNAF || !defined(STRIP)
 
 
 /**
@@ -593,13 +587,9 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif /* EB_MUL == RWNAF */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_MUL == BASIC || !defined(STRIP)
 
 void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	eb_t t;
@@ -646,10 +636,6 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 		RLC_FREE(naf);
 	}
 }
-
-#endif
-
-#if EB_MUL == LODAH || !defined(STRIP)
 
 void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
@@ -836,10 +822,6 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif /* EB_MUL == LODAH */
-
-#if EB_MUL == LWNAF || !defined(STRIP)
-
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -854,10 +836,6 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 	eb_mul_lnaf_imp(r, p, k);
 }
 
-#endif
-
-#if EB_MUL == RWNAF || !defined(STRIP)
-
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -871,10 +849,6 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 
 	eb_mul_rnaf_imp(r, p, k);
 }
-
-#endif
-
-#if EB_MUL == HALVE || !defined(STRIP)
 
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, trc, cof;
@@ -1051,8 +1025,6 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		fb_free(z);
 	}
 }
-
-#endif
 
 void eb_mul_gen(eb_t r, const bn_t k) {
 #ifdef EB_PRECO

@@ -76,7 +76,6 @@ static int addition1(void) {
 			TEST_ASSERT(ep_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -92,9 +91,7 @@ static int addition1(void) {
 			fp_mul(e2, e2, e3);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -112,7 +109,6 @@ static int addition1(void) {
 			pp_exp_k1(e2, e2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -173,7 +169,6 @@ static int doubling1(void) {
 			TEST_ASSERT(ep_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -191,9 +186,7 @@ static int doubling1(void) {
 			pp_exp_k1(e2, e2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -212,7 +205,6 @@ static int doubling1(void) {
 			pp_exp_k1(e2, e2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -328,7 +320,6 @@ static int pairing1(void) {
             TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
         } TEST_END;
 
-#if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
@@ -394,9 +385,7 @@ static int pairing1(void) {
 			pp_map_sim_tatep_k1(e2, p, q, 2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_set_infty(p[0]);
 			ep_rand(q[0]);
@@ -459,7 +448,6 @@ static int pairing1(void) {
 			pp_map_sim_weilp_k1(e2, p, q, 2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -520,7 +508,6 @@ static int addition2(void) {
 			TEST_ASSERT(ep_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -534,9 +521,7 @@ static int addition2(void) {
 			pp_exp_k2(e2, e2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -551,7 +536,6 @@ static int addition2(void) {
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller addition is consistent") {
 			ep_rand(p);
 			ep_rand(q);
@@ -563,9 +547,7 @@ static int addition2(void) {
 			pp_add_k2_projc_basic(e2, s, q, p);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller addition is consistent") {
 			ep_rand(p);
 			ep_rand(q);
@@ -577,8 +559,6 @@ static int addition2(void) {
 			pp_add_k2_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -635,7 +615,6 @@ static int doubling2(void) {
 			TEST_ASSERT(ep_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -648,9 +627,7 @@ static int doubling2(void) {
 			pp_exp_k2(e2, e2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -664,7 +641,6 @@ static int doubling2(void) {
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -675,9 +651,7 @@ static int doubling2(void) {
 			pp_dbl_k2_projc_basic(e2, r, q, p);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep_rand(q);
@@ -688,8 +662,6 @@ static int doubling2(void) {
 			pp_dbl_k2_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -798,7 +770,6 @@ static int pairing2(void) {
             TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
         } TEST_END;
 
-#if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
@@ -860,9 +831,7 @@ static int pairing2(void) {
 			pp_map_sim_tatep_k2(e2, p, q, 2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
@@ -924,7 +893,6 @@ static int pairing2(void) {
 			pp_map_sim_weilp_k2(e2, p, q, 2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -985,7 +953,6 @@ static int doubling8(void) {
 			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -1004,9 +971,7 @@ static int doubling8(void) {
 			pp_exp_k8(e1, e1);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -1027,7 +992,6 @@ static int doubling8(void) {
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1038,9 +1002,7 @@ static int doubling8(void) {
 			pp_dbl_k8_projc_basic(e2, r, q, p);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1051,8 +1013,6 @@ static int doubling8(void) {
 			pp_dbl_k8_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1112,7 +1072,6 @@ static int addition8(void) {
 			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -1138,9 +1097,7 @@ static int addition8(void) {
 			pp_exp_k8(e2, e2);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -1165,7 +1122,6 @@ static int addition8(void) {
 			pp_exp_k8(e2, e2);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1307,7 +1263,6 @@ static int doubling12(void) {
 			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1326,9 +1281,7 @@ static int doubling12(void) {
 			pp_exp_k12(e1, e1);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1350,7 +1303,6 @@ static int doubling12(void) {
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1361,9 +1313,7 @@ static int doubling12(void) {
 			pp_dbl_k12_projc_basic(e2, r, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1374,8 +1324,6 @@ static int doubling12(void) {
 			pp_dbl_k12_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1434,7 +1382,6 @@ static int addition12(void) {
 			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1448,9 +1395,7 @@ static int addition12(void) {
 			pp_exp_k12(e2, e2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1465,7 +1410,6 @@ static int addition12(void) {
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller addition is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1477,9 +1421,7 @@ static int addition12(void) {
 			pp_add_k12_projc_basic(e2, s, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller addition is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1491,8 +1433,6 @@ static int addition12(void) {
 			pp_add_k12_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1606,7 +1546,6 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_MAP == TATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
@@ -1672,9 +1611,7 @@ static int pairing12(void) {
 			pp_map_sim_tatep_k12(e1, p, q, 2);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
@@ -1740,9 +1677,7 @@ static int pairing12(void) {
 			pp_map_sim_weilp_k12(e1, p, q, 2);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("optimal ate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
@@ -1805,7 +1740,6 @@ static int pairing12(void) {
 			pp_map_sim_oatep_k12(e1, p, q, 2);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1865,7 +1799,6 @@ static int doubling16(void) {
 			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -1884,9 +1817,7 @@ static int doubling16(void) {
 			pp_exp_k16(e1, e1);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -1907,7 +1838,6 @@ static int doubling16(void) {
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -1918,9 +1848,7 @@ static int doubling16(void) {
 			pp_dbl_k16_projc_basic(e2, r, q, p);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -1931,8 +1859,6 @@ static int doubling16(void) {
 			pp_dbl_k16_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1992,7 +1918,6 @@ static int addition16(void) {
 			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep4_curve_get_gen(q);
@@ -2018,9 +1943,7 @@ static int addition16(void) {
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep4_curve_get_gen(q);
@@ -2044,7 +1967,6 @@ static int addition16(void) {
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2154,7 +2076,6 @@ static int pairing16(void) {
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_MAP == TATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
@@ -2216,9 +2137,7 @@ static int pairing16(void) {
 			pp_map_sim_tatep_k16(e2, p, q, 2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
@@ -2280,9 +2199,7 @@ static int pairing16(void) {
 			pp_map_sim_weilp_k16(e2, p, q, 2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("optimal ate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
@@ -2341,7 +2258,6 @@ static int pairing16(void) {
 			pp_map_sim_oatep_k16(e2, p, q, 2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2401,7 +2317,6 @@ static int doubling18(void) {
 			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2420,9 +2335,7 @@ static int doubling18(void) {
 			pp_exp_k18(e1, e1);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2444,7 +2357,6 @@ static int doubling18(void) {
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2455,9 +2367,7 @@ static int doubling18(void) {
 			pp_dbl_k18_projc_basic(e2, r, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2468,8 +2378,6 @@ static int doubling18(void) {
 			pp_dbl_k18_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2528,7 +2436,6 @@ static int addition18(void) {
 			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2542,9 +2449,7 @@ static int addition18(void) {
 			pp_exp_k18(e2, e2);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2559,7 +2464,6 @@ static int addition18(void) {
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_EXT == BASIC || !defined(STRIP)
 		TEST_CASE("basic projective miller addition is consistent") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2571,9 +2475,7 @@ static int addition18(void) {
 			pp_add_k18_projc_basic(e2, s, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced projective miller addition is consistent") {
 			ep_rand(p);
 			ep3_rand(q);
@@ -2585,8 +2487,6 @@ static int addition18(void) {
 			pp_add_k18_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2696,7 +2596,6 @@ static int pairing18(void) {
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-#if PP_MAP == TATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep3_rand(q[0]);
@@ -2758,9 +2657,7 @@ static int pairing18(void) {
 			pp_map_sim_tatep_k18(e2, p, q, 2);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep3_rand(q[0]);
@@ -2822,9 +2719,7 @@ static int pairing18(void) {
 			pp_map_sim_weilp_k18(e2, p, q, 2);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("optimal ate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep3_rand(q[0]);
@@ -2883,7 +2778,6 @@ static int pairing18(void) {
 			pp_map_sim_oatep_k18(e2, p, q, 2);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2943,7 +2837,6 @@ static int doubling24(void) {
 			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -2961,9 +2854,7 @@ static int doubling24(void) {
 			pp_exp_k24(e1, e1);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -2983,7 +2874,6 @@ static int doubling24(void) {
 			pp_exp_k24(e1, e1);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3042,7 +2932,6 @@ static int addition24(void) {
 			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -3056,9 +2945,7 @@ static int addition24(void) {
 			pp_exp_k24(e2, e2);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep4_rand(q);
@@ -3072,7 +2959,6 @@ static int addition24(void) {
 			pp_exp_k24(e2, e2);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3244,7 +3130,6 @@ static int doubling48(void) {
 			TEST_ASSERT(ep8_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep8_rand(q);
@@ -3262,9 +3147,7 @@ static int doubling48(void) {
 			pp_exp_k48(e1, e1);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep8_rand(q);
@@ -3284,7 +3167,6 @@ static int doubling48(void) {
 			pp_exp_k48(e1, e1);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3343,7 +3225,6 @@ static int addition48(void) {
 			TEST_ASSERT(ep8_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep8_rand(q);
@@ -3357,9 +3238,7 @@ static int addition48(void) {
 			pp_exp_k48(e2, e2);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep8_rand(q);
@@ -3373,7 +3252,6 @@ static int addition48(void) {
 			pp_exp_k48(e2, e2);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3545,7 +3423,6 @@ static int doubling54(void) {
 			TEST_ASSERT(ep9_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep9_rand(q);
@@ -3563,9 +3440,7 @@ static int doubling54(void) {
 			pp_exp_k54(e1, e1);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep9_rand(q);
@@ -3585,7 +3460,6 @@ static int doubling54(void) {
 			pp_exp_k54(e1, e1);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3644,7 +3518,6 @@ static int addition54(void) {
 			TEST_ASSERT(ep9_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep9_rand(q);
@@ -3658,9 +3531,7 @@ static int addition54(void) {
 			pp_exp_k54(e2, e2);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep9_rand(q);
@@ -3674,7 +3545,6 @@ static int addition54(void) {
 			pp_exp_k54(e2, e2);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

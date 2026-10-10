@@ -116,18 +116,10 @@
 /* Public definitions															*/
 /*============================================================================*/
 
-#if MD_MAP == SH224 || !defined(STRIP)
 make_md_xmd(SHA224, sh224)
-#endif
 
-#if MD_MAP == SH256 || !defined(STRIP)
 make_md_xmd(SHA256, sh256)
-#endif
 
-#if MD_MAP == SH384 || !defined(STRIP)
 make_md_xmd(SHA384, sh384)
-#endif
 
-#if MD_MAP == SH512 || !defined(STRIP)
 make_md_xmd(SHA512, sh512)
-#endif

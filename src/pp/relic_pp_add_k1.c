@@ -39,8 +39,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 void pp_add_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 	fp_t s;
 
@@ -69,10 +67,6 @@ void pp_add_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_free(s);
 	}
 }
-
-#endif
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_add_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
@@ -170,5 +164,3 @@ void pp_add_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_free(t5);
 	}
 }
-
-#endif

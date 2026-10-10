@@ -35,8 +35,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
-
 /**
  * Normalizes a point represented in projective coordinates.
  *
@@ -61,8 +59,6 @@ static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 	}
 }
 
-#endif /* ED_ADD == PROJC */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -78,9 +74,7 @@ void ed_norm(ed_t r, const ed_t p) {
 		ed_copy(r, p);
 		return;
 	}
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 	ed_norm_imp(r, p, 0);
-#endif /* ED_ADD != BASIC*/
 }
 
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
@@ -115,11 +109,9 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 			}
 		}
 
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 		for (int i = 0; i < n; i++) {
 			ed_norm_imp(r[i], r[i], 1);
 		}
-#endif /* ED_ADD != BASIC*/
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

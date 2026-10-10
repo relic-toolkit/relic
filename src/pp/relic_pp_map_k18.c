@@ -133,8 +133,6 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 	}
 }
 
-#if PP_MAP == TATEP || PP_MAP == WEILP || !defined(STRIP)
-
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -190,8 +188,6 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 		RLC_FREE(_q);
 	}
 }
-
-#endif
 
 /**
  * Compute the final lines for optimal ate pairings.
@@ -267,8 +263,6 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if PP_MAP == TATEP || !defined(STRIP)
 
 void pp_map_tatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1], t[1];
@@ -364,10 +358,6 @@ void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(_q);
 	}
 }
-
-#endif
-
-#if PP_MAP == WEILP || !defined(STRIP)
 
 void pp_map_weilp_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1], t0[1];
@@ -503,10 +493,6 @@ void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(t1);
 	}
 }
-
-#endif
-
-#if PP_MAP == OATEP || !defined(STRIP)
 
 void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1];
@@ -670,5 +656,3 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
-
-#endif

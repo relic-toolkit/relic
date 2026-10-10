@@ -39,8 +39,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_ADD == BASIC || !defined(STRIP)
-
 void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0, t1, t2;
 
@@ -118,10 +116,6 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q) {
 	}
 }
 
-#endif /* ED_ADD == BASIC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
-
 void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0, t1, t2, t3, t4, t5, t6, t7;
 
@@ -195,10 +189,6 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	}
 }
 
-#endif /* ED_ADD == PROJC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
-
 void ed_sub_projc(ed_t r, const ed_t p, const ed_t q) {
 	ed_t t;
 
@@ -222,10 +212,6 @@ void ed_sub_projc(ed_t r, const ed_t p, const ed_t q) {
 		ed_free(t);
 	}
 }
-
-#endif /* ED_ADD == PROJC || ED_ADD == EXTND */
-
-#if ED_ADD == EXTND || !defined(STRIP)
 
 void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0;
@@ -316,5 +302,3 @@ void ed_sub_extnd(ed_t r, const ed_t p, const ed_t q) {
 		ed_free(t);
 	}
 }
-
-#endif

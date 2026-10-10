@@ -64,8 +64,6 @@ char *tests[3] = {
 
 long int count[3] = { 1, 1, 10000 };
 
-#if MD_MAP == SH224 || !defined(STRIP)
-
 uint8_t result224[3][28] = {
 	{0x23, 0x09, 0x7D, 0x22, 0x34, 0x05, 0xD8, 0x22, 0x86, 0x42, 0xA4, 0x77,
 			0xBD, 0xA2, 0x55, 0xB3, 0x2A, 0xAD, 0xBC, 0xE4, 0xBD, 0xA0,
@@ -145,10 +143,6 @@ static int sha224(void) {
 	return code;
 }
 
-#endif
-
-#if MD_MAP == SH256 || !defined(STRIP)
-
 uint8_t result256[3][32] = {
 	{0xBA, 0x78, 0x16, 0xBF, 0x8F, 0x01, 0xCF, 0xEA, 0x41, 0x41, 0x40, 0xDE,
 			0x5D, 0xAE, 0x22, 0x23, 0xB0, 0x03, 0x61, 0xA3, 0x96, 0x17,
@@ -227,10 +221,6 @@ static int sha256(void) {
   end:
 	return code;
 }
-
-#endif
-
-#if MD_MAP == SH384 || !defined(STRIP)
 
 char *tests2[3] = {
 	TEST1,
@@ -325,10 +315,6 @@ static int sha384(void) {
 	return code;
 }
 
-#endif
-
-#if MD_MAP == SH512 || !defined(STRIP)
-
 uint8_t result512[4][64] = {
 	{0xDD, 0xAF, 0x35, 0xA1, 0x93, 0x61, 0x7A, 0xBA, 0xCC, 0x41, 0x73, 0x49,
 			0xAE, 0x20, 0x41, 0x31, 0x12, 0xE6, 0xFA, 0x4E, 0x89, 0xA9,
@@ -419,8 +405,6 @@ static int sha512(void) {
   end:
 	return code;
 }
-
-#endif
 
 #if MD_MAP == SH256
 
@@ -600,33 +584,25 @@ int main(void) {
 
 	util_banner("Tests for the MD module:\n", 0);
 
-#if MD_MAP == SH224 || !defined(STRIP)
 	if (sha224() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
-#if MD_MAP == SH256 || !defined(STRIP)
 	if (sha256() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
-#if MD_MAP == SH384 || !defined(STRIP)
 	if (sha384() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
-#if MD_MAP == SH512 || !defined(STRIP)
 	if (sha512() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
 	if (kdf() != RLC_OK) {
 		core_clean();
