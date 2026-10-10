@@ -337,7 +337,8 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 					fp_set_dig(t2, 64);
 					fp_sqr(t2, t2);
 				} else {
-					fp_dbl(h[0], t1);
+					fp_mul(h[0], h[0], h[3]);
+					fp_dbl(h[0], h[0]);
 					fp_sqr(t2, h[3]);
 				}
 				fp_add(h[0], h[0], w);
