@@ -256,9 +256,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_basic(L, RX, RY, QX, QY, P)
+#define pp_add_k54(L, R, Q, P)		pp_add_k54_basic(L, R, Q, P)
 #else
-#define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_projc(L, RX, RY, RZ, QX, QY, P)
+#define pp_add_k54(L, R, Q, P)		pp_add_k54_projc(L, R, Q, P)
 #endif
 
 /**
@@ -474,9 +474,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_basic(L, RX, RY, P)
+#define pp_dbl_k54(L, R, Q, P)		pp_dbl_k54_basic(L, R, Q, P)
 #else
-#define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_projc(L, RX, RY, RZ, P)
+#define pp_dbl_k54(L, R, Q, P)		pp_dbl_k54_projc(L, R, Q, P)
 #endif
 
 /**
@@ -962,8 +962,7 @@ void pp_add_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx,
-        const fp9_t qy, const ep_t p);
+void pp_add_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -975,8 +974,7 @@ void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx,
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const fp9_t qx,
-        const fp9_t qy, const ep_t p);
+void pp_add_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1245,7 +1243,7 @@ void pp_dbl_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
  * @param[in] q				- the point to double.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p);
+void pp_dbl_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1257,7 +1255,7 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p);
  * @param[in] q				- the point to double.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p);
+void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1447,6 +1445,15 @@ void pp_norm_k24(ep4_t c, const ep4_t a);
  * @param[in] p				- the point to normalize.
  */
 void pp_norm_k48(ep8_t c, const ep8_t a);
+
+/**
+ * Normalizes the accumulator point used inside pairing computation defined
+ * over curves of embedding degree 54.
+ *
+ * @param[out] r			- the resulting point.
+ * @param[in] p				- the point to normalize.
+ */
+void pp_norm_k54(ep9_t c, const ep9_t a);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -1792,6 +1799,17 @@ void pp_map_sim_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy);
+void pp_map_k54(fp54_t r, const ep_t p, const ep9_t q);
+
+/**
+ * Computes the multi-pairing of points in a parameterized elliptic curve with
+ * embedding degree 54. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m				- the number of pairings to evaluate.
+ */
+void pp_map_sim_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m);
 
 #endif /* !RLC_PP_H */

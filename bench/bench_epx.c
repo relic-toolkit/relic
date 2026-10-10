@@ -2171,8 +2171,515 @@ static void arith8(void) {
 	fp8_free(s);
 }
 
+static void memory9(void) {
+	ep9_t a[BENCH];
+
+	BENCH_FEW("ep9_null", ep9_null(a[i]), 1);
+
+	BENCH_FEW("ep9_new", ep9_new(a[i]), 1);
+	for (int i = 0; i < BENCH; i++) {
+		ep9_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		ep9_new(a[i]);
+	}
+	BENCH_FEW("ep9_free", ep9_free(a[i]), 1);
+
+	(void)a;
+}
+
+static void util9(void) {
+	ep9_t p, q, t[2];
+	uint8_t bin[18 * RLC_FP_BYTES + 1];
+	int l;
+
+	ep9_null(p);
+	ep9_null(q);
+	ep9_null(t[0]);
+	ep9_null(t[1]);
+
+	ep9_new(p);
+	ep9_new(q);
+	ep9_new(t[0]);
+	ep9_new(t[1]);
+
+	BENCH_RUN("ep9_is_infty") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_is_infty(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_set_infty") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_set_infty(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_copy") {
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_copy(p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_cmp") {
+		ep9_rand(p);
+		ep9_dbl(p, p);
+		ep9_rand(q);
+		ep9_dbl(q, q);
+		BENCH_ADD(ep9_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_norm") {
+		ep9_rand(p);
+		ep9_dbl(p, p);
+		BENCH_ADD(ep9_norm(p, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_norm_sim (2)") {
+		ep9_rand(t[0]);
+		ep9_rand(t[1]);
+		ep9_dbl(t[0], t[0]);
+		ep9_dbl(t[1], t[1]);
+		BENCH_ADD(ep9_norm_sim(t, t, 2));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_cmp (1 norm)") {
+		ep9_rand(p);
+		ep9_dbl(p, p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_cmp (2 norm)") {
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_rand") {
+		BENCH_ADD(ep9_rand(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_blind") {
+		BENCH_ADD(ep9_blind(p, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_on_curve") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_on_curve(p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_size_bin") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_size_bin(p, 0));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_write_bin") {
+		ep9_rand(p);
+		l = ep9_size_bin(p, 0);
+		BENCH_ADD(ep9_write_bin(bin, l, p, 0));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_read_bin") {
+		ep9_rand(p);
+		l = ep9_size_bin(p, 0);
+		ep9_write_bin(bin, l, p, 0);
+		BENCH_ADD(ep9_read_bin(p, bin, l));
+	} BENCH_END;
+
+	ep9_free(p);
+	ep9_free(q);
+	ep9_free(t[0]);
+	ep9_free(t[1]);
+}
+
+static void arith9(void) {
+	ep9_t p, q, r, t[RLC_EPX_TABLE_MAX];
+	bn_t k, n, l;
+	fp9_t s;
+
+	ep9_null(p);
+	ep9_null(q);
+	ep9_null(r);
+	bn_null(k);
+	bn_null(n);
+	fp9_null(s);
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep9_null(t[i]);
+	}
+
+	ep9_new(p);
+	ep9_new(q);
+	ep9_new(r);
+	bn_new(k);
+	bn_new(n);
+	bn_new(l);
+	fp9_new(s);
+
+	ep9_curve_get_ord(n);
+
+	BENCH_RUN("ep9_add") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add(p, p, q);
+		ep9_rand(q);
+		ep9_rand(p);
+		ep9_add(q, q, p);
+		BENCH_ADD(ep9_add(r, p, q));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("ep9_add_basic") {
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_add_basic(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_add_slp_basic") {
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_add_slp_basic(r, s, p, q));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("ep9_add_projc") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add_projc(p, p, q);
+		ep9_rand(q);
+		ep9_rand(p);
+		ep9_add_projc(q, q, p);
+		BENCH_ADD(ep9_add_projc(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_add_projc (z2 = 1)") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add_projc(p, p, q);
+		ep9_rand(q);
+		ep9_norm(q, q);
+		BENCH_ADD(ep9_add_projc(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_add_projc (z1,z2 = 1)") {
+		ep9_rand(p);
+		ep9_norm(p, p);
+		ep9_rand(q);
+		ep9_norm(q, q);
+		BENCH_ADD(ep9_add_projc(r, p, q));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("ep9_sub") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add(p, p, q);
+		ep9_rand(q);
+		ep9_rand(p);
+		ep9_add(q, q, p);
+		BENCH_ADD(ep9_sub(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_dbl") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add(p, p, q);
+		BENCH_ADD(ep9_dbl(r, p));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("ep9_dbl_basic") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_dbl_basic(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_dbl_slp_basic") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_dbl_slp_basic(r, s, p));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("ep9_dbl_projc") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add_projc(p, p, q);
+		BENCH_ADD(ep9_dbl_projc(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_dbl_projc (z1 = 1)") {
+		ep9_rand(p);
+		ep9_norm(p, p);
+		BENCH_ADD(ep9_dbl_projc(r, p));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("ep9_neg") {
+		ep9_rand(p);
+		ep9_rand(q);
+		ep9_add(p, p, q);
+		BENCH_ADD(ep9_neg(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep9_mul") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep9_mul(q, p, k));
+	} BENCH_END;
+
+#if EP_MUL == BASIC || !defined(STRIP)
+	BENCH_RUN("ep9_mul_basic") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep9_mul_basic(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == SLIDE || !defined(STRIP)
+	BENCH_RUN("ep9_mul_slide") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_slide(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+	BENCH_RUN("ep9_mul_monty") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_monty(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+	BENCH_RUN("ep9_mul_lwnaf") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep9_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_lwreg(q, p, k));
+	} BENCH_END;
+#endif
+
+	BENCH_RUN("ep9_mul_gen") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep9_mul_gen(q, k));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_cof") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_cof(q, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_dig") {
+		bn_rand(k, RLC_POS, RLC_DIG);
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_dig(q, p, k->dp[0]));
+	}
+	BENCH_END;
+
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep9_new(t[i]);
+	}
+
+	BENCH_RUN("ep9_mul_pre") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_pre(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_fix") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		ep9_mul_pre(t, p);
+		BENCH_ADD(ep9_mul_fix(q, t, k));
+	} BENCH_END;
+
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep9_free(t[i]);
+	}
+
+#if EP_FIX == BASIC || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
+		ep9_new(t[i]);
+	}
+	BENCH_RUN("ep9_mul_pre_basic") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_pre_basic(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_fix_basic") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		ep9_mul_pre_basic(t, p);
+		BENCH_ADD(ep9_mul_fix_basic(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
+		ep9_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == COMBS || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
+		ep9_new(t[i]);
+	}
+	BENCH_RUN("ep9_mul_pre_combs") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_pre_combs(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_fix_combs") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		ep9_mul_pre_combs(t, p);
+		BENCH_ADD(ep9_mul_fix_combs(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
+		ep9_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == COMBD || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
+		ep9_new(t[i]);
+	}
+	BENCH_RUN("ep9_mul_pre_combd") {
+		BENCH_ADD(ep9_mul_pre_combd(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_fix_combd") {
+		bn_rand_mod(k, n);
+		ep9_mul_pre_combd(t, p);
+		BENCH_ADD(ep9_mul_fix_combd(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
+		ep9_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == LWNAF || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
+		ep9_new(t[i]);
+	}
+	BENCH_RUN("ep9_mul_pre_lwnaf") {
+		ep9_rand(p);
+		BENCH_ADD(ep9_mul_pre_lwnaf(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_mul_fix_lwnaf") {
+		bn_rand_mod(k, n);
+		ep9_rand(p);
+		ep9_mul_pre_lwnaf(t, p);
+		BENCH_ADD(ep9_mul_fix_lwnaf(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
+		ep9_free(t[i]);
+	}
+#endif
+
+	BENCH_RUN("ep9_mul_sim") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim(r, p, k, q, l));
+	} BENCH_END;
+
+#if EP_SIM == BASIC || !defined(STRIP)
+	BENCH_RUN("ep9_mul_sim_basic") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim_basic(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == TRICK || !defined(STRIP)
+	BENCH_RUN("ep9_mul_sim_trick") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim_trick(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == INTER || !defined(STRIP)
+	BENCH_RUN("ep9_mul_sim_inter") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim_inter(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == JOINT || !defined(STRIP)
+	BENCH_RUN("ep9_mul_sim_joint") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(p);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim_joint(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+	BENCH_RUN("ep9_mul_sim_gen") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep9_rand(q);
+		BENCH_ADD(ep9_mul_sim_gen(r, k, q, l));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_frb") {
+		ep9_rand(q);
+		BENCH_ADD(ep9_frb(r, q, 1));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_psi") {
+		ep9_rand(q);
+		BENCH_ADD(ep9_psi(r, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep9_map") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep9_map(p, msg, 5));
+	} BENCH_END;
+
+	ep9_free(p);
+	ep9_free(q);
+	ep9_free(r);
+	bn_free(k);
+	bn_free(n);
+	bn_free(l);
+	fp9_free(s);
+}
+
 int main(void) {
-	int r0, r1, r2, r3;
+	int r0, r1, r2, r3, r4;
 	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
@@ -2232,7 +2739,18 @@ int main(void) {
 		arith8();
 	}
 
-	if (!r0 && !r2 && !r1 && !r3) {
+	if ((r4 = ep9_curve_is_twist())) {
+		ep_param_print();
+
+		util_banner("Utilities:", 1);
+		memory9();
+		util9();
+
+		util_banner("Arithmetic:", 1);
+		arith9();
+	}
+
+	if (!r0 && !r2 && !r1 && !r3 && !r4) {
 		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

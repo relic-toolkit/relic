@@ -164,3 +164,23 @@ void pp_norm_k48(ep8_t r, const ep8_t p) {
 	r->coord = BASIC;
 #endif
 }
+
+void pp_norm_k54(ep9_t r, const ep9_t p) {
+	if (ep9_is_infty(p)) {
+		ep9_set_infty(r);
+		return;
+	}
+
+	if (p->coord == BASIC) {
+		/* If the point is represented in affine coordinates, we just copy it. */
+		ep9_copy(r, p);
+		return;
+	}
+#if EP_ADD != BASIC || !defined(STRIP)
+	fp9_inv(r->z, p->z);
+	fp9_mul(r->x, p->x, r->z);
+	fp9_mul(r->y, p->y, r->z);
+	fp9_set_dig(r->z, 1);
+	r->coord = BASIC;
+#endif
+}

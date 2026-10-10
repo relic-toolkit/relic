@@ -3538,6 +3538,25 @@ void fp9_exp(fp9_t c, const fp9_t a, const bn_t b);
 void fp9_frb(fp9_t c, const fp9_t a, int i);
 
 /**
+ * Tests if a nonic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the nonic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
+ */
+int fp9_is_sqr(const fp9_t a);
+
+/**
+ * Extracts the square root of a nonic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp9_srt(fp9_t c, const fp9_t a);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.

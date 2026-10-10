@@ -3851,6 +3851,56 @@ static int exponentiation9(void) {
 	return code;
 }
 
+static int square_root9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c;
+
+	fp9_null_all(a, b, c);
+
+	RLC_TRY {
+		fp9_new_all(a, b, c);
+
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp9_zero(a);
+			TEST_ASSERT(fp9_is_sqr(a) == 1, end);
+			fp9_rand(a);
+			fp9_sqr(a, a);
+			TEST_ASSERT(fp9_is_sqr(a) == 1, end);
+			do {
+				fp9_rand(a);
+			} while(fp9_srt(b, a) == 1);
+			TEST_ASSERT(fp9_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("square root extraction is correct") {
+			fp9_rand(a);
+			fp9_sqr(c, a);
+			TEST_ASSERT(fp9_srt(b, c), end);
+			fp9_neg(c, b);
+			TEST_ASSERT(fp9_cmp(b, a) == RLC_EQ || fp9_cmp(c, a) == RLC_EQ, end);
+			fp9_rand(a);
+			if (fp9_srt(b, a)) {
+				fp9_sqr(c, b);
+				TEST_ASSERT(fp9_cmp(c, a) == RLC_EQ, end);
+			}
+			do {
+				fp9_rand(a);
+			} while(fp9_is_sqr(a) == 1);
+			TEST_ASSERT(fp9_srt(b, a) == 0, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free_all(a, b, c);
+	return code;
+}
+
 static int memory12(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -8604,6 +8654,11 @@ int main(void) {
 		}
 
 		if (exponentiation9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (square_root9() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

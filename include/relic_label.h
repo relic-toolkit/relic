@@ -1009,6 +1009,7 @@
 #undef ep_curve_set_endom
 #undef ep_curve_embed
 #undef ep_curve_frdim
+#undef ep_curve_frbase
 #undef ep_param_set
 #undef ep_param_set_any
 #undef ep_param_set_any_plain
@@ -1108,6 +1109,7 @@
 #define ep_curve_set_endom 	RLC_PREFIX(ep_curve_set_endom)
 #define ep_curve_embed 	RLC_PREFIX(ep_curve_embed)
 #define ep_curve_frdim 	RLC_PREFIX(ep_curve_frdim)
+#define ep_curve_frbase 	RLC_PREFIX(ep_curve_frbase)
 #define ep_param_set 	RLC_PREFIX(ep_param_set)
 #define ep_param_set_any 	RLC_PREFIX(ep_param_set_any)
 #define ep_param_set_any_plain 	RLC_PREFIX(ep_param_set_any_plain)
@@ -2085,6 +2087,143 @@
 #define ep8_pck 	RLC_PREFIX(ep8_pck)
 #define ep8_upk 	RLC_PREFIX(ep8_upk)
 
+#undef ep9_st
+#undef ep9_t
+#define ep9_st		RLC_PREFIX(ep9_st)
+#define ep9_t			RLC_PREFIX(ep9_t)
+
+#undef ep9_curve_init
+#undef ep9_curve_clean
+#undef ep9_curve_get_a
+#undef ep9_curve_get_b
+#undef ep9_curve_opt_a
+#undef ep9_curve_opt_b
+#undef ep9_curve_mul_a
+#undef ep9_curve_mul_b
+#undef ep9_curve_is_twist
+#undef ep9_curve_get_gen
+#undef ep9_curve_get_tab
+#undef ep9_curve_get_ord
+#undef ep9_curve_set
+#undef ep9_curve_set_twist
+#undef ep9_is_infty
+#undef ep9_set_infty
+#undef ep9_copy
+#undef ep9_cmp
+#undef ep9_rand
+#undef ep9_blind
+#undef ep9_rhs
+#undef ep9_on_curve
+#undef ep9_tab
+#undef ep9_print
+#undef ep9_size_bin
+#undef ep9_read_bin
+#undef ep9_write_bin
+#undef ep9_neg
+#undef ep9_add_basic
+#undef ep9_add_slp_basic
+#undef ep9_add_projc
+#undef ep9_add_jacob
+#undef ep9_sub
+#undef ep9_dbl_basic
+#undef ep9_dbl_slp_basic
+#undef ep9_dbl_projc
+#undef ep9_dbl_jacob
+#undef ep9_mul_basic
+#undef ep9_mul_slide
+#undef ep9_mul_monty
+#undef ep9_mul_lwnaf
+#undef ep9_mul_lwreg
+#undef ep9_mul_gen
+#undef ep9_mul_dig
+#undef ep9_mul_cof
+#undef ep9_mul_pre_basic
+#undef ep9_mul_pre_combs
+#undef ep9_mul_pre_combd
+#undef ep9_mul_pre_lwnaf
+#undef ep9_mul_fix_basic
+#undef ep9_mul_fix_combs
+#undef ep9_mul_fix_combd
+#undef ep9_mul_fix_lwnaf
+#undef ep9_mul_sim_basic
+#undef ep9_mul_sim_trick
+#undef ep9_mul_sim_inter
+#undef ep9_mul_sim_joint
+#undef ep9_mul_sim_lot
+#undef ep9_mul_sim_gen
+#undef ep9_mul_sim_dig
+#undef ep9_norm
+#undef ep9_norm_sim
+#undef ep9_map
+#undef ep9_frb
+#undef ep9_psi
+
+#define ep9_curve_init 	RLC_PREFIX(ep9_curve_init)
+#define ep9_curve_clean 	RLC_PREFIX(ep9_curve_clean)
+#define ep9_curve_get_a 	RLC_PREFIX(ep9_curve_get_a)
+#define ep9_curve_get_b 	RLC_PREFIX(ep9_curve_get_b)
+#define ep9_curve_opt_a 	RLC_PREFIX(ep9_curve_opt_a)
+#define ep9_curve_opt_b 	RLC_PREFIX(ep9_curve_opt_b)
+#define ep9_curve_mul_a 	RLC_PREFIX(ep9_curve_mul_a)
+#define ep9_curve_mul_b 	RLC_PREFIX(ep9_curve_mul_b)
+#define ep9_curve_is_twist 	RLC_PREFIX(ep9_curve_is_twist)
+#define ep9_curve_get_gen 	RLC_PREFIX(ep9_curve_get_gen)
+#define ep9_curve_get_tab 	RLC_PREFIX(ep9_curve_get_tab)
+#define ep9_curve_get_ord 	RLC_PREFIX(ep9_curve_get_ord)
+#define ep9_curve_set 	RLC_PREFIX(ep9_curve_set)
+#define ep9_curve_set_twist 	RLC_PREFIX(ep9_curve_set_twist)
+#define ep9_is_infty 	RLC_PREFIX(ep9_is_infty)
+#define ep9_set_infty 	RLC_PREFIX(ep9_set_infty)
+#define ep9_copy 	RLC_PREFIX(ep9_copy)
+#define ep9_cmp 	RLC_PREFIX(ep9_cmp)
+#define ep9_rand 	RLC_PREFIX(ep9_rand)
+#define ep9_blind 	RLC_PREFIX(ep9_blind)
+#define ep9_rhs 	RLC_PREFIX(ep9_rhs)
+#define ep9_on_curve 	RLC_PREFIX(ep9_on_curve)
+#define ep9_tab 	RLC_PREFIX(ep9_tab)
+#define ep9_print 	RLC_PREFIX(ep9_print)
+#define ep9_size_bin 	RLC_PREFIX(ep9_size_bin)
+#define ep9_read_bin 	RLC_PREFIX(ep9_read_bin)
+#define ep9_write_bin 	RLC_PREFIX(ep9_write_bin)
+#define ep9_neg 	RLC_PREFIX(ep9_neg)
+#define ep9_add_basic 	RLC_PREFIX(ep9_add_basic)
+#define ep9_add_slp_basic 	RLC_PREFIX(ep9_add_slp_basic)
+#define ep9_add_projc 	RLC_PREFIX(ep9_add_projc)
+#define ep9_add_jacob 	RLC_PREFIX(ep9_add_jacob)
+#define ep9_sub 	RLC_PREFIX(ep9_sub)
+#define ep9_dbl_basic 	RLC_PREFIX(ep9_dbl_basic)
+#define ep9_dbl_slp_basic 	RLC_PREFIX(ep9_dbl_slp_basic)
+#define ep9_dbl_projc 	RLC_PREFIX(ep9_dbl_projc)
+#define ep9_dbl_jacob 	RLC_PREFIX(ep9_dbl_jacob)
+#define ep9_mul_basic 	RLC_PREFIX(ep9_mul_basic)
+#define ep9_mul_slide 	RLC_PREFIX(ep9_mul_slide)
+#define ep9_mul_monty 	RLC_PREFIX(ep9_mul_monty)
+#define ep9_mul_lwnaf 	RLC_PREFIX(ep9_mul_lwnaf)
+#define ep9_mul_lwreg 	RLC_PREFIX(ep9_mul_lwreg)
+#define ep9_mul_gen 	RLC_PREFIX(ep9_mul_gen)
+#define ep9_mul_dig 	RLC_PREFIX(ep9_mul_dig)
+#define ep9_mul_cof 	RLC_PREFIX(ep9_mul_cof)
+#define ep9_mul_pre_basic 	RLC_PREFIX(ep9_mul_pre_basic)
+#define ep9_mul_pre_combs 	RLC_PREFIX(ep9_mul_pre_combs)
+#define ep9_mul_pre_combd 	RLC_PREFIX(ep9_mul_pre_combd)
+#define ep9_mul_pre_lwnaf 	RLC_PREFIX(ep9_mul_pre_lwnaf)
+#define ep9_mul_fix_basic 	RLC_PREFIX(ep9_mul_fix_basic)
+#define ep9_mul_fix_combs 	RLC_PREFIX(ep9_mul_fix_combs)
+#define ep9_mul_fix_combd 	RLC_PREFIX(ep9_mul_fix_combd)
+#define ep9_mul_fix_lwnaf 	RLC_PREFIX(ep9_mul_fix_lwnaf)
+#define ep9_mul_sim_basic 	RLC_PREFIX(ep9_mul_sim_basic)
+#define ep9_mul_sim_trick 	RLC_PREFIX(ep9_mul_sim_trick)
+#define ep9_mul_sim_inter 	RLC_PREFIX(ep9_mul_sim_inter)
+#define ep9_mul_sim_joint 	RLC_PREFIX(ep9_mul_sim_joint)
+#define ep9_mul_sim_lot 	RLC_PREFIX(ep9_mul_sim_lot)
+#define ep9_mul_sim_gen 	RLC_PREFIX(ep9_mul_sim_gen)
+#define ep9_mul_sim_dig 	RLC_PREFIX(ep9_mul_sim_dig)
+#define ep9_norm 	RLC_PREFIX(ep9_norm)
+#define ep9_norm_sim 	RLC_PREFIX(ep9_norm_sim)
+#define ep9_map 	RLC_PREFIX(ep9_map)
+#define ep9_frb 	RLC_PREFIX(ep9_frb)
+#define ep9_psi 	RLC_PREFIX(ep9_psi)
+
 #undef fp2_st
 #undef fp2_t
 #undef dv2_t
@@ -2640,6 +2779,8 @@
 #undef fp9_inv_sim
 #undef fp9_exp
 #undef fp9_frb
+#undef fp9_is_sqr
+#undef fp9_srt
 
 #define fp9_copy 	RLC_PREFIX(fp9_copy)
 #define fp9_copy_sec 	RLC_PREFIX(fp9_copy_sec)
@@ -2669,6 +2810,8 @@
 #define fp9_inv_sim 	RLC_PREFIX(fp9_inv_sim)
 #define fp9_exp 	RLC_PREFIX(fp9_exp)
 #define fp9_frb 	RLC_PREFIX(fp9_frb)
+#define fp9_is_sqr 	RLC_PREFIX(fp9_is_sqr)
+#define fp9_srt 	RLC_PREFIX(fp9_srt)
 
 #undef fp12_copy
 #undef fp12_copy_sec
@@ -3297,6 +3440,7 @@
 #undef pp_norm_k18
 #undef pp_norm_k24
 #undef pp_norm_k48
+#undef pp_norm_k54
 #undef pp_map_tatep_k1
 #undef pp_map_sim_tatep_k1
 #undef pp_map_tatep_k2
@@ -3330,6 +3474,7 @@
 #undef pp_map_k48
 #undef pp_map_sim_k48
 #undef pp_map_k54
+#undef pp_map_sim_k54
 
 #define pp_map_init 	RLC_PREFIX(pp_map_init)
 #define pp_map_clean 	RLC_PREFIX(pp_map_clean)
@@ -3402,6 +3547,7 @@
 #define pp_norm_k18 	RLC_PREFIX(pp_norm_k18)
 #define pp_norm_k24 	RLC_PREFIX(pp_norm_k24)
 #define pp_norm_k48 	RLC_PREFIX(pp_norm_k48)
+#define pp_norm_k54 	RLC_PREFIX(pp_norm_k54)
 #define pp_map_tatep_k1 	RLC_PREFIX(pp_map_tatep_k1)
 #define pp_map_sim_tatep_k1 	RLC_PREFIX(pp_map_sim_tatep_k1)
 #define pp_map_tatep_k2 	RLC_PREFIX(pp_map_tatep_k2)
@@ -3435,6 +3581,7 @@
 #define pp_map_k48 	RLC_PREFIX(pp_map_k48)
 #define pp_map_sim_k48 	RLC_PREFIX(pp_map_sim_k48)
 #define pp_map_k54 	RLC_PREFIX(pp_map_k54)
+#define pp_map_sim_k54 	RLC_PREFIX(pp_map_sim_k54)
 
 #undef pc_core_init
 #undef pc_core_calc

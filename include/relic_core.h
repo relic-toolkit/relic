@@ -411,6 +411,28 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep8_st *ep8_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
+	/** The generator of the elliptic curve. */
+	ep9_t ep9_g;
+	/** The 'a' coefficient of the curve. */
+	fp9_t ep9_a;
+	/** The 'b' coefficient of the curve. */
+	fp9_t ep9_b;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ep9_r;
+	/** The constants needed for Frobenius and its 11th power. */
+	fp9_t ep9_frb[4];
+	/** Optimization identifier for the a-coefficient. */
+	int ep9_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep9_opt_b;
+	/** Flag that stores if the prime curve is a twist. */
+	int ep9_is_twist;
+#ifdef EP_PRECO
+	/** Precomputation table for generator multiplication.*/
+	ep9_st ep9_pre[RLC_EP_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ep9_st *ep9_ptr[RLC_EP_TABLE];
+#endif /* EP_PRECO */
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED

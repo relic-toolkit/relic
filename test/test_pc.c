@@ -655,7 +655,7 @@ static int memory2(void) {
 int util2(void) {
 	int l, code = RLC_ERR;
 	g2_t a, b, c;
-	uint8_t bin[16 * RLC_PC_BYTES + 1];
+	uint8_t bin[18 * RLC_PC_BYTES + 1];
 
 	g2_null(a);
 	g2_null(b);
@@ -1560,7 +1560,6 @@ static int validity(void) {
 	return code;
 }
 
-#if RLC_GT_EMBED != 54
 static int pairing(void) {
 	int j, code = RLC_ERR;
 	g1_t p[2];
@@ -1670,7 +1669,6 @@ static int pairing(void) {
 	}
 	return code;
 }
-#endif
 
 int test1(void) {
 	util_banner("Utilities:", 1);
@@ -1804,11 +1802,9 @@ int test(void) {
 		return RLC_ERR;
 	}
 
-#if RLC_GT_EMBED != 54
 	if (pairing() != RLC_OK) {
 		return RLC_ERR;
 	}
-#endif
 
 	return RLC_OK;
 }
@@ -1835,14 +1831,11 @@ int main(void) {
 		return 1;
 	}
 
-#if RLC_GT_EMBED != 54
-	/* There is no G_2 implementation for k = 54 yet. */
 	util_banner("Group G_2:", 0);
 	if (test2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
 	util_banner("Group G_T:", 0);
 	if (test() != RLC_OK) {

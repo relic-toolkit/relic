@@ -37,86 +37,25 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
-static void ep9_dbl_basic(fp9_t s, fp9_t rx, fp9_t ry) {
-	fp9_t t0, t1, t2;
-
-	fp9_null(t0);
-	fp9_null(t1);
-	fp9_null(t2);
-
-	RLC_TRY {
-		fp9_new(t0);
-		fp9_new(t1);
-		fp9_new(t2);
-
-		/* t0 = 1/(2 * y1). */
-		fp9_dbl(t0, ry);
-		fp9_inv(t0, t0);
-
-		/* t1 = 3 * x1^2 + a. */
-		fp9_sqr(t1, rx);
-		fp9_copy(t2, t1);
-		fp9_dbl(t1, t1);
-		fp9_add(t1, t1, t2);
-
-		/* a = 0. */
-		/* t1 = (3 * x1^2 + a)/(2 * y1). */
-		fp9_mul(t1, t1, t0);
-
-		if (s != NULL) {
-			fp9_copy(s, t1);
-		}
-
-		/* t2 = t1^2. */
-		fp9_sqr(t2, t1);
-
-		/* x3 = t1^2 - 2 * x1. */
-		fp9_dbl(t0, rx);
-		fp9_sub(t0, t2, t0);
-
-		/* y3 = t1 * (x1 - x3) - y1. */
-		fp9_sub(t2, rx, t0);
-		fp9_mul(t1, t1, t2);
-
-		fp9_sub(ry, t1, ry);
-
-		fp9_copy(rx, t0);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp9_free(t0);
-		fp9_free(t1);
-		fp9_free(t2);
-	}
-}
-
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p) {
-	fp9_t s, tx, ty;
+void pp_dbl_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
+	fp9_t s;
+	ep9_t t;
 
 	fp9_null(s);
-	fp9_null(tx);
-	fp9_null(ty);
+	ep9_null(t);
 
 	RLC_TRY {
 		fp9_new(s);
-		fp9_new(tx);
-		fp9_new(ty);
+		ep9_new(t);
 
-		fp9_copy(tx, rx);
-		fp9_copy(ty, ry);
-		ep9_dbl_basic(s, rx, ry);
+		ep9_copy(t, q);
+		ep9_dbl_slp_basic(r, s, q);
 		fp54_zero(l);
 
 		fp_mul(l[2][0][0][0], p->x, s[0][0]);
@@ -129,8 +68,8 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p) {
 		fp_mul(l[2][0][2][1], p->x, s[2][1]);
 		fp_mul(l[2][0][2][2], p->x, s[2][2]);
 
-		fp9_mul(l[0][0], s, tx);
-		fp9_sub(l[0][0], ty, l[0][0]);
+		fp9_mul(l[0][0], s, t->x);
+		fp9_sub(l[0][0], t->y, l[0][0]);
 
 		fp_copy(l[0][1][0][0], p->y);
 	} RLC_CATCH_ANY {
@@ -138,8 +77,7 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p) {
 	}
 	RLC_FINALLY {
 		fp9_free(s);
-		fp9_free(tx);
-		fp9_free(ty);
+		ep9_free(t);
 	}
 }
 
@@ -147,7 +85,7 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const ep_t p) {
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
-void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p) {
+void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 	fp9_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp9_null(t0);
@@ -168,11 +106,11 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p) {
 		fp9_new(t6);
 
 		/* A = x1^2. */
-		fp9_sqr(t0, rx);
+		fp9_sqr(t0, q->x);
 		/* B = y1^2. */
-		fp9_sqr(t1, ry);
+		fp9_sqr(t1, q->y);
 		/* C = z1^2. */
-		fp9_sqr(t2, rz);
+		fp9_sqr(t2, q->z);
 		/* D = 3bC, general b. */
 		fp9_dbl(t3, t2);
 		fp9_add(t3, t3, t2);
@@ -181,13 +119,13 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p) {
 
 		fp9_mul(t3, t3, t4);
 		/* E = (x1 + y1)^2 - A - B. */
-		fp9_add(t4, rx, ry);
+		fp9_add(t4, q->x, q->y);
 		fp9_sqr(t4, t4);
 		fp9_sub(t4, t4, t0);
 		fp9_sub(t4, t4, t1);
 
 		/* F = (y1 + z1)^2 - B - C. */
-		fp9_add(t5, ry, rz);
+		fp9_add(t5, q->y, q->z);
 		fp9_sqr(t5, t5);
 		fp9_sub(t5, t5, t1);
 		fp9_sub(t5, t5, t2);
@@ -197,23 +135,24 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p) {
 		fp9_add(t6, t6, t3);
 
 		/* x3 = E * (B - G). */
-		fp9_sub(rx, t1, t6);
-		fp9_mul(rx, rx, t4);
+		fp9_sub(r->x, t1, t6);
+		fp9_mul(r->x, r->x, t4);
 
 		/* y3 = (B + G)^2 -12D^2. */
 		fp9_add(t6, t6, t1);
 		fp9_sqr(t6, t6);
 		fp9_sqr(t2, t3);
-		fp9_dbl(ry, t2);
-		fp9_dbl(t2, ry);
-		fp9_dbl(ry, t2);
-		fp9_add(ry, ry, t2);
-		fp9_sub(ry, t6, ry);
+		fp9_dbl(r->y, t2);
+		fp9_dbl(t2, r->y);
+		fp9_dbl(r->y, t2);
+		fp9_add(r->y, r->y, t2);
+		fp9_sub(r->y, t6, r->y);
 
 		/* z3 = 4B * F. */
-		fp9_dbl(rz, t1);
-		fp9_dbl(rz, rz);
-		fp9_mul(rz, rz, t5);
+		fp9_dbl(r->z, t1);
+		fp9_dbl(r->z, r->z);
+		fp9_mul(r->z, r->z, t5);
+		r->coord = PROJC;
 
 		/* l11 = D - B. */
 		fp9_sub(l[0][0], t3, t1);

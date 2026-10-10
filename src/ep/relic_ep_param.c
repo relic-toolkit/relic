@@ -1677,8 +1677,7 @@ int ep_param_set_any_pairf(void) {
 				ep8_curve_set_twist(type);
 				break;
 			case 9:
-				/* There is no twist over Fp^9 yet, so only set up G_T. */
-				pc_core_calc();
+				ep9_curve_set_twist(type);
 				break;
 		}
 	}

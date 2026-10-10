@@ -63,13 +63,7 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 			ep3_new(t[i]);
 		}
 
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
+		ep_curve_frbase(u);
 		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);

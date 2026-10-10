@@ -35,6 +35,8 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+#if FP_PRIME <= 1536
+
 /**
  * Apply Frobenius endomorphism in different pairing-friendly curve families.
  *
@@ -105,31 +107,14 @@ static void gt_psi(gt_t c, const gt_t a) {
 	}
 }
 
-/**
- * Computes the base for decomposing exponents with the endomorphism gt_psi().
- *
- * @param[out] u			- the base.
- */
-static void gt_get_base(bn_t u) {
-	fp_prime_get_par(u);
-	switch (ep_curve_is_pairf()) {
-		case EP_SG18:
-			/* Compute base -3*u for the recoding below. */
-			bn_mul_dig(u, u, 3);
-			bn_neg(u, u);
-			break;
-		case EP_SG54:
-			/* Compute base 3*u^2 = p^11 mod r for the recoding below. */
-			bn_sqr(u, u);
-			bn_mul_dig(u, u, 3);
-			break;
-	}
-}
+#endif
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_GT_TABLE		(1 << (RLC_WIDTH - 2))
+
+#if FP_PRIME < 1536 && FP_PRIME != 544
 
 /**
  * Exponentiates one or two elements from G_T simultaneously, decomposing the
@@ -187,7 +172,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 			}
 		}
 
-		gt_get_base(u);
+		ep_curve_frbase(u);
 		gt_get_ord(n);
 		for (size_t k = 0; k < m; k++) {
 			bn_abs(_b[k * f], (k == 0 ? b : d));
@@ -346,7 +331,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		gt_get_base(u);
+		ep_curve_frbase(u);
 		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
@@ -428,6 +413,10 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	}
 }
 
+#endif
+
+#if FP_PRIME < 1536
+
 /**
  * Exponentiates an element from G_T in constant time using the GLS-SAC method.
  *
@@ -468,7 +457,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		gt_get_base(u);
+		ep_curve_frbase(u);
 		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
@@ -547,6 +536,8 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	}
 }
 
+#endif
+
 #if FP_PRIME == 1536
 
 /**
@@ -598,7 +589,7 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 		}
 
-		gt_get_base(u);
+		ep_curve_frbase(u);
 		gt_get_ord(n);
 		bn_abs(_b[0], b);
 		bn_mod(_b[0], _b[0], n);

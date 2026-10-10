@@ -711,6 +711,15 @@ int ep_curve_embed(void);
 int ep_curve_frdim(void);
 
 /**
+ * Returns the base of Frobenius expansions of the currently configured
+ * elliptic curve, that is, the eigenvalue of the endomorphism used for GLS
+ * scalar multiplication.
+ *
+ * @param[out] u			- the base.
+ */
+void ep_curve_frbase(bn_t u);
+
+/**
  * Configures a prime elliptic curve by its parameter identifier.
  *
  * @param				- the parameter identifier.

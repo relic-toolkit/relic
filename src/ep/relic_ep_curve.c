@@ -586,3 +586,19 @@ int ep_curve_frdim(void) {
 	}
 	return 0;
 }
+
+void ep_curve_frbase(bn_t u) {
+	fp_prime_get_par(u);
+	switch (ep_curve_is_pairf()) {
+		case EP_SG18:
+			/* The endomorphism acts as multiplication by -3u. */
+			bn_mul_dig(u, u, 3);
+			bn_neg(u, u);
+			break;
+		case EP_SG54:
+			/* The endomorphism acts as multiplication by 3u^2 = p^11 mod r. */
+			bn_sqr(u, u);
+			bn_mul_dig(u, u, 3);
+			break;
+	}
+}

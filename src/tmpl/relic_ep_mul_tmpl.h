@@ -130,7 +130,7 @@
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
-			fp_prime_get_par(u);											\
+			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
 			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
 																			\
@@ -243,12 +243,7 @@
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
-			fp_prime_get_par(u);											\
-			if (ep_curve_is_pairf() == EP_SG18) {							\
-				/* The endomorphism acts as multiplication by -3u. */		\
-				bn_mul_dig(u, u, 3);										\
-				bn_neg(u, u);												\
-			}																\
+			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
 			bn_rec_frb(_k, S, _k[0], u, n, flag);							\
 																			\
@@ -1201,12 +1196,7 @@
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
-			fp_prime_get_par(u);											\
-			if (ep_curve_is_pairf() == EP_SG18) {							\
-				/* The endomorphism acts as multiplication by -3u. */		\
-				bn_mul_dig(u, u, 3);										\
-				bn_neg(u, u);												\
-			}																\
+			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
 			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
 			bn_mod(_m[0], m, n);											\
@@ -1721,12 +1711,7 @@
 																			\
 				l = 0;														\
 				C##_curve_get_ord(q);										\
-				fp_prime_get_par(x);										\
-				if (ep_curve_is_pairf() == EP_SG18) {						\
-					/* The endomorphism acts as multiplication by -3u. */	\
-					bn_mul_dig(x, x, 3);									\
-					bn_neg(x, x);											\
-				}															\
+				ep_curve_frbase(x);											\
 				for (i = 0; i < n; i++) {									\
 					C##_norm(_p[S*i], p[i]);								\
 					for (j = 1; j < S; j++) {								\
@@ -1813,12 +1798,7 @@
 																			\
 				l = 0;														\
 				C##_curve_get_ord(q);										\
-				fp_prime_get_par(x);										\
-				if (ep_curve_is_pairf() == EP_SG18) {						\
-					/* The endomorphism acts as multiplication by -3u. */	\
-					bn_mul_dig(x, x, 3);									\
-					bn_neg(x, x);											\
-				}															\
+				ep_curve_frbase(x);											\
 				for (i = 0; i < n; i++) {									\
 					C##_norm(_q[S*i], p[i]);								\
 					for (j = 1; j < S; j++) {								\
