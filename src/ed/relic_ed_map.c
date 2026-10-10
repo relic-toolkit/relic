@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-void ed_map_ell2_5mod8(ed_t p, fp_t t) {
+static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	bn_t h;
 	fp_t tv1, tv2, tv3, tv4, tv5;
 	bn_null(h);

@@ -247,7 +247,8 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[out] k			- the integer scalars.
  * @param[out] n			- the number of elements to multiply.
  */
-void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
+static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
+		int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, sk;
 	bn_t _k[2], q;
@@ -449,7 +450,8 @@ TMPL_EP_MUL_SIM_PLAIN(ep);
  * @param[out] k			- the integer scalars.
  * @param[out] n			- the number of elements to multiply.
  */
-void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
+static void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[],
+		int n) {
 	int i, j;
 	int8_t *naf = NULL;
 	ep_t *_p = RLC_ALLOCA(ep_t, n);

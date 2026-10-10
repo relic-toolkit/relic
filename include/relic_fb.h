@@ -477,6 +477,13 @@ void fb_poly_get_trc(int *a, int *b, int *c);
 const dig_t *fb_poly_get_slv(void);
 
 /**
+ * Returns the identifier of the currently configured irreducible polynomial.
+ *
+ * @return the polynomial identifier.
+ */
+int fb_param_get(void);
+
+/**
  * Assigns a standard irreducible polynomial as modulo of the binary field.
  *
  * @param[in] param			- the standardized polynomial identifier.

@@ -801,6 +801,7 @@
 #undef fb_poly_get_rdc
 #undef fb_poly_get_trc
 #undef fb_poly_get_slv
+#undef fb_param_get
 #undef fb_param_set
 #undef fb_param_set_any
 #undef fb_param_print
@@ -872,6 +873,7 @@
 #define fb_poly_get_rdc 	RLC_PREFIX(fb_poly_get_rdc)
 #define fb_poly_get_trc 	RLC_PREFIX(fb_poly_get_trc)
 #define fb_poly_get_slv 	RLC_PREFIX(fb_poly_get_slv)
+#define fb_param_get 	RLC_PREFIX(fb_param_get)
 #define fb_param_set 	RLC_PREFIX(fb_param_set)
 #define fb_param_set_any 	RLC_PREFIX(fb_param_set_any)
 #define fb_param_print 	RLC_PREFIX(fb_param_print)
@@ -3442,6 +3444,40 @@
 #define pc_core_calc 	RLC_PREFIX(pc_core_calc)
 #define pc_core_clean 	RLC_PREFIX(pc_core_clean)
 
+#undef g1_mul
+#undef g1_mul_gen
+#undef g1_is_valid
+
+#define g1_mul 	RLC_PREFIX(g1_mul)
+#define g1_mul_gen 	RLC_PREFIX(g1_mul_gen)
+#define g1_is_valid 	RLC_PREFIX(g1_is_valid)
+
+#undef g2_mul
+#undef g2_mul_gen
+#undef g2_is_valid
+
+#define g2_mul 	RLC_PREFIX(g2_mul)
+#define g2_mul_gen 	RLC_PREFIX(g2_mul_gen)
+#define g2_is_valid 	RLC_PREFIX(g2_is_valid)
+
+#undef gt_rand
+#undef gt_exp
+#undef gt_exp_sec
+#undef gt_exp_dig
+#undef gt_exp_sim
+#undef gt_exp_gen
+#undef gt_get_gen
+#undef gt_is_valid
+
+#define gt_rand 	RLC_PREFIX(gt_rand)
+#define gt_exp 	RLC_PREFIX(gt_exp)
+#define gt_exp_sec 	RLC_PREFIX(gt_exp_sec)
+#define gt_exp_dig 	RLC_PREFIX(gt_exp_dig)
+#define gt_exp_sim 	RLC_PREFIX(gt_exp_sim)
+#define gt_exp_gen 	RLC_PREFIX(gt_exp_gen)
+#define gt_get_gen 	RLC_PREFIX(gt_get_gen)
+#define gt_is_valid 	RLC_PREFIX(gt_is_valid)
+
 #undef mpc_mt_gen
 #undef mpc_mt_lcl
 #undef mpc_mt_bct
@@ -3455,6 +3491,40 @@
 #define mpc_mt_mul 	RLC_PREFIX(mpc_mt_mul)
 #define mpc_sss_gen 	RLC_PREFIX(mpc_sss_gen)
 #define mpc_sss_key 	RLC_PREFIX(mpc_sss_key)
+
+#undef g1_mul_lcl
+#undef g1_mul_bct
+#undef g1_mul_mpc
+
+#define g1_mul_lcl 	RLC_PREFIX(g1_mul_lcl)
+#define g1_mul_bct 	RLC_PREFIX(g1_mul_bct)
+#define g1_mul_mpc 	RLC_PREFIX(g1_mul_mpc)
+
+#undef g2_mul_lcl
+#undef g2_mul_bct
+#undef g2_mul_mpc
+
+#define g2_mul_lcl 	RLC_PREFIX(g2_mul_lcl)
+#define g2_mul_bct 	RLC_PREFIX(g2_mul_bct)
+#define g2_mul_mpc 	RLC_PREFIX(g2_mul_mpc)
+
+#undef gt_exp_lcl
+#undef gt_exp_bct
+#undef gt_exp_mpc
+
+#define gt_exp_lcl 	RLC_PREFIX(gt_exp_lcl)
+#define gt_exp_bct 	RLC_PREFIX(gt_exp_bct)
+#define gt_exp_mpc 	RLC_PREFIX(gt_exp_mpc)
+
+#undef pc_map_tri
+#undef pc_map_lcl
+#undef pc_map_bct
+#undef pc_map_mpc
+
+#define pc_map_tri 	RLC_PREFIX(pc_map_tri)
+#define pc_map_lcl 	RLC_PREFIX(pc_map_lcl)
+#define pc_map_bct 	RLC_PREFIX(pc_map_bct)
+#define pc_map_mpc 	RLC_PREFIX(pc_map_mpc)
 
 #undef crt_t
 #undef rsa_t

@@ -57,9 +57,9 @@ REDEF() {
 }
 
 REDEF2() {
-	cat "relic_$1.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
+	cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
 	echo
-	cat "relic_$1.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
+	cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
 	echo
 }
 
@@ -260,7 +260,14 @@ REDEF2 fbx fb4
 
 REDEF pp
 REDEF pc
+REDEF2 pc g1
+REDEF2 pc g2
+REDEF2 pc gt
 REDEF mpc
+REDEF2 mpc g1
+REDEF2 mpc g2
+REDEF2 mpc gt
+REDEF2 mpc pc
 
 echo "#undef crt_t"
 echo "#undef rsa_t"

@@ -547,6 +547,8 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	}
 }
 
+#if FP_PRIME == 1536
+
 /**
  * Exponentiates an element from G_T in constant time.
  *
@@ -555,7 +557,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
  * @param[in] b				- the exponent.
  * @param[in] f				- the maximum Frobenius power.
  */
-void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
+static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	int8_t c0, n0, *reg  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
 	int8_t *e = RLC_ALLOCA(int8_t, f), *s = RLC_ALLOCA(int8_t, f);
 	gt_t q, w, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
@@ -688,6 +690,8 @@ void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		RLC_FREE(_l);
 	}
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */

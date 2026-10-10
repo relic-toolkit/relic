@@ -168,7 +168,7 @@ static void pp_exp_kss(fp18_t c, fp18_t a) {
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-void pp_exp_sg(fp18_t c, fp18_t a) {
+static void pp_exp_sg(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3;
 	const int *b;
 	bn_t x;
@@ -264,7 +264,7 @@ void pp_exp_sg(fp18_t c, fp18_t a) {
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-void pp_exp_fm(fp18_t c, fp18_t a) {
+static void pp_exp_fm(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3, t4;
 	const int *b;
 	bn_t x;

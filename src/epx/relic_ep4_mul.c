@@ -433,7 +433,7 @@ static void ep4_mul_cof_fm16(ep4_t r, const ep4_t p) {
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
  */
-void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
+static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 	bn_t z;
 	ep4_t t0, t1, t2, t3;
 
