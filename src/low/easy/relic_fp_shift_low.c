@@ -59,7 +59,7 @@ dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	for (i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		/* Get the needed least significant bits. */
@@ -99,7 +99,7 @@ dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	a += RLC_FP_DIGS - 1;
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	for (i = RLC_FP_DIGS - 1; i >= 0; i--, a--, c--) {
 		/* Get the needed least significant bits. */

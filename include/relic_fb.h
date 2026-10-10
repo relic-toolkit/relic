@@ -145,6 +145,35 @@ enum {
 #endif
 
 /**
+ * Index of the most significant bit of a value smaller than 2^17.
+ */
+#define RLC_FB_MSB(X)														\
+	((X) >> 16 ? 16 :														\
+	(X) >> 15 ? 15 : (X) >> 14 ? 14 : (X) >> 13 ? 13 : (X) >> 12 ? 12 :		\
+	(X) >> 11 ? 11 : (X) >> 10 ? 10 : (X) >> 9 ? 9 : (X) >> 8 ? 8 :			\
+	(X) >> 7 ? 7 : (X) >> 6 ? 6 : (X) >> 5 ? 5 : (X) >> 4 ? 4 :				\
+	(X) >> 3 ? 3 : (X) >> 2 ? 2 : (X) >> 1 ? 1 : 0)
+
+/**
+ * Number of set bits of a value smaller than 2^17.
+ */
+#define RLC_FB_POPC(X)														\
+	((((X) >> 0) & 1) + (((X) >> 1) & 1) + (((X) >> 2) & 1) +				\
+	(((X) >> 3) & 1) + (((X) >> 4) & 1) + (((X) >> 5) & 1) +				\
+	(((X) >> 6) & 1) + (((X) >> 7) & 1) + (((X) >> 8) & 1) +				\
+	(((X) >> 9) & 1) + (((X) >> 10) & 1) + (((X) >> 11) & 1) +				\
+	(((X) >> 12) & 1) + (((X) >> 13) & 1) + (((X) >> 14) & 1) +				\
+	(((X) >> 15) & 1) + (((X) >> 16) & 1))
+
+/**
+ * Number of rows of the repeated squaring tables used by Itoh-Tsujii
+ * inversion, one per element of the addition chain for (RLC_FB_BITS - 1).
+ * This bounds the binary chain and the shorter chains of fb_poly_set().
+ */
+#define RLC_FB_CHAIN	(RLC_FB_MSB(RLC_FB_BITS - 1) +						\
+		RLC_FB_POPC(RLC_FB_BITS - 1) - ((RLC_FB_BITS - 1) & 1))
+
+/**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP

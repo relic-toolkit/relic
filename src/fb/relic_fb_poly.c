@@ -277,7 +277,12 @@ static void find_chain(void) {
 		}
 	}
 
-#if FB_INV == ITOHT || FB_INV == LOWER
+#if FB_INV == ITOHT || FB_INV == LOWER || !defined(STRIP)
+	if (ctx->chain_len >= RLC_FB_CHAIN) {
+		/* The tables have one row per element of the chain. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 	for (i = 0; i <= ctx->chain_len; i++) {
 		fb_itr_pre((fb_st *)fb_poly_tab_sqr(i), u[i]);
 	}
@@ -429,7 +434,7 @@ dig_t *fb_poly_get_srz(void) {
 }
 
 const fb_st *fb_poly_tab_sqr(int i) {
-#if FB_INV == ITOHT || FB_INV == LOWER
+#if FB_INV == ITOHT || FB_INV == LOWER || !defined(STRIP)
 	/* If ITOHT inversion is used and tables are precomputed, return them. */
 	return (const fb_st *)core_get()->fb_tab_sqr[i];
 #else

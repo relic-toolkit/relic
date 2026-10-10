@@ -182,9 +182,9 @@ typedef struct _ctx_t {
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
 	int chain_len;
-#if FB_INV == ITOHT || FB_INV == LOWER
-	/** Tables for repeated squarings, only kept for the selected method. */
-	fb_st fb_tab_sqr[RLC_TERMS][RLC_FB_TABLE];
+#if FB_INV == ITOHT || FB_INV == LOWER || !defined(STRIP)
+	/** Tables for repeated squarings, one per element of the chain. */
+	fb_st fb_tab_sqr[RLC_FB_CHAIN][RLC_FB_TABLE];
 #endif /* FB_INV == ITOHT */
 #endif /* WITH_FB */
 

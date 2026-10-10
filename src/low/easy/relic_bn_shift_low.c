@@ -57,7 +57,7 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	int i;
 	dig_t r, carry, shift, mask;
 
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	mask = RLC_MASK(bits);
 	for (i = 0; i < size; i++, a++, c++) {
