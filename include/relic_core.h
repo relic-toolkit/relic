@@ -162,22 +162,16 @@ typedef struct _ctx_t {
 	int fb_pa, fb_pb, fb_pc;
 	/** Positions of the non-zero coefficients of trinomials or pentanomials. */
 	int fb_na, fb_nb, fb_nc;
-#if FB_TRC == QUICK || !defined(STRIP)
 	/** Powers of z with non-zero traces. */
 	int fb_ta, fb_tb, fb_tc;
-#endif /* FB_TRC == QUICK */
-#if FB_SLV == QUICK || !defined(STRIP)
 	/** Table of precomputed half-traces. */
 	fb_st fb_half[(RLC_DIG / 8 + 1) * RLC_FB_DIGS][16];
-#endif /* FB_SLV == QUICK */
-#if FB_SRT == QUICK || !defined(STRIP)
 	/** Square root of z. */
 	fb_st fb_srz;
 #ifdef FB_PRECO
 	/** Multiplication table for the polynomial z^(1/2). */
 	fb_st fb_tab_srz[256];
 #endif /* FB_PRECO */
-#endif /* FB_SRT == QUICK */
 	/** Stores an addition chain for (RLC_FB_BITS - 1). */
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
@@ -228,16 +222,12 @@ typedef struct _ctx_t {
 	int par_sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int par_len;
-#if FP_RDC == MONTY || !defined(STRIP)
 	/** Value (R^2 mod p) for converting small integers to Montgomery form. */
 	fp_st conv;
 	/** Value of constant one in Montgomery form. */
 	fp_st one;
-#endif /* FP_RDC == MONTY */
-#if FP_INV == JMPDS || !defined(STRIP)
 	/** Value of constant for divstep-based inversion. */
 	fp_st inv;
-#endif /* FP_INV */
 	/** Square root of unity for square root extraction. */
 	fp_st srt;
 	/** Primitive cube root of unity for cube root extraction. */
@@ -256,12 +246,10 @@ typedef struct _ctx_t {
 	dig_t ad2;
 	/** Value derived from the prime used for modular reduction. */
 	dig_t u;
-#if FP_RDC == QUICK || !defined(STRIP)
 	/** Sparse representation of prime modulus. */
 	int sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int sps_len;
-#endif /* FP_RDC == QUICK */
 #endif /* WITH_FP */
 
 #ifdef WITH_EP
@@ -282,12 +270,10 @@ typedef struct _ctx_t {
 	/** Precomputed constants for hashing. */
 	fp_st ep_map_c[7];
 	fp_st beta;
-#if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */
-#endif /* EP_MUL */
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */

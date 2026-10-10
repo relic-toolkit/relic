@@ -38,37 +38,17 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_GLS_IMP(ep8, 16);
-
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
 
 TMPL_EP_MUL_REG_GLS(ep8, fp8, 16, 4);
 
-#endif /* EP_MUL == LWREG */
-
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_NAF_IMP(ep8);
 
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 TMPL_EP_MUL_REG_IMP(ep8, fp8);
-
-#endif /* EP_MUL == LWREG */
-
-#if EP_SIM == INTER || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_ENDOM_GLS(ep8, 16);
 
 TMPL_EP_MUL_SIM_PLAIN(ep8);
-
-#endif /* EP_SIM == INTER */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -76,13 +56,7 @@ TMPL_EP_MUL_SIM_PLAIN(ep8);
 
 TMPL_EP_MUL_BASIC(ep8);
 
-#if EP_MUL == MONTY || !defined(STRIP)
-
 TMPL_EP_MUL_MONTY(ep8, fp8);
-
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 void ep8_mul_lwnaf(ep8_t r, const ep8_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep8_is_infty(p)) {
@@ -98,10 +72,6 @@ void ep8_mul_lwnaf(ep8_t r, const ep8_t p, const bn_t k) {
 	ep8_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep8_is_infty(p)) {
 		ep8_set_infty(r);
@@ -116,59 +86,25 @@ void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k) {
 	ep8_mul_reg_imp(r, p, k);
 }
 
-#endif
-
 TMPL_EP_MUL_GEN(ep8);
 
 TMPL_EP_MUL_DIG(ep8);
 
-#if EP_FIX == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_BASIC(ep8);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
 
 TMPL_EP_MUL_COMBS(ep8);
 
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
-
 TMPL_EP_MUL_COMBD(ep8);
-
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
 
 TMPL_EP_MUL_FIX_LWNAF(ep8);
 
-#endif
-
-#if EP_SIM == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_BASIC(ep8);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_TRICK(ep8);
 
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_INTER(ep8);
 
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_JOINT(ep8);
-
-#endif
 
 TMPL_EP_MUL_SIM_GEN(ep8);
 

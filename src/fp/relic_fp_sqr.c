@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_KARAT > 0 || !defined(STRIP)
-
 /**
  * Computes the square of a multiple precision integer using recursive Karatsuba
  * squaring.
@@ -145,13 +143,10 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 		dv_free_all(t0, t1, a0a0, a1a1);
 	}
 }
-#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FP_SQR == BASIC || !defined(STRIP)
 
 void fp_sqr_basic(fp_t c, const fp_t a) {
 	size_t i;
@@ -179,10 +174,6 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_SQR == COMBA || !defined(STRIP)
-
 void fp_sqr_comba(fp_t c, const fp_t a) {
 	dv_t t;
 
@@ -202,17 +193,9 @@ void fp_sqr_comba(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_SQR == INTEG || !defined(STRIP)
-
 void fp_sqr_integ(fp_t c, const fp_t a) {
 	fp_sqrm_low(c, a);
 }
-
-#endif
-
-#if FP_KARAT > 0 || !defined(STRIP)
 
 void fp_sqr_karat(fp_t c, const fp_t a) {
 	dv_t t;
@@ -238,5 +221,3 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 		dv_free(t);
 	}
 }
-
-#endif

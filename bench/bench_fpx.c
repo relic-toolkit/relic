@@ -182,23 +182,19 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_add_basic") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_add_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_add_integ") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_add_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_sub") {
 		fp2_rand(a);
@@ -207,23 +203,19 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_sub_basic") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_sub_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_sub_integ") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_sub_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_dbl") {
 		fp2_rand(a);
@@ -231,21 +223,17 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_dbl_basic") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_dbl_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_dbl_integ") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_dbl_integ(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_mul") {
 		fp2_rand(a);
@@ -254,23 +242,19 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_mul_basic") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_mul_integ") {
 		fp2_rand(a);
 		fp2_rand(b);
 		BENCH_ADD(fp2_mul_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_mul_art") {
 		fp2_rand(a);
@@ -284,21 +268,17 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_mul_nor_basic") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_mul_nor_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_mul_nor_integ") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_mul_nor_integ(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_sqr") {
 		fp2_rand(a);
@@ -306,21 +286,17 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if PP_QDR == BASIC || !defined(STRIP)
 	BENCH_RUN("fp2_sqr_basic") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if PP_QDR == INTEG || !defined(STRIP)
 	BENCH_RUN("fp2_sqr_integ") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_sqr_integ(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp2_test_cyc") {
 		fp2_rand(a);
@@ -563,23 +539,19 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if PP_CBC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp3_add_basic") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_add_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_CBC == INTEG || !defined(STRIP)
 	BENCH_RUN("fp3_add_integ") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_add_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp3_sub") {
 		fp3_rand(a);
@@ -588,23 +560,19 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if PP_CBC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp3_sub_basic") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_sub_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_CBC == INTEG || !defined(STRIP)
 	BENCH_RUN("fp3_sub_integ") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_sub_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp3_dbl") {
 		fp3_rand(a);
@@ -612,21 +580,17 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if PP_CBC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp3_dbl_basic") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_dbl_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if PP_CBC == INTEG || !defined(STRIP)
 	BENCH_RUN("fp3_dbl_integ") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_dbl_integ(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp3_mul") {
 		fp3_rand(a);
@@ -635,23 +599,19 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if PP_CBC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp3_mul_basic") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if PP_CBC == INTEG || !defined(STRIP)
 	BENCH_RUN("fp3_mul_integ") {
 		fp3_rand(a);
 		fp3_rand(b);
 		BENCH_ADD(fp3_mul_integ(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp3_mul_nor") {
 		fp3_rand(a);
@@ -665,21 +625,17 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if PP_CBC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp3_sqr_basic") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if PP_CBC == INTEG || !defined(STRIP)
 	BENCH_RUN("fp3_sqr_integ") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_sqr_integ(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp3_inv") {
 		fp3_rand(a);
@@ -884,23 +840,19 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp4_mul_basic") {
 		fp4_rand(a);
 		fp4_rand(b);
 		BENCH_ADD(fp4_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp4_mul_lazyr") {
 		fp4_rand(a);
 		fp4_rand(b);
 		BENCH_ADD(fp4_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp4_mul_art") {
 		fp4_rand(a);
@@ -914,21 +866,17 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp4_sqr_basic") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp4_sqr_lazyr") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp4_inv") {
 		fp4_rand(a);
@@ -1115,23 +1063,19 @@ static void arith6(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp6_mul_basic") {
 		fp6_rand(a);
 		fp6_rand(b);
 		BENCH_ADD(fp6_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp6_mul_lazyr") {
 		fp6_rand(a);
 		fp6_rand(b);
 		BENCH_ADD(fp6_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp6_mul_art") {
 		fp6_rand(a);
@@ -1145,21 +1089,17 @@ static void arith6(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp6_sqr_basic") {
 		fp6_rand(a);
 		BENCH_ADD(fp6_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp6_sqr_lazyr") {
 		fp6_rand(a);
 		BENCH_ADD(fp6_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp6_inv") {
 		fp6_rand(a);
@@ -1333,23 +1273,19 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp8_mul_basic") {
 		fp8_rand(a);
 		fp8_rand(b);
 		BENCH_ADD(fp8_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp8_mul_lazyr") {
 		fp8_rand(a);
 		fp8_rand(b);
 		BENCH_ADD(fp8_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp8_mul_dxs") {
 		fp8_rand(a);
@@ -1364,21 +1300,17 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp8_sqr_basic") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp8_sqr_lazyr") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp8_sqr_cyc") {
 		fp8_rand(a);
@@ -1633,23 +1565,19 @@ static void arith9(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp9_mul_basic") {
 		fp9_rand(a);
 		fp9_rand(b);
 		BENCH_ADD(fp9_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp9_mul_lazyr") {
 		fp9_rand(a);
 		fp9_rand(b);
 		BENCH_ADD(fp9_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp9_mul_art") {
 		fp9_rand(a);
@@ -1663,21 +1591,17 @@ static void arith9(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp9_sqr_basic") {
 		fp9_rand(a);
 		BENCH_ADD(fp9_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp9_sqr_lazyr") {
 		fp9_rand(a);
 		BENCH_ADD(fp9_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp9_inv") {
 		fp9_rand(a);
@@ -1866,23 +1790,19 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp12_mul_basic") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp12_mul_lazyr") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp12_mul_dxs") {
 		fp12_rand(a);
@@ -1891,23 +1811,19 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp12_mul_dxs_basic") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_mul_dxs_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp12_mul_dxs_lazyr") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_mul_dxs_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp12_sqr") {
 		fp12_rand(a);
@@ -1915,21 +1831,17 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_basic") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_lazyr") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp12_sqr_cyc") {
 		fp12_rand(a);
@@ -1937,23 +1849,19 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_cyc_basic") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_sqr_cyc_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_cyc_lazyr") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_sqr_cyc_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp12_sqr_pck") {
 		fp12_rand(a);
@@ -1961,23 +1869,19 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_pck_basic") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_sqr_pck_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp12_sqr_pck_lazyr") {
 		fp12_rand(a);
 		fp12_rand(b);
 		BENCH_ADD(fp12_sqr_pck_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp12_test_cyc") {
 		fp12_rand(a);
@@ -2224,23 +2128,19 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp16_mul_basic") {
 		fp16_rand(a);
 		fp16_rand(b);
 		BENCH_ADD(fp16_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp16_mul_lazyr") {
 		fp16_rand(a);
 		fp16_rand(b);
 		BENCH_ADD(fp16_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp16_sqr") {
 		fp16_rand(a);
@@ -2504,23 +2404,19 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp18_mul_basic") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp18_mul_lazyr") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp18_mul_dxs") {
 		fp18_rand(a);
@@ -2529,23 +2425,19 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp18_mul_dxs_basic") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_mul_dxs_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp18_mul_dxs_lazyr") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_mul_dxs_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp18_sqr") {
 		fp18_rand(a);
@@ -2559,23 +2451,19 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp18_sqr_cyc_basic") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_sqr_cyc_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp18_sqr_cyc_lazyr") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_sqr_cyc_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp18_sqr_pck") {
 		fp18_rand(a);
@@ -2583,23 +2471,19 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp18_sqr_pck_basic") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_sqr_pck_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp18_sqr_pck_lazyr") {
 		fp18_rand(a);
 		fp18_rand(b);
 		BENCH_ADD(fp18_sqr_pck_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp18_test_cyc") {
 		fp18_rand(a);
@@ -2888,23 +2772,19 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp24_mul_basic") {
 		fp24_rand(a);
 		fp24_rand(b);
 		BENCH_ADD(fp24_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp24_mul_lazyr") {
 		fp24_rand(a);
 		fp24_rand(b);
 		BENCH_ADD(fp24_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp24_sqr") {
 		fp24_rand(a);
@@ -2912,21 +2792,17 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp24_sqr_basic") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_sqr_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp24_sqr_lazyr") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_sqr_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp24_test_cyc") {
 		fp24_rand(a);
@@ -3194,23 +3070,19 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp48_mul_basic") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp48_mul_lazyr") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp48_mul_dxs") {
 		fp48_rand(a);
@@ -3231,23 +3103,19 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp48_sqr_cyc_basic") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_sqr_cyc_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp48_sqr_cyc_lazyr") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_sqr_cyc_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp48_sqr_pck") {
 		fp48_rand(a);
@@ -3255,23 +3123,19 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp48_sqr_pck_basic") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_sqr_pck_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp48_sqr_pck_lazyr") {
 		fp48_rand(a);
 		fp48_rand(b);
 		BENCH_ADD(fp48_sqr_pck_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp48_test_cyc") {
 		fp48_rand(a);
@@ -3560,23 +3424,19 @@ static void arith54(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp54_mul_basic") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_mul_basic(c, a, b));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp54_mul_lazyr") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_mul_lazyr(c, a, b));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp54_mul_dxs") {
 		fp54_rand(a);
@@ -3597,23 +3457,19 @@ static void arith54(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp54_sqr_cyc_basic") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_sqr_cyc_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp54_sqr_cyc_lazyr") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_sqr_cyc_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp54_sqr_pck") {
 		fp54_rand(a);
@@ -3621,23 +3477,19 @@ static void arith54(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
 	BENCH_RUN("fp54_sqr_pck_basic") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_sqr_pck_basic(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
 	BENCH_RUN("fp54_sqr_pck_lazyr") {
 		fp54_rand(a);
 		fp54_rand(b);
 		BENCH_ADD(fp54_sqr_pck_lazyr(c, a));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("fp54_test_cyc") {
 		fp54_rand(a);

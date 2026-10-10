@@ -85,7 +85,6 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
 }
 #endif /* FB_MUL == BASIC */
 
-#if FB_KARAT > 0 || !defined(STRIP)
 /**
  * Multiplies two binary field elements using recursive Karatsuba
  * multiplication.
@@ -177,13 +176,9 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 	}
 }
 
-#endif /* FB_KARAT > 0 || !defined(STRIP) */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FB_MUL == BASIC || !defined(STRIP)
 
 void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 	int i;
@@ -229,17 +224,9 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 	}
 }
 
-#endif
-
-#if FB_MUL == INTEG || !defined(STRIP)
-
 void fb_mul_integ(fb_t c, const fb_t a, const fb_t b) {
 	fb_mulm_low(c, a, b);
 }
-
-#endif
-
-#if FB_MUL == LODAH || !defined(STRIP)
 
 void fb_mul_lodah(fb_t c, const fb_t a, const fb_t b) {
 	dv_t t;
@@ -259,10 +246,6 @@ void fb_mul_lodah(fb_t c, const fb_t a, const fb_t b) {
 		dv_free(t);
 	}
 }
-
-#endif
-
-#if FB_KARAT > 0 || !defined(STRIP)
 
 void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 	dv_t t;
@@ -284,8 +267,6 @@ void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 		dv_free(t);
 	}
 }
-
-#endif
 
 void fb_mul_dig(fb_t c, const fb_t a, dig_t b) {
 	dv_t t;

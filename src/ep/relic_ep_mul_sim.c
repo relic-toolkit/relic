@@ -37,8 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_SIM == INTER || !defined(STRIP)
-
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
@@ -508,35 +506,17 @@ static void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[],
 	}
 }
 
-#endif /* EP_SIM == INTER */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_SIM == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_BASIC(ep);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_TRICK(ep);
 
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_INTER(ep);
 
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_JOINT(ep);
-
-#endif
 
 TMPL_EP_MUL_SIM_GEN(ep);
 

@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if BN_KARAT > 0 || !defined(STRIP)
-
 /**
  * Multiplies two multiple precision integers using recursive Karatsuba
  * multiplication.
@@ -134,8 +132,6 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		bn_free_all(a0, a1, b0, b1, a0b0, a1b1, t);
 	}
 }
-
-#endif
 
 /*
  * c = c + a * b when sub is zero, c = c - a * b otherwise, computed in place.
@@ -274,8 +270,6 @@ void bn_mul_dis(bn_t t, const bn_t x, dis_t b) {
 	}
 }
 
-#if BN_MUL == BASIC || !defined(STRIP)
-
 void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 	size_t i;
 	bn_t t;
@@ -306,10 +300,6 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 		bn_free(t);
 	}
 }
-
-#endif
-
-#if BN_MUL == COMBA || !defined(STRIP)
 
 void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t;
@@ -356,12 +346,6 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if BN_KARAT > 0 || !defined(STRIP)
-
 void bn_mul_karat(bn_t c, const bn_t a, const bn_t b) {
 	bn_mul_karat_imp(c, a, b, BN_KARAT);
 }
-
-#endif

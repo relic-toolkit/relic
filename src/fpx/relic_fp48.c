@@ -45,13 +45,7 @@ TMPL_FPX_BASE(fp48, fp24, 2);
 
 TMPL_FPX_BIN_QC(fp48, fp24, fp8, 48);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_MUL_QUAD(fp48, fp24, fp24_mul_art);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1;
@@ -86,8 +80,6 @@ void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
 }
 
 TMPL_FPX_MUL_LAZYR(fp48, dv48, fp2, dv2, 24);
-
-#endif
 
 void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
@@ -148,17 +140,11 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 
 TMPL_FPX_MUL_ART_QUAD(fp48, fp24, fp24_mul_art);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_SQR_QUAD(fp48, fp24, fp24_mul_art);
 
 TMPL_SQR_CYC_QC(fp48, fp8, fp8_mul_art);
 
 TMPL_SQR_PCK_QC(fp48, fp8, fp8_mul_art);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp48_sqr_unr(dv48_t c, const fp48_t a) {
 	fp24_t t;
@@ -195,8 +181,6 @@ TMPL_FPX_SQR_LAZYR(fp48, dv48, fp2, dv2, 24);
 TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr, fp8_mul_art);
 
 TMPL_SQR_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
-
-#endif
 
 TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC);
 

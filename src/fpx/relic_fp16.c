@@ -44,8 +44,6 @@ TMPL_FPX_BASE(fp16, fp8, 2);
 
 TMPL_FPX_BIN_T2(fp16, fp8, 16);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_MUL_QUAD(fp16, fp8, fp8_mul_art);
 
 void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
@@ -107,10 +105,6 @@ void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 		fp8_free_all(t0, t1, t4);
 	}
 }
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2, fp8_mul_unr);
 
@@ -207,23 +201,13 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 	}
 }
 
-#endif
-
 TMPL_FPX_MUL_ART_QUAD(fp16, fp8, fp8_mul_art);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_SQR_QUAD(fp16, fp8, fp8_mul_art);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
 
 TMPL_FPX_SQR_LAZYR(fp16, dv16, fp2, dv2, 8);
-
-#endif
 
 void fp16_sqr_cyc(fp16_t c, const fp16_t a) {
 	fp8_t t0, t1, t2;

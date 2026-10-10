@@ -39,8 +39,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 /**
  * Adds two points represented in affine coordinates on an ordinary prime
  * elliptic curve.
@@ -51,10 +49,6 @@
  * @param[in] q				- the second point to add.
  */
 TMPL_ADD_BASIC_IMP(ep3, fp3);
-
-#endif /* EP_ADD == BASIC */
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 /**
  * Adds a point represented in homogeneous coordinates to a point represented in
@@ -76,10 +70,6 @@ TMPL_ADD_PROJC_MIX(ep3, fp3);
  */
 TMPL_ADD_PROJC_IMP(ep3, fp3);
 
-#endif /* EP_ADD == PROJC */
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 /**
  * Adds a point represented in Jacobian coordinates to a point represented in
  * affine coordinates on an ordinary prime elliptic curve.
@@ -100,33 +90,17 @@ TMPL_ADD_JACOB_MIX(ep3, fp3);
  */
 TMPL_ADD_JACOB_IMP(ep3, fp3);
 
-#endif /* EP_ADD == JACOB */
-
 /*============================================================================*/
 	/* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 TMPL_ADD_BASIC(ep3, fp3);
-
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 TMPL_ADD(ep3, projc);
 
-#endif
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_ADD(ep3, jacob);
 
-#endif
-
 TMPL_SUB(ep3);
-
-#if EP_ADD == BASIC || !defined(STRIP)
 
 /**
  * Doubles a point represented in affine coordinates on an ordinary prime
@@ -138,10 +112,6 @@ TMPL_SUB(ep3);
  */
 TMPL_DBL_BASIC_IMP(ep3, fp3);
 
-#endif /* EP_ADD == BASIC */
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
 /**
  * Doubles a point represented in projective coordinates on an ordinary prime
  * elliptic curve.
@@ -150,10 +120,6 @@ TMPL_DBL_BASIC_IMP(ep3, fp3);
  * @param p					- the point to double.
  */
 TMPL_DBL_PROJC_IMP(ep3, fp3);
-
-#endif /* EP_ADD == PROJC */
-
-#if EP_ADD == JACOB || !defined(STRIP)
 
 /**
  * Doubles a point represented in Jacobian coordinates on an ordinary prime
@@ -164,13 +130,7 @@ TMPL_DBL_PROJC_IMP(ep3, fp3);
  */
 TMPL_DBL_JACOB_IMP(ep3, fp3);
 
-#endif /* EP_ADD == JACOB */
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_EP_NORM_IMP(ep3, fp3);
-
-#endif /* EP_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -186,23 +146,11 @@ TMPL_EP_CMP(ep3, fp3);
 
 TMPL_EP_NEG(ep3, fp3);
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 TMPL_DBL_BASIC(ep3, fp3);
-
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 TMPL_DBL(ep3, projc);
 
-#endif
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_DBL(ep3, jacob);
-
-#endif
 
 TMPL_EP_NORM(ep3, fp3);
 

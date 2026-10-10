@@ -38,37 +38,17 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_GLS_IMP(ep9, 10);
-
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
 
 TMPL_EP_MUL_REG_GLS(ep9, fp9, 10, 2);
 
-#endif /* EP_MUL == LWREG */
-
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_NAF_IMP(ep9);
 
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 TMPL_EP_MUL_REG_IMP(ep9, fp9);
-
-#endif /* EP_MUL == LWREG */
-
-#if EP_SIM == INTER || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_ENDOM_GLS(ep9, 10);
 
 TMPL_EP_MUL_SIM_PLAIN(ep9);
-
-#endif /* EP_SIM == INTER */
 
 /**
  * Applies the automorphism (x, y) -> (beta * x, y) of an elliptic curve over a
@@ -184,13 +164,7 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 
 TMPL_EP_MUL_BASIC(ep9);
 
-#if EP_MUL == MONTY || !defined(STRIP)
-
 TMPL_EP_MUL_MONTY(ep9, fp9);
-
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 void ep9_mul_lwnaf(ep9_t r, const ep9_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep9_is_infty(p)) {
@@ -206,10 +180,6 @@ void ep9_mul_lwnaf(ep9_t r, const ep9_t p, const bn_t k) {
 	ep9_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep9_is_infty(p)) {
 		ep9_set_infty(r);
@@ -224,59 +194,25 @@ void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k) {
 	ep9_mul_reg_imp(r, p, k);
 }
 
-#endif
-
 TMPL_EP_MUL_GEN(ep9);
 
 TMPL_EP_MUL_DIG(ep9);
 
-#if EP_FIX == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_BASIC(ep9);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
 
 TMPL_EP_MUL_COMBS(ep9);
 
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
-
 TMPL_EP_MUL_COMBD(ep9);
-
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
 
 TMPL_EP_MUL_FIX_LWNAF(ep9);
 
-#endif
-
-#if EP_SIM == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_BASIC(ep9);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_TRICK(ep9);
 
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_INTER(ep9);
 
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_JOINT(ep9);
-
-#endif
 
 TMPL_EP_MUL_SIM_GEN(ep9);
 

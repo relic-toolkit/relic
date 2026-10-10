@@ -79,15 +79,8 @@
  * @param[in] P			- the point to normalize.
  * @param[in] I			- the flag to indicate if z is already inverted.
  */
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 #define TMPL_EP_NORM_CALL(C, R, P, I)		C##_norm_imp(R, P, I)
-
-#else
-
-#define TMPL_EP_NORM_CALL(C, R, P, I)		/* Nothing to do. */
-
-#endif
 
 /**
  * Defines a template for basic utilities: testing for and setting the

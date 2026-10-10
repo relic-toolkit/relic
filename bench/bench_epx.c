@@ -215,7 +215,6 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep2_add_basic") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -229,9 +228,7 @@ static void arith2(void) {
 		BENCH_ADD(ep2_add_slp_basic(r, s, p, q));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep2_add_projc") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -258,9 +255,7 @@ static void arith2(void) {
 		ep2_norm(q, q);
 		BENCH_ADD(ep2_add_projc(r, p, q));
 	} BENCH_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 	BENCH_RUN("ep2_add_jacob") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -287,7 +282,6 @@ static void arith2(void) {
 		ep2_norm(q, q);
 		BENCH_ADD(ep2_add_jacob(r, p, q));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_sub") {
 		ep2_rand(p);
@@ -308,7 +302,6 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep2_dbl_basic") {
 		ep2_rand(p);
 		BENCH_ADD(ep2_dbl_basic(r, p));
@@ -320,9 +313,7 @@ static void arith2(void) {
 		BENCH_ADD(ep2_dbl_slp_basic(r, s, p));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep2_dbl_projc") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -335,9 +326,7 @@ static void arith2(void) {
 		ep2_norm(p, p);
 		BENCH_ADD(ep2_dbl_projc(r, p));
 	} BENCH_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 	BENCH_RUN("ep2_dbl_jacob") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -350,7 +339,6 @@ static void arith2(void) {
 		ep2_norm(p, p);
 		BENCH_ADD(ep2_dbl_jacob(r, p));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_neg") {
 		ep2_rand(p);
@@ -365,36 +353,28 @@ static void arith2(void) {
 		BENCH_ADD(ep2_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("ep2_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep2_mul_basic(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ep2_mul_monty") {
 		bn_rand_mod(k, n);
 		ep2_rand(p);
 		BENCH_ADD(ep2_mul_monty(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("ep2_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep2_rand(p);
 		BENCH_ADD(ep2_mul_lwnaf(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 	BENCH_RUN("ep2_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep2_rand(p);
 		BENCH_ADD(ep2_mul_lwreg(q, p, k));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_mul_gen") {
 		bn_rand_mod(k, n);
@@ -433,7 +413,6 @@ static void arith2(void) {
 		ep2_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep2_new(t[i]);
 	}
@@ -451,9 +430,7 @@ static void arith2(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep2_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep2_new(t[i]);
 	}
@@ -471,9 +448,7 @@ static void arith2(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep2_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep2_new(t[i]);
 	}
@@ -489,9 +464,7 @@ static void arith2(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep2_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep2_new(t[i]);
 	}
@@ -509,7 +482,6 @@ static void arith2(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep2_free(t[i]);
 	}
-#endif
 
 	BENCH_RUN("ep2_mul_sim") {
 		bn_rand_mod(l[0], n);
@@ -519,7 +491,6 @@ static void arith2(void) {
 		BENCH_ADD(ep2_mul_sim(r, p, l[0], q, l[1]));
 	} BENCH_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep2_mul_sim_basic") {
 		bn_rand_mod(l[0], n);
 		bn_rand_mod(l[1], n);
@@ -527,9 +498,7 @@ static void arith2(void) {
 		ep2_rand(q);
 		BENCH_ADD(ep2_mul_sim_basic(r, p, l[0], q, l[1]));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep2_mul_sim_trick") {
 		bn_rand_mod(l[0], n);
 		bn_rand_mod(l[1], n);
@@ -537,9 +506,7 @@ static void arith2(void) {
 		ep2_rand(q);
 		BENCH_ADD(ep2_mul_sim_trick(r, p, l[0], q, l[1]));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep2_mul_sim_inter") {
 		bn_rand_mod(l[0], n);
 		bn_rand_mod(l[1], n);
@@ -547,9 +514,7 @@ static void arith2(void) {
 		ep2_rand(q);
 		BENCH_ADD(ep2_mul_sim_inter(r, p, l[0], q, l[1]));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep2_mul_sim_joint") {
 		bn_rand_mod(l[0], n);
 		bn_rand_mod(l[1], n);
@@ -557,7 +522,6 @@ static void arith2(void) {
 		ep2_rand(q);
 		BENCH_ADD(ep2_mul_sim_joint(r, p, l[0], q, l[1]));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_mul_sim_gen") {
 		bn_rand_mod(l[0], n);
@@ -598,29 +562,23 @@ static void arith2(void) {
 		BENCH_ADD(ep2_map(p, msg, 5));
 	} BENCH_END;
 
-#if EP_MAP == BASIC || !defined(STRIP)
 	BENCH_RUN("ep2_map_basic") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep2_map_basic(p, msg, 5));
 	} BENCH_END;
-#endif
 
-#if EP_MAP == SSWUM || !defined(STRIP)
 	BENCH_RUN("ep2_map_sswum") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep2_map_sswum(p, msg, 5));
 	} BENCH_END;
-#endif
 
-#if EP_MAP == SWIFT || !defined(STRIP)
 	BENCH_RUN("ep2_map_swift") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep2_map_swift(p, msg, 5));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_pck") {
 		ep2_rand(p);
@@ -804,7 +762,6 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep3_add_basic") {
 		ep3_rand(p);
 		ep3_rand(q);
@@ -818,9 +775,7 @@ static void arith3(void) {
 		BENCH_ADD(ep3_add_slp_basic(r, s, p, q));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep3_add_projc") {
 		ep3_rand(p);
 		ep3_rand(q);
@@ -850,7 +805,6 @@ static void arith3(void) {
 		BENCH_ADD(ep3_add_projc(r, p, q));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep3_sub") {
 		ep3_rand(p);
@@ -871,7 +825,6 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep3_dbl_basic") {
 		ep3_rand(p);
 		BENCH_ADD(ep3_dbl_basic(r, p));
@@ -883,9 +836,7 @@ static void arith3(void) {
 		BENCH_ADD(ep3_dbl_slp_basic(r, s, p));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep3_dbl_projc") {
 		ep3_rand(p);
 		ep3_rand(q);
@@ -900,7 +851,6 @@ static void arith3(void) {
 		BENCH_ADD(ep3_dbl_projc(r, p));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep3_neg") {
 		ep3_rand(p);
@@ -915,36 +865,28 @@ static void arith3(void) {
 		BENCH_ADD(ep3_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("ep3_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep3_mul_basic(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ep3_mul_monty") {
 		bn_rand_mod(k, n);
 		ep3_rand(p);
 		BENCH_ADD(ep3_mul_monty(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("ep3_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep3_rand(p);
 		BENCH_ADD(ep3_mul_lwnaf(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 	BENCH_RUN("ep3_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep3_rand(p);
 		BENCH_ADD(ep3_mul_lwreg(q, p, k));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep3_mul_gen") {
 		bn_rand_mod(k, n);
@@ -983,7 +925,6 @@ static void arith3(void) {
 		ep3_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep3_new(t[i]);
 	}
@@ -1001,9 +942,7 @@ static void arith3(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep3_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep3_new(t[i]);
 	}
@@ -1021,9 +960,7 @@ static void arith3(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep3_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep3_new(t[i]);
 	}
@@ -1039,9 +976,7 @@ static void arith3(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep3_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep3_new(t[i]);
 	}
@@ -1059,7 +994,6 @@ static void arith3(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep3_free(t[i]);
 	}
-#endif
 
 	BENCH_RUN("ep3_mul_sim") {
 		bn_rand_mod(k, n);
@@ -1069,7 +1003,6 @@ static void arith3(void) {
 		BENCH_ADD(ep3_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep3_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1077,9 +1010,7 @@ static void arith3(void) {
 		ep3_rand(q);
 		BENCH_ADD(ep3_mul_sim_basic(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep3_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1087,9 +1018,7 @@ static void arith3(void) {
 		ep3_rand(q);
 		BENCH_ADD(ep3_mul_sim_trick(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep3_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1097,9 +1026,7 @@ static void arith3(void) {
 		ep3_rand(q);
 		BENCH_ADD(ep3_mul_sim_inter(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep3_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1107,7 +1034,6 @@ static void arith3(void) {
 		ep3_rand(q);
 		BENCH_ADD(ep3_mul_sim_joint(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep3_mul_sim_gen") {
 		bn_rand_mod(k, n);
@@ -1303,7 +1229,6 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep4_add_basic") {
 		ep4_rand(p);
 		ep4_rand(q);
@@ -1317,9 +1242,7 @@ static void arith4(void) {
 		BENCH_ADD(ep4_add_slp_basic(r, s, p, q));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep4_add_projc") {
 		ep4_rand(p);
 		ep4_rand(q);
@@ -1349,7 +1272,6 @@ static void arith4(void) {
 		BENCH_ADD(ep4_add_projc(r, p, q));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep4_sub") {
 		ep4_rand(p);
@@ -1370,7 +1292,6 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep4_dbl_basic") {
 		ep4_rand(p);
 		BENCH_ADD(ep4_dbl_basic(r, p));
@@ -1382,9 +1303,7 @@ static void arith4(void) {
 		BENCH_ADD(ep4_dbl_slp_basic(r, s, p));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep4_dbl_projc") {
 		ep4_rand(p);
 		ep4_rand(q);
@@ -1399,7 +1318,6 @@ static void arith4(void) {
 		BENCH_ADD(ep4_dbl_projc(r, p));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep4_neg") {
 		ep4_rand(p);
@@ -1414,36 +1332,28 @@ static void arith4(void) {
 		BENCH_ADD(ep4_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("ep4_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep4_mul_basic(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ep4_mul_monty") {
 		bn_rand_mod(k, n);
 		ep4_rand(p);
 		BENCH_ADD(ep4_mul_monty(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("ep4_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep4_rand(p);
 		BENCH_ADD(ep4_mul_lwnaf(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 	BENCH_RUN("ep4_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep4_rand(p);
 		BENCH_ADD(ep4_mul_lwreg(q, p, k));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep4_mul_gen") {
 		bn_rand_mod(k, n);
@@ -1482,7 +1392,6 @@ static void arith4(void) {
 		ep4_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep4_new(t[i]);
 	}
@@ -1500,9 +1409,7 @@ static void arith4(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep4_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep4_new(t[i]);
 	}
@@ -1520,9 +1427,7 @@ static void arith4(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep4_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep4_new(t[i]);
 	}
@@ -1538,9 +1443,7 @@ static void arith4(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep4_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep4_new(t[i]);
 	}
@@ -1558,7 +1461,6 @@ static void arith4(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep4_free(t[i]);
 	}
-#endif
 
 	BENCH_RUN("ep4_mul_sim") {
 		bn_rand_mod(k, n);
@@ -1568,7 +1470,6 @@ static void arith4(void) {
 		BENCH_ADD(ep4_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep4_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1576,9 +1477,7 @@ static void arith4(void) {
 		ep4_rand(q);
 		BENCH_ADD(ep4_mul_sim_basic(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep4_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1586,9 +1485,7 @@ static void arith4(void) {
 		ep4_rand(q);
 		BENCH_ADD(ep4_mul_sim_trick(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep4_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1596,9 +1493,7 @@ static void arith4(void) {
 		ep4_rand(q);
 		BENCH_ADD(ep4_mul_sim_inter(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep4_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -1606,7 +1501,6 @@ static void arith4(void) {
 		ep4_rand(q);
 		BENCH_ADD(ep4_mul_sim_joint(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep4_mul_sim_gen") {
 		bn_rand_mod(k, n);
@@ -1802,7 +1696,6 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep8_add_basic") {
 		ep8_rand(p);
 		ep8_rand(q);
@@ -1816,9 +1709,7 @@ static void arith8(void) {
 		BENCH_ADD(ep8_add_slp_basic(r, s, p, q));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep8_add_projc") {
 		ep8_rand(p);
 		ep8_rand(q);
@@ -1848,7 +1739,6 @@ static void arith8(void) {
 		BENCH_ADD(ep8_add_projc(r, p, q));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep8_sub") {
 		ep8_rand(p);
@@ -1869,7 +1759,6 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep8_dbl_basic") {
 		ep8_rand(p);
 		BENCH_ADD(ep8_dbl_basic(r, p));
@@ -1881,9 +1770,7 @@ static void arith8(void) {
 		BENCH_ADD(ep8_dbl_slp_basic(r, s, p));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep8_dbl_projc") {
 		ep8_rand(p);
 		ep8_rand(q);
@@ -1898,7 +1785,6 @@ static void arith8(void) {
 		BENCH_ADD(ep8_dbl_projc(r, p));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep8_neg") {
 		ep8_rand(p);
@@ -1913,36 +1799,28 @@ static void arith8(void) {
 		BENCH_ADD(ep8_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("ep8_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep8_mul_basic(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ep8_mul_monty") {
 		bn_rand_mod(k, n);
 		ep8_rand(p);
 		BENCH_ADD(ep8_mul_monty(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("ep8_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep8_rand(p);
 		BENCH_ADD(ep8_mul_lwnaf(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 	BENCH_RUN("ep8_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep8_rand(p);
 		BENCH_ADD(ep8_mul_lwreg(q, p, k));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep8_mul_gen") {
 		bn_rand_mod(k, n);
@@ -1981,7 +1859,6 @@ static void arith8(void) {
 		ep8_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep8_new(t[i]);
 	}
@@ -1999,9 +1876,7 @@ static void arith8(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep8_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep8_new(t[i]);
 	}
@@ -2019,9 +1894,7 @@ static void arith8(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep8_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep8_new(t[i]);
 	}
@@ -2037,9 +1910,7 @@ static void arith8(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep8_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep8_new(t[i]);
 	}
@@ -2057,7 +1928,6 @@ static void arith8(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep8_free(t[i]);
 	}
-#endif
 
 	BENCH_RUN("ep8_mul_sim") {
 		bn_rand_mod(k, n);
@@ -2067,7 +1937,6 @@ static void arith8(void) {
 		BENCH_ADD(ep8_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep8_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2075,9 +1944,7 @@ static void arith8(void) {
 		ep8_rand(q);
 		BENCH_ADD(ep8_mul_sim_basic(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep8_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2085,9 +1952,7 @@ static void arith8(void) {
 		ep8_rand(q);
 		BENCH_ADD(ep8_mul_sim_trick(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep8_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2095,9 +1960,7 @@ static void arith8(void) {
 		ep8_rand(q);
 		BENCH_ADD(ep8_mul_sim_inter(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep8_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2105,7 +1968,6 @@ static void arith8(void) {
 		ep8_rand(q);
 		BENCH_ADD(ep8_mul_sim_joint(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep8_mul_sim_gen") {
 		bn_rand_mod(k, n);
@@ -2301,7 +2163,6 @@ static void arith9(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep9_add_basic") {
 		ep9_rand(p);
 		ep9_rand(q);
@@ -2315,9 +2176,7 @@ static void arith9(void) {
 		BENCH_ADD(ep9_add_slp_basic(r, s, p, q));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep9_add_projc") {
 		ep9_rand(p);
 		ep9_rand(q);
@@ -2347,7 +2206,6 @@ static void arith9(void) {
 		BENCH_ADD(ep9_add_projc(r, p, q));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep9_sub") {
 		ep9_rand(p);
@@ -2368,7 +2226,6 @@ static void arith9(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("ep9_dbl_basic") {
 		ep9_rand(p);
 		BENCH_ADD(ep9_dbl_basic(r, p));
@@ -2380,9 +2237,7 @@ static void arith9(void) {
 		BENCH_ADD(ep9_dbl_slp_basic(r, s, p));
 	}
 	BENCH_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("ep9_dbl_projc") {
 		ep9_rand(p);
 		ep9_rand(q);
@@ -2397,7 +2252,6 @@ static void arith9(void) {
 		BENCH_ADD(ep9_dbl_projc(r, p));
 	}
 	BENCH_END;
-#endif
 
 	BENCH_RUN("ep9_neg") {
 		ep9_rand(p);
@@ -2412,36 +2266,28 @@ static void arith9(void) {
 		BENCH_ADD(ep9_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("ep9_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep9_mul_basic(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_RUN("ep9_mul_monty") {
 		bn_rand_mod(k, n);
 		ep9_rand(p);
 		BENCH_ADD(ep9_mul_monty(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("ep9_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep9_rand(p);
 		BENCH_ADD(ep9_mul_lwnaf(q, p, k));
 	} BENCH_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 	BENCH_RUN("ep9_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep9_rand(p);
 		BENCH_ADD(ep9_mul_lwreg(q, p, k));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep9_mul_gen") {
 		bn_rand_mod(k, n);
@@ -2480,7 +2326,6 @@ static void arith9(void) {
 		ep9_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep9_new(t[i]);
 	}
@@ -2498,9 +2343,7 @@ static void arith9(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep9_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep9_new(t[i]);
 	}
@@ -2518,9 +2361,7 @@ static void arith9(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep9_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep9_new(t[i]);
 	}
@@ -2536,9 +2377,7 @@ static void arith9(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep9_free(t[i]);
 	}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep9_new(t[i]);
 	}
@@ -2556,7 +2395,6 @@ static void arith9(void) {
 	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep9_free(t[i]);
 	}
-#endif
 
 	BENCH_RUN("ep9_mul_sim") {
 		bn_rand_mod(k, n);
@@ -2566,7 +2404,6 @@ static void arith9(void) {
 		BENCH_ADD(ep9_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep9_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2574,9 +2411,7 @@ static void arith9(void) {
 		ep9_rand(q);
 		BENCH_ADD(ep9_mul_sim_basic(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep9_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2584,9 +2419,7 @@ static void arith9(void) {
 		ep9_rand(q);
 		BENCH_ADD(ep9_mul_sim_trick(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep9_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2594,9 +2427,7 @@ static void arith9(void) {
 		ep9_rand(q);
 		BENCH_ADD(ep9_mul_sim_inter(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep9_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -2604,7 +2435,6 @@ static void arith9(void) {
 		ep9_rand(q);
 		BENCH_ADD(ep9_mul_sim_joint(r, p, k, q, l));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep9_mul_sim_gen") {
 		bn_rand_mod(k, n);

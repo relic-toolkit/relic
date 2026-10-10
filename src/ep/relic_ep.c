@@ -40,8 +40,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 /**
  * Adds two points represented in affine coordinates on an ordinary prime
  * elliptic curve.
@@ -52,10 +50,6 @@
  * @param[in] q				- the second point to add.
  */
 TMPL_ADD_BASIC_IMP(ep, fp);
-
-#endif /* EP_ADD == BASIC */
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 /**
  * Adds a point represented in homogeneous coordinates to a point represented in
@@ -77,10 +71,6 @@ TMPL_ADD_PROJC_MIX(ep, fp);
  */
 TMPL_ADD_PROJC_IMP(ep, fp);
 
-#endif /* EP_ADD == PROJC */
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 /**
  * Adds a point represented in Jacobian coordinates to a point represented in
  * affine coordinates on an ordinary prime elliptic curve.
@@ -101,33 +91,17 @@ TMPL_ADD_JACOB_MIX(ep, fp);
  */
 TMPL_ADD_JACOB_IMP(ep, fp);
 
-#endif /* EP_ADD == JACOB */
-
 /*============================================================================*/
 	/* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 TMPL_ADD_BASIC(ep, fp);
-
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 TMPL_ADD(ep, projc);
 
-#endif
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_ADD(ep, jacob);
 
-#endif
-
 TMPL_SUB(ep);
-
-#if EP_ADD == BASIC || !defined(STRIP)
 
 /**
  * Doubles a point represented in affine coordinates on an ordinary prime
@@ -139,10 +113,6 @@ TMPL_SUB(ep);
  */
 TMPL_DBL_BASIC_IMP(ep, fp);
 
-#endif /* EP_ADD == BASIC */
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
 /**
  * Doubles a point represented in projective coordinates on an ordinary prime
  * elliptic curve.
@@ -152,10 +122,6 @@ TMPL_DBL_BASIC_IMP(ep, fp);
  */
 TMPL_DBL_PROJC_IMP(ep, fp);
 
-#endif /* EP_ADD == PROJC */
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 /**
  * Doubles a point represented in Jacobian coordinates on an ordinary prime
  * elliptic curve.
@@ -164,10 +130,6 @@ TMPL_DBL_PROJC_IMP(ep, fp);
  * @param p					- the point to double.
  */
 TMPL_DBL_JACOB_IMP(ep, fp);
-
-#endif /* EP_ADD == JACOB */
-
-#if EP_ADD == BASIC || !defined(STRIP)
 
 /**
  * Doubles a point represented in affine coordinates on an ordinary prime
@@ -179,10 +141,6 @@ TMPL_DBL_JACOB_IMP(ep, fp);
  */
 TMPL_TPL_BASIC_IMP(ep, fp);
 
-#endif /* EP_ADD == BASIC */
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
 /**
  * Doubles a point represented in projective coordinates on an ordinary prime
  * elliptic curve.
@@ -191,10 +149,6 @@ TMPL_TPL_BASIC_IMP(ep, fp);
  * @param p					- the point to double.
  */
 TMPL_TPL_PROJC_IMP(ep, fp);
-
-#endif /* EP_ADD == PROJC */
-
-#if EP_ADD == JACOB || !defined(STRIP)
 
 /**
  * Doubles a point represented in Jacobian coordinates on an ordinary prime
@@ -205,13 +159,7 @@ TMPL_TPL_PROJC_IMP(ep, fp);
  */
 TMPL_TPL_JACOB_IMP(ep, fp);
 
-#endif /* EP_ADD == JACOB */
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_EP_NORM_IMP(ep, fp);
-
-#endif /* EP_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -402,25 +350,11 @@ TMPL_EP_CMP(ep, fp);
 
 TMPL_EP_NEG(ep, fp);
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 TMPL_DBL_BASIC(ep, fp);
-
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
 
 TMPL_DBL(ep, projc);
 
-#endif
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 TMPL_DBL(ep, jacob);
-
-#endif
-
-#if EP_ADD == BASIC || !defined(STRIP)
 
 void ep_tpl_basic(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
@@ -431,10 +365,6 @@ void ep_tpl_basic(ep_t r, const ep_t p) {
 	ep_tpl_basic_imp(r, p);
 }
 
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
 void ep_tpl_projc(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -444,10 +374,6 @@ void ep_tpl_projc(ep_t r, const ep_t p) {
 	ep_tpl_projc_imp(r, p);
 }
 
-#endif
-
-#if EP_ADD == JACOB || !defined(STRIP)
-
 void ep_tpl_jacob(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -456,8 +382,6 @@ void ep_tpl_jacob(ep_t r, const ep_t p) {
 
 	ep_tpl_jacob_imp(r, p);
 }
-
-#endif
 
 TMPL_EP_NORM(ep, fp);
 

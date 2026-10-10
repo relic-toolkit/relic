@@ -70,8 +70,6 @@ void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack) {
 
 TMPL_FPX_CMP(fp3, fp, 3);
 
-#if FPX_CBC == BASIC || !defined(STRIP)
-
 void fp3_add_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_add(c[0], a[0], b[0]);
 	fp_add(c[1], a[1], b[1]);
@@ -91,8 +89,6 @@ void fp3_dbl_basic(fp3_t c, const fp3_t a) {
 	fp_dbl(c[2], a[2]);
 }
 
-#endif
-
 TMPL_FPX_ASM_DIG(fp3, fp, 3);
 
 void fp3_neg(fp3_t c, const fp3_t a) {
@@ -100,8 +96,6 @@ void fp3_neg(fp3_t c, const fp3_t a) {
 	fp_neg(c[1], a[1]);
 	fp_neg(c[2], a[2]);
 }
-
-#if FPX_CBC == INTEG || !defined(STRIP)
 
 void fp3_add_integ(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp3_addm_low(c, a, b);
@@ -114,10 +108,6 @@ void fp3_sub_integ(fp3_t c, const fp3_t a, const fp3_t b) {
 void fp3_dbl_integ(fp3_t c, const fp3_t a) {
 	fp3_dblm_low(c, a);
 }
-
-#endif
-
-#if FPX_CBC == BASIC || !defined(STRIP)
 
 void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv_t t, t0, t1, t2, t3, t4, t5, t6;
@@ -198,15 +188,9 @@ void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	}
 }
 
-#endif
-
-#if FPX_CBC == INTEG || !defined(STRIP)
-
 void fp3_mul_integ(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp3_mulm_low(c, a, b);
 }
-
-#endif
 
 void fp3_mul_art(fp3_t c, const fp3_t a) {
 	fp_t t;
@@ -356,8 +340,6 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 	}
 }
 
-#if FPX_CBC == BASIC || !defined(STRIP)
-
 void fp3_sqr_basic(fp3_t c, const fp3_t a) {
 	dv_t t0, t1, t2, t3, t4;
 
@@ -426,15 +408,9 @@ void fp3_sqr_basic(fp3_t c, const fp3_t a) {
 	}
 }
 
-#endif
-
-#if FPX_CBC == INTEG || !defined(STRIP)
-
 void fp3_sqr_integ(fp3_t c, const fp3_t a) {
 	fp3_sqrm_low(c, a);
 }
-
-#endif
 
 void fp3_inv(fp3_t c, const fp3_t a) {
 	fp_t v0;

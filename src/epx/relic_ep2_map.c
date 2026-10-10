@@ -169,8 +169,6 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_MAP == BASIC || !defined(STRIP)
-
 void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len) {
 	bn_t x;
 	fp2_t t0;
@@ -213,10 +211,6 @@ void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len) {
 	}
 }
 
-#endif
-
-#if EP_MAP == SSWUM || !defined(STRIP)
-
 void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t lpe = (FP_PRIME + ep_param_level() + 7) / 8;
@@ -238,10 +232,6 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
 		RLC_FREE(r);
 	}
 }
-
-#endif
-
-#if EP_MAP == SWIFT || !defined(STRIP)
 
 void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
@@ -531,5 +521,3 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 		RLC_FREE(r);
 	}
 }
-
-#endif

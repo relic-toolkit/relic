@@ -37,8 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FP_RDC == BASIC || !defined(STRIP)
-
 void fp_rdc_basic(fp_t c, dv_t a) {
 	dv_t t0, t1, t2, t3;
 
@@ -59,12 +57,6 @@ void fp_rdc_basic(fp_t c, dv_t a) {
 	}
 }
 
-#endif
-
-#if FP_RDC == MONTY || !defined(STRIP)
-
-#if FP_MUL == BASIC || !defined(STRIP)
-
 void fp_rdc_monty_basic(fp_t c, dv_t a) {
 	size_t i;
 	dig_t r, u0;
@@ -78,22 +70,10 @@ void fp_rdc_monty_basic(fp_t c, dv_t a) {
 	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }
 
-#endif
-
-#if FP_MUL == COMBA || FP_MUL == INTEG || !defined(STRIP)
-
 void fp_rdc_monty_comba(fp_t c, dv_t a) {
 	fp_rdcn_low(c, a);
 }
 
-#endif
-
-#endif
-
-#if FP_RDC == QUICK || !defined(STRIP)
-
 void fp_rdc_quick(fp_t c, dv_t a) {
 	fp_rdcs_low(c, a, fp_prime_get());
 }
-
-#endif

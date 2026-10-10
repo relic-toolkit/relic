@@ -297,7 +297,6 @@ static int addition(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("basic addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -305,9 +304,7 @@ static int addition(void) {
 			fp_add_basic(e, a, b);
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
 		TEST_CASE("integrated addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -315,7 +312,6 @@ static int addition(void) {
 			fp_add_integ(e, a, b);
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -360,7 +356,6 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("basic subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -368,9 +363,7 @@ static int subtraction(void) {
 			fp_sub_basic(d, a, b);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
 		TEST_CASE("integrated subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -378,25 +371,20 @@ static int subtraction(void) {
 			fp_sub_integ(d, a, b);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("basic negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
 			fp_neg_basic(d, a);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
 		TEST_CASE("integrated negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
 			fp_neg_integ(d, a);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -461,7 +449,6 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -470,9 +457,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if FP_MUL == INTEG || !defined(STRIP)
 		TEST_CASE("integrated multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -481,9 +466,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if FP_MUL == COMBA || !defined(STRIP)
 		TEST_CASE("comba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -492,9 +475,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if FP_KARAT > 0 || !defined(STRIP)
 		TEST_CASE("karatsuba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -503,7 +484,6 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -530,41 +510,33 @@ static int squaring(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_SQR == BASIC || !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_basic(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_SQR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_integ(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_SQR == COMBA || !defined(STRIP)
 		TEST_CASE("comba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_comba(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_KARAT > 0 || !defined(STRIP)
 		TEST_CASE("karatsuba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_karat(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -591,23 +563,19 @@ static int doubling_halving_trisecting(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("basic doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
 			fp_dbl_basic(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
 		TEST_CASE("integrated doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
 			fp_dbl_integ(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("halving is consistent") {
 			fp_rand(a);
@@ -617,23 +585,19 @@ static int doubling_halving_trisecting(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("basic halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
 			fp_hlv_basic(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
 		TEST_CASE("integrated halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
 			fp_hlv_integ(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		if (fp_prime_get_mod18() % 3 == 1) {
 			TEST_CASE("trisecting is consistent") {
@@ -745,16 +709,13 @@ static int reduction(void) {
 			TEST_ASSERT(fp_is_zero(b) == 1 || fp_is_zero(t) == 1, end);
 		} TEST_END;
 
-#if FP_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_basic(b, t);
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
-#endif
 
-#if FP_RDC == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
@@ -762,25 +723,20 @@ static int reduction(void) {
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
 
-#if FP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("basic montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_monty_basic(b, t);
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
-#endif
 
-#if FP_MUL == COMBA || FP_MUL == INTEG || !defined(STRIP)
 		TEST_CASE("comba montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_monty_comba(b, t);
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
-#endif
 
-#if !defined(STRIP)
 		TEST_CASE("montgomery modular reductions are consistent") {
 			fp_rand(a);
 			fp_rand(b);
@@ -790,10 +746,7 @@ static int reduction(void) {
 			fp_rdc_monty_comba(b, u);
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
-#endif
 
-#if FP_RDC == QUICK || !defined(STRIP)
 		if (fp_prime_get_sps(NULL) != NULL) {
 			TEST_CASE("fast modular reduction is correct") {
 				fp_rand(a);
@@ -803,7 +756,6 @@ static int reduction(void) {
 			}
 			TEST_END;
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -836,7 +788,6 @@ static int inversion(void) {
 			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_INV == BASIC || !defined(STRIP)
 		TEST_CASE("basic inversion is correct") {
 			do {
 				fp_rand(a);
@@ -845,9 +796,7 @@ static int inversion(void) {
 			fp_inv_basic(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == BINAR || !defined(STRIP)
 		TEST_CASE("binary inversion is correct") {
 			do {
 				fp_rand(a);
@@ -856,9 +805,7 @@ static int inversion(void) {
 			fp_inv_binar(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery inversion is correct") {
 			do {
 				fp_rand(a);
@@ -867,9 +814,7 @@ static int inversion(void) {
 			fp_inv_monty(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == EXGCD || !defined(STRIP)
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fp_rand(a);
@@ -878,9 +823,7 @@ static int inversion(void) {
 			fp_inv_exgcd(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == DIVST || !defined(STRIP)
 		TEST_CASE("division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -889,9 +832,7 @@ static int inversion(void) {
 			fp_inv_divst(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == JMPDS || !defined(STRIP)
 		TEST_CASE("jump division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -900,9 +841,7 @@ static int inversion(void) {
 			fp_inv_jmpds(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if FP_INV == LOWER || !defined(STRIP)
 		TEST_CASE("lower inversion is correct") {
 			do {
 				fp_rand(a);
@@ -911,7 +850,6 @@ static int inversion(void) {
 			fp_inv_lower(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous inversion is correct") {
 			do {
@@ -958,38 +896,28 @@ static int symbol(void) {
 		}
 		TEST_END;
 
-#if FP_SMB == BASIC || !defined(STRIP)
 		TEST_CASE("basic symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
 		} TEST_END;
-#endif
 
-#if FP_SMB == BINAR || !defined(STRIP)
 		TEST_CASE("binary symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
 		} TEST_END;
-#endif
 
-#if FP_SMB == DIVST || !defined(STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
 		} TEST_END;
-#endif
-#if FP_SMB == JMPDS || !defined(STRIP)
 		TEST_CASE("jump division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
 		} TEST_END;
-#endif
-#if FP_SMB == LOWER || !defined(STRIP)
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1034,7 +962,6 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-#if FP_EXP == BASIC || !defined(STRIP)
 		TEST_CASE("basic exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1043,9 +970,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if FP_EXP == SLIDE || !defined(STRIP)
 		TEST_CASE("sliding window exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1054,9 +979,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if FP_EXP == MONTY || !defined(STRIP)
 		TEST_CASE("constant-time exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1065,7 +988,6 @@ static int exponentiation(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 		TEST_CASE("lucas sequence is correct") {
 			do {
 				fp_rand(a);

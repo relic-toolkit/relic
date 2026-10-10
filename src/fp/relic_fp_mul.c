@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_KARAT > 0 || !defined(STRIP)
-
 /**
  * Multiplies two prime field elements using recursive Karatsuba
  * multiplication.
@@ -142,8 +140,6 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 	}
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -164,8 +160,6 @@ void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
 		dv_free(t);
 	}
 }
-
-#if FP_MUL == BASIC || !defined(STRIP)
 
 void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 	size_t i;
@@ -193,10 +187,6 @@ void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 	}
 }
 
-#endif
-
-#if FP_MUL == COMBA || !defined(STRIP)
-
 void fp_mul_comba(fp_t c, const fp_t a, const fp_t b) {
 	dv_t t;
 
@@ -217,17 +207,9 @@ void fp_mul_comba(fp_t c, const fp_t a, const fp_t b) {
 	}
 }
 
-#endif
-
-#if FP_MUL == INTEG || !defined(STRIP)
-
 void fp_mul_integ(fp_t c, const fp_t a, const fp_t b) {
 	fp_mulm_low(c, a, b);
 }
-
-#endif
-
-#if FP_KARAT > 0 || !defined(STRIP)
 
 void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 	dv_t t;
@@ -254,5 +236,3 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 		dv_free(t);
 	}
 }
-
-#endif

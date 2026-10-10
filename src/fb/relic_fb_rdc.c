@@ -45,8 +45,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_RDC == BASIC || !defined(STRIP)
-
 void fb_rdc_basic(fb_t c, dv_t a) {
 	int j, k;
 	dig_t *tmpa;
@@ -93,12 +91,6 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 	}
 }
 
-#endif
-
-#if FB_RDC == QUICK || !defined(STRIP)
-
 void fb_rdc_quick(fb_t c, dv_t a) {
 	fb_rdcn_low(c, a);
 }
-
-#endif

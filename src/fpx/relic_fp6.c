@@ -43,20 +43,12 @@ TMPL_FPX_BASE(fp6, fp2, 3);
 
 TMPL_FPX_BIN(fp6, fp2, 3, 6);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_MUL_CUBIC(fp6, fp2, fp2_mul_nor);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 /* MSVC needs this to be exported, so remove inline */
 TMPL_FPX_MUL_UNR_CUBIC(fp6, fp2, dv6, dv2, fp2, dv2, 1, 1, fp2_muln_low);
 
 TMPL_FPX_MUL_LAZYR(fp6, dv6, fp2, dv2, 3);
-
-#endif
 
 void fp6_mul_dxs(fp6_t c, const fp6_t a, const fp6_t b) {
 	fp2_t v0, v1, t0, t1, t2;
@@ -105,20 +97,12 @@ void fp6_mul_dxs(fp6_t c, const fp6_t a, const fp6_t b) {
 
 TMPL_FPX_MUL_ART_CUBIC(fp6, fp2, fp2_mul_nor);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_SQR_CUBIC(fp6, fp2, fp2_mul_nor, 2);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_CUBIC(fp6, fp2, dv6, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
 		fp2_muln_low, 2);
 
 TMPL_FPX_SQR_LAZYR(fp6, dv6, fp2, dv2, 3);
-
-#endif
 
 TMPL_FPX_INV_CUBIC(fp6, fp2, fp2_mul_nor);
 

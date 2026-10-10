@@ -37,8 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if BN_KARAT > 0 || !defined(STRIP)
-
 /**
  * Computes the square of a multiple precision integer using recursive Karatsuba
  * squaring.
@@ -127,13 +125,9 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 	}
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if BN_SQR == BASIC || !defined(STRIP)
 
 void bn_sqr_basic(bn_t c, const bn_t a) {
 	size_t i;
@@ -164,10 +158,6 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 	}
 }
 
-#endif
-
-#if BN_SQR == COMBA || !defined(STRIP)
-
 void bn_sqr_comba(bn_t c, const bn_t a) {
 	int digits;
 	bn_t t;
@@ -194,12 +184,6 @@ void bn_sqr_comba(bn_t c, const bn_t a) {
 	}
 }
 
-#endif
-
-#if BN_KARAT > 0 || !defined(STRIP)
-
 void bn_sqr_karat(bn_t c, const bn_t a) {
 	bn_sqr_karat_imp(c, a, BN_KARAT);
 }
-
-#endif

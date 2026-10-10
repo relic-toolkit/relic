@@ -105,8 +105,6 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	return even;
 }
 
-#if BN_GCD == LEHME || !defined(STRIP)
-
 /*
  * Extends whatever transformation (a, b; c, d) already holds with further
  * single-precision continued fraction steps on x, y, for as long as they
@@ -171,8 +169,6 @@ static void lehme_mat(bn_t p, bn_t q, dis_t a, dis_t b, dis_t c, dis_t d,
 	bn_copy(p, t0);
 }
 
-#endif
-
 /*
  * Disposes of the two cases every bn_gcd_ext_* variant must handle before
  * running its algorithm proper: either operand zero. Returns nonzero when it
@@ -218,8 +214,6 @@ static int gcd_ext_zero(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if BN_GCD == BASIC || !defined(STRIP)
 
 void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v;
@@ -310,10 +304,6 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_free_all(t, u, v, x_1, y_1, q, r);
 	}
 }
-
-#endif
-
-#if BN_GCD == LEHME || !defined(STRIP)
 
 void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 	bn_t x, y, u, v, t0, t1;
@@ -482,10 +472,6 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_free_all(x, y, u, v, t0, t1, t4);
 	}
 }
-
-#endif
-
-#if BN_GCD == BINAR || !defined(STRIP)
 
 void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, t;
@@ -660,10 +646,6 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if BN_GCD == LOWER || !defined(STRIP)
-
 void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, g;
 	size_t shift = 0;
@@ -803,8 +785,6 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_free_all(u, v, g, s, t);
 	}
 }
-
-#endif
 
 void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		const bn_t a, const bn_t b, const bn_t l) {

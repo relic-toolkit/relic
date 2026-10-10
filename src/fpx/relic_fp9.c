@@ -43,19 +43,11 @@ TMPL_FPX_BASE(fp9, fp3, 3);
 
 TMPL_FPX_BIN(fp9, fp3, 3, 9);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_MUL_CUBIC(fp9, fp3, fp3_mul_nor);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_muln_low);
 
 TMPL_FPX_MUL_LAZYR(fp9, dv9, fp3, dv3, 3);
-
-#endif
 
 void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 	fp3_t v0, v1, t0, t1, t2;
@@ -104,20 +96,12 @@ void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 
 TMPL_FPX_MUL_ART_CUBIC(fp9, fp3, fp3_mul_nor);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_SQR_CUBIC(fp9, fp3, fp3_mul_nor, 3);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
 		fp3_muln_low, 3);
 
 TMPL_FPX_SQR_LAZYR(fp9, dv9, fp3, dv3, 3);
-
-#endif
 
 TMPL_FPX_INV_CUBIC(fp9, fp3, fp3_mul_nor);
 

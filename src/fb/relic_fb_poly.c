@@ -43,8 +43,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FB_TRC == QUICK || !defined(STRIP)
-
 /**
  * Find non-zero bits for fast trace computation.
  *
@@ -104,10 +102,6 @@ static void find_trace(void) {
 	}
 }
 
-#endif
-
-#if FB_SLV == QUICK || !defined(STRIP)
-
 /**
  * Precomputes half-traces for z^i with odd i.
  *
@@ -150,10 +144,6 @@ static void find_solve(void) {
 	}
 }
 
-#endif
-
-#if FB_SRT == QUICK || !defined(STRIP)
-
 /**
  * Precomputes the square root of z.
  */
@@ -172,8 +162,6 @@ static void find_srz(void) {
 	}
 #endif
 }
-
-#endif
 
 /**
  * Finds an addition chain for (RLC_FB_BITS - 1).
@@ -298,15 +286,9 @@ static void find_chain(void) {
  */
 static void fb_poly_set(const fb_t f) {
 	fb_copy(core_get()->fb_poly, f);
-#if FB_TRC == QUICK || !defined(STRIP)
 	find_trace();
-#endif
-#if FB_SLV == QUICK || !defined(STRIP)
 	find_solve();
-#endif
-#if FB_SRT == QUICK || !defined(STRIP)
 	find_srz();
-#endif
 	find_chain();
 }
 
@@ -426,11 +408,7 @@ void fb_poly_set_penta(int a, int b, int c) {
 }
 
 dig_t *fb_poly_get_srz(void) {
-#if FB_SRT == QUICK || !defined(STRIP)
 	return core_get()->fb_srz;
-#else
-	return NULL;
-#endif
 }
 
 const fb_st *fb_poly_tab_sqr(int i) {
@@ -443,7 +421,6 @@ const fb_st *fb_poly_tab_sqr(int i) {
 }
 
 const dig_t *fb_poly_tab_srz(int i) {
-#if FB_SRT == QUICK || !defined(STRIP)
 
 #ifdef FB_PRECO
 	return core_get()->fb_tab_srz[i];
@@ -451,20 +428,13 @@ const dig_t *fb_poly_tab_srz(int i) {
 	return NULL;
 #endif
 
-#else
-	return NULL;
-#endif
 }
 
 void fb_poly_get_trc(int *a, int *b, int *c) {
-#if FB_TRC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	*a = ctx->fb_ta;
 	*b = ctx->fb_tb;
 	*c = ctx->fb_tc;
-#else
-	*a = *b = *c = -1;
-#endif
 }
 
 void fb_poly_get_rdc(int *a, int *b, int *c) {
@@ -475,11 +445,7 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 }
 
 const dig_t *fb_poly_get_slv(void) {
-#if FB_SLV == QUICK || !defined(STRIP)
 	return (dig_t *)&(core_get()->fb_half);
-#else
-	return NULL;
-#endif
 }
 
 const int *fb_poly_get_chain(int *len) {

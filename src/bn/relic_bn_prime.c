@@ -546,8 +546,6 @@ int bn_is_prime_lucas(const bn_t a) {
 	return result;
 }
 
-#if BN_GEN == BASIC || !defined(STRIP)
-
 void bn_gen_prime_basic(bn_t a, size_t bits) {
 	while (1) {
 		do {
@@ -558,10 +556,6 @@ void bn_gen_prime_basic(bn_t a, size_t bits) {
 		}
 	}
 }
-
-#endif
-
-#if BN_GEN == SAFEP || !defined(STRIP)
 
 void bn_gen_prime_safep(bn_t a, size_t bits) {
 	while (1) {
@@ -582,10 +576,6 @@ void bn_gen_prime_safep(bn_t a, size_t bits) {
 		}
 	}
 }
-
-#endif
-
-#if BN_GEN == STRON || !defined(STRIP)
 
 void bn_gen_prime_stron(bn_t a, size_t bits) {
 	dig_t i, j;
@@ -653,8 +643,6 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 		bn_free_all(r, s, t);
 	}
 }
-
-#endif
 
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 	bn_t t, u;

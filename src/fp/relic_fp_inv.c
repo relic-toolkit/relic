@@ -37,8 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_INV == JMPDS || !defined(STRIP)
-
 #ifdef RLC_FP_ROOM
 
 /*
@@ -119,13 +117,9 @@ static inline void jmpds_fg(dig_t *f, dig_t *g, const dis_t m[4], dig_t *t0,
 	bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FP_INV == BASIC || !defined(STRIP)
 
 void fp_inv_basic(fp_t c, const fp_t a) {
 	bn_t e;
@@ -153,10 +147,6 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 		bn_free(e);
 	}
 }
-
-#endif
-
-#if FP_INV == BINAR || !defined(STRIP)
 
 void fp_inv_binar(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p;
@@ -258,10 +248,6 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 		bn_free_all(u, v, g1, g2, p);
 	}
 }
-
-#endif
-
-#if FP_INV == MONTY || !defined(STRIP)
 
 void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_t _a, _p, u, v, x1, x2;
@@ -384,10 +370,6 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_INV == EXGCD || !defined(STRIP)
-
 void fp_inv_exgcd(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p, q, r;
 
@@ -436,10 +418,6 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		bn_free_all(u, v, g1, g2, p, q, r);
 	}
 }
-
-#endif
-
-#if FP_INV == DIVST || !defined(STRIP)
 
 void fp_inv_divst(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
@@ -540,10 +518,6 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_free_all(f, g, u, v, r);
 	}
 }
-
-#endif
-
-#if FP_INV == JMPDS || !defined(STRIP)
 
 void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dis_t m[4];
@@ -715,10 +689,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_INV == LOWER || !defined(STRIP)
-
 void fp_inv_lower(fp_t c, const fp_t a) {
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -727,8 +697,6 @@ void fp_inv_lower(fp_t c, const fp_t a) {
 
 	fp_invm_low(c, a);
 }
-
-#endif
 
 void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	int i;

@@ -37,7 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_SMB == BINAR || !defined(STRIP)
 /**
  * Approach heavily inpired in the blst implementation of the algorithm.
  */
@@ -158,10 +157,6 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 	return k;
 }
 
-#endif
-
-#if FP_SMB == JMPDS || !defined(STRIP)
-
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
 		int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
@@ -228,13 +223,9 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 	return delta;
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FP_SMB == BASIC || !defined(STRIP)
 
 int fp_smb_basic(const fp_t a) {
 	bn_t t;
@@ -266,10 +257,6 @@ int fp_smb_basic(const fp_t a) {
 	}
 	return r;
 }
-
-#endif
-
-#if FP_SMB == BINAR || !defined(STRIP)
 
 #define RLC_LSH(H, L, I)													\
 		(H << I) | (L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
@@ -345,10 +332,6 @@ int fp_smb_binar(const fp_t a) {
 
 	return (k & 1 ? -1 : 1);
 }
-
-#endif
-
-#if FP_SMB == DIVST || !defined(STRIP)
 
 int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
@@ -447,10 +430,6 @@ int fp_smb_divst(const fp_t a) {
 	return r;
 }
 
-#endif
-
-#if FP_SMB == JMPDS || !defined(STRIP)
-
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4], d = -1;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
@@ -537,12 +516,6 @@ int fp_smb_jmpds(const fp_t a) {
 	return r;
 }
 
-#endif
-
-#if FP_SMB == LOWER || !defined(STRIP)
-
 int fp_smb_lower(const fp_t a) {
 	return fp_smbm_low(a);
 }
-
-#endif

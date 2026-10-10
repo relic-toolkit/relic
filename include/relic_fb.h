@@ -176,11 +176,7 @@ enum {
 /**
  * Maximum size of a precomputation table.
  */
-#ifdef STRIP
-#define RLC_FB_TABLE_MAX 		RLC_FB_TABLE
-#else
 #define RLC_FB_TABLE_MAX 		RLC_FB_TABLE_QUICK
-#endif
 
 /*============================================================================*/
 /* Type definitions                                                           */

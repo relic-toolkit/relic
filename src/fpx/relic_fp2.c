@@ -107,8 +107,6 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 
 TMPL_FPX_CMP(fp2, fp, 2);
 
-#if FPX_QDR == BASIC || !defined(STRIP)
-
 void fp2_add_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_add(c[0], a[0], b[0]);
 	fp_add(c[1], a[1], b[1]);
@@ -125,10 +123,6 @@ void fp2_dbl_basic(fp2_t c, const fp2_t a) {
 	fp_dbl(c[1], a[1]);
 }
 
-#endif
-
-#if FPX_QDR == INTEG || !defined(STRIP)
-
 void fp2_add_integ(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp2_addm_low(c, a, b);
 }
@@ -141,16 +135,12 @@ void fp2_dbl_integ(fp2_t c, const fp2_t a) {
 	fp2_dblm_low(c, a);
 }
 
-#endif
-
 TMPL_FPX_ASM_DIG(fp2, fp, 2);
 
 void fp2_neg(fp2_t c, const fp2_t a) {
 	fp_neg(c[0], a[0]);
 	fp_neg(c[1], a[1]);
 }
-
-#if FPX_QDR == BASIC || !defined(STRIP)
 
 void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 	dv_t t0, t1, t2, t3, t4;
@@ -261,10 +251,6 @@ void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 	}
 }
 
-#endif
-
-#if FPX_QDR == INTEG || !defined(STRIP)
-
 void fp2_mul_integ(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp2_mulm_low(c, a, b);
 }
@@ -272,8 +258,6 @@ void fp2_mul_integ(fp2_t c, const fp2_t a, const fp2_t b) {
 void fp2_mul_nor_integ(fp2_t c, const fp2_t a) {
 	fp2_norm_low(c, a);
 }
-
-#endif
 
 void fp2_mul_art(fp2_t c, const fp2_t a) {
 	fp_t t;
@@ -352,8 +336,6 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 #endif
 }
 
-#if FPX_QDR == BASIC || !defined(STRIP)
-
 void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 	fp_t t0, t1, t2;
 
@@ -408,15 +390,9 @@ void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 	}
 }
 
-#endif
-
-#if FPX_QDR == INTEG || !defined(STRIP)
-
 void fp2_sqr_integ(fp2_t c, const fp2_t a) {
 	fp2_sqrm_low(c, a);
 }
-
-#endif
 
 void fp2_inv(fp2_t c, const fp2_t a) {
 	fp_t t0, t1;

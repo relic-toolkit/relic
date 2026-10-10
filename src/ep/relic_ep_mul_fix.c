@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_FIX == COMBS || !defined(STRIP)
-
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
  * method.
@@ -195,19 +193,11 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 }
 
-#endif /* EP_FIX == COMBS */
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_FIX == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_BASIC(ep);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
 
 void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 	int i, j, l;
@@ -262,16 +252,7 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
 
 	ep_mul_combs_plain(r, t, k);
 }
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
 
 TMPL_EP_MUL_COMBD(ep);
 
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_LWNAF(ep);
-
-#endif

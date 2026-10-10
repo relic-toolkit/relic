@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	size_t l;
 	bn_t n, _k[6], u;
@@ -134,33 +132,15 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 TMPL_EP_MUL_REG_GLS(ep3, fp3, 6, 1);
-
-#endif /* EP_MUL == LWREG */
-
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 TMPL_EP_MUL_NAF_IMP(ep3);
 
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 TMPL_EP_MUL_REG_IMP(ep3, fp3);
-
-#endif /* EP_MUL == LWREG */
-
-#if EP_SIM == INTER || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_ENDOM_GLS(ep3, 6);
 
 TMPL_EP_MUL_SIM_PLAIN(ep3);
-
-#endif /* EP_SIM == INTER */
 
 /**
  * Multiplies a point by the cofactor in a KSS18 curve.
@@ -425,13 +405,7 @@ static void ep3_mul_cof_fm18(ep3_t r, const ep3_t p) {
 
 TMPL_EP_MUL_BASIC(ep3);
 
-#if EP_MUL == MONTY || !defined(STRIP)
-
 TMPL_EP_MUL_MONTY(ep3, fp3);
-
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 void ep3_mul_lwnaf(ep3_t r, const ep3_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep3_is_infty(p)) {
@@ -447,10 +421,6 @@ void ep3_mul_lwnaf(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep3_mul_lwreg(ep3_t r, const ep3_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep3_is_infty(p)) {
 		ep3_set_infty(r);
@@ -465,59 +435,25 @@ void ep3_mul_lwreg(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_mul_reg_imp(r, p, k);
 }
 
-#endif
-
 TMPL_EP_MUL_GEN(ep3);
 
 TMPL_EP_MUL_DIG(ep3);
 
-#if EP_FIX == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_BASIC(ep3);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
 
 TMPL_EP_MUL_COMBS(ep3);
 
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
-
 TMPL_EP_MUL_COMBD(ep3);
-
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
 
 TMPL_EP_MUL_FIX_LWNAF(ep3);
 
-#endif
-
-#if EP_SIM == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_BASIC(ep3);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_TRICK(ep3);
 
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_INTER(ep3);
 
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_JOINT(ep3);
-
-#endif
 
 TMPL_EP_MUL_SIM_GEN(ep3);
 

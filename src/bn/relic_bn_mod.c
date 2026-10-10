@@ -73,8 +73,6 @@ void bn_mod_basic(bn_t c, const bn_t a, const bn_t m) {
 	bn_div_rem(NULL, c, a, m);
 }
 
-#if BN_MOD == BARRT || !defined(STRIP)
-
 void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
 		RLC_THROW(ERR_NO_VALID);
@@ -165,10 +163,6 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 }
 
-#endif /* BN_MOD == BARRT || !defined(STRIP) */
-
-#if BN_MOD == MONTY || (defined(WITH_FP) && FP_RDC == MONTY) || !defined(STRIP)
-
 void bn_mod_pre_monty(bn_t u, const bn_t m) {
 	dig_t x, b = m->dp[0];
 
@@ -224,8 +218,6 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m) {
 	}
 }
 
-#if BN_MUL == BASIC || !defined(STRIP)
-
 void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	size_t digits, i;
 	dig_t r, u0, *tmp;
@@ -271,10 +263,6 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 }
 
-#endif /* BN_MUL == BASIC || !defined(STRIP) */
-
-#if BN_MUL == COMBA || !defined(STRIP)
-
 void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	int digits;
 	bn_t t;
@@ -310,12 +298,6 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_free(t);
 	}
 }
-
-#endif /* BN_MUL == COMBA || !defined(STRIP) */
-
-#endif /* BN_MOD == MONTY || (WITH_FP && FP_RDC == MONTY) || !defined(STRIP) */
-
-#if BN_MOD == PMERS || !defined(STRIP)
 
 void bn_mod_pre_pmers(bn_t u, const bn_t m) {
 	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
@@ -378,5 +360,3 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_free_all(t, q);
 	}
 }
-
-#endif /* BN_MOD == PMERS || !defined(STRIP) */

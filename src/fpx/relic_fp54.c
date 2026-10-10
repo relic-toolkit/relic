@@ -45,19 +45,11 @@ TMPL_FPX_BASE(fp54, fp18, 3);
 
 TMPL_FPX_BIN_CQ(fp54, fp18, fp9, 54);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_MUL_CUBIC(fp54, fp18, fp18_mul_art);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2, fp18_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp54, dv54, fp3, dv3, 18);
-
-#endif
 
 void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b) {
 	fp18_t t0, t1, t2, t3, t4;
@@ -106,17 +98,11 @@ void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b) {
 
 TMPL_FPX_MUL_ART_CUBIC(fp54, fp18, fp18_mul_art);
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-
 TMPL_FPX_SQR_CUBIC(fp54, fp18, fp18_mul_art, 18);
 
 TMPL_SQR_CYC_CQ(fp54, fp9, fp9_mul_art);
 
 TMPL_SQR_PCK_CQ(fp54, fp9, fp9_mul_art);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
 		fp18_sqr_unr, fp18_mul_unr, 18);
@@ -126,8 +112,6 @@ TMPL_FPX_SQR_LAZYR(fp54, dv54, fp3, dv3, 18);
 TMPL_SQR_PCK_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr, fp9_mul_art);
 
 TMPL_SQR_CYC_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
-
-#endif
 
 TMPL_FPX_CYC(fp54, fp18, fp9, fp9_mul_art, CQ);
 

@@ -38,37 +38,17 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_GLS_IMP(ep2, 4);
-
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
 
 TMPL_EP_MUL_REG_GLS(ep2, fp2, 4, 1);
 
-#endif /* EP_MUL == LWREG */
-
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 TMPL_EP_MUL_NAF_IMP(ep2);
 
-#endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 TMPL_EP_MUL_REG_IMP(ep2, fp2);
-
-#endif /* EP_MUL == LWREG */
-
-#if EP_SIM == INTER || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_ENDOM_GLS(ep2, 4);
 
 TMPL_EP_MUL_SIM_PLAIN(ep2);
-
-#endif /* EP_SIM == INTER */
 
 /**
  * Multiplies a point by the cofactor in a Barreto-Naehrig curve.
@@ -184,13 +164,7 @@ static void ep2_mul_cof_b12(ep2_t r, const ep2_t p) {
 
 TMPL_EP_MUL_BASIC(ep2);
 
-#if EP_MUL == MONTY || !defined(STRIP)
-
 TMPL_EP_MUL_MONTY(ep2, fp2);
-
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
@@ -206,10 +180,6 @@ void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
 		ep2_set_infty(r);
@@ -224,59 +194,25 @@ void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_mul_reg_imp(r, p, k);
 }
 
-#endif
-
 TMPL_EP_MUL_GEN(ep2);
 
 TMPL_EP_MUL_DIG(ep2);
 
-#if EP_FIX == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_FIX_BASIC(ep2);
-
-#endif
-
-#if EP_FIX == COMBS || !defined(STRIP)
 
 TMPL_EP_MUL_COMBS(ep2);
 
-#endif
-
-#if EP_FIX == COMBD || !defined(STRIP)
-
 TMPL_EP_MUL_COMBD(ep2);
-
-#endif
-
-#if EP_FIX == LWNAF || !defined(STRIP)
 
 TMPL_EP_MUL_FIX_LWNAF(ep2);
 
-#endif
-
-#if EP_SIM == BASIC || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_BASIC(ep2);
-
-#endif
-
-#if EP_SIM == TRICK || !defined(STRIP)
 
 TMPL_EP_MUL_SIM_TRICK(ep2);
 
-#endif
-
-#if EP_SIM == INTER || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_INTER(ep2);
 
-#endif
-
-#if EP_SIM == JOINT || !defined(STRIP)
-
 TMPL_EP_MUL_SIM_JOINT(ep2);
-
-#endif
 
 TMPL_EP_MUL_SIM_GEN(ep2);
 

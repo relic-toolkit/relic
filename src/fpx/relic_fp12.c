@@ -41,8 +41,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
-
 inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) {
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;
@@ -80,8 +78,6 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 	}
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -89,8 +85,6 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 TMPL_FPX_BASE(fp12, fp6, 2);
 
 TMPL_FPX_BIN_QC(fp12, fp6, fp2, 12);
-
-#if FPX_RDC == BASIC || !defined(STRIP)
 
 TMPL_FPX_MUL_QUAD(fp12, fp6, fp6_mul_art);
 
@@ -170,10 +164,6 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 		fp6_free_all(t0, t1, t2);
 	}
 }
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_QUAD(fp12, fp6, dv12, dv6, fp2, dv2, 3, 1, fp6_mul_unr);
 
@@ -270,21 +260,13 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 	}
 }
 
-#endif
-
 TMPL_FPX_MUL_ART_QUAD(fp12, fp6, fp6_mul_art);
-
-#if FPX_RDC == BASIC || !defined(STRIP)
 
 TMPL_FPX_SQR_QUAD(fp12, fp6, fp6_mul_art);
 
 TMPL_SQR_CYC_QC(fp12, fp2, fp2_mul_nor);
 
 TMPL_SQR_PCK_QC(fp12, fp2, fp2_mul_nor);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp12_sqr_unr(dv12_t c, const fp12_t a) {
 	fp4_t t0, t1;
@@ -380,8 +362,6 @@ TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
 		fp2_norm_low);
 
 TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
-
-#endif
 
 TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
 

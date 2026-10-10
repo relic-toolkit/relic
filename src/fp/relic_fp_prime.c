@@ -66,8 +66,6 @@ static void fp_prime_set(const bn_t p) {
 		bn_sub_dig(&(ctx->over3), p, 1);
 		bn_div_dig(&(ctx->over3), &(ctx->over3), 3);
 
-#if FP_RDC == MONTY || !defined(STRIP)
-
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
 
@@ -81,10 +79,6 @@ static void fp_prime_set(const bn_t p) {
 		bn_set_dig(t, RLC_FP_DIGS);
 		bn_lsh(t, t, RLC_DIG_LOG);
 		fp_exp(ctx->conv, r, t);
-
-#endif /* FP_RDC == MONTY */
-
-#if FP_INV == JMPDS || !defined(STRIP)
 
 		int d = (45907 * FP_PRIME + 26313) / 19929;
 
@@ -118,8 +112,6 @@ static void fp_prime_set(const bn_t p) {
 #endif
 
 #endif /* FP_RDC == MONTY */
-
-#endif /* FP_INV */
 
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
@@ -239,20 +231,16 @@ void fp_prime_init(void) {
 	bn_make(&(ctx->prime), RLC_FP_DIGS);
 	bn_make(&(ctx->over3), RLC_FP_DIGS);
 	bn_make(&(ctx->par), RLC_FP_DIGS);
-#if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
-#endif
 }
 
 void fp_prime_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
 		ctx->fp_id = 0;
-#if FP_RDC == QUICK || !defined(STRIP)
 		ctx->sps_len = 0;
 		memset(ctx->sps, 0, sizeof(ctx->sps));
-#endif
 		bn_clean(&(ctx->prime));
 		bn_clean(&(ctx->over3));
 		bn_clean(&(ctx->par));
@@ -286,7 +274,6 @@ const int *fp_prime_get_par_sps(int *len) {
 }
 
 const int *fp_prime_get_sps(int *len) {
-#if FP_RDC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	if (ctx->sps_len > 0 && ctx->sps_len < RLC_TERMS) {
 		if (len != NULL) {
@@ -299,17 +286,10 @@ const int *fp_prime_get_sps(int *len) {
 		}
 		return NULL;
 	}
-#else
-	return NULL;
-#endif
 }
 
 const dig_t *fp_prime_get_conv(void) {
-#if FP_RDC == MONTY || !defined(STRIP)
 	return core_get()->conv;
-#else
-	return NULL;
-#endif
 }
 
 const dig_t *fp_prime_get_srt(void) {
@@ -672,14 +652,12 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 		}
 		bn_add_dis(p, p, f[0]);
 
-#if FP_RDC == QUICK || !defined(STRIP)
 		ctx_t *ctx = core_get();
 		for (size_t i = 0; i < len; i++) {
 			ctx->sps[i] = f[i];
 		}
 		ctx->sps[len] = 0;
 		ctx->sps_len = len;
-#endif /* FP_RDC == QUICK */
 
 		fp_prime_set(p);
 	}

@@ -247,11 +247,7 @@ enum {
 /**
  * Maximum size of a precomputation table.
  */
-#ifdef STRIP
-#define RLC_EP_TABLE_MAX 		RLC_EP_TABLE
-#else
 #define RLC_EP_TABLE_MAX 		RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
-#endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.

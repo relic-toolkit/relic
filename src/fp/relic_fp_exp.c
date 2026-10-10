@@ -36,8 +36,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FP_EXP == BASIC || !defined(STRIP)
-
 void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 	size_t l;
 	fp_t r;
@@ -76,10 +74,6 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 		fp_free(r);
 	}
 }
-
-#endif
-
-#if FP_EXP == SLIDE || !defined(STRIP)
 
 void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 	fp_t t[1 << (RLC_WIDTH - 1)], r;
@@ -144,10 +138,6 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if FP_EXP == MONTY || !defined(STRIP)
-
 void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 	fp_t t[2];
 
@@ -184,8 +174,6 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 		fp_free_all(t[1], t[0]);
 	}
 }
-
-#endif
 
 void fp_exp_dig(fp_t c, const fp_t a, dig_t b) {
 	fp_t t;

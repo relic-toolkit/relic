@@ -41,8 +41,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_SRT == BASIC || !defined(STRIP)
-
 void fb_srt_basic(fb_t c, const fb_t a) {
 	if (c != a) {
 		fb_copy(c, a);
@@ -53,12 +51,6 @@ void fb_srt_basic(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_SRT == QUICK || !defined(STRIP)
-
 void fb_srt_quick(fb_t c, const fb_t a) {
 	fb_srtn_low(c, a);
 }
-
-#endif

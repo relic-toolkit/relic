@@ -260,7 +260,6 @@ static int addition2(void) {
 			TEST_ASSERT(ep2_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
@@ -268,9 +267,7 @@ static int addition2(void) {
 			ep2_add_basic(e, a, b);
 			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
@@ -306,9 +303,7 @@ static int addition2(void) {
 			ep2_add_projc(e, a, b);
 			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
@@ -345,7 +340,6 @@ static int addition2(void) {
 			ep2_add_jacob(e, a, b);
 			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -432,16 +426,13 @@ static int doubling2(void) {
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep2_rand(a);
 			ep2_dbl(b, a);
 			ep2_dbl_basic(c, a);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep2_rand(a);
 			/* a in projective coordinates. */
@@ -459,9 +450,7 @@ static int doubling2(void) {
 			ep2_dbl(c, a);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep2_rand(a);
 			/* a in projective coordinates. */
@@ -479,7 +468,6 @@ static int doubling2(void) {
 			ep2_dbl(c, a);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -544,7 +532,6 @@ static int multiplication2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep2_mul_basic(r, p, k);
@@ -572,9 +559,7 @@ static int multiplication2(void) {
 			ep2_mul_basic(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep2_mul_monty(r, p, k);
@@ -603,9 +588,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep2_mul_lwnaf(r, p, k);
@@ -634,9 +617,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep2_mul_lwreg(r, p, k);
@@ -665,7 +646,6 @@ static int multiplication2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("point multiplication by digit is correct") {
 			ep2_mul_dig(r, p, 0);
@@ -754,7 +734,6 @@ static int fixed2(void) {
 			ep2_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep2_new(t[i]);
 		}
@@ -789,9 +768,7 @@ static int fixed2(void) {
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep2_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep2_new(t[i]);
 		}
@@ -826,9 +803,7 @@ static int fixed2(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep2_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep2_new(t[i]);
 		}
@@ -863,9 +838,7 @@ static int fixed2(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep2_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep2_new(t[i]);
 		}
@@ -900,7 +873,6 @@ static int fixed2(void) {
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep2_free(t[i]);
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -988,7 +960,6 @@ static int simultaneous2(void) {
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -1020,9 +991,7 @@ static int simultaneous2(void) {
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -1054,9 +1023,7 @@ static int simultaneous2(void) {
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -1088,9 +1055,7 @@ static int simultaneous2(void) {
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -1122,7 +1087,6 @@ static int simultaneous2(void) {
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k[0]);
@@ -1250,7 +1214,6 @@ static int hashing2(void) {
 		}
 		TEST_END;
 
-#if EP_MAP == BASIC || !defined(STRIP)
 		TEST_CASE("basic point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_basic(a, msg, sizeof(msg));
@@ -1259,9 +1222,7 @@ static int hashing2(void) {
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MAP == SSWUM || !defined(STRIP)
 		TEST_CASE("simplified SWU point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_sswum(a, msg, sizeof(msg));
@@ -1270,10 +1231,8 @@ static int hashing2(void) {
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
-#endif
 
 		if (ep_curve_is_pairf()) {
-			#if EP_MAP == SWIFT || !defined(STRIP)
 					TEST_CASE("swift point hashing is correct") {
 						rand_bytes(msg, sizeof(msg));
 						ep2_map_swift(a, msg, sizeof(msg));
@@ -1282,7 +1241,6 @@ static int hashing2(void) {
 						TEST_ASSERT(ep2_is_infty(a) == 1, end);
 					}
 					TEST_END;
-			#endif
 		}
 	}
 	RLC_CATCH_ANY {
@@ -1576,7 +1534,6 @@ static int addition3(void) {
 			TEST_ASSERT(ep3_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep3_rand(a);
 			ep3_rand(b);
@@ -1584,9 +1541,7 @@ static int addition3(void) {
 			ep3_add_basic(e, a, b);
 			TEST_ASSERT(ep3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep3_rand(a);
 			ep3_rand(b);
@@ -1622,9 +1577,7 @@ static int addition3(void) {
 			ep3_add_projc(e, a, b);
 			TEST_ASSERT(ep3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep3_rand(a);
 			ep3_rand(b);
@@ -1661,7 +1614,6 @@ static int addition3(void) {
 			ep3_add_jacob(e, a, b);
 			TEST_ASSERT(ep3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1748,16 +1700,13 @@ static int doubling3(void) {
 			TEST_ASSERT(ep3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep3_rand(a);
 			ep3_dbl(b, a);
 			ep3_dbl_basic(c, a);
 			TEST_ASSERT(ep3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep3_rand(a);
 			/* a in projective coordinates. */
@@ -1775,9 +1724,7 @@ static int doubling3(void) {
 			ep3_dbl(c, a);
 			TEST_ASSERT(ep3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep3_rand(a);
 			/* a in projective coordinates. */
@@ -1795,7 +1742,6 @@ static int doubling3(void) {
 			ep3_dbl(c, a);
 			TEST_ASSERT(ep3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1860,7 +1806,6 @@ static int multiplication3(void) {
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep3_mul_basic(r, p, k);
@@ -1888,9 +1833,7 @@ static int multiplication3(void) {
 			ep3_mul_basic(r, p, k);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep3_mul_monty(r, p, k);
@@ -1919,9 +1862,7 @@ static int multiplication3(void) {
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep3_mul_lwnaf(r, p, k);
@@ -1950,9 +1891,7 @@ static int multiplication3(void) {
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep3_mul_lwreg(r, p, k);
@@ -1981,7 +1920,6 @@ static int multiplication3(void) {
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("multiplication by digit is correct") {
 			ep3_mul_dig(r, p, 0);
@@ -2070,7 +2008,6 @@ static int fixed3(void) {
 			ep3_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep3_new(t[i]);
 		}
@@ -2105,9 +2042,7 @@ static int fixed3(void) {
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep3_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep3_new(t[i]);
 		}
@@ -2142,9 +2077,7 @@ static int fixed3(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep3_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep3_new(t[i]);
 		}
@@ -2179,9 +2112,7 @@ static int fixed3(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep3_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep3_new(t[i]);
 		}
@@ -2216,7 +2147,6 @@ static int fixed3(void) {
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep3_free(t[i]);
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2298,7 +2228,6 @@ static int simultaneous3(void) {
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -2330,9 +2259,7 @@ static int simultaneous3(void) {
 			ep3_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -2364,9 +2291,7 @@ static int simultaneous3(void) {
 			ep3_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -2398,9 +2323,7 @@ static int simultaneous3(void) {
 			ep3_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -2432,7 +2355,6 @@ static int simultaneous3(void) {
 			ep3_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep3_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k[0]);
@@ -2796,7 +2718,6 @@ static int addition4(void) {
 			TEST_ASSERT(ep4_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep4_rand(a);
 			ep4_rand(b);
@@ -2804,9 +2725,7 @@ static int addition4(void) {
 			ep4_add_basic(e, a, b);
 			TEST_ASSERT(ep4_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep4_rand(a);
 			ep4_rand(b);
@@ -2842,9 +2761,7 @@ static int addition4(void) {
 			ep4_add_projc(e, a, b);
 			TEST_ASSERT(ep4_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep4_rand(a);
 			ep4_rand(b);
@@ -2881,7 +2798,6 @@ static int addition4(void) {
 			ep4_add_jacob(e, a, b);
 			TEST_ASSERT(ep4_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2968,16 +2884,13 @@ static int doubling4(void) {
 			TEST_ASSERT(ep4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep4_rand(a);
 			ep4_dbl(b, a);
 			ep4_dbl_basic(c, a);
 			TEST_ASSERT(ep4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep4_rand(a);
 			/* a in projective coordinates. */
@@ -2995,9 +2908,7 @@ static int doubling4(void) {
 			ep4_dbl(c, a);
 			TEST_ASSERT(ep4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep4_rand(a);
 			/* a in projective coordinates. */
@@ -3015,7 +2926,6 @@ static int doubling4(void) {
 			ep4_dbl(c, a);
 			TEST_ASSERT(ep4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -3080,7 +2990,6 @@ static int multiplication4(void) {
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep4_mul_basic(r, p, k);
@@ -3108,9 +3017,7 @@ static int multiplication4(void) {
 			ep4_mul_basic(r, p, k);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep4_mul_monty(r, p, k);
@@ -3139,9 +3046,7 @@ static int multiplication4(void) {
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep4_mul_lwnaf(r, p, k);
@@ -3170,9 +3075,7 @@ static int multiplication4(void) {
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep4_mul_lwreg(r, p, k);
@@ -3201,7 +3104,6 @@ static int multiplication4(void) {
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("multiplication by digit is correct") {
 			ep4_mul_dig(r, p, 0);
@@ -3290,7 +3192,6 @@ static int fixed4(void) {
 			ep4_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep4_new(t[i]);
 		}
@@ -3325,9 +3226,7 @@ static int fixed4(void) {
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep4_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep4_new(t[i]);
 		}
@@ -3362,9 +3261,7 @@ static int fixed4(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep4_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep4_new(t[i]);
 		}
@@ -3399,9 +3296,7 @@ static int fixed4(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep4_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep4_new(t[i]);
 		}
@@ -3436,7 +3331,6 @@ static int fixed4(void) {
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep4_free(t[i]);
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3518,7 +3412,6 @@ static int simultaneous4(void) {
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -3550,9 +3443,7 @@ static int simultaneous4(void) {
 			ep4_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -3584,9 +3475,7 @@ static int simultaneous4(void) {
 			ep4_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -3618,9 +3507,7 @@ static int simultaneous4(void) {
 			ep4_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -3652,7 +3539,6 @@ static int simultaneous4(void) {
 			ep4_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k[0]);
@@ -4012,7 +3898,6 @@ static int addition8(void) {
 			TEST_ASSERT(ep8_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep8_rand(a);
 			ep8_rand(b);
@@ -4020,9 +3905,7 @@ static int addition8(void) {
 			ep8_add_basic(e, a, b);
 			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep8_rand(a);
 			ep8_rand(b);
@@ -4058,9 +3941,7 @@ static int addition8(void) {
 			ep8_add_projc(e, a, b);
 			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep8_rand(a);
 			ep8_rand(b);
@@ -4097,7 +3978,6 @@ static int addition8(void) {
 			ep8_add_jacob(e, a, b);
 			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -4184,16 +4064,13 @@ static int doubling8(void) {
 			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep8_rand(a);
 			ep8_dbl(b, a);
 			ep8_dbl_basic(c, a);
 			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep8_rand(a);
 			/* a in projective coordinates. */
@@ -4211,9 +4088,7 @@ static int doubling8(void) {
 			ep8_dbl(c, a);
 			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep8_rand(a);
 			/* a in projective coordinates. */
@@ -4231,7 +4106,6 @@ static int doubling8(void) {
 			ep8_dbl(c, a);
 			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -4296,7 +4170,6 @@ static int multiplication8(void) {
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep8_mul_basic(r, p, k);
@@ -4324,9 +4197,7 @@ static int multiplication8(void) {
 			ep8_mul_basic(r, p, k);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep8_mul_monty(r, p, k);
@@ -4355,9 +4226,7 @@ static int multiplication8(void) {
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep8_mul_lwnaf(r, p, k);
@@ -4386,9 +4255,7 @@ static int multiplication8(void) {
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep8_mul_lwreg(r, p, k);
@@ -4417,7 +4284,6 @@ static int multiplication8(void) {
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("multiplication by digit is correct") {
 			ep8_mul_dig(r, p, 0);
@@ -4506,7 +4372,6 @@ static int fixed8(void) {
 			ep8_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep8_new(t[i]);
 		}
@@ -4541,9 +4406,7 @@ static int fixed8(void) {
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep8_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep8_new(t[i]);
 		}
@@ -4578,9 +4441,7 @@ static int fixed8(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep8_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep8_new(t[i]);
 		}
@@ -4615,9 +4476,7 @@ static int fixed8(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep8_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep8_new(t[i]);
 		}
@@ -4652,7 +4511,6 @@ static int fixed8(void) {
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep8_free(t[i]);
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4734,7 +4592,6 @@ static int simultaneous8(void) {
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -4766,9 +4623,7 @@ static int simultaneous8(void) {
 			ep8_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -4800,9 +4655,7 @@ static int simultaneous8(void) {
 			ep8_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -4834,9 +4687,7 @@ static int simultaneous8(void) {
 			ep8_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -4868,7 +4719,6 @@ static int simultaneous8(void) {
 			ep8_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k[0]);
@@ -5228,7 +5078,6 @@ static int addition9(void) {
 			TEST_ASSERT(ep9_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep9_rand(a);
 			ep9_rand(b);
@@ -5236,9 +5085,7 @@ static int addition9(void) {
 			ep9_add_basic(e, a, b);
 			TEST_ASSERT(ep9_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep9_rand(a);
 			ep9_rand(b);
@@ -5274,9 +5121,7 @@ static int addition9(void) {
 			ep9_add_projc(e, a, b);
 			TEST_ASSERT(ep9_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep9_rand(a);
 			ep9_rand(b);
@@ -5313,7 +5158,6 @@ static int addition9(void) {
 			ep9_add_jacob(e, a, b);
 			TEST_ASSERT(ep9_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -5400,16 +5244,13 @@ static int doubling9(void) {
 			TEST_ASSERT(ep9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep9_rand(a);
 			ep9_dbl(b, a);
 			ep9_dbl_basic(c, a);
 			TEST_ASSERT(ep9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep9_rand(a);
 			/* a in projective coordinates. */
@@ -5427,9 +5268,7 @@ static int doubling9(void) {
 			ep9_dbl(c, a);
 			TEST_ASSERT(ep9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep9_rand(a);
 			/* a in projective coordinates. */
@@ -5447,7 +5286,6 @@ static int doubling9(void) {
 			ep9_dbl(c, a);
 			TEST_ASSERT(ep9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -5512,7 +5350,6 @@ static int multiplication9(void) {
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep9_mul_basic(r, p, k);
@@ -5540,9 +5377,7 @@ static int multiplication9(void) {
 			ep9_mul_basic(r, p, k);
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep9_mul_monty(r, p, k);
@@ -5571,9 +5406,7 @@ static int multiplication9(void) {
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep9_mul_lwnaf(r, p, k);
@@ -5602,9 +5435,7 @@ static int multiplication9(void) {
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep9_mul_lwreg(r, p, k);
@@ -5633,7 +5464,6 @@ static int multiplication9(void) {
 			TEST_ASSERT(ep9_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("multiplication by digit is correct") {
 			ep9_mul_dig(r, p, 0);
@@ -5722,7 +5552,6 @@ static int fixed9(void) {
 			ep9_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep9_new(t[i]);
 		}
@@ -5757,9 +5586,7 @@ static int fixed9(void) {
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep9_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep9_new(t[i]);
 		}
@@ -5794,9 +5621,7 @@ static int fixed9(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep9_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep9_new(t[i]);
 		}
@@ -5831,9 +5656,7 @@ static int fixed9(void) {
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep9_free(t[i]);
 		}
-#endif
 
-#if EP_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep9_new(t[i]);
 		}
@@ -5868,7 +5691,6 @@ static int fixed9(void) {
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep9_free(t[i]);
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5950,7 +5772,6 @@ static int simultaneous9(void) {
 			TEST_ASSERT(ep9_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -5982,9 +5803,7 @@ static int simultaneous9(void) {
 			ep9_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep9_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -6016,9 +5835,7 @@ static int simultaneous9(void) {
 			ep9_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep9_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -6050,9 +5867,7 @@ static int simultaneous9(void) {
 			ep9_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep9_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
-#if EP_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k[0]);
 			bn_rand_mod(k[1], n);
@@ -6084,7 +5899,6 @@ static int simultaneous9(void) {
 			ep9_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep9_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k[0]);

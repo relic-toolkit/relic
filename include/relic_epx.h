@@ -85,11 +85,7 @@
 /**
  * Maximum size of a precomputation table.
  */
-#ifdef STRIP
-#define RLC_EPX_TABLE_MAX 	RLC_EPX_TABLE
-#else
 #define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
-#endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.

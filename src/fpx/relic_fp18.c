@@ -41,8 +41,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
-
 inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) {
 	dv3_t u0, u1, u2, u3;
 	fp3_t t0, t1;
@@ -80,8 +78,6 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 	}
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -89,8 +85,6 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 TMPL_FPX_BASE(fp18, fp9, 2);
 
 TMPL_FPX_BIN_QC(fp18, fp9, fp3, 18);
-
-#if FPX_RDC == BASIC || !defined(STRIP)
 
 TMPL_FPX_MUL_QUAD(fp18, fp9, fp9_mul_art);
 
@@ -146,10 +140,6 @@ void fp18_mul_dxs_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 		fp9_free_all(t0, t1, t2);
 	}
 }
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1, fp9_mul_unr);
 
@@ -250,21 +240,13 @@ void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 	}
 }
 
-#endif
-
 TMPL_FPX_MUL_ART_QUAD(fp18, fp9, fp9_mul_art);
-
-#if FPX_RDC == BASIC || !defined(STRIP)
 
 TMPL_FPX_SQR_QUAD(fp18, fp9, fp9_mul_art);
 
 TMPL_SQR_CYC_QC(fp18, fp3, fp3_mul_nor);
 
 TMPL_SQR_PCK_QC(fp18, fp3, fp3_mul_nor);
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
@@ -274,8 +256,6 @@ TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
 		fp3_mul_nor);
 
 TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
-
-#endif
 
 TMPL_FPX_CYC(fp18, fp9, fp3, fp3_mul_nor, QC);
 

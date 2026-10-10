@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, n0, n1, s0, s1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
@@ -130,8 +128,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 }
 
 TMPL_EP_MUL_NAF_IMP(ep);
-
-#endif /* EP_MUL == LWNAF */
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	int8_t reg[2][RLC_FP_BITS + 1], s[2], b[2], c0, c1, n0, n1;
@@ -312,8 +308,6 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#if EP_MUL == MONTY || !defined(STRIP)
-
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[2];
 	bn_t n, l, m;
@@ -380,10 +374,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#endif
-
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -397,8 +387,6 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 
 	ep_mul_naf_imp(r, p, k);
 }
-
-#endif
 
 /* Conditional compilation of the function below was turned off because it
  * is used by the default for protected scalar multiplication in G1. */

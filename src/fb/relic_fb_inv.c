@@ -40,8 +40,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_INV == BASIC || !defined(STRIP)
-
 void fb_inv_basic(fb_t c, const fb_t a) {
 	fb_t t, u, v;
 	int i, x;
@@ -104,10 +102,6 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 		fb_free(v);
 	}
 }
-
-#endif
-
-#if FB_INV == BINAR || !defined(STRIP)
 
 void fb_inv_binar(fb_t c, const fb_t a) {
 	int lu, lv;
@@ -210,10 +204,6 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		dv_free(g2);
 	}
 }
-
-#endif
-
-#if FB_INV == EXGCD || !defined(STRIP)
 
 void fb_inv_exgcd(fb_t c, const fb_t a) {
 	int j, d, lu, lv, lt, l1, l2, bu, bv;
@@ -332,10 +322,6 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_INV == ALMOS || !defined(STRIP)
-
 void fb_inv_almos(fb_t c, const fb_t a) {
 	int lu, lv, lt;
 	dv_t _b, _d, _u, _v;
@@ -432,10 +418,6 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_INV == ITOHT || !defined(STRIP)
-
 void fb_inv_itoht(fb_t c, const fb_t a) {
 	int i, x, y, len;
 	const int *chain = fb_poly_get_chain(&len);
@@ -506,10 +488,6 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_INV == CTAIA || !defined(STRIP)
-
 void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_t r, s, t, u, v;
 	int i, k, d, r0, d0;
@@ -575,10 +553,6 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_INV == LOWER || !defined(STRIP)
-
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -587,7 +561,6 @@ void fb_inv_lower(fb_t c, const fb_t a) {
 
 	fb_invn_low(c, a);
 }
-#endif
 
 void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	int i;

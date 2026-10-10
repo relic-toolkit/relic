@@ -232,12 +232,10 @@ void ep_curve_init(void) {
 	ep_set_infty(&ctx->ep_g);
 	bn_make(&ctx->ep_r, RLC_FP_DIGS);
 	bn_make(&ctx->ep_h, RLC_FP_DIGS);
-#if (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || !defined(STRIP))
 	for (int i = 0; i < 3; i++) {
 		bn_make(&(ctx->ep_v1[i]), RLC_FP_DIGS);
 		bn_make(&(ctx->ep_v2[i]), RLC_FP_DIGS);
 	}
-#endif
 }
 
 void ep_curve_clean(void) {
@@ -245,12 +243,10 @@ void ep_curve_clean(void) {
 	if (ctx != NULL) {
 		bn_clean(&ctx->ep_r);
 		bn_clean(&ctx->ep_h);
-#if (EP_MUL == LWNAF || EP_FIX == LWNAF || !defined(STRIP))
 		for (int i = 0; i < 3; i++) {
 			bn_clean(&(ctx->ep_v1[i]));
 			bn_clean(&(ctx->ep_v2[i]));
 		}
-#endif
 	}
 }
 
@@ -261,8 +257,6 @@ dig_t *ep_curve_get_a(void) {
 dig_t *ep_curve_get_b(void) {
 	return core_get()->ep_b;
 }
-
-#if (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 
 dig_t *ep_curve_get_beta(void) {
 	return core_get()->beta;
@@ -275,8 +269,6 @@ const bn_st *ep_curve_get_v1(void) {
 const bn_st *ep_curve_get_v2(void) {
 	return (const bn_st *)core_get()->ep_v2;
 }
-
-#endif
 
 int ep_curve_opt_a(void) {
 	return core_get()->ep_opt_a;
@@ -420,7 +412,6 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_curve_set(a, b, g, r, h, ctmap);
 
 	/* Precompute endomorphism constants. */
-#if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	ep_t p, q;
 	bn_t m, n, t;
 
@@ -525,7 +516,6 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		bn_free(n);
 		bn_free(t);
 	}
-#endif
 }
 
 
