@@ -125,13 +125,14 @@ static int rand_add(uint8_t *state, uint8_t *hash, size_t size) {
  * @param[in] out_len		- the number of bytes to write.
  */
 static void rand_gen(uint8_t *out, size_t out_len) {
-	int m = RLC_CEIL(out_len, RLC_MD_LEN);
+	/* Not RLC_CEIL, which wraps around for an empty output. */
+	size_t m = (out_len + RLC_MD_LEN - 1) / RLC_MD_LEN;
 	uint8_t hash[RLC_MD_LEN], data[(RLC_RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
 	/* data = V */
 	memcpy(data, ctx->rand + 1, (RLC_RAND_SIZE - 1)/2);
-	for (int i = 0; i < m; i++) {
+	for (size_t i = 0; i < m; i++) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
 		/* W = W || w_i */
