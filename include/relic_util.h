@@ -294,21 +294,6 @@
 /*============================================================================*/
 
 /**
- * Toggle endianness of a digit.
- */
-uint32_t util_conv_endian(uint32_t i);
-
-/**
- * Convert a digit to big-endian.
- */
-uint32_t util_conv_big(uint32_t i);
-
-/**
- * Convert a digit to little-endian.
- */
-uint32_t util_conv_little(uint32_t i);
-
-/**
  * Converts a small digit to a character.
  */
 char util_conv_char(dig_t i);

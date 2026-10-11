@@ -83,33 +83,6 @@ FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 /* Public definitions                                                         */
 /*============================================================================*/
 
-uint32_t util_conv_endian(uint32_t i) {
-	uint32_t i1, i2, i3, i4;
-	i1 = i & 0xFF;
-	i2 = (i >> 8) & 0xFF;
-	i3 = (i >> 16) & 0xFF;
-	i4 = (i >> 24) & 0xFF;
-
-	return ((uint32_t) i1 << 24) | ((uint32_t) i2 << 16) | ((uint32_t) i3 << 8)
-			| i4;
-}
-
-uint32_t util_conv_big(uint32_t i) {
-#ifdef BIGED
-	return i;
-#else
-	return util_conv_endian(i);
-#endif
-}
-
-uint32_t util_conv_little(uint32_t i) {
-#ifndef BIGED
-	return util_conv_endian(i);
-#else
-	return i;
-#endif
-}
-
 void util_write_uint32(uint8_t *bin, uint32_t a) {
 	bin[0] = (uint8_t)(a >> 24);
 	bin[1] = (uint8_t)(a >> 16);

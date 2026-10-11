@@ -42,7 +42,7 @@
 
 static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 		size_t in_len, dig_t value) {
-	uint32_t i, j, d;
+	uint32_t i, d;
 	uint8_t *buffer = NULL, hash[RLC_MD_LEN];
 	size_t out_len = 0;
 
@@ -66,9 +66,8 @@ static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 	d = RLC_CEIL(key_len, RLC_MD_LEN);
 	memcpy(buffer, in, in_len);
 	for (i = value; i < d + value; i++) {
-		j = util_conv_big(i);
 		/* c = integer_to_string(c, 4). */
-		memcpy(buffer + in_len, &j, sizeof(uint32_t));
+		util_write_uint32(buffer + in_len, i);
 		/* t = t || hash(z || c). */
 		if (out_len + RLC_MD_LEN <= key_len) {
 			md_map(key + out_len, buffer, in_len + sizeof(uint32_t));

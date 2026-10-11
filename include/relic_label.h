@@ -131,9 +131,6 @@
 #define test_fail 	RLC_PREFIX(test_fail)
 #define test_pass 	RLC_PREFIX(test_pass)
 
-#undef util_conv_endian
-#undef util_conv_big
-#undef util_conv_little
 #undef util_conv_char
 #undef util_write_uint32
 #undef util_write_size
@@ -144,9 +141,6 @@
 #undef util_printf
 #undef util_print_dig
 
-#define util_conv_endian 	RLC_PREFIX(util_conv_endian)
-#define util_conv_big 	RLC_PREFIX(util_conv_big)
-#define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_write_uint32 	RLC_PREFIX(util_write_uint32)
 #define util_write_size 	RLC_PREFIX(util_write_size)
