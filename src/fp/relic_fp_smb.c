@@ -516,6 +516,10 @@ int fp_smb_jmpds(const fp_t a) {
 	return r;
 }
 
+#if FP_SMB == LOWER
+
 int fp_smb_lower(const fp_t a) {
 	return fp_smbm_low(a);
 }
+
+#endif

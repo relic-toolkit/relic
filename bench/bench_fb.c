@@ -411,11 +411,13 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if FB_INV == LOWER
 	BENCH_RUN("fb_inv_lower") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_lower(c, a));
 	}
 	BENCH_END;
+#endif
 
 	BENCH_RUN("fb_inv_sim (2)") {
 		fb_rand(d[0]);

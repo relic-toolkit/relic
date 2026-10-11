@@ -761,6 +761,7 @@ static int inversion(void) {
 			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FB_INV == LOWER
 		TEST_CASE("lower inversion is correct") {
 			do {
 				fb_rand(a);
@@ -769,6 +770,7 @@ static int inversion(void) {
 			fb_inv_lower(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("simultaneous inversion is correct") {
 			do {

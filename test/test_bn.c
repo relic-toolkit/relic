@@ -1275,6 +1275,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
+#if BN_MXP == LOWER
 		TEST_CASE("low-level modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1282,6 +1283,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
         for(int i = 0; i < 16; ++i) {
             bn_rand_mod(t[i], p);
@@ -1672,6 +1674,7 @@ static int gcd(void) {
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
 
+#if BN_GCD == LOWER
 		TEST_CASE("lower greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1712,6 +1715,7 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("midway extended greatest common divisor is correct") {
 			for (int k = 0; k < 3; k++) {

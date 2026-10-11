@@ -504,6 +504,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if FP_INV == LOWER
 	BENCH_RUN("fp_inv_lower") {
 		dig_t b = 0;
 		fp_rand(a);
@@ -511,6 +512,7 @@ static void arith(void) {
 				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
+#endif
 
 	BENCH_RUN("fp_inv_sim (2)") {
 		fp_rand(f[0]);
@@ -556,6 +558,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if FP_SMB == LOWER
 	BENCH_RUN("fp_smb_lower") {
 		dig_t b = 0;
 		fp_rand(a);
@@ -564,6 +567,7 @@ static void arith(void) {
 				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
+#endif
 
 	BENCH_RUN("fp_exp") {
 		fp_rand(a);

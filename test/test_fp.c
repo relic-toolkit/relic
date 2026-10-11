@@ -854,6 +854,7 @@ static int inversion(void) {
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
+#if FP_INV == LOWER
 		TEST_CASE("lower inversion is correct") {
 			do {
 				fp_rand(a);
@@ -862,6 +863,7 @@ static int inversion(void) {
 			fp_inv_lower(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("simultaneous inversion is correct") {
 			do {
@@ -926,10 +928,12 @@ static int symbol(void) {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
 		} TEST_END;
+#if FP_SMB == LOWER
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

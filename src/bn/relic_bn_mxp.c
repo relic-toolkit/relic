@@ -338,6 +338,8 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 }
 
+#if BN_MXP == LOWER
+
 void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t t, u;
 	size_t sm;
@@ -393,6 +395,8 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_free_all(t, u);
 	}
 }
+
+#endif
 
 void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 		const crt_t crt, int sqr) {

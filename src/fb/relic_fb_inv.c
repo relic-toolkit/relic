@@ -431,6 +431,8 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	}
 }
 
+#if FB_INV == LOWER
+
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -439,6 +441,8 @@ void fb_inv_lower(fb_t c, const fb_t a) {
 
 	fb_invn_low(c, a);
 }
+
+#endif
 
 void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	int i;

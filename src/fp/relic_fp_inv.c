@@ -694,6 +694,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	}
 }
 
+#if FP_INV == LOWER
+
 void fp_inv_lower(fp_t c, const fp_t a) {
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -702,6 +704,8 @@ void fp_inv_lower(fp_t c, const fp_t a) {
 
 	fp_invm_low(c, a);
 }
+
+#endif
 
 void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	int i;
