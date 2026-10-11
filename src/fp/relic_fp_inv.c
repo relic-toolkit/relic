@@ -255,10 +255,12 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	dig_t carry;
 	size_t i;
 	int k;
+#if FP_RDC == MONTY
 #if ALLOC == AUTO
 	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
 #else
 	const fp_t conv = (fp_t)fp_prime_get_conv();
+#endif
 #endif
 
 	bn_null_all(_a, _p, u, v, x1, x2);
@@ -333,11 +335,14 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 			fp_subn_low(x1->dp, x1->dp, fp_prime_get());
 		}
 
-		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
+		/* If k < Wt then x1 = x1 * R mod p. */
 		if (k <= (int)(RLC_FP_DIGS * RLC_DIG)) {
 			k = k + RLC_FP_DIGS * RLC_DIG;
 #if FP_RDC == MONTY
+			/* Multiply by R^2 * R^{-1}. */
 			fp_mul(x1->dp, x1->dp, conv);
+#else
+			fp_mul(x1->dp, x1->dp, core_get()->one);
 #endif
 		}
 
