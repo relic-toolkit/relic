@@ -170,8 +170,73 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 }
 
 /**
- * Multiplies a binary elliptic curve point by an integer using the w-TNAF
- * method.
+ * Combines the accumulators of a right-to-left w-NAF method, computing
+ * R = sum_i (2i + 1) * T[i] as T[0] + 2 * sum_{i >= 1} S[i], where
+ * S[i] = sum_{j >= i} T[j]. The accumulators are overwritten.
+ *
+ * @param[out] r 				- the result.
+ * @param[in,out] t				- the accumulators.
+ */
+static void eb_mul_odd_sum(eb_t r, eb_t *t) {
+	int i;
+
+	eb_set_infty(r);
+	for (i = (1 << (RLC_WIDTH - 2)) - 1; i > 0; i--) {
+		eb_add(t[i - 1], t[i - 1], t[i]);
+		eb_add(r, r, t[i]);
+	}
+	eb_dbl(r, r);
+	eb_add(r, r, t[0]);
+}
+
+/**
+ * Multiplies a point on a Koblitz curve by a small element
+ * alpha = b + g * tau of Z[tau], using the tau-adic NAF of alpha.
+ *
+ * @param[out] r 				- the result.
+ * @param[in] p					- the point to multiply.
+ * @param[in] b					- the integer part of alpha.
+ * @param[in] g					- the coefficient of tau in alpha.
+ * @param[in] u					- the parameter mu of the curve.
+ */
+static void eb_mul_alpha(eb_t r, const eb_t p, int b, int g, int u) {
+	int8_t d[2 * RLC_WIDTH + 4];
+	int c, l = 0;
+
+	/* Compute the tau-adic NAF of alpha, least significant digit first. */
+	while (b != 0 || g != 0) {
+		d[l] = 0;
+		if (b & 1) {
+			d[l] = 2 - ((b - 2 * g) & 3);
+			b -= d[l];
+		}
+		/* Divide by tau, using tau^2 = mu * tau - 2. */
+		c = b / 2;
+		b = g + u * c;
+		g = -c;
+		l++;
+	}
+
+	/* Evaluate the expansion with Horner's rule. */
+	if (d[l - 1] > 0) {
+		eb_copy(r, p);
+	} else {
+		eb_neg(r, p);
+	}
+	for (l -= 2; l >= 0; l--) {
+		eb_frb(r, r);
+		if (d[l] > 0) {
+			eb_add(r, r, p);
+		}
+		if (d[l] < 0) {
+			eb_sub(r, r, p);
+		}
+	}
+}
+
+/**
+ * Multiplies a binary elliptic curve point by an integer using the
+ * right-to-left w-TNAF method.
  *
  * @param[out] r 				- the result.
  * @param[in] p					- the point to multiply.
@@ -180,6 +245,8 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, n;
 	int8_t tnaf[RLC_FB_BITS + 8], u;
+	int8_t beta[1 << (RLC_WIDTH - 2)], gama[1 << (RLC_WIDTH - 2)];
+	uint8_t t_w;
 	eb_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
@@ -216,221 +283,13 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			fb_sqr(r->y, r->y);
 		}
 
+		/* Multiply each accumulator by its representative alpha. */
+		bn_rec_tnaf_get(&t_w, beta, gama, u, RLC_WIDTH);
 		eb_copy(r, t[0]);
-
-#if RLC_WIDTH == 3
-		eb_frb(t[0], t[1]);
-		if (u == 1) {
-			eb_sub(t[1], t[1], t[0]);
-		} else {
-			eb_add(t[1], t[1], t[0]);
+		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_copy(t[0], t[i]);
+			eb_mul_alpha(t[i], t[0], beta[i], gama[i], u);
 		}
-#endif
-
-#if RLC_WIDTH == 4
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-#endif
-
-#if RLC_WIDTH == 5
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		eb_frb(t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[4], t[0], t[4]);
-
-		eb_frb(t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_sub(t[5], t[0], t[5]);
-
-		eb_frb(t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		eb_frb(t[0], t[7]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-#endif
-
-#if RLC_WIDTH == 6
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[3]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[4]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[4], t[0], t[4]);
-
-		eb_frb(t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[5], t[0], t[5]);
-
-		eb_frb(t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[6]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		eb_frb(t[0], t[7]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-
-		eb_frb(t[0], t[8]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[8], t[0], t[8]);
-
-		eb_frb(t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[0], t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[9]);
-		eb_neg(t[9], t[0]);
-
-		eb_frb(t[0], t[10]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[0], t[0], t[10]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[10], t[0], t[10]);
-
-		eb_frb(t[0], t[11]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[11], t[0], t[11]);
-
-		eb_frb(t[0], t[12]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[12], t[0], t[12]);
-
-		eb_frb(t[0], t[13]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[13]);
-		eb_neg(t[13], t[0]);
-
-		eb_frb(t[0], t[14]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[14], t[0], t[14]);
-
-		eb_frb(t[0], t[15]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[15], t[0], t[15]);
-#endif
 
 		/* Add accumulators */
 		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
@@ -496,73 +355,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_dbl(r, r);
 		}
 
-		eb_copy(r, t[0]);
-
-#if RLC_WIDTH >= 3
-		/* Compute 3 * T[1]. */
-		eb_dbl(t[0], t[1]);
-		eb_add(t[1], t[0], t[1]);
-#endif
-#if RLC_WIDTH >= 4
-		/* Compute 5 * T[2]. */
-		eb_dbl(t[0], t[2]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		/* Compute 7 * T[3]. */
-		eb_dbl(t[0], t[3]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[3], t[0], t[3]);
-#endif
-#if RLC_WIDTH >= 5
-		/* Compute 9 * T[4]. */
-		eb_dbl(t[0], t[4]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[4], t[0], t[4]);
-
-		/* Compute 11 * T[5]. */
-		eb_dbl(t[0], t[5]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[5], t[0], t[5]);
-
-		/* Compute 13 * T[6]. */
-		eb_dbl(t[0], t[6]);
-		eb_add(t[0], t[0], t[6]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		/* Compute 15 * T[7]. */
-		eb_dbl(t[0], t[7]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-#endif
-#if RLC_WIDTH == 6
-		for (i = 8; i < 15; i++) {
-			eb_mul_dig(t[i], t[i], 2 * i + 1);
-		}
-		eb_dbl(t[0], t[15]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[15], t[0], t[15]);
-#endif
-
-		/* Add accumulators */
-		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
-			if (r->coord == BASIC) {
-				eb_add(r, t[i], r);
-			} else {
-				eb_add(r, r, t[i]);
-			}
-		}
+		eb_mul_odd_sum(r, t);
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
 		if (bn_sign(k) == RLC_NEG) {
@@ -912,22 +705,8 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-#if RLC_WIDTH == 2
-		eb_norm(r, t[0]);
-#else
-		/* Compute Q_i = Q_i + Q_{i+2} for i from 2^{w-1}-3 to 1. */
-		for (i = (1 << (RLC_WIDTH - 1)) - 3; i >= 1; i -= 2) {
-			eb_add(t[i / 2], t[i / 2], t[(i + 2) / 2]);
-		}
-		/* Compute R = Q_1 + 2 * sum_{i != 1}Q_i. */
-		eb_copy(r, t[1]);
-		for (i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_add(r, r, t[i]);
-		}
-		eb_dbl(r, r);
-		eb_add(r, r, t[0]);
+		eb_mul_odd_sum(r, t);
 		eb_norm(r, r);
-#endif
 
 		/* We may need to fix an error of a 2-torsion point if the curve has a
 		 * 4-cofactor. */

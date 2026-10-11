@@ -207,6 +207,9 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		}
 
 		switch (w) {
+			case 2:
+				eb_copy(t[0], p);
+				break;
 			/* Formulas from https://eprint.iacr.org/2014/664. */
 #if RLC_DEPTH == 3 || RLC_WIDTH ==  3
 			case 3:
