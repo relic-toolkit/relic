@@ -40,11 +40,7 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	bn_t h;
 	fp_t tv1, tv2, tv3, tv4, tv5;
 	bn_null(h);
-	fp_null(tv1);
-	fp_null(tv2);
-	fp_null(tv3);
-	fp_null(tv4);
-	fp_null(tv5);
+	fp_null_all(tv1, tv2, tv3, tv4, tv5);
 
 	/* aliases to make code easier to read */
 	ctx_t *ctx = core_get();
@@ -55,11 +51,7 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 
 	RLC_TRY {
 		bn_new(h);
-		fp_new(tv1);
-		fp_new(tv2);
-		fp_new(tv3);
-		fp_new(tv4);
-		fp_new(tv5);
+		fp_new_all(tv1, tv2, tv3, tv4, tv5);
 
 		/* set h = (p - 5) / 8 */
 		h->used = RLC_FP_DIGS;
@@ -174,11 +166,7 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	}
 	RLC_FINALLY {
 		bn_free(h);
-		fp_free(tv1);
-		fp_free(tv2);
-		fp_free(tv3);
-		fp_free(tv4);
-		fp_free(tv5);
+		fp_free_all(tv1, tv2, tv3, tv4, tv5);
 	}
 }
 

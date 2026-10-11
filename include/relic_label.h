@@ -1201,20 +1201,12 @@
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
-#undef ed_mul_pre_combs
 #undef ed_mul_pre_combd
-#undef ed_mul_pre_lwnaf
 #undef ed_mul_fix_basic
-#undef ed_mul_fix_combs
 #undef ed_mul_fix_combd
-#undef ed_mul_fix_lwnaf
-#undef ed_mul_fix_lwnaf_mixed
 #undef ed_mul_gen
 #undef ed_mul_dig
-#undef ed_mul_sim_basic
-#undef ed_mul_sim_trick
-#undef ed_mul_sim_inter
-#undef ed_mul_sim_joint
+#undef ed_mul_sim
 #undef ed_mul_sim_lot
 #undef ed_mul_sim_gen
 #undef ed_tab
@@ -1265,20 +1257,12 @@
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
-#define ed_mul_pre_combs 	RLC_PREFIX(ed_mul_pre_combs)
 #define ed_mul_pre_combd 	RLC_PREFIX(ed_mul_pre_combd)
-#define ed_mul_pre_lwnaf 	RLC_PREFIX(ed_mul_pre_lwnaf)
 #define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
-#define ed_mul_fix_combs 	RLC_PREFIX(ed_mul_fix_combs)
 #define ed_mul_fix_combd 	RLC_PREFIX(ed_mul_fix_combd)
-#define ed_mul_fix_lwnaf 	RLC_PREFIX(ed_mul_fix_lwnaf)
-#define ed_mul_fix_lwnaf_mixed 	RLC_PREFIX(ed_mul_fix_lwnaf_mixed)
 #define ed_mul_gen 	RLC_PREFIX(ed_mul_gen)
 #define ed_mul_dig 	RLC_PREFIX(ed_mul_dig)
-#define ed_mul_sim_basic 	RLC_PREFIX(ed_mul_sim_basic)
-#define ed_mul_sim_trick 	RLC_PREFIX(ed_mul_sim_trick)
-#define ed_mul_sim_inter 	RLC_PREFIX(ed_mul_sim_inter)
-#define ed_mul_sim_joint 	RLC_PREFIX(ed_mul_sim_joint)
+#define ed_mul_sim 	RLC_PREFIX(ed_mul_sim)
 #define ed_mul_sim_lot 	RLC_PREFIX(ed_mul_sim_lot)
 #define ed_mul_sim_gen 	RLC_PREFIX(ed_mul_sim_gen)
 #define ed_tab 	RLC_PREFIX(ed_tab)

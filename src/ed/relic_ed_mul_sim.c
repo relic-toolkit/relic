@@ -37,65 +37,43 @@
 /*============================================================================*/
 
 /**
- * Multiplies and adds two prime elliptic curve points simultaneously,
- * optionally choosing the first point as the generator depending on an optional
- * table of precomputed points.
+ * Multiplies and adds two prime elliptic Edwards curve points simultaneously
+ * by interleaving their w-NAFs. The integers must be reduced modulo the order.
  *
  * @param[out] r 				- the result.
  * @param[in] p					- the first point to multiply.
  * @param[in] k					- the first integer.
  * @param[in] q					- the second point to multiply.
  * @param[in] m					- the second integer.
- * @param[in] t					- the pointer to the precomputed table.
  */
-static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m, const ed_t *t) {
-	int i, n0, n1, w, 		gen = (t == NULL ? 0 : 1);
+static void ed_mul_sim_imp(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+		const bn_t m) {
+	int i, n0, n1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	ed_t t0[1 << (RLC_WIDTH - 2)];
 	ed_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
-	RLC_TRY {
-		if (!gen) {
-			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-				ed_null(t0[i]);
-				ed_new(t0[i]);
-			}
-			ed_tab(t0, p, RLC_WIDTH);
-			t = (const ed_t *)t0;
-		}
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		ed_null(t0[i]);
+		ed_null(t1[i]);
+	}
 
-		/* Prepare the precomputation table. */
+	RLC_TRY {
+		/* Compute the precomputation tables. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_null(t1[i]);
+			ed_new(t0[i]);
 			ed_new(t1[i]);
 		}
-		/* Compute the precomputation table. */
+		ed_tab(t0, p, RLC_WIDTH);
 		ed_tab(t1, q, RLC_WIDTH);
 
-		/* Compute the w-TNAF representation of k. */
-		if (gen) {
-			w = RLC_DEPTH;
-		} else {
-			w = RLC_WIDTH;
-		}
+		/* Compute the w-NAF representations of k and m. */
 		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, k, w);
+		bn_rec_naf(naf0, &l0, k, RLC_WIDTH);
 		bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
-			}
-		}
-		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
-			}
-		}
-
 		_k = naf0 + l - 1;
 		_m = naf1 + l - 1;
 		ed_set_infty(r);
@@ -105,10 +83,10 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 			n0 = *_k;
 			n1 = *_m;
 			if (n0 > 0) {
-				ed_add(r, r, t[n0 / 2]);
+				ed_add(r, r, t0[n0 / 2]);
 			}
 			if (n0 < 0) {
-				ed_sub(r, r, t[-n0 / 2]);
+				ed_sub(r, r, t0[-n0 / 2]);
 			}
 			if (n1 > 0) {
 				ed_add(r, r, t1[n1 / 2]);
@@ -125,12 +103,8 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	}
 	RLC_FINALLY {
 		/* Free the precomputation tables. */
-		if (!gen) {
-			for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
-				ed_free(t0[i]);
-			}
-		}
-		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ed_free(t0[i]);
 			ed_free(t1[i]);
 		}
 	}
@@ -140,35 +114,9 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
-	ed_t t;
-
-	ed_null(t);
-
-	RLC_TRY {
-		ed_new(t);
-		ed_mul(t, q, m);
-		ed_mul(r, p, k);
-		ed_add(t, t, r);
-		ed_norm(r, t);
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(t);
-	}
-}
-
-void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m) {
-	ed_t t0[1 << (RLC_WIDTH / 2)], t1[1 << (RLC_WIDTH / 2)], t[1 << RLC_WIDTH];
-	bn_t n;
-	size_t l0, l1, w = RLC_WIDTH / 2;
-	uint8_t w0[RLC_FP_BITS + 1], w1[RLC_FP_BITS + 1];
-
-	bn_null(n);
+	bn_t n, _k, _m;
 
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_mul(r, q, m);
@@ -179,162 +127,28 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		return;
 	}
 
-	RLC_TRY {
-		bn_new(n);
+	bn_null_all(n, _k, _m);
 
+	RLC_TRY {
+		bn_new_all(n, _k, _m);
+
+		/* Reduce the scalars here to simplify the static function. */
 		ed_curve_get_ord(n);
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
-		for (int i = 0; i < (1 << w); i++) {
-			ed_null(t0[i]);
-			ed_null(t1[i]);
-			ed_new(t0[i]);
-			ed_new(t1[i]);
-		}
-		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
-			ed_null(t[i]);
-			ed_new(t[i]);
-		}
-
-		ed_set_infty(t0[0]);
-		ed_copy(t0[1], p);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(t0[1], t0[1]);
-		}
-		for (int i = 2; i < (1 << w); i++) {
-			ed_add(t0[i], t0[i - 1], t0[1]);
-		}
-
-		ed_set_infty(t1[0]);
-		ed_copy(t1[1], q);
-		if (bn_sign(m) == RLC_NEG) {
-			ed_neg(t1[1], t1[1]);
-		}
-		for (int i = 1; i < (1 << w); i++) {
-			ed_add(t1[i], t1[i - 1], t1[1]);
-		}
-
-		for (int i = 0; i < (1 << w); i++) {
-			for (int j = 0; j < (1 << w); j++) {
-				ed_add(t[(i << w) + j], t0[i], t1[j]);
-			}
-		}
-
-		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
-		bn_rec_win(w0, &l0, k, w);
-		bn_rec_win(w1, &l1, m, w);
-
-		ed_set_infty(r);
-		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
-			for (int j = 0; j < w; j++) {
-				ed_dbl(r, r);
-			}
-			ed_add(r, r, t[(w0[i] << w) + w1[i]]);
-		}
-		ed_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		for (int i = 0; i < (1 << w); i++) {
-			ed_free(t0[i]);
-			ed_free(t1[i]);
-		}
-		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
-			ed_free(t[i]);
-		}
-	}
-}
-
-void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m) {
-
-	if (bn_is_zero(k) || ed_is_infty(p)) {
-		ed_mul(r, q, m);
-		return;
-	}
-	if (bn_is_zero(m) || ed_is_infty(q)) {
-		ed_mul(r, p, k);
-		return;
-	}
-
-	ed_mul_sim_plain(r, p, k, q, m, NULL);
-}
-
-void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m) {
-	ed_t t[5];
-	int i, u_i, offset;
-	int8_t jsf[2 * (RLC_FP_BITS + 1)];
-	size_t l;
-
-	if (bn_is_zero(k) || ed_is_infty(p)) {
-		ed_mul(r, q, m);
-		return;
-	}
-	if (bn_is_zero(m) || ed_is_infty(q)) {
-		ed_mul(r, p, k);
-		return;
-	}
-
-	RLC_TRY {
-		for (i = 0; i < 5; i++) {
-			ed_null(t[i]);
-			ed_new(t[i]);
-		}
-
-		ed_set_infty(t[0]);
-		ed_copy(t[1], q);
-		if (bn_sign(m) == RLC_NEG) {
-			ed_neg(t[1], t[1]);
-		}
-		ed_copy(t[2], p);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(t[2], t[2]);
-		}
-		ed_add(t[3], t[2], t[1]);
-		ed_sub(t[4], t[2], t[1]);
-
-		l = 2 * (RLC_FP_BITS + 1);
-		bn_rec_jsf(jsf, &l, k, m);
-
-		ed_set_infty(r);
-
-		offset = RLC_MAX(bn_bits(k), bn_bits(m)) + 1;
-		for (i = l - 1; i >= 0; i--) {
-			ed_dbl(r, r);
-			if (jsf[i] != 0 && jsf[i] == -jsf[i + offset]) {
-				u_i = jsf[i] * 2 + jsf[i + offset];
-				if (u_i < 0) {
-					ed_sub(r, r, t[4]);
-				} else {
-					ed_add(r, r, t[4]);
-				}
-			} else {
-				u_i = jsf[i] * 2 + jsf[i + offset];
-				if (u_i < 0) {
-					ed_sub(r, r, t[-u_i]);
-				} else {
-					ed_add(r, r, t[u_i]);
-				}
-			}
-		}
-		ed_norm(r, r);
+		ed_mul_sim_imp(r, p, _k, q, _m);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < 5; i++) {
-			ed_free(t[i]);
-		}
+		bn_free_all(n, _k, _m);
 	}
 }
 
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 	ed_t g;
-
-	ed_null(g);
 
 	if (bn_is_zero(k)) {
 		ed_mul(r, q, m);
@@ -345,16 +159,12 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 		return;
 	}
 
+	ed_null(g);
+
 	RLC_TRY {
 		ed_new(g);
-
 		ed_curve_get_gen(g);
-
-#if ED_SIM == INTER && ED_FIX == LWNAF && defined(ED_PRECO)
-		ed_mul_sim_plain(r, g, k, q, m, ed_curve_get_tab());
-#else
 		ed_mul_sim(r, g, k, q, m);
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -367,8 +177,16 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n) {
 	int i, j;
 	int8_t *naf = NULL;
-	ed_t *_p = RLC_ALLOCA(ed_t, n);
-	size_t l, *_l = RLC_ALLOCA(size_t, n);
+	ed_t *_p;
+	size_t l, *_l;
+
+	if (n == 0) {
+		ed_set_infty(r);
+		return;
+	}
+
+	_p = RLC_ALLOCA(ed_t, n);
+	_l = RLC_ALLOCA(size_t, n);
 
 	RLC_TRY {
 		l = 0;

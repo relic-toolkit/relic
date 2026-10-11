@@ -80,12 +80,10 @@ void ed_copy(ed_t r, const ed_t p) {
 void ed_rand(ed_t p) {
 	bn_t n, k;
 
-	bn_null(k);
-	bn_null(n);
+	bn_null_all(k, n);
 
 	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
+		bn_new_all(k, n);
 
 		ed_curve_get_ord(n);
 		bn_rand_mod(k, n);
@@ -94,8 +92,7 @@ void ed_rand(ed_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
+		bn_free_all(k, n);
 	}
 }
 

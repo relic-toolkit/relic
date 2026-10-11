@@ -41,11 +41,6 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
-
 	RLC_TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
@@ -87,9 +82,6 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -105,7 +97,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	bn_t _k;
 	int i, j, n;
-	int8_t s, reg[RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
+	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
 	ed_t t[1 << (RLC_WIDTH - 2)], u, v;
 	size_t l;
 
@@ -113,8 +105,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 
 	RLC_TRY {
 		bn_new(_k);
-		ed_new(u);
-		ed_new(v);
+		ed_new_all(u, v);
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ed_null(t[i]);
@@ -124,7 +115,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_tab(t, p, RLC_WIDTH);
 
 		/* Make a copy of the scalar for processing. */
-		bn_abs(_k, k);
+		bn_copy(_k, k);
 		_k->dp[0] |= bn_is_even(_k);
 
 		/* Compute the w-NAF representation of k. */
@@ -162,16 +153,11 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		fp_copy_sec(r->x, u->x, bn_is_even(k));
 		fp_copy_sec(r->y, u->y, bn_is_even(k));
 		fp_copy_sec(r->z, u->z, bn_is_even(k));
-#if ED_Afp == EXTND
+#if ED_ADD == EXTND
 		fp_copy_sec(r->t, u->t, bn_is_even(k));
 #endif
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
-		ed_neg(u, r);
-		fp_copy_sec(r->x, u->x, bn_sign(k) == RLC_NEG);
-#if ED_ADD == EXTND
-		fp_copy_sec(r->t, u->t, bn_sign(k) == RLC_NEG);
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -238,24 +224,31 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 
 void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t[2];
-
-	ed_null(t[0]);
-	ed_null(t[1]);
+	bn_t n, _k;
 
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
+	bn_null_all(n, _k);
+	ed_null(t[0]);
+	ed_null(t[1]);
+
 	RLC_TRY {
+		bn_new_all(n, _k);
 		ed_new(t[0]);
 		ed_new(t[1]);
+
+		/* Reduce the scalar to bound the length of the ladder. */
+		ed_curve_get_ord(n);
+		bn_mod(_k, k, n);
 
 		ed_set_infty(t[0]);
 		ed_copy(t[1], p);
 
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
+		for (int i = bn_bits(_k) - 1; i >= 0; i--) {
+			int j = bn_get_bit(_k, i);
 
 			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
@@ -274,34 +267,68 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 		}
 
 		ed_norm(r, t[0]);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free_all(n, _k);
 		ed_free(t[1]);
 		ed_free(t[0]);
 	}
 }
 
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
+	bn_t n, _k;
+
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-	ed_mul_naf_imp(r, p, k);
+	bn_null_all(n, _k);
+
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		/* Reduce the scalar here to simplify the static functions. */
+		ed_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		ed_mul_naf_imp(r, p, _k);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }
 
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
+	bn_t n, _k;
+
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-	ed_mul_reg_imp(r, p, k);
+	bn_null_all(n, _k);
+
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		/* Reduce the scalar here to simplify the static functions. */
+		ed_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		ed_mul_reg_imp(r, p, _k);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }
 
 void ed_mul_gen(ed_t r, const bn_t k) {

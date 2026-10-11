@@ -49,12 +49,10 @@ int ed_upk(ed_t r, const ed_t p) {
 	int result = 1;
 	fp_t t, u;
 
-	fp_null(t);
-	fp_null(u);
+	fp_null_all(t, u);
 
 	RLC_TRY {
-		fp_new(t);
-		fp_new(u);
+		fp_new_all(t, u);
 
 		fp_copy(r->y, p->y);
 

@@ -497,26 +497,6 @@ static void arith(void) {
 	}
 #endif
 
-#if ED_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < RLC_ED_TABLE_COMBS; i++) {
-		ed_new(t[i]);
-	}
-	BENCH_RUN("ed_mul_pre_combs") {
-		ed_rand(p);
-		BENCH_ADD(ed_mul_pre_combs(t, p));
-	} BENCH_END;
-
-	BENCH_RUN("ed_mul_fix_combs") {
-		bn_rand_mod(k, n);
-		ed_rand(p);
-		ed_mul_pre_combs(t, p);
-		BENCH_ADD(ed_mul_fix_combs(q, (const ed_t *)t, k));
-	} BENCH_END;
-	for (int i = 0; i < RLC_ED_TABLE_COMBS; i++) {
-		ed_free(t[i]);
-	}
-#endif
-
 #if ED_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_ED_TABLE_COMBD; i++) {
 		ed_new(t[i]);
@@ -542,46 +522,6 @@ static void arith(void) {
 		ed_rand(q);
 		BENCH_ADD(ed_mul_sim(r, p, l[0], q, l[1]));
 	} BENCH_END;
-
-#if ED_SIM == BASIC || !defined(STRIP)
-	BENCH_RUN("ed_mul_sim_basic") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ed_rand(p);
-		ed_rand(q);
-		BENCH_ADD(ed_mul_sim_basic(r, p, l[0], q, l[1]));
-	} BENCH_END;
-#endif
-
-#if ED_SIM == TRICK || !defined(STRIP)
-	BENCH_RUN("ed_mul_sim_trick") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ed_rand(p);
-		ed_rand(q);
-		BENCH_ADD(ed_mul_sim_trick(r, p, l[0], q, l[1]));
-	} BENCH_END;
-#endif
-
-#if ED_SIM == INTER || !defined(STRIP)
-	BENCH_RUN("ed_mul_sim_inter") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ed_rand(p);
-		ed_rand(q);
-		BENCH_ADD(ed_mul_sim_inter(r, p, l[0], q, l[1]));
-	} BENCH_END;
-#endif
-
-#if ED_SIM == JOINT || !defined(STRIP)
-	BENCH_RUN("ed_mul_sim_joint") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ed_rand(p);
-		ed_rand(q);
-		BENCH_ADD(ed_mul_sim_joint(r, p, l[0], q, l[1]));
-	} BENCH_END;
-#endif
 
 	BENCH_RUN("ed_mul_sim_gen") {
 		bn_rand_mod(l[0], n);

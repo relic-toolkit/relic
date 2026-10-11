@@ -503,27 +503,12 @@
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_MUL	 @ED_MUL@
 
-/** Binary point multiplication. */
-#define BASIC	 1
 /** Single-table comb method. */
-#define COMBS	 2
+#define BASIC	 1
 /** Double-table comb method. */
 #define COMBD    3
-/** Left-to-right Width-w NAF. */
-#define LWNAF	 4
-/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
+/** Chosen prime elliptic twisted Edwards curve fixed point multiplication method. */
 #define ED_FIX	 @ED_FIX@
-
-/** Basic simultaneouns point multiplication. */
-#define BASIC    1
-/** Shamir's trick. */
-#define TRICK    2
-/** Interleaving of w-(T)NAFs. */
-#define INTER    3
-/** Joint sparse form. */
-#define JOINT    4
-/** Chosen prime elliptic curve simulteanous point multiplication method. */
-#define ED_SIM   @ED_SIM@
 
 /** Prime curves. */
 #define PRIME    1

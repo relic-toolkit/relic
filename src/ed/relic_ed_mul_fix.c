@@ -32,167 +32,10 @@
 #include "relic_core.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF mixed coordinate
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FP_BITS + 1], *_k;
-	size_t l;
-
-	/* Compute the w-TNAF representation of k. */
-	l = RLC_FP_BITS + 1;
-	bn_rec_naf(naf, &l, k, RLC_DEPTH);
-
-	_k = naf + l - 1;
-	ed_set_infty(r);
-	for (i = l - 1; i >= 0; i--, _k--) {
-		n = *_k;
-		if (n == 0) {
-			/* doubling is followed by another doubling */
-			if (i > 0) {
-				r->coord = EXTND;
-				ed_dbl(r, r);
-			} else {
-				/* use full extended coordinate doubling for last step */
-				ed_dbl(r, r);
-			}
-		} else {
-			ed_dbl(r, r);
-			if (n > 0) {
-				ed_add(r, r, t[n / 2]);
-			} else if (n < 0) {
-				ed_sub(r, r, t[-n / 2]);
-			}
-		}
-	}
-	/* Convert r to affine coordinates. */
-	ed_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ed_neg(r, r);
-	}
-}
-
-/**
- * Multiplies a prime elliptic curve point by an integer using the COMBS
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
-	int i, j, l, w, n0, p0, p1;
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ed_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % RLC_DEPTH) == 0 ? (l / RLC_DEPTH) : (l / RLC_DEPTH) + 1);
-
-		n0 = bn_bits(k);
-
-		p0 = (RLC_DEPTH) * l - 1;
-
-		w = 0;
-		p1 = p0--;
-		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-			w = w << 1;
-			if (p1 < n0 && bn_get_bit(k, p1)) {
-				w = w | 1;
-			}
-		}
-		ed_copy(r, t[w]);
-
-		for (i = l - 2; i >= 0; i--) {
-			ed_dbl(r, r);
-
-			w = 0;
-			p1 = p0--;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-				w = w << 1;
-				if (p1 < n0 && bn_get_bit(k, p1)) {
-					w = w | 1;
-				}
-			}
-			if (w > 0) {
-				ed_add(r, r, t[w]);
-			}
-		}
-		ed_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ed_mul_pre_basic(ed_t * t, const ed_t p) {
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ed_curve_get_ord(n);
-
-		ed_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			ed_dbl(t[i], t[i - 1]);
-		}
-
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, bn_bits(n) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
-
-	ed_set_infty(r);
-
-	for (int i = 0; i < bn_bits(k); i++) {
-		if (bn_get_bit(k, i)) {
-			ed_add(r, r, t[i]);
-		}
-	}
-	ed_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ed_neg(r, r);
-	}
-}
-
-void ed_mul_pre_combs(ed_t * t, const ed_t p) {
+void ed_mul_pre_basic(ed_t *t, const ed_t p) {
 	int i, j, l;
 	bn_t n;
 
@@ -202,8 +45,7 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % RLC_DEPTH) == 0 ? (l / RLC_DEPTH) : (l / RLC_DEPTH) + 1);
+		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 
 		ed_set_infty(t[0]);
 
@@ -218,7 +60,7 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 			}
 		}
 
-		ed_norm_sim(t + 2, (const ed_t *)t + 2, RLC_ED_TABLE_COMBS - 2);
+		ed_norm_sim(t + 2, (const ed_t *)t + 2, RLC_ED_TABLE_BASIC - 2);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -228,11 +70,66 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_combs(ed_t r, const ed_t * t, const bn_t k) {
-	ed_mul_combs_plain(r, t, k);
+void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
+	int i, j, l, w, n0, p0, p1;
+	bn_t n, _k;
+
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
+	}
+
+	bn_null_all(n, _k);
+
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		ed_curve_get_ord(n);
+		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
+
+		/* Reduce the scalar so that it fits in the table. */
+		bn_mod(_k, k, n);
+		n0 = bn_bits(_k);
+
+		p0 = (RLC_DEPTH) * l - 1;
+
+		w = 0;
+		p1 = p0--;
+		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
+			w = w << 1;
+			if (p1 < n0 && bn_get_bit(_k, p1)) {
+				w = w | 1;
+			}
+		}
+		ed_copy(r, t[w]);
+
+		for (i = l - 2; i >= 0; i--) {
+			ed_dbl(r, r);
+
+			w = 0;
+			p1 = p0--;
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
+				w = w << 1;
+				if (p1 < n0 && bn_get_bit(_k, p1)) {
+					w = w | 1;
+				}
+			}
+			if (w > 0) {
+				ed_add(r, r, t[w]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		ed_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }
 
-void ed_mul_pre_combd(ed_t * t, const ed_t p) {
+void ed_mul_pre_combd(ed_t *t, const ed_t p) {
 	int i, j, d, e;
 	bn_t n;
 
@@ -242,9 +139,8 @@ void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
-		d = bn_bits(n);
-		d = ((d % RLC_DEPTH) == 0 ? (d / RLC_DEPTH) : (d / RLC_DEPTH) + 1);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
+		e = RLC_CEIL(d, 2);
 
 		ed_set_infty(t[0]);
 		ed_copy(t[1], p);
@@ -277,23 +173,29 @@ void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
+void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
-	bn_t n;
+	bn_t n, _k;
 
-	bn_null(n);
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
+	}
+
+	bn_null_all(n, _k);
 
 	RLC_TRY {
-		bn_new(n);
+		bn_new_all(n, _k);
 
 		ed_curve_get_ord(n);
-		d = bn_bits(n);
-		d = ((d % RLC_DEPTH) == 0 ? (d / RLC_DEPTH) : (d / RLC_DEPTH) + 1);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
+		e = RLC_CEIL(d, 2);
+
+		/* Reduce the scalar so that it fits in the table. */
+		bn_mod(_k, k, n);
+		n0 = bn_bits(_k);
 
 		ed_set_infty(r);
-		n0 = bn_bits(k);
-
 		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
 		for (i = e - 1; i >= 0; i--) {
 			ed_dbl(r, r);
@@ -302,7 +204,7 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 			p0 = p1;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w0 = w0 << 1;
-				if (p0 < n0 && bn_get_bit(k, p0)) {
+				if (p0 < n0 && bn_get_bit(_k, p0)) {
 					w0 = w0 | 1;
 				}
 			}
@@ -311,7 +213,7 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 			p0 = p1-- + e;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w1 = w1 << 1;
-				if (i + e < d && p0 < n0 && bn_get_bit(k, p0)) {
+				if (i + e < d && p0 < n0 && bn_get_bit(_k, p0)) {
 					w1 = w1 | 1;
 				}
 			}
@@ -319,23 +221,13 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 			ed_add(r, r, t[w0]);
 			ed_add(r, r, t[(1 << RLC_DEPTH) + w1]);
 		}
+		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
+		bn_free_all(n, _k);
 	}
-}
-
-void ed_mul_pre_lwnaf(ed_t * t, const ed_t p) {
-	ed_tab(t, p, RLC_DEPTH);
-}
-
-void ed_mul_fix_lwnaf(ed_t r, const ed_t * t, const bn_t k) {
-	ed_mul_fix_plain(r, t, k);
 }

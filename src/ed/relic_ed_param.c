@@ -76,13 +76,11 @@ void ed_param_set(int param) {
 	bn_t h;
 
 	ed_null(g);
-	bn_null(r);
-	bn_null(h);
+	bn_null_all(r, h);
 
 	RLC_TRY {
 		ed_new(g);
-		bn_new(r);
-		bn_new(h);
+		bn_new_all(r, h);
 
 		ctx->ed_id = 0;
 
@@ -162,8 +160,7 @@ void ed_param_set(int param) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
-		bn_free(h);
+		bn_free_all(r, h);
 		ed_free(g);
 	}
 }

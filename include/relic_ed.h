@@ -57,14 +57,9 @@ enum {
 /* Precomputaion table														*/
 /*============================================================================*/
 /**
- * Size of a precomputation table using the binary method.
- */
-#define RLC_ED_TABLE_BASIC	  (RLC_FP_BITS + 1)
-
-/**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_ED_TABLE_COMBS	  (1 << RLC_DEPTH)
+#define RLC_ED_TABLE_BASIC	  (1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -72,21 +67,12 @@ enum {
 #define RLC_ED_TABLE_COMBD	  (1 << (RLC_DEPTH + 1))
 
 /**
- * Size of a precomputation table using the w-(T)NAF method.
- */
-#define RLC_ED_TABLE_LWNAF	  (1 << (RLC_DEPTH - 2))
-
-/**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if ED_FIX == BASIC
 #define RLC_ED_TABLE			RLC_ED_TABLE_BASIC
-#elif ED_FIX == COMBS
-#define RLC_ED_TABLE			RLC_ED_TABLE_COMBS
 #elif ED_FIX == COMBD
 #define RLC_ED_TABLE			RLC_ED_TABLE_COMBD
-#elif ED_FIX == LWNAF
-#define RLC_ED_TABLE			RLC_ED_TABLE_LWNAF
 #endif
 
 /**
@@ -181,6 +167,17 @@ typedef ed_st *ed_t;
 #define ed_free(A)			/* empty */
 
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ed_null_all(...)	RLC_EACH(ed_null, __VA_ARGS__)
+#define ed_new_all(...)		RLC_EACH(ed_new, __VA_ARGS__)
+#define ed_free_all(...)	RLC_EACH(ed_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Negates an Edwards elliptic curve point. Computes R = -P.
@@ -520,12 +517,8 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  */
 #if ED_FIX == BASIC
 #define ed_mul_pre(T, P)	ed_mul_pre_basic(T, P)
-#elif ED_FIX == COMBS
-#define ed_mul_pre(T, P)	ed_mul_pre_combs(T, P)
 #elif ED_FIX == COMBD
 #define ed_mul_pre(T, P)	ed_mul_pre_combd(T, P)
-#elif ED_FIX == LWNAF
-#define ed_mul_pre(T, P)	ed_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -538,32 +531,8 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  */
 #if ED_FIX == BASIC
 #define ed_mul_fix(R, T, K) ed_mul_fix_basic(R, T, K)
-#elif ED_FIX == COMBS
-#define ed_mul_fix(R, T, K) ed_mul_fix_combs(R, T, K)
 #elif ED_FIX == COMBD
 #define ed_mul_fix(R, T, K) ed_mul_fix_combd(R, T, K)
-#elif ED_FIX == LWNAF
-#define ed_mul_fix(R, T, K) ed_mul_fix_lwnaf(R, T, K)
-#endif
-
- /**
- * Multiplies and adds two Edwards elliptic curve points simultaneously. Computes
- * R = [k]P + [m]Q.
- *
- * @param[out] R			- the result.
- * @param[in] P			 	- the first point to multiply.
- * @param[in] K			 	- the first integer.
- * @param[in] Q			 	- the second point to multiply.
- * @param[in] M			 	- the second integer,
- */
-#if ED_SIM == BASIC
-#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_basic(R, P, K, Q, M)
-#elif ED_SIM == TRICK
-#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_trick(R, P, K, Q, M)
-#elif ED_SIM == INTER
-#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_inter(R, P, K, Q, M)
-#elif ED_SIM == JOINT
-#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /*============================================================================*/
@@ -582,21 +551,12 @@ void ed_curve_clean(void);
 
 /**
  * Builds a precomputation table for multiplying a fixed Edwards elliptic point
- * using the binary method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ed_mul_pre_basic(ed_t *t, const ed_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed Edwards elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ed_mul_pre_combs(ed_t *t, const ed_t p);
+void ed_mul_pre_basic(ed_t *t, const ed_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed Edwards elliptic point
@@ -608,25 +568,6 @@ void ed_mul_pre_combs(ed_t *t, const ed_t p);
 void ed_mul_pre_combd(ed_t *t, const ed_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed Edwards elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ed_mul_pre_lwnaf(ed_t *t, const ed_t p);
-
-/**
- * Multiplies a fixed Edwards elliptic point using a precomputation table and
- * the binary method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
-
-/**
  * Multiplies a fixed Edwards elliptic point using a precomputation table and
  * the single-table comb method.
  *
@@ -634,7 +575,7 @@ void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ed_mul_fix_combs(ed_t r, const ed_t *t, const bn_t k);
+void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed Edwards elliptic point using a precomputation table and
@@ -645,26 +586,6 @@ void ed_mul_fix_combs(ed_t r, const ed_t *t, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed Edwards elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed Edwards elliptic point using a precomputation table and
- * the w-(T)NAF mixed coordinate method.
- *
- * @param[out] r			- the result.
- * @param[in] t			 	- the precomputation table.
- * @param[in] k			 	- the integer.
- */
-void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies the generator of an Edwards elliptic curve by an integer.
@@ -684,56 +605,17 @@ void ed_mul_gen(ed_t r, const bn_t k);
 void ed_mul_dig(ed_t r, const ed_t p, dig_t k);
 
 /**
- * Multiplies and adds two Edwards elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two Edwards elliptic curve points simultaneously by
+ * interleaving their w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
- * @param[in] p			 	- the first point to multiply.
- * @param[in] k			 	- the first integer.
- * @param[in] q			 	- the second point to multiply.
- * @param[in] m			 	- the second integer,
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer.
  */
-void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-	const bn_t m);
-
-/**
- * Multiplies and adds two Edwards elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p			 	- the first point to multiply.
- * @param[in] k			 	- the first integer.
- * @param[in] q			 	- the second point to multiply.
- * @param[in] m			 	- the second integer,
- */
-void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-	const bn_t m);
-
-/**
- * Multiplies and adds two Edwards elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p			 	- the first point to multiply.
- * @param[in] k			 	- the first integer.
- * @param[in] q			 	- the second point to multiply.
- * @param[in] m			 	- the second integer,
- */
-void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-	const bn_t m);
-
-/**
- * Multiplies and adds two Edwards elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p			 	- the first point to multiply.
- * @param[in] k			 	- the first integer.
- * @param[in] q			 	- the second point to multiply.
- * @param[in] m			 	- the second integer,
- */
-void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-	const bn_t m);
+void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+		const bn_t m);
 
 /**
  * Multiplies and adds multiple Edwards elliptic curve points simultaneously.
