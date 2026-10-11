@@ -185,7 +185,7 @@ void dv_copy(dig_t *c, const dig_t *a, size_t digits);
  * Conditionally copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.
- * @param[in] a			- the source.
+ * @param[in] a				- the source.
  * @param[in] digits		- the number of digits to copy.
  * @param[in] bit			- the condition bit, 0 or 1.
  */
@@ -195,7 +195,7 @@ void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
  * Conditionally swap two digit vectors.
  *
  * @param[in,out] c			- the destination.
- * @param[in,out] a		- the source.
+ * @param[in,out] a			- the source.
  * @param[in] digits		- the number of digits to swap.
  * @param[in] bit			- the condition bit, 0 or 1.
  */
