@@ -561,7 +561,7 @@ static int ecies(void) {
 
 		switch (ec_param_get()) {
 
-#if FP_PRIME == 256
+#if FP_PRIME == 256 && EC_CUR == PRIME
 			case NIST_P256:
 				ASSIGNP(NIST_P256);
 				memcpy(msg, expected, sizeof(expected));

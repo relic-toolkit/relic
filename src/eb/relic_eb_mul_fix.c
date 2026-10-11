@@ -144,49 +144,6 @@ static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
 /*============================================================================*/
 
 void eb_mul_pre_basic(eb_t *t, const eb_t p) {
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		eb_curve_get_ord(n);
-
-		eb_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			eb_dbl(t[i], t[i - 1]);
-		}
-
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, bn_bits(n) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k) {
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_set_infty(r);
-	for (int i = 0; i < bn_bits(k); i++) {
-		if (bn_get_bit(k, i)) {
-			eb_add(r, r, t[i]);
-		}
-	}
-	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
-}
-
-void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 	int i, j, l;
 	bn_t ord;
 
@@ -212,7 +169,7 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 			}
 		}
 
-		eb_norm_sim(t + 2, (const eb_t *)t + 2, RLC_EB_TABLE_COMBS - 2);
+		eb_norm_sim(t + 2, (const eb_t *)t + 2, RLC_EB_TABLE_BASIC - 2);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -222,7 +179,7 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 	}
 }
 
-void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
+void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k) {
 	int i, j, l, w, n, p0, p1;
 	bn_t ord;
 

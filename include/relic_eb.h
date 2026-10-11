@@ -79,14 +79,9 @@ enum {
 };
 
 /**
- * Size of a precomputation table using the binary method.
- */
-#define RLC_EB_TABLE_BASIC		(RLC_FB_BITS)
-
-/**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EB_TABLE_COMBS      (1 << RLC_DEPTH)
+#define RLC_EB_TABLE_BASIC		(1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -103,8 +98,6 @@ enum {
  */
 #if EB_FIX == BASIC
 #define RLC_EB_TABLE			RLC_EB_TABLE_BASIC
-#elif EB_FIX == COMBS
-#define RLC_EB_TABLE			RLC_EB_TABLE_COMBS
 #elif EB_FIX == COMBD
 #define RLC_EB_TABLE			RLC_EB_TABLE_COMBD
 #elif EB_FIX == LWNAF
@@ -276,8 +269,6 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_pre(T, P)	eb_mul_pre_basic(T, P)
-#elif EB_FIX == COMBS
-#define eb_mul_pre(T, P)	eb_mul_pre_combs(T, P)
 #elif EB_FIX == COMBD
 #define eb_mul_pre(T, P)	eb_mul_pre_combd(T, P)
 #elif EB_FIX == LWNAF
@@ -294,32 +285,10 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_fix(R, T, K)	eb_mul_fix_basic(R, T, K)
-#elif EB_FIX == COMBS
-#define eb_mul_fix(R, T, K)	eb_mul_fix_combs(R, T, K)
 #elif EB_FIX == COMBD
 #define eb_mul_fix(R, T, K)	eb_mul_fix_combd(R, T, K)
 #elif EB_FIX == LWNAF
 #define eb_mul_fix(R, T, K)	eb_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two binary elliptic curve points simultaneously. Computes
- * R = [k]P + [m]Q.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the first point to multiply.
- * @param[in] K				- the first integer.
- * @param[in] Q				- the second point to multiply.
- * @param[in] M				- the second integer,
- */
-#if EB_SIM == BASIC
-#define eb_mul_sim(R, P, K, Q, M)	eb_mul_sim_basic(R, P, K, Q, M)
-#elif EB_SIM == TRICK
-#define eb_mul_sim(R, P, K, Q, M)	eb_mul_sim_trick(R, P, K, Q, M)
-#elif EB_SIM == INTER
-#define eb_mul_sim(R, P, K, Q, M)	eb_mul_sim_inter(R, P, K, Q, M)
-#elif EB_SIM == JOINT
-#define eb_mul_sim(R, P, K, Q, M)	eb_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /*============================================================================*/
@@ -725,21 +694,12 @@ void eb_mul_dig(eb_t r, const eb_t p, const dig_t k);
 
 /**
  * Builds a precomputation table for multiplying a fixed binary elliptic point
- * using the binary method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void eb_mul_pre_basic(eb_t *t, const eb_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed binary elliptic point
  * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void eb_mul_pre_combs(eb_t *t, const eb_t p);
+void eb_mul_pre_basic(eb_t *t, const eb_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed binary elliptic point
@@ -761,23 +721,13 @@ void eb_mul_pre_lwnaf(eb_t *t, const eb_t p);
 
 /**
  * Multiplies a fixed binary elliptic point using a precomputation table and
- * the binary method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed binary elliptic point using a precomputation table and
  * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k);
+void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed binary elliptic point using a precomputation table and
@@ -800,8 +750,8 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k);
 void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k);
 
 /**
- * Multiplies and adds two binary elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two binary elliptic curve points simultaneously by
+ * interleaving w-(T)NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -809,46 +759,7 @@ void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two binary elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two binary elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two binary elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
+void eb_mul_sim(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m);
 
 /**

@@ -268,116 +268,7 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m) {
-	eb_t t;
-
-	eb_null(t);
-
-	RLC_TRY {
-		eb_new(t);
-		eb_mul(t, q, m);
-		eb_mul(r, p, k);
-		eb_add(t, t, r);
-		eb_norm(r, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-	}
-}
-
-void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m) {
-	eb_t t0[1 << (RLC_WIDTH / 2)], t1[1 << (RLC_WIDTH / 2)], t[1 << RLC_WIDTH];
-	size_t l0, l1, w = RLC_WIDTH / 2;
-	uint8_t w0[RLC_FB_BITS], w1[RLC_FB_BITS];
-	bn_t n;
-
-	bn_null(n);
-
-	if (bn_is_zero(k) || eb_is_infty(p)) {
-		eb_mul(r, q, m);
-		return;
-	}
-	if (bn_is_zero(m) || eb_is_infty(q)) {
-		eb_mul(r, p, k);
-		return;
-	}
-
-	RLC_TRY {
-		bn_new(n);
-
-		eb_curve_get_ord(n);
-
-		for (int i = 0; i < (1 << w); i++) {
-			eb_null(t0[i]);
-			eb_null(t1[i]);
-			eb_new(t0[i]);
-			eb_new(t1[i]);
-		}
-		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-		}
-
-		eb_set_infty(t0[0]);
-		eb_copy(t0[1], p);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(t0[1], t0[1]);
-		}
-		for (int i = 2; i < (1 << w); i++) {
-			eb_add(t0[i], t0[i - 1], t0[1]);
-		}
-
-		eb_set_infty(t1[0]);
-		eb_copy(t1[1], q);
-		if (bn_sign(m) == RLC_NEG) {
-			eb_neg(t1[1], t1[1]);
-		}
-		for (int i = 2; i < (1 << w); i++) {
-			eb_add(t1[i], t1[i - 1], t1[1]);
-		}
-
-		for (int i = 0; i < (1 << w); i++) {
-			for (int j = 0; j < (1 << w); j++) {
-				eb_add(t[(i << w) + j], t0[i], t1[j]);
-			}
-		}
-
-#if RLC_WIDTH > 2
-		eb_norm_sim(t + 2, (const eb_t *)(t + 2), (1 << (w + w)) - 2);
-#endif
-
-		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
-		bn_rec_win(w0, &l0, k, w);
-		bn_rec_win(w1, &l1, m, w);
-
-		eb_set_infty(r);
-		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
-			for (int j = 0; j < w; j++) {
-				eb_dbl(r, r);
-			}
-			eb_add(r, r, t[(w0[i] << w) + w1[i]]);
-		}
-		eb_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		for (int i = 0; i < (1 << w); i++) {
-			eb_free(t0[i]);
-			eb_free(t1[i]);
-		}
-		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
+void eb_mul_sim(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
@@ -395,76 +286,6 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 
 	eb_mul_sim_plain(r, p, k, q, m, NULL);
-}
-
-void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m) {
-	eb_t t[5];
-	int i, u_i, offset;
-	int8_t jsf[2 * (RLC_FB_BITS + 1)];
-	size_t len;
-
-	if (bn_is_zero(k) || eb_is_infty(p)) {
-		eb_mul(r, q, m);
-		return;
-	}
-	if (bn_is_zero(m) || eb_is_infty(q)) {
-		eb_mul(r, p, k);
-		return;
-	}
-
-	RLC_TRY {
-		for (i =  0; i < 5; i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-		}
-
-		eb_set_infty(t[0]);
-		eb_copy(t[1], q);
-		if (bn_sign(m) == RLC_NEG) {
-			eb_neg(t[1], t[1]);
-		}
-		eb_copy(t[2], p);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(t[2], t[2]);
-		}
-		eb_add(t[3], t[2], t[1]);
-		eb_sub(t[4], t[2], t[1]);
-		eb_norm_sim(t + 3, (const eb_t*)(t + 3), 2);
-
-		len = 2 * (RLC_FB_BITS + 1);
-		bn_rec_jsf(jsf, &len, k, m);
-
-		eb_set_infty(r);
-		offset = RLC_MAX(bn_bits(k), bn_bits(m)) + 1;
-		for (i = len - 1; i >= 0; i--) {
-			eb_dbl(r, r);
-			if (jsf[i] != 0 && jsf[i] == -jsf[i + offset]) {
-				u_i = jsf[i] * 2 + jsf[i + offset];
-				if (u_i < 0) {
-					eb_sub(r, r, t[4]);
-				} else {
-					eb_add(r, r, t[4]);
-				}
-			} else {
-				u_i = jsf[i] * 2 + jsf[i + offset];
-				if (u_i < 0) {
-					eb_sub(r, r, t[-u_i]);
-				} else {
-					eb_add(r, r, t[u_i]);
-				}
-			}
-		}
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i =  0; i < 5; i++) {
-			eb_free(t[i]);
-		}
-	}
 }
 
 void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
@@ -486,7 +307,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 
 		eb_curve_get_gen(g);
 
-#if EB_SIM == INTER && EB_FIX == LWNAF && defined(EB_PRECO)
+#if EB_FIX == LWNAF && defined(EB_PRECO)
 		if (eb_curve_is_kbltz()) {
 			eb_mul_sim_kbltz(r, g, k, q, m, eb_curve_get_tab());
 		}
@@ -496,7 +317,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		}
 #endif
 
-#if EB_SIM == INTER && EB_FIX == LWNAF && defined(EB_PRECO)
+#if EB_FIX == LWNAF && defined(EB_PRECO)
 		if (!eb_curve_is_kbltz()) {
 			eb_mul_sim_plain(r, g, k, q, m, eb_curve_get_tab());
 		}

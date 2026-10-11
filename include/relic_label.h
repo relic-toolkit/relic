@@ -1347,17 +1347,12 @@
 #undef eb_mul_gen
 #undef eb_mul_dig
 #undef eb_mul_pre_basic
-#undef eb_mul_pre_combs
 #undef eb_mul_pre_combd
 #undef eb_mul_pre_lwnaf
 #undef eb_mul_fix_basic
-#undef eb_mul_fix_combs
 #undef eb_mul_fix_combd
 #undef eb_mul_fix_lwnaf
-#undef eb_mul_sim_basic
-#undef eb_mul_sim_trick
-#undef eb_mul_sim_inter
-#undef eb_mul_sim_joint
+#undef eb_mul_sim
 #undef eb_mul_sim_gen
 #undef eb_mul_sim_lot
 #undef eb_norm
@@ -1416,17 +1411,12 @@
 #define eb_mul_gen 	RLC_PREFIX(eb_mul_gen)
 #define eb_mul_dig 	RLC_PREFIX(eb_mul_dig)
 #define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
-#define eb_mul_pre_combs 	RLC_PREFIX(eb_mul_pre_combs)
 #define eb_mul_pre_combd 	RLC_PREFIX(eb_mul_pre_combd)
 #define eb_mul_pre_lwnaf 	RLC_PREFIX(eb_mul_pre_lwnaf)
 #define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
-#define eb_mul_fix_combs 	RLC_PREFIX(eb_mul_fix_combs)
 #define eb_mul_fix_combd 	RLC_PREFIX(eb_mul_fix_combd)
 #define eb_mul_fix_lwnaf 	RLC_PREFIX(eb_mul_fix_lwnaf)
-#define eb_mul_sim_basic 	RLC_PREFIX(eb_mul_sim_basic)
-#define eb_mul_sim_trick 	RLC_PREFIX(eb_mul_sim_trick)
-#define eb_mul_sim_inter 	RLC_PREFIX(eb_mul_sim_inter)
-#define eb_mul_sim_joint 	RLC_PREFIX(eb_mul_sim_joint)
+#define eb_mul_sim 	RLC_PREFIX(eb_mul_sim)
 #define eb_mul_sim_gen 	RLC_PREFIX(eb_mul_sim_gen)
 #define eb_mul_sim_lot 	RLC_PREFIX(eb_mul_sim_lot)
 #define eb_norm 	RLC_PREFIX(eb_norm)

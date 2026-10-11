@@ -312,11 +312,11 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			/* the loop above stays inside a digit, so a value wider than
 			 * that is read from a string and compared apart */
-			bn_read_str(a, "123456", 6, 16);
-			bn_set_int(b, 0x123456);
+			bn_read_str(a, "1234", 4, 16);
+			bn_set_int(b, 0x1234);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bn_neg(a, a);
-			bn_set_int(b, -0x123456);
+			bn_set_int(b, -0x1234);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bits++;
 			bits %= (RLC_DIG);

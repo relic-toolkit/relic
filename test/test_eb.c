@@ -827,7 +827,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 			eb_new(t[i]);
 		}
-		TEST_CASE("binary fixed point multiplication is correct") {
+		TEST_CASE("single-table comb fixed point multiplication is correct") {
 			eb_rand(p);
 			eb_mul_pre_basic(t, p);
 			bn_zero(k);
@@ -846,33 +846,6 @@ static int fixed(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
-			eb_free(t[i]);
-		}
-#endif
-
-#if EB_FIX == COMBS || !defined(STRIP)
-		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
-			eb_new(t[i]);
-		}
-		TEST_CASE("single-table comb fixed point multiplication is correct") {
-			eb_rand(p);
-			eb_mul_pre_combs(t, p);
-			bn_zero(k);
-			eb_mul_fix_combs(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_is_infty(r), end);
-			bn_set_dig(k, 1);
-			eb_mul_fix_combs(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			eb_mul(r, p, k);
-			eb_mul_fix_combs(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			eb_mul_fix_combs(r, (const eb_t *)t, k);
-			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-		} TEST_END;
-		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 			eb_free(t[i]);
 		}
 #endif
@@ -1008,142 +981,6 @@ static int simultaneous(void) {
 			eb_add(q, q, p);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-
-#if EB_SIM == BASIC || !defined(STRIP)
-		TEST_CASE("basic simultaneous point multiplication is correct") {
-			bn_zero(k);
-			bn_rand_mod(l, n);
-			eb_mul(q, p, l);
-			eb_mul_sim_basic(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_zero(l);
-			eb_mul(q, p, k);
-			eb_mul_sim_basic(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_rand_mod(l, n);
-			eb_mul_sim_basic(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			eb_mul_sim_basic(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(l, l);
-			eb_mul_sim_basic(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if EB_SIM == TRICK || !defined(STRIP)
-		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
-			bn_zero(k);
-			bn_rand_mod(l, n);
-			eb_mul(q, p, l);
-			eb_mul_sim_trick(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_zero(l);
-			eb_mul(q, p, k);
-			eb_mul_sim_trick(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_rand_mod(l, n);
-			eb_mul_sim_trick(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			eb_mul_sim_trick(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(l, l);
-			eb_mul_sim_trick(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if EB_SIM == INTER || !defined(STRIP)
-		TEST_CASE("interleaving for simultaneous multiplication is correct") {
-			bn_zero(k);
-			bn_rand_mod(l, n);
-			eb_mul(q, p, l);
-			eb_mul_sim_inter(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_zero(l);
-			eb_mul(q, p, k);
-			eb_mul_sim_inter(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_rand_mod(l, n);
-			eb_mul_sim_inter(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			eb_mul_sim_inter(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(l, l);
-			eb_mul_sim_inter(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if EB_SIM == JOINT || !defined(STRIP)
-		TEST_CASE("jsf for simultaneous multiplication is correct") {
-			bn_zero(k);
-			bn_rand_mod(l, n);
-			eb_mul(q, p, l);
-			eb_mul_sim_joint(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_zero(l);
-			eb_mul(q, p, k);
-			eb_mul_sim_joint(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_rand_mod(k, n);
-			bn_rand_mod(l, n);
-			eb_mul_sim_joint(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			eb_mul_sim_joint(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-			bn_neg(l, l);
-			eb_mul_sim_joint(r, p, k, q, l);
-			eb_mul(p, p, k);
-			eb_mul(q, q, l);
-			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
-		} TEST_END;
-#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);
