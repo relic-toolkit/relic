@@ -1,4 +1,4 @@
-fp_rdcs_low:
+fp_rdcs_p1_low:
     push r4
     push r5
     push r6
@@ -10,9 +10,9 @@ fp_rdcs_low:
 
 #include "fp_rdc_256p1.inc"
 
-add1:
+add1_p1:
     tst r11
-    jge skip1
+    jge skip1_p1
     add #0xFFFF,0*2(r15)
     addc #0xFFFF,1*2(r15)
     addc #0xFFFF,2*2(r15)
@@ -30,12 +30,12 @@ add1:
     addc #0xFFFF,14*2(r15)
     addc #0xFFFF,15*2(r15)
     adc r11
-    jmp add1
-skip1:
+    jmp add1_p1
+skip1_p1:
 
-subtract2:
+subtract2_p1:
     tst r11
-    jz skip2
+    jz skip2_p1
     sub #0xFFFF,0*2(r15)
     subc #0xFFFF,1*2(r15)
     subc #0xFFFF,2*2(r15)
@@ -53,58 +53,58 @@ subtract2:
     subc #0xFFFF,14*2(r15)
     subc #0xFFFF,15*2(r15)
     sbc r11
-    jmp subtract2
-skip2:
+    jmp subtract2_p1
+skip2_p1:
 
     cmp #0xFFFF,2*15(r15)
-    jlo skip3 /* m > z, jmp to DO NOT subtract */
-    jne subtract3 /* m < z, jmp to subtract */
+    jlo skip3_p1 /* m > z, jmp to DO NOT subtract */
+    jne subtract3_p1 /* m < z, jmp to subtract */
     cmp #0xFFFF,2*14(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*13(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #1,2*12(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*11(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*10(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*9(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*8(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*7(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0,2*6(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*5(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*4(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*3(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*2(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*1(r15)
-    jlo skip3
-    jne subtract3
+    jlo skip3_p1
+    jne subtract3_p1
     cmp #0xFFFF,2*0(r15)
-    jlo skip3
+    jlo skip3_p1
     /* subtract */
-subtract3:
+subtract3_p1:
     /*** DECREMENT ***/
     sub #0xFFFF,0*2(r15)
     subc #0xFFFF,1*2(r15)
@@ -122,7 +122,7 @@ subtract3:
     sbc 13*2(r15)
     subc #0xFFFF,14*2(r15)
     subc #0xFFFF,15*2(r15)
-skip3:
+skip3_p1:
     pop r11
     pop r10
     pop r9

@@ -187,23 +187,18 @@ dont_subtract:
     ret
 
 
-.global fp_rdcs_low
+.global fp_rdcs_k1_low
+.global fp_rdcs_p1_low
 
 #if FP_PRIME == 160
 
-#ifdef EC_ENDOM
 #include "relic_fp_rdc_low_160k1.s"
-#else
 #include "relic_fp_rdc_low_160p1.s"
-#endif
 
 #elif FP_PRIME == 256
 
-#ifdef EC_ENDOM
 #include "relic_fp_rdc_low_256k1.s"
-#else
 #include "relic_fp_rdc_low_256p1.s"
-#endif
 
 #else
 
