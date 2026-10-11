@@ -101,9 +101,7 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 	dv_t a1, b1, ab;
 	dig_t *a0b0, *a1b1;
 
-	dv_null(a1);
-	dv_null(b1);
-	dv_null(ab);
+	dv_null_all(a1, b1, ab);
 
 	/* Compute half the digits of a or b. */
 	h = size >> 1;
@@ -111,9 +109,7 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		dv_new(a1);
-		dv_new(b1);
-		dv_new(ab);
+		dv_new_all(a1, b1, ab);
 		a0b0 = ab;
 		a1b1 = ab + 2 * h;
 
@@ -170,9 +166,7 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(a1);
-		dv_free(b1);
-		dv_free(ab);
+		dv_free_all(a1, b1, ab);
 	}
 }
 
@@ -219,8 +213,7 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t);
-		fb_free(s);
+		fb_free_all(t, s);
 	}
 }
 

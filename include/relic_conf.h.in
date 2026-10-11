@@ -368,12 +368,12 @@
 #define BASIC    1
 /** Binary inversion. */
 #define BINAR    2
+/** Constant-time version of almost inverse. */
+#define CTAIA    3
 /** Extended Euclidean algorithm. */
 #define EXGCD    4
 /** Itoh-Tsuji inversion. */
 #define ITOHT    5
-/** Constant-time version of almost inverse. */
-#define CTAIA    6
 /** Use implementation provided by the lower layer. */
 #define LOWER    7
 /** Chosen binary field inversion method. */

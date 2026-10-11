@@ -44,9 +44,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 	fb_t t, u, v;
 	int i, x;
 
-	fb_null(t);
-	fb_null(u);
-	fb_null(v);
+	fb_null_all(t, u, v);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -54,9 +52,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		fb_new(t);
-		fb_new(u);
-		fb_new(v);
+		fb_new_all(t, u, v);
 
 #if (FB_POLYN % 2) == 0
 		fb_sqr(v, a);
@@ -97,9 +93,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t);
-		fb_free(u);
-		fb_free(v);
+		fb_free_all(t, u, v);
 	}
 }
 
@@ -107,10 +101,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 	int lu, lv;
 	dv_t u, v, g1, g2;
 
-	dv_null(u);
-	dv_null(v);
-	dv_null(g1);
-	dv_null(g2);
+	dv_null_all(u, v, g1, g2);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -118,10 +109,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		dv_new(u);
-		dv_new(v);
-		dv_new(g1);
-		dv_new(g2);
+		dv_new_all(u, v, g1, g2);
 
 		/* u = a, v = f, g1 = 1, g2 = 0. */
 		fb_copy(u, a);
@@ -198,10 +186,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(u);
-		dv_free(v);
-		dv_free(g1);
-		dv_free(g2);
+		dv_free_all(u, v, g1, g2);
 	}
 }
 
@@ -210,10 +195,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	dv_t _u, _v, _g1, _g2;
 	dig_t *t = NULL, *u = NULL, *v = NULL, *g1 = NULL, *g2 = NULL, carry;
 
-	fb_null(_u);
-	fb_null(_v);
-	fb_null(_g1);
-	fb_null(_g2);
+	fb_null_all(_u, _v, _g1, _g2);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -221,10 +203,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		dv_new(_u);
-		dv_new(_v);
-		dv_new(_g1);
-		dv_new(_g2);
+		dv_new_all(_u, _v, _g1, _g2);
 
 		dv_zero(_g1, RLC_FB_DIGS + 1);
 		dv_zero(_g2, RLC_FB_DIGS + 1);
@@ -315,10 +294,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(_u);
-		dv_free(_v);
-		dv_free(_g1);
-		dv_free(_g2);
+		dv_free_all(_u, _v, _g1, _g2);
 	}
 }
 
@@ -396,11 +372,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_t r, s, t, u, v;
 	int i, k, d, r0, d0;
 
-	fb_null(r);
-	fb_null(s);
-	fb_null(t);
-	fb_null(u);
-	fb_null(v);
+	fb_null_all(r, s, t, u, v);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -408,11 +380,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		fb_new(r);
-		fb_new(s);
-		fb_new(t);
-		fb_new(u);
-		fb_new(v);
+		fb_new_all(r, s, t, u, v);
 
 		fb_copy(r, a);
 		fb_copy(t, fb_poly_get());
@@ -449,11 +417,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fb_free(r);
-		fb_free(s);
-		fb_free(t);
-		fb_free(u);
-		fb_free(v);
+		fb_free_all(r, s, t, u, v);
 	}
 }
 

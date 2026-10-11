@@ -54,14 +54,12 @@ static void find_trace(void) {
 	int counter;
 	ctx_t *ctx = core_get();
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	ctx->fb_ta = ctx->fb_tb = ctx->fb_tc = -1;
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		counter = 0;
 		for (int i = 0; i < RLC_FB_BITS; i++) {
@@ -97,8 +95,7 @@ static void find_trace(void) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 

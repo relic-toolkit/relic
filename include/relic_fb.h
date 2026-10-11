@@ -235,6 +235,18 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen binary field elements at once,
+ * in order.
+ *
+ * @param[in,out] ...		- the binary field elements.
+ */
+/** @{ */
+#define fb_null_all(...)	RLC_EACH(fb_null, __VA_ARGS__)
+#define fb_new_all(...)		RLC_EACH(fb_new, __VA_ARGS__)
+#define fb_free_all(...)	RLC_EACH(fb_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiples two binary field elements. Computes c = a * b.
  *
  * @param[out] C			- the result.
