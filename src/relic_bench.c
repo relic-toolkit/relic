@@ -29,6 +29,8 @@
  * @ingroup relic
  */
 
+#include "relic_conf.h"
+
 #if TIMER == PERF
 #define _GNU_SOURCE
 #include <sys/syscall.h>      /* Definition of SYS_* constants */
@@ -39,7 +41,6 @@
 #include <string.h>
 
 #include "relic_core.h"
-#include "relic_conf.h"
 
 #if OPSYS == DUINO && TIMER == HREAL
 /*

@@ -69,6 +69,9 @@
  */
 #if ALLOC == DYNAMIC
 #define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
+#elif defined(__GNUC__)
+/* The builtin does not depend on the C library providing alloca(). */
+#define RLC_ALLOCA(T, S)		(T*) __builtin_alloca((S) * sizeof(T))
 #else
 #define RLC_ALLOCA(T, S)		(T*) alloca((S) * sizeof(T))
 #endif
