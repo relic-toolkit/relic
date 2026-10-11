@@ -439,6 +439,24 @@ static void bench_##C##_arith(void) {										\
 		C##_free(t[i]);														\
 	}																		\
 																			\
+	for (int i = 0; i < RLC_EPX_TABLE_LWREG; i++) {							\
+		C##_new(t[i]);														\
+	}																		\
+	BENCH_RUN(#C "_mul_pre_lwreg") {										\
+		C##_rand(p);														\
+		BENCH_ADD(C##_mul_pre_lwreg(t, p));									\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_mul_fix_lwreg") {										\
+		bn_rand_mod(k, n);													\
+		C##_rand(p);														\
+		C##_mul_pre_lwreg(t, p);											\
+		BENCH_ADD(C##_mul_fix_lwreg(q, t, k));								\
+	} BENCH_END;															\
+	for (int i = 0; i < RLC_EPX_TABLE_LWREG; i++) {							\
+		C##_free(t[i]);														\
+	}																		\
+																			\
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {							\
 		C##_new(t[i]);														\
 	}																		\

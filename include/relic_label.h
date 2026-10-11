@@ -1053,8 +1053,10 @@
 #undef ep_mul_dig
 #undef ep_mul_cof
 #undef ep_mul_pre_basic
+#undef ep_mul_pre_lwreg
 #undef ep_mul_pre_combd
 #undef ep_mul_fix_basic
+#undef ep_mul_fix_lwreg
 #undef ep_mul_fix_combd
 #undef ep_mul_sim
 #undef ep_mul_sim_lot
@@ -1141,8 +1143,10 @@
 #define ep_mul_dig 	RLC_PREFIX(ep_mul_dig)
 #define ep_mul_cof 	RLC_PREFIX(ep_mul_cof)
 #define ep_mul_pre_basic 	RLC_PREFIX(ep_mul_pre_basic)
+#define ep_mul_pre_lwreg 	RLC_PREFIX(ep_mul_pre_lwreg)
 #define ep_mul_pre_combd 	RLC_PREFIX(ep_mul_pre_combd)
 #define ep_mul_fix_basic 	RLC_PREFIX(ep_mul_fix_basic)
+#define ep_mul_fix_lwreg 	RLC_PREFIX(ep_mul_fix_lwreg)
 #define ep_mul_fix_combd 	RLC_PREFIX(ep_mul_fix_combd)
 #define ep_mul_sim 	RLC_PREFIX(ep_mul_sim)
 #define ep_mul_sim_lot 	RLC_PREFIX(ep_mul_sim_lot)
@@ -1485,8 +1489,10 @@
 #undef ep2_mul_dig
 #undef ep2_mul_cof
 #undef ep2_mul_pre_basic
+#undef ep2_mul_pre_lwreg
 #undef ep2_mul_pre_combd
 #undef ep2_mul_fix_basic
+#undef ep2_mul_fix_lwreg
 #undef ep2_mul_fix_combd
 #undef ep2_mul_sim
 #undef ep2_mul_sim_lot
@@ -1550,8 +1556,10 @@
 #define ep2_mul_dig 	RLC_PREFIX(ep2_mul_dig)
 #define ep2_mul_cof 	RLC_PREFIX(ep2_mul_cof)
 #define ep2_mul_pre_basic 	RLC_PREFIX(ep2_mul_pre_basic)
+#define ep2_mul_pre_lwreg 	RLC_PREFIX(ep2_mul_pre_lwreg)
 #define ep2_mul_pre_combd 	RLC_PREFIX(ep2_mul_pre_combd)
 #define ep2_mul_fix_basic 	RLC_PREFIX(ep2_mul_fix_basic)
+#define ep2_mul_fix_lwreg 	RLC_PREFIX(ep2_mul_fix_lwreg)
 #define ep2_mul_fix_combd 	RLC_PREFIX(ep2_mul_fix_combd)
 #define ep2_mul_sim 	RLC_PREFIX(ep2_mul_sim)
 #define ep2_mul_sim_lot 	RLC_PREFIX(ep2_mul_sim_lot)
@@ -1618,8 +1626,10 @@
 #undef ep3_mul_dig
 #undef ep3_mul_cof
 #undef ep3_mul_pre_basic
+#undef ep3_mul_pre_lwreg
 #undef ep3_mul_pre_combd
 #undef ep3_mul_fix_basic
+#undef ep3_mul_fix_lwreg
 #undef ep3_mul_fix_combd
 #undef ep3_mul_sim
 #undef ep3_mul_sim_lot
@@ -1679,8 +1689,10 @@
 #define ep3_mul_dig 	RLC_PREFIX(ep3_mul_dig)
 #define ep3_mul_cof 	RLC_PREFIX(ep3_mul_cof)
 #define ep3_mul_pre_basic 	RLC_PREFIX(ep3_mul_pre_basic)
+#define ep3_mul_pre_lwreg 	RLC_PREFIX(ep3_mul_pre_lwreg)
 #define ep3_mul_pre_combd 	RLC_PREFIX(ep3_mul_pre_combd)
 #define ep3_mul_fix_basic 	RLC_PREFIX(ep3_mul_fix_basic)
+#define ep3_mul_fix_lwreg 	RLC_PREFIX(ep3_mul_fix_lwreg)
 #define ep3_mul_fix_combd 	RLC_PREFIX(ep3_mul_fix_combd)
 #define ep3_mul_sim 	RLC_PREFIX(ep3_mul_sim)
 #define ep3_mul_sim_lot 	RLC_PREFIX(ep3_mul_sim_lot)
@@ -1745,8 +1757,10 @@
 #undef ep4_mul_dig
 #undef ep4_mul_cof
 #undef ep4_mul_pre_basic
+#undef ep4_mul_pre_lwreg
 #undef ep4_mul_pre_combd
 #undef ep4_mul_fix_basic
+#undef ep4_mul_fix_lwreg
 #undef ep4_mul_fix_combd
 #undef ep4_mul_sim
 #undef ep4_mul_sim_lot
@@ -1806,8 +1820,10 @@
 #define ep4_mul_dig 	RLC_PREFIX(ep4_mul_dig)
 #define ep4_mul_cof 	RLC_PREFIX(ep4_mul_cof)
 #define ep4_mul_pre_basic 	RLC_PREFIX(ep4_mul_pre_basic)
+#define ep4_mul_pre_lwreg 	RLC_PREFIX(ep4_mul_pre_lwreg)
 #define ep4_mul_pre_combd 	RLC_PREFIX(ep4_mul_pre_combd)
 #define ep4_mul_fix_basic 	RLC_PREFIX(ep4_mul_fix_basic)
+#define ep4_mul_fix_lwreg 	RLC_PREFIX(ep4_mul_fix_lwreg)
 #define ep4_mul_fix_combd 	RLC_PREFIX(ep4_mul_fix_combd)
 #define ep4_mul_sim 	RLC_PREFIX(ep4_mul_sim)
 #define ep4_mul_sim_lot 	RLC_PREFIX(ep4_mul_sim_lot)
@@ -1872,8 +1888,10 @@
 #undef ep8_mul_dig
 #undef ep8_mul_cof
 #undef ep8_mul_pre_basic
+#undef ep8_mul_pre_lwreg
 #undef ep8_mul_pre_combd
 #undef ep8_mul_fix_basic
+#undef ep8_mul_fix_lwreg
 #undef ep8_mul_fix_combd
 #undef ep8_mul_sim
 #undef ep8_mul_sim_lot
@@ -1933,8 +1951,10 @@
 #define ep8_mul_dig 	RLC_PREFIX(ep8_mul_dig)
 #define ep8_mul_cof 	RLC_PREFIX(ep8_mul_cof)
 #define ep8_mul_pre_basic 	RLC_PREFIX(ep8_mul_pre_basic)
+#define ep8_mul_pre_lwreg 	RLC_PREFIX(ep8_mul_pre_lwreg)
 #define ep8_mul_pre_combd 	RLC_PREFIX(ep8_mul_pre_combd)
 #define ep8_mul_fix_basic 	RLC_PREFIX(ep8_mul_fix_basic)
+#define ep8_mul_fix_lwreg 	RLC_PREFIX(ep8_mul_fix_lwreg)
 #define ep8_mul_fix_combd 	RLC_PREFIX(ep8_mul_fix_combd)
 #define ep8_mul_sim 	RLC_PREFIX(ep8_mul_sim)
 #define ep8_mul_sim_lot 	RLC_PREFIX(ep8_mul_sim_lot)
@@ -1998,8 +2018,10 @@
 #undef ep9_mul_dig
 #undef ep9_mul_cof
 #undef ep9_mul_pre_basic
+#undef ep9_mul_pre_lwreg
 #undef ep9_mul_pre_combd
 #undef ep9_mul_fix_basic
+#undef ep9_mul_fix_lwreg
 #undef ep9_mul_fix_combd
 #undef ep9_mul_sim
 #undef ep9_mul_sim_lot
@@ -2058,8 +2080,10 @@
 #define ep9_mul_dig 	RLC_PREFIX(ep9_mul_dig)
 #define ep9_mul_cof 	RLC_PREFIX(ep9_mul_cof)
 #define ep9_mul_pre_basic 	RLC_PREFIX(ep9_mul_pre_basic)
+#define ep9_mul_pre_lwreg 	RLC_PREFIX(ep9_mul_pre_lwreg)
 #define ep9_mul_pre_combd 	RLC_PREFIX(ep9_mul_pre_combd)
 #define ep9_mul_fix_basic 	RLC_PREFIX(ep9_mul_fix_basic)
+#define ep9_mul_fix_lwreg 	RLC_PREFIX(ep9_mul_fix_lwreg)
 #define ep9_mul_fix_combd 	RLC_PREFIX(ep9_mul_fix_combd)
 #define ep9_mul_sim 	RLC_PREFIX(ep9_mul_sim)
 #define ep9_mul_sim_lot 	RLC_PREFIX(ep9_mul_sim_lot)

@@ -425,6 +425,8 @@
 
 /** Single-table comb method. */
 #define BASIC	 1
+/** Regular signed comb method. */
+#define LWREG	 2
 /** Double-table comb method. */
 #define COMBD    3
 /** Chosen prime elliptic curve fixed point multiplication method. */

@@ -777,6 +777,41 @@ static int test_##C##_fixed(void) {											\
 			C##_free(t[i]);													\
 		}																	\
 																			\
+		for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {						\
+			C##_new(t[i]);													\
+		}																	\
+		TEST_CASE("regular signed comb fixed point multiplication is correct") {\
+			C##_rand(p);													\
+			C##_mul_pre_lwreg(t, p);										\
+			bn_zero(k);														\
+			C##_mul_fix_lwreg(r, t, k);										\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			C##_mul_fix_lwreg(r, t, n);										\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			bn_set_dig(k, 1);												\
+			C##_mul_fix_lwreg(r, t, k);										\
+			TEST_ASSERT(C##_cmp(p, r) == RLC_EQ, end);						\
+			bn_rand_mod(k, n);												\
+			C##_mul(r, p, k);												\
+			C##_mul_fix_lwreg(q, t, k);										\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_neg(k, k);													\
+			C##_mul_fix_lwreg(r, t, k);										\
+			C##_neg(r, r);													\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_rand_mod(k, n);												\
+			C##_mul_fix_lwreg(q, t, k);										\
+			/* Add a multiple of n beyond the bit length of the table. */	\
+			bn_lsh(n, n, RLC_DIG);											\
+			bn_add(k, k, n);												\
+			bn_rsh(n, n, RLC_DIG);											\
+			C##_mul_fix_lwreg(r, t, k);										\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+		} TEST_END;															\
+		for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {						\
+			C##_free(t[i]);													\
+		}																	\
+																			\
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {						\
 			C##_new(t[i]);													\
 		}																	\

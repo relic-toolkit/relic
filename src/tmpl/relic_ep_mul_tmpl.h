@@ -619,57 +619,24 @@
 	}
 
 /**
+ * Number of subscalars of the single-table comb method: one, or two when the
+ * GLV endomorphism of a prime curve is available.
+ */
+#define TMPL_EP_MUL_FIX_DIM_plain	1
+#define TMPL_EP_MUL_FIX_DIM_glv		(ep_curve_is_endom() ? 2 : 1)
+
+/**
  * Defines a template for fixed-point multiplication using the single-table
- * comb method, including the precomputation.
+ * comb method, including the precomputation. The multiplication dispatches to
+ * C##_mul_fix_##E when the scalar is decomposed with an endomorphism.
  *
  * @param[in] C			- the curve.
+ * @param[in] E			- the endomorphism method, glv or plain.
  */
-#define TMPL_EP_MUL_FIX_BASIC(C)											\
-	void C##_mul_pre_basic(C##_t *t, const C##_t p) {						\
-		int i, j, l;														\
-		bn_t n;																\
-																			\
-		bn_null(n);															\
-																			\
-		RLC_TRY {															\
-			bn_new(n);														\
-																			\
-			C##_curve_get_ord(n);											\
-			l = RLC_CEIL(bn_bits(n), RLC_DEPTH);							\
-																			\
-			C##_set_infty(t[0]);											\
-																			\
-			C##_copy(t[1], p);												\
-			for (j = 1; j < RLC_DEPTH; j++) {								\
-				C##_dbl(t[1 << j], t[1 << (j - 1)]);						\
-				for (i = 1; i < l; i++) {									\
-					C##_dbl(t[1 << j], t[1 << j]);							\
-				}															\
-				C##_norm(t[1 << j], t[1 << j]);								\
-				for (i = 1; i < (1 << j); i++) {							\
-					C##_add(t[(1 << j) + i], t[i], t[1 << j]);				\
-				}															\
-			}																\
-																			\
-			C##_norm_sim(t + 2, (const C##_t *)t + 2,						\
-					RLC_EP_TABLE_BASIC - 2);								\
-		}																	\
-		RLC_CATCH_ANY {														\
-			RLC_THROW(ERR_CAUGHT);											\
-		}																	\
-		RLC_FINALLY {														\
-			bn_free(n);														\
-		}																	\
-	}																		\
-																			\
-	void C##_mul_fix_basic(C##_t r, const C##_t *t, const bn_t k) {			\
+#define TMPL_EP_MUL_FIX_BASIC(C, E)											\
+	static void C##_mul_fix_plain(C##_t r, const C##_t *t, const bn_t k) {	\
 		int i, j, l, w, n0, p0, p1;											\
 		bn_t n, _k;															\
-																			\
-		if (bn_is_zero(k)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
 																			\
 		bn_null(n);															\
 		bn_null(_k);														\
@@ -719,6 +686,215 @@
 		RLC_FINALLY {														\
 			bn_free(n);														\
 			bn_free(_k);													\
+		}																	\
+	}																		\
+																			\
+	void C##_mul_pre_basic(C##_t *t, const C##_t p) {						\
+		int i, j, l;														\
+		bn_t n;																\
+																			\
+		bn_null(n);															\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+																			\
+			/* The teeth are spaced for the length of the subscalars. */	\
+			C##_curve_get_ord(n);											\
+			l = RLC_CEIL(bn_bits(n), TMPL_EP_MUL_FIX_DIM_##E * RLC_DEPTH);	\
+																			\
+			C##_set_infty(t[0]);											\
+																			\
+			C##_copy(t[1], p);												\
+			for (j = 1; j < RLC_DEPTH; j++) {								\
+				C##_dbl(t[1 << j], t[1 << (j - 1)]);						\
+				for (i = 1; i < l; i++) {									\
+					C##_dbl(t[1 << j], t[1 << j]);							\
+				}															\
+				C##_norm(t[1 << j], t[1 << j]);								\
+				for (i = 1; i < (1 << j); i++) {							\
+					C##_add(t[(1 << j) + i], t[i], t[1 << j]);				\
+				}															\
+			}																\
+																			\
+			C##_norm_sim(t + 2, (const C##_t *)t + 2,						\
+					RLC_EP_TABLE_BASIC - 2);								\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+		}																	\
+	}																		\
+																			\
+	void C##_mul_fix_basic(C##_t r, const C##_t *t, const bn_t k) {			\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (TMPL_EP_MUL_FIX_DIM_##E > 1) {									\
+			C##_mul_fix_##E(r, t, k);										\
+			return;															\
+		}																	\
+																			\
+		C##_mul_fix_plain(r, t, k);											\
+	}
+
+/**
+ * Defines a template for fixed-point multiplication using the regular signed
+ * comb method, including the precomputation. Two combs of RLC_DEPTH teeth are
+ * spaced s bits apart, so that each column needs one doubling and two
+ * additions of points read from the table in constant time.
+ *
+ * Mike Hamburg. Fast and compact elliptic-curve cryptography.
+ * https://eprint.iacr.org/2012/309
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_MUL_FIX_LWREG(C, F)											\
+	void C##_mul_pre_lwreg(C##_t *t, const C##_t p) {						\
+		const int h = 1 << (RLC_DEPTH - 1);									\
+		int i, j, e, s;														\
+		C##_t b[2 * RLC_DEPTH];												\
+		bn_t n;																\
+																			\
+		bn_null(n);															\
+		for (i = 0; i < 2 * RLC_DEPTH; i++) {								\
+			C##_null(b[i]);													\
+		}																	\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			for (i = 0; i < 2 * RLC_DEPTH; i++) {							\
+				C##_new(b[i]);												\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			s = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);						\
+																			\
+			/* b[i] = 2^(i * s) * P, one point per tooth. */				\
+			C##_copy(b[0], p);												\
+			for (i = 1; i < 2 * RLC_DEPTH; i++) {							\
+				C##_copy(b[i], b[i - 1]);									\
+				for (j = 0; j < s; j++) {									\
+					C##_dbl(b[i], b[i]);									\
+				}															\
+			}																\
+			/* Entry e of comb c adds the top tooth and the other teeth, each\
+			 * with the sign given by its bit in e. */						\
+			for (i = 0; i < 2; i++) {										\
+				C##_t *u = t + i * h, *v = b + i * RLC_DEPTH;				\
+																			\
+				C##_copy(u[0], v[RLC_DEPTH - 1]);							\
+				for (j = 0; j < RLC_DEPTH - 1; j++) {						\
+					C##_sub(u[0], u[0], v[j]);								\
+				}															\
+				/* Turning tooth j positive adds twice its point. */		\
+				for (j = 0; j < RLC_DEPTH - 1; j++) {						\
+					C##_dbl(v[j], v[j]);									\
+					for (e = 0; e < (1 << j); e++) {						\
+						C##_add(u[(1 << j) + e], u[e], v[j]);				\
+					}														\
+				}															\
+			}																\
+			C##_norm_sim(t, (const C##_t *)t, 2 * h);						\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(n);														\
+			for (i = 0; i < 2 * RLC_DEPTH; i++) {							\
+				C##_free(b[i]);												\
+			}																\
+		}																	\
+	}																		\
+																			\
+	void C##_mul_fix_lwreg(C##_t r, const C##_t *t, const bn_t k) {			\
+		const int h = 1 << (RLC_DEPTH - 1);									\
+		dig_t d[RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG)];			\
+		int i, j, c, e, s, l, neg, top;										\
+		bn_t m, n, u;														\
+		C##_t q, v;															\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(m);															\
+		bn_null(n);															\
+		bn_null(u);															\
+		C##_null(q);														\
+		C##_null(v);														\
+																			\
+		RLC_TRY {															\
+			bn_new(m);														\
+			bn_new(n);														\
+			bn_new(u);														\
+			C##_new(q);														\
+			C##_new(v);														\
+																			\
+			C##_curve_get_ord(n);											\
+			s = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);						\
+			l = 2 * RLC_DEPTH * s;											\
+																			\
+			/* Reduce the scalar, keeping its sign to negate the result. */	\
+			bn_mod(m, k, n);												\
+			neg = (bn_sign(m) == RLC_NEG);									\
+			bn_abs(m, m);													\
+			/* Recode m as (m + 2^l - 1)/2 mod n, so that bits b_i give		\
+			 * k = sum (2 * b_i - 1) * 2^i mod n, with all digits nonzero. */\
+			bn_set_2b(u, l);												\
+			bn_sub_dig(u, u, 1);											\
+			bn_add(m, m, u);												\
+			bn_add_dig(u, n, 1);											\
+			bn_hlv(u, u);													\
+			bn_mul(m, m, u);												\
+			bn_mod(m, m, n);												\
+			/* Read the bits from a buffer of fixed length. */				\
+			dv_zero(d, RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG));		\
+			dv_copy(d, m->dp, m->used);										\
+																			\
+			F##_set_dig(q->z, 1);											\
+			q->coord = BASIC;												\
+			C##_set_infty(r);												\
+			for (i = s - 1; i >= 0; i--) {									\
+				if (i != s - 1) {											\
+					C##_dbl(r, r);											\
+				}															\
+				for (c = 0; c < 2; c++) {									\
+					/* The top tooth gives the sign, the others the entry. */\
+					j = (c * RLC_DEPTH + RLC_DEPTH - 1) * s + i;			\
+					top = (d[j / RLC_DIG] >> (j % RLC_DIG)) & 1;			\
+					e = 0;													\
+					for (j = 0; j < RLC_DEPTH - 1; j++) {					\
+						int b = (c * RLC_DEPTH + j) * s + i;				\
+						e |= ((d[b / RLC_DIG] >> (b % RLC_DIG)) & 1) << j;	\
+					}														\
+					/* A negative top tooth flips the signs of all teeth. */\
+					e ^= (top - 1) & (h - 1);								\
+					for (j = 0; j < h; j++) {								\
+						F##_copy_sec(q->x, t[c * h + j]->x, j == e);		\
+						F##_copy_sec(q->y, t[c * h + j]->y, j == e);		\
+					}														\
+					C##_neg(v, q);											\
+					F##_copy_sec(q->y, v->y, top == 0);						\
+					C##_add(r, r, q);										\
+				}															\
+			}																\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+			C##_neg(v, r);													\
+			F##_copy_sec(r->y, v->y, neg);									\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(m);														\
+			bn_free(n);														\
+			bn_free(u);														\
+			C##_free(q);													\
+			C##_free(v);													\
 		}																	\
 	}
 
@@ -1529,7 +1705,8 @@
 	TMPL_EP_MUL_LWREG(C, gls)												\
 	TMPL_EP_MUL_GEN(C)														\
 	TMPL_EP_MUL_DIG(C)														\
-	TMPL_EP_MUL_FIX_BASIC(C)												\
+	TMPL_EP_MUL_FIX_BASIC(C, plain)											\
+	TMPL_EP_MUL_FIX_LWREG(C, F)												\
 	TMPL_EP_MUL_COMBD(C)													\
 	TMPL_EP_MUL_SIM(C)														\
 	TMPL_EP_MUL_SIM_GEN(C)													\

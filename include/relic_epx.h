@@ -55,6 +55,11 @@
 #define RLC_EPX_TABLE_BASIC      (1 << RLC_DEPTH)
 
 /**
+ * Size of a precomputation table using the regular signed comb method.
+ */
+#define RLC_EPX_TABLE_LWREG		(1 << RLC_DEPTH)
+
+/**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_EPX_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
@@ -64,6 +69,8 @@
  */
 #if EP_FIX == BASIC
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_BASIC
+#elif EP_FIX == LWREG
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_LWREG
 #elif EP_FIX == COMBD
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBD
 #endif
@@ -546,6 +553,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep2_mul_pre(T, P)		ep2_mul_pre_basic(T, P)
+#elif EP_FIX == LWREG
+#define ep2_mul_pre(T, P)		ep2_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep2_mul_pre(T, P)		ep2_mul_pre_combd(T, P)
 #endif
@@ -560,6 +569,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_basic(R, T, K)
+#elif EP_FIX == LWREG
+#define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_combd(R, T, K)
 #endif
@@ -648,6 +659,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep3_mul_pre(T, P)		ep3_mul_pre_basic(T, P)
+#elif EP_FIX == LWREG
+#define ep3_mul_pre(T, P)		ep3_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep3_mul_pre(T, P)		ep3_mul_pre_combd(T, P)
 #endif
@@ -662,6 +675,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_basic(R, T, K)
+#elif EP_FIX == LWREG
+#define ep3_mul_fix(R, T, K)	ep3_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_combd(R, T, K)
 #endif
@@ -734,6 +749,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep4_mul_pre(T, P)		ep4_mul_pre_basic(T, P)
+#elif EP_FIX == LWREG
+#define ep4_mul_pre(T, P)		ep4_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep4_mul_pre(T, P)		ep4_mul_pre_combd(T, P)
 #endif
@@ -748,6 +765,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_basic(R, T, K)
+#elif EP_FIX == LWREG
+#define ep4_mul_fix(R, T, K)	ep4_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_combd(R, T, K)
 #endif
@@ -820,6 +839,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep8_mul_pre(T, P)		ep8_mul_pre_basic(T, P)
+#elif EP_FIX == LWREG
+#define ep8_mul_pre(T, P)		ep8_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep8_mul_pre(T, P)		ep8_mul_pre_combd(T, P)
 #endif
@@ -834,6 +855,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_basic(R, T, K)
+#elif EP_FIX == LWREG
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_combd(R, T, K)
 #endif
@@ -906,6 +929,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep9_mul_pre(T, P)		ep9_mul_pre_basic(T, P)
+#elif EP_FIX == LWREG
+#define ep9_mul_pre(T, P)		ep9_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep9_mul_pre(T, P)		ep9_mul_pre_combd(T, P)
 #endif
@@ -920,6 +945,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_FIX == BASIC
 #define ep9_mul_fix(R, T, K)	ep9_mul_fix_basic(R, T, K)
+#elif EP_FIX == LWREG
+#define ep9_mul_fix(R, T, K)	ep9_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep9_mul_fix(R, T, K)	ep9_mul_fix_combd(R, T, K)
 #endif
@@ -1344,6 +1371,15 @@ void ep2_mul_pre_basic(ep2_t *t, const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_lwreg(ep2_t *t, const ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -1360,6 +1396,16 @@ void ep2_mul_pre_combd(ep2_t *t, const ep2_t p);
  * @param[in] k				- the integer.
  */
 void ep2_mul_fix_basic(ep2_t r, const ep2_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_lwreg(ep2_t r, const ep2_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -1895,6 +1941,15 @@ void ep3_mul_pre_basic(ep3_t *t, const ep3_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep3_mul_pre_lwreg(ep3_t *t, const ep3_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -1911,6 +1966,16 @@ void ep3_mul_pre_combd(ep3_t *t, const ep3_t p);
  * @param[in] k				- the integer.
  */
 void ep3_mul_fix_basic(ep3_t r, const ep3_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep3_mul_fix_lwreg(ep3_t r, const ep3_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2426,6 +2491,15 @@ void ep4_mul_pre_basic(ep4_t *t, const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep4_mul_pre_lwreg(ep4_t *t, const ep4_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -2442,6 +2516,16 @@ void ep4_mul_pre_combd(ep4_t *t, const ep4_t p);
  * @param[in] k				- the integer.
  */
 void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep4_mul_fix_lwreg(ep4_t r, const ep4_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2957,6 +3041,15 @@ void ep8_mul_pre_basic(ep8_t *t, const ep8_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_lwreg(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -2973,6 +3066,16 @@ void ep8_mul_pre_combd(ep8_t *t, const ep8_t p);
  * @param[in] k				- the integer.
  */
 void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_lwreg(ep8_t r, const ep8_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -3480,6 +3583,15 @@ void ep9_mul_pre_basic(ep9_t *t, const ep9_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep9_mul_pre_lwreg(ep9_t *t, const ep9_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -3496,6 +3608,16 @@ void ep9_mul_pre_combd(ep9_t *t, const ep9_t p);
  * @param[in] k				- the integer.
  */
 void ep9_mul_fix_basic(ep9_t r, const ep9_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_fix_lwreg(ep9_t r, const ep9_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and

@@ -20,6 +20,7 @@ message("      EP_METHD=LWREG    Left-to-right regular recoding method (GLV for 
 
 message("      Fixed-base scalar multiplication:")
 message("      EP_METHD=BASIC    Single-table comb method for fixed point multiplication.")
+message("      EP_METHD=LWREG    Regular signed comb method for constant-time fixed point multiplication.")
 message("      EP_METHD=COMBD    Double-table comb method for fixed point multiplication.\n")
 
 message("      Hash to point on the elliptic curve:")
@@ -59,7 +60,7 @@ if (EP_FIX STREQUAL "COMBS")
 	list(INSERT EP_METHD 2 "BASIC")
 	set(EP_METHD ${EP_METHD} CACHE STRING "Method for prime elliptic curve arithmetic." FORCE)
 endif(EP_FIX STREQUAL "COMBS")
-if (NOT (EP_FIX STREQUAL "BASIC" OR EP_FIX STREQUAL "COMBD"))
+if (NOT (EP_FIX STREQUAL "BASIC" OR EP_FIX STREQUAL "LWREG" OR EP_FIX STREQUAL "COMBD"))
 	message(FATAL_ERROR "Unsupported fixed point multiplication method in EP_METHD: ${EP_FIX}")
 endif()
 set(EP_METHD ${EP_METHD} CACHE STRING "Method for prime elliptic curve arithmetic.")

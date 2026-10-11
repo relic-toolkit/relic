@@ -454,6 +454,24 @@ static void arith(void) {
 		ep_free(t[i]);
 	}
 
+	for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {
+		ep_new(t[i]);
+	}
+	BENCH_RUN("ep_mul_pre_lwreg") {
+		ep_rand(p);
+		BENCH_ADD(ep_mul_pre_lwreg(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep_mul_fix_lwreg") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		ep_mul_pre_lwreg(t, p);
+		BENCH_ADD(ep_mul_fix_lwreg(q, (const ep_t *)t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {
+		ep_free(t[i]);
+	}
+
 	for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 		ep_new(t[i]);
 	}
