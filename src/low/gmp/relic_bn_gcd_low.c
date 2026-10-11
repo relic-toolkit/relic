@@ -252,5 +252,6 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 		un = mx;
 	}
 	*sm = (size_t)un;
+	RLC_FREE(t0);
 	return (size_t)n;
 }

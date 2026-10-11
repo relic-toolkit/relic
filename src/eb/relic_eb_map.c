@@ -53,10 +53,13 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, RLC_MD_LEN));
+		/* Longer digests fill more bits than the field has. */
+		bn_mod_2b(k, k, RLC_FB_BITS);
 		fb_set_dig(p->z, 1);
 
 		while (1) {
-			dv_copy(p->x, k->dp, RLC_FB_DIGS);
+			fb_zero(p->x);
+			dv_copy(p->x, k->dp, RLC_MIN(k->used, RLC_FB_DIGS));
 
 			eb_rhs(t1, p->x);
 

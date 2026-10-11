@@ -48,12 +48,12 @@
 /*============================================================================*/
 
 /**
- * Size in bits of the largest field element.
+ * Size in bits of a product of the largest field elements.
  */
 #ifdef WITH_FP
 
 #ifdef WITH_FB
-#define RLC_DV_MAX		(RLC_MAX(FP_PRIME, FB_POLYN))
+#define RLC_DV_MAX		((size_t)(2 * RLC_MAX(FP_PRIME, FB_POLYN)))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
 #endif
@@ -61,7 +61,7 @@
 #else /* !WITH_FP */
 
 #ifdef WITH_FB
-#define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
+#define RLC_DV_MAX		((size_t)(2 * FB_POLYN))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		(0)
 #endif

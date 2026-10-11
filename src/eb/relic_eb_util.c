@@ -520,7 +520,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return;
 		}
 		eb_upk(a, a);
 	}

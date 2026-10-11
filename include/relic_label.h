@@ -1359,6 +1359,7 @@
 #undef eb_mul_sim_inter
 #undef eb_mul_sim_joint
 #undef eb_mul_sim_gen
+#undef eb_mul_sim_lot
 #undef eb_norm
 #undef eb_norm_sim
 #undef eb_map
@@ -1427,6 +1428,7 @@
 #define eb_mul_sim_inter 	RLC_PREFIX(eb_mul_sim_inter)
 #define eb_mul_sim_joint 	RLC_PREFIX(eb_mul_sim_joint)
 #define eb_mul_sim_gen 	RLC_PREFIX(eb_mul_sim_gen)
+#define eb_mul_sim_lot 	RLC_PREFIX(eb_mul_sim_lot)
 #define eb_norm 	RLC_PREFIX(eb_norm)
 #define eb_norm_sim 	RLC_PREFIX(eb_norm_sim)
 #define eb_map 	RLC_PREFIX(eb_map)

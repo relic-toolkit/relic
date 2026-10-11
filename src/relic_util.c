@@ -158,7 +158,7 @@ void util_perm(uint_t p[], size_t n) {
 }
 
 #ifndef QUIET
-void util_print(const char *format, ...) {
+void util_printf(const char *format, ...) {
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;

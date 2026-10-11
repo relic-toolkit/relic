@@ -655,6 +655,12 @@ static int multiplication(void) {
 			eb_mul_lodah(r, p, k);
 			eb_neg(r, r);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			/* The point may be given in projective coordinates. */
+			eb_dbl_projc(r, p);
+			eb_norm(p, r);
+			eb_mul(q, p, k);
+			eb_mul_lodah(r, r, k);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -701,6 +707,12 @@ static int multiplication(void) {
 			eb_mul_rwnaf(r, p, k);
 			eb_neg(r, r);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			/* The point may be given in projective coordinates. */
+			eb_dbl_projc(r, p);
+			eb_norm(p, r);
+			eb_mul(q, p, k);
+			eb_mul_rwnaf(r, r, k);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -723,6 +735,12 @@ static int multiplication(void) {
 			bn_neg(k, k);
 			eb_mul_halve(r, p, k);
 			eb_neg(r, r);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			/* The point may be given in projective coordinates. */
+			eb_dbl_projc(r, p);
+			eb_norm(p, r);
+			eb_mul(q, p, k);
+			eb_mul_halve(r, r, k);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -929,8 +947,8 @@ static int fixed(void) {
 
 static int simultaneous(void) {
 	int code = RLC_ERR;
-	bn_t n, k, l;
-	eb_t p, q, r;
+	bn_t n, k, l, s[2];
+	eb_t p, q, r, t[2];
 
 	bn_null(n);
 	bn_null(k);
@@ -938,6 +956,10 @@ static int simultaneous(void) {
 	eb_null(p);
 	eb_null(q);
 	eb_null(r);
+	for (int j = 0; j < 2; j++) {
+		bn_null(s[j]);
+		eb_null(t[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -946,6 +968,10 @@ static int simultaneous(void) {
 		eb_new(p);
 		eb_new(q);
 		eb_new(r);
+		for (int j = 0; j < 2; j++) {
+			bn_new(s[j]);
+			eb_new(t[j]);
+		}
 
 		eb_curve_get_gen(p);
 		eb_curve_get_gen(q);
@@ -1147,6 +1173,19 @@ static int simultaneous(void) {
 			eb_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("many simultaneous point multiplications are correct") {
+			bn_rand_mod(s[0], n);
+			bn_rand_mod(s[1], n);
+			eb_curve_get_gen(t[0]);
+			eb_rand(t[1]);
+			eb_mul_sim(r, t[0], s[0], t[1], s[1]);
+			eb_mul_sim_lot(q, t, s, 2);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			eb_mul_sim_lot(q, t, s, 1);
+			eb_mul(r, t[0], s[0]);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1160,6 +1199,10 @@ static int simultaneous(void) {
 	eb_free(p);
 	eb_free(q);
 	eb_free(r);
+	for (int j = 0; j < 2; j++) {
+		bn_free(s[j]);
+		eb_free(t[j]);
+	}
 	return code;
 }
 

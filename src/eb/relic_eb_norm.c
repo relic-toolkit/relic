@@ -99,17 +99,24 @@ void eb_norm(eb_t r, const eb_t p) {
 }
 
 void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
-	fb_t *a = RLC_ALLOCA(fb_t, n);
+	fb_t *a;
 
+	if (n <= 0) {
+		return;
+	}
 	if (n == 1) {
 		eb_norm(r[0], t[0]);
 		return;
 	}
 
+	/* Allocate after the early returns, so that they do not leak. */
+	a = RLC_ALLOCA(fb_t, n);
+	if (a == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	RLC_TRY {
-		if (a == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < n; i++) {
 			fb_null(a[i]);
 			fb_new(a[i]);

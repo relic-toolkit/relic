@@ -604,6 +604,7 @@ static void arith(void) {
 
 	eb_free(p);
 	eb_free(q);
+	eb_free(r);
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);

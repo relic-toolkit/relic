@@ -517,6 +517,8 @@ static int ecmqv(void) {
 	return code;
 }
 
+#if defined(WITH_BC)
+
 static int ecies(void) {
 	int code = RLC_ERR;
 	ec_t r;
@@ -607,6 +609,8 @@ static int ecies(void) {
 	ec_free(q_b);
 	return code;
 }
+
+#endif
 
 static int ecdsa(void) {
 	int code = RLC_ERR;

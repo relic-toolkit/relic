@@ -863,6 +863,17 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m);
 
 /**
+ * Multiplies and adds multiple binary elliptic curve points simultaneously.
+ * Computes R = \Sum_i=0..n [k_i]P_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elements to multiply.
+ * @param[in] k				- the integer scalars.
+ * @param[in] n				- the number of elements to multiply.
+ */
+void eb_mul_sim_lot(eb_t r, const eb_t p[], const bn_t k[], int n);
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] r			- the result.

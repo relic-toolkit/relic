@@ -80,8 +80,11 @@ enum errors {
 	ERR_MAX
 };
 
-/** Truncate file name if verbosity is turned off. */
-#ifdef VERBS
+/**
+ * Truncate file name if verbosity is turned off. On AVR the name is kept in
+ * program memory, where it cannot be searched with strrchr().
+ */
+#if defined(VERBS) || ARCH == AVR
 #define RLC_FILE	RLC_STR(__FILE__)
 #else
 #define RLC_FILE															\

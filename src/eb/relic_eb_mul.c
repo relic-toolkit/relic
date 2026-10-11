@@ -593,7 +593,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	eb_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
+	int8_t u, *naf = NULL;
 	size_t l;
 
 	eb_null(t);
@@ -603,11 +603,15 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
+	/* Allocate after the early return, so that it does not leak. */
+	naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
+	if (naf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	RLC_TRY {
 		eb_new(t);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_BUFFER);
-		}
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
@@ -637,7 +641,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
+static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
 	bn_t t, n;
@@ -822,6 +826,30 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
+void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
+	eb_t t;
+
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_set_infty(r);
+		return;
+	}
+
+	eb_null(t);
+
+	RLC_TRY {
+		eb_new(t);
+		/* The method needs the input point in affine coordinates. */
+		eb_norm(t, p);
+		eb_mul_lodah_imp(r, t, k);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		eb_free(t);
+	}
+}
+
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -837,20 +865,34 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 }
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
+	eb_t t;
+
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-	if (eb_curve_is_kbltz()) {
-		eb_mul_rtnaf_imp(r, p, k);
-		return;
-	}
+	eb_null(t);
 
-	eb_mul_rnaf_imp(r, p, k);
+	RLC_TRY {
+		eb_new(t);
+		/* The method needs the input point in affine coordinates. */
+		eb_norm(t, p);
+		if (eb_curve_is_kbltz()) {
+			eb_mul_rtnaf_imp(r, t, k);
+		} else {
+			eb_mul_rnaf_imp(r, t, k);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		eb_free(t);
+	}
 }
 
-void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
+static void eb_mul_halve_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, trc, cof;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
 	eb_t q, s, t[1 << (RLC_WIDTH - 2)];
@@ -1023,6 +1065,30 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		fb_free(v);
 		fb_free(w);
 		fb_free(z);
+	}
+}
+
+void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
+	eb_t t;
+
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_set_infty(r);
+		return;
+	}
+
+	eb_null(t);
+
+	RLC_TRY {
+		eb_new(t);
+		/* The method needs the input point in affine coordinates. */
+		eb_norm(t, p);
+		eb_mul_halve_imp(r, t, k);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		eb_free(t);
 	}
 }
 
