@@ -861,7 +861,6 @@
 #undef fb_itr_pre_quick
 #undef fb_itr_quick
 
-  This bounds the binary chain and the shorter chains #define fb_poly_set 	RLC_PREFIX(fb_poly_set)
 #define fb_poly_init 	RLC_PREFIX(fb_poly_init)
 #define fb_poly_clean 	RLC_PREFIX(fb_poly_clean)
 #define fb_poly_get 	RLC_PREFIX(fb_poly_get)
@@ -3231,13 +3230,13 @@
 #define fp54_upk 	RLC_PREFIX(fp54_upk)
 
 #undef fb2_mul
- #undef fb2_mul_nor
+#undef fb2_mul_nor
 #undef fb2_sqr
 #undef fb2_slv
 #undef fb2_inv
 
 #define fb2_mul 	RLC_PREFIX(fb2_mul)
- #define fb2_mul_nor 	RLC_PREFIX(fb2_mul_nor)
+#define fb2_mul_nor 	RLC_PREFIX(fb2_mul_nor)
 #define fb2_sqr 	RLC_PREFIX(fb2_sqr)
 #define fb2_slv 	RLC_PREFIX(fb2_slv)
 #define fb2_inv 	RLC_PREFIX(fb2_inv)

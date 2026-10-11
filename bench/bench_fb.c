@@ -32,6 +32,7 @@
 #include <stdio.h>
 
 #include "relic.h"
+#include "relic_fb_low.h"
 #include "relic_bench.h"
 
 static void memory(void) {
@@ -163,7 +164,7 @@ static void util(void) {
 static void arith(void) {
 	fb_t a, b, c, d[2];
 	fb_st t[RLC_FB_TABLE_MAX];
-	dv_t e;
+	dv_t e, g;
 	bn_t f;
 	uint_t bits;
 
@@ -173,6 +174,7 @@ static void arith(void) {
 	fb_null(d[0]);
 	fb_null(d[1]);
 	dv_null(e);
+	dv_null(g);
 	bn_null(f);
 
 	fb_new(a);
@@ -181,6 +183,7 @@ static void arith(void) {
 	fb_new(d[0]);
 	fb_new(d[1]);
 	dv_new(e);
+	dv_new(g);
 	dv_zero(e, 2 * RLC_FB_DIGS);
 	bn_new(f);
 
@@ -289,25 +292,27 @@ static void arith(void) {
 
 	BENCH_RUN("fb_rdc") {
 		fb_rand(a);
-		fb_lsh(e, a, RLC_FB_BITS);
-		fb_rand(e);
-		BENCH_ADD(fb_rdc(c, e));
+		fb_rand(b);
+		/* Reduce a full double-length product. */
+		fb_muln_low(e, a, b);
+		/* Some methods reduce in place, so each call gets a fresh copy. */
+		BENCH_ADD(dv_copy(g, e, 2 * RLC_FB_DIGS); fb_rdc(c, g));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fb_rdc_basic") {
 		fb_rand(a);
-		fb_lsh(e, a, RLC_FB_BITS);
-		fb_rand(e);
-		BENCH_ADD(fb_rdc_basic(c, e));
+		fb_rand(b);
+		fb_muln_low(e, a, b);
+		BENCH_ADD(dv_copy(g, e, 2 * RLC_FB_DIGS); fb_rdc_basic(c, g));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fb_rdc_quick") {
 		fb_rand(a);
-		fb_lsh(e, a, RLC_FB_BITS);
-		fb_rand(e);
-		BENCH_ADD(fb_rdc_quick(c, e));
+		fb_rand(b);
+		fb_muln_low(e, a, b);
+		BENCH_ADD(dv_copy(g, e, 2 * RLC_FB_DIGS); fb_rdc_quick(c, g));
 	}
 	BENCH_END;
 
@@ -482,6 +487,7 @@ static void arith(void) {
 	fb_free(d[0]);
 	fb_free(d[1]);
 	dv_free(e);
+	dv_free(g);
 	bn_free(f);
 }
 
