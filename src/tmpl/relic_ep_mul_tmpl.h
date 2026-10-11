@@ -721,15 +721,25 @@
  * Decomposes the scalar M modulo N into the subscalars K of the regular signed
  * comb, with the GLV endomorphism or without one.
  */
-#define TMPL_EP_MUL_FIX_REC_glv(K, M, N)									\
+#define TMPL_EC_MUL_FIX_REC_glv(K, M, N)									\
 	bn_rec_glv(K[0], K[1], M, N, ep_curve_get_v1(), ep_curve_get_v2())
-#define TMPL_EP_MUL_FIX_REC_plain(K, M, N)	bn_copy(K[0], M)
+#define TMPL_EC_MUL_FIX_REC_plain(K, M, N)	bn_copy(K[0], M)
 
 /**
  * Bounds the bit length of the subscalars, with a margin for making them odd.
  */
-#define TMPL_EP_MUL_FIX_LEN_glv(N)			(RLC_CEIL(bn_bits(N), 2) + 2)
-#define TMPL_EP_MUL_FIX_LEN_plain(N)		bn_bits(N)
+#define TMPL_EC_MUL_FIX_LEN_glv(N)			(RLC_CEIL(bn_bits(N), 2) + 2)
+#define TMPL_EC_MUL_FIX_LEN_plain(N)		bn_bits(N)
+
+/**
+ * Gives the dimension of the decomposition, which is S only for curves with an
+ * endomorphism, and applies the endomorphism to a point. The plain versions
+ * never reach the endomorphism, so curves without one need not provide it.
+ */
+#define TMPL_EC_MUL_FIX_DIM_glv(S)			(ep_curve_is_endom() ? S : 1)
+#define TMPL_EC_MUL_FIX_DIM_plain(S)		1
+#define TMPL_EC_MUL_FIX_PSI_glv(C, R, P)	C##_psi(R, P)
+#define TMPL_EC_MUL_FIX_PSI_plain(C, R, P)	C##_copy(R, P)
 
 /**
  * Defines a template for fixed-point multiplication using the regular signed
@@ -749,11 +759,12 @@
  * @param[in] F			- the field prefix.
  * @param[in] E			- the endomorphism method, glv or plain.
  * @param[in] S			- the dimension of the decomposition, 2 or 1.
+ * @param[in] B			- the size in bits of the field, which bounds the order.
  */
-#define TMPL_EP_MUL_FIX_LWREG(C, F, E, S)									\
+#define TMPL_EC_MUL_FIX_LWREG(C, F, E, S, B)									\
 	void C##_mul_pre_lwreg(C##_t *t, const C##_t p) {						\
 		const int h = 1 << (RLC_DEPTH - 1);									\
-		const int dim = (ep_curve_is_endom() ? S : 1);						\
+		const int dim = TMPL_EC_MUL_FIX_DIM_##E(S);							\
 		int i, j, e;														\
 		size_t s;															\
 		C##_t b[2 * RLC_DEPTH];												\
@@ -772,7 +783,7 @@
 																			\
 			/* The teeth are spaced for the length of the subscalars. */	\
 			C##_curve_get_ord(n);											\
-			s = (dim > 1 ? TMPL_EP_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
+			s = (dim > 1 ? TMPL_EC_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
 			s = RLC_CEIL(s, 2 * RLC_DEPTH);									\
 																			\
 			/* b[i] = 2^(i * s) * P, one point per tooth. */				\
@@ -815,8 +826,8 @@
 																			\
 	void C##_mul_fix_lwreg(C##_t r, const C##_t *t, const bn_t k) {			\
 		const int h = 1 << (RLC_DEPTH - 1);									\
-		const int dim = (ep_curve_is_endom() ? S : 1);						\
-		dig_t d[S][RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG)];			\
+		const int dim = TMPL_EC_MUL_FIX_DIM_##E(S);							\
+		dig_t d[S][RLC_CEIL(B + 2 * RLC_DEPTH, RLC_DIG)];					\
 		int i, j, c, e, top, neg, sgn[S], even[S];							\
 		size_t l, s;														\
 		bn_t m, n, u, _k[S];												\
@@ -841,7 +852,7 @@
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
-			l = (dim > 1 ? TMPL_EP_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
+			l = (dim > 1 ? TMPL_EC_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
 			s = RLC_CEIL(l, 2 * RLC_DEPTH);									\
 			l = 2 * RLC_DEPTH * s;											\
 																			\
@@ -863,7 +874,7 @@
 				bn_mul(_k[0], _k[0], u);									\
 				bn_mod(_k[0], _k[0], n);									\
 			} else {														\
-				TMPL_EP_MUL_FIX_REC_##E(_k, m, n);							\
+				TMPL_EC_MUL_FIX_REC_##E(_k, m, n);							\
 				/* Make each subscalar positive and odd, then recode it as	\
 				 * (k_j + 2^l - 1)/2, which is exact for odd k_j. */		\
 				bn_set_2b(u, l);											\
@@ -879,7 +890,7 @@
 			}																\
 			/* Read the bits from buffers of fixed length. */				\
 			for (j = 0; j < dim; j++) {										\
-				dv_zero(d[j], RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG));\
+				dv_zero(d[j], RLC_CEIL(B + 2 * RLC_DEPTH, RLC_DIG));		\
 				dv_copy(d[j], _k[j]->dp, _k[j]->used);						\
 			}																\
 																			\
@@ -913,7 +924,7 @@
 						if (j == 0) {										\
 							C##_add(r, r, q);								\
 						} else {											\
-							C##_psi(w, q);									\
+							TMPL_EC_MUL_FIX_PSI_##E(C, w, q);				\
 							C##_add(r, r, w);								\
 						}													\
 					}														\
@@ -923,7 +934,7 @@
 			for (j = 0; j < (dim > 1 ? dim : 0); j++) {						\
 				C##_copy(w, t[2 * h]);										\
 				if (j > 0) {												\
-					C##_psi(w, w);											\
+					TMPL_EC_MUL_FIX_PSI_##E(C, w, w);						\
 				}															\
 				C##_neg(v, w);												\
 				F##_copy_sec(w->y, v->y, sgn[j]);							\
@@ -1723,7 +1734,7 @@
 	TMPL_EP_MUL_GEN(C)														\
 	TMPL_EP_MUL_DIG(C)														\
 	TMPL_EP_MUL_FIX_BASIC(C, plain)											\
-	TMPL_EP_MUL_FIX_LWREG(C, F, plain, 1)									\
+	TMPL_EC_MUL_FIX_LWREG(C, F, plain, 1, RLC_FP_BITS)						\
 	TMPL_EP_MUL_COMBD(C)													\
 	TMPL_EP_MUL_SIM(C)														\
 	TMPL_EP_MUL_SIM_GEN(C)													\

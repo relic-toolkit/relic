@@ -551,6 +551,15 @@ void fb_poly_add(fb_t c, const fb_t a);
 void fb_copy(fb_t c, const fb_t a);
 
 /**
+ * Conditionally copies a binary field element to another in constant time.
+ *
+ * @param[out] c			- the destination.
+ * @param[in] a				- the source.
+ * @param[in] bit			- the condition bit, 0 or 1.
+ */
+void fb_copy_sec(fb_t c, const fb_t a, dig_t bit);
+
+/**
  * Negates a binary field element.
  *
  * @param[out] c			- the result.

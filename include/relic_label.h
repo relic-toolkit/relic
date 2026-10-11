@@ -807,6 +807,7 @@
 #undef fb_param_print
 #undef fb_poly_add
 #undef fb_copy
+#undef fb_copy_sec
 #undef fb_neg
 #undef fb_zero
 #undef fb_is_zero
@@ -877,6 +878,7 @@
 #define fb_param_print 	RLC_PREFIX(fb_param_print)
 #define fb_poly_add 	RLC_PREFIX(fb_poly_add)
 #define fb_copy 	RLC_PREFIX(fb_copy)
+#define fb_copy_sec 	RLC_PREFIX(fb_copy_sec)
 #define fb_neg 	RLC_PREFIX(fb_neg)
 #define fb_zero 	RLC_PREFIX(fb_zero)
 #define fb_is_zero 	RLC_PREFIX(fb_is_zero)
@@ -1347,9 +1349,11 @@
 #undef eb_mul_gen
 #undef eb_mul_dig
 #undef eb_mul_pre_basic
+#undef eb_mul_pre_lwreg
 #undef eb_mul_pre_combd
 #undef eb_mul_pre_lwnaf
 #undef eb_mul_fix_basic
+#undef eb_mul_fix_lwreg
 #undef eb_mul_fix_combd
 #undef eb_mul_fix_lwnaf
 #undef eb_mul_sim
@@ -1411,9 +1415,11 @@
 #define eb_mul_gen 	RLC_PREFIX(eb_mul_gen)
 #define eb_mul_dig 	RLC_PREFIX(eb_mul_dig)
 #define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
+#define eb_mul_pre_lwreg 	RLC_PREFIX(eb_mul_pre_lwreg)
 #define eb_mul_pre_combd 	RLC_PREFIX(eb_mul_pre_combd)
 #define eb_mul_pre_lwnaf 	RLC_PREFIX(eb_mul_pre_lwnaf)
 #define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
+#define eb_mul_fix_lwreg 	RLC_PREFIX(eb_mul_fix_lwreg)
 #define eb_mul_fix_combd 	RLC_PREFIX(eb_mul_fix_combd)
 #define eb_mul_fix_lwnaf 	RLC_PREFIX(eb_mul_fix_lwnaf)
 #define eb_mul_sim 	RLC_PREFIX(eb_mul_sim)

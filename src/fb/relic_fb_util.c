@@ -78,6 +78,10 @@ void fb_copy(fb_t c, const fb_t a) {
 	dv_copy(c, a, RLC_FB_DIGS);
 }
 
+void fb_copy_sec(fb_t c, const fb_t a, dig_t bit) {
+	dv_copy_sec(c, a, RLC_FB_DIGS, bit);
+}
+
 void fb_zero(fb_t a) {
 	dv_zero(a, RLC_FB_DIGS);
 }

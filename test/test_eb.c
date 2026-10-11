@@ -850,6 +850,43 @@ static int fixed(void) {
 		}
 #endif
 
+#if EB_FIX == LWREG || !defined(STRIP)
+		for (int i = 0; i < RLC_EB_TABLE_LWREG; i++) {
+			eb_new(t[i]);
+		}
+		TEST_CASE("regular signed comb fixed point multiplication is correct") {
+			eb_rand(p);
+			eb_mul_pre_lwreg(t, p);
+			bn_zero(k);
+			eb_mul_fix_lwreg(r, (const eb_t *)t, k);
+			TEST_ASSERT(eb_is_infty(r), end);
+			eb_mul_fix_lwreg(r, (const eb_t *)t, n);
+			TEST_ASSERT(eb_is_infty(r), end);
+			bn_set_dig(k, 1);
+			eb_mul_fix_lwreg(r, (const eb_t *)t, k);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			eb_mul(r, p, k);
+			eb_mul_fix_lwreg(q, (const eb_t *)t, k);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			eb_mul_fix_lwreg(r, (const eb_t *)t, k);
+			eb_neg(r, r);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			eb_mul_fix_lwreg(q, (const eb_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			eb_mul_fix_lwreg(r, (const eb_t *)t, k);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EB_TABLE_LWREG; i++) {
+			eb_free(t[i]);
+		}
+#endif
+
 #if EB_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 			eb_new(t[i]);

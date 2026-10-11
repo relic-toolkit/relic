@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -91,8 +92,6 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	}
 }
 
-
-
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-NAF
  * method.
@@ -137,7 +136,6 @@ static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
 		eb_neg(r, r);
 	}
 }
-
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -236,6 +234,8 @@ void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k) {
 		bn_free(ord);
 	}
 }
+
+TMPL_EC_MUL_FIX_LWREG(eb, fb, plain, 1, RLC_FB_BITS);
 
 void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 	int i, j, d, e;

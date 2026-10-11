@@ -471,6 +471,26 @@ static void arith(void) {
 	}
 #endif
 
+#if EB_FIX == LWREG || !defined(STRIP)
+	for (int i = 0; i < RLC_EB_TABLE_LWREG; i++) {
+		eb_new(t[i]);
+	}
+	BENCH_RUN("eb_mul_pre_lwreg") {
+		eb_rand(p);
+		BENCH_ADD(eb_mul_pre_lwreg(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("eb_mul_fix_lwreg") {
+		bn_rand_mod(k, n);
+		eb_rand(p);
+		eb_mul_pre_lwreg(t, p);
+		BENCH_ADD(eb_mul_fix_lwreg(q, (const eb_t *)t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EB_TABLE_LWREG; i++) {
+		eb_free(t[i]);
+	}
+#endif
+
 #if EB_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 		eb_new(t[i]);

@@ -84,6 +84,12 @@ enum {
 #define RLC_EB_TABLE_BASIC		(1 << RLC_DEPTH)
 
 /**
+ * Size of a precomputation table using the regular signed comb method, two
+ * combs and the base point.
+ */
+#define RLC_EB_TABLE_LWREG		((1 << RLC_DEPTH) + 1)
+
+/**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_EB_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
@@ -98,6 +104,8 @@ enum {
  */
 #if EB_FIX == BASIC
 #define RLC_EB_TABLE			RLC_EB_TABLE_BASIC
+#elif EB_FIX == LWREG
+#define RLC_EB_TABLE			RLC_EB_TABLE_LWREG
 #elif EB_FIX == COMBD
 #define RLC_EB_TABLE			RLC_EB_TABLE_COMBD
 #elif EB_FIX == LWNAF
@@ -191,6 +199,17 @@ typedef eb_st *eb_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define eb_null_all(...)	RLC_EACH(eb_null, __VA_ARGS__)
+#define eb_new_all(...)		RLC_EACH(eb_new, __VA_ARGS__)
+#define eb_free_all(...)	RLC_EACH(eb_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Negates a binary elliptic curve point. Computes R = -P.
  *
  * @param[out] R			- the result.
@@ -269,6 +288,8 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_pre(T, P)	eb_mul_pre_basic(T, P)
+#elif EB_FIX == LWREG
+#define eb_mul_pre(T, P)	eb_mul_pre_lwreg(T, P)
 #elif EB_FIX == COMBD
 #define eb_mul_pre(T, P)	eb_mul_pre_combd(T, P)
 #elif EB_FIX == LWNAF
@@ -285,6 +306,8 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_fix(R, T, K)	eb_mul_fix_basic(R, T, K)
+#elif EB_FIX == LWREG
+#define eb_mul_fix(R, T, K)	eb_mul_fix_lwreg(R, T, K)
 #elif EB_FIX == COMBD
 #define eb_mul_fix(R, T, K)	eb_mul_fix_combd(R, T, K)
 #elif EB_FIX == LWNAF
@@ -703,6 +726,15 @@ void eb_mul_pre_basic(eb_t *t, const eb_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed binary elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void eb_mul_pre_lwreg(eb_t *t, const eb_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed binary elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -728,6 +760,16 @@ void eb_mul_pre_lwnaf(eb_t *t, const eb_t p);
  * @param[in] k				- the integer.
  */
 void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed binary elliptic point in constant time using a
+ * precomputation table and the regular signed comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void eb_mul_fix_lwreg(eb_t r, const eb_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed binary elliptic point using a precomputation table and

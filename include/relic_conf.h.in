@@ -468,6 +468,8 @@
 
 /** Single-table comb method. */
 #define BASIC	 1
+/** Regular signed comb method. */
+#define LWREG	 2
 /** Double-table comb method. */
 #define COMBD    3
 /** Left-to-right Width-w NAF. */
