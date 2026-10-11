@@ -130,7 +130,6 @@ static void find_solve(void) {
 					fb_add(ctx->fb_half[l][j], ctx->fb_half[l][j], t0);
 				}
 			}
-			fb_rsh(ctx->fb_half[l][j], ctx->fb_half[l][j], 1);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -248,6 +247,12 @@ static void find_chain(void) {
 				j = j >> 1;
 			}
 			break;
+	}
+
+	if (ctx->chain_len >= RLC_TERMS) {
+		/* The chain does not fit in the context. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	u[0] = 1;

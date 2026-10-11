@@ -97,6 +97,11 @@ static int util(void) {
 			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fb_set_dig(a, d);
 			TEST_ASSERT(fb_cmp_dig(a, d) == RLC_EQ, end);
+			/* Higher digits must count, also when they cancel out. */
+			if (RLC_FB_DIGS > 2) {
+				a[1] = a[2] = d | 1;
+				TEST_ASSERT(fb_cmp_dig(a, d) == RLC_NE, end);
+			}
 		}
 		TEST_END;
 
@@ -131,6 +136,16 @@ static int util(void) {
 			fb_write_bin(bin, sizeof(bin), a);
 			fb_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
+			/* Bits beyond the degree of the field are rejected. */
+			if (RLC_FB_BITS % 8 != 0) {
+				bin[0] |= 0x80;
+				err_get_code();
+				RLC_TRY {
+					fb_read_bin(b, bin, sizeof(bin));
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			}
 		}
 		TEST_END;
 

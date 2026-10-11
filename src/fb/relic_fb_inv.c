@@ -63,7 +63,6 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 			}
 			fb_mul(v, v, u);
 		}
-		fb_copy(c, v);
 #else
 		/* u = a^2, v = 1, x = (m - 1)/2. */
 		fb_sqr(u, a);
@@ -301,22 +300,33 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 void fb_inv_itoht(fb_t c, const fb_t a) {
 	int i, x, y, len;
 	const int *chain = fb_poly_get_chain(&len);
-	int *u = RLC_ALLOCA(int, len + 1);
-	fb_t *table = RLC_ALLOCA(fb_t, len + 1);
-
-	for (i = 0; i <= len; i++) {
-		fb_null(table[i]);
-	}
+	int *u = NULL;
+	fb_t *table = NULL;
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
+	/* The table needs at least two entries, also for even degrees. */
+	if (chain == NULL && (FB_POLYN % 2) != 0) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	len = RLC_MAX(len, 1);
+
+	u = RLC_ALLOCA(int, len + 1);
+	table = RLC_ALLOCA(fb_t, len + 1);
+	if (u == NULL || table == NULL) {
+		RLC_FREE(u);
+		RLC_FREE(table);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+	for (i = 0; i <= len; i++) {
+		fb_null(table[i]);
+	}
 
 	RLC_TRY {
-		if (u == NULL || table == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i <= len; i++) {
 			fb_new(table[i]);
 		}
@@ -432,10 +442,16 @@ void fb_inv_lower(fb_t c, const fb_t a) {
 
 void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	int i;
-	fb_t u, *t = RLC_ALLOCA(fb_t, n);
+	fb_t u, *t;
 
+	if (n <= 0) {
+		return;
+	}
+
+	t = RLC_ALLOCA(fb_t, n);
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 
 	fb_null(u);
