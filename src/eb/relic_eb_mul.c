@@ -38,122 +38,6 @@
 /*============================================================================*/
 
 /**
- * Multiplies a binary elliptic curve point by an integer using the w-TNAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t tnaf[RLC_FB_BITS + 8], u;
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	if (eb_curve_opt_a() == RLC_ZERO) {
-		u = -1;
-	} else {
-		u = 1;
-	}
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		eb_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-TNAF representation of k. */
-		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
-
-		eb_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			eb_frb(r, r);
-
-			n = tnaf[i];
-			if (n > 0) {
-				eb_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				eb_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the
- * left-to-right w-NAF method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-			fb_set_dig(t[i]->z, 1);
-			t[i]->coord = BASIC;
-		}
-
-		/* Compute the precomputation table. */
-		eb_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		eb_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			eb_dbl(r, r);
-
-			n = naf[i];
-			if (n > 0) {
-				eb_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				eb_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-/**
  * Combines the accumulators of a right-to-left w-NAF method, computing
  * R = sum_i (2i + 1) * T[i] as T[0] + 2 * sum_{i >= 1} S[i], where
  * S[i] = sum_{j >= i} T[j]. The accumulators are overwritten.
@@ -214,139 +98,6 @@ static void eb_mul_alpha(eb_t r, const eb_t p, int b, int g, int u) {
 		}
 		if (d[l] < 0) {
 			eb_sub(r, r, p);
-		}
-	}
-}
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the
- * right-to-left w-TNAF method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t tnaf[RLC_FB_BITS + 8], u;
-	int8_t beta[1 << (RLC_WIDTH - 2)], gama[1 << (RLC_WIDTH - 2)];
-	uint8_t t_w;
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	if (eb_curve_opt_a() == RLC_ZERO) {
-		u = -1;
-	} else {
-		u = 1;
-	}
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-		}
-
-		/* Compute the w-TNAF representation of k. */
-		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
-
-		eb_copy(r, p);
-		for (i = 0; i < l; i++) {
-			n = tnaf[i];
-			if (n > 0) {
-				eb_add(t[n / 2], t[n / 2], r);
-			}
-			if (n < 0) {
-				eb_sub(t[-n / 2], t[-n / 2], r);
-			}
-
-			/* We can avoid a function call here. */
-			fb_sqr(r->x, r->x);
-			fb_sqr(r->y, r->y);
-		}
-
-		/* Multiply each accumulator by its representative alpha. */
-		bn_rec_tnaf_get(&t_w, beta, gama, u, RLC_WIDTH);
-		eb_copy(r, t[0]);
-		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_copy(t[0], t[i]);
-			eb_mul_alpha(t[i], t[0], beta[i], gama[i], u);
-		}
-
-		/* Add accumulators */
-		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
-			if (r->coord == BASIC) {
-				eb_add(r, t[i], r);
-			} else {
-				eb_add(r, r, t[i]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the
- * right-to-left w-NAF method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	RLC_TRY {
-		/* Prepare the accumulator table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-		}
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		eb_copy(r, p);
-		for (i = 0; i < l; i++) {
-			n = naf[i];
-			if (n > 0) {
-				eb_add(t[n / 2], t[n / 2], r);
-			}
-			if (n < 0) {
-				eb_sub(t[-n / 2], t[-n / 2], r);
-			}
-
-			eb_dbl(r, r);
-		}
-
-		eb_mul_odd_sum(r, t);
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the accumulator table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
 		}
 	}
 }
@@ -519,7 +270,11 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 }
 
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
+	int i, d, kbltz = eb_curve_is_kbltz();
+	int8_t u, naf[RLC_FB_BITS + 8];
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	bn_t n, _k;
+	size_t l;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -527,31 +282,71 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 	}
 
 	bn_null_all(n, _k);
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		eb_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new_all(n, _k);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_new(t[i]);
+		}
 
-		/* Reduce the scalar here to simplify the static functions. */
+		/* Reduce the scalar to bound the length of its recoding. */
 		eb_curve_get_ord(n);
 		bn_mod(_k, k, n);
 
-		if (eb_curve_is_kbltz()) {
-			eb_mul_ltnaf_imp(r, p, _k);
+		/* Compute the precomputation table. */
+		eb_tab(t, p, RLC_WIDTH);
+
+		/* Compute the w-TNAF or w-NAF representation of k. */
+		l = sizeof(naf);
+		if (kbltz) {
+			u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+			bn_rec_tnaf(naf, &l, _k, u, RLC_FB_BITS, RLC_WIDTH);
 		} else {
-			eb_mul_lnaf_imp(r, p, _k);
+			bn_rec_naf(naf, &l, _k, RLC_WIDTH);
 		}
+
+		eb_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			/* The Frobenius map replaces doubling on Koblitz curves. */
+			if (kbltz) {
+				eb_frb(r, r);
+			} else {
+				eb_dbl(r, r);
+			}
+
+			d = naf[i];
+			if (d > 0) {
+				eb_add(r, r, t[d / 2]);
+			}
+			if (d < 0) {
+				eb_sub(r, r, t[-d / 2]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		eb_norm(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free_all(n, _k);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_free(t[i]);
+		}
 	}
 }
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
+	int i, d, kbltz = eb_curve_is_kbltz();
+	int8_t u, naf[RLC_FB_BITS + 8];
+	int8_t beta[1 << (RLC_WIDTH - 2)], gama[1 << (RLC_WIDTH - 2)];
+	uint8_t t_w;
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	bn_t n, _k;
-	eb_t t;
+	size_t l;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -559,30 +354,78 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 	}
 
 	bn_null_all(n, _k);
-	eb_null(t);
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		eb_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new_all(n, _k);
-		eb_new(t);
+		/* Prepare the accumulator table. */
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_new(t[i]);
+			eb_set_infty(t[i]);
+		}
 
-		/* Reduce the scalar here to simplify the static functions. */
+		/* Reduce the scalar to bound the length of its recoding. */
 		eb_curve_get_ord(n);
 		bn_mod(_k, k, n);
 
-		/* The method needs the input point in affine coordinates. */
-		eb_norm(t, p);
-		if (eb_curve_is_kbltz()) {
-			eb_mul_rtnaf_imp(r, t, _k);
+		/* Compute the w-TNAF or w-NAF representation of k. */
+		u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+		l = sizeof(naf);
+		if (kbltz) {
+			bn_rec_tnaf(naf, &l, _k, u, RLC_FB_BITS, RLC_WIDTH);
 		} else {
-			eb_mul_rnaf_imp(r, t, _k);
+			bn_rec_naf(naf, &l, _k, RLC_WIDTH);
 		}
+
+		/* The method needs the input point in affine coordinates. */
+		eb_norm(r, p);
+		for (i = 0; i < l; i++) {
+			d = naf[i];
+			if (d > 0) {
+				eb_add(t[d / 2], t[d / 2], r);
+			}
+			if (d < 0) {
+				eb_sub(t[-d / 2], t[-d / 2], r);
+			}
+
+			/* The Frobenius map replaces doubling on Koblitz curves, and
+			 * only squares the coordinates of an affine point. */
+			if (kbltz) {
+				fb_sqr(r->x, r->x);
+				fb_sqr(r->y, r->y);
+			} else {
+				eb_dbl(r, r);
+			}
+		}
+
+		if (kbltz) {
+			/* Multiply each accumulator by its representative alpha. */
+			bn_rec_tnaf_get(&t_w, beta, gama, u, RLC_WIDTH);
+			for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
+				eb_copy(r, t[i]);
+				eb_mul_alpha(t[i], r, beta[i], gama[i], u);
+			}
+			/* Add the accumulators. */
+			eb_copy(r, t[0]);
+			for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
+				eb_add(r, r, t[i]);
+			}
+		} else {
+			eb_mul_odd_sum(r, t);
+		}
+		/* Convert r to affine coordinates. */
+		eb_norm(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free_all(n, _k);
-		eb_free(t);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_free(t[i]);
+		}
 	}
 }
 

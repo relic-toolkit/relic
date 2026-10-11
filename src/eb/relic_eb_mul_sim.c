@@ -39,7 +39,7 @@
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
- * table of precomputed points.
+ * table of precomputed points. The integers must be reduced modulo the order.
  *
  * @param[out] r 				- the result.
  * @param[in] p					- the first point to multiply.
@@ -48,183 +48,59 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to a precomputed table.
  */
-static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
+static void eb_mul_sim_imp(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, n0, n1, w, g;
-	int8_t u, tnaf0[RLC_FB_BITS + 8], tnaf1[RLC_FB_BITS + 8], *_k, *_m;
+	int i, n0, n1, w, g = (t == NULL ? 0 : 1), kbltz = eb_curve_is_kbltz();
+	int8_t u, naf0[RLC_FB_BITS + 8], naf1[RLC_FB_BITS + 8], *_k, *_m;
 	eb_t t0[1 << (RLC_WIDTH - 2)];
 	eb_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
-	for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
-		eb_null(t0[i]);
-		eb_null(t1[i]);
-	}
-
-	RLC_TRY {
-		/* Compute the w-TNAF representation of k. */
-		if (eb_curve_opt_a() == RLC_ZERO) {
-			u = -1;
-		} else {
-			u = 1;
-		}
-
-		g = (t == NULL ? 0 : 1);
-		if (!g) {
-			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
-				eb_new(t0[i]);
-				eb_set_infty(t0[i]);
-				fb_set_bit(t0[i]->z, 0, 1);
-				t0[i]->coord = BASIC;
-			}
-			eb_tab(t0, p, RLC_WIDTH);
-			t = (const eb_t *)t0;
-		}
-
-		/* Prepare the precomputation table. */
-		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_new(t1[i]);
-			eb_set_infty(t1[i]);
-			fb_set_bit(t1[i]->z, 0, 1);
-			t1[i]->coord = BASIC;
-		}
-		/* Compute the precomputation table. */
-		eb_tab(t1, q, RLC_WIDTH);
-
-		/* Compute the w-TNAF representation of k. */
-		if (g) {
-			w = RLC_DEPTH;
-		} else {
-			w = RLC_WIDTH;
-		}
-
-		l0 = l1 = RLC_FB_BITS + 8;
-		bn_rec_tnaf(tnaf0, &l0, k, u, RLC_FB_BITS, w);
-		bn_rec_tnaf(tnaf1, &l1, m, u, RLC_FB_BITS, RLC_WIDTH);
-
-		l = RLC_MAX(l0, l1);
-		_k = tnaf0 + l - 1;
-		_m = tnaf1 + l - 1;
-
-		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				tnaf0[i] = -tnaf0[i];
-			}
-		}
-		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				tnaf1[i] = -tnaf1[i];
-			}
-		}
-
-		_k = tnaf0 + l - 1;
-		_m = tnaf1 + l - 1;
-		eb_set_infty(r);
-		for (i =  l - 1; i >= 0; i--, _k--, _m--) {
-			eb_frb(r, r);
-
-			n0 = *_k;
-			n1 = *_m;
-			if (n0 > 0) {
-				eb_add(r, r, t[n0 / 2]);
-			}
-			if (n0 < 0) {
-				eb_sub(r, r, t[-n0 / 2]);
-			}
-			if (n1 > 0) {
-				eb_add(r, r, t1[n1 / 2]);
-			}
-			if (n1 < 0) {
-				eb_sub(r, r, t1[-n1 / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		if (!g) {
-			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
-				eb_free(t0[i]);
-			}
-		}
-		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t1[i]);
-		}
-	}
-}
-
-/**
- * Multiplies and adds two binary elliptic curve points simultaneously,
- * optionally choosing the first point as the generator depending on an optional
- * table of precomputed points.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the first point to multiply.
- * @param[in] k					- the first integer.
- * @param[in] q					- the second point to multiply.
- * @param[in] m					- the second integer.
- * @param[in] t					- the pointer to a precomputed table.
- */
-static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
-		const bn_t m, const eb_t *t) {
-	int i, n0, n1, w, g = (t == NULL ? 0 : 1);
-	int8_t naf0[RLC_FB_BITS + 1], naf1[RLC_FB_BITS + 1], *_k, *_m;
-	eb_t t0[1 << (RLC_WIDTH - 2)];
-	eb_t t1[1 << (RLC_WIDTH - 2)];
-	size_t l, l0, l1;
-
-	for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
 		eb_null(t1[i]);
 	}
 
 	RLC_TRY {
 		if (!g) {
-			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
 			}
 			eb_tab(t0, p, RLC_WIDTH);
 			t = (const eb_t *)t0;
 		}
 
-		/* Prepare the precomputation table. */
-		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		/* Compute the precomputation table. */
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_new(t1[i]);
 		}
-		/* Compute the precomputation table. */
 		eb_tab(t1, q, RLC_WIDTH);
 
-		/* Compute the w-NAF representation of k. */
-		if (g) {
-			w = RLC_DEPTH;
-		} else {
-			w = RLC_WIDTH;
-		}
+		/* The generator table may have a different width. */
+		w = (g ? RLC_DEPTH : RLC_WIDTH);
 
-		l0 = l1 = RLC_FB_BITS + 1;
-		bn_rec_naf(naf0, &l0, k, w);
-		bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
+		/* Compute the w-TNAF or w-NAF representations of k and m. */
+		l0 = l1 = sizeof(naf0);
+		if (kbltz) {
+			u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+			bn_rec_tnaf(naf0, &l0, k, u, RLC_FB_BITS, w);
+			bn_rec_tnaf(naf1, &l1, m, u, RLC_FB_BITS, RLC_WIDTH);
+		} else {
+			bn_rec_naf(naf0, &l0, k, w);
+			bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
+		}
 
 		l = RLC_MAX(l0, l1);
-		if (bn_sign(k) == RLC_NEG) {
-			for (i =  0; i < l0; i++) {
-				naf0[i] = -naf0[i];
-			}
-		}
-		if (bn_sign(m) == RLC_NEG) {
-			for (i =  0; i < l1; i++) {
-				naf1[i] = -naf1[i];
-			}
-		}
-
 		_k = naf0 + l - 1;
 		_m = naf1 + l - 1;
 		eb_set_infty(r);
-		for (i =  l - 1; i >= 0; i--, _k--, _m--) {
-			eb_dbl(r, r);
+		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+			/* The Frobenius map replaces doubling on Koblitz curves. */
+			if (kbltz) {
+				eb_frb(r, r);
+			} else {
+				eb_dbl(r, r);
+			}
 
 			n0 = *_k;
 			n1 = *_m;
@@ -250,11 +126,11 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	RLC_FINALLY {
 		/* Free the precomputation tables. */
 		if (!g) {
-			for (i =  0; i < 1 << (RLC_WIDTH - 2); i++) {
+			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_free(t0[i]);
 			}
 		}
-		for (i =  0; i < 1 << (RLC_WIDTH - 2); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t1[i]);
 		}
 	}
@@ -287,11 +163,7 @@ void eb_mul_sim(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-		if (eb_curve_is_kbltz()) {
-			eb_mul_sim_kbltz(r, p, _k, q, _m, NULL);
-		} else {
-			eb_mul_sim_plain(r, p, _k, q, _m, NULL);
-		}
+		eb_mul_sim_imp(r, p, _k, q, _m, NULL);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -327,11 +199,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		bn_mod(_m, m, n);
 
 #if EB_FIX == LWNAF && defined(EB_PRECO)
-		if (eb_curve_is_kbltz()) {
-			eb_mul_sim_kbltz(r, g, _k, q, _m, eb_curve_get_tab());
-		} else {
-			eb_mul_sim_plain(r, g, _k, q, _m, eb_curve_get_tab());
-		}
+		eb_mul_sim_imp(r, g, _k, q, _m, eb_curve_get_tab());
 #else
 		eb_mul_sim(r, g, _k, q, _m);
 #endif
