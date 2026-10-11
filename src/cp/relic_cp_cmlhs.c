@@ -105,7 +105,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 16 * RLC_PC_BYTES + dlen);
+	uint8_t *buf = NULL;
 	int result = RLC_OK;
 
 	bn_null(k);
@@ -118,9 +118,6 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		bn_new(m);
 		bn_new(n);
 		g1_new(t);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		pc_get_ord(n);
 		/* Generate r and s. */
@@ -161,7 +158,12 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g1_add(c, c, t);
 		g1_norm(c, c);
 
+		/* Sign Z || data, with a buffer sized for the encoding of Z. */
 		len = g2_size_bin(z, 0);
+		buf = RLC_ALLOCA(uint8_t, len + dlen);
+		if (buf == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 		g2_write_bin(buf, len, z, 0);
 		memcpy(buf + len, data, dlen);
 		if (bls) {
