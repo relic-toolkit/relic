@@ -252,7 +252,6 @@ typedef dv18_t dv54_t[3];
 #define dv2_null(A)															\
 		dv_null(A[0]); dv_null(A[1]);										\
 
-
 /**
  * Allocates a double-precision quadratic extension field element.
  *
@@ -2659,7 +2658,6 @@ int fp4_srt(fp4_t c, const fp4_t a);
  * @param[in] a				- the sextic extension field element to copy.
  */
 void fp6_copy(fp6_t c, const fp6_t a);
-
 
 /**
  * Conditionally copies the second argument to the first argument.

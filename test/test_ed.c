@@ -26,7 +26,6 @@
  *
  * Tests for arithmetic on prime Edwards elliptic curves.
  *
- * @version $Id$
  * @ingroup test
  */
 

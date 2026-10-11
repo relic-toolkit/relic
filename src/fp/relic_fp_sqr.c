@@ -212,7 +212,6 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 			fp_sqrn_low(t, a);
 		}
 
-
 		fp_rdc(c, t);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

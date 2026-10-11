@@ -205,7 +205,6 @@ void arch_clean(void) {
 	}
 }
 
-
 ull_t arch_cycles(void) {
 	uint_t value = 0;
 

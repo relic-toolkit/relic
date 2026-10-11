@@ -816,7 +816,6 @@
 	RLC_GET(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));						\
 	bn_read_str(lamb, str, strlen(str), 16);								\
 
-
 /**
  * Assigns the isogeny map parameters for hashing with SSWU map.
  *
@@ -826,11 +825,9 @@
     ep_param_set_ctmap(CURVE##_ISO_A, CURVE##_ISO_B, CURVE##_ISO_XN,		\
 			CURVE##_ISO_XD, CURVE##_ISO_YN, CURVE##_ISO_YD, CURVE##_MAPU)	\
 
-
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
-
 
 /**
  * Reads a sequence of polynomial coefficients from semicolon separated string.
@@ -889,7 +886,6 @@ static inline void ep_param_set_ctmap(const char *a_str, const char *b_str,
 	coeffs->deg_yn = ep_param_get_coeffs(coeffs->yn, yn_str);
 	coeffs->deg_yd = ep_param_get_coeffs(coeffs->yd, yd_str);
 }
-
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -1384,7 +1380,6 @@ void ep_param_set(int param) {
 		if (plain) {
 			ep_curve_set_plain(a, b, g, r, h, ctmap);
 		}
-
 
 		if (endom) {
 			ep_curve_set_endom(a, b, g, r, h, beta, lamb, ctmap);

@@ -365,11 +365,9 @@ const ep_t *ep_curve_get_tab(void) {
 #endif
 }
 
-
 iso_t ep_curve_get_iso() {
 	return &core_get()->ep_iso;
 }
-
 
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
@@ -389,8 +387,6 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
-
-
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
 	ctx_t *ctx = core_get();
@@ -399,8 +395,6 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
-
-
 
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap) {
@@ -479,7 +473,6 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		bn_free(m);
 	}
 }
-
 
 int ep_curve_embed(void) {
 	switch (core_get()->ep_is_pairf) {

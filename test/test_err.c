@@ -79,7 +79,6 @@ static void dummy4(void) {
 	}
 }
 
-
 int main(void) {
 	err_t e = ERR_CAUGHT;
 	char *msg = NULL;

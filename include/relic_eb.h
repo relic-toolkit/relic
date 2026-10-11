@@ -259,7 +259,6 @@ typedef eb_st *eb_t;
 #define eb_dbl(R, P)		eb_dbl_projc(R, P);
 #endif
 
-
 /**
  * Multiplies a binary elliptic curve point by an integer. Computes R = [k]P.
  *

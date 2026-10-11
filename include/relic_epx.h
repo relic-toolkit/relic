@@ -1405,7 +1405,6 @@ void ep2_mul_gen(ep2_t r, const bn_t k);
  */
 void ep2_mul_dig(ep2_t r, const ep2_t p, const dig_t k);
 
-
 /**
  * Multiplies a point in an elliptic curve over a quadratic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
@@ -2525,7 +2524,6 @@ void ep4_mul_gen(ep4_t r, const bn_t k);
  */
 void ep4_mul_dig(ep4_t r, const ep4_t p, const dig_t k);
 
-
 /**
  * Multiplies a point in an elliptic curve over a quartic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
@@ -3074,7 +3072,6 @@ void ep8_mul_gen(ep8_t r, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k);
-
 
 /**
  * Multiplies a point in an elliptic curve over an octic extension field by

@@ -37,37 +37,6 @@
 #include "relic_ep.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Triples a point represented in affine coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to triple.
- */
-TMPL_TPL_BASIC_IMP(ep, fp);
-
-/**
- * Triples a point represented in projective coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to triple.
- */
-TMPL_TPL_PROJC_IMP(ep, fp);
-
-/**
- * Triples a point represented in Jacobian coordinates on an ordinary prime
- * elliptic curve.
- *
- * @param r					- the result.
- * @param p					- the point to triple.
- */
-TMPL_TPL_JACOB_IMP(ep, fp);
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -252,32 +221,11 @@ void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack) {
 	}
 }
 
-void ep_tpl_basic(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
+TMPL_EP_TPL_BASIC(ep, fp);
 
-	ep_tpl_basic_imp(r, p);
-}
+TMPL_EP_TPL_PROJC(ep, fp);
 
-void ep_tpl_projc(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	ep_tpl_projc_imp(r, p);
-}
-
-void ep_tpl_jacob(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	ep_tpl_jacob_imp(r, p);
-}
+TMPL_EP_TPL_JACOB(ep, fp);
 
 void ep_psi(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {

@@ -110,7 +110,6 @@ void bn_swap_sec(bn_t a, bn_t b, dig_t bit) {
 	a->sign ^= st;
 	b->sign ^= st;
 }
- 
 
 void bn_abs(bn_t c, const bn_t a) {
 	if (c->dp != a->dp) {

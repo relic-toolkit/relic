@@ -46,22 +46,22 @@
  * @param[in] coeffs		- the vector of coefficients in the polynomial.
  * @param[in] len			- the degree of the polynomial.
  */
-TMPL_MAP_HORNER(fp2, fp2_t)
+TMPL_EP_MAP_HORNER(fp2, fp2_t)
 
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP(ep2, fp2, iso2)
+TMPL_EP_MAP_ISOGENY_MAP(ep2, fp2, iso2)
 
 /**
  * Simplified SWU mapping.
  */
-TMPL_MAP_SSWU(ep2, fp2, fp_t)
+TMPL_EP_MAP_SSWU(ep2, fp2, fp_t)
 
 /**
  * Shallue--van de Woestijne map.
  */
-TMPL_MAP_SVDW(ep2, fp2, fp_t)
+TMPL_EP_MAP_SVDW(ep2, fp2, fp_t)
 
 /**
  * Maps a byte array to a point in an elliptic curve over a quadratic extension
@@ -126,12 +126,12 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 		/* first map invocation */
 		EP2_MAP_CONVERT_BYTES(0);
 		EP2_MAP_APPLY_MAP(p);
-		TMPL_MAP_CALL_ISOMAP(ep2, p);
+		TMPL_EP_MAP_CALL_ISOMAP(ep2, p);
 
 		/* second map invocation */
 		EP2_MAP_CONVERT_BYTES(1);
 		EP2_MAP_APPLY_MAP(q);
-		TMPL_MAP_CALL_ISOMAP(ep2, q);
+		TMPL_EP_MAP_CALL_ISOMAP(ep2, q);
 
 		/* XXX(rsw) could add p and q and then apply isomap,
 		 * but need ep_add to support addition on isogeny curves */

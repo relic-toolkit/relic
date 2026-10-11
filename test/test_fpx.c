@@ -667,7 +667,6 @@ static int exponentiation2(void) {
 	return code;
 }
 
-
 static int compression2(void) {
 	int code = RLC_ERR;
 	fp2_t a, b, c, d;
@@ -716,7 +715,6 @@ static int compression2(void) {
 	fp2_free_all(a, b, c, d);
 	return code;
 }
-
 
 static int square_root2(void) {
 	int code = RLC_ERR;
@@ -5479,7 +5477,6 @@ static int util18(void) {
 			TEST_ASSERT(fp18_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
-
 
 		TEST_CASE("assignment to random and comparison are consistent") {
 			do {

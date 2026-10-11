@@ -55,7 +55,6 @@ void fp_dblm_low(dig_t *c, const dig_t *a) {
 	fp_dbl(c, a);
 }
 
-
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	fp_sub(c, a, b);
 }

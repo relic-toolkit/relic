@@ -41,8 +41,13 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_BASIC_IMP(C, F)											\
-	static void C##_tpl_basic_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_BASIC(C, F)												\
+	void C##_tpl_basic(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5);								\
@@ -104,8 +109,13 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_PROJC_IMP(C, F)											\
-	static void C##_tpl_projc_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_PROJC(C, F)												\
+	void C##_tpl_projc(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		C##_t q;															\
 																			\
 		C##_null(q);														\
@@ -130,8 +140,13 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_JACOB_IMP(C, F)											\
-	static void C##_tpl_jacob_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_JACOB(C, F)												\
+	void C##_tpl_jacob(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\

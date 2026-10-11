@@ -233,7 +233,6 @@ typedef ed_st *ed_t;
 #define ed_dbl(R, P)		ed_dbl_extnd(R, P)
 #endif
 
-
 /**
  * Configures an Edwards curve by its parameter identifier.
  *

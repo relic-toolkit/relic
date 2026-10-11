@@ -22,13 +22,12 @@
  */
 
 /**
-* @file
-*
-* Implementation of the point doubling on prime elliptic twisted Edwards curves.
-*
-* @version $Id$
-* @ingroup ed
-*/
+ * @file
+ *
+ * Implementation of the point doubling on prime elliptic twisted Edwards curves.
+ *
+ * @ingroup ed
+ */
 
 #include "relic_core.h"
 #include "relic_label.h"

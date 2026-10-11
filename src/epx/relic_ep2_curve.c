@@ -335,7 +335,6 @@
 	RLC_GET(str, CURVE##_MAPU1, sizeof(CURVE##_MAPU1));						\
 	fp_read_str(u[1], str, strlen(str), 16);
 
-
 /**
  * Assigns the isogeny map parameters for hashing with SSWU map.
  *
@@ -345,7 +344,6 @@
     ep2_curve_set_ctmap(CURVE##_ISO_A0, CURVE##_ISO_A1, CURVE##_ISO_B0,		\
                         CURVE##_ISO_B1, CURVE##_ISO_XN, CURVE##_ISO_XD,		\
 						CURVE##_ISO_YN, CURVE##_ISO_YD)
-
 
 /**
  * Reads a sequence of polynomial coefficients from semicolon separated string.

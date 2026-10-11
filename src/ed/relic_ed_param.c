@@ -26,7 +26,6 @@
  *
  * Implementation of the Edwards elliptic curve parameters.
  *
- * @version $Id$
  * @ingroup ed
  */
 

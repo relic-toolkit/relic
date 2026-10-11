@@ -1006,7 +1006,6 @@ void pc_core_calc(void);
  */
 void pc_core_clean(void);
 
-
 /**
  * Assigns a random value to an element from G_T.
  *

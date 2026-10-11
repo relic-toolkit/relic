@@ -72,17 +72,6 @@
 #endif
 
 /**
- * Normalizes a point in projective coordinates if these are enabled.
- *
- * @param[in] C			- the curve.
- * @param[out] R		- the result.
- * @param[in] P			- the point to normalize.
- * @param[in] I			- the flag to indicate if z is already inverted.
- */
-
-#define TMPL_EP_NORM_CALL(C, R, P, I)		C##_norm_imp(R, P, I)
-
-/**
  * Defines a template for basic utilities: testing for and setting the
  * point at infinity, copying, sampling, blinding, validating, tabulating
  * multiples and printing points.
@@ -212,13 +201,12 @@
 	}
 
 /**
- * Defines a template for normalizing a point represented in projective
- * coordinates, with a flag to indicate if z is already inverted.
+ * Defines a template for normalizing one or several points.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_EP_NORM_IMP(C, F)												\
+#define TMPL_EP_NORM(C, F)													\
 	static void C##_norm_imp(C##_t r, const C##_t p, int inv) {				\
 		if (p->coord != BASIC) {											\
 			F##_t t;														\
@@ -260,15 +248,8 @@
 		}																	\
 																			\
 		r->coord = BASIC;													\
-	}
-
-/**
- * Defines a template for normalizing one or several points.
- *
- * @param[in] C			- the curve.
- * @param[in] F			- the field prefix.
- */
-#define TMPL_EP_NORM(C, F)													\
+	}																		\
+																			\
 	void C##_norm(C##_t r, const C##_t p) {									\
 		if (C##_is_infty(p)) {												\
 			C##_set_infty(r);												\
@@ -281,7 +262,7 @@
 			return;															\
 		}																	\
 																			\
-		TMPL_EP_NORM_CALL(C, r, p, 0);										\
+		C##_norm_imp(r, p, 0);												\
 	}																		\
 																			\
 	void C##_norm_sim(C##_t *r, const C##_t *t, int n) {					\
@@ -315,7 +296,7 @@
 			}																\
 																			\
 			for (i = 0; i < n; i++) {										\
-				TMPL_EP_NORM_CALL(C, r[i], r[i], 1);						\
+				C##_norm_imp(r[i], r[i], 1);								\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
@@ -682,23 +663,14 @@
  * @param[in] F			- the field prefix.
  */
 #define TMPL_EP_ARITH(C, F)													\
-	TMPL_ADD_BASIC_IMP(C, F)												\
-	TMPL_ADD_PROJC_MIX(C, F)												\
-	TMPL_ADD_PROJC_IMP(C, F)												\
-	TMPL_ADD_JACOB_MIX(C, F)												\
-	TMPL_ADD_JACOB_IMP(C, F)												\
-	TMPL_ADD_BASIC(C, F)													\
-	TMPL_ADD(C, projc)														\
-	TMPL_ADD(C, jacob)														\
-	TMPL_SUB(C)																\
-	TMPL_DBL_BASIC_IMP(C, F)												\
-	TMPL_DBL_PROJC_IMP(C, F)												\
-	TMPL_DBL_JACOB_IMP(C, F)												\
-	TMPL_EP_NORM_IMP(C, F)													\
+	TMPL_EP_ADD_BASIC(C, F)													\
+	TMPL_EP_ADD_PROJC(C, F)													\
+	TMPL_EP_ADD_JACOB(C, F)													\
+	TMPL_EP_SUB(C)															\
+	TMPL_EP_DBL_BASIC(C, F)													\
+	TMPL_EP_DBL_PROJC(C, F)													\
+	TMPL_EP_DBL_JACOB(C, F)													\
 	TMPL_EP_UTIL(C, F)														\
 	TMPL_EP_CMP(C, F)														\
 	TMPL_EP_NEG(C, F)														\
-	TMPL_DBL_BASIC(C, F)													\
-	TMPL_DBL(C, projc)														\
-	TMPL_DBL(C, jacob)														\
 	TMPL_EP_NORM(C, F)

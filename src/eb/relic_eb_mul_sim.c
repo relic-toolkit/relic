@@ -36,7 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
@@ -157,8 +156,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 }
 
-
-
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
@@ -262,7 +259,6 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 	}
 }
-
 
 /*============================================================================*/
 /* Public definitions                                                         */

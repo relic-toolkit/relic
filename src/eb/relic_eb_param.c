@@ -257,18 +257,14 @@ void eb_param_set(int param) {
 	bn_t r;
 	bn_t h;
 
-	fb_null(a);
-	fb_null(b);
+	fb_null_all(a, b);
 	eb_null(g);
-	bn_null(r);
-	bn_null(h);
+	bn_null_all(r, h);
 
 	RLC_TRY {
-		fb_new(a);
-		fb_new(b);
+		fb_new_all(a, b);
 		eb_new(g);
-		bn_new(r);
-		bn_new(h);
+		bn_new_all(r, h);
 
 		core_get()->eb_id = 0;
 
@@ -354,11 +350,9 @@ void eb_param_set(int param) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(a);
-		fb_free(b);
+		fb_free_all(a, b);
 		eb_free(g);
-		bn_free(r);
-		bn_free(h);
+		bn_free_all(r, h);
 	}
 }
 

@@ -26,7 +26,6 @@
  *
  * Implementation of fixed point multiplication on prime elliptic Edwards curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 

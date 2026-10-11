@@ -340,7 +340,6 @@ static void arith(void) {
 		BENCH_END;
 	}
 
-
 	BENCH_RUN("eb_neg") {
 		eb_rand(p);
 		eb_rand(q);

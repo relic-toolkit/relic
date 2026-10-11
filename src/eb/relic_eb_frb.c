@@ -36,7 +36,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-
 void eb_frb(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
 		eb_set_infty(r);

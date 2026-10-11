@@ -289,7 +289,6 @@ static int paillier(void) {
 	return code;
 }
 
-
 static int subgroup_paillier() {
 	int code = RLC_ERR;
 	bn_t a, b, c, d;

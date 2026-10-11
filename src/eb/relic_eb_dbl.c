@@ -48,14 +48,10 @@
 static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 	fb_t t0, t1, t2;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
+	fb_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
+		fb_new_all(t0, t1, t2);
 
 		/* t0 = 1/x1. */
 		fb_inv(t0, p->x);
@@ -102,9 +98,7 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
+		fb_free_all(t0, t1, t2);
 	}
 }
 
@@ -118,12 +112,10 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 	fb_t t0, t1;
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		/* t0 = B = x1^2. */
 		fb_sqr(t0, p->x);
@@ -182,8 +174,7 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 

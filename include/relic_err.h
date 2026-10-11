@@ -100,7 +100,6 @@ enum errors {
  */
 typedef int err_t;
 
-
 #ifdef CHECK
 
 /**

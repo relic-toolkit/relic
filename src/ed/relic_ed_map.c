@@ -26,7 +26,6 @@
  *
  * Implementation of hashing to a prime elliptic curve.
  *
- * @version $Id$
  * @ingroup ed
  */
 

@@ -87,7 +87,6 @@ typedef crt_st phpe_t[1];
 typedef crt_st *phpe_t;
 #endif
 
-
 /**
  * Represents a Subgroup Paillier's Probabilistic Encryption key pair.
  */
@@ -260,7 +259,6 @@ typedef etrs_st etrs_t[1];
 #else
 typedef etrs_st *etrs_t;
 #endif
-
 
 /*============================================================================*/
 /* Macro definitions                                                          */

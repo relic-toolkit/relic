@@ -27,7 +27,6 @@
  * Implementation of simultaneous point multiplication on binary elliptic
  * curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 
@@ -219,7 +218,6 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 				ed_add(t[(i << w) + j], t0[i], t1[j]);
 			}
 		}
-
 
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);

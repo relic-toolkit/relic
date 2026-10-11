@@ -26,7 +26,6 @@
  *
  * Implementation of the Edwards elliptic curve utilities.
  *
- * @version $Id$
  * @ingroup ed
  */
 
@@ -35,7 +34,6 @@
 #include "relic_core.h"
 #include "relic_label.h"
 #include "relic_md.h"
-
 
 /*============================================================================*/
 /* Public definitions                                                         */

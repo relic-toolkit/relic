@@ -31,11 +31,11 @@
 
 #include "relic_core.h"
 #include "relic_fb_low.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
-
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -105,8 +105,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-
-
 /**
  * Multiplies a binary elliptic curve point by an integer using the
  * left-to-right w-NAF method.
@@ -171,7 +169,6 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
  * method.
@@ -220,7 +217,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		eb_copy(r, t[0]);
-
 
 #if RLC_WIDTH == 3
 		eb_frb(t[0], t[1]);
@@ -436,7 +432,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_sub(t[15], t[0], t[15]);
 #endif
 
-
 		/* Add accumulators */
 		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
 			if (r->coord == BASIC) {
@@ -461,8 +456,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 	}
 }
-
-
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the
@@ -591,93 +584,32 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
-	eb_t t;
-	int8_t u, *naf = NULL;
-	size_t l;
+TMPL_EC_MUL_BASIC(eb);
 
-	eb_null(t);
+void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
+	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
+	const dig_t *b;
+	bn_t t, n;
+	size_t bits;
+	eb_t q;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-	/* Allocate after the early return, so that it does not leak. */
-	naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
-	if (naf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
+	eb_null(q);
+	bn_null_all(n, t);
+	dv_null_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 
 	RLC_TRY {
-		eb_new(t);
+		/* The ladder needs the input point in affine coordinates. */
+		eb_new(q);
+		eb_norm(q, p);
+		bn_new_all(n, t);
+		dv_new_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 
-		l = bn_bits(k) + 1;
-		bn_rec_naf(naf, &l, k, 2);
-		eb_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
-			eb_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				eb_add(t, t, p);
-			} else if (u < 0) {
-				eb_sub(t, t, p);
-			}
-		}
-
-		eb_norm(r, t);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-		RLC_FREE(naf);
-	}
-}
-
-static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
-	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
-	const dig_t *b;
-	bn_t t, n;
-	size_t bits;
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(t);
-	dv_null(x1);
-	dv_null(z1);
-	dv_null(x2);
-	dv_null(z2);
-	dv_null(r1);
-	dv_null(r2);
-	dv_null(r3);
-	dv_null(r4);
-	dv_null(r5);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(t);
-		dv_new(x1);
-		dv_new(z1);
-		dv_new(x2);
-		dv_new(z2);
-		dv_new(r1);
-		dv_new(r2);
-		dv_new(r3);
-		dv_new(r4);
-		dv_new(r5);
-
-		fb_sqr(z2, p->x);
+		fb_sqr(z2, q->x);
 		fb_sqr(x2, z2);
 		dv_zero(r5, 2 * RLC_FB_DIGS);
 
@@ -708,7 +640,7 @@ static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Blind both points indebendently. */
 		fb_rand(z1);
-		fb_mul(x1, z1, p->x);
+		fb_mul(x1, z1, q->x);
 		fb_rand(r1);
 		fb_mul(z2, z2, r1);
 		fb_mul(x2, x2, r1);
@@ -722,7 +654,7 @@ static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 			dv_swap_sec(x1, x2, RLC_FB_DIGS, j ^ 1);
 			dv_swap_sec(z1, z2, RLC_FB_DIGS, j ^ 1);
 			fb_sqr(z1, r3);
-			fb_muln_low(r1, z1, p->x);
+			fb_muln_low(r1, z1, q->x);
 			fb_addd_low(x1, r1, r4, 2 * RLC_FB_DIGS);
 			fb_rdcn_low(x1, x1);
 			fb_sqr(r1, z2);
@@ -760,17 +692,17 @@ static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_set_infty(r);
 		} else {
 			if (fb_is_zero(z2)) {
-				fb_copy(r->x, p->x);
-				fb_add(r->y, p->x, p->y);
+				fb_copy(r->x, q->x);
+				fb_add(r->y, q->x, q->y);
 				fb_set_dig(r->z, 1);
 			} else {
 				/* r3 = z1 * z2. */
 				fb_mul(r3, z1, z2);
 				/* z1 = (x1 + x * z1). */
-				fb_mul(z1, z1, p->x);
+				fb_mul(z1, z1, q->x);
 				fb_add(z1, z1, x1);
 				/* z2 = x * z2. */
-				fb_mul(z2, z2, p->x);
+				fb_mul(z2, z2, q->x);
 				/* x1 = x1 * z2. */
 				fb_mul(x1, x1, z2);
 				/* z2 = (x2 + x * z2)(x1 + x * z1). */
@@ -778,24 +710,24 @@ static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 				fb_mul(z2, z2, z1);
 
 				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1). */
-				fb_sqr(r4, p->x);
-				fb_add(r4, r4, p->y);
+				fb_sqr(r4, q->x);
+				fb_add(r4, r4, q->y);
 				fb_mul(r4, r4, r3);
 				fb_add(r4, r4, z2);
 
 				/* r3 = (z1 * z2 * x)^{-1}. */
-				fb_mul(r3, r3, p->x);
+				fb_mul(r3, r3, q->x);
 				fb_inv(r3, r3);
 				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1) * r3. */
 				fb_mul(r4, r4, r3);
 				/* x2 = x1 * x * z2 * (z1 * z2 * x)^{-1} = x1/z1. */
 				fb_mul(x2, x1, r3);
 				/* z2 = x + x1/z1. */
-				fb_add(z2, x2, p->x);
+				fb_add(z2, x2, q->x);
 
 				/* z2 = z2 * r4 + y. */
 				fb_mul(z2, z2, r4);
-				fb_add(z2, z2, p->y);
+				fb_add(z2, z2, q->y);
 
 				fb_copy(r->x, x2);
 				fb_copy(r->y, z2);
@@ -812,41 +744,9 @@ static void eb_mul_lodah_imp(eb_t r, const eb_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(t);
-		dv_free(x1);
-		dv_free(z1);
-		dv_free(x2);
-		dv_free(z2);
-		dv_free(r1);
-		dv_free(r2);
-		dv_free(r3);
-		dv_free(r4);
-		dv_free(r5);
-	}
-}
-
-void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
-	eb_t t;
-
-	if (bn_is_zero(k) || eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_null(t);
-
-	RLC_TRY {
-		eb_new(t);
-		/* The method needs the input point in affine coordinates. */
-		eb_norm(t, p);
-		eb_mul_lodah_imp(r, t, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
+		eb_free(q);
+		bn_free_all(n, t);
+		dv_free_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 	}
 }
 
@@ -892,10 +792,10 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-static void eb_mul_halve_imp(eb_t r, const eb_t p, const bn_t k) {
+void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, trc, cof;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
-	eb_t q, s, t[1 << (RLC_WIDTH - 2)];
+	eb_t a, q, s, t[1 << (RLC_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
 	size_t l;
@@ -905,27 +805,20 @@ static void eb_mul_halve_imp(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
-	bn_null(m);
-	bn_null(n);
-	eb_null(q);
-	eb_null(s);
+	bn_null_all(m, n);
+	eb_null_all(a, q, s);
 	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t[i]);
 	}
-	fb_null(u);
-	fb_null(v);
-	fb_null(w);
-	fb_null(z);
+	fb_null_all(u, v, w, z);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-		eb_new(q);
-		eb_new(s);
-		fb_new(u);
-		fb_new(v);
-		fb_new(w);
-		fb_new(z);
+		/* The method needs the input point in affine coordinates. */
+		eb_new(a);
+		eb_norm(a, p);
+		bn_new_all(n, m);
+		eb_new_all(q, s);
+		fb_new_all(u, v, w, z);
 
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
@@ -943,12 +836,12 @@ static void eb_mul_halve_imp(eb_t r, const eb_t p, const bn_t k) {
 		bn_rec_naf(naf, &l, m, RLC_WIDTH);
 
 		if (naf[bn_bits(n)] == 1) {
-			eb_dbl(t[0], p);
+			eb_dbl(t[0], a);
 		}
 		l = bn_bits(n);
 		_k = naf + l - 1;
 
-		eb_copy(q, p);
+		eb_copy(q, a);
 		eb_curve_get_cof(n);
 
 		/* Test if curve has a cofactor bigger than 2. */
@@ -1057,90 +950,16 @@ static void eb_mul_halve_imp(eb_t r, const eb_t p, const bn_t k) {
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
-		bn_free(n);
-		bn_free(m);
-		eb_free(q);
-		eb_free(s);
-		fb_free(u);
-		fb_free(v);
-		fb_free(w);
-		fb_free(z);
+		bn_free_all(n, m);
+		eb_free_all(a, q, s);
+		fb_free_all(u, v, w, z);
 	}
 }
 
-void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
-	eb_t t;
-
-	if (bn_is_zero(k) || eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_null(t);
-
-	RLC_TRY {
-		eb_new(t);
-		/* The method needs the input point in affine coordinates. */
-		eb_norm(t, p);
-		eb_mul_halve_imp(r, t, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-	}
-}
-
-void eb_mul_gen(eb_t r, const bn_t k) {
 #ifdef EB_PRECO
-	eb_mul_fix(r, eb_curve_get_tab(), k);
+TMPL_EC_MUL_GEN(eb, preco);
 #else
-	eb_t g;
-
-	eb_null(g);
-
-	RLC_TRY {
-		eb_new(g);
-		eb_curve_get_gen(g);
-		eb_mul(r, g, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(g);
-	}
+TMPL_EC_MUL_GEN(eb, plain);
 #endif
-}
 
-void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
-	eb_t t;
-
-	if (k == 0 || eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_null(t);
-
-	RLC_TRY {
-		eb_new(t);
-
-		eb_copy(t, p);
-		for (int i = util_bits_dig(k) - 2; i >= 0; i--) {
-			eb_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
-				eb_add(t, t, p);
-			}
-		}
-
-		eb_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-	}
-}
+TMPL_EC_MUL_DIG(eb);

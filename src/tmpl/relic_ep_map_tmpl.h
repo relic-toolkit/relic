@@ -37,7 +37,7 @@
  * Evaluates a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  */
-#define TMPL_MAP_HORNER(PFX, IN)											\
+#define TMPL_EP_MAP_HORNER(PFX, IN)											\
 	static void PFX##_eval(PFX##_t c, PFX##_t a, IN *coeffs, int deg) {		\
 		PFX##_copy(c, coeffs[deg]);											\
 		for (int i = deg; i > 0; --i) {										\
@@ -49,7 +49,7 @@
 /* conditionally normalize result of isogeny map when not using projective coords */
 #if EP_ADD == JACOB
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* Y = Ny * Dx * Z^2. */											\
 		PFX##_mul(q->y, p->y, t1);											\
@@ -66,7 +66,7 @@
 
 #elif EP_ADD == PROJC
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 		/* Z = Dx * Dy. */													\
 		PFX##_mul(q->z, t2, t3);											\
 		/* X = Nx * Dy. */													\
@@ -78,7 +78,7 @@
 
 #else
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* when working with affine coordinates, clear denominator */		\
 		PFX##_mul(q->z, t2, t3);											\
@@ -100,7 +100,7 @@
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-#define TMPL_MAP_ISOGENY_MAP(CUR, PFX, ISO)									\
+#define TMPL_EP_MAP_ISOGENY_MAP(CUR, PFX, ISO)									\
 	/* declaring this function inline suppresses unused warnings */			\
 	static inline void CUR##_iso(CUR##_t q, CUR##_t p) {					\
 		PFX##_t t0, t1, t2, t3;												\
@@ -135,7 +135,7 @@
 			PFX##_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);				\
 																			\
 			/* normalize if necessary */									\
-			TMPL_MAP_ISOMAP_NORM(PFX);										\
+			TMPL_EP_MAP_ISOMAP_NORM(PFX);										\
 		}																	\
 		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }							\
 		RLC_FINALLY {														\
@@ -147,7 +147,7 @@
 	}																		\
 
 /* Call the isogeny map if the curve has one. */
-#define TMPL_MAP_CALL_ISOMAP(CUR, PT)										\
+#define TMPL_EP_MAP_CALL_ISOMAP(CUR, PT)										\
 	do {																	\
 		if (CUR##_curve_is_ctmap()) {										\
 			CUR##_iso(PT, PT);												\
@@ -158,7 +158,7 @@
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-#define TMPL_MAP_SSWU(CUR, PFX, PTR_TY)										\
+#define TMPL_EP_MAP_SSWU(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_sswu(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t0, t1, t2, t3;												\
 		ctx_t *ctx = core_get();											\
@@ -234,7 +234,7 @@
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-#define TMPL_MAP_SVDW(CUR, PFX, PTR_TY)										\
+#define TMPL_EP_MAP_SVDW(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_svdw(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t1, t2, t3, t4;												\
 		ctx_t *ctx = core_get();											\

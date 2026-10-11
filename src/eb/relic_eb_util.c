@@ -58,12 +58,10 @@ void eb_copy(eb_t r, const eb_t p) {
 void eb_rand(eb_t p) {
 	bn_t n, k;
 
-	bn_null(n);
-	bn_null(k);
+	bn_null_all(n, k);
 
 	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
+		bn_new_all(k, n);
 
 		eb_curve_get_ord(n);
 
@@ -73,20 +71,17 @@ void eb_rand(eb_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
+		bn_free_all(k, n);
 	}
 }
 
 void eb_rhs(fb_t rhs, const fb_t x) {
 	fb_t t0, t1;
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		/* t0 = x1^2. */
 		fb_sqr(t0, x);
@@ -130,8 +125,7 @@ void eb_rhs(fb_t rhs, const fb_t x) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 

@@ -214,7 +214,6 @@
 #define RLC_NULL(A)			A = NULL;
 #endif
 
-
 /**
  * Accumulates a double precision digit in a triple register variable.
  *

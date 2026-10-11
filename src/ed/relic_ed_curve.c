@@ -26,7 +26,6 @@
  *
  * Implementation of the point addition on prime elliptic twisted Edwards curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 

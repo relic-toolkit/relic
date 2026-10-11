@@ -183,7 +183,6 @@ static void paillier(void) {
     shpe_null(spub);
     shpe_null(sprv);
 
-
 	bn_new(c);
 	bn_new(m);
 	bn_new(pub);
