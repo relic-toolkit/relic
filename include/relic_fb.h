@@ -327,8 +327,6 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #define fb_inv(C, A)		fb_inv_binar(C, A)
 #elif FB_INV == EXGCD
 #define fb_inv(C, A)		fb_inv_exgcd(C, A)
-#elif FB_INV == ALMOS
-#define fb_inv(C, A)		fb_inv_almos(C, A)
 #elif FB_INV == ITOHT
 #define fb_inv(C, A)		fb_inv_itoht(C, A)
 #elif FB_INV == CTAIA
@@ -875,15 +873,6 @@ void fb_inv_binar(fb_t c, const fb_t a);
  * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_exgcd(fb_t c, const fb_t a);
-
-/**
- * Inverts a binary field element using the Almost Inverse algorithm.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the binary field element to invert.
- * @throw ERR_NO_VALID		- if the field element is not invertible.
- */
-void fb_inv_almos(fb_t c, const fb_t a);
 
 /**
  * Inverts a binary field element using Itoh-Tsuji inversion.

@@ -393,12 +393,6 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("fb_inv_almos") {
-		fb_rand(a);
-		BENCH_ADD(fb_inv_almos(c, a));
-	}
-	BENCH_END;
-
 	BENCH_RUN("fb_inv_exgcd") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_exgcd(c, a));

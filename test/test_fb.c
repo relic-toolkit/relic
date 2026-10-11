@@ -719,15 +719,6 @@ static int inversion(void) {
 			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("almost inverse is correct") {
-			do {
-				fb_rand(a);
-			} while (fb_is_zero(a));
-			fb_inv(b, a);
-			fb_inv_almos(c, a);
-			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
-		} TEST_END;
-
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fb_rand(a);
