@@ -2632,9 +2632,12 @@
 #undef fp9_cmp_dig
 #undef fp9_set_dig
 #undef fp9_add
+#undef fp9_add_dig
 #undef fp9_sub
+#undef fp9_sub_dig
 #undef fp9_neg
 #undef fp9_dbl
+#undef fp9_mul_dig
 #undef fp9_mul_unr
 #undef fp9_mul_basic
 #undef fp9_mul_lazyr
@@ -2663,9 +2666,12 @@
 #define fp9_cmp_dig 	RLC_PREFIX(fp9_cmp_dig)
 #define fp9_set_dig 	RLC_PREFIX(fp9_set_dig)
 #define fp9_add 	RLC_PREFIX(fp9_add)
+#define fp9_add_dig 	RLC_PREFIX(fp9_add_dig)
 #define fp9_sub 	RLC_PREFIX(fp9_sub)
+#define fp9_sub_dig 	RLC_PREFIX(fp9_sub_dig)
 #define fp9_neg 	RLC_PREFIX(fp9_neg)
 #define fp9_dbl 	RLC_PREFIX(fp9_dbl)
+#define fp9_mul_dig 	RLC_PREFIX(fp9_mul_dig)
 #define fp9_mul_unr 	RLC_PREFIX(fp9_mul_unr)
 #define fp9_mul_basic 	RLC_PREFIX(fp9_mul_basic)
 #define fp9_mul_lazyr 	RLC_PREFIX(fp9_mul_lazyr)
