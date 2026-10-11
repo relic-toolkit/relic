@@ -34,6 +34,12 @@
 #include "relic.h"
 #include "relic_test.h"
 
+#if ARCH == AVR || ARCH == MSP || ARCH == ARM
+#define SIM_LOT		4
+#else
+#define SIM_LOT		16
+#endif
+
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -1046,8 +1052,8 @@ static int fixed(void) {
 
 static int simultaneous(void) {
 	int code = RLC_ERR;
-	bn_t n, k[17];
-	eb_t p[17], r;
+	bn_t n, k[SIM_LOT + 1];
+	eb_t p[SIM_LOT + 1], r;
 
 	bn_null(n);
 	eb_null(r);
@@ -1055,7 +1061,7 @@ static int simultaneous(void) {
 	RLC_TRY {
 		bn_new(n);
 		eb_new(r);
-		for (int i = 0; i <= 16; i++) {
+		for (int i = 0; i <= SIM_LOT; i++) {
 			bn_null(k[i]);
 			bn_new(k[i]);
 			eb_null(p[i]);
@@ -1148,30 +1154,30 @@ static int simultaneous(void) {
 
 		TEST_CASE("many simultaneous point multiplications are correct") {
 			eb_set_infty(r);
-			eb_mul_sim_lot(p[16], p, k, 0);
-			TEST_ASSERT(eb_cmp(p[16], r) == RLC_EQ, end);
-			for (int j = 0; j < 16; j++) {
+			eb_mul_sim_lot(p[SIM_LOT], p, k, 0);
+			TEST_ASSERT(eb_cmp(p[SIM_LOT], r) == RLC_EQ, end);
+			for (int j = 0; j < SIM_LOT; j++) {
 				bn_rand_mod(k[j], n);
 				eb_rand(p[j]);
-				eb_mul(p[16], p[j], k[j]);
-				eb_add(r, r, p[16]);
-				eb_mul_sim_lot(p[16], p, k, j + 1);
-				TEST_ASSERT(eb_cmp(p[16], r) == RLC_EQ, end);
+				eb_mul(p[SIM_LOT], p[j], k[j]);
+				eb_add(r, r, p[SIM_LOT]);
+				eb_mul_sim_lot(p[SIM_LOT], p, k, j + 1);
+				TEST_ASSERT(eb_cmp(p[SIM_LOT], r) == RLC_EQ, end);
 			}
-			eb_mul(p[16], p[0], k[0]);
-			eb_sub(r, r, p[16]);
+			eb_mul(p[SIM_LOT], p[0], k[0]);
+			eb_sub(r, r, p[SIM_LOT]);
 			bn_zero(k[0]);
-			eb_mul_sim_lot(p[16], p, k, 16);
-			TEST_ASSERT(eb_cmp(p[16], r) == RLC_EQ, end);
-			eb_mul(p[16], p[1], k[1]);
-			eb_sub(r, r, p[16]);
-			eb_sub(r, r, p[16]);
+			eb_mul_sim_lot(p[SIM_LOT], p, k, SIM_LOT);
+			TEST_ASSERT(eb_cmp(p[SIM_LOT], r) == RLC_EQ, end);
+			eb_mul(p[SIM_LOT], p[1], k[1]);
+			eb_sub(r, r, p[SIM_LOT]);
+			eb_sub(r, r, p[SIM_LOT]);
 			bn_neg(k[1], k[1]);
-			eb_mul_sim_lot(p[16], p, k, 16);
-			TEST_ASSERT(eb_cmp(p[16], r) == RLC_EQ, end);
+			eb_mul_sim_lot(p[SIM_LOT], p, k, SIM_LOT);
+			TEST_ASSERT(eb_cmp(p[SIM_LOT], r) == RLC_EQ, end);
 			bn_add(k[2], k[2], n);
-			eb_mul_sim_lot(p[16], p, k, 16);
-			TEST_ASSERT(eb_cmp(p[16], r) == RLC_EQ, end);
+			eb_mul_sim_lot(p[SIM_LOT], p, k, SIM_LOT);
+			TEST_ASSERT(eb_cmp(p[SIM_LOT], r) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1181,7 +1187,7 @@ static int simultaneous(void) {
 	code = RLC_OK;
   end:
 	bn_free(n);
-	for (int i = 0; i <= 16; i++) {
+	for (int i = 0; i <= SIM_LOT; i++) {
 		bn_free(k[i]);
 		eb_free(p[i]);
 	}

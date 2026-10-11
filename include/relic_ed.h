@@ -90,9 +90,14 @@ enum {
 #endif
 
 /**
- * Maximum size of a precomputation table.
+ * Maximum size of a precomputation table, which only needs to fit the
+ * chosen method when unused methods are stripped.
  */
+#ifdef STRIP
+#define RLC_ED_TABLE_MAX		RLC_ED_TABLE
+#else
 #define RLC_ED_TABLE_MAX		RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
+#endif
 
 /*============================================================================*/
 /* Type definitions														   */
