@@ -104,11 +104,13 @@
 #undef err_simple_msg
 #undef err_full_msg
 #undef err_get_msg
+#undef err_throw
 #undef err_get_code
 
 #define err_simple_msg 	RLC_PREFIX(err_simple_msg)
 #define err_full_msg 	RLC_PREFIX(err_full_msg)
 #define err_get_msg 	RLC_PREFIX(err_get_msg)
+#define err_throw 	RLC_PREFIX(err_throw)
 #define err_get_code 	RLC_PREFIX(err_get_code)
 
 #undef rand_init

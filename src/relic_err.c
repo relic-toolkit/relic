@@ -98,6 +98,11 @@ void err_get_msg(err_t *e, char **msg) {
 
 #endif /* CHECK */
 
+void err_throw(const char *file, int line) {
+	core_get()->code = RLC_ERR;
+	util_print("ERROR THROWN in %s:%d\n", file, line);
+}
+
 int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;

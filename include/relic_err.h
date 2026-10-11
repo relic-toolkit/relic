@@ -268,9 +268,7 @@ typedef struct _sts_t {
 #ifdef QUIET
 #define RLC_THROW(E)			core_get()->code = RLC_ERR;
 #else
-#define RLC_THROW(E)														\
-	core_get()->code = RLC_ERR; 											\
-	util_print("ERROR THROWN in %s:%d\n", RLC_FILE, __LINE__);				\
+#define RLC_THROW(E)			err_throw(RLC_FILE, __LINE__);
 
 #endif
 #endif
@@ -349,6 +347,14 @@ void err_full_msg(const char *function, const char *file,
 void err_get_msg(err_t *e, char **msg);
 
 #endif
+
+/**
+ * Records an error without error checking and prints where it was thrown.
+ *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
+ */
+void err_throw(const char *file, int line);
 
 /**
  * Returns the code returned by the last function call and resets the current

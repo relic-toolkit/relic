@@ -78,10 +78,7 @@ extern "C" {
  */
 #define TEST_ASSERT(C, LABEL)												\
 	if (!(C)) {																\
-		test_fail();														\
-		util_print("(at ");													\
-		util_print(__FILE__);												\
-		util_print(":%d)\n", __LINE__);										\
+		test_fail(__FILE__, __LINE__);										\
 		RLC_ERROR(LABEL);													\
 	}																		\
 
@@ -96,9 +93,12 @@ extern "C" {
 /*============================================================================*/
 
 /**
- * Prints a string indicating that the test failed.
+ * Prints a string indicating that the test failed and where.
+ *
+ * @param[in] file			- the source file of the failed assertion.
+ * @param[in] line			- the line of the failed assertion.
  */
-void test_fail(void);
+void test_fail(const char *file, int line);
 
 /**
  * Prints a string indicating that the test passed.
