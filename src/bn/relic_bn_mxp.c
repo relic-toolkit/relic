@@ -106,16 +106,15 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		}
 
 #if BN_MOD == MONTY
-		if (even) {
-			bn_copy(c, r);
-		} else {
-			bn_mod_monty_back(c, r, m);
+		if (!even) {
+			bn_mod_monty_back(r, r, m);
 		}
-#else
-		bn_copy(c, r);
 #endif
+		/* Check the sign before writing c, which may alias b. */
 		if (bn_sign(b) == RLC_NEG) {
-			bn_mod_inv(c, c, m);
+			bn_mod_inv(c, r, m);
+		} else {
+			bn_copy(c, r);
 		}
 	}
 	RLC_CATCH_ANY {

@@ -311,7 +311,8 @@ uint8_t result2[] = {
 #endif
 
 static int test(void) {
-	int i, len = 2 * RLC_MD_LEN, code = RLC_ERR;
+	size_t i;
+	int len = 2 * RLC_MD_LEN, code = RLC_ERR;
 	uint8_t out[2 * RLC_MD_LEN], seed2[(RLC_RAND_SIZE - 1) / 2], seed3[(RLC_RAND_SIZE - 1) / 2];
 
 	for (i = 0; i < (RLC_RAND_SIZE - 1) / 2; i++) {

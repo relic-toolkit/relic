@@ -231,6 +231,7 @@ static int addition(void) {
 			TEST_ASSERT(eb_is_infty(e), end);
 		} TEST_END;
 
+#if EB_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			eb_rand(a);
 			eb_rand(b);
@@ -238,7 +239,9 @@ static int addition(void) {
 			eb_add_basic(e, a, b);
 			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			eb_rand(a);
 			eb_rand(b);
@@ -274,6 +277,7 @@ static int addition(void) {
 			eb_add_projc(e, a, b);
 			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -337,6 +341,7 @@ static int subtraction(void) {
 			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if EB_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point subtraction in projective coordinates is correct") {
 			eb_rand(a);
 			eb_rand(b);
@@ -368,6 +373,7 @@ static int subtraction(void) {
 			eb_norm(d, d);
 			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE
 				("point subtraction in mixed coordinates (z1,z2 = 1) is correct")
@@ -417,13 +423,16 @@ static int doubling(void) {
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if EB_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			eb_rand(a);
 			eb_dbl(b, a);
 			eb_dbl_basic(c, a);
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_ADD == PROJC || !defined(STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			eb_rand(a);
 			/* a in projective coordinates. */
@@ -441,6 +450,7 @@ static int doubling(void) {
 			eb_dbl(c, a);
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -532,6 +542,7 @@ static int frobenius(void) {
 			}
 			TEST_END;
 
+#if EB_ADD == PROJC || !defined(STRIP)
 			TEST_CASE("frobenius in projective coordinates is correct") {
 				eb_rand(a);
 				eb_dbl_projc(a, a);
@@ -542,6 +553,7 @@ static int frobenius(void) {
 				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
+#endif
 		}
 	(void)a;
 	(void)b;
@@ -602,6 +614,7 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
+#if EB_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			eb_mul_basic(r, p, k);
@@ -621,7 +634,9 @@ static int multiplication(void) {
 			eb_neg(r, r);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_MUL == LODAH || !defined(STRIP)
 		TEST_CASE("lopez-dahab point multiplication is correct") {
 			bn_zero(k);
 			eb_mul_lodah(r, p, k);
@@ -642,7 +657,9 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
+#if EB_MUL == LWNAF || !defined(STRIP)
 		TEST_CASE("left-to-right w-(t)naf point multiplication is correct") {
 			bn_zero(k);
 			eb_mul_lwnaf(r, p, k);
@@ -663,7 +680,9 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
+#if EB_MUL == RWNAF || !defined(STRIP)
 		TEST_CASE("right-to-left w-(t)naf point multiplication is correct") {
 			bn_zero(k);
 			eb_mul_rwnaf(r, p, k);
@@ -684,7 +703,9 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
+#if EB_MUL == HALVE || !defined(STRIP)
 		TEST_CASE("point multiplication by halving is correct") {
 			bn_zero(k);
 			eb_mul_halve(r, p, k);
@@ -705,6 +726,7 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
 		TEST_CASE("point multiplication by digit is correct") {
 			eb_mul_dig(r, p, 0);
@@ -783,6 +805,7 @@ static int fixed(void) {
 			eb_free(t[i]);
 		}
 
+#if EB_FIX == BASIC || !defined(STRIP)
 		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 			eb_new(t[i]);
 		}
@@ -807,7 +830,9 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 			eb_free(t[i]);
 		}
+#endif
 
+#if EB_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 			eb_new(t[i]);
 		}
@@ -832,7 +857,9 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 			eb_free(t[i]);
 		}
+#endif
 
+#if EB_FIX == COMBD || !defined(STRIP)
 		for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 			eb_new(t[i]);
 		}
@@ -857,7 +884,9 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 			eb_free(t[i]);
 		}
+#endif
 
+#if EB_FIX == LWNAF || !defined(STRIP)
 		for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 			eb_new(t[i]);
 		}
@@ -882,6 +911,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 			eb_free(t[i]);
 		}
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -953,6 +983,7 @@ static int simultaneous(void) {
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
+#if EB_SIM == BASIC || !defined(STRIP)
 		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
@@ -984,7 +1015,9 @@ static int simultaneous(void) {
 			eb_add(q, q, p);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_SIM == TRICK || !defined(STRIP)
 		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
@@ -1016,7 +1049,9 @@ static int simultaneous(void) {
 			eb_add(q, q, p);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_SIM == INTER || !defined(STRIP)
 		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
@@ -1048,7 +1083,9 @@ static int simultaneous(void) {
 			eb_add(q, q, p);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if EB_SIM == JOINT || !defined(STRIP)
 		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
@@ -1080,6 +1117,7 @@ static int simultaneous(void) {
 			eb_add(q, q, p);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);

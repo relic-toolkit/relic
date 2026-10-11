@@ -204,12 +204,15 @@ static void arith(void) {
 		BENCH_ADD(eb_add(r, p, q));
 	} BENCH_END;
 
+#if EB_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("eb_add_basic") {
 		eb_rand(p);
 		eb_rand(q);
 		BENCH_ADD(eb_add_basic(r, p, q));
 	} BENCH_END;
+#endif
 
+#if EB_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("eb_add_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -236,6 +239,7 @@ static void arith(void) {
 		eb_norm(q, q);
 		BENCH_ADD(eb_add_projc(r, p, q));
 	} BENCH_END;
+#endif
 
 	BENCH_RUN("eb_sub") {
 		eb_rand(p);
@@ -253,6 +257,7 @@ static void arith(void) {
 		BENCH_ADD(eb_sub_basic(r, p, q));
 	} BENCH_END;
 
+#if EB_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("eb_sub_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -271,6 +276,7 @@ static void arith(void) {
 		eb_norm(q, q);
 		BENCH_ADD(eb_sub_projc(r, p, q));
 	} BENCH_END;
+#endif
 
 	BENCH_RUN("eb_sub_projc (z1,z2 = 1)") {
 		eb_rand(p);
@@ -287,11 +293,14 @@ static void arith(void) {
 		BENCH_ADD(eb_dbl(r, p));
 	} BENCH_END;
 
+#if EB_ADD == BASIC || !defined(STRIP)
 	BENCH_RUN("eb_dbl_basic") {
 		eb_rand(p);
 		BENCH_ADD(eb_dbl_basic(r, p));
 	} BENCH_END;
+#endif
 
+#if EB_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("eb_dbl_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -304,6 +313,7 @@ static void arith(void) {
 		eb_norm(p, p);
 		BENCH_ADD(eb_dbl_projc(r, p));
 	} BENCH_END;
+#endif
 
 	BENCH_RUN("eb_hlv") {
 		eb_rand(p);
@@ -311,6 +321,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 	if (eb_curve_is_kbltz()) {
+#if EB_ADD == PROJC || !defined(STRIP)
 		BENCH_RUN("eb_frb") {
 			eb_rand(p);
 			eb_rand(q);
@@ -318,6 +329,7 @@ static void arith(void) {
 			BENCH_ADD(eb_frb(r, p));
 		}
 		BENCH_END;
+#endif
 	}
 
 	if (eb_curve_is_kbltz()) {
@@ -343,6 +355,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if EB_ADD == PROJC || !defined(STRIP)
 	BENCH_RUN("eb_neg_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -350,6 +363,7 @@ static void arith(void) {
 		BENCH_ADD(eb_neg_projc(r, p));
 	}
 	BENCH_END;
+#endif
 
 	BENCH_RUN("eb_mul") {
 		bn_rand_mod(k, n);
@@ -359,40 +373,50 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if EB_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("eb_mul_basic") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
 		BENCH_ADD(eb_mul_basic(q, p, k));
 	}
 	BENCH_END;
+#endif
 
+#if EB_MUL == LODAH || !defined(STRIP)
 	BENCH_RUN("eb_mul_lodah") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
 		BENCH_ADD(eb_mul_lodah(q, p, k));
 	}
 	BENCH_END;
+#endif
 
+#if EB_MUL == LWNAF || !defined(STRIP)
 	BENCH_RUN("eb_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
 		BENCH_ADD(eb_mul_lwnaf(q, p, k));
 	}
 	BENCH_END;
+#endif
 
+#if EB_MUL == RWNAF || !defined(STRIP)
 	BENCH_RUN("eb_mul_rwnaf") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
 		BENCH_ADD(eb_mul_rwnaf(q, p, k));
 	}
 	BENCH_END;
+#endif
 
+#if EB_MUL == HALVE || !defined(STRIP)
 		BENCH_RUN("eb_mul_halve") {
 			bn_rand_mod(k, n);
 			eb_rand(p);
 			BENCH_ADD(eb_mul_halve(q, p, k));
 		}
 		BENCH_END;
+#endif
 
 	BENCH_RUN("eb_mul_gen") {
 		bn_rand_mod(k, n);
@@ -427,6 +451,7 @@ static void arith(void) {
 		eb_free(t[i]);
 	}
 
+#if EB_FIX == BASIC || !defined(STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 		eb_new(t[i]);
 	}
@@ -444,7 +469,9 @@ static void arith(void) {
 	for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 		eb_free(t[i]);
 	}
+#endif
 
+#if EB_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 		eb_new(t[i]);
 	}
@@ -462,7 +489,9 @@ static void arith(void) {
 	for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 		eb_free(t[i]);
 	}
+#endif
 
+#if EB_FIX == COMBD || !defined(STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 		eb_new(t[i]);
 	}
@@ -480,7 +509,9 @@ static void arith(void) {
 	for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 		eb_free(t[i]);
 	}
+#endif
 
+#if EB_FIX == LWNAF || !defined(STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 		eb_new(t[i]);
 	}
@@ -498,6 +529,7 @@ static void arith(void) {
 	for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 		eb_free(t[i]);
 	}
+#endif
 
 	BENCH_RUN("eb_mul_sim") {
 		bn_rand_mod(k, n);
@@ -507,6 +539,7 @@ static void arith(void) {
 		BENCH_ADD(eb_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
+#if EB_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("eb_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -514,7 +547,9 @@ static void arith(void) {
 		eb_rand(q);
 		BENCH_ADD(eb_mul_sim_basic(r, p, k, q, l));
 	} BENCH_END;
+#endif
 
+#if EB_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("eb_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -522,7 +557,9 @@ static void arith(void) {
 		eb_rand(q);
 		BENCH_ADD(eb_mul_sim_trick(r, p, k, q, l));
 	} BENCH_END;
+#endif
 
+#if EB_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("eb_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -530,7 +567,9 @@ static void arith(void) {
 		eb_rand(q);
 		BENCH_ADD(eb_mul_sim_inter(r, p, k, q, l));
 	} BENCH_END;
+#endif
 
+#if EB_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("eb_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -538,6 +577,7 @@ static void arith(void) {
 		eb_rand(q);
 		BENCH_ADD(eb_mul_sim_joint(r, p, k, q, l));
 	} BENCH_END;
+#endif
 
 	BENCH_RUN("eb_mul_sim_gen") {
 		bn_rand_mod(k, n);
