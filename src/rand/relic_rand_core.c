@@ -156,7 +156,7 @@ void rand_init(void) {
 
 #elif SEED == RDRND
 
-	int i, j;
+	int i = 0, j;
 	ull_t r;
 
 	while (i < RLC_RAND_SEED) {
@@ -167,6 +167,7 @@ void rand_init(void) {
 #endif
 		for (j = 0; i < RLC_RAND_SEED && j < sizeof(ull_t); i++, j++) {
 			buf[i] = r & 0xFF;
+			r >>= 8;
 		}
 	}
 

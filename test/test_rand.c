@@ -99,6 +99,17 @@ uint8_t result1[] = {
 	0xC8, 0x7B, 0xB9, 0x56, 0xD5, 0x3B, 0xF3, 0x51
 };
 
+/* Output of the 40000th request of 32 bytes after seeding with seed1, which
+ * covers reseed counters beyond 16 bits, from an independent implementation. */
+#define RESULT3_CALLS	40000
+
+uint8_t result3[] = {
+	0x3F, 0x20, 0x9C, 0x0F, 0x80, 0x6D, 0xD9, 0xBF, 0x45, 0x3E,
+	0x64, 0x8B, 0x74, 0x7E, 0x37, 0xF3, 0xB2, 0xDC, 0xC6, 0x5E,
+	0x6B, 0x25, 0x55, 0xA4, 0x1F, 0x1F, 0x3B, 0x28, 0x06, 0x78,
+	0x49, 0x84
+};
+
 uint8_t result2[] = {
 	0x92, 0x27, 0x55, 0x23, 0xC7, 0x0E, 0x56, 0x7B, 0xCF, 0x9B,
 	0x35, 0xEC, 0x50, 0xB9, 0x33, 0xF8, 0x12, 0x61, 0x6D, 0xF5,
@@ -322,6 +333,18 @@ static int test(void) {
 	}
 	TEST_END;
 
+#ifdef RESULT3_CALLS
+	TEST_ONCE("hash-dbrg (" FUNCTION ") is correct after many requests") {
+		rand_clean();
+		rand_seed(seed1, sizeof(seed1));
+		for (i = 0; i < RESULT3_CALLS; i++) {
+			rand_bytes(out, sizeof(result3));
+		}
+		TEST_ASSERT(memcmp(out, result3, sizeof(result3)) == 0, end);
+	}
+	TEST_END;
+#endif
+
 	TEST_ONCE("hash-dbrg (" FUNCTION ") reseeding is correct") {
 		rand_clean();
 		rand_seed(seed1, sizeof(seed1));
@@ -370,6 +393,9 @@ static int test(void) {
 		rand_bytes(out, len);
 		/* This fails with negligible probability. */
 		TEST_ASSERT(memcmp(out, out + len, len) != 0, end);
+		/* Runs of repeated bytes mean the output is not being consumed. */
+		rand_bytes(out, 2 * len);
+		TEST_ASSERT(rand_check(out, 2 * len) == RLC_OK, end);
 	}
 	TEST_END;
 

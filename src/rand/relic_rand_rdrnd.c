@@ -54,6 +54,7 @@ void rand_bytes(uint8_t *buf, size_t size) {
 #endif
 		for (j = 0; i < size && j < sizeof(ull_t); i++, j++) {
 			buf[i] = r & 0xFF;
+			r >>= 8;
 		}
 	}
 }

@@ -84,20 +84,22 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 }
 
 /**
- * Accumulates a small integer in the internal state.
+ * Accumulates an integer in the internal state, seen as a big-endian number.
  *
  * @param[in,out] state		- the internal state.
- * @param[in] digit			- the small integer.
+ * @param[in] size			- the size of the state in bytes.
+ * @param[in] digit			- the integer to add.
+ * @return the carry out of the state.
  */
-static int rand_inc(uint8_t *data, size_t size, int digit) {
-	int carry = digit;
+static int rand_inc(uint8_t *data, size_t size, uint64_t digit) {
+	uint64_t s, carry = digit;
 	for (int i = size - 1; i >= 0; i--) {
-		int16_t s;
-		s = (data[i] + carry);
+		/* Add one byte of the integer at a time, so nothing overflows. */
+		s = (uint64_t)data[i] + (carry & 0xFF);
 		data[i] = s & 0xFF;
-		carry = s >> 8;
+		carry = (carry >> 8) + (s >> 8);
 	}
-	return carry;
+	return carry != 0;
 }
 
 /**
@@ -158,6 +160,11 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 
 	if (sizeof(int) > 2 && size > (1 << 16)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	/* The generator must be reseeded after 2^48 requests. */
+	if (ctx->counter > ((uint64_t)1 << 48)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}

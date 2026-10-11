@@ -491,7 +491,7 @@ typedef struct _ctx_t {
 	/** Flag to indicate if PRNG is seed. */
 	int seeded;
 	/** Counter to keep track of number of calls since last seeding. */
-	int counter;
+	uint64_t counter;
 
 #if TIMER == PERF
 	/** File descriptor for perf system call. */
