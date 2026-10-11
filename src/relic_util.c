@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <string.h>
 
 #include "relic_core.h"
 #include "relic_conf.h"
@@ -162,6 +163,14 @@ int util_cmp_sec(const void *a, const void *b, size_t size) {
 	}
 
 	return (result == 0 ? RLC_EQ : RLC_NE);
+}
+
+void util_zero(void *a, size_t n) {
+	/* Calling through a volatile pointer keeps the compiler from removing
+	 * the call when the buffer is dead afterwards. */
+	static void *(*const volatile set)(void *, int, size_t) = &memset;
+
+	set(a, 0, n);
 }
 
 void util_perm(uint_t p[], size_t n) {

@@ -56,7 +56,7 @@
 #elif RAND == UDEV
 #define RLC_RAND_SIZE		(sizeof(int))
 #elif RAND == CALL
-#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
+#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, size_t, void *)))
 #elif RAND == RDRND
 #define RLC_RAND_SIZE      0
 #endif

@@ -372,7 +372,7 @@ static int test(void) {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(20); j++) {
+		for (int j = 0; j < sizeof(out); j++) {
 			digit ^= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
@@ -412,20 +412,22 @@ static int test(void) {
 #include <fcntl.h>
 
 static void test_bytes(uint8_t *buf, size_t size, void *args) {
-	int c, l, fd = *(int *)args;
+	int fd = *(int *)args;
+	ssize_t c;
+	size_t l;
 
 	if (fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
+		return;
 	}
 
-	l = 0;
-	do {
+	for (l = 0; l < size; l += c) {
 		c = read(fd, buf + l, size - l);
-		l += c;
-		if (c == -1) {
+		if (c <= 0) {
 			RLC_THROW(ERR_NO_READ);
+			return;
 		}
-	} while (l < size);
+	}
 }
 
 static int test(void) {
@@ -436,13 +438,13 @@ static int test(void) {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(20); j++) {
+		for (int j = 0; j < sizeof(out); j++) {
 			digit ^= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
 		rand_seed(&test_bytes, (void *)&fd);
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(20); j++) {
+		for (int j = 0; j < sizeof(out); j++) {
 			digit ^= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);

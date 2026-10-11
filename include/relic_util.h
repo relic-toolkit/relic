@@ -351,6 +351,14 @@ size_t util_bits_dig(dig_t a);
 int util_cmp_sec(const void *a, const void *b, size_t n);
 
 /**
+ * Overwrites a buffer with zeros, even when it is not read afterwards.
+ *
+ * @param[out] a			- the buffer.
+ * @param[in] n				- the length in bytes of the buffer.
+ */
+void util_zero(void *a, size_t n);
+
+/**
  * Computes a random permutation in [0, n-1].
  *
  * @param[out] p 			- the resulting permutation.

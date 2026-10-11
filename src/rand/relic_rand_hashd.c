@@ -80,6 +80,8 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 		buf[0]++;
 	}
 
+	util_zero(hash, sizeof(hash));
+	util_zero(buf, 1 + sizeof(uint32_t) + in_len);
 	RLC_FREE(buf);
 }
 
@@ -144,6 +146,8 @@ static void rand_gen(uint8_t *out, size_t out_len) {
 		/* data = data + 1 mod 2^b. */
 		rand_inc(data, (RLC_RAND_SIZE - 1)/2, 1);
 	}
+	util_zero(hash, sizeof(hash));
+	util_zero(data, sizeof(data));
 }
 
 #endif
@@ -180,6 +184,7 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	rand_inc(ctx->rand, len - RLC_MD_LEN + 1, carry);
 	rand_inc(ctx->rand, len + 1, ctx->counter);
 	ctx->counter = ctx->counter + 1;
+	util_zero(hash, sizeof(hash));
 }
 
 void rand_seed(uint8_t *buf, size_t size) {
@@ -191,7 +196,8 @@ void rand_seed(uint8_t *buf, size_t size) {
 		return;
 	}
 
-	if (sizeof(int) > 4 && size > (1 << 32)) {
+	/* The seed has at most 2^35 bits. */
+	if ((uint64_t)size > ((uint64_t)1 << 32)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -216,6 +222,7 @@ void rand_seed(uint8_t *buf, size_t size) {
 		rand_hash(ctx->rand + 1, len, tmp, tmp_size);
 		/* C = hash_df(00 || V). */
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
+		util_zero(tmp, tmp_size);
 		RLC_FREE(tmp);
 	}
 	ctx->counter = ctx->seeded = 1;

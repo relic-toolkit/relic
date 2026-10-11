@@ -139,6 +139,7 @@
 #undef util_write_size
 #undef util_bits_dig
 #undef util_cmp_sec
+#undef util_zero
 #undef util_perm
 #undef util_printf
 #undef util_print_dig
@@ -151,6 +152,7 @@
 #define util_write_size 	RLC_PREFIX(util_write_size)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
 #define util_cmp_sec 	RLC_PREFIX(util_cmp_sec)
+#define util_zero 	RLC_PREFIX(util_zero)
 #define util_perm 	RLC_PREFIX(util_perm)
 #define util_printf 	RLC_PREFIX(util_printf)
 #define util_print_dig 	RLC_PREFIX(util_print_dig)

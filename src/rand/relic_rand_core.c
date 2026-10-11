@@ -42,6 +42,7 @@
 
 #if RAND == UDEV || SEED == UDEV
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -99,7 +100,9 @@ void rand_init(void) {
 	memset(buf, 0, RLC_RAND_SEED);
 
 #elif SEED == DEV || SEED == UDEV
-	int fd, c, l;
+	int fd;
+	ssize_t c;
+	size_t l;
 
 	fd = open(RLC_RAND_PATH, O_RDONLY);
 	if (fd == -1) {
@@ -107,19 +110,20 @@ void rand_init(void) {
 		return;
 	}
 
-	l = 0;
-	do {
+	for (l = 0; l < RLC_RAND_SEED; l += c) {
 		c = read(fd, buf + l, RLC_RAND_SEED - l);
-		l += c;
-		if (c == -1) {
+		if (c == -1 && errno == EINTR) {
+			c = 0;
+			continue;
+		}
+		/* An error or the end of the file leaves the seed incomplete. */
+		if (c <= 0) {
+			close(fd);
 			RLC_THROW(ERR_NO_READ);
 			return;
 		}
-	} while (l < RLC_RAND_SEED);
-
-	if (fd != -1) {
-		close(fd);
 	}
+	close(fd);
 #elif SEED == LIBC
 
 #if OPSYS == FREEBSD || OPSYS == NETBSD
@@ -178,6 +182,7 @@ void rand_init(void) {
 #if RAND != CALL
 	core_get()->seeded = 0;
 	rand_seed(buf, RLC_RAND_SEED);
+	util_zero(buf, RLC_RAND_SEED);
 #else
 	rand_seed(NULL, NULL);
 #endif
