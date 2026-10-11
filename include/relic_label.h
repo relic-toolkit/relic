@@ -1199,11 +1199,11 @@
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
-#undef ed_mul_pre_basic
+#undef ed_mul_pre_combs
 #undef ed_mul_pre_combd
 #undef ed_mul_pre_lwnaf
 #undef ed_mul_fix_basic
-#undef ed_mul_fix_basic
+#undef ed_mul_fix_combs
 #undef ed_mul_fix_combd
 #undef ed_mul_fix_lwnaf
 #undef ed_mul_fix_lwnaf_mixed
@@ -1263,11 +1263,11 @@
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
-#define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
+#define ed_mul_pre_combs 	RLC_PREFIX(ed_mul_pre_combs)
 #define ed_mul_pre_combd 	RLC_PREFIX(ed_mul_pre_combd)
 #define ed_mul_pre_lwnaf 	RLC_PREFIX(ed_mul_pre_lwnaf)
 #define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
-#define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
+#define ed_mul_fix_combs 	RLC_PREFIX(ed_mul_fix_combs)
 #define ed_mul_fix_combd 	RLC_PREFIX(ed_mul_fix_combd)
 #define ed_mul_fix_lwnaf 	RLC_PREFIX(ed_mul_fix_lwnaf)
 #define ed_mul_fix_lwnaf_mixed 	RLC_PREFIX(ed_mul_fix_lwnaf_mixed)
@@ -1347,11 +1347,11 @@
 #undef eb_mul_gen
 #undef eb_mul_dig
 #undef eb_mul_pre_basic
-#undef eb_mul_pre_basic
+#undef eb_mul_pre_combs
 #undef eb_mul_pre_combd
 #undef eb_mul_pre_lwnaf
 #undef eb_mul_fix_basic
-#undef eb_mul_fix_basic
+#undef eb_mul_fix_combs
 #undef eb_mul_fix_combd
 #undef eb_mul_fix_lwnaf
 #undef eb_mul_sim_basic
@@ -1415,11 +1415,11 @@
 #define eb_mul_gen 	RLC_PREFIX(eb_mul_gen)
 #define eb_mul_dig 	RLC_PREFIX(eb_mul_dig)
 #define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
-#define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
+#define eb_mul_pre_combs 	RLC_PREFIX(eb_mul_pre_combs)
 #define eb_mul_pre_combd 	RLC_PREFIX(eb_mul_pre_combd)
 #define eb_mul_pre_lwnaf 	RLC_PREFIX(eb_mul_pre_lwnaf)
 #define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
-#define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
+#define eb_mul_fix_combs 	RLC_PREFIX(eb_mul_fix_combs)
 #define eb_mul_fix_combd 	RLC_PREFIX(eb_mul_fix_combd)
 #define eb_mul_fix_lwnaf 	RLC_PREFIX(eb_mul_fix_lwnaf)
 #define eb_mul_sim_basic 	RLC_PREFIX(eb_mul_sim_basic)
@@ -3917,6 +3917,8 @@
 #undef md_xmd_sh256
 #undef md_xmd_sh384
 #undef md_xmd_sh512
+#undef md_xmd_b2s160
+#undef md_xmd_b2s256
 #undef md_xof_init
 #undef md_xof_bytes
 #undef md_xof_double
@@ -3936,6 +3938,8 @@
 #define md_xmd_sh256 	RLC_PREFIX(md_xmd_sh256)
 #define md_xmd_sh384 	RLC_PREFIX(md_xmd_sh384)
 #define md_xmd_sh512 	RLC_PREFIX(md_xmd_sh512)
+#define md_xmd_b2s160 	RLC_PREFIX(md_xmd_b2s160)
+#define md_xmd_b2s256 	RLC_PREFIX(md_xmd_b2s256)
 #define md_xof_init 	RLC_PREFIX(md_xof_init)
 #define md_xof_bytes 	RLC_PREFIX(md_xof_bytes)
 #define md_xof_double 	RLC_PREFIX(md_xof_double)
