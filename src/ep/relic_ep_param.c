@@ -1850,9 +1850,15 @@ int ep_param_level(void) {
 		case NIST_P192:
 		case SECG_K192:
 			return 96;
+		case CURVE_22103:
+			return 110;
 		case NIST_P224:
 		case SECG_K224:
 			return 112;
+		case CURVE_4417:
+			return 113;
+		case CURVE_1174:
+			return 125;
 		case BN_P254:
 		case BN_P256:
 		case SM9_P256:
@@ -1862,6 +1868,8 @@ int ep_param_level(void) {
 		case SM2_P256:
 		case CURVE_25519:
 		case TWEEDLEDUM:
+		case BSI_P256:
+		case CURVE_67254:
 			return 128;
 		case B24_P315:
 		case B24_P317:
@@ -1874,6 +1882,7 @@ int ep_param_level(void) {
 		case BN_P446:
 		case B12_P446:
 		case AFG16_P510:
+		case OT8_P511:
 		case GMT8_P544:
 		case SS_P1536:
 		case K1_P3072:
@@ -1881,15 +1890,21 @@ int ep_param_level(void) {
 		case B12_P455:
 			return 140;
 		case NIST_P384:
+		case CURVE_383187:
 		case B12_P1150:
 		case FM16_P765:
 		case K16_P766:
 		case FM18_P768:
 		case K18_P638:
+		case SG18_P638:
+		case N16_P765:
+		case AFG16_P766:
 		case B24_P509:
 			return 192;
 		case NIST_P521:
+		case CURVE_511187:
 		case B48_P575:
+		case SG54_P569:
 			return 256;
 		case BN_P638:
 		case B12_P638:

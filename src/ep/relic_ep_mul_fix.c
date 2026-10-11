@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of fixed point multiplication on binary elliptic curves.
+ * Implementation of fixed point multiplication on prime elliptic curves.
  *
  * @ingroup ep
  */
@@ -37,14 +37,14 @@
 /*============================================================================*/
 
 /**
- * Multiplies a prime elliptic curve point by an integer using the COMBS
- * method.
+ * Multiplies a prime elliptic curve point by an integer using the
+ * single-table comb method and the GLV endomorphism.
  *
  * @param[out] r 				- the result.
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
+static void ep_mul_fix_endom(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
 	bn_t n, m, k0, k1;
 	ep_t u;
@@ -132,14 +132,14 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 }
 
 /**
- * Multiplies a prime elliptic curve point by an integer using the COMBS
- * method.
+ * Multiplies a prime elliptic curve point by an integer using the
+ * single-table comb method.
  *
  * @param[out] r 				- the result.
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
+static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n, m;
 
@@ -197,9 +197,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_FIX_BASIC(ep);
-
-void ep_mul_pre_combs(ep_t *t, const ep_t p) {
+void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 	int i, j, l;
 	bn_t n;
 
@@ -229,7 +227,7 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 			}
 		}
 
-		ep_norm_sim(t + 2, (const ep_t *)t + 2, RLC_EP_TABLE_COMBS - 2);
+		ep_norm_sim(t + 2, (const ep_t *)t + 2, RLC_EP_TABLE_BASIC - 2);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -239,20 +237,18 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 	}
 }
 
-void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
+void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
 		return;
 	}
 
 	if (ep_curve_is_endom()) {
-		ep_mul_combs_endom(r, t, k);
+		ep_mul_fix_endom(r, t, k);
 		return;
 	}
 
-	ep_mul_combs_plain(r, t, k);
+	ep_mul_fix_plain(r, t, k);
 }
 
 TMPL_EP_MUL_COMBD(ep);
-
-TMPL_EP_MUL_FIX_LWNAF(ep);

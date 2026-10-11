@@ -423,27 +423,12 @@
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
 
-/** Binary point multiplication. */
-#define BASIC	 1
 /** Single-table comb method. */
-#define COMBS	 2
+#define BASIC	 1
 /** Double-table comb method. */
 #define COMBD    3
-/** Left-to-right Width-w NAF. */
-#define LWNAF	 4
-/** Chosen prime elliptic curve point multiplication method. */
+/** Chosen prime elliptic curve fixed point multiplication method. */
 #define EP_FIX	 @EP_FIX@
-
-/** Basic simultaneouns point multiplication. */
-#define BASIC    1
-/** Shamir's trick. */
-#define TRICK    2
-/** Interleaving of w-(T)NAFs. */
-#define INTER    3
-/** Joint sparse form. */
-#define JOINT    4
-/** Chosen prime elliptic curve simulteanous point multiplication method. */
-#define EP_SIM   @EP_SIM@
 
 /** Basic hash to x-coordinate and increment. */
 #define BASIC    1

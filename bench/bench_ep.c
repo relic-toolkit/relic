@@ -454,24 +454,6 @@ static void arith(void) {
 		ep_free(t[i]);
 	}
 
-	for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
-		ep_new(t[i]);
-	}
-	BENCH_RUN("ep_mul_pre_combs") {
-		ep_rand(p);
-		BENCH_ADD(ep_mul_pre_combs(t, p));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_fix_combs") {
-		bn_rand_mod(k, n);
-		ep_rand(p);
-		ep_mul_pre_combs(t, p);
-		BENCH_ADD(ep_mul_fix_combs(q, (const ep_t *)t, k));
-	} BENCH_END;
-	for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
-		ep_free(t[i]);
-	}
-
 	for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 		ep_new(t[i]);
 	}
@@ -488,61 +470,12 @@ static void arith(void) {
 		ep_free(t[i]);
 	}
 
-	for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
-		ep_new(t[i]);
-	}
-	BENCH_RUN("ep_mul_pre_lwnaf") {
-		ep_rand(p);
-		BENCH_ADD(ep_mul_pre_lwnaf(t, p));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_fix_lwnaf") {
-		bn_rand_mod(k, n);
-		ep_rand(p);
-		ep_mul_pre_lwnaf(t, p);
-		BENCH_ADD(ep_mul_fix_lwnaf(q, (const ep_t *)t, k));
-	} BENCH_END;
-	for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
-		ep_free(t[i]);
-	}
 	BENCH_RUN("ep_mul_sim") {
 		bn_rand_mod(l[0], n);
 		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim(r, p, l[0], q, l[1]));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_sim_basic") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ep_rand(p);
-		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_basic(r, p, l[0], q, l[1]));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_sim_trick") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ep_rand(p);
-		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_trick(r, p, l[0], q, l[1]));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_sim_inter") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ep_rand(p);
-		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_inter(r, p, l[0], q, l[1]));
-	} BENCH_END;
-
-	BENCH_RUN("ep_mul_sim_joint") {
-		bn_rand_mod(l[0], n);
-		bn_rand_mod(l[1], n);
-		ep_rand(p);
-		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_joint(r, p, l[0], q, l[1]));
 	} BENCH_END;
 
 	BENCH_RUN("ep_mul_sim_gen") {

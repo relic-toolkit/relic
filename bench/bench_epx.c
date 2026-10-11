@@ -439,24 +439,6 @@ static void bench_##C##_arith(void) {										\
 		C##_free(t[i]);														\
 	}																		\
 																			\
-	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {							\
-		C##_new(t[i]);														\
-	}																		\
-	BENCH_RUN(#C "_mul_pre_combs") {										\
-		C##_rand(p);														\
-		BENCH_ADD(C##_mul_pre_combs(t, p));									\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_fix_combs") {										\
-		bn_rand_mod(k, n);													\
-		C##_rand(p);														\
-		C##_mul_pre_combs(t, p);											\
-		BENCH_ADD(C##_mul_fix_combs(q, t, k));								\
-	} BENCH_END;															\
-	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {							\
-		C##_free(t[i]);														\
-	}																		\
-																			\
 	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {							\
 		C##_new(t[i]);														\
 	}																		\
@@ -473,62 +455,12 @@ static void bench_##C##_arith(void) {										\
 		C##_free(t[i]);														\
 	}																		\
 																			\
-	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {							\
-		C##_new(t[i]);														\
-	}																		\
-	BENCH_RUN(#C "_mul_pre_lwnaf") {										\
-		C##_rand(p);														\
-		BENCH_ADD(C##_mul_pre_lwnaf(t, p));									\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_fix_lwnaf") {										\
-		bn_rand_mod(k, n);													\
-		C##_rand(p);														\
-		C##_mul_pre_lwnaf(t, p);											\
-		BENCH_ADD(C##_mul_fix_lwnaf(q, t, k));								\
-	} BENCH_END;															\
-	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {							\
-		C##_free(t[i]);														\
-	}																		\
-																			\
 	BENCH_RUN(#C "_mul_sim") {												\
 		bn_rand_mod(l[0], n);												\
 		bn_rand_mod(l[1], n);												\
 		C##_rand(p);														\
 		C##_rand(q);														\
 		BENCH_ADD(C##_mul_sim(r, p, l[0], q, l[1]));						\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_sim_basic") {										\
-		bn_rand_mod(l[0], n);												\
-		bn_rand_mod(l[1], n);												\
-		C##_rand(p);														\
-		C##_rand(q);														\
-		BENCH_ADD(C##_mul_sim_basic(r, p, l[0], q, l[1]));					\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_sim_trick") {										\
-		bn_rand_mod(l[0], n);												\
-		bn_rand_mod(l[1], n);												\
-		C##_rand(p);														\
-		C##_rand(q);														\
-		BENCH_ADD(C##_mul_sim_trick(r, p, l[0], q, l[1]));					\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_sim_inter") {										\
-		bn_rand_mod(l[0], n);												\
-		bn_rand_mod(l[1], n);												\
-		C##_rand(p);														\
-		C##_rand(q);														\
-		BENCH_ADD(C##_mul_sim_inter(r, p, l[0], q, l[1]));					\
-	} BENCH_END;															\
-																			\
-	BENCH_RUN(#C "_mul_sim_joint") {										\
-		bn_rand_mod(l[0], n);												\
-		bn_rand_mod(l[1], n);												\
-		C##_rand(p);														\
-		C##_rand(q);														\
-		BENCH_ADD(C##_mul_sim_joint(r, p, l[0], q, l[1]));					\
 	} BENCH_END;															\
 																			\
 	BENCH_RUN(#C "_mul_sim_gen") {											\
