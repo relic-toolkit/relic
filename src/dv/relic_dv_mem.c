@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#if ALLOC != AUTO
+#if ALLOC != AUTO && OPSYS == WINDOWS
 #include <malloc.h>
 #endif
 
@@ -58,11 +58,13 @@ void dv_new_dynam(dv_t *a, size_t digits) {
 	*a = _aligned_malloc(digits * (RLC_DIG / 8), ALIGN);
 #else
 	int r = posix_memalign((void **)a, ALIGN, digits * (RLC_DIG / 8));
-	if (r == ENOMEM) {
-		RLC_THROW(ERR_NO_MEMORY);
-	}
-	if (r == EINVAL) {
-		RLC_THROW(ERR_NO_CONFIG);
+	if (r != 0) {
+		/* The pointer is left undefined when the allocation fails. */
+		*a = NULL;
+		if (r == EINVAL) {
+			RLC_THROW(ERR_NO_CONFIG);
+			return;
+		}
 	}
 #endif
 

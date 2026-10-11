@@ -185,9 +185,9 @@ void dv_copy(dig_t *c, const dig_t *a, size_t digits);
  * Conditionally copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.
- * @paraim[in] a			- the source.
+ * @param[in] a			- the source.
  * @param[in] digits		- the number of digits to copy.
- * @param[in] bit			- the condition bit to evaluate.
+ * @param[in] bit			- the condition bit, 0 or 1.
  */
 void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
 
@@ -195,9 +195,9 @@ void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
  * Conditionally swap two digit vectors.
  *
  * @param[in,out] c			- the destination.
- * @paraim[in,out] a		- the source.
- * @param[in] digits		- the number of digits to copy.
- * @param[in] bit			- the condition bit to evaluate.
+ * @param[in,out] a		- the source.
+ * @param[in] digits		- the number of digits to swap.
+ * @param[in] bit			- the condition bit, 0 or 1.
  */
 void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit);
 
@@ -264,24 +264,26 @@ void dv_free_dynam(dv_t *a);
 #endif
 
 /**
- * Shifts a digit vector to the left by some digits.
+ * Shifts a digit vector to the left by some digits. Shifting by size digits or
+ * more gives zero.
  * Computes c = a << (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to shift.
- * @param[in] size			- the number of digits to shift.
- * @param[in] digits		- the shift amount.
+ * @param[in] size			- the length of the vectors in digits.
+ * @param[in] digits		- the shift amount in digits.
  */
 void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 
 /**
- * Shifts a digit vector to the right by some digits.
+ * Shifts a digit vector to the right by some digits. Shifting by size digits or
+ * more gives zero.
  * Computes c = a >> (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to shift.
- * @param[in] size			- the number of digits to shift.
- * @param[in] digits		- the shift amount.
+ * @param[in] size			- the length of the vectors in digits.
+ * @param[in] digits		- the shift amount in digits.
  */
 void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 

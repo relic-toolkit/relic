@@ -31,7 +31,7 @@
 
 #include <errno.h>
 
-#if ALLOC != AUTO
+#if ALLOC != AUTO && OPSYS == WINDOWS
 #include <malloc.h>
 #endif
 
@@ -51,26 +51,32 @@ void bn_make(bn_t a, size_t digits) {
 		digits += (RLC_BN_SIZE - digits % RLC_BN_SIZE);
 	}
 
-	if (a != NULL) {
-		a->dp = NULL;
-#if ALIGN == 1
-		a->dp = (dig_t *)malloc(digits * sizeof(dig_t));
-#elif OPSYS == WINDOWS
-		a->dp = _aligned_malloc(digits * sizeof(dig_t), ALIGN);
-#else
-		int r = posix_memalign((void **)&a->dp, ALIGN, digits * sizeof(dig_t));
-		if (r == ENOMEM) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		if (r == EINVAL) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-#endif /* ALIGN */
+	if (a == NULL) {
+		return;
 	}
 
+	a->dp = NULL;
+#if ALIGN == 1
+	a->dp = (dig_t *)malloc(digits * sizeof(dig_t));
+#elif OPSYS == WINDOWS
+	a->dp = _aligned_malloc(digits * sizeof(dig_t), ALIGN);
+#else
+	int r = posix_memalign((void **)&a->dp, ALIGN, digits * sizeof(dig_t));
+	if (r != 0) {
+		/* The pointer is left undefined when the allocation fails. */
+		a->dp = NULL;
+		if (r == EINVAL) {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
+	}
+#endif /* ALIGN */
+
 	if (a->dp == NULL) {
-		free((void *)a);
+		/* The caller still owns a, and bn_free() handles the null digits. */
+		a->alloc = 0;
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 #else
 	/* Verify if the number of digits is sane. */

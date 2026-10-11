@@ -37,8 +37,6 @@
 /*============================================================================*/
 
 void dv_print(const dig_t *a, size_t digits) {
-	/* Suppress possible unused parameter warning. */
-	(void)a;
 	for (size_t i = digits; i > 0; i--) {
 		util_print_dig(a[i-1], 1);
 	}
@@ -48,12 +46,6 @@ void dv_print(const dig_t *a, size_t digits) {
 }
 
 void dv_zero(dig_t *a, size_t digits) {
-#if ALLOC != DYNAMIC
-	if (digits > RLC_DV_DIGS) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
-	}
-#endif
 	memset(a, 0, digits * sizeof(dig_t));
 }
 
@@ -91,7 +83,7 @@ void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 	}
 }
 
- int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
+int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
 	for (size_t i = size; i > 0; i--) {
 		if (a[i - 1] != b[i - 1]) {
 			return (a[i - 1] > b[i - 1] ? RLC_GT : RLC_LT);
@@ -135,6 +127,11 @@ void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	dig_t *bot;
 	size_t i;
 
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
+
 	top = a + digits;
 	bot = c;
 
@@ -150,6 +147,11 @@ void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	dig_t *top;
 	const dig_t *bot;
 	size_t i;
+
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
 
 	top = c + size - 1;
 	bot = a + size - 1 - digits;
