@@ -45,14 +45,10 @@
 	static void C##_dbl_basic_imp(C##_t r, F##_t s, const C##_t p) {		\
 		F##_t t0, t1, t2;													\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
+		F##_null_all(t0, t1, t2);											\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
+			F##_new_all(t0, t1, t2);										\
 																			\
 			/* t0 = 1/(2 * y1). */											\
 			F##_dbl(t0, p->y);												\
@@ -91,9 +87,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		}																	\
 	}																		\
 
@@ -112,20 +106,10 @@
 	static void C##_dbl_projc_imp(C##_t r, const C##_t p) {					\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
@@ -239,12 +223,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -260,19 +239,10 @@
 	static void C##_dbl_jacob_imp(C##_t r, const C##_t p) {					\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t1, t2, t3, t4, t5);									\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (p->coord != BASIC && C##_curve_opt_a() == RLC_MIN3) {		\
 				/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */	\
@@ -419,12 +389,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 

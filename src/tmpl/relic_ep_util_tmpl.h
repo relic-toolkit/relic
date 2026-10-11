@@ -112,12 +112,10 @@
 	void C##_rand(C##_t p) {												\
 		bn_t n, k;															\
 																			\
-		bn_null(k);															\
-		bn_null(n);															\
+		bn_null_all(k, n);													\
 																			\
 		RLC_TRY {															\
-			bn_new(k);														\
-			bn_new(n);														\
+			bn_new_all(k, n);												\
 																			\
 			C##_curve_get_ord(n);											\
 			bn_rand_mod(k, n);												\
@@ -128,8 +126,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(k);														\
-			bn_free(n);														\
+			bn_free_all(k, n);												\
 		}																	\
 	}																		\
 																			\
@@ -347,12 +344,10 @@
 			return RLC_EQ;													\
 		}																	\
 																			\
-		C##_null(r);														\
-		C##_null(s);														\
+		C##_null_all(r, s);													\
 																			\
 		RLC_TRY {															\
-			C##_new(r);														\
-			C##_new(s);														\
+			C##_new_all(r, s);												\
 																			\
 			switch (q->coord) {												\
 				case PROJC:													\
@@ -400,8 +395,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			C##_free(r);													\
-			C##_free(s);													\
+			C##_free_all(r, s);												\
 		}																	\
 																			\
 		return result;														\
@@ -510,12 +504,10 @@
 		bn_t h, k;															\
 		int b;																\
 																			\
-		bn_null(h);															\
-		bn_null(k);															\
+		bn_null_all(h, k);													\
 																			\
 		RLC_TRY {															\
-			bn_new(h);														\
-			bn_new(k);														\
+			bn_new_all(h, k);												\
 																			\
 			h->used = RLC_FP_DIGS;											\
 			dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);					\
@@ -530,8 +522,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			bn_free(h);														\
-			bn_free(k);														\
+			bn_free_all(h, k);												\
 		}																	\
 	}																		\
 																			\
@@ -541,13 +532,11 @@
 		int b, result = 0;													\
 																			\
 		F##_null(t);														\
-		bn_null(h);															\
-		bn_null(k);															\
+		bn_null_all(h, k);													\
 																			\
 		RLC_TRY {															\
 			F##_new(t);														\
-			bn_new(h);														\
-			bn_new(k);														\
+			bn_new_all(h, k);												\
 																			\
 			C##_rhs(t, p->x);												\
 			result = F##_srt(t, t);											\
@@ -568,8 +557,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			F##_free(t);													\
-			bn_free(h);														\
-			bn_free(k);														\
+			bn_free_all(h, k);												\
 		}																	\
 		return result;														\
 	}

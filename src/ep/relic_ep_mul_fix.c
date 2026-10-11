@@ -137,6 +137,6 @@ static void ep_mul_fix_glv(ep_t r, const ep_t *t, const bn_t k) {
 
 TMPL_EP_MUL_FIX_BASIC(ep, glv);
 
-TMPL_EP_MUL_FIX_LWREG(ep, fp);
+TMPL_EP_MUL_FIX_LWREG(ep, fp, glv, 2);
 
 TMPL_EP_MUL_COMBD(ep);

@@ -19,7 +19,7 @@ message("      EP_METHD=LWNAF    Left-to-right window NAF method.")
 message("      EP_METHD=LWREG    Left-to-right regular recoding method (GLV for curves with endomorphisms).\n")
 
 message("      Fixed-base scalar multiplication:")
-message("      EP_METHD=BASIC    Single-table comb method for fixed point multiplication.")
+message("      EP_METHD=BASIC    Single-table comb method for fixed point multiplication (GLV for curves with endomorphisms).")
 message("      EP_METHD=LWREG    Regular signed comb method for constant-time fixed point multiplication.")
 message("      EP_METHD=COMBD    Double-table comb method for fixed point multiplication.\n")
 

@@ -112,13 +112,11 @@
 		int8_t naf[S][RLC_FP_BITS + 1];										\
 		C##_t q, t[S][1 << (RLC_WIDTH - 2)];								\
 																			\
-		bn_null(n);															\
-		bn_null(u);															\
+		bn_null_all(n, u);													\
 		C##_null(q);														\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(u);														\
+			bn_new_all(n, u);												\
 			C##_new(q);														\
 			for (size_t i = 0; i < S; i++) {								\
 				bn_null(_k[i]);												\
@@ -192,8 +190,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(u);														\
+			bn_free_all(n, u);												\
 			C##_free(q);													\
 			for (size_t i = 0; i < S; i++) {								\
 				bn_free(_k[i]);												\
@@ -223,12 +220,10 @@
 		int8_t even[T], col, sac[T][(S / T) * (RLC_FP_BITS + 1)];			\
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
 																			\
-		bn_null(n);															\
-		bn_null(u);															\
+		bn_null_all(n, u);													\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(u);														\
+			bn_new_all(n, u);												\
 			for (int i = 0; i < S; i++) {									\
 				bn_null(_k[i]);												\
 				C##_null(q[i]);												\
@@ -312,8 +307,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(u);														\
+			bn_free_all(n, u);												\
 			for (int i = 0; i < S; i++) {									\
 				bn_free(_k[i]);												\
 				C##_free(q[i]);												\
@@ -340,12 +334,10 @@
 		bn_t m, n;															\
 		size_t l;															\
 																			\
-		bn_null(n);															\
-		bn_null(m);															\
+		bn_null_all(n, m);													\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(m);														\
+			bn_new_all(n, m);												\
 			/* Prepare the precomputation table. */							\
 			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
 				C##_null(t[i]);												\
@@ -380,8 +372,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(m);														\
+			bn_free_all(n, m);												\
 			/* Free the precomputation table. */							\
 			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
 				C##_free(t[i]);												\
@@ -403,9 +394,7 @@
 		bn_t n, l, _k;														\
 		size_t bits;														\
 																			\
-		bn_null(n);															\
-		bn_null(l);															\
-		bn_null(_k);														\
+		bn_null_all(n, l, _k);												\
 		C##_null(t[0]);														\
 		C##_null(t[1]);														\
 																			\
@@ -415,9 +404,7 @@
 		}																	\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(l);														\
-			bn_new(_k);														\
+			bn_new_all(n, l, _k);											\
 			C##_new(t[0]);													\
 			C##_new(t[1]);													\
 																			\
@@ -466,9 +453,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(l);														\
-			bn_free(_k);													\
+			bn_free_all(n, l, _k);											\
 			C##_free(t[1]);													\
 			C##_free(t[0]);													\
 		}																	\
@@ -489,16 +474,12 @@
 		C##_t t[1 << (RLC_WIDTH - 2)], u, v;								\
 		size_t l;															\
 																			\
-		bn_null(m);															\
-		bn_null(o);															\
-		C##_null(u);														\
-		C##_null(v);														\
+		bn_null_all(m, o);													\
+		C##_null_all(u, v);													\
 																			\
 		RLC_TRY {															\
-			bn_new(m);														\
-			bn_new(o);														\
-			C##_new(u);														\
-			C##_new(v);														\
+			bn_new_all(m, o);												\
+			C##_new_all(u, v);												\
 			/* Prepare the precomputation table. */							\
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
 				C##_null(t[i]);												\
@@ -559,10 +540,8 @@
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
 				C##_free(t[i]);												\
 			}																\
-			bn_free(m);														\
-			bn_free(o);														\
-			C##_free(u);													\
-			C##_free(v);													\
+			bn_free_all(m, o);												\
+			C##_free_all(u, v);												\
 		}																	\
 	}
 
@@ -638,12 +617,10 @@
 		int i, j, l, w, n0, p0, p1;											\
 		bn_t n, _k;															\
 																			\
-		bn_null(n);															\
-		bn_null(_k);														\
+		bn_null_all(n, _k);													\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(_k);														\
+			bn_new_all(n, _k);												\
 																			\
 			C##_curve_get_ord(n);											\
 			l = RLC_CEIL(bn_bits(n), RLC_DEPTH);							\
@@ -684,8 +661,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(_k);													\
+			bn_free_all(n, _k);												\
 		}																	\
 	}																		\
 																			\
@@ -742,21 +718,44 @@
 	}
 
 /**
+ * Decomposes the scalar M modulo N into the subscalars K of the regular signed
+ * comb, with the GLV endomorphism or without one.
+ */
+#define TMPL_EP_MUL_FIX_REC_glv(K, M, N)									\
+	bn_rec_glv(K[0], K[1], M, N, ep_curve_get_v1(), ep_curve_get_v2())
+#define TMPL_EP_MUL_FIX_REC_plain(K, M, N)	bn_copy(K[0], M)
+
+/**
+ * Bounds the bit length of the subscalars, with a margin for making them odd.
+ */
+#define TMPL_EP_MUL_FIX_LEN_glv(N)			(RLC_CEIL(bn_bits(N), 2) + 2)
+#define TMPL_EP_MUL_FIX_LEN_plain(N)		bn_bits(N)
+
+/**
  * Defines a template for fixed-point multiplication using the regular signed
  * comb method, including the precomputation. Two combs of RLC_DEPTH teeth are
  * spaced s bits apart, so that each column needs one doubling and two
- * additions of points read from the table in constant time.
+ * additions of points read from the table in constant time. With the GLV
+ * endomorphism, the combs run over both subscalars at once, applying the
+ * endomorphism to the points read for the second one, which halves the
+ * number of doublings. Applying the GLS endomorphism to every point read
+ * costs more than the doublings it saves, so curves over extension fields
+ * use the comb without an endomorphism.
  *
  * Mike Hamburg. Fast and compact elliptic-curve cryptography.
  * https://eprint.iacr.org/2012/309
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
+ * @param[in] E			- the endomorphism method, glv or plain.
+ * @param[in] S			- the dimension of the decomposition, 2 or 1.
  */
-#define TMPL_EP_MUL_FIX_LWREG(C, F)											\
+#define TMPL_EP_MUL_FIX_LWREG(C, F, E, S)									\
 	void C##_mul_pre_lwreg(C##_t *t, const C##_t p) {						\
 		const int h = 1 << (RLC_DEPTH - 1);									\
-		int i, j, e, s;														\
+		const int dim = (ep_curve_is_endom() ? S : 1);						\
+		int i, j, e;														\
+		size_t s;															\
 		C##_t b[2 * RLC_DEPTH];												\
 		bn_t n;																\
 																			\
@@ -771,8 +770,10 @@
 				C##_new(b[i]);												\
 			}																\
 																			\
+			/* The teeth are spaced for the length of the subscalars. */	\
 			C##_curve_get_ord(n);											\
-			s = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);						\
+			s = (dim > 1 ? TMPL_EP_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
+			s = RLC_CEIL(s, 2 * RLC_DEPTH);									\
 																			\
 			/* b[i] = 2^(i * s) * P, one point per tooth. */				\
 			C##_copy(b[0], p);												\
@@ -799,7 +800,9 @@
 					}														\
 				}															\
 			}																\
-			C##_norm_sim(t, (const C##_t *)t, 2 * h);						\
+			/* The last entry corrects the subscalars made odd. */			\
+			C##_copy(t[2 * h], p);											\
+			C##_norm_sim(t, (const C##_t *)t, 2 * h + 1);					\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -812,49 +815,73 @@
 																			\
 	void C##_mul_fix_lwreg(C##_t r, const C##_t *t, const bn_t k) {			\
 		const int h = 1 << (RLC_DEPTH - 1);									\
-		dig_t d[RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG)];			\
-		int i, j, c, e, s, l, neg, top;										\
-		bn_t m, n, u;														\
-		C##_t q, v;															\
+		const int dim = (ep_curve_is_endom() ? S : 1);						\
+		dig_t d[S][RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG)];			\
+		int i, j, c, e, top, neg, sgn[S], even[S];							\
+		size_t l, s;														\
+		bn_t m, n, u, _k[S];												\
+		C##_t q, v, w;														\
 																			\
 		if (bn_is_zero(k)) {												\
 			C##_set_infty(r);												\
 			return;															\
 		}																	\
 																			\
-		bn_null(m);															\
-		bn_null(n);															\
-		bn_null(u);															\
-		C##_null(q);														\
-		C##_null(v);														\
+		bn_null_all(m, n, u);												\
+		C##_null_all(q, v, w);												\
+		for (j = 0; j < S; j++) {											\
+			bn_null(_k[j]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
-			bn_new(m);														\
-			bn_new(n);														\
-			bn_new(u);														\
-			C##_new(q);														\
-			C##_new(v);														\
+			bn_new_all(m, n, u);											\
+			C##_new_all(q, v, w);											\
+			for (j = 0; j < S; j++) {										\
+				bn_new(_k[j]);												\
+			}																\
 																			\
 			C##_curve_get_ord(n);											\
-			s = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);						\
+			l = (dim > 1 ? TMPL_EP_MUL_FIX_LEN_##E(n) : bn_bits(n));		\
+			s = RLC_CEIL(l, 2 * RLC_DEPTH);									\
 			l = 2 * RLC_DEPTH * s;											\
 																			\
 			/* Reduce the scalar, keeping its sign to negate the result. */	\
 			bn_mod(m, k, n);												\
 			neg = (bn_sign(m) == RLC_NEG);									\
 			bn_abs(m, m);													\
-			/* Recode m as (m + 2^l - 1)/2 mod n, so that bits b_i give		\
-			 * k = sum (2 * b_i - 1) * 2^i mod n, with all digits nonzero. */\
-			bn_set_2b(u, l);												\
-			bn_sub_dig(u, u, 1);											\
-			bn_add(m, m, u);												\
-			bn_add_dig(u, n, 1);											\
-			bn_hlv(u, u);													\
-			bn_mul(m, m, u);												\
-			bn_mod(m, m, n);												\
-			/* Read the bits from a buffer of fixed length. */				\
-			dv_zero(d, RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG));		\
-			dv_copy(d, m->dp, m->used);										\
+			for (j = 0; j < S; j++) {										\
+				sgn[j] = even[j] = 0;										\
+			}																\
+			if (dim == 1) {													\
+				/* Recode m as (m + 2^l - 1)/2 mod n, so that bits b_i give	\
+				 * k = sum (2 * b_i - 1) * 2^i mod n. */					\
+				bn_set_2b(_k[0], l);										\
+				bn_sub_dig(_k[0], _k[0], 1);								\
+				bn_add(_k[0], _k[0], m);									\
+				bn_add_dig(u, n, 1);										\
+				bn_hlv(u, u);												\
+				bn_mul(_k[0], _k[0], u);									\
+				bn_mod(_k[0], _k[0], n);									\
+			} else {														\
+				TMPL_EP_MUL_FIX_REC_##E(_k, m, n);							\
+				/* Make each subscalar positive and odd, then recode it as	\
+				 * (k_j + 2^l - 1)/2, which is exact for odd k_j. */		\
+				bn_set_2b(u, l);											\
+				bn_sub_dig(u, u, 1);										\
+				for (j = 0; j < dim; j++) {									\
+					sgn[j] = (bn_sign(_k[j]) == RLC_NEG);					\
+					bn_abs(_k[j], _k[j]);									\
+					even[j] = bn_is_even(_k[j]);							\
+					bn_add_dig(_k[j], _k[j], even[j]);						\
+					bn_add(_k[j], _k[j], u);								\
+					bn_hlv(_k[j], _k[j]);									\
+				}															\
+			}																\
+			/* Read the bits from buffers of fixed length. */				\
+			for (j = 0; j < dim; j++) {										\
+				dv_zero(d[j], RLC_CEIL(RLC_FP_BITS + 2 * RLC_DEPTH, RLC_DIG));\
+				dv_copy(d[j], _k[j]->dp, _k[j]->used);						\
+			}																\
 																			\
 			F##_set_dig(q->z, 1);											\
 			q->coord = BASIC;												\
@@ -863,25 +890,47 @@
 				if (i != s - 1) {											\
 					C##_dbl(r, r);											\
 				}															\
-				for (c = 0; c < 2; c++) {									\
-					/* The top tooth gives the sign, the others the entry. */\
-					j = (c * RLC_DEPTH + RLC_DEPTH - 1) * s + i;			\
-					top = (d[j / RLC_DIG] >> (j % RLC_DIG)) & 1;			\
-					e = 0;													\
-					for (j = 0; j < RLC_DEPTH - 1; j++) {					\
-						int b = (c * RLC_DEPTH + j) * s + i;				\
-						e |= ((d[b / RLC_DIG] >> (b % RLC_DIG)) & 1) << j;	\
+				for (j = 0; j < dim; j++) {									\
+					for (c = 0; c < 2; c++) {								\
+						/* The top tooth is the sign, the others the index. */\
+						int b = (c * RLC_DEPTH + RLC_DEPTH - 1) * s + i;	\
+						top = (d[j][b / RLC_DIG] >> (b % RLC_DIG)) & 1;		\
+						e = 0;												\
+						for (int z = 0; z < RLC_DEPTH - 1; z++) {			\
+							b = (c * RLC_DEPTH + z) * s + i;				\
+							b = (d[j][b / RLC_DIG] >> (b % RLC_DIG)) & 1;	\
+							e |= b << z;									\
+						}													\
+						/* A negative top tooth flips all the signs. */		\
+						e ^= (top - 1) & (h - 1);							\
+						for (int z = 0; z < h; z++) {						\
+							F##_copy_sec(q->x, t[c * h + z]->x, z == e);	\
+							F##_copy_sec(q->y, t[c * h + z]->y, z == e);	\
+						}													\
+						C##_neg(v, q);										\
+						F##_copy_sec(q->y, v->y, (top == 0) ^ sgn[j]);		\
+						/* The second subscalar multiplies psi(P). */		\
+						if (j == 0) {										\
+							C##_add(r, r, q);								\
+						} else {											\
+							C##_psi(w, q);									\
+							C##_add(r, r, w);								\
+						}													\
 					}														\
-					/* A negative top tooth flips the signs of all teeth. */\
-					e ^= (top - 1) & (h - 1);								\
-					for (j = 0; j < h; j++) {								\
-						F##_copy_sec(q->x, t[c * h + j]->x, j == e);		\
-						F##_copy_sec(q->y, t[c * h + j]->y, j == e);		\
-					}														\
-					C##_neg(v, q);											\
-					F##_copy_sec(q->y, v->y, top == 0);						\
-					C##_add(r, r, q);										\
 				}															\
+			}																\
+			/* Subtract P and psi(P) where k_j was made odd. */				\
+			for (j = 0; j < (dim > 1 ? dim : 0); j++) {						\
+				C##_copy(w, t[2 * h]);										\
+				if (j > 0) {												\
+					C##_psi(w, w);											\
+				}															\
+				C##_neg(v, w);												\
+				F##_copy_sec(w->y, v->y, sgn[j]);							\
+				C##_sub(v, r, w);											\
+				F##_copy_sec(r->x, v->x, even[j]);							\
+				F##_copy_sec(r->y, v->y, even[j]);							\
+				F##_copy_sec(r->z, v->z, even[j]);							\
 			}																\
 			/* Convert r to affine coordinates. */							\
 			C##_norm(r, r);													\
@@ -890,11 +939,11 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			bn_free(m);														\
-			bn_free(n);														\
-			bn_free(u);														\
-			C##_free(q);													\
-			C##_free(v);													\
+			bn_free_all(m, n, u);											\
+			C##_free_all(q, v, w);											\
+			for (j = 0; j < S; j++) {										\
+				bn_free(_k[j]);												\
+			}																\
 		}																	\
 	}
 
@@ -961,12 +1010,10 @@
 			return;															\
 		}																	\
 																			\
-		bn_null(n);															\
-		bn_null(_k);														\
+		bn_null_all(n, _k);													\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(_k);														\
+			bn_new_all(n, _k);												\
 																			\
 			C##_curve_get_ord(n);											\
 			d = RLC_CEIL(bn_bits(n), RLC_DEPTH);							\
@@ -1007,8 +1054,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(_k);													\
+			bn_free_all(n, _k);												\
 		}																	\
 	}
 
@@ -1135,13 +1181,11 @@
 		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
 		C##_t _p[S << (RLC_WIDTH - 2)], _q[S << (RLC_WIDTH - 2)], v;		\
 																			\
-		bn_null(n);															\
-		bn_null(u);															\
+		bn_null_all(n, u);													\
 		C##_null(v);														\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(u);														\
+			bn_new_all(n, u);												\
 			C##_new(v);														\
 			for (int i = 0; i < S; i++) {									\
 				bn_null(_k[i]);												\
@@ -1218,8 +1262,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(u);														\
+			bn_free_all(n, u);												\
 			C##_free(v);													\
 			for (int i = 0; i < S; i++) {									\
 				bn_free(_k[i]);												\
@@ -1252,14 +1295,10 @@
 			return;															\
 		}																	\
 																			\
-		bn_null(n);															\
-		bn_null(_k);														\
-		bn_null(_m);														\
+		bn_null_all(n, _k, _m);												\
 																			\
 		RLC_TRY {															\
-			bn_new(n);														\
-			bn_new(_k);														\
-			bn_new(_m);														\
+			bn_new_all(n, _k, _m);											\
 																			\
 			/* Reduce the scalars here to simplify the static functions. */	\
 			C##_curve_get_ord(n);											\
@@ -1274,9 +1313,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			bn_free(n);														\
-			bn_free(_k);													\
-			bn_free(_m);													\
+			bn_free_all(n, _k, _m);											\
 		}																	\
 	}
 
@@ -1302,15 +1339,11 @@
 		}																	\
 																			\
 		C##_null(g);														\
-		bn_null(n);															\
-		bn_null(_k);														\
-		bn_null(_m);														\
+		bn_null_all(n, _k, _m);												\
 																			\
 		RLC_TRY {															\
 			C##_new(g);														\
-			bn_new(n);														\
-			bn_new(_k);														\
-			bn_new(_m);														\
+			bn_new_all(n, _k, _m);											\
 																			\
 			C##_curve_get_gen(g);											\
 			C##_curve_get_ord(n);											\
@@ -1322,9 +1355,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			C##_free(g);													\
-			bn_free(n);														\
-			bn_free(_k);													\
-			bn_free(_m);													\
+			bn_free_all(n, _k, _m);											\
 		}																	\
 	}
 
@@ -1395,8 +1426,7 @@
 			return;															\
 		}																	\
 																			\
-		bn_null(q);															\
-		bn_null(x);															\
+		bn_null_all(q, x);													\
 																			\
 		if (n <= 10) {														\
 			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
@@ -1405,8 +1435,7 @@
 				if (naf == NULL || _p == NULL) {							\
 					RLC_THROW(ERR_NO_MEMORY);								\
 				}															\
-				bn_new(q);													\
-				bn_new(x);													\
+				bn_new_all(q, x);											\
 				for (j = 0; j < S; j++) {									\
 					bn_null(_k[j]);											\
 					bn_new(_k[j]);											\
@@ -1457,8 +1486,7 @@
 			} RLC_CATCH_ANY {												\
 				RLC_THROW(ERR_CAUGHT);										\
 			} RLC_FINALLY {													\
-				bn_free(q);													\
-				bn_free(x);													\
+				bn_free_all(q, x);											\
 				for (j = 0; j < S; j++) {									\
 					bn_free(_k[j]);											\
 					for (i = 0; i < n; i++) {								\
@@ -1474,21 +1502,14 @@
 			C##_t s, t, u, v, *_p = RLC_ALLOCA(C##_t, c);					\
 			C##_t *_q = RLC_ALLOCA(C##_t, S * n);							\
 																			\
-			C##_null(s);													\
-			C##_null(t);													\
-			C##_null(u);													\
-			C##_null(v);													\
+			C##_null_all(s, t, u, v);										\
 																			\
 			RLC_TRY {														\
 				if (naf == NULL || _p == NULL || _q == NULL) {				\
 					RLC_THROW(ERR_NO_MEMORY);								\
 				}															\
-				bn_new(q);													\
-				bn_new(x);													\
-				C##_new(s);													\
-				C##_new(t);													\
-				C##_new(u);													\
-				C##_new(v);													\
+				bn_new_all(q, x);											\
+				C##_new_all(s, t, u, v);									\
 				for (i = 0; i < S; i++) {									\
 					bn_null(_k[i]);											\
 					bn_new(_k[i]);											\
@@ -1563,12 +1584,8 @@
 			} RLC_CATCH_ANY {												\
 				RLC_THROW(ERR_CAUGHT);										\
 			} RLC_FINALLY {													\
-				bn_free(q);													\
-				bn_free(x);													\
-				C##_free(s);												\
-				C##_free(t);												\
-				C##_free(u);												\
-				C##_free(v);												\
+				bn_free_all(q, x);											\
+				C##_free_all(s, t, u, v);									\
 				for (i = 0; i < S; i++) {									\
 					bn_free(_k[i]);											\
 				}															\
@@ -1706,7 +1723,7 @@
 	TMPL_EP_MUL_GEN(C)														\
 	TMPL_EP_MUL_DIG(C)														\
 	TMPL_EP_MUL_FIX_BASIC(C, plain)											\
-	TMPL_EP_MUL_FIX_LWREG(C, F)												\
+	TMPL_EP_MUL_FIX_LWREG(C, F, plain, 1)									\
 	TMPL_EP_MUL_COMBD(C)													\
 	TMPL_EP_MUL_SIM(C)														\
 	TMPL_EP_MUL_SIM_GEN(C)													\

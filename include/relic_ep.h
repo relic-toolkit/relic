@@ -217,9 +217,10 @@ enum {
 #define RLC_EP_TABLE_BASIC      (1 << RLC_DEPTH)
 
 /**
- * Size of a precomputation table using the regular signed comb method.
+ * Size of a precomputation table using the regular signed comb method: two
+ * combs and the point itself.
  */
-#define RLC_EP_TABLE_LWREG		(1 << RLC_DEPTH)
+#define RLC_EP_TABLE_LWREG		((1 << RLC_DEPTH) + 1)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -359,6 +360,17 @@ typedef iso_st *iso_t;
 #define ep_free(A)				/* empty */
 
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep_null_all(...)	RLC_EACH(ep_null, __VA_ARGS__)
+#define ep_new_all(...)		RLC_EACH(ep_new, __VA_ARGS__)
+#define ep_free_all(...)	RLC_EACH(ep_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Adds two prime elliptic curve points. Computes R = P + Q.

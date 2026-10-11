@@ -46,14 +46,10 @@
 			const C##_t q) {												\
 		F##_t t0, t1, t2;													\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
+		F##_null_all(t0, t1, t2);											\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
+			F##_new_all(t0, t1, t2);										\
 																			\
 			/* t0 = x2 - x1. */												\
 			F##_sub(t0, q->x, p->x);										\
@@ -94,15 +90,11 @@
 																			\
 				r->coord = BASIC;											\
 			}																\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		}																	\
 	}																		\
 
@@ -122,20 +114,10 @@
 	static void C##_add_projc_mix(C##_t r, const C##_t p, const C##_t q) {	\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			F##_mul(t0, p->x, q->x);										\
 			F##_mul(t1, p->y, q->y);										\
@@ -270,12 +252,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -301,20 +278,10 @@
 			return;															\
 		}																	\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			F##_mul(t0, p->x, q->x);										\
 			F##_mul(t1, p->y, q->y);										\
@@ -435,12 +402,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -457,20 +419,10 @@
 	static void C##_add_jacob_mix(C##_t r, const C##_t p, const C##_t q) {	\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (p->coord != BASIC) {										\
 				/* t0 = z1^2. */											\
@@ -550,12 +502,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -578,22 +525,10 @@
 			return;															\
 		}																	\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
-		F##_null(t6);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
-			F##_new(t6);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
 																			\
 			/* t0 = z1^2. */												\
 			F##_sqr(t0, p->z);												\
@@ -668,13 +603,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
-			F##_free(t6);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 		}																	\
 	}																		\
 

@@ -55,9 +55,10 @@
 #define RLC_EPX_TABLE_BASIC      (1 << RLC_DEPTH)
 
 /**
- * Size of a precomputation table using the regular signed comb method.
+ * Size of a precomputation table using the regular signed comb method: two
+ * combs and the point itself.
  */
-#define RLC_EPX_TABLE_LWREG		(1 << RLC_DEPTH)
+#define RLC_EPX_TABLE_LWREG		((1 << RLC_DEPTH) + 1)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -296,6 +297,17 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep2_null_all(...)	RLC_EACH(ep2_null, __VA_ARGS__)
+#define ep2_new_all(...)		RLC_EACH(ep2_new, __VA_ARGS__)
+#define ep2_free_all(...)	RLC_EACH(ep2_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Initializes a point on an elliptic curve with a null value.
  *
  * @param[out] A				- the point to initialize.
@@ -344,6 +356,17 @@ typedef iso2_st *iso2_t;
 #elif ALLOC == AUTO
 #define ep3_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep3_null_all(...)	RLC_EACH(ep3_null, __VA_ARGS__)
+#define ep3_new_all(...)		RLC_EACH(ep3_new, __VA_ARGS__)
+#define ep3_free_all(...)	RLC_EACH(ep3_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Initializes a point on an elliptic curve with a null value.
@@ -396,6 +419,17 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep4_null_all(...)	RLC_EACH(ep4_null, __VA_ARGS__)
+#define ep4_new_all(...)		RLC_EACH(ep4_new, __VA_ARGS__)
+#define ep4_free_all(...)	RLC_EACH(ep4_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Initializes a point on an elliptic curve with a null value.
  *
  * @param[out] A				- the point to initialize.
@@ -446,6 +480,17 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep8_null_all(...)	RLC_EACH(ep8_null, __VA_ARGS__)
+#define ep8_new_all(...)		RLC_EACH(ep8_new, __VA_ARGS__)
+#define ep8_free_all(...)	RLC_EACH(ep8_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Initializes a point on an elliptic curve with a null value.
  *
  * @param[out] A				- the point to initialize.
@@ -494,6 +539,17 @@ typedef iso2_st *iso2_t;
 #elif ALLOC == AUTO
 #define ep9_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep9_null_all(...)	RLC_EACH(ep9_null, __VA_ARGS__)
+#define ep9_new_all(...)		RLC_EACH(ep9_new, __VA_ARGS__)
+#define ep9_free_all(...)	RLC_EACH(ep9_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Adds two points in an elliptic curve over a quadratic extension field.
