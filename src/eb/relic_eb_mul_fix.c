@@ -41,7 +41,6 @@
  * method.
  *
  * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
@@ -50,12 +49,6 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	int8_t u, tnaf[RLC_FB_BITS + 8];
 	size_t l;
 
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
 	if (eb_curve_opt_a() == RLC_ZERO) {
 		u = -1;
 	} else {
@@ -66,14 +59,8 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	l = sizeof(tnaf);
 	bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_DEPTH);
 
-	n = tnaf[l - 1];
-	if (n > 0) {
-		eb_copy(r, t[n / 2]);
-	} else {
-		eb_neg(r, t[-n / 2]);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
+	eb_set_infty(r);
+	for (i = l - 1; i >= 0; i--) {
 		eb_frb(r, r);
 
 		n = tnaf[i];
@@ -86,9 +73,6 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
 }
 
 /**
@@ -96,7 +80,7 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
  * method.
  *
  * @param[out] r 				- the result.
- * @param[in] t				- the precomputed table.
+ * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
 static void eb_mul_fix_naf(eb_t r, const eb_t *t, const bn_t k) {
@@ -104,21 +88,12 @@ static void eb_mul_fix_naf(eb_t r, const eb_t *t, const bn_t k) {
 	int8_t naf[RLC_FB_BITS + 1];
 	size_t l;
 
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
+	/* Compute the w-NAF representation of k. */
 	l = RLC_FB_BITS + 1;
 	bn_rec_naf(naf, &l, k, RLC_DEPTH);
 
-	n = naf[l - 1];
-	if (n > 0) {
-		eb_copy(r, t[n / 2]);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
+	eb_set_infty(r);
+	for (i = l - 1; i >= 0; i--) {
 		eb_dbl(r, r);
 
 		n = naf[i];
@@ -131,9 +106,6 @@ static void eb_mul_fix_naf(eb_t r, const eb_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
 }
 
 /*============================================================================*/
@@ -151,10 +123,27 @@ void eb_mul_pre_lwnaf(eb_t *t, const eb_t p) {
 }
 
 void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k) {
-	if (eb_curve_is_kbltz()) {
-		eb_mul_fix_kbltz(r, t, k);
-		return;
-	}
+	bn_t n, _k;
 
-	eb_mul_fix_naf(r, t, k);
+	bn_null_all(n, _k);
+
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		/* Reduce the scalar here to simplify the static functions. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		if (eb_curve_is_kbltz()) {
+			eb_mul_fix_kbltz(r, t, _k);
+		} else {
+			eb_mul_fix_naf(r, t, _k);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }

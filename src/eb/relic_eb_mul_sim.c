@@ -266,6 +266,7 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 void eb_mul_sim(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
+	bn_t n, _k, _m;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_mul(r, q, m);
@@ -276,18 +277,33 @@ void eb_mul_sim(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		return;
 	}
 
-	if (eb_curve_is_kbltz()) {
-		eb_mul_sim_kbltz(r, p, k, q, m, NULL);
-		return;
-	}
+	bn_null_all(n, _k, _m);
 
-	eb_mul_sim_plain(r, p, k, q, m, NULL);
+	RLC_TRY {
+		bn_new_all(n, _k, _m);
+
+		/* Reduce the scalars here to simplify the static functions. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
+
+		if (eb_curve_is_kbltz()) {
+			eb_mul_sim_kbltz(r, p, _k, q, _m, NULL);
+		} else {
+			eb_mul_sim_plain(r, p, _k, q, _m, NULL);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k, _m);
+	}
 }
 
 void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
+	bn_t n, _k, _m;
 	eb_t g;
-
-	eb_null(g);
 
 	if (bn_is_zero(k)) {
 		eb_mul(r, q, m);
@@ -298,29 +314,26 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		return;
 	}
 
+	eb_null(g);
+	bn_null_all(n, _k, _m);
+
 	RLC_TRY {
 		eb_new(g);
+		bn_new_all(n, _k, _m);
 
 		eb_curve_get_gen(g);
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
 #if EB_FIX == LWNAF && defined(EB_PRECO)
 		if (eb_curve_is_kbltz()) {
-			eb_mul_sim_kbltz(r, g, k, q, m, eb_curve_get_tab());
+			eb_mul_sim_kbltz(r, g, _k, q, _m, eb_curve_get_tab());
+		} else {
+			eb_mul_sim_plain(r, g, _k, q, _m, eb_curve_get_tab());
 		}
 #else
-		if (eb_curve_is_kbltz()) {
-			eb_mul_sim(r, g, k, q, m);
-		}
-#endif
-
-#if EB_FIX == LWNAF && defined(EB_PRECO)
-		if (!eb_curve_is_kbltz()) {
-			eb_mul_sim_plain(r, g, k, q, m, eb_curve_get_tab());
-		}
-#else
-		if (!eb_curve_is_kbltz()) {
-			eb_mul_sim(r, g, k, q, m);
-		}
+		eb_mul_sim(r, g, _k, q, _m);
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -328,14 +341,23 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 	}
 	RLC_FINALLY {
 		eb_free(g);
+		bn_free_all(n, _k, _m);
 	}
 }
 
 void eb_mul_sim_lot(eb_t r, const eb_t p[], const bn_t k[], int n) {
 	int i, j;
 	int8_t *naf = NULL;
-	eb_t *_p = RLC_ALLOCA(eb_t, n);
-	size_t l, *_l = RLC_ALLOCA(size_t, n);
+	eb_t *_p;
+	size_t l, *_l;
+
+	if (n == 0) {
+		eb_set_infty(r);
+		return;
+	}
+
+	_p = RLC_ALLOCA(eb_t, n);
+	_l = RLC_ALLOCA(size_t, n);
 
 	RLC_TRY {
 		l = 0;

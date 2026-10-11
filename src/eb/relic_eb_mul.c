@@ -70,14 +70,8 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		l = sizeof(tnaf);
 		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
 
-		n = tnaf[l - 1];
-		if (n > 0) {
-			eb_copy(r, t[n / 2]);
-		} else {
-			eb_neg(r, t[-n / 2]);
-		}
-
-		for (i = l - 2; i >= 0; i--) {
+		eb_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
 			eb_frb(r, r);
 
 			n = tnaf[i];
@@ -90,9 +84,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -136,12 +127,8 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		l = sizeof(naf);
 		bn_rec_naf(naf, &l, k, RLC_WIDTH);
 
-		n = naf[l - 1];
-		if (n > 0) {
-			eb_copy(r, t[n / 2]);
-		}
-
-		for (i = l - 2; i >= 0; i--) {
+		eb_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
 			eb_dbl(r, r);
 
 			n = naf[i];
@@ -154,9 +141,6 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -301,9 +285,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -358,9 +339,6 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_mul_odd_sum(r, t);
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -410,7 +388,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		eb_curve_get_ord(n);
 		bits = bn_bits(n);
 
-		bn_abs(t, k);
+		bn_mod(t, k, n);
 		bn_add(t, t, n);
 		bn_add(n, t, n);
 		dv_swap_sec(t->dp, n->dp, RLC_MAX(t->used, n->used),
@@ -529,9 +507,6 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		r->coord = BASIC;
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -544,20 +519,38 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 }
 
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
+	bn_t n, _k;
+
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-	if (eb_curve_is_kbltz()) {
-		eb_mul_ltnaf_imp(r, p, k);
-		return;
-	}
+	bn_null_all(n, _k);
 
-	eb_mul_lnaf_imp(r, p, k);
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		/* Reduce the scalar here to simplify the static functions. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		if (eb_curve_is_kbltz()) {
+			eb_mul_ltnaf_imp(r, p, _k);
+		} else {
+			eb_mul_lnaf_imp(r, p, _k);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
+	bn_t n, _k;
 	eb_t t;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
@@ -565,22 +558,30 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
+	bn_null_all(n, _k);
 	eb_null(t);
 
 	RLC_TRY {
+		bn_new_all(n, _k);
 		eb_new(t);
+
+		/* Reduce the scalar here to simplify the static functions. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
 		/* The method needs the input point in affine coordinates. */
 		eb_norm(t, p);
 		if (eb_curve_is_kbltz()) {
-			eb_mul_rtnaf_imp(r, t, k);
+			eb_mul_rtnaf_imp(r, t, _k);
 		} else {
-			eb_mul_rnaf_imp(r, t, k);
+			eb_mul_rnaf_imp(r, t, _k);
 		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free_all(n, _k);
 		eb_free(t);
 	}
 }
