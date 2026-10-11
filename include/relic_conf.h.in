@@ -200,8 +200,6 @@
 #define FP_PRIME @FP_PRIME@
 /** Number of Karatsuba steps. */
 #define FP_KARAT @FP_KARAT@
-/** Prefer Pseudo-Mersenne primes over random primes. */
-#cmakedefine FP_PMERS
 /** Use -1 as quadratic non-residue. */
 #cmakedefine FP_QNRES
 
