@@ -39,75 +39,44 @@
 /*============================================================================*/
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS];
-	rlc_align dig_t t[2 * RLC_FP_DIGS], r[RLC_FP_DIGS];
+	rlc_align dig_t q[2 * RLC_FP_DIGS], r[2 * RLC_FP_DIGS], t[2 * RLC_FP_DIGS];
 	const int *sform;
-	int len, first, i, j, k, b0, d0, b1, d1;
+	int len, i, j, b, d, bi, di;
 
+	/* Write m = 2^n - s, with the sparse terms of m in sform. */
 	sform = fp_prime_get_sps(&len);
+	RLC_RIP(b, d, sform[len - 1]);
 
-	RLC_RIP(b0, d0, sform[len - 1]);
-	first = (d0) + (b0 == 0 ? 0 : 1);
-
-	/* q = floor(a/b^k) */
-	dv_rshd(q, a, 2 * RLC_FP_DIGS, d0);
-	if (b0 > 0) {
-		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
-	}
-
-	/* r = a - qb^k. */
-	dv_copy(r, a, first);
-	if (b0 > 0) {
-		r[first - 1] &= RLC_MASK(b0);
-	}
-
-	k = 0;
-	while (!fp_is_zero(q)) {
-		dv_zero(_q, 2 * RLC_FP_DIGS);
-		for (i = len - 2; i > 0; i--) {
-			j = (sform[i] < 0 ? -sform[i] : sform[i]);
-			RLC_RIP(b1, d1, j);
-			dv_zero(t, 2 * RLC_FP_DIGS);
-			dv_lshd(t, q, 2 * RLC_FP_DIGS, d1);
-			if (b1 > 0) {
-				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, b1);
+	/* Fold q = floor(r/2^n) into r mod 2^n since 2^n = s mod m. */
+	dv_copy(r, a, 2 * RLC_FP_DIGS);
+	dv_rshd(q, r, 2 * RLC_FP_DIGS, d);
+	bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b);
+	while (!dv_is_zero(q, 2 * RLC_FP_DIGS)) {
+		r[d] &= RLC_MASK(b);
+		dv_zero(r + d + 1, 2 * RLC_FP_DIGS - d - 1);
+		/* The partial sums may wrap around, but r + q * s does not. */
+		for (i = 0; i < len - 1; i++) {
+			/* The first term is the constant +1 or -1, so its power is 0. */
+			j = (i == 0 ? 0 : (sform[i] < 0 ? -sform[i] : sform[i]));
+			RLC_RIP(bi, di, j);
+			dv_lshd(t, q, 2 * RLC_FP_DIGS, di);
+			if (bi > 0) {
+				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, bi);
 			}
-			/* Check if these two have the same sign. */
-			if ((sform[len - 2] < 0) == (sform[i] < 0)) {
-				bn_addn_low(_q, _q, t, 2 * RLC_FP_DIGS);
+			if (sform[i] < 0) {
+				bn_addn_low(r, r, t, 2 * RLC_FP_DIGS);
 			} else {
-				bn_subn_low(_q, _q, t, 2 * RLC_FP_DIGS);
+				bn_subn_low(r, r, t, 2 * RLC_FP_DIGS);
 			}
 		}
-		/* Check if these two have the same sign. */
-		if ((sform[len - 2] < 0) == (sform[0] < 0)) {
-			bn_addn_low(_q, _q, q, 2 * RLC_FP_DIGS);
-		} else {
-			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
-		}
-		dv_rshd(q, _q, 2 * RLC_FP_DIGS, d0);
-		if (b0 > 0) {
-			bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
-		}
-		if (b0 > 0) {
-			_q[first - 1] &= RLC_MASK(b0);
-		}
-		if (sform[len - 2] < 0) {
-			fp_addm_low(r, r, _q);
-		} else {
-			if (k++ % 2 == 0) {
-				if (fp_subn_low(r, r, _q)) {
-					fp_addn_low(r, r, m);
-				}
-			} else {
-				fp_addn_low(r, r, _q);
-			}
-		}
+		dv_rshd(q, r, 2 * RLC_FP_DIGS, d);
+		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b);
 	}
-	while (dv_cmp(r, m, RLC_FP_DIGS) != RLC_LT) {
+	/* Now r < 2^n < 2m. */
+	if (dv_cmp(r, m, RLC_FP_DIGS) != RLC_LT) {
 		fp_subn_low(r, r, m);
 	}
-	fp_copy(c, r);
+	dv_copy(c, r, RLC_FP_DIGS);
 }
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {

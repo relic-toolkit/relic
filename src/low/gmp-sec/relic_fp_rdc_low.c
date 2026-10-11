@@ -41,75 +41,50 @@
 /*============================================================================*/
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS];
-	rlc_align dig_t t[2 * RLC_FP_DIGS], r[RLC_FP_DIGS];
+	rlc_align dig_t q[2 * RLC_FP_DIGS], r[2 * RLC_FP_DIGS], t[2 * RLC_FP_DIGS];
 	const int *sform;
-	int len, first, i, j, k, b0, d0, b1, d1;
+	int len, i, j, b, d, e, k, l, n, bi, di;
+	dig_t borrow;
 
+	/* Write m = 2^n - s, with the sparse terms of m in sform. */
 	sform = fp_prime_get_sps(&len);
+	n = sform[len - 1];
+	RLC_RIP(b, d, n);
+	/* The largest power of 2 in s, so that s < 2^(e + 1). */
+	e = (len > 2 ? (sform[len - 2] < 0 ? -sform[len - 2] : sform[len - 2]) : 0);
 
-	RLC_RIP(b0, d0, sform[len - 1]);
-	first = (d0) + (b0 == 0 ? 0 : 1);
-
-	/* q = floor(a/b^k) */
-	dv_rshd(q, a, 2 * RLC_FP_DIGS, d0);
-	if (b0 > 0) {
-		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
+	/* Count the folds from the public bounds only. A fold takes r from l to
+	 * max(n, l - n + e + 1) + 1 bits; once l <= n + 1, two more folds bring r
+	 * below 2^n, since s < 2^(n - 1). */
+	for (k = 2, l = 2 * RLC_FP_DIGS * RLC_DIG; l > n + 1 && e + 2 < n; k++) {
+		l = RLC_MAX(n, l - n + e + 1) + 1;
 	}
 
-	/* r = a - qb^k. */
-	dv_copy(r, a, first);
-	if (b0 > 0) {
-		r[first - 1] &= RLC_MASK(b0);
-	}
-
-	k = 0;
-	while (!fp_is_zero(q)) {
-		dv_zero(_q, 2 * RLC_FP_DIGS);
-		for (i = len - 2; i > 0; i--) {
-			j = (sform[i] < 0 ? -sform[i] : sform[i]);
-			RLC_RIP(b1, d1, j);
-			dv_zero(t, 2 * RLC_FP_DIGS);
-			dv_lshd(t, q, 2 * RLC_FP_DIGS, d1);
-			if (b1 > 0) {
-				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, b1);
-			}
-			/* Check if these two have the same sign. */
-			if ((sform[len - 2] < 0) == (sform[i] < 0)) {
-				bn_addn_low(_q, _q, t, 2 * RLC_FP_DIGS);
+	/* Fold q = floor(r/2^n) into r mod 2^n since 2^n = s mod m. */
+	mpn_copyi((mp_ptr)r, (mp_srcptr)a, 2 * RLC_FP_DIGS);
+	for (; k > 0; k--) {
+		dv_rshd(q, r, 2 * RLC_FP_DIGS, d);
+		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b);
+		r[d] &= RLC_MASK(b);
+		mpn_zero((mp_ptr)r + d + 1, 2 * RLC_FP_DIGS - d - 1);
+		/* The partial sums may wrap around, but r + q * s does not. */
+		for (i = 0; i < len - 1; i++) {
+			/* The first term is the constant +1 or -1, so its power is 0. */
+			j = (i == 0 ? 0 : (sform[i] < 0 ? -sform[i] : sform[i]));
+			RLC_RIP(bi, di, j);
+			dv_lshd(t, q, 2 * RLC_FP_DIGS, di);
+			bn_lshb_low(t, t, 2 * RLC_FP_DIGS, bi);
+			if (sform[i] < 0) {
+				mpn_add_n((mp_ptr)r, (mp_srcptr)r, (mp_srcptr)t, 2 * RLC_FP_DIGS);
 			} else {
-				bn_subn_low(_q, _q, t, 2 * RLC_FP_DIGS);
-			}
-		}
-		/* Check if these two have the same sign. */
-		if ((sform[len - 2] < 0) == (sform[0] < 0)) {
-			bn_addn_low(_q, _q, q, 2 * RLC_FP_DIGS);
-		} else {
-			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
-		}
-		dv_rshd(q, _q, 2 * RLC_FP_DIGS, d0);
-		if (b0 > 0) {
-			bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
-		}
-		if (b0 > 0) {
-			_q[first - 1] &= RLC_MASK(b0);
-		}
-		if (sform[len - 2] < 0) {
-			fp_addm_low(r, r, _q);
-		} else {
-			if (k++ % 2 == 0) {
-				if (fp_subn_low(r, r, _q)) {
-					fp_addn_low(r, r, m);
-				}
-			} else {
-				fp_addn_low(r, r, _q);
+				mpn_sub_n((mp_ptr)r, (mp_srcptr)r, (mp_srcptr)t, 2 * RLC_FP_DIGS);
 			}
 		}
 	}
-	while (dv_cmp(r, m, RLC_FP_DIGS) != RLC_LT) {
-		fp_subn_low(r, r, m);
-	}
-	fp_copy(c, r);
+	/* Now r < 2^n < 2m, so subtract m in constant time if r >= m. */
+	borrow = mpn_sub_n((mp_ptr)t, (mp_srcptr)r, (mp_srcptr)m, RLC_FP_DIGS);
+	dv_copy_sec(r, t, RLC_FP_DIGS, borrow ^ 1);
+	mpn_copyi((mp_ptr)c, (mp_srcptr)r, RLC_FP_DIGS);
 }
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {

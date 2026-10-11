@@ -234,6 +234,8 @@
 #define QUICK    2
 /** Montgomery modular reduction. */
 #define MONTY    3
+/** Use implementation provided by the lower layer. */
+#define LOWER    7
 /** Chosen prime field reduction method. */
 #define FP_RDC   @FP_RDC@
 

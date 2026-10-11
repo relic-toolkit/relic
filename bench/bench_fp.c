@@ -451,6 +451,15 @@ static void arith(void) {
 		BENCH_END;
 	}
 
+#if FP_RDC == LOWER
+	BENCH_RUN("fp_rdc_lower") {
+		fp_rand(a);
+		fp_lsh(d, a, RLC_FP_BITS);
+		BENCH_ADD(fp_rdc_lower(c, d));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("fp_inv") {
 		dig_t b = 0;
 		fp_rand(a);

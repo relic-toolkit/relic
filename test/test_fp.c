@@ -756,6 +756,18 @@ static int reduction(void) {
 			}
 			TEST_END;
 		}
+
+#if FP_RDC == LOWER
+		TEST_CASE("lower modular reduction is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_muln_low(t, a, b);
+			dv_copy(u, t, 2 * RLC_FP_DIGS);
+			fp_rdc_quick(a, t);
+			fp_rdc_lower(b, u);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

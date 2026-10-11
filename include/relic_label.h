@@ -595,6 +595,7 @@
 #undef fp_rdc_monty_basic
 #undef fp_rdc_monty_comba
 #undef fp_rdc_quick
+#undef fp_rdc_lower
 #undef fp_inv_basic
 #undef fp_inv_binar
 #undef fp_inv_monty
@@ -696,6 +697,7 @@
 #define fp_rdc_monty_basic 	RLC_PREFIX(fp_rdc_monty_basic)
 #define fp_rdc_monty_comba 	RLC_PREFIX(fp_rdc_monty_comba)
 #define fp_rdc_quick 	RLC_PREFIX(fp_rdc_quick)
+#define fp_rdc_lower 	RLC_PREFIX(fp_rdc_lower)
 #define fp_inv_basic 	RLC_PREFIX(fp_inv_basic)
 #define fp_inv_binar 	RLC_PREFIX(fp_inv_binar)
 #define fp_inv_monty 	RLC_PREFIX(fp_inv_monty)

@@ -322,7 +322,7 @@ int fp_prime_get_2ad(void) {
 
 void fp_prime_set_dense(const bn_t p) {
 	fp_prime_set(p);
-#if FP_RDC == QUICK
+#if FP_RDC == QUICK || FP_RDC == LOWER
 	RLC_THROW(ERR_NO_CONFIG);
 #endif
 }
