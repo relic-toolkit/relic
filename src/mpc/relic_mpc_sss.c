@@ -39,19 +39,22 @@
 /*============================================================================*/
 int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t secret, const bn_t order,
         size_t k, size_t n) {
-    bn_t t, *a = RLC_ALLOCA(bn_t, k);
+    bn_t t, *a = NULL;
 
     if (k < 2 || n < k) {
+        return RLC_ERR;
+    }
+
+    /* Allocate after the early return, so that it does not leak. */
+    a = RLC_ALLOCA(bn_t, k);
+    if (a == NULL) {
+        RLC_THROW(ERR_NO_MEMORY);
         return RLC_ERR;
     }
 
     bn_null(t);
 
     RLC_TRY {
-        if (a == NULL) {
-            RLC_THROW(ERR_NO_MEMORY);
-        }
-
         bn_new(t);
         bn_null(a[0]);
         bn_new(a[0]);

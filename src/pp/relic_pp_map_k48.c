@@ -50,8 +50,8 @@
  */
 static void pp_mil_k48(fp48_t r, ep8_t *t, ep8_t *q, ep_t *p, int m, bn_t a) {
 	fp48_t l;
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep8_t *_q = RLC_ALLOCA(ep8_t, m);
+	ep_t *_p = NULL;
+	ep8_t *_q = NULL;
 	size_t len = bn_bits(a) + 1;
 	int i, j;
 	int8_t s[RLC_FP_BITS + 1];
@@ -60,13 +60,20 @@ static void pp_mil_k48(fp48_t r, ep8_t *t, ep8_t *q, ep_t *p, int m, bn_t a) {
 		return;
 	}
 
+	/* Allocate after the early return, so that it does not leak. */
+	_p = RLC_ALLOCA(ep_t, m);
+	_q = RLC_ALLOCA(ep8_t, m);
+	if (_p == NULL || _q == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	fp48_null(l);
 
 	RLC_TRY {
 		fp48_new(l);
-		if (_p == NULL || _q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
 			ep8_null(_q[j]);

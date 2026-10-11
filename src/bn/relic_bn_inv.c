@@ -63,19 +63,23 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	int i;
-	bn_t u, *t = RLC_ALLOCA(bn_t, n);
+	bn_t u, *t = NULL;
 
 	if (n == 0) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
+	/* Allocate after the early return, so that it does not leak. */
+	t = RLC_ALLOCA(bn_t, n);
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	bn_null(u);
 
 	RLC_TRY {
-		if (t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < (int)n; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
