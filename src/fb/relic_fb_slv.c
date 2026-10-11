@@ -70,6 +70,11 @@ void fb_slv_basic(fb_t c, const fb_t a) {
 }
 
 void fb_slv_quick(fb_t c, const fb_t a) {
+	if (fb_poly_get_slv() == NULL) {
+		/* Without the table of half-traces, compute them directly. */
+		fb_slv_basic(c, a);
+		return;
+	}
 	fb_slvn_low(c, a);
 	fb_add_dig(c, c, fb_trc(c));
 }

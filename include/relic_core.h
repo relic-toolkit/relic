@@ -164,8 +164,10 @@ typedef struct _ctx_t {
 	int fb_na, fb_nb, fb_nc;
 	/** Powers of z with non-zero traces. */
 	int fb_ta, fb_tb, fb_tc;
+#if FB_SLV == QUICK || !defined(STRIP)
 	/** Table of precomputed half-traces. */
 	fb_st fb_half[(RLC_DIG / 8 + 1) * RLC_FB_DIGS][16];
+#endif /* FB_SLV == QUICK */
 	/** Square root of z. */
 	fb_st fb_srz;
 #ifdef FB_PRECO

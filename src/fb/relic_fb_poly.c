@@ -99,6 +99,8 @@ static void find_trace(void) {
 	}
 }
 
+#if FB_SLV == QUICK || !defined(STRIP)
+
 /**
  * Precomputes half-traces for z^i with odd i.
  *
@@ -139,6 +141,8 @@ static void find_solve(void) {
 		fb_free(t0);
 	}
 }
+
+#endif
 
 /**
  * Precomputes the square root of z.
@@ -289,7 +293,9 @@ static void find_chain(void) {
 static void fb_poly_set(const fb_t f) {
 	fb_copy(core_get()->fb_poly, f);
 	find_trace();
+#if FB_SLV == QUICK || !defined(STRIP)
 	find_solve();
+#endif
 	find_srz();
 	find_chain();
 }
@@ -447,7 +453,11 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 }
 
 const dig_t *fb_poly_get_slv(void) {
+#if FB_SLV == QUICK || !defined(STRIP)
 	return (dig_t *)&(core_get()->fb_half);
+#else
+	return NULL;
+#endif
 }
 
 const int *fb_poly_get_chain(int *len) {

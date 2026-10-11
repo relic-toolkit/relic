@@ -505,7 +505,7 @@ void fb_poly_get_trc(int *a, int *b, int *c);
 /**
  * Returns the table of precomputed half-traces.
  *
- * @return the table of half-traces.
+ * @return the table of half-traces, or NULL if it is not kept.
  */
 const dig_t *fb_poly_get_slv(void);
 
