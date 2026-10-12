@@ -112,10 +112,12 @@
 	}																		\
 																			\
 	void C##_set_infty(C##_t p) {											\
+		/* The point (0 : 1 : 0) in homogeneous projective coordinates,		\
+		 * where the complete formulas need no special case for it. */		\
 		F##_zero(p->x);														\
-		F##_zero(p->y);														\
+		F##_set_dig(p->y, 1);												\
 		F##_zero(p->z);														\
-		p->coord = BASIC;													\
+		p->coord = PROJC;													\
 	}																		\
 																			\
 	void C##_copy(C##_t r, const C##_t p) {									\
@@ -332,7 +334,9 @@
 			}																\
 																			\
 			for (i = 0; i < n; i++) {										\
-				C##_norm_imp(r[i], r[i], 1);								\
+				if (!C##_is_infty(r[i])) {									\
+					C##_norm_imp(r[i], r[i], 1);							\
+				}															\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\

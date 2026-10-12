@@ -293,6 +293,38 @@ static int addition(void) {
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("point arithmetic in projective coordinates is complete") {
+			ep_rand(a);
+			ep_dbl_projc(a, a);
+			ep_neg(b, a);
+			/* c is the point at infinity in projective coordinates. */
+			ep_add_projc(c, a, b);
+			TEST_ASSERT(c->coord == PROJC && ep_is_infty(c), end);
+			ep_add_projc(d, c, a);
+			TEST_ASSERT(ep_cmp(d, a) == RLC_EQ, end);
+			ep_norm(e, a);
+			ep_add_projc(d, c, e);
+			TEST_ASSERT(ep_cmp(d, a) == RLC_EQ, end);
+			ep_add_projc(d, a, c);
+			TEST_ASSERT(ep_cmp(d, a) == RLC_EQ, end);
+			ep_dbl_projc(d, c);
+			TEST_ASSERT(ep_is_infty(d), end);
+			ep_tpl_projc(d, c);
+			TEST_ASSERT(ep_is_infty(d), end);
+			/* The same for the canonical representation (0 : 1 : 0). */
+			ep_set_infty(c);
+			ep_add_projc(d, c, a);
+			TEST_ASSERT(ep_cmp(d, a) == RLC_EQ, end);
+			ep_add_projc(d, e, c);
+			TEST_ASSERT(ep_cmp(d, a) == RLC_EQ, end);
+			ep_add_projc(d, c, c);
+			TEST_ASSERT(ep_is_infty(d), end);
+			ep_dbl_projc(d, c);
+			TEST_ASSERT(ep_is_infty(d), end);
+			ep_tpl_projc(d, c);
+			TEST_ASSERT(ep_is_infty(d), end);
+		} TEST_END;
+
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep_rand(a);
 			ep_rand(b);

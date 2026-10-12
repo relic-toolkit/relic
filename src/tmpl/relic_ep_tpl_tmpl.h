@@ -111,11 +111,8 @@
  */
 #define TMPL_EP_TPL_PROJC(C, F)												\
 	void C##_tpl_projc(C##_t r, const C##_t p) {							\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		C##_t q;															\
 																			\
 		C##_null(q);														\
