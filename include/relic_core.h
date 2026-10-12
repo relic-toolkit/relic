@@ -261,6 +261,8 @@ typedef struct _ctx_t {
 	fp_st ep_a;
 	/** The b-coefficient of the elliptic curve. */
 	fp_st ep_b;
+	/** The b-coefficient if it fits in a digit, zero otherwise. */
+	dig_t ep_b_dig;
 	/** The generator of the elliptic curve. */
 	ep_st ep_g;
 	/** The order of the group of points in the elliptic curve. */
