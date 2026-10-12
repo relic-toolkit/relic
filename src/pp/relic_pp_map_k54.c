@@ -197,16 +197,24 @@ void pp_map_sim_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m) {
 	bn_t a;
 	int i, j;
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep9_null(_q[i]);
+		ep9_null(t[i]);
+	}
+
 	RLC_TRY {
-		bn_null(a);
 		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep9_null(_q[i]);
-			ep9_null(t[i]);
 			ep_new(_p[i]);
 			ep9_new(_q[i]);
 			ep9_new(t[i]);

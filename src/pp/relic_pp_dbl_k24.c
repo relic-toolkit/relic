@@ -1,5 +1,5 @@
 /*
- * RELIC is an Efficient LIbrar->y for Cr->yptography
+ * RELIC is an Efficient LIbrary for Cryptography
  * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
@@ -75,7 +75,7 @@ void pp_dbl_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp2_free(s);
+		fp4_free(s);
 		ep4_free(t);
 	}
 }
@@ -170,6 +170,8 @@ void pp_dbl_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp_mul(l[0][1][0][1], p->y, t5[0][1]);
 		fp_mul(l[0][1][1][0], p->y, t5[1][0]);
 		fp_mul(l[0][1][1][1], p->y, t5[1][1]);
+
+		r->coord = PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

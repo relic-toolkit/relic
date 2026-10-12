@@ -176,7 +176,6 @@ void pp_dbl_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 
 void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_t t0, t1, t2, t3, t4, t5, t6;
-	dv2_t u0, u1;
 	int one = 1, zero = 0;
 
 	fp3_null(t0);
@@ -186,8 +185,6 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_null(t4);
 	fp3_null(t5);
 	fp3_null(t6);
-	dv2_null(u0);
-	dv2_null(u1);
 
 	RLC_TRY {
 		fp3_new(t0);
@@ -197,8 +194,6 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp3_new(t4);
 		fp3_new(t5);
 		fp3_new(t6);
-		dv2_new(u0);
-		dv2_new(u1);
 
 		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
@@ -276,8 +271,6 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp3_free(t4);
 		fp3_free(t5);
 		fp3_free(t6);
-		dv2_free(u0);
-		dv2_free(u1);
 	}
 }
 
@@ -292,6 +285,11 @@ void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_null(t4);
 	fp_null(t5);
 	fp_null(t6);
+
+	/* An M-type twist puts x_Q in w^4, and a D-type twist in w^2. */
+	if (ep3_curve_is_twist() == RLC_EP_DTYPE) {
+		two = 1;
+	}
 
 	RLC_TRY {
 		fp_new(t0);

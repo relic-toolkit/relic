@@ -57,13 +57,18 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 
 	fp2_null(l);
 
+	if (_q == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (j = 0; j < m; j++) {
+		ep_null(_q[j]);
+	}
+
 	RLC_TRY {
-		if (_q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		fp2_new(l);
 		for (j = 0; j < m; j++) {
-			ep_null(_q[j]);
 			ep_new(_q[j]);
 			ep_copy(t[j], p[j]);
 			ep_neg(_q[j], q[j]);
@@ -121,14 +126,19 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_null(l);
 	fp2_null(_l);
 
+	if (_q == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (j = 0; j < m; j++) {
+		ep_null(_q[j]);
+	}
+
 	RLC_TRY {
-		if (_q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		fp2_new(l);
 		fp2_new(_l);
 		for (j = 0; j < m; j++) {
-			ep_null(_q[j]);
 			ep_new(_q[j]);
 			ep_copy(t[j], p[j]);
 			ep_neg(_q[j], q[j]);
@@ -167,7 +177,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		fp2_free(l);
 		fp2_free(_l);
 		for (j = 0; j < m; j++) {
-			ep_null(_q[j]);
+			ep_free(_q[j]);
 		}
 		RLC_FREE(_q);
 	}
@@ -223,15 +233,23 @@ void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(_q[i]);
+		ep_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(_q[i]);
-			ep_null(t[i]);
 			ep_new(_p[i]);
 			ep_new(_q[i]);
 			ep_new(t[i]);
@@ -333,20 +351,29 @@ void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 
 	fp2_null(r0);
 	fp2_null(r1);
-	bn_null(r);
+	bn_null(n);
+
+	if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(_q[i]);
+		ep_null(t0[i]);
+		ep_null(t1[i]);
+	}
 
 	RLC_TRY {
 		fp2_new(r0);
 		fp2_new(r1);
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(_q[i]);
-			ep_null(t0[i]);
-			ep_null(t1[i]);
 			ep_new(_p[i]);
 			ep_new(_q[i]);
 			ep_new(t0[i]);

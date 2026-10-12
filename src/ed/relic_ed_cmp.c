@@ -84,8 +84,8 @@ int ed_cmp(const ed_t p, const ed_t q) {
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
-        ep_free(r);
-        ep_free(s);
+        ed_free(r);
+        ed_free(s);
     }
 
     return result;

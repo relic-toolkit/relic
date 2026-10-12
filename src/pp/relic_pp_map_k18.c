@@ -45,7 +45,7 @@
  * @param[out] t			- the resulting point.
  * @param[in] q				- the vector of first arguments in affine coordinates.
  * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
@@ -148,7 +148,7 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
  * @param[out] t			- the resulting point.
  * @param[in] p				- the first pairing argument in affine coordinates.
  * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) {
@@ -158,14 +158,18 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 
 	fp18_null(l);
 
-	RLC_TRY {
-		if (_q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		fp18_new(l);
+	if (_q == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
+	for (j = 0; j < m; j++) {
+		ep3_null(_q[j]);
+	}
+
+	RLC_TRY {
+		fp18_new(l);
 		for (j = 0; j < m; j++) {
-			ep3_null(_q[j]);
 			ep3_new(_q[j]);
 			ep_copy(t[j], p[j]);
 			ep3_neg(_q[j], q[j]);
@@ -289,8 +293,11 @@ void pp_map_tatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 
 		ep_norm(_p[0], p);
 		ep3_norm(_q[0], q);
-		fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-		fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+		/* Scale Q by 1/xi to untwist it, for M-type twists only. */
+		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+			fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
+			fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+		}
 		ep_curve_get_ord(n);
 		fp18_set_dig(r, 1);
 
@@ -318,15 +325,23 @@ void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(t[i]);
+		ep3_null(_q[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t[i]);
-			ep3_null(_q[i]);
 			ep_new(_p[i]);
 			ep_new(t[i]);
 			ep3_new(_q[i]);
@@ -337,8 +352,11 @@ void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
 				ep3_norm(_q[j], q[i]);
-				fp3_mul(_q[j]->x, _q[j]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[j]->y, _q[j]->y, core_get()->ep3_frb[2]);
+				/* Scale Q by 1/xi to untwist it, for M-type twists only. */
+				if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+					fp3_mul(_q[j]->x, _q[j]->x, core_get()->ep3_frb[2]);
+					fp3_mul(_q[j]->y, _q[j]->y, core_get()->ep3_frb[2]);
+				}
 				j++;
 			}
 		}
@@ -399,8 +417,11 @@ void pp_map_weilp_k18(fp18_t r, const ep_t p, const ep3_t q) {
 
 		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
 			pp_mil_k18(r1, t1, _q, _p, 1, n);
-			fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-			fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+			/* Scale Q by 1/xi to untwist it, for M-type twists only. */
+			if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+				fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
+				fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+			}
 			pp_mil_lit_k18(r0, t0, _p, _q, 1, n);
 			fp18_inv(r1, r1);
 			fp18_mul(r0, r0, r1);
@@ -435,18 +456,27 @@ void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 	fp18_null(r1);
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(t0[i]);
+		ep3_null(_q[i]);
+		ep3_null(t1[i]);
+	}
+
 	RLC_TRY {
 		fp18_new(r0);
 		fp18_new(r1);
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t0[i]);
-			ep3_null(_q[i]);
-			ep3_null(t1[i]);
 			ep_new(_p[i]);
 			ep_new(t0[i]);
 			ep3_new(_q[i]);
@@ -469,8 +499,11 @@ void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		if (j > 0) {
 			pp_mil_k18(r1, t1, _q, _p, j, n);
 			for (i = 0; i < j; i++) {
-				fp3_mul(_q[i]->x, _q[i]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[i]->y, _q[i]->y, core_get()->ep3_frb[2]);
+				/* Scale Q by 1/xi to untwist it, for M-type twists only. */
+				if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+					fp3_mul(_q[i]->x, _q[i]->x, core_get()->ep3_frb[2]);
+					fp3_mul(_q[i]->y, _q[i]->y, core_get()->ep3_frb[2]);
+				}
 			}
 			pp_mil_lit_k18(r0, t0, _p, _q, j, n);
 			fp18_inv(r1, r1);
@@ -577,16 +610,24 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 	bn_t a;
 	int i, j;
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep3_null(_q[i]);
+		ep3_null(t[i]);
+	}
+
 	RLC_TRY {
-		bn_null(a);
 		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep3_null(_q[i]);
-			ep3_null(t[i]);
 			ep_new(_p[i]);
 			ep3_new(_q[i]);
 			ep3_new(t[i]);

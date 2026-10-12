@@ -738,6 +738,10 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 
 	/* Constant-time, except for the first scalar copy. */
 
+	/* The subscalars are computed in full double precision. */
+	bn_grow(k0, 2 * RLC_FP_DIGS + 1);
+	bn_grow(k1, 2 * RLC_FP_DIGS + 1);
+
 	/* b1 = (k * v10) >> (bits + 1). */
 	dv_copy(_k, k->dp, k->used);
 	dv_copy(_v, v1[0].dp, v1[0].used);

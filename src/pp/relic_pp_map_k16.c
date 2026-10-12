@@ -45,7 +45,7 @@
  * @param[out] t			- the resulting point.
  * @param[in] q				- the vector of first arguments in affine coordinates.
  * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
@@ -148,7 +148,7 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
  * @param[out] t			- the resulting point.
  * @param[in] p				- the first pairing argument in affine coordinates.
  * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep4_t *q, int m, bn_t a) {
@@ -158,14 +158,18 @@ static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep4_t *q, int m, bn_t a) 
 
 	fp16_null(l);
 
-	RLC_TRY {
-		if (_q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		fp16_new(l);
+	if (_q == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
+	for (j = 0; j < m; j++) {
+		ep4_null(_q[j]);
+	}
+
+	RLC_TRY {
+		fp16_new(l);
 		for (j = 0; j < m; j++) {
-			ep4_null(_q[j]);
 			ep4_new(_q[j]);
 			ep_copy(t[j], p[j]);
 			ep4_neg(_q[j], q[j]);
@@ -296,15 +300,23 @@ void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(t[i]);
+		ep4_null(_q[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t[i]);
-			ep4_null(_q[i]);
 			ep_new(_p[i]);
 			ep_new(t[i]);
 			ep4_new(_q[i]);
@@ -409,18 +421,27 @@ void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 	fp16_null(r1);
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(t0[i]);
+		ep4_null(_q[i]);
+		ep4_null(t1[i]);
+	}
+
 	RLC_TRY {
 		fp16_new(r0);
 		fp16_new(r1);
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t0[i]);
-			ep4_null(_q[i]);
-			ep4_null(t1[i]);
 			ep_new(_p[i]);
 			ep_new(t0[i]);
 			ep4_new(_q[i]);
@@ -538,16 +559,24 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 	bn_t a;
 	int i, j;
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep4_null(_q[i]);
+		ep4_null(t[i]);
+	}
+
 	RLC_TRY {
-		bn_null(a);
 		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep4_null(_q[i]);
-			ep4_null(t[i]);
 			ep_new(_p[i]);
 			ep4_new(_q[i]);
 			ep4_new(t[i]);

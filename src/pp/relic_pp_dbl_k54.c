@@ -105,13 +105,10 @@ void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 		fp9_sqr(t1, q->y);
 		/* C = z1^2. */
 		fp9_sqr(t2, q->z);
-		/* D = 3bC, general b. */
+		/* D = 3bC, with b from the twisted curve. */
 		fp9_dbl(t3, t2);
 		fp9_add(t3, t3, t2);
-		fp9_zero(t4);
-		fp_copy(t4[1][0], ep_curve_get_b());
-
-		fp9_mul(t3, t3, t4);
+		fp9_mul(t3, t3, ep9_curve_get_b());
 		/* E = (x1 + y1)^2 - A - B. */
 		fp9_add(t4, q->x, q->y);
 		fp9_sqr(t4, t4);

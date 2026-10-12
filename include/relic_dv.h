@@ -72,9 +72,9 @@
  * Size in digits of a temporary vector.
  *
  * A temporary vector has enough size to store a multiplication/squaring result
- * produced by any module.
+ * produced by any module, plus one digit for the carry of Montgomery reduction.
  */
-#define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG), RLC_BN_SIZE))
+#define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG) + 1, RLC_BN_SIZE))
 
 /**
  * Size in bytes of a temporary vector.

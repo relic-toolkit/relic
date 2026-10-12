@@ -150,6 +150,8 @@ void pp_add_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p) {
 		fp_mul(l[1][1][1][0][1], p->y, t0[1][0][1]);
 		fp_mul(l[1][1][1][1][0], p->y, t0[1][1][0]);
 		fp_mul(l[1][1][1][1][1], p->y, t0[1][1][1]);
+
+		r->coord = PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

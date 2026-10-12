@@ -45,6 +45,7 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 	fp8_null(t1);
 	fp8_null(t2);
 	fp8_null(t3);
+	fp8_null(t4);
 	bn_null(x);
 	bn_null(t);
 

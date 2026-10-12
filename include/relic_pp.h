@@ -312,7 +312,7 @@
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
- * point on an elliptic curve with embedding degree 12 using projective
+ * point on an elliptic curve with embedding degree 8 using projective
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
@@ -709,7 +709,7 @@ void pp_add_k2_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
- * point on an elliptic curve with embedding degree 12 using projective
+ * point on an elliptic curve with embedding degree 2 using projective
  * coordinates.
  *
  * @param[out] l			- the result of the evaluation.
@@ -721,7 +721,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
- * point on an elliptic curve with embedding degree 12 using projective
+ * point on an elliptic curve with embedding degree 2 using projective
  * coordinates and lazy reduction.
  *
  * @param[out] l			- the result of the evaluation.

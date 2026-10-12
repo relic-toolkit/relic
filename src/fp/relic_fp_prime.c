@@ -716,7 +716,7 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 	dv_t t;
 	ctx_t *ctx = core_get();
 
-	bn_null(t);
+	dv_null(t);
 
 	RLC_TRY {
 		dv_new(t);

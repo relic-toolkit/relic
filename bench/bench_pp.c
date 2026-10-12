@@ -57,8 +57,8 @@ static void pairing1(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
-		ep_new(p[0]);
-		ep_new(q[0]);
+		ep_new(p[j]);
+		ep_new(q[j]);
 	}
 
 	ep_curve_get_ord(n);
@@ -184,8 +184,8 @@ static void pairing2(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
-		ep_new(p[0]);
-		ep_new(q[0]);
+		ep_new(p[j]);
+		ep_new(q[j]);
 	}
 
 	ep_curve_get_ord(n);

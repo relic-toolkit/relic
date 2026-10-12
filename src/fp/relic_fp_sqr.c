@@ -170,7 +170,7 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t);
+		dv_free(t);
 	}
 }
 
@@ -189,7 +189,7 @@ void fp_sqr_comba(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t);
+		dv_free(t);
 	}
 }
 

@@ -254,6 +254,7 @@ static int pairing1(void) {
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
+			pp_map_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_set_infty(p[0]);
 			pp_map_k1(e1, p[0], q[0]);
@@ -323,6 +324,7 @@ static int pairing1(void) {
 		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
+			pp_map_tatep_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_set_infty(p[0]);
 			pp_map_tatep_k1(e1, p[0], q[0]);
@@ -463,7 +465,7 @@ static int pairing1(void) {
 
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
-		ep2_free(q[j]);
+		ep_free(q[j]);
 	}
 
     return code;
@@ -908,7 +910,7 @@ static int pairing2(void) {
 
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
-		ep2_free(q[j]);
+		ep_free(q[j]);
 	}
 
     return code;

@@ -169,7 +169,6 @@ void pp_dbl_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 
 void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
-	dv4_t u0, u1;
 	int one = 1, zero = 0;
 
 	fp4_null(t0);
@@ -179,8 +178,6 @@ void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_null(t4);
 	fp4_null(t5);
 	fp4_null(t6);
-	dv4_null(u0);
-	dv4_null(u1);
 
 	RLC_TRY {
 		fp4_new(t0);
@@ -190,8 +187,6 @@ void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_new(t4);
 		fp4_new(t5);
 		fp4_new(t6);
-		dv4_new(u0);
-		dv4_new(u1);
 
 		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
@@ -260,8 +255,6 @@ void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_free(t4);
 		fp4_free(t5);
 		fp4_free(t6);
-		dv4_free(u0);
-		dv4_free(u1);
 	}
 }
 
@@ -286,47 +279,33 @@ void pp_dbl_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q) {
 		fp_new(t5);
 		fp_new(t6);
 
+		/* The tangent has slope (3X^2 + aZ^2)/(2YZ), so compute
+		 * t0 = 3X^2 + aZ^2, t3 = 3bZ^2 + 2aXZ, t1 = Y^2 and t5 = 2YZ. */
 		fp_sqr(t0, p->x);
-		fp_sqr(t1, p->y);
+		fp_dbl(t4, t0);
+		fp_add(t0, t0, t4);
 		fp_sqr(t2, p->z);
-
+		fp_mul(t4, ep_curve_get_a(), t2);
+		fp_add(t0, t0, t4);
 		fp_mul(t4, ep_curve_get_b(), t2);
-
 		fp_dbl(t3, t4);
 		fp_add(t3, t3, t4);
-
-		fp_add(t4, p->x, p->y);
-		fp_sqr(t4, t4);
-		fp_sub(t4, t4, t0);
-		fp_sub(t4, t4, t1);
-		fp_add(t5, p->y, p->z);
-		fp_sqr(t5, t5);
-		fp_sub(t5, t5, t1);
-		fp_sub(t5, t5, t2);
-		fp_dbl(t6, t3);
-		fp_add(t6, t6, t3);
-		fp_sub(r->x, t1, t6);
-		fp_mul(r->x, r->x, t4);
-		fp_add(r->y, t1, t6);
-		fp_sqr(r->y, r->y);
-		fp_sqr(t4, t3);
-		fp_dbl(t6, t4);
-		fp_add(t6, t6, t4);
+		fp_mul(t6, p->x, p->z);
+		fp_mul(t6, t6, ep_curve_get_a());
 		fp_dbl(t6, t6);
-		fp_dbl(t6, t6);
-		fp_sub(r->y, r->y, t6);
-		fp_mul(r->z, t1, t5);
-		fp_dbl(r->z, r->z);
-		fp_dbl(r->z, r->z);
-		r->coord = PROJC;
+		fp_add(t3, t3, t6);
+		fp_sqr(t1, p->y);
+		fp_mul(t5, p->y, p->z);
+		fp_dbl(t5, t5);
+		/* Double the point after reading it, since r may alias p. */
+		ep_dbl_projc(r, p);
 
 		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
 
-		fp4_dbl(l[zero][one], q->x);
-		fp4_add(l[zero][one], l[zero][one], q->x);
+		fp4_copy(l[zero][one], q->x);
 		fp_mul(l[zero][one][0][0], l[zero][one][0][0], t0);
 		fp_mul(l[zero][one][0][1], l[zero][one][0][1], t0);
 		fp_mul(l[zero][one][1][0], l[zero][one][1][0], t0);
@@ -338,7 +317,6 @@ void pp_dbl_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q) {
 		fp_mul(l[one][one][0][1], q->y[0][1], t5);
 		fp_mul(l[one][one][1][0], q->y[1][0], t5);
 		fp_mul(l[one][one][1][1], q->y[1][1], t5);
-
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -45,7 +45,7 @@
  * @param[out] t			- the resulting point.
  * @param[in] q				- the vector of first arguments in affine coordinates.
  * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k48(fp48_t r, ep8_t *t, ep8_t *q, ep_t *p, int m, bn_t a) {
@@ -196,16 +196,24 @@ void pp_map_sim_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m) {
 	bn_t a;
 	int i, j;
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep8_null(_q[i]);
+		ep8_null(t[i]);
+	}
+
 	RLC_TRY {
-		bn_null(a);
 		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep8_null(_q[i]);
-			ep8_null(t[i]);
 			ep_new(_p[i]);
 			ep8_new(_q[i]);
 			ep8_new(t[i]);

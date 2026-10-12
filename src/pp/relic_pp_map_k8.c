@@ -45,9 +45,8 @@
  * @param[out] t			- the resulting point.
  * @param[in] q				- the vector of first arguments in affine coordinates.
  * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
- * @param[in] s				- the loop parameter in sparse form.
- * @paramin] len			- the length of the loop parameter.
+ * @param[in] m 			- the number of pairings to evaluate.
+ * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k8(fp8_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 	fp8_t l;
@@ -155,7 +154,6 @@ void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q) {
 			pp_mil_k8(r, t, _q, _p, 1, a);
 			if (bn_sign(a) == RLC_NEG) {
 				fp8_inv_cyc(r, r);
-				ep2_neg(t[0], t[0]);
 			}
 			pp_exp_k8(r, r);
 		}
@@ -177,16 +175,24 @@ void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m) {
 	bn_t a;
 	int i, j;
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep2_null(_q[i]);
+		ep2_null(t[i]);
+	}
+
 	RLC_TRY {
-		bn_null(a);
 		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep2_null(_q[i]);
-			ep2_null(t[i]);
 			ep_new(_p[i]);
 			ep2_new(_q[i]);
 			ep2_new(t[i]);
@@ -208,7 +214,6 @@ void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m) {
 			pp_mil_k8(r, t, _q, _p, j, a);
 			if (bn_sign(a) == RLC_NEG) {
 				fp8_inv_cyc(r, r);
-				ep2_neg(t[i], t[i]);
 			}
 			pp_exp_k8(r, r);
 		}
@@ -220,8 +225,8 @@ void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m) {
 		bn_free(a);
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
-			ep4_free(_q[i]);
-			ep4_free(t[i]);
+			ep2_free(_q[i]);
+			ep2_free(t[i]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);

@@ -249,6 +249,11 @@ void pp_add_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_null(t2);
 	fp_null(t3);
 
+	/* An M-type twist puts x_Q in w^4, and a D-type twist in w^2. */
+	if (ep3_curve_is_twist() == RLC_EP_DTYPE) {
+		two = 1;
+	}
+
 	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);

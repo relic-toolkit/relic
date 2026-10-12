@@ -54,21 +54,23 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	size_t len = bn_bits(a) + 1;
 	int8_t b[RLC_FP_BITS + 1];
 
-	fp_null(l);
-	fp_null(m);
-	fp_null(s);
 	if (w == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
+	fp_null(l);
+	fp_null(m);
+	fp_null(s);
+	for (j = 0; j < n; j++) {
+		fp_null(w[j]);
+	}
+
 	RLC_TRY {
 		fp_new(l);
 		fp_new(m);
-		fp_new(w);
 		fp_new(s);
 		for (j = 0; j < n; j++) {
-			fp_null(w[j]);
 			fp_new(w[j]);
 			ep_copy(t[j], p[j]);
 			fp_set_dig(w[j], 1);
@@ -106,6 +108,7 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	RLC_FINALLY {
 		fp_free(l);
 		fp_free(m);
+		fp_free(s);
 		for (j = 0; j < n; j++) {
 			fp_free(w[j]);
 		}
@@ -127,6 +130,8 @@ void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 	bn_null(n);
 
 	RLC_TRY {
+		ep_new(_p[0]);
+		ep_new(_q[0]);
 		ep_new(t[0]);
 		bn_new(n);
 
@@ -159,15 +164,23 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 
 	bn_null(n);
 
+	if (_p == NULL || _q == NULL || t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(_q[i]);
+		ep_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(_q[i]);
-			ep_null(t[i]);
 			ep_new(_p[i]);
 			ep_new(_q[i]);
 			ep_new(t[i]);
@@ -272,20 +285,29 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 
 	fp_null(r0);
 	fp_null(r1);
-	bn_null(r);
+	bn_null(n);
+
+	if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < m; i++) {
+		ep_null(_p[i]);
+		ep_null(_q[i]);
+		ep_null(t0[i]);
+		ep_null(t1[i]);
+	}
 
 	RLC_TRY {
 		fp_new(r0);
 		fp_new(r1);
 		bn_new(n);
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(_q[i]);
-			ep_null(t0[i]);
-			ep_null(t1[i]);
 			ep_new(_p[i]);
 			ep_new(_q[i]);
 			ep_new(t0[i]);

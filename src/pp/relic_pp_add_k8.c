@@ -83,6 +83,7 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_null(t2);
 	fp2_null(t3);
 	fp2_null(t4);
+	fp2_null(t5);
 
 	RLC_TRY {
 		fp2_new(t0);
@@ -172,6 +173,7 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_null(t2);
 	fp2_null(t3);
 	fp2_null(t4);
+	fp2_null(t5);
 
 	RLC_TRY {
 		fp2_new(t0);

@@ -85,6 +85,7 @@ void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_null(t2);
 	fp4_null(t3);
 	fp4_null(t4);
+	fp4_null(t5);
 
 	RLC_TRY {
 		fp4_new(t0);
@@ -178,6 +179,7 @@ void pp_add_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_null(t2);
 	fp4_null(t3);
 	fp4_null(t4);
+	fp4_null(t5);
 
 	RLC_TRY {
 		fp4_new(t0);
