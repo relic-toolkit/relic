@@ -297,6 +297,231 @@
 	}
 
 /**
+ * Defines templates for the tau-adic methods on curves y^2 = x^3 + b with an
+ * endomorphism w(x, y) = (beta * x, y) of order 3, where tau = 1 - w: the map
+ * tau and the table of base digits times P and their images under tau, and
+ * separately the evaluation of e interleaved tau-adic NAFs or regular
+ * expansions given by bn_rec_etnaf() and bn_rec_retnaf(), the k-th on the
+ * k-th table.
+ *
+ * The map tau(P) = P - w(P) applies the 3-isogeny (X : Y : Z) ->
+ * (X(Y^2 + 3bZ^2) : Y(Y^2 - 9bZ^2) : Z(Y^2 - bZ^2)) from y^2 = x^3 + b to
+ * y^2 = x^3 - 27b and the isomorphism back that multiplies X by c1 = 1 - beta
+ * and Z by c3 = (1 - beta)^3. The formula is complete. In the table, entry
+ * i < s is the i-th base digit times P, entry s + i is its image under tau,
+ * and row 1 applies w to them, as w^2(x, y) = (-x - w(x), y) is cheap to
+ * recover. The entries are in affine coordinates.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_MUL_TW_TAB(C, F)											\
+	static void C##_tw_tau(C##_t r, const C##_t p, const F##_t c1,			\
+			const F##_t c3) {												\
+		F##_t t0, t1, t2, t3, t4;											\
+																			\
+		F##_null_all(t0, t1, t2, t3, t4);									\
+																			\
+		RLC_TRY {															\
+			F##_new_all(t0, t1, t2, t3, t4);								\
+																			\
+			F##_sqr(t0, p->y);												\
+			F##_sqr(t1, p->z);												\
+			C##_curve_mul_b(t1, t1);										\
+			F##_dbl(t2, t1);												\
+			F##_add(t2, t2, t1);											\
+			F##_add(t3, t0, t2);											\
+			F##_mul(t3, t3, p->x);											\
+			F##_mul(t3, t3, c1);											\
+			F##_dbl(t4, t2);												\
+			F##_add(t2, t2, t4);											\
+			F##_sub(t4, t0, t2);											\
+			F##_mul(t4, t4, p->y);											\
+			F##_sub(t0, t0, t1);											\
+			F##_mul(t0, t0, p->z);											\
+			F##_mul(r->z, t0, c3);											\
+			F##_copy(r->x, t3);												\
+			F##_copy(r->y, t4);												\
+			r->coord = PROJC;												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			F##_free_all(t0, t1, t2, t3, t4);								\
+		}																	\
+	}																		\
+																			\
+	static void C##_tw_tab(C##_t t[2][12], const C##_t p, int s,			\
+			const F##_t beta) {												\
+		F##_t c1, c3;														\
+		C##_t u;															\
+																			\
+		F##_null_all(c1, c3);												\
+		C##_null(u);														\
+																			\
+		RLC_TRY {															\
+			F##_new_all(c1, c3);											\
+			C##_new(u);														\
+																			\
+			F##_set_dig(c1, 1);												\
+			F##_sub(c1, c1, beta);											\
+			F##_sqr(c3, c1);												\
+			F##_mul(c3, c3, c1);											\
+																			\
+			/* Compute P, 2P, P + tau(P) and, for six bases, P - 2tau(P),	\
+			 * 2P + tau(P) and P + 2tau(P), keeping tau(P) and tau(2P) as	\
+			 * the first images. */											\
+			C##_norm(t[0][0], p);											\
+			C##_dbl_projc(t[0][1], t[0][0]);								\
+			C##_tw_tau(t[0][s], t[0][0], c1, c3);							\
+			C##_add_projc(t[0][2], t[0][0], t[0][s]);						\
+			C##_tw_tau(t[0][s + 1], t[0][1], c1, c3);						\
+			if (s == 6) {													\
+				C##_add_projc(t[0][4], t[0][1], t[0][s]);					\
+				C##_add_projc(t[0][5], t[0][0], t[0][s + 1]);				\
+				C##_neg(u, t[0][s + 1]);									\
+				C##_add_projc(t[0][3], t[0][0], u);							\
+			}																\
+			for (int i = 2; i < s; i++) {									\
+				C##_tw_tau(t[0][s + i], t[0][i], c1, c3);					\
+			}																\
+			C##_norm_sim(t[0] + 1, (const C##_t *)t[0] + 1, 2 * s - 1);		\
+																			\
+			for (int i = 0; i < 2 * s; i++) {								\
+				F##_mul(t[1][i]->x, t[0][i]->x, beta);						\
+				F##_copy(t[1][i]->y, t[0][i]->y);							\
+				F##_set_dig(t[1][i]->z, 1);									\
+				t[1][i]->coord = BASIC;										\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			F##_free_all(c1, c3);											\
+			C##_free(u);													\
+		}																	\
+	}
+
+#define TMPL_EP_MUL_TW_NAF(C, F)											\
+	static void C##_tw_naf(C##_t r, C##_t t[][2][12],						\
+			int8_t naf[][RLC_FP_BITS + 1], const size_t *len, int e) {		\
+		int d, f, j;														\
+		size_t l = 0;														\
+		C##_t q;															\
+																			\
+		C##_null(q);														\
+																			\
+		RLC_TRY {															\
+			C##_new(q);														\
+																			\
+			for (int i = 0; i < e; i++) {									\
+				l = RLC_MAX(l, len[i]);										\
+			}																\
+			/* Horner's rule in base 3: digit d at position i is multiplied	\
+			 * by tau^i = (-w)^m * 3^m * tau^(i - 2m) for m = i / 2, and the\
+			 * unit (-w)^m only changes the unit of the digit. */			\
+			C##_set_infty(r);												\
+			for (int m = ((int)l - 1) / 2; m >= 0 && l > 0; m--) {			\
+				C##_tpl(r, r);												\
+				for (int i = 2 * m; i < RLC_MIN(2 * m + 2, (int)l); i++) {	\
+					for (int k = 0; k < e; k++) {							\
+						if (i >= (int)len[k] || naf[k][i] == 0) {			\
+							continue;										\
+						}													\
+						d = naf[k][i] - 1;									\
+						f = (d % 3 + m) % 3;								\
+						j = d / 6 + 3 * (i - 2 * m);						\
+						/* w^2(x, y) = (-x - w(x), y). */					\
+						C##_copy(q, t[k][f & 1][j]);						\
+						if (f == 2) {										\
+							F##_add(q->x, q->x, t[k][1][j]->x);				\
+							F##_neg(q->x, q->x);							\
+						}													\
+						if (((d % 6) / 3) ^ (m & 1)) {						\
+							C##_neg(q, q);									\
+						}													\
+						C##_add(r, r, q);									\
+					}														\
+				}															\
+			}																\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free(q);													\
+		}																	\
+	}
+
+#define TMPL_EP_MUL_TW_REG(C, F)											\
+	static void C##_tw_reg(C##_t r, C##_t t[][2][12],						\
+			int8_t reg[][RLC_FP_BITS + 1], const int8_t *c, int len,		\
+			int e) {														\
+		int d, f, top = 3 * len;											\
+		dig_t s;															\
+		C##_t q, u;															\
+																			\
+		C##_null_all(q, u);													\
+																			\
+		RLC_TRY {															\
+			C##_new_all(q, u);												\
+																			\
+			/* Horner's rule in base 3 as in the NAF, now with a digit at	\
+			 * every position multiple of 3, read in constant time from the	\
+			 * table by scanning it, and complete formulas. */				\
+			F##_set_dig(u->z, 1);											\
+			u->coord = BASIC;												\
+			for (int m = top / 2; m >= 0; m--) {							\
+				if (m < top / 2) {											\
+					C##_tpl_projc(r, r);									\
+				}															\
+				for (int i = 2 * m; i <= RLC_MIN(2 * m + 1, top); i++) {	\
+					if (i % 3 != 0) {										\
+						continue;											\
+					}														\
+					for (int k = 0; k < e; k++) {							\
+						d = reg[k][i / 3];									\
+						f = (d % 3 + m) % 3;								\
+						s = ((d % 6) / 3) ^ (m & 1);						\
+						d = d / 6;											\
+						/* Select x, w(x) and y in the entries of the right	\
+						 * parity, then w^f(x) as w^2(x) = -x - w(x). */	\
+						for (int j = 0; j < 6; j++) {						\
+							int o = j + 6 * (i - 2 * m);					\
+							F##_copy_sec(u->x, t[k][0][o]->x, j == d);		\
+							F##_copy_sec(q->x, t[k][1][o]->x, j == d);		\
+							F##_copy_sec(u->y, t[k][0][o]->y, j == d);		\
+						}													\
+						F##_add(q->y, u->x, q->x);							\
+						F##_neg(q->y, q->y);								\
+						F##_copy_sec(u->x, q->x, f == 1);					\
+						F##_copy_sec(u->x, q->y, f == 2);					\
+						F##_neg(q->y, u->y);								\
+						F##_copy_sec(u->y, q->y, s);						\
+						if (m == top / 2 && k == 0) {						\
+							C##_copy(r, u);									\
+						} else {											\
+							C##_add_projc(r, r, u);							\
+						}													\
+					}														\
+				}															\
+			}																\
+			/* Undo the increments of the recodings. */						\
+			for (int k = 0; k < e; k++) {									\
+				C##_neg(u, t[k][0][0]);										\
+				C##_add_projc(q, r, u);										\
+				F##_copy_sec(r->x, q->x, c[k]);								\
+				F##_copy_sec(r->y, q->y, c[k]);								\
+				F##_copy_sec(r->z, q->z, c[k]);								\
+			}																\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free_all(q, u);												\
+		}																	\
+	}
+
+/**
  * Builds the table for the i-th subscalar of a simultaneous GLS
  * multiplication, applying the endomorphism to the previous table.
  *

@@ -874,6 +874,68 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
+#if EP_MUL == TWNAF || !defined(STRIP)
+		TEST_CASE("tau-adic naf point multiplication is correct") {
+			bn_zero(k);
+			ep_mul_twnaf(r, p, k);
+			TEST_ASSERT(ep_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep_mul_twnaf(r, p, k);
+			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
+			ep_rand(p);
+			ep_mul_twnaf(r, p, n);
+			TEST_ASSERT(ep_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep_mul(q, p, k);
+			ep_mul_twnaf(r, p, k);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep_mul_twnaf(r, p, k);
+			ep_neg(r, r);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep_mul_twnaf(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep_mul_twnaf(r, p, k);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == TWREG || !defined(STRIP)
+		TEST_CASE("regular tau-adic point multiplication is correct") {
+			bn_zero(k);
+			ep_mul_twreg(r, p, k);
+			TEST_ASSERT(ep_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep_mul_twreg(r, p, k);
+			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
+			ep_rand(p);
+			ep_mul_twreg(r, p, n);
+			TEST_ASSERT(ep_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep_mul(q, p, k);
+			ep_mul_twreg(r, p, k);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep_mul_twreg(r, p, k);
+			ep_neg(r, r);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep_mul_twreg(q, p, k);
+			/* Add a multiple of n beyond the bit length of the field. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep_mul_twreg(r, p, k);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
 		TEST_CASE("point multiplication by digit is correct") {
 			ep_mul_dig(r, p, 0);
 			TEST_ASSERT(ep_is_infty(r), end);

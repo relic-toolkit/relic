@@ -243,6 +243,121 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 TMPL_EC_MUL_REG_IMP(ep, RLC_FP_BITS);
 
+TMPL_EP_MUL_TW_TAB(ep, fp);
+TMPL_EP_MUL_TW_NAF(ep, fp);
+TMPL_EP_MUL_TW_REG(ep, fp);
+
+/**
+ * Decomposes k modulo the order n as k0 + k1 * w, for the cube root of unity
+ * w that the endomorphism multiplies points by.
+ */
+static void ep_tw_glv(bn_t k0, bn_t k1, const bn_t k) {
+	bn_t n;
+
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(n);
+		ep_curve_get_ord(n);
+		bn_mod(k0, k, n);
+		bn_rec_glv(k0, k1, k0, n, ep_curve_get_v1(), ep_curve_get_v2());
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+	}
+}
+
+static void ep_mul_twnaf_imp(ep_t r, const ep_t p, const bn_t k) {
+	int8_t naf[1][RLC_FP_BITS + 1];
+	size_t len[1] = { RLC_FP_BITS + 1 };
+	bn_t k0, k1;
+	ep_t t[1][2][12];
+
+	bn_null_all(k0, k1);
+
+	RLC_TRY {
+		bn_new_all(k0, k1);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 12; j++) {
+				ep_null(t[0][i][j]);
+				ep_new(t[0][i][j]);
+			}
+		}
+
+		ep_tw_glv(k0, k1, k);
+		bn_rec_etnaf(naf[0], &len[0], k0, k1);
+		ep_tw_tab(t[0], p, 3, ep_curve_get_beta());
+		ep_tw_naf(r, t, naf, len, 1);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free_all(k0, k1);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 12; j++) {
+				ep_free(t[0][i][j]);
+			}
+		}
+	}
+}
+
+static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
+	int8_t c[1], reg[1][RLC_FP_BITS + 1];
+	size_t l, len;
+	bn_t k0, k1;
+	ep_t t[1][2][12];
+
+	bn_null_all(k0, k1);
+
+	RLC_TRY {
+		bn_new_all(k0, k1);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 12; j++) {
+				ep_null(t[0][i][j]);
+				ep_new(t[0][i][j]);
+			}
+		}
+
+		/* The GLV decomposition rounds each coordinate of k in the basis
+		 * v1[1] + v1[2] * w, v2[1] + v2[2] * w with error below 3/4, so
+		 * |k0 + k1 * w| is at most 3/4 of the sum of the absolute values of
+		 * the basis vectors. With their norms below 2^l, this is at most
+		 * 1.5 * 2^(l/2), plus 1 for the increment of the recoding. Each step
+		 * subtracts a digit of norm at most 19 and divides by tau^3, of
+		 * absolute value sqrt(27), so after len steps the remainder is below
+		 * (1.5 * 2^(l/2) + 1) / 27^(len/2) + sqrt(19) / (sqrt(27) - 1). It is
+		 * below 2, hence a unit, when len > (l + 1.29) / log2(27). */
+		l = 0;
+		for (int i = 0; i < 2; i++) {
+			const bn_st *v = (i == 0 ? ep_curve_get_v1() : ep_curve_get_v2());
+			bn_sqr(k0, &v[1]);
+			bn_mul(k1, &v[1], &v[2]);
+			bn_sub(k0, k0, k1);
+			bn_sqr(k1, &v[2]);
+			bn_add(k0, k0, k1);
+			l = RLC_MAX(l, bn_bits(k0));
+		}
+		len = (l * 10000 + 13000 + 47548) / 47549;
+		if (len >= RLC_FP_BITS + 1) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
+
+		ep_tw_glv(k0, k1, k);
+		bn_rec_retnaf(reg[0], &c[0], len, k0, k1);
+		ep_tw_tab(t[0], p, 6, ep_curve_get_beta());
+		ep_tw_reg(r, t, reg, c, len, 1);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free_all(k0, k1);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 12; j++) {
+				ep_free(t[0][i][j]);
+			}
+		}
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -315,6 +430,34 @@ TMPL_EP_MUL_LWNAF(ep, glv);
 /* Conditional compilation of the function below was turned off because it
  * is used by the default for protected scalar multiplication in G1. */
 TMPL_EP_MUL_LWREG(ep, glv);
+
+void ep_mul_twnaf(ep_t r, const ep_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
+		ep_set_infty(r);
+		return;
+	}
+
+	if (!ep_curve_is_endom() || ep_curve_opt_a() != RLC_ZERO) {
+		ep_mul_lwnaf(r, p, k);
+		return;
+	}
+
+	ep_mul_twnaf_imp(r, p, k);
+}
+
+void ep_mul_twreg(ep_t r, const ep_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
+		ep_set_infty(r);
+		return;
+	}
+
+	if (!ep_curve_is_endom() || ep_curve_opt_a() != RLC_ZERO) {
+		ep_mul_lwreg(r, p, k);
+		return;
+	}
+
+	ep_mul_twreg_imp(r, p, k);
+}
 
 TMPL_EP_MUL_GEN(ep);
 

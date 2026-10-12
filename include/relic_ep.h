@@ -435,6 +435,10 @@ typedef iso_st *iso_t;
 #define ep_mul(R, P, K)		ep_mul_lwnaf(R, P, K)
 #elif EP_MUL == LWREG
 #define ep_mul(R, P, K)		ep_mul_lwreg(R, P, K)
+#elif EP_MUL == TWNAF
+#define ep_mul(R, P, K)		ep_mul_twnaf(R, P, K)
+#elif EP_MUL == TWREG
+#define ep_mul(R, P, K)		ep_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -1055,6 +1059,28 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the width-3 tau-adic
+ * NAF, with tau = 1 - w for the cube root of unity w of the endomorphism.
+ * Curves without such an endomorphism use the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep_mul_twnaf(ep_t r, const ep_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using a regular tau-adic
+ * recoding and complete formulas, in constant time and without exceptions.
+ * Curves without an endomorphism of order 3 use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep_mul_twreg(ep_t r, const ep_t p, const bn_t k);
 
 /**
  * Multiplies the generator of a prime elliptic curve by an integer.

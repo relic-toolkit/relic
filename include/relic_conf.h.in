@@ -416,6 +416,10 @@
 #define MONTY	 3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
+/** Left-to-right width-3 tau-adic NAF. */
+#define TWNAF	 8
+/** Left-to-right regular tau-adic recoding. */
+#define TWREG	 9
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
 

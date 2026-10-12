@@ -609,9 +609,9 @@ typedef iso2_st *iso2_t;
 #define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP_MUL == TWNAF
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == LWREG || EP_MUL == TWREG
 #define ep2_mul(R, P, K)		ep2_mul_lwreg(R, P, K)
 #endif
 
@@ -715,9 +715,9 @@ typedef iso2_st *iso2_t;
 #define ep3_mul(R, P, K)		ep3_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep3_mul(R, P, K)		ep3_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP_MUL == TWNAF
 #define ep3_mul(R, P, K)		ep3_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == LWREG || EP_MUL == TWREG
 #define ep3_mul(R, P, K)		ep3_mul_lwreg(R, P, K)
 #endif
 
@@ -805,9 +805,9 @@ typedef iso2_st *iso2_t;
 #define ep4_mul(R, P, K)		ep4_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP_MUL == TWNAF
 #define ep4_mul(R, P, K)		ep4_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == LWREG || EP_MUL == TWREG
 #define ep4_mul(R, P, K)		ep4_mul_lwreg(R, P, K)
 #endif
 
@@ -895,9 +895,9 @@ typedef iso2_st *iso2_t;
 #define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP_MUL == TWNAF
 #define ep8_mul(R, P, K)		ep8_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == LWREG || EP_MUL == TWREG
 #define ep8_mul(R, P, K)		ep8_mul_lwreg(R, P, K)
 #endif
 
@@ -985,9 +985,9 @@ typedef iso2_st *iso2_t;
 #define ep9_mul(R, P, K)		ep9_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep9_mul(R, P, K)		ep9_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP_MUL == TWNAF
 #define ep9_mul(R, P, K)		ep9_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == LWREG || EP_MUL == TWREG
 #define ep9_mul(R, P, K)		ep9_mul_lwreg(R, P, K)
 #endif
 

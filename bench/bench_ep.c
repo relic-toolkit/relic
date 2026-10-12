@@ -425,6 +425,22 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
+#if EP_MUL == TWNAF || !defined(STRIP)
+	BENCH_RUN("ep_mul_twnaf") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep_mul_twnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == TWREG || !defined(STRIP)
+	BENCH_RUN("ep_mul_twreg") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep_mul_twreg(q, p, k));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_gen(q, k));

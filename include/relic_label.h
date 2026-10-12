@@ -1054,6 +1054,8 @@
 #undef ep_mul_monty
 #undef ep_mul_lwnaf
 #undef ep_mul_lwreg
+#undef ep_mul_twnaf
+#undef ep_mul_twreg
 #undef ep_mul_gen
 #undef ep_mul_dig
 #undef ep_mul_cof
@@ -1146,6 +1148,8 @@
 #define ep_mul_monty 	RLC_PREFIX(ep_mul_monty)
 #define ep_mul_lwnaf 	RLC_PREFIX(ep_mul_lwnaf)
 #define ep_mul_lwreg 	RLC_PREFIX(ep_mul_lwreg)
+#define ep_mul_twnaf 	RLC_PREFIX(ep_mul_twnaf)
+#define ep_mul_twreg 	RLC_PREFIX(ep_mul_twreg)
 #define ep_mul_gen 	RLC_PREFIX(ep_mul_gen)
 #define ep_mul_dig 	RLC_PREFIX(ep_mul_dig)
 #define ep_mul_cof 	RLC_PREFIX(ep_mul_cof)
