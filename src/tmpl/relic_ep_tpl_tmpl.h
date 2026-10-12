@@ -58,7 +58,7 @@
 			/* t0 = A = 3x^2 + a */											\
 			F##_sqr(t0, p->x);												\
 			F##_mul_dig(t0, t0, 3);											\
-			F##_add(t0, t0, ep_curve_get_a());								\
+			F##_add(t0, t0, C##_curve_get_a());								\
 			/* t1 = B = 2y */												\
 			F##_dbl(t1, p->y);												\
 			/* t2 = B^2 = 4y^2 */											\
@@ -70,7 +70,7 @@
 			F##_add(t4, t4, t5);	/* t4 = 3xB^2 */						\
 			F##_sub(t3, t3, t4);    /* t3 = D (the denominator) */			\
 			if (F##_is_zero(t3)) {											\
-				ep_set_infty(r);											\
+				C##_set_infty(r);											\
 			} else {														\
 				/* t4 = Single Inversion = 1 / (B * D) */					\
 				F##_mul(t4, t1, t3);										\
@@ -93,9 +93,9 @@
 				F##_mul(t0, t0, t2);										\
 				F##_sub(r->y, t0, p->y);									\
 				F##_copy(r->x, t1);											\
+				F##_copy(r->z, p->z);										\
+				r->coord = BASIC;											\
 			}																\
-			F##_copy(r->z, p->z);											\
-			r->coord = BASIC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -204,7 +204,7 @@
 				F##_dbl(t4, t0);											\
 				F##_add(t4, t4, t0);										\
 				F##_sqr(t5, t2);											\
-				F##_mul(t5, t5, ep_curve_get_a());							\
+				F##_mul(t5, t5, C##_curve_get_a());							\
 				F##_add(t4, t4, t5);										\
 				/* t5 = MM = M^2 */											\
 				F##_sqr(t5, t4);											\
