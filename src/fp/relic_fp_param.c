@@ -435,7 +435,7 @@ void fp_param_set(int param) {
 				break;
 #elif FP_PRIME == 448
 			case PRIME_448:
-				/* p = 2^448 - 2^224 + 1. */
+				/* p = 2^448 - 2^224 - 1. */
 				f[0] = -1;
 				f[1] = -224;
 				f[2] = 448;

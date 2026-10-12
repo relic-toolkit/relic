@@ -63,7 +63,7 @@ int ed_upk(ed_t r, const ed_t p) {
 		fp_sub(t, t, core_get()->ed_a);
 		fp_inv(t, t);
 		fp_mul(u, u, t);
-		fp_srt(u, u);
+		result = fp_srt(u, u);
 
 		fp_norm(u, u);
 		fp_norm(r->x, p->x);
@@ -83,7 +83,7 @@ int ed_upk(ed_t r, const ed_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t);
+		fp_free_all(t, u);
 	}
 	return result;
 }

@@ -170,6 +170,122 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	}
 }
 
+/**
+ * Maps a field element to a point using Elligator 2 for p = 3 mod 4, following
+ * RFC 9380 with Z = -1 on the Montgomery curve K * t^2 = s^3 + J * s^2 + s and
+ * then the rational map x = s/t, y = (s - 1)/(s + 1) to the Edwards curve.
+ *
+ * @param[out] p			- the resulting point.
+ * @param[in] u				- the field element to map.
+ */
+static void ed_map_ell2_3mod4(ed_t p, const fp_t u) {
+	bn_t h;
+	fp_t tv1, x1, x2, y, s, t;
+	ctx_t *ctx = core_get();
+	/* Aliases to make the code easier to read. */
+	dig_t *c1 = ctx->ed_map_c[0];
+	dig_t *c2 = ctx->ed_map_c[1];
+	dig_t *k = ctx->ed_map_c[2];
+
+	bn_null(h);
+	fp_null_all(tv1, x1, x2, y, s, t);
+
+	RLC_TRY {
+		bn_new(h);
+		fp_new_all(tv1, x1, x2, y, s, t);
+
+		/* h = (p + 1) / 4. */
+		h->used = RLC_FP_DIGS;
+		h->sign = RLC_POS;
+		dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_add_dig(h, h, 1);
+		bn_rsh(h, h, 2);
+
+		/* tv1 = Z * u^2, set to zero when it equals -1. */
+		fp_sqr(tv1, u);
+		fp_neg(tv1, tv1);
+		fp_set_dig(t, 1);
+		fp_neg(t, t);
+		fp_zero(s);
+		fp_copy_sec(tv1, s, fp_cmp(tv1, t) == RLC_EQ);
+
+		/* x1 = -c1 / (tv1 + 1), gx1 = x1^3 + c1 * x1^2 + c2 * x1. */
+		fp_add_dig(x1, tv1, 1);
+		fp_inv(x1, x1);
+		fp_mul(x1, x1, c1);
+		fp_neg(x1, x1);
+		fp_add(s, x1, c1);
+		fp_mul(s, s, x1);
+		fp_add(s, s, c2);
+		fp_mul(s, s, x1);
+
+		/* x2 = -x1 - c1, and gx2 = tv1 * gx1. */
+		fp_add(x2, x1, c1);
+		fp_neg(x2, x2);
+
+		/* y1 = gx1^((p + 1)/4) is a square root of gx1 if gx1 is a square,
+		 * and otherwise u * y1 is a square root of gx2 = -u^2 * gx1. */
+		fp_exp(y, s, h);
+		fp_sqr(t, y);
+		{
+			const int e2 = (fp_cmp(t, s) == RLC_EQ);
+			fp_mul(t, y, u);
+			fp_copy_sec(y, t, !e2);
+			fp_copy_sec(x1, x2, !e2);
+
+			/* Choose the sign of y. */
+			fp_prime_back(h, y);
+			const int e3 = bn_get_bit(h, 0);
+			fp_neg(t, y);
+			fp_copy_sec(y, t, e2 ^ e3);
+		}
+
+		/* s = x * K, t = y * K. */
+		fp_mul(s, x1, k);
+		fp_mul(t, y, k);
+
+		/* X = s * (s + 1), Y = (s - 1) * t, Z = t * (s + 1). */
+		fp_add_dig(tv1, s, 1);
+		fp_sub_dig(p->y, s, 1);
+		fp_mul(p->y, p->y, t);
+		fp_mul(p->x, s, tv1);
+		fp_mul(p->z, t, tv1);
+		{
+			/* The exceptional cases map to the identity. */
+			const int e4 = fp_is_zero(p->z);
+			fp_set_dig(tv1, 1);
+			fp_zero(s);
+			fp_copy_sec(p->x, s, e4);
+			fp_copy_sec(p->y, tv1, e4);
+			fp_copy_sec(p->z, tv1, e4);
+		}
+
+#if ED_ADD == EXTND || ED_ADD == PROJC
+		p->coord = PROJC;
+#if ED_ADD == EXTND
+		/* Extended coordinates: T * Z == X * Y. */
+		fp_mul(p->t, p->x, p->y);
+		fp_mul(p->x, p->x, p->z);
+		fp_mul(p->y, p->y, p->z);
+		fp_sqr(p->z, p->z);
+#endif
+#else
+		fp_inv(tv1, p->z);
+		fp_mul(p->x, p->x, tv1);
+		fp_mul(p->y, p->y, tv1);
+		fp_set_dig(p->z, 1);
+		p->coord = BASIC;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT)
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		fp_free_all(tv1, x1, x2, y, s, t);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -203,26 +319,28 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 
 		/* first map invocation */
 		ED_MAP_CONVERT_BYTES(0);
-		ed_map_ell2_5mod8(p, t);
+		if (fp_prime_get_mod8() == 5) {
+			ed_map_ell2_5mod8(p, t);
+		} else {
+			ed_map_ell2_3mod4(p, t);
+		}
 
 		/* second map invocation */
 		ED_MAP_CONVERT_BYTES(1);
-		ed_map_ell2_5mod8(q, t);
+		if (fp_prime_get_mod8() == 5) {
+			ed_map_ell2_5mod8(q, t);
+		} else {
+			ed_map_ell2_3mod4(q, t);
+		}
 
 #undef ED_MAP_CONVERT_BYTES
 
 		ed_add(p, p, q);
 
-		/* clear cofactor */
-		switch (ed_param_get()) {
-			case CURVE_ED25519:
-				ed_dbl(p, p);
-				ed_dbl(p, p);
-				ed_dbl(p, p);
-				break;
-			default:
-				RLC_THROW(ERR_NO_VALID);
-				break;
+		/* Clear the cofactor, which is a power of two. */
+		ed_curve_get_cof(k);
+		for (int i = 1; i < bn_bits(k); i++) {
+			ed_dbl(p, p);
 		}
 
 		ed_norm(p, p);

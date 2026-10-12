@@ -50,7 +50,11 @@
  */
 enum {
 	/** ED25519 Edwards curve. */
-	CURVE_ED25519 = 1
+	CURVE_ED25519 = 1,
+	/** ED448 Edwards curve. */
+	CURVE_ED448,
+	/** E-521 Edwards curve. */
+	CURVE_ED521
 };
 
 /*============================================================================*/
