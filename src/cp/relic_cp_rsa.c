@@ -884,15 +884,6 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 		return 0;
 	}
 
-	/* Allocate after the early return, so that it does not leak. */
-	h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
-	h2 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN));
-	if (h1 == NULL || h2 == NULL) {
-		RLC_FREE(h1);
-		RLC_FREE(h2);
-		return 0;
-	}
-
 	pad_len = (!hash ? RLC_MD_LEN : msg_len);
 
 #if CP_RSAPD == PKCS2
@@ -911,6 +902,15 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 		return 0;
 	}
 #endif
+
+	/* Allocate after the early returns, so that they do not leak. */
+	h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
+	h2 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN));
+	if (h1 == NULL || h2 == NULL) {
+		RLC_FREE(h1);
+		RLC_FREE(h2);
+		return 0;
+	}
 
 	bn_null(m);
 	bn_null(eb);

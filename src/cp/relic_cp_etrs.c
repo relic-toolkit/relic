@@ -43,6 +43,13 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 	bn_t *_v = RLC_ALLOCA(bn_t, max);
 	int result = RLC_OK;
 
+	if (v == NULL || _v == NULL) {
+		RLC_FREE(v);
+		RLC_FREE(_v);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(l);
 	bn_null(u);
@@ -59,9 +66,6 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 		ec_new(w[1]);
 
 		ec_curve_get_ord(n);
-		if (_v == NULL || v == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < max; i++) {
 			bn_null(v[i]);
 			bn_null(_v[i]);
@@ -153,6 +157,15 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
 	ec_t *_t = RLC_ALLOCA(ec_t, d);
 
+	if (v == NULL || _v == NULL || _y == NULL || _t == NULL) {
+		RLC_FREE(v);
+		RLC_FREE(_v);
+		RLC_FREE(_y);
+		RLC_FREE(_t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(l);
 	bn_null(n);
 	bn_null(u);
@@ -165,9 +178,6 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		bn_new(u);
 		ec_new(w[0]);
 		ec_new(w[1]);
-		if (_y == NULL || _t == NULL || v == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < d; i++) {
 			bn_null(v[i]);
 			bn_null(_v[i]);
@@ -301,7 +311,7 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
 		const ec_t pp) {
-	int i, result = 0;
+	int i, result = RLC_ERR;
 	bn_t l, n, u, v;
 	ec_t t, w[2];
 
@@ -309,6 +319,14 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 	bn_t *_v = RLC_ALLOCA(bn_t, d);
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
 	ec_t *_t = RLC_ALLOCA(ec_t, d);
+
+	if (_v == NULL || _y == NULL || _t == NULL) {
+		RLC_FREE(_v);
+		RLC_FREE(_y);
+		RLC_FREE(_t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(l);
 	bn_null(n);
@@ -326,9 +344,6 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 		ec_new(t);
 		ec_new(w[0]);
 		ec_new(w[1]);
-		if (_v == NULL || _y == NULL || _t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < d; i++) {
 			bn_new(_v[i]);
 			bn_new(_y[i]);

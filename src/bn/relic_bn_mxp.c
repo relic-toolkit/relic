@@ -175,6 +175,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	tab = RLC_ALLOCA(bn_t, (1 << (w - 1)));
 	if (tab == NULL) {
+		RLC_FREE(win);
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
