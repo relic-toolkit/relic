@@ -1137,6 +1137,51 @@ TMPL_TEST_EPX(ep8, fp8)
 
 TMPL_TEST_EPX(ep9, fp9)
 
+static int tau2(void) {
+	int code = RLC_ERR;
+	bn_t n, k;
+	ep2_t p, q, r;
+
+	bn_null_all(n, k);
+	ep2_null_all(p, q, r);
+
+	RLC_TRY {
+		bn_new_all(n, k);
+		ep2_new_all(p, q, r);
+		ep2_curve_get_ord(n);
+
+		TEST_CASE("point tripling is correct") {
+			ep2_rand(p);
+			ep2_dbl(q, p);
+			ep2_add(q, q, p);
+			ep2_norm(q, q);
+			ep2_tpl_basic(r, p);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			ep2_tpl_projc(r, p);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			ep2_tpl_jacob(r, p);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			/* p in projective coordinates. */
+			ep2_dbl_projc(p, p);
+			ep2_tpl_projc(r, p);
+			ep2_norm(p, p);
+			ep2_tpl(q, p);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			ep2_set_infty(p);
+			ep2_tpl_projc(r, p);
+			TEST_ASSERT(ep2_is_infty(r), end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free_all(n, k);
+	ep2_free_all(p, q, r);
+	return code;
+}
+
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
@@ -1271,6 +1316,11 @@ int main(void) {
 		}
 
 		if (hashing2() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (tau2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

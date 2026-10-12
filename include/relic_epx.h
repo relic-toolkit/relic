@@ -583,6 +583,21 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Triples a point in an elliptic curve over a quadratic extension. Computes
+ * R = 3P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to triple.
+ */
+#if EP_ADD == BASIC
+#define ep2_tpl(R, P)			ep2_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep2_tpl(R, P)			ep2_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep2_tpl(R, P)			ep2_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a point in an elliptic curve over a quadratic extension field.
  * Computes R = [k]P.
  *
@@ -1369,6 +1384,33 @@ void ep2_dbl_projc(ep2_t r, const ep2_t p);
  * @param[in] p				- the point to double.
  */
 void ep2_dbl_jacob(ep2_t r, const ep2_t p);
+
+/**
+ * Triples a point represented in affine coordinates on an elliptic curve over
+ * a quadratic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep2_tpl_basic(ep2_t r, const ep2_t p);
+
+/**
+ * Triples a point represented in homogeneous projective coordinates on an
+ * elliptic curve over a quadratic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep2_tpl_projc(ep2_t r, const ep2_t p);
+
+/**
+ * Triples a point represented in Jacobian coordinates on an elliptic curve
+ * over a quadratic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep2_tpl_jacob(ep2_t r, const ep2_t p);
 
 /**
  * Multiplies a prime elliptic point by an integer using the binary method.

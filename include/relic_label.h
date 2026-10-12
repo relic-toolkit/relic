@@ -1478,6 +1478,9 @@
 #undef ep2_dbl_slp_basic
 #undef ep2_dbl_projc
 #undef ep2_dbl_jacob
+#undef ep2_tpl_basic
+#undef ep2_tpl_projc
+#undef ep2_tpl_jacob
 #undef ep2_mul_basic
 #undef ep2_mul_monty
 #undef ep2_mul_lwnaf
@@ -1547,6 +1550,9 @@
 #define ep2_dbl_slp_basic 	RLC_PREFIX(ep2_dbl_slp_basic)
 #define ep2_dbl_projc 	RLC_PREFIX(ep2_dbl_projc)
 #define ep2_dbl_jacob 	RLC_PREFIX(ep2_dbl_jacob)
+#define ep2_tpl_basic 	RLC_PREFIX(ep2_tpl_basic)
+#define ep2_tpl_projc 	RLC_PREFIX(ep2_tpl_projc)
+#define ep2_tpl_jacob 	RLC_PREFIX(ep2_tpl_jacob)
 #define ep2_mul_basic 	RLC_PREFIX(ep2_mul_basic)
 #define ep2_mul_monty 	RLC_PREFIX(ep2_mul_monty)
 #define ep2_mul_lwnaf 	RLC_PREFIX(ep2_mul_lwnaf)

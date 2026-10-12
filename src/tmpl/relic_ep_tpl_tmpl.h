@@ -58,7 +58,7 @@
 			/* t0 = A = 3x^2 + a */											\
 			F##_sqr(t0, p->x);												\
 			F##_mul_dig(t0, t0, 3);											\
-			F##_add(t0, t0, ep_curve_get_a());								\
+			F##_add(t0, t0, C##_curve_get_a());								\
 			/* t1 = B = 2y */												\
 			F##_dbl(t1, p->y);												\
 			/* t2 = B^2 = 4y^2 */											\
@@ -70,7 +70,7 @@
 			F##_add(t4, t4, t5);	/* t4 = 3xB^2 */						\
 			F##_sub(t3, t3, t4);    /* t3 = D (the denominator) */			\
 			if (F##_is_zero(t3)) {											\
-				ep_set_infty(r);											\
+				C##_set_infty(r);											\
 			} else {														\
 				/* t4 = Single Inversion = 1 / (B * D) */					\
 				F##_mul(t4, t1, t3);										\
@@ -116,18 +116,73 @@
 			return;															\
 		}																	\
 																			\
+		F##_t t0, t1, t2, t3, t4;											\
 		C##_t q;															\
 																			\
+		F##_null_all(t0, t1, t2, t3, t4);									\
 		C##_null(q);														\
 																			\
 		RLC_TRY {															\
-			/* No particularly efficient formula is known, so reuse. */		\
+			F##_new_all(t0, t1, t2, t3, t4);								\
 			C##_new(q);														\
-			C##_dbl_projc(q, p);											\
-			C##_add_projc(r, q, p);											\
+																			\
+			if (C##_curve_opt_a() == RLC_ZERO) {							\
+				/* Complete formula 3P = f'(f(P)), with the 3-isogeny		\
+				 * f(X : Y : Z) = (X(Y^2 + 3bZ^2) : Y(Y^2 - 9bZ^2) :		\
+				 * Z(Y^2 - bZ^2)) from y^2 = x^3 + b to y^2 = x^3 - 27b,	\
+				 * the same map f' to y^2 = x^3 + 729b and then the			\
+				 * isomorphism (X : Y : Z) -> (3X : Y : 27Z) back.			\
+				 * Cost of 6M + 4S + 2m_b. */								\
+				F##_sqr(t0, p->y);											\
+				F##_sqr(t1, p->z);											\
+				C##_curve_mul_b(t1, t1);									\
+				F##_dbl(t2, t1);											\
+				F##_add(t2, t2, t1);										\
+				F##_add(t3, t0, t2);										\
+				F##_mul(t3, t3, p->x);										\
+				F##_dbl(t4, t2);											\
+				F##_add(t2, t4, t2);										\
+				F##_sub(t4, t0, t2);										\
+				F##_mul(t4, t4, p->y);										\
+				F##_sub(t0, t0, t1);										\
+				F##_mul(t0, t0, p->z);										\
+				/* With u = 27bZ^2 = 3b(3Z)^2 on f(P), f' multiplies X,		\
+				 * Y and Z by Y^2 - 3u, Y^2 + 9u and Y^2 + u, and the		\
+				 * results are scaled as 3X = X(3Y^2 - 9u) and				\
+				 * 27Z = 9 * 3Z(Y^2 + u). */								\
+				F##_dbl(t2, t0);											\
+				F##_add(t0, t0, t2);										\
+				F##_sqr(t1, t4);											\
+				F##_sqr(t2, t0);											\
+				C##_curve_mul_b(t2, t2);									\
+				F##_dbl(r->x, t2);											\
+				F##_add(t2, t2, r->x);										\
+				F##_add(r->z, t1, t2);										\
+				F##_mul(r->z, r->z, t0);									\
+				for (int i = 0; i < 2; i++) {								\
+					F##_dbl(r->x, t2);										\
+					F##_add(t2, t2, r->x);									\
+				}															\
+				F##_add(r->y, t1, t2);										\
+				F##_mul(r->y, r->y, t4);									\
+				F##_dbl(r->x, t1);											\
+				F##_add(r->x, r->x, t1);									\
+				F##_sub(r->x, r->x, t2);									\
+				F##_mul(r->x, r->x, t3);									\
+				for (int i = 0; i < 2; i++) {								\
+					F##_dbl(t0, r->z);										\
+					F##_add(r->z, r->z, t0);								\
+				}															\
+				r->coord = PROJC;											\
+			} else {														\
+				/* No particularly efficient formula is known, so reuse. */	\
+				C##_dbl_projc(q, p);										\
+				C##_add_projc(r, q, p);										\
+			}																\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
+			F##_free_all(t0, t1, t2, t3, t4);								\
 			C##_free(q);													\
 		}																	\
 	}																		\
@@ -204,7 +259,7 @@
 				F##_dbl(t4, t0);											\
 				F##_add(t4, t4, t0);										\
 				F##_sqr(t5, t2);											\
-				F##_mul(t5, t5, ep_curve_get_a());							\
+				F##_mul(t5, t5, C##_curve_get_a());							\
 				F##_add(t4, t4, t5);										\
 				/* t5 = MM = M^2 */											\
 				F##_sqr(t5, t4);											\
