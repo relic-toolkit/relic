@@ -787,6 +787,25 @@ void ep_set_infty(ep_t p);
 void ep_copy(ep_t r, const ep_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the prime elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep_copy_sec(ep_t r, const ep_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep_swap_sec(ep_t p, ep_t q, dig_t bit);
+
+/**
  * Compares two prime elliptic curve points.
  *
  * @param[in] p				- the first prime elliptic curve point.

@@ -351,7 +351,7 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_EP_MUL_MONTY(C, F)												\
+#define TMPL_EP_MUL_MONTY(C)												\
 	void C##_mul_monty(C##_t r, const C##_t p, const bn_t k) {				\
 		C##_t t[2];															\
 		bn_t n, l, _k;														\
@@ -391,24 +391,10 @@
 																			\
 			for (int i = bits - 1; i >= 0; i--) {							\
 				int j = bn_get_bit(l, i);									\
-				for (size_t c = 0; c < sizeof(F##_t) / sizeof(fp_t); c++) {	\
-					dv_swap_sec(((fp_t *)t[0]->x)[c], ((fp_t *)t[1]->x)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-					dv_swap_sec(((fp_t *)t[0]->y)[c], ((fp_t *)t[1]->y)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-					dv_swap_sec(((fp_t *)t[0]->z)[c], ((fp_t *)t[1]->z)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-				}															\
+				C##_swap_sec(t[0], t[1], j ^ 1);							\
 				C##_add(t[0], t[0], t[1]);									\
 				C##_dbl(t[1], t[1]);										\
-				for (size_t c = 0; c < sizeof(F##_t) / sizeof(fp_t); c++) {	\
-					dv_swap_sec(((fp_t *)t[0]->x)[c], ((fp_t *)t[1]->x)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-					dv_swap_sec(((fp_t *)t[0]->y)[c], ((fp_t *)t[1]->y)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-					dv_swap_sec(((fp_t *)t[0]->z)[c], ((fp_t *)t[1]->z)[c],	\
-							RLC_FP_DIGS, j ^ 1);							\
-				}															\
+				C##_swap_sec(t[0], t[1], j ^ 1);							\
 			}																\
 																			\
 			C##_norm(r, t[0]);												\
@@ -429,7 +415,7 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_EP_MUL_REG_IMP(C, F)											\
+#define TMPL_EP_MUL_REG_IMP(C)												\
 	static void C##_mul_reg_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		bn_t m, o;															\
 		int i, j, n, even, neg;												\
@@ -465,8 +451,6 @@
 			l = RLC_CEIL(n, RLC_WIDTH - 1) + 1;								\
 			bn_rec_reg(reg, &l, m, n, RLC_WIDTH);							\
 																			\
-			F##_set_dig(u->z, 1);											\
-			u->coord = BASIC;												\
 			C##_set_infty(r);												\
 			for (i = l - 1; i >= 0; i--) {									\
 				for (j = 0; j < RLC_WIDTH - 1; j++) {						\
@@ -478,22 +462,19 @@
 				n = ((n ^ s) - s) >> 1;										\
 																			\
 				for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {				\
-					F##_copy_sec(u->x, t[j]->x, j == n);					\
-					F##_copy_sec(u->y, t[j]->y, j == n);					\
+					C##_copy_sec(u, t[j], j == n);							\
 				}															\
 				C##_neg(v, u);												\
-				F##_copy_sec(u->y, v->y, s != 0);							\
+				C##_copy_sec(u, v, s != 0);									\
 				C##_add(r, r, u);											\
 			}																\
 			/* t[0] has an unmodified copy of p. */							\
 			C##_sub(u, r, t[0]);											\
-			F##_copy_sec(r->x, u->x, even);									\
-			F##_copy_sec(r->y, u->y, even);									\
-			F##_copy_sec(r->z, u->z, even);									\
+			C##_copy_sec(r, u, even);										\
 			/* Convert r to affine coordinates. */							\
 			C##_norm(r, r);													\
 			C##_neg(u, r);													\
-			F##_copy_sec(r->y, u->y, neg);									\
+			C##_copy_sec(r, u, neg);										\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -1123,17 +1104,17 @@
 	TMPL_EP_MUL_GLS_IMP_##G(C, S)											\
 	TMPL_EP_MUL_REG_GLS(C, F, S, T)											\
 	TMPL_EP_MUL_NAF_IMP(C)													\
-	TMPL_EP_MUL_REG_IMP(C, F)												\
+	TMPL_EP_MUL_REG_IMP(C)													\
 	TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)											\
 	TMPL_EP_MUL_SIM_PLAIN(C)												\
 	TMPL_EC_MUL_BASIC(C)													\
-	TMPL_EP_MUL_MONTY(C, F)													\
+	TMPL_EP_MUL_MONTY(C)													\
 	TMPL_EP_MUL_LWNAF(C, gls)												\
 	TMPL_EP_MUL_LWREG(C, gls)												\
 	TMPL_EP_MUL_GEN(C)														\
 	TMPL_EC_MUL_DIG(C)														\
 	TMPL_EC_MUL_FIX_BASIC(C, plain)											\
-	TMPL_EC_MUL_FIX_LWREG(C, F, plain, 1, RLC_FP_BITS)						\
+	TMPL_EC_MUL_FIX_LWREG(C, plain, 1, RLC_FP_BITS)							\
 	TMPL_EC_MUL_COMBD(C)													\
 	TMPL_EP_MUL_SIM(C)														\
 	TMPL_EP_MUL_SIM_GEN(C)													\

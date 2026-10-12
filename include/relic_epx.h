@@ -1165,6 +1165,25 @@ void ep2_set_infty(ep2_t p);
 void ep2_copy(ep2_t r, const ep2_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep2_copy_sec(ep2_t r, const ep2_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep2_swap_sec(ep2_t p, ep2_t q, dig_t bit);
+
+/**
  * Compares two elliptic curve points.
  *
  * @param[in] p				- the first elliptic curve point.
@@ -1735,6 +1754,25 @@ void ep3_set_infty(ep3_t p);
 void ep3_copy(ep3_t r, const ep3_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep3_copy_sec(ep3_t r, const ep3_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep3_swap_sec(ep3_t p, ep3_t q, dig_t bit);
+
+/**
  * Compares two elliptic curve points.
  *
  * @param[in] p				- the first elliptic curve point.
@@ -2282,6 +2320,25 @@ void ep4_set_infty(ep4_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep4_copy(ep4_t r, const ep4_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep4_copy_sec(ep4_t r, const ep4_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep4_swap_sec(ep4_t p, ep4_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.
@@ -2833,6 +2890,25 @@ void ep8_set_infty(ep8_t p);
 void ep8_copy(ep8_t r, const ep8_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep8_copy_sec(ep8_t r, const ep8_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep8_swap_sec(ep8_t p, ep8_t q, dig_t bit);
+
+/**
  * Compares two elliptic curve points.
  *
  * @param[in] p				- the first elliptic curve point.
@@ -3373,6 +3449,25 @@ void ep9_set_infty(ep9_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep9_copy(ep9_t r, const ep9_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep9_copy_sec(ep9_t r, const ep9_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep9_swap_sec(ep9_t p, ep9_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.

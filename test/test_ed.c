@@ -303,6 +303,30 @@ int addition(void) {
 			ed_norm(e, e);
 			TEST_ASSERT(ed_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
+			ed_rand(a);
+			ed_rand(b);
+			/* a in projective, b in affine coordinates. */
+			ed_add_projc(a, a, b);
+			ed_add_projc(d, a, b);
+			/* a in affine coordinates. */
+			ed_norm(a, a);
+			ed_add(e, a, b);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z1 = 1) is correct") {
+			ed_rand(a);
+			ed_rand(b);
+			/* a in affine, b in projective coordinates. */
+			ed_add_projc(b, b, a);
+			ed_add_projc(d, a, b);
+			/* b in affine coordinates. */
+			ed_norm(b, b);
+			ed_add(e, a, b);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
 #elif ED_ADD == EXTND
 		TEST_CASE("point addition in extended coordinates is correct") {
 			ed_rand(a);
@@ -319,6 +343,30 @@ int addition(void) {
 			ed_add(e, a, b);
 			ed_norm(e, e);
 			TEST_ASSERT(ed_cmp(e, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
+			ed_rand(a);
+			ed_rand(b);
+			/* a in extended, b in affine coordinates. */
+			ed_add_extnd(a, a, b);
+			ed_add_extnd(d, a, b);
+			/* a in affine coordinates. */
+			ed_norm(a, a);
+			ed_add(e, a, b);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z1 = 1) is correct") {
+			ed_rand(a);
+			ed_rand(b);
+			/* a in affine, b in extended coordinates. */
+			ed_add_extnd(b, b, a);
+			ed_add_extnd(d, a, b);
+			/* b in affine coordinates. */
+			ed_norm(b, b);
+			ed_add(e, a, b);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -816,6 +864,43 @@ static int fixed(void) {
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_ED_TABLE_BASIC; i++) {
+			ed_free(t[i]);
+		}
+#endif
+
+#if ED_FIX == LWREG || !defined(STRIP)
+		for (int i = 0; i < RLC_ED_TABLE_LWREG; i++) {
+			ed_new(t[i]);
+		}
+		TEST_CASE("regular signed comb fixed point multiplication is correct") {
+			ed_rand(p);
+			ed_mul_pre_lwreg(t, p);
+			bn_zero(k);
+			ed_mul_fix_lwreg(r, (const ed_t *)t, k);
+			TEST_ASSERT(ed_is_infty(r), end);
+			ed_mul_fix_lwreg(r, (const ed_t *)t, n);
+			TEST_ASSERT(ed_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ed_mul_fix_lwreg(r, (const ed_t *)t, k);
+			TEST_ASSERT(ed_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ed_mul(r, p, k);
+			ed_mul_fix_lwreg(q, (const ed_t *)t, k);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ed_mul_fix_lwreg(r, (const ed_t *)t, k);
+			ed_neg(r, r);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ed_mul_fix_lwreg(q, (const ed_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ed_mul_fix_lwreg(r, (const ed_t *)t, k);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_ED_TABLE_LWREG; i++) {
 			ed_free(t[i]);
 		}
 #endif

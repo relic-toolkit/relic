@@ -31,84 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/**
- * Multiplies and adds two prime elliptic Edwards curve points simultaneously
- * by interleaving their w-NAFs. The integers must be reduced modulo the order.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the first point to multiply.
- * @param[in] k					- the first integer.
- * @param[in] q					- the second point to multiply.
- * @param[in] m					- the second integer.
- */
-static void ed_mul_sim_imp(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m) {
-	int i, n0, n1;
-	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
-	ed_t t0[1 << (RLC_WIDTH - 2)];
-	ed_t t1[1 << (RLC_WIDTH - 2)];
-	size_t l, l0, l1;
-
-	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-		ed_null(t0[i]);
-		ed_null(t1[i]);
-	}
-
-	RLC_TRY {
-		/* Compute the precomputation tables. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_new(t0[i]);
-			ed_new(t1[i]);
-		}
-		ed_tab(t0, p, RLC_WIDTH);
-		ed_tab(t1, q, RLC_WIDTH);
-
-		/* Compute the w-NAF representations of k and m. */
-		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, k, RLC_WIDTH);
-		bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
-
-		l = RLC_MAX(l0, l1);
-		_k = naf0 + l - 1;
-		_m = naf1 + l - 1;
-		ed_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
-			ed_dbl(r, r);
-
-			n0 = *_k;
-			n1 = *_m;
-			if (n0 > 0) {
-				ed_add(r, r, t0[n0 / 2]);
-			}
-			if (n0 < 0) {
-				ed_sub(r, r, t0[-n0 / 2]);
-			}
-			if (n1 > 0) {
-				ed_add(r, r, t1[n1 / 2]);
-			}
-			if (n1 < 0) {
-				ed_sub(r, r, t1[-n1 / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		ed_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation tables. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_free(t0[i]);
-			ed_free(t1[i]);
-		}
-	}
-}
+TMPL_EP_MUL_SIM_PLAIN(ed);
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -137,7 +66,7 @@ void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-		ed_mul_sim_imp(r, p, _k, q, _m);
+		ed_mul_sim_plain(r, p, _k, q, _m);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -147,32 +76,7 @@ void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	}
 }
 
-void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
-	ed_t g;
-
-	if (bn_is_zero(k)) {
-		ed_mul(r, q, m);
-		return;
-	}
-	if (bn_is_zero(m) || ed_is_infty(q)) {
-		ed_mul_gen(r, k);
-		return;
-	}
-
-	ed_null(g);
-
-	RLC_TRY {
-		ed_new(g);
-		ed_curve_get_gen(g);
-		ed_mul_sim(r, g, k, q, m);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(g);
-	}
-}
+TMPL_EP_MUL_SIM_GEN(ed);
 
 void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n) {
 	int i, j;

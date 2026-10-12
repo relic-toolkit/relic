@@ -38,7 +38,7 @@
 
 TMPL_EC_MUL_FIX_BASIC(eb, plain);
 
-TMPL_EC_MUL_FIX_LWREG(eb, fb, plain, 1, RLC_FB_BITS);
+TMPL_EC_MUL_FIX_LWREG(eb, plain, 1, RLC_FB_BITS);
 
 TMPL_EC_MUL_COMBD(eb);
 

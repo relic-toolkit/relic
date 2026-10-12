@@ -62,6 +62,12 @@ enum {
 #define RLC_ED_TABLE_BASIC	  (1 << RLC_DEPTH)
 
 /**
+ * Size of a precomputation table using the regular signed comb method: two
+ * combs and the point itself.
+ */
+#define RLC_ED_TABLE_LWREG	  ((1 << RLC_DEPTH) + 1)
+
+/**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_ED_TABLE_COMBD	  (1 << (RLC_DEPTH + 1))
@@ -71,6 +77,8 @@ enum {
  */
 #if ED_FIX == BASIC
 #define RLC_ED_TABLE			RLC_ED_TABLE_BASIC
+#elif ED_FIX == LWREG
+#define RLC_ED_TABLE			RLC_ED_TABLE_LWREG
 #elif ED_FIX == COMBD
 #define RLC_ED_TABLE			RLC_ED_TABLE_COMBD
 #endif
@@ -333,6 +341,25 @@ void ed_rhs(fp_t rhs, const fp_t p);
 void ed_copy(ed_t r, const ed_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the Edwards elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ed_copy_sec(ed_t r, const ed_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ed_swap_sec(ed_t p, ed_t q, dig_t bit);
+
+/**
  * Compares two Edwards elliptic curve points.
  *
  * @param[in] p			   - the first Edwards elliptic curve point.
@@ -517,6 +544,8 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  */
 #if ED_FIX == BASIC
 #define ed_mul_pre(T, P)	ed_mul_pre_basic(T, P)
+#elif ED_FIX == LWREG
+#define ed_mul_pre(T, P)	ed_mul_pre_lwreg(T, P)
 #elif ED_FIX == COMBD
 #define ed_mul_pre(T, P)	ed_mul_pre_combd(T, P)
 #endif
@@ -531,6 +560,8 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  */
 #if ED_FIX == BASIC
 #define ed_mul_fix(R, T, K) ed_mul_fix_basic(R, T, K)
+#elif ED_FIX == LWREG
+#define ed_mul_fix(R, T, K) ed_mul_fix_lwreg(R, T, K)
 #elif ED_FIX == COMBD
 #define ed_mul_fix(R, T, K) ed_mul_fix_combd(R, T, K)
 #endif
@@ -560,6 +591,15 @@ void ed_mul_pre_basic(ed_t *t, const ed_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed Edwards elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_lwreg(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed Edwards elliptic point
  * using the double-table comb method.
  *
  * @param[out] t			- the precomputation table.
@@ -576,6 +616,16 @@ void ed_mul_pre_combd(ed_t *t, const ed_t p);
  * @param[in] k				- the integer.
  */
 void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed Edwards elliptic point using a precomputation table and
+ * the regular signed comb method, in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_lwreg(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed Edwards elliptic point using a precomputation table and

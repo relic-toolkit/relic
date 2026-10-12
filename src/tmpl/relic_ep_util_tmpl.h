@@ -73,8 +73,8 @@
 
 /**
  * Defines a template for basic utilities: testing for and setting the
- * point at infinity, copying, sampling, blinding, validating, tabulating
- * multiples and printing points.
+ * point at infinity, copying, copying and swapping in constant time,
+ * sampling, blinding, validating, tabulating multiples and printing points.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -96,6 +96,17 @@
 		F##_copy(r->y, p->y);												\
 		F##_copy(r->z, p->z);												\
 		r->coord = p->coord;												\
+	}																		\
+																			\
+	void C##_copy_sec(C##_t r, const C##_t p, dig_t bit) {					\
+		/* Copy all coordinates and the coordinate system at once. */		\
+		dv_copy_sec((dig_t *)r, (const dig_t *)p,							\
+			sizeof(C##_st) / sizeof(dig_t), bit);							\
+	}																		\
+																			\
+	void C##_swap_sec(C##_t p, C##_t q, dig_t bit) {						\
+		dv_swap_sec((dig_t *)p, (dig_t *)q,									\
+			sizeof(C##_st) / sizeof(dig_t), bit);							\
 	}																		\
 																			\
 	void C##_rand(C##_t p) {												\

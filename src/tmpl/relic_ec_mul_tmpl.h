@@ -285,7 +285,7 @@
  * @param[in] S			- the dimension of the decomposition, 2 or 1.
  * @param[in] B			- the size in bits of the field, which bounds the order.
  */
-#define TMPL_EC_MUL_FIX_LWREG(C, F, E, S, B)									\
+#define TMPL_EC_MUL_FIX_LWREG(C, E, S, B)									\
 	void C##_mul_pre_lwreg(C##_t *t, const C##_t p) {						\
 		const int h = 1 << (RLC_DEPTH - 1);									\
 		const int dim = TMPL_EP_MUL_FIX_DIM_##E(S);							\
@@ -418,8 +418,6 @@
 				dv_copy(d[j], _k[j]->dp, _k[j]->used);						\
 			}																\
 																			\
-			F##_set_dig(q->z, 1);											\
-			q->coord = BASIC;												\
 			C##_set_infty(r);												\
 			for (i = s - 1; i >= 0; i--) {									\
 				if (i != s - 1) {											\
@@ -439,11 +437,10 @@
 						/* A negative top tooth flips all the signs. */		\
 						e ^= (top - 1) & (h - 1);							\
 						for (int z = 0; z < h; z++) {						\
-							F##_copy_sec(q->x, t[c * h + z]->x, z == e);	\
-							F##_copy_sec(q->y, t[c * h + z]->y, z == e);	\
+							C##_copy_sec(q, t[c * h + z], z == e);			\
 						}													\
 						C##_neg(v, q);										\
-						F##_copy_sec(q->y, v->y, (top == 0) ^ sgn[j]);		\
+						C##_copy_sec(q, v, (top == 0) ^ sgn[j]);			\
 						/* The second subscalar multiplies psi(P). */		\
 						if (j == 0) {										\
 							C##_add(r, r, q);								\
@@ -461,16 +458,14 @@
 					TMPL_EP_MUL_FIX_PSI_##E(C, w, w);						\
 				}															\
 				C##_neg(v, w);												\
-				F##_copy_sec(w->y, v->y, sgn[j]);							\
+				C##_copy_sec(w, v, sgn[j]);									\
 				C##_sub(v, r, w);											\
-				F##_copy_sec(r->x, v->x, even[j]);							\
-				F##_copy_sec(r->y, v->y, even[j]);							\
-				F##_copy_sec(r->z, v->z, even[j]);							\
+				C##_copy_sec(r, v, even[j]);								\
 			}																\
 			/* Convert r to affine coordinates. */							\
 			C##_norm(r, r);													\
 			C##_neg(v, r);													\
-			F##_copy_sec(r->y, v->y, neg);									\
+			C##_copy_sec(r, v, neg);										\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\

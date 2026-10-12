@@ -55,6 +55,16 @@ void eb_copy(eb_t r, const eb_t p) {
 	r->coord = p->coord;
 }
 
+void eb_copy_sec(eb_t r, const eb_t p, dig_t bit) {
+	/* Copy all coordinates and the coordinate system at once. */
+	dv_copy_sec((dig_t *)r, (const dig_t *)p, sizeof(eb_st) / sizeof(dig_t),
+		bit);
+}
+
+void eb_swap_sec(eb_t p, eb_t q, dig_t bit) {
+	dv_swap_sec((dig_t *)p, (dig_t *)q, sizeof(eb_st) / sizeof(dig_t), bit);
+}
+
 void eb_rand(eb_t p) {
 	bn_t n, k;
 

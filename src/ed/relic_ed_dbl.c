@@ -102,9 +102,13 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 		/* E = a * C */
 		fp_mul(t3, core_get()->ed_a, t1);
 
-		/* F = E + D, H = Z^2 */
+		/* F = E + D, H = Z^2, saving 1S if z1 = 1. */
 		fp_add(t4, t3, t2);
-		fp_sqr(t5, p->z);
+		if (p->coord == BASIC) {
+			fp_set_dig(t5, 1);
+		} else {
+			fp_sqr(t5, p->z);
+		}
 
 		// J = F - 2H
 		fp_dbl(t6, t5);
@@ -145,9 +149,13 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_sqr(t0, p->x);
 		fp_sqr(t1, p->y);
 
-		/* C = 2 * Z^2 */
-		fp_sqr(r->z, p->z);
-		fp_dbl(r->z, r->z);
+		/* C = 2 * Z^2, saving 1S if z1 = 1. */
+		if (p->coord == BASIC) {
+			fp_set_dig(r->z, 2);
+		} else {
+			fp_sqr(r->z, p->z);
+			fp_dbl(r->z, r->z);
+		}
 
 		/* D = a * A */
 		fp_mul(r->t, core_get()->ed_a, t0);

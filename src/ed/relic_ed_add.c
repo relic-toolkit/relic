@@ -117,8 +117,14 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	RLC_TRY {
 		fp_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
-		/* A = z1 * z2, B = A^2 */
-		fp_mul(t0, p->z, q->z);
+		/* A = z1 * z2, B = A^2, saving 1M if z1 = 1 or z2 = 1. */
+		if (q->coord == BASIC) {
+			fp_copy(t0, p->z);
+		} else if (p->coord == BASIC) {
+			fp_copy(t0, q->z);
+		} else {
+			fp_mul(t0, p->z, q->z);
+		}
 		fp_sqr(t1, t0);
 
 		/* C = x1 * x2, D = y1 * y2 */
@@ -205,8 +211,14 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(t2, core_get()->ed_d, p->t);
 		fp_mul(r->t, t2, q->t);
 
-		/* D = z1 * z2 */
-		fp_mul(r->z, p->z, q->z);
+		/* D = z1 * z2, saving 1M if z1 = 1 or z2 = 1. */
+		if (q->coord == BASIC) {
+			fp_copy(r->z, p->z);
+		} else if (p->coord == BASIC) {
+			fp_copy(r->z, q->z);
+		} else {
+			fp_mul(r->z, p->z, q->z);
+		}
 
 		/* E = (x1 + y1) * (x2 + y2) - A - B */
 		fp_add(t2, p->x, p->y);

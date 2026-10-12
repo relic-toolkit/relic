@@ -1020,6 +1020,8 @@
 #undef ep_is_infty
 #undef ep_set_infty
 #undef ep_copy
+#undef ep_copy_sec
+#undef ep_swap_sec
 #undef ep_cmp
 #undef ep_rand
 #undef ep_blind
@@ -1110,6 +1112,8 @@
 #define ep_is_infty 	RLC_PREFIX(ep_is_infty)
 #define ep_set_infty 	RLC_PREFIX(ep_set_infty)
 #define ep_copy 	RLC_PREFIX(ep_copy)
+#define ep_copy_sec 	RLC_PREFIX(ep_copy_sec)
+#define ep_swap_sec 	RLC_PREFIX(ep_swap_sec)
 #define ep_cmp 	RLC_PREFIX(ep_cmp)
 #define ep_rand 	RLC_PREFIX(ep_rand)
 #define ep_blind 	RLC_PREFIX(ep_blind)
@@ -1180,6 +1184,8 @@
 #undef ed_blind
 #undef ed_rhs
 #undef ed_copy
+#undef ed_copy_sec
+#undef ed_swap_sec
 #undef ed_cmp
 #undef ed_set_infty
 #undef ed_is_infty
@@ -1201,8 +1207,10 @@
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
+#undef ed_mul_pre_lwreg
 #undef ed_mul_pre_combd
 #undef ed_mul_fix_basic
+#undef ed_mul_fix_lwreg
 #undef ed_mul_fix_combd
 #undef ed_mul_gen
 #undef ed_mul_dig
@@ -1236,6 +1244,8 @@
 #define ed_blind 	RLC_PREFIX(ed_blind)
 #define ed_rhs 	RLC_PREFIX(ed_rhs)
 #define ed_copy 	RLC_PREFIX(ed_copy)
+#define ed_copy_sec 	RLC_PREFIX(ed_copy_sec)
+#define ed_swap_sec 	RLC_PREFIX(ed_swap_sec)
 #define ed_cmp 	RLC_PREFIX(ed_cmp)
 #define ed_set_infty 	RLC_PREFIX(ed_set_infty)
 #define ed_is_infty 	RLC_PREFIX(ed_is_infty)
@@ -1257,8 +1267,10 @@
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
+#define ed_mul_pre_lwreg 	RLC_PREFIX(ed_mul_pre_lwreg)
 #define ed_mul_pre_combd 	RLC_PREFIX(ed_mul_pre_combd)
 #define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
+#define ed_mul_fix_lwreg 	RLC_PREFIX(ed_mul_fix_lwreg)
 #define ed_mul_fix_combd 	RLC_PREFIX(ed_mul_fix_combd)
 #define ed_mul_gen 	RLC_PREFIX(ed_mul_gen)
 #define ed_mul_dig 	RLC_PREFIX(ed_mul_dig)
@@ -1305,6 +1317,8 @@
 #undef eb_is_infty
 #undef eb_set_infty
 #undef eb_copy
+#undef eb_copy_sec
+#undef eb_swap_sec
 #undef eb_cmp
 #undef eb_rand
 #undef eb_blind
@@ -1371,6 +1385,8 @@
 #define eb_is_infty 	RLC_PREFIX(eb_is_infty)
 #define eb_set_infty 	RLC_PREFIX(eb_set_infty)
 #define eb_copy 	RLC_PREFIX(eb_copy)
+#define eb_copy_sec 	RLC_PREFIX(eb_copy_sec)
+#define eb_swap_sec 	RLC_PREFIX(eb_swap_sec)
 #define eb_cmp 	RLC_PREFIX(eb_cmp)
 #define eb_rand 	RLC_PREFIX(eb_rand)
 #define eb_blind 	RLC_PREFIX(eb_blind)
@@ -1440,6 +1456,8 @@
 #undef ep2_is_infty
 #undef ep2_set_infty
 #undef ep2_copy
+#undef ep2_copy_sec
+#undef ep2_swap_sec
 #undef ep2_cmp
 #undef ep2_rand
 #undef ep2_blind
@@ -1507,6 +1525,8 @@
 #define ep2_is_infty 	RLC_PREFIX(ep2_is_infty)
 #define ep2_set_infty 	RLC_PREFIX(ep2_set_infty)
 #define ep2_copy 	RLC_PREFIX(ep2_copy)
+#define ep2_copy_sec 	RLC_PREFIX(ep2_copy_sec)
+#define ep2_swap_sec 	RLC_PREFIX(ep2_swap_sec)
 #define ep2_cmp 	RLC_PREFIX(ep2_cmp)
 #define ep2_rand 	RLC_PREFIX(ep2_rand)
 #define ep2_blind 	RLC_PREFIX(ep2_blind)
@@ -1577,6 +1597,8 @@
 #undef ep3_is_infty
 #undef ep3_set_infty
 #undef ep3_copy
+#undef ep3_copy_sec
+#undef ep3_swap_sec
 #undef ep3_cmp
 #undef ep3_rand
 #undef ep3_blind
@@ -1640,6 +1662,8 @@
 #define ep3_is_infty 	RLC_PREFIX(ep3_is_infty)
 #define ep3_set_infty 	RLC_PREFIX(ep3_set_infty)
 #define ep3_copy 	RLC_PREFIX(ep3_copy)
+#define ep3_copy_sec 	RLC_PREFIX(ep3_copy_sec)
+#define ep3_swap_sec 	RLC_PREFIX(ep3_swap_sec)
 #define ep3_cmp 	RLC_PREFIX(ep3_cmp)
 #define ep3_rand 	RLC_PREFIX(ep3_rand)
 #define ep3_blind 	RLC_PREFIX(ep3_blind)
@@ -1708,6 +1732,8 @@
 #undef ep4_is_infty
 #undef ep4_set_infty
 #undef ep4_copy
+#undef ep4_copy_sec
+#undef ep4_swap_sec
 #undef ep4_cmp
 #undef ep4_rand
 #undef ep4_blind
@@ -1771,6 +1797,8 @@
 #define ep4_is_infty 	RLC_PREFIX(ep4_is_infty)
 #define ep4_set_infty 	RLC_PREFIX(ep4_set_infty)
 #define ep4_copy 	RLC_PREFIX(ep4_copy)
+#define ep4_copy_sec 	RLC_PREFIX(ep4_copy_sec)
+#define ep4_swap_sec 	RLC_PREFIX(ep4_swap_sec)
 #define ep4_cmp 	RLC_PREFIX(ep4_cmp)
 #define ep4_rand 	RLC_PREFIX(ep4_rand)
 #define ep4_blind 	RLC_PREFIX(ep4_blind)
@@ -1839,6 +1867,8 @@
 #undef ep8_is_infty
 #undef ep8_set_infty
 #undef ep8_copy
+#undef ep8_copy_sec
+#undef ep8_swap_sec
 #undef ep8_cmp
 #undef ep8_rand
 #undef ep8_blind
@@ -1902,6 +1932,8 @@
 #define ep8_is_infty 	RLC_PREFIX(ep8_is_infty)
 #define ep8_set_infty 	RLC_PREFIX(ep8_set_infty)
 #define ep8_copy 	RLC_PREFIX(ep8_copy)
+#define ep8_copy_sec 	RLC_PREFIX(ep8_copy_sec)
+#define ep8_swap_sec 	RLC_PREFIX(ep8_swap_sec)
 #define ep8_cmp 	RLC_PREFIX(ep8_cmp)
 #define ep8_rand 	RLC_PREFIX(ep8_rand)
 #define ep8_blind 	RLC_PREFIX(ep8_blind)
@@ -1969,6 +2001,8 @@
 #undef ep9_is_infty
 #undef ep9_set_infty
 #undef ep9_copy
+#undef ep9_copy_sec
+#undef ep9_swap_sec
 #undef ep9_cmp
 #undef ep9_rand
 #undef ep9_blind
@@ -2031,6 +2065,8 @@
 #define ep9_is_infty 	RLC_PREFIX(ep9_is_infty)
 #define ep9_set_infty 	RLC_PREFIX(ep9_set_infty)
 #define ep9_copy 	RLC_PREFIX(ep9_copy)
+#define ep9_copy_sec 	RLC_PREFIX(ep9_copy_sec)
+#define ep9_swap_sec 	RLC_PREFIX(ep9_swap_sec)
 #define ep9_cmp 	RLC_PREFIX(ep9_cmp)
 #define ep9_rand 	RLC_PREFIX(ep9_rand)
 #define ep9_blind 	RLC_PREFIX(ep9_blind)

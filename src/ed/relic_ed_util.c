@@ -77,6 +77,16 @@ void ed_copy(ed_t r, const ed_t p) {
 	r->coord = p->coord;
 }
 
+void ed_copy_sec(ed_t r, const ed_t p, dig_t bit) {
+	/* Copy all coordinates and the coordinate system at once. */
+	dv_copy_sec((dig_t *)r, (const dig_t *)p, sizeof(ed_st) / sizeof(dig_t),
+		bit);
+}
+
+void ed_swap_sec(ed_t p, ed_t q, dig_t bit) {
+	dv_swap_sec((dig_t *)p, (dig_t *)q, sizeof(ed_st) / sizeof(dig_t), bit);
+}
+
 void ed_rand(ed_t p) {
 	bn_t n, k;
 
@@ -167,15 +177,17 @@ int ed_on_curve(const ed_t p) {
 	return r;
 }
 
-void ed_tab(ed_t * t, const ed_t p, int w) {
+void ed_tab(ed_t *t, const ed_t p, int w) {
 	if (w > 2) {
 		ed_dbl(t[0], p);
-		ed_add(t[1], t[0], p);
+		ed_norm(t[0], t[0]);
+		ed_add(t[1], p, t[0]);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ed_add(t[i], t[i - 1], t[0]);
 		}
+		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (w - 2)) - 1);
 	}
-	ed_copy(t[0], p);
+	ed_norm(t[0], p);
 }
 
 void ed_print(const ed_t p) {
