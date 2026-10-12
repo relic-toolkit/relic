@@ -40,39 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_dbl_k12_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
-	fp2_t s;
-	ep2_t t;
-	int one = 1, zero = 0;
-
-	fp2_null(s);
-	ep2_null(t);
-
-	RLC_TRY {
-		fp2_new(s);
-		ep2_new(t);
-		ep2_copy(t, q);
-		ep2_dbl_slp_basic(r, s, q);
-
-		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
-
-		fp_mul(l[one][zero][0], s[0], p->x);
-		fp_mul(l[one][zero][1], s[1], p->x);
-		fp2_mul(l[one][one], s, t->x);
-		fp2_sub(l[one][one], t->y, l[one][one]);
-		fp_copy(l[zero][zero][0], p->y);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(s);
-		ep2_free(t);
-	}
-}
+TMPL_PP_DBL_BASIC(12, ep2, fp2);
 
 void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4, t5, t6;

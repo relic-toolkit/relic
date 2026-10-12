@@ -133,9 +133,10 @@
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
  * @param[in] F			- the prefix of the twist field.
+ * @param[in] N			- the suffix of the function name.
  */
-#define TMPL_PP_ADD_PROJC(K, C, F)											\
-	void pp_add_k##K##_projc(fp##K##_t l, C##_t r, const C##_t q,			\
+#define TMPL_PP_ADD_PROJC(K, C, F, N)										\
+	void pp_add_k##K##_##N(fp##K##_t l, C##_t r, const C##_t q,			\
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4;											\
 		fp_t u;																\
@@ -256,9 +257,10 @@
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
  * @param[in] F			- the prefix of the twist field.
+ * @param[in] N			- the suffix of the function name.
  */
-#define TMPL_PP_DBL_PROJC(K, C, F)											\
-	void pp_dbl_k##K##_projc(fp##K##_t l, C##_t r, const C##_t q,			\
+#define TMPL_PP_DBL_PROJC(K, C, F, N)										\
+	void pp_dbl_k##K##_##N(fp##K##_t l, C##_t r, const C##_t q,			\
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
@@ -328,11 +330,11 @@
 	}
 
 /**
- * Selects where the line functions of curves with quartic twists (K = 8 and
- * 16) store their coefficients, as the selectors above do for sextic twists:
- * the term multiplied by x_P (LX), the one multiplied by y_P (LY) and its
- * first coordinate in the prime field (LY0), and the remaining term (LJ).
- * Quartic twists need no correction of that term.
+ * Selects where the line functions of curves with embedding degree 8, 12, 16
+ * and 18 store their coefficients, as the selectors above do for K = 24, 48
+ * and 54: the term multiplied by x_P (LX), the one multiplied by y_P (LY) and
+ * its first coordinate in the prime field (LY0), and the remaining term (LJ).
+ * M-type twists swap the positions, and no correction of LJ is needed.
  */
 /** @{ */
 #define TMPL_PP_LX_8(L)														\
@@ -341,8 +343,17 @@
 	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
 #define TMPL_PP_LJ_8(L)														\
 	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
-#define TMPL_PP_LY0_8(L)		TMPL_PP_LY_8(L)[0]
-#define TMPL_PP_ART_8(L)		/* No correction for quartic twists. */
+#define TMPL_PP_LY0_8(L)	TMPL_PP_LY_8(L)[0]
+#define TMPL_PP_ART_8(L)	/* No correction of LJ. */
+
+#define TMPL_PP_LX_12(L)													\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[0][1] : L[1][0])
+#define TMPL_PP_LY_12(L)													\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
+#define TMPL_PP_LJ_12(L)													\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
+#define TMPL_PP_LY0_12(L)	TMPL_PP_LY_12(L)[0]
+#define TMPL_PP_ART_12(L)	/* No correction of LJ. */
 
 #define TMPL_PP_LX_16(L)													\
 	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[0][1] : L[1][0])
@@ -350,8 +361,17 @@
 	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
 #define TMPL_PP_LJ_16(L)													\
 	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
-#define TMPL_PP_LY0_16(L)		TMPL_PP_LY_16(L)[0][0]
-#define TMPL_PP_ART_16(L)		/* No correction for quartic twists. */
+#define TMPL_PP_LY0_16(L)	TMPL_PP_LY_16(L)[0][0]
+#define TMPL_PP_ART_16(L)	/* No correction of LJ. */
+
+#define TMPL_PP_LX_18(L)													\
+	(ep3_curve_is_twist() == RLC_EP_MTYPE ? L[0][1] : L[1][0])
+#define TMPL_PP_LY_18(L)													\
+	(ep3_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
+#define TMPL_PP_LJ_18(L)													\
+	(ep3_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
+#define TMPL_PP_LY0_18(L)	TMPL_PP_LY_18(L)[0]
+#define TMPL_PP_ART_18(L)	/* No correction of LJ. */
 /** @} */
 
 /**
@@ -361,10 +381,10 @@
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
  * @param[in] F			- the prefix of the twist field.
- * @param[in] V			- the suffix of the function name.
+ * @param[in] N			- the suffix of the function name.
  */
-#define TMPL_PP_ADD_PROJC4(K, C, F, V)										\
-	void pp_add_k##K##_projc_##V(fp##K##_t l, C##_t r, const C##_t q,		\
+#define TMPL_PP_ADD_PROJC4(K, C, F, N)										\
+	void pp_add_k##K##_##N(fp##K##_t l, C##_t r, const C##_t q,				\
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 		fp_t u;																\
@@ -446,10 +466,10 @@
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
  * @param[in] F			- the prefix of the twist field.
- * @param[in] V			- the suffix of the function name.
+ * @param[in] N			- the suffix of the function name.
  */
-#define TMPL_PP_DBL_PROJC4(K, C, F, V)										\
-	void pp_dbl_k##K##_projc_##V(fp##K##_t l, C##_t r, const C##_t q,		\
+#define TMPL_PP_DBL_PROJC4(K, C, F, N)										\
+	void pp_dbl_k##K##_##N(fp##K##_t l, C##_t r, const C##_t q,				\
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
@@ -512,6 +532,37 @@
 		RLC_FINALLY {														\
 			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 		}																	\
+	}
+
+/**
+ * Defines a template for converting a point of the twist used by the Miller
+ * loop to affine coordinates. Curves with quartic twists, where b = 0, keep
+ * that point in Jacobian coordinates, so y is divided by z twice.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_NORM(K, C, F)												\
+	void pp_norm_k##K(C##_t r, const C##_t p) {								\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (p->coord == BASIC) {											\
+			/* If the point is in affine coordinates, just copy it. */		\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+		F##_inv(r->z, p->z);												\
+		F##_mul(r->x, p->x, r->z);											\
+		F##_mul(r->y, p->y, r->z);											\
+		if (ep_curve_opt_b() == RLC_ZERO) {									\
+			F##_mul(r->y, r->y, r->z);										\
+		}																	\
+		F##_set_dig(r->z, 1);												\
+		r->coord = BASIC;													\
 	}
 
 /**

@@ -42,8 +42,8 @@
 
 TMPL_PP_DBL_BASIC(16, ep4, fp4);
 
-TMPL_PP_DBL_PROJC4(16, ep4, fp4, basic);
+TMPL_PP_DBL_PROJC4(16, ep4, fp4, projc_basic);
 
-TMPL_PP_DBL_PROJC4(16, ep4, fp4, lazyr);
+TMPL_PP_DBL_PROJC4(16, ep4, fp4, projc_lazyr);
 
 TMPL_PP_DBL_LIT4(16, ep4, fp4);

@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_md.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_conf.h"
 #include "relic_fp_low.h"
@@ -47,132 +48,16 @@ void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }
 
-void pp_norm_k8(ep2_t r, const ep2_t p) {
-	if (ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
+TMPL_PP_NORM(8, ep2, fp2);
 
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep2_copy(r, p);
-		return;
-	}
-	fp2_inv(r->z, p->z);
-	fp2_mul(r->x, p->x, r->z);
-	fp2_mul(r->y, p->y, r->z);
-	fp2_mul(r->y, r->y, r->z);
-	fp2_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
+TMPL_PP_NORM(12, ep2, fp2);
 
-void pp_norm_k12(ep2_t r, const ep2_t p) {
-	if (ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
+TMPL_PP_NORM(16, ep4, fp4);
 
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep2_copy(r, p);
-		return;
-	}
-	fp2_inv(r->z, p->z);
-	fp2_mul(r->x, p->x, r->z);
-	fp2_mul(r->y, p->y, r->z);
-	fp2_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
+TMPL_PP_NORM(18, ep3, fp3);
 
-void pp_norm_k16(ep4_t r, const ep4_t p) {
-	if (ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
+TMPL_PP_NORM(24, ep4, fp4);
 
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep4_copy(r, p);
-		return;
-	}
-	fp4_inv(r->z, p->z);
-	fp4_mul(r->x, p->x, r->z);
-	fp4_mul(r->y, p->y, r->z);
-	if (ep_curve_opt_b() == RLC_ZERO) {
-		fp4_mul(r->y, r->y, r->z);
-	}
-	fp4_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
+TMPL_PP_NORM(48, ep8, fp8);
 
-void pp_norm_k18(ep3_t r, const ep3_t p) {
-	if (ep3_is_infty(p)) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep3_copy(r, p);
-		return;
-	}
-	fp3_inv(r->z, p->z);
-	fp3_mul(r->x, p->x, r->z);
-	fp3_mul(r->y, p->y, r->z);
-	fp3_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
-
-void pp_norm_k24(ep4_t r, const ep4_t p) {
-	if (ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep4_copy(r, p);
-		return;
-	}
-	fp4_inv(r->z, p->z);
-	fp4_mul(r->x, p->x, r->z);
-	fp4_mul(r->y, p->y, r->z);
-	fp4_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
-
-void pp_norm_k48(ep8_t r, const ep8_t p) {
-	if (ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep8_copy(r, p);
-		return;
-	}
-	fp8_inv(r->z, p->z);
-	fp8_mul(r->x, p->x, r->z);
-	fp8_mul(r->y, p->y, r->z);
-	fp8_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
-
-void pp_norm_k54(ep9_t r, const ep9_t p) {
-	if (ep9_is_infty(p)) {
-		ep9_set_infty(r);
-		return;
-	}
-
-	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep9_copy(r, p);
-		return;
-	}
-	fp9_inv(r->z, p->z);
-	fp9_mul(r->x, p->x, r->z);
-	fp9_mul(r->y, p->y, r->z);
-	fp9_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
+TMPL_PP_NORM(54, ep9, fp9);
