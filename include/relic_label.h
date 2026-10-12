@@ -319,6 +319,8 @@
 #undef bn_rec_rtnaf
 #undef bn_rec_tnaf_get
 #undef bn_rec_tnaf_mod
+#undef bn_rec_etnaf
+#undef bn_rec_retnaf
 #undef bn_rec_reg
 #undef bn_rec_jsf
 #undef bn_rec_glv
@@ -450,6 +452,8 @@
 #define bn_rec_rtnaf 	RLC_PREFIX(bn_rec_rtnaf)
 #define bn_rec_tnaf_get 	RLC_PREFIX(bn_rec_tnaf_get)
 #define bn_rec_tnaf_mod 	RLC_PREFIX(bn_rec_tnaf_mod)
+#define bn_rec_etnaf 	RLC_PREFIX(bn_rec_etnaf)
+#define bn_rec_retnaf 	RLC_PREFIX(bn_rec_retnaf)
 #define bn_rec_reg 	RLC_PREFIX(bn_rec_reg)
 #define bn_rec_jsf 	RLC_PREFIX(bn_rec_jsf)
 #define bn_rec_glv 	RLC_PREFIX(bn_rec_glv)

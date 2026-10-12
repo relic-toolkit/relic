@@ -1724,6 +1724,40 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 
 /**
+ * Recodes an element u + v * w of Z[w], for a primitive cube root of unity w,
+ * in width-3 \tau-adic NAF with \tau = 1 - w, least significant digit first.
+ * A nonzero digit is 1 + 6 * i + j for the unit (-1)^(j / 3) * w^(j % 3)
+ * times the i-th base digit among 1, 2 and 1 + \tau, and zero digits are 0.
+ *
+ * @param[out] naf			- the recoded element.
+ * @param[in,out] len		- the buffer capacity, then the number of digits.
+ * @param[in] u				- the first coordinate.
+ * @param[in] v				- the coordinate of w.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
+ */
+void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v);
+
+/**
+ * Recodes an element u + v * w of Z[w], for a primitive cube root of unity w,
+ * in constant time as a regular \tau-adic expansion with \tau = 1 - w: a
+ * nonzero digit at every position multiple of 3, least significant first.
+ * Digit 6 * i + j is the unit (-1)^(j / 3) * w^(j % 3) times the i-th base
+ * digit among 1, 2, 1 + \tau, 1 - 2\tau, 2 + \tau and 1 + 2\tau. The element
+ * is first incremented by c in {0, 1} so that \tau does not divide it, and
+ * the last digit is a unit. The number of digits len must be large enough
+ * for the remainder to be a unit: with |u + v * w| + 1 < 2^l, it suffices
+ * that len > 2 * (l + 0.06) / log2(27).
+ *
+ * @param[out] reg			- the recoded element, with len + 1 digits.
+ * @param[out] c			- the increment.
+ * @param[in] len			- the number of digits before the last.
+ * @param[in] u				- the first coordinate.
+ * @param[in] v				- the coordinate of w.
+ */
+void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
+		const bn_t v);
+
+/**
  * Recodes a positive integer in regular fixed-length width-w NAF. If a negative
  * integer is given instead, its absolute value is taken.
  *

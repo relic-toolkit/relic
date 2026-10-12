@@ -103,6 +103,181 @@ static void tnaf_hlv(bn_t r0, bn_t r1, bn_t tmp, int8_t u) {
  */
 #define MOD_CMASK	(MOD_2TC - 1)
 
+/**
+ * Digits g + h * tau of the tau-adic recodings in Z[w], where w is a primitive
+ * cube root of unity and tau = 1 - w. Digit 6 * i + u is the unit
+ * (-1)^(u / 3) * w^(u % 3) times the i-th base digit, among 1, 2, 1 + tau,
+ * 1 - 2 * tau, 2 + tau and 1 + 2 * tau.
+ */
+static const int8_t tw_g[36] = {
+	1, 1, -2, -1, -1, 2, 2, 2, -4, -2, -2, 4,
+	1, 4, -5, -1, -4, 5, 1, -5, 4, -1, 5, -4,
+	2, 5, -7, -2, -5, 7, 1, 7, -8, -1, -7, 8
+};
+
+static const int8_t tw_h[36] = {
+	0, -1, 1, 0, 1, -1, 0, -2, 2, 0, 2, -2,
+	1, -3, 2, -1, 3, -2, -2, 3, -1, 2, -3, 1,
+	1, -4, 3, -1, 4, -3, 2, -5, 3, -2, 5, -3
+};
+
+/**
+ * Digit of the width-3 tau-NAF for the residues (g mod 9, h mod 3) of a
+ * remainder g + h * tau not divisible by tau, using the first three bases.
+ */
+static const int8_t tw_naf[27] = {
+	0, 0, 0, 0, 12, 1, 6, 7, 5,
+	0, 0, 0, 13, 11, 14, 16, 17, 8,
+	0, 0, 0, 9, 2, 10, 3, 4, 15
+};
+
+/**
+ * Digit of the regular recoding for the residues (g mod 9, h mod 9) of a
+ * remainder g + h * tau not divisible by tau, and the digit itself, in rows
+ * for g mod 9 in 1, 2, 4, 5, 7, 8. It is congruent to the remainder modulo
+ * tau^3 but not modulo tau^4, so the next remainder is not divisible by tau
+ * either.
+ */
+static const int8_t tw_reg[54] = {
+	32, 18, 1, 0, 12, 1, 0, 12, 30,
+	26, 7, 5, 6, 7, 5, 6, 24, 34,
+	13, 11, 20, 13, 11, 14, 19, 28, 14,
+	16, 17, 25, 22, 17, 8, 16, 23, 8,
+	29, 31, 27, 9, 2, 10, 9, 2, 10,
+	35, 33, 15, 3, 4, 15, 3, 4, 21
+};
+
+static const int8_t tw_reg_g[54] = {
+	-8, 1, 1, 1, 1, 1, 1, 1, 1,
+	-7, 2, 2, 2, 2, 2, 2, 2, -7,
+	4, 4, 4, 4, 4, -5, -5, -5, -5,
+	-4, 5, 5, 5, 5, -4, -4, -4, -4,
+	7, 7, -2, -2, -2, -2, -2, -2, -2,
+	8, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+static const int8_t tw_reg_h[54] = {
+	3, -2, -1, 0, 1, -1, 0, 1, 2,
+	3, -2, -1, 0, -2, -1, 0, 1, 5,
+	-3, -2, -1, -3, -2, 2, 3, 4, 2,
+	3, -2, -4, -3, -2, 2, 3, 1, 2,
+	-3, -5, -1, 0, 1, 2, 0, 1, 2,
+	-3, -2, -1, 0, 1, -1, 0, 1, 2
+};
+
+/**
+ * Reduces modulo 9, in constant time, an integer of s digits in two's
+ * complement representation. The weight 2^(i * RLC_DIG) of the i-th digit
+ * modulo 9 has period 3 in i for every digit size.
+ */
+static int tw_mod9(const dig_t *a, size_t s) {
+	const dig_t d = (RLC_DMASK % 9 + 1) % 9, w[3] = { 1, d, d * d % 9 };
+	dig_t r = 0;
+
+	for (size_t i = 0; i < s; i++) {
+		r += (a[i] % 9) * w[i % 3];
+	}
+	/* Subtract 2^(s * RLC_DIG) for negative integers. */
+	r += (a[s - 1] >> (RLC_DIG - 1)) * (9 - w[s % 3]);
+	return r % 9;
+}
+
+/**
+ * Subtracts the digit g + h * tau from a + b * tau.
+ */
+static void tw_sub(dig_t *a, dig_t *b, int g, int h, size_t s) {
+	dig_t c0 = 0, c1 = 0, t, u, x = (dig_t)g, y = (dig_t)h;
+
+	for (size_t i = 0; i < s; i++) {
+		t = a[i] - x;
+		u = (a[i] < x);
+		a[i] = t - c0;
+		c0 = u | (t < c0);
+		t = b[i] - y;
+		u = (b[i] < y);
+		b[i] = t - c1;
+		c1 = u | (t < c1);
+		/* Sign-extend the digit. */
+		x = -(dig_t)(g < 0);
+		y = -(dig_t)(h < 0);
+	}
+}
+
+/**
+ * Divides a + b * tau by tau, computing (a + b) - (a / 3) * tau when a is a
+ * multiple of 3. All the steps go from the least significant digit up: the
+ * exact division by 3 multiplies each digit of a, minus the borrow, by the
+ * inverse of 3 modulo 2^RLC_DIG.
+ */
+static void tw_div(dig_t *a, dig_t *b, size_t s) {
+	const dig_t e = RLC_DMASK / 3 * 2 + 1;
+	dig_t c = 0, n = 1, r = 0, h, l, q, t;
+
+	for (size_t i = 0; i < s; i++) {
+		q = (a[i] - r) * e;
+		RLC_MUL_DIG(h, l, q, 3);
+		r = h + (a[i] < r);
+		t = a[i] + c;
+		c = (t < c);
+		t += b[i];
+		c += (t < b[i]);
+		a[i] = t;
+		b[i] = ~q + n;
+		n = (b[i] < n);
+	}
+	(void)l;
+}
+
+/**
+ * Divides a + b * tau by tau^3 = 6 * tau - 9, computing (a + 2b) / 3 -
+ * ((2a + 3b) / 9) * tau when a is a multiple of 9 and b of 3, in a single pass
+ * from the least significant digit up as above.
+ */
+static void tw_div3(dig_t *a, dig_t *b, size_t s) {
+	const dig_t e = RLC_DMASK / 3 * 2 + 1, f = e * e;
+	dig_t c0 = 0, c1 = 0, c2 = 0, n = 1, r0 = 0, r1 = 0, h, l, t, u, v;
+
+	for (size_t i = 0; i < s; i++) {
+		/* t = a + b, u = a + 2b and v = 2a + 3b. */
+		t = a[i] + c0;
+		c0 = (t < c0);
+		t += b[i];
+		c0 += (t < b[i]);
+		u = t + c1;
+		c1 = (u < c1);
+		u += b[i];
+		c1 += (u < b[i]);
+		v = u + c2;
+		c2 = (v < c2);
+		v += t;
+		c2 += (v < t);
+		a[i] = (u - r0) * e;
+		RLC_MUL_DIG(h, l, a[i], 3);
+		r0 = h + (u < r0);
+		t = (v - r1) * f;
+		RLC_MUL_DIG(h, l, t, 9);
+		r1 = h + (v < r1);
+		b[i] = ~t + n;
+		n = (b[i] < n);
+	}
+	(void)l;
+}
+
+/**
+ * Converts u + v * w to a + b * tau = (u + v) - v * tau, in two's complement
+ * representation with s digits.
+ */
+static void tw_set(dig_t *a, dig_t *b, const bn_t u, const bn_t v, size_t s) {
+	dv_zero(a, s);
+	dv_zero(b, s);
+	dv_copy(a, u->dp, RLC_MIN(u->used, s));
+	dv_copy(b, v->dp, RLC_MIN(v->used, s));
+	bn_sneg_low(a, a, bn_sign(u), s);
+	bn_sneg_low(b, b, bn_sign(v), s);
+	bn_addn_low(a, a, b, s);
+	bn_sneg_low(b, b, 1, s);
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -1014,4 +1189,87 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			bn_free(v[i]);
 		}
 	}
+}
+
+void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
+	/* One digit more absorbs the growth of the remainders. */
+	size_t l, s = RLC_MAX(u->used, v->used) + 1;
+	dig_t a[RLC_BN_DIGS + 1], b[RLC_BN_DIGS + 1], z;
+	int d;
+
+	if (s > RLC_BN_DIGS + 1) {
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+
+	tw_set(a, b, u, v, s);
+	for (l = 0; ; l++) {
+		z = 0;
+		for (size_t i = 0; i < s; i++) {
+			z |= a[i] | b[i];
+		}
+		if (z == 0) {
+			break;
+		}
+		if (l + 3 > *len) {
+			RLC_THROW(ERR_NO_BUFFER);
+			return;
+		}
+		d = tw_mod9(a, s);
+		if (d % 3 == 0) {
+			naf[l] = 0;
+			tw_div(a, b, s);
+		} else {
+			/* A digit is followed by two zeros. */
+			d = tw_naf[3 * d + tw_mod9(b, s) % 3];
+			tw_sub(a, b, tw_g[d], tw_h[d], s);
+			naf[l] = d + 1;
+			naf[l + 1] = naf[l + 2] = 0;
+			l += 2;
+			tw_div3(a, b, s);
+		}
+	}
+	while (l > 0 && naf[l - 1] == 0) {
+		l--;
+	}
+	*len = l;
+}
+
+void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
+		const bn_t v) {
+	/* The remainders have absolute value below 27^(len/2) * 2 and their
+	 * coordinates grow by a few bits in the divisions. */
+	size_t s = RLC_MAX(RLC_CEIL(12 * len / 5 + 8, RLC_DIG),
+			RLC_MAX(u->used, v->used) + 1);
+	dig_t a[RLC_BN_DIGS + 1], b[RLC_BN_DIGS + 1];
+	int d, e, g, h;
+
+	if (s > RLC_BN_DIGS + 1) {
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+
+	tw_set(a, b, u, v, s);
+	/* Make a + b * tau not divisible by tau. */
+	*c = (tw_mod9(a, s) % 3 == 0);
+	tw_sub(a, b, -(int)*c, 0, s);
+	for (size_t i = 0; i < len; i++) {
+		e = tw_mod9(a, s);
+		e = 9 * (e - e / 3 - 1) + tw_mod9(b, s);
+		d = g = h = 0;
+		for (int j = 0; j < 54; j++) {
+			d |= tw_reg[j] & -(j == e);
+			g |= tw_reg_g[j] & -(j == e);
+			h |= tw_reg_h[j] & -(j == e);
+		}
+		reg[i] = d;
+		tw_sub(a, b, g, h, s);
+		tw_div3(a, b, s);
+	}
+	/* The remainder is a unit, the top digit. */
+	d = 0;
+	for (int j = 0; j < 6; j++) {
+		d |= j & -((a[0] == (dig_t)tw_g[j]) & (b[0] == (dig_t)tw_h[j]));
+	}
+	reg[len] = d;
 }
