@@ -39,17 +39,26 @@
  * Detects an optimization based on the curve coefficients.
  *
  * @param[out] opt		- the resulting optimization.
+ * @param[out] d		- the coefficient if it fits in a digit, or NULL.
  * @param[in] a			- the curve coefficient.
  */
-static void detect_opt(int *opt, fp_t a) {
+static void detect_opt(int *opt, dig_t *d, fp_t a) {
 	fp_t t;
+	bn_t u;
 
 	fp_null(t);
+	bn_null(u);
 
 	RLC_TRY {
 		fp_new(t);
+		bn_new(u);
 		fp_prime_conv_dig(t, 3);
 		fp_neg(t, t);
+		/* Test the size of the integer, not of its representation. */
+		fp_prime_back(u, a);
+		if (d != NULL) {
+			*d = (bn_bits(u) <= RLC_DIG ? u->dp[0] : 0);
+		}
 
 		if (fp_cmp(a, t) == RLC_EQ) {
 			*opt = RLC_MIN3;
@@ -59,7 +68,7 @@ static void detect_opt(int *opt, fp_t a) {
 			*opt = RLC_ONE;
 		} else if (fp_cmp_dig(a, 2) == RLC_EQ) {
 			*opt = RLC_TWO;
-		} else if (fp_bits(a) <= RLC_DIG) {
+		} else if (bn_bits(u) <= RLC_DIG) {
 			*opt = RLC_TINY;
 		} else {
 			*opt = RLC_HUGE;
@@ -70,6 +79,7 @@ static void detect_opt(int *opt, fp_t a) {
 	}
 	RLC_FINALLY {
 		fp_free(t);
+		bn_free(u);
 	}
 }
 
@@ -203,8 +213,8 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
 
-	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
-	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
+	detect_opt(&(ctx->ep_opt_a), NULL, ctx->ep_a);
+	detect_opt(&(ctx->ep_opt_b), &(ctx->ep_b_dig), ctx->ep_b);
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map();
@@ -310,9 +320,32 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 		case RLC_ONE:
 			fp_copy(c, a);
 			break;
-#if FP_RDC != MONTY
+		case RLC_TWO:
+			fp_dbl(c, a);
+			break;
 		case RLC_TINY:
-			fp_mul_dig(c, a, ctx->ep_b[0]);
+			if (ctx->ep_b_dig < 8) {
+				/* At most four doublings and additions for 3 <= b < 8,
+				 * copying a to a digit vector to avoid allocating when b
+				 * is not a power of two. */
+				dig_t t[RLC_FP_DIGS];
+
+				if (ctx->ep_b_dig & (ctx->ep_b_dig - 1)) {
+					dv_copy(t, a, RLC_FP_DIGS);
+				}
+				fp_dbl(c, a);
+				for (int i = util_bits_dig(ctx->ep_b_dig) - 2; i >= 0; i--) {
+					if ((ctx->ep_b_dig >> i) & 1) {
+						fp_add(c, c, t);
+					}
+					if (i > 0) {
+						fp_dbl(c, c);
+					}
+				}
+				break;
+			}
+#if FP_RDC != MONTY
+			fp_mul_dig(c, a, ctx->ep_b_dig);
 			break;
 #endif
 		default:
