@@ -2336,6 +2336,14 @@ void fp3_frb(fp3_t c, const fp3_t a, int i);
 int fp3_is_sqr(const fp3_t a);
 
 /**
+ * Tests if a cubic extension field element is a cubic residue.
+ *
+ * @param[in] a				- the cubic extension field element to test.
+ * @return 1 if the argument is a cube, and 0 otherwise.
+ */
+int fp3_is_cub(const fp3_t a);
+
+/**
  * Extracts the square root of a cubic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.  The output value
  * shall not be used in case 0 is returned.

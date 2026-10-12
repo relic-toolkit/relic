@@ -1484,10 +1484,13 @@ static int exponentiation3(void) {
 static int square_root3(void) {
 	int code = RLC_ERR;
 	fp3_t a, b, c;
+	bn_t e, g;
 
 	fp3_null_all(a, b, c);
+	bn_null_all(e, g);
 
 	RLC_TRY {
+		bn_new_all(e, g);
 		fp3_new_all(a, b, c);
 
 		TEST_CASE("quadratic residuosity test is correct") {
@@ -1500,6 +1503,25 @@ static int square_root3(void) {
 				fp3_rand(a);
 			} while(fp3_srt(b, a) == 1);
 			TEST_ASSERT(fp3_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("cubic residuosity test is correct") {
+			fp3_zero(a);
+			TEST_ASSERT(fp3_is_cub(a) == 1, end);
+			fp3_rand(a);
+			fp3_sqr(b, a);
+			fp3_mul(b, b, a);
+			TEST_ASSERT(fp3_is_cub(b) == 1, end);
+			/* Compare with the definition: a is a cube iff a^((p^3-1)/3) = 1. */
+			bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+			bn_sqr(g, e);
+			bn_mul(g, g, e);
+			bn_sub_dig(g, g, 1);
+			bn_div_dig(g, g, 3);
+			fp3_rand(a);
+			fp3_exp(b, a, g);
+			TEST_ASSERT(fp3_is_cub(a) == (fp3_cmp_dig(b, 1) == RLC_EQ), end);
 		}
 		TEST_END;
 
@@ -1527,6 +1549,7 @@ static int square_root3(void) {
 	}
 	code = RLC_OK;
   end:
+	bn_free_all(e, g);
 	fp3_free_all(a, b, c);
 	return code;
 }

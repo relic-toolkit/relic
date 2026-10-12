@@ -2346,6 +2346,7 @@
 #undef fp3_exp
 #undef fp3_frb
 #undef fp3_is_sqr
+#undef fp3_is_cub
 #undef fp3_srt
 
 #define fp3_field_init 	RLC_PREFIX(fp3_field_init)
@@ -2385,6 +2386,7 @@
 #define fp3_exp 	RLC_PREFIX(fp3_exp)
 #define fp3_frb 	RLC_PREFIX(fp3_frb)
 #define fp3_is_sqr 	RLC_PREFIX(fp3_is_sqr)
+#define fp3_is_cub 	RLC_PREFIX(fp3_is_cub)
 #define fp3_srt 	RLC_PREFIX(fp3_srt)
 
 #undef fp3_addn_low
