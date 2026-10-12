@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 18.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 18.
  *
  * @ingroup pp
  */
@@ -32,6 +33,8 @@
 #include "relic_core.h"
 #include "relic_pp_tmpl.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 #include "relic_util.h"
 
 /*============================================================================*/
@@ -41,7 +44,6 @@
 TMPL_PP_MIL(18, ep3);
 
 TMPL_PP_MIL_LIT(18, ep3);
-
 
 /**
  * Compute the final lines for optimal ate pairings.
@@ -111,6 +113,22 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_ADD_BASIC(18, ep3, fp3);
+
+TMPL_PP_ADD_PROJC(18, ep3, fp3);
+
+TMPL_PP_ADD_LAZYR(18, ep3, fp3, dv3);
+
+TMPL_PP_ADD_LIT(18, ep3, fp3);
+
+TMPL_PP_DBL_BASIC(18, ep3, fp3);
+
+TMPL_PP_DBL_PROJC(18, ep3, fp3);
+
+TMPL_PP_DBL_LAZYR(18, ep3, fp3, dv3);
+
+TMPL_PP_DBL_LIT(18, ep3, fp3);
 
 TMPL_PP_MAP_TATEP(18, ep3);
 

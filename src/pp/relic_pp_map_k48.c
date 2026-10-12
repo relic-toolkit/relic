@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 48.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 48.
  *
  * @ingroup pp
  */
@@ -45,6 +46,22 @@ TMPL_PP_MIL_LIT(48, ep8);
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_ADD_BASIC(48, ep8, fp8);
+
+TMPL_PP_ADD_PROJC(48, ep8, fp8);
+
+TMPL_PP_ADD_LAZYR(48, ep8, fp8, dv8);
+
+TMPL_PP_ADD_LIT(48, ep8, fp8);
+
+TMPL_PP_DBL_BASIC(48, ep8, fp8);
+
+TMPL_PP_DBL_PROJC(48, ep8, fp8);
+
+TMPL_PP_DBL_LAZYR(48, ep8, fp8, dv8);
+
+TMPL_PP_DBL_LIT(48, ep8, fp8);
 
 TMPL_PP_MAP_TATEP(48, ep8);
 

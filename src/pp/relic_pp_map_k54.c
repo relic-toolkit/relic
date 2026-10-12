@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 54.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 54.
  *
  * @ingroup pp
  */
@@ -102,6 +103,22 @@ static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, int m) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_ADD_BASIC(54, ep9, fp9);
+
+TMPL_PP_ADD_PROJC(54, ep9, fp9);
+
+TMPL_PP_ADD_LAZYR(54, ep9, fp9, dv9);
+
+TMPL_PP_ADD_LIT(54, ep9, fp9);
+
+TMPL_PP_DBL_BASIC(54, ep9, fp9);
+
+TMPL_PP_DBL_PROJC(54, ep9, fp9);
+
+TMPL_PP_DBL_LAZYR(54, ep9, fp9, dv9);
+
+TMPL_PP_DBL_LIT(54, ep9, fp9);
 
 TMPL_PP_MAP_TATEP(54, ep9);
 

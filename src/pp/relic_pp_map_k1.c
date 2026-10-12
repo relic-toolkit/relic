@@ -24,13 +24,16 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 1.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 1.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 #include "relic_util.h"
 
 /*============================================================================*/
@@ -132,6 +135,249 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+void pp_add_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
+	fp_t s;
+
+	fp_null(s);
+
+	RLC_TRY {
+		fp_new(s);
+
+		if (fp_cmp(r->x, p->x) == RLC_EQ) {
+			fp_set_dig(m, 1);
+			fp_sub(l, q->x, p->x);
+		} else {
+			fp_sub(l, q->x, p->x);
+			ep_add_slp_basic(r, s, r, p);
+			fp_mul(l, l, s);
+			fp_sub(l, q->y, l);
+			fp_sub(l, l, p->y);
+			if (fp_is_zero(l)) {
+				fp_set_dig(l, 1);
+			}
+			fp_sub(m, q->x, r->x);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(s);
+	}
+}
+
+void pp_add_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
+	fp_t t0, t1, t2, t3, t4, t5;
+
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+	fp_null(t5);
+
+	RLC_TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+		fp_new(t5);
+
+		fp_sqr(l, r->z);
+		fp_mul(l, l, p->x);
+		if (fp_cmp(l, r->x) == RLC_EQ) {
+			fp_set_dig(m, 1);
+			fp_sub(l, q->x, p->x);
+		} else {
+			/* t0 = z1^2. */
+			fp_sqr(t0, r->z);
+
+			/* t3 = U = x2 * z1^2. */
+			fp_mul(t3, p->x, t0);
+
+			/* t1 = S = y2 * z1^3. */
+			fp_mul(t1, t0, r->z);
+			fp_mul(t1, t1, p->y);
+
+			/* t2 = H = U - x1. */
+			fp_sub(t2, t3, r->x);
+
+			/* t4 = L = S - y1. */
+			fp_sub(t4, t1, r->y);
+
+			/* t5 = H_2 = 2H, t3 = I = 4H^2. */
+			fp_dbl(t5, t2);
+			fp_sqr(t3, t5);
+
+			/* Z3 = (Z1 + H)^2 - Z1^2 - H^2 = 2 * z1 * H. */
+			fp_mul(r->z, r->z, t5);
+
+			/* t4 = M = 2L, t5 = M3 = (L + Z3)^2 - L^2 - Z3^2 = 2 * L * Z3. */
+			fp_dbl(t4, t4);
+			fp_mul(t5, t4, r->z);
+
+			/* l = Z3^2 * (yQ - y2) - M3*(xQ - x2). */
+			fp_sqr(m, r->z);
+			fp_sub(l, q->y, p->y);
+			fp_mul(l, l, m);
+			fp_sub(t0, q->x, p->x);
+			fp_mul(t0, t0, t5);
+			fp_sub(l, l, t0);
+			if (fp_is_zero(l)) {
+				fp_set_dig(l, 1);
+			}
+
+			/* t0 = V = x1 * I, t3 = J = HI, x3 = 4L^2 - J - 2V*/
+			fp_mul(t0, r->x, t3);
+			fp_mul(t3, t3, t2);
+			fp_sqr(r->x, t4);
+			fp_sub(r->x, r->x, t3);
+			fp_sub(r->x, r->x, t0);
+			fp_sub(r->x, r->x, t0);
+
+			/* y3 = M * (V - X3) - 2y1 * J. */
+			fp_mul(r->y, r->y, t3);
+			fp_dbl(r->y, r->y);
+			fp_sub(t0, t0, r->x);
+			fp_mul(t0, t4, t0);
+			fp_sub(r->y, t0, r->y);
+
+			/* v = Z3^2 * xQ - X3. */
+			fp_mul(m, m, q->x);
+			fp_sub(m, m, r->x);
+
+			r->coord = JACOB;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+		fp_free(t5);
+	}
+}
+
+/* Formulas from "Generation and Tate Pairing Computation
+ * of Ordinary Elliptic Curves with Embedding Degree One", by Hu et al. */
+
+void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
+	fp_t s;
+
+	fp_null(s);
+
+	RLC_TRY {
+		fp_new(s);
+
+		ep_dbl_slp_basic(r, s, p);
+		fp_sub(m, q->x, r->x);
+		fp_mul(l, m, s);
+		fp_sub(l, r->y, l);
+		fp_add(l, l, q->y);
+		if (fp_is_zero(l)) {
+			fp_set_dig(l, 1);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(s);
+	}
+}
+
+void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
+		const ep_t q) {
+	fp_t t0, t1, t2, t3, t4;
+
+	fp_null(t0);
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+
+	RLC_TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+
+		/* dbl-2007-bl formulas 1M + 8S + 1*a + 10add + 2*2 + 1*3 + 1*8 */
+		/* with the extended coordinate optimization w = z^2 applied.  */
+
+		/* t0 = y1^2. */
+		fp_sqr(t0, p->y);
+
+		/* t1 = x1^2. */
+		fp_sqr(t1, p->x);
+
+		/* t2 = y1^4.*/
+		fp_sqr(t2, t0);
+
+		/* t3 = S = 2*((X1+YY)^2-XX-YYYY). */
+		fp_add(t3, p->x, t0);
+		fp_sqr(t3, t3);
+		fp_sub(t3, t3, t1);
+		fp_sub(t3, t3, t2);
+		fp_dbl(t3, t3);
+
+		/* z3 = (Y1+Z1)^2-YY-ZZ, */
+		fp_add(r->z, p->y, p->z);
+		fp_sqr(r->z, r->z);
+		fp_sub(r->z, r->z, t0);
+		fp_sub(r->z, r->z, v);
+
+		/* t4 = M = 3*XX+a*ZZ^2. */
+		fp_dbl(t4, t1);
+		fp_add(t4, t4, t1);
+		fp_sqr(t1, v);
+		ep_curve_mul_a(t0, t1);
+		fp_add(t4, t4, t0);
+
+		/* x3 = T = M^2 - 2S. */
+		fp_sqr(r->x, t4);
+		fp_sub(r->x, r->x, t3);
+		fp_sub(r->x, r->x, t3);
+
+		/* y3 = M*(S-T)-8*YYYY. */
+		fp_sub(t0, t3, r->x);
+		fp_mul(t0, t4, t0);
+		fp_dbl(t2, t2);
+		fp_dbl(t2, t2);
+		fp_dbl(t2, t2);
+		fp_sub(r->y, t0, t2);
+
+		/* l = z3*z3^2*yQ + y3 − t4*(z3^2*xQ - x3), v = z3*(z3^2*xQ - x3)). */
+		fp_sqr(w, r->z);
+		fp_mul(l, r->z, w);
+		fp_mul(l, l, q->y);
+		fp_add(l, l, r->y);
+		fp_mul(t1, w, q->x);
+		fp_sub(t1, t1, r->x);
+		fp_mul(m, r->z, t1);
+		fp_mul(t1, t1, t4);
+		fp_sub(l, l, t1);
+		if (fp_is_zero(l)) {
+			fp_set_dig(l, 1);
+		}
+
+		r->coord = JACOB;
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+	}
+}
 
 void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t[1];

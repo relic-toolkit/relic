@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 16.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 16.
  *
  * @ingroup pp
  */
@@ -32,6 +33,8 @@
 #include "relic_core.h"
 #include "relic_pp_tmpl.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 #include "relic_util.h"
 
 /*============================================================================*/
@@ -91,6 +94,20 @@ static void pp_fin_k16_oatep(fp16_t r, ep4_t t, const ep4_t q, const ep_t p) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_ADD_BASIC(16, ep4, fp4);
+
+TMPL_PP_ADD_PROJC4(16, ep4, fp4);
+
+TMPL_PP_ADD_LAZYR4(16, ep4, fp4, dv4);
+
+TMPL_PP_ADD_LIT(16, ep4, fp4);
+
+TMPL_PP_DBL_BASIC(16, ep4, fp4);
+
+TMPL_PP_DBL_PROJC4(16, ep4, fp4);
+
+TMPL_PP_DBL_LIT4(16, ep4, fp4);
 
 TMPL_PP_MAP_TATEP(16, ep4);
 

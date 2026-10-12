@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 8.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 8.
  *
  * @ingroup pp
  */
@@ -32,6 +33,8 @@
 #include "relic_core.h"
 #include "relic_pp_tmpl.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 #include "relic_util.h"
 
 /*============================================================================*/
@@ -45,6 +48,20 @@ TMPL_PP_MIL_LIT(8, ep2);
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_ADD_BASIC(8, ep2, fp2);
+
+TMPL_PP_ADD_PROJC4(8, ep2, fp2);
+
+TMPL_PP_ADD_LAZYR4(8, ep2, fp2, dv2);
+
+TMPL_PP_ADD_LIT(8, ep2, fp2);
+
+TMPL_PP_DBL_BASIC(8, ep2, fp2);
+
+TMPL_PP_DBL_PROJC4(8, ep2, fp2);
+
+TMPL_PP_DBL_LIT4(8, ep2, fp2);
 
 TMPL_PP_MAP_TATEP(8, ep2);
 
