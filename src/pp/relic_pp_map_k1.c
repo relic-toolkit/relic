@@ -379,6 +379,10 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 	}
 }
 
+void pp_norm_k1(ep_t r, const ep_t p) {
+	ep_norm(r, p);
+}
+
 void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t[1];
 	bn_t n;

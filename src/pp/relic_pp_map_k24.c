@@ -63,6 +63,8 @@ TMPL_PP_DBL_LAZYR(24, ep4, fp4, dv4);
 
 TMPL_PP_DBL_LIT(24, ep4, fp4);
 
+TMPL_PP_NORM(24, ep4, fp4);
+
 TMPL_PP_MAP_TATEP(24, ep4);
 
 TMPL_PP_MAP_SIM_TATEP(24, ep4);

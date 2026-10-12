@@ -395,6 +395,8 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 
 TMPL_PP_DBL_LIT(12, ep2, fp2);
 
+TMPL_PP_NORM(12, ep2, fp2);
+
 TMPL_PP_MAP_TATEP(12, ep2);
 
 TMPL_PP_MAP_SIM_TATEP(12, ep2);

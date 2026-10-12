@@ -120,6 +120,8 @@ TMPL_PP_DBL_LAZYR(54, ep9, fp9, dv9);
 
 TMPL_PP_DBL_LIT(54, ep9, fp9);
 
+TMPL_PP_NORM(54, ep9, fp9);
+
 TMPL_PP_MAP_TATEP(54, ep9);
 
 TMPL_PP_MAP_SIM_TATEP(54, ep9);

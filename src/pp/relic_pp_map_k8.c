@@ -63,6 +63,8 @@ TMPL_PP_DBL_PROJC4(8, ep2, fp2);
 
 TMPL_PP_DBL_LIT4(8, ep2, fp2);
 
+TMPL_PP_NORM(8, ep2, fp2);
+
 TMPL_PP_MAP_TATEP(8, ep2);
 
 TMPL_PP_MAP_SIM_TATEP(8, ep2);

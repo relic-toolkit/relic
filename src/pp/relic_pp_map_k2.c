@@ -601,6 +601,10 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	}
 }
 
+void pp_norm_k2(ep_t r, const ep_t p) {
+	ep_norm(r, p);
+}
+
 void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t[1];
 	bn_t n;

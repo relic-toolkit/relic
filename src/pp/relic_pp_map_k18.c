@@ -130,6 +130,8 @@ TMPL_PP_DBL_LAZYR(18, ep3, fp3, dv3);
 
 TMPL_PP_DBL_LIT(18, ep3, fp3);
 
+TMPL_PP_NORM(18, ep3, fp3);
+
 TMPL_PP_MAP_TATEP(18, ep3);
 
 TMPL_PP_MAP_SIM_TATEP(18, ep3);
