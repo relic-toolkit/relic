@@ -1114,19 +1114,8 @@ static int addition8(void) {
 			ep2_copy(s, r);
 			fp8_zero(e1);
 			fp8_zero(e2);
-#if EP_ADD == PROJC
-			/* Precompute. */
-			fp_neg(p->x, p->x);
-#else
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k8(e1, r, q, p);
 			pp_exp_k8(e1, e1);
-#if EP_ADD == PROJC
-			/* Revert precompute. */
-			fp_neg(p->x, p->x);
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k8_basic(e2, s, q, p);
 			pp_exp_k8(e2, e2);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
@@ -1140,18 +1129,8 @@ static int addition8(void) {
 			ep2_copy(s, r);
 			fp8_zero(e1);
 			fp8_zero(e2);
-#if EP_ADD == PROJC
-			/* Precompute. */
-			fp_neg(p->x, p->x);
-#else
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k8(e1, r, q, p);
 			pp_exp_k8(e1, e1);
-#if EP_ADD == BASIC
-			fp_neg(p->x, p->x);
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k8_projc(e2, s, q, p);
 			pp_exp_k8(e2, e2);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);

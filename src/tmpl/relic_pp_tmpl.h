@@ -25,8 +25,8 @@
  * @file
  *
  * Templates for pairings over curves with twists: line functions for
- * embedding degree 24, 48 and 54, and Miller loops for 12, 16, 18, 24, 48
- * and 54.
+ * embedding degree 24, 48 and 54, and Miller loops for 8, 12, 16, 18, 24,
+ * 48 and 54.
  *
  * @ingroup pp
  */
@@ -335,6 +335,7 @@
  * callers add them.
  */
 /** @{ */
+#define TMPL_PP_FIN_8(R, T, Q, P, _P, M)	/* No final lines. */
 #define TMPL_PP_FIN_12(R, T, Q, P, _P, M)	/* Added by the callers. */
 #define TMPL_PP_FIN_16(R, T, Q, P, _P, M)	/* Added by the callers. */
 #define TMPL_PP_FIN_18(R, T, Q, P, _P, M)	/* Added by the callers. */
@@ -346,7 +347,8 @@
 /**
  * Selects how the Miller loop of degree K prepares the point of G_1 for the
  * doubling lines: its negation for affine coordinates, and for projective
- * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists.
+ * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists
+ * (K = 8 and 16).
  *
  * @param[out] R		- the prepared point.
  * @param[in] P			- the point of G_1.
@@ -364,6 +366,7 @@
 	fp_neg(R->x, P->x);														\
 	fp_copy(R->y, P->y);
 #endif
+#define TMPL_PP_MIL_P_8(R, P)	TMPL_PP_MIL_P4(R, P)
 #define TMPL_PP_MIL_P_12(R, P)	TMPL_PP_MIL_P6(R, P)
 #define TMPL_PP_MIL_P_16(R, P)	TMPL_PP_MIL_P4(R, P)
 #define TMPL_PP_MIL_P_18(R, P)	TMPL_PP_MIL_P6(R, P)

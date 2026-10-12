@@ -63,7 +63,7 @@ void pp_add_k8_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp_mul(l[one][zero][1], s[1], p->x);
 		fp2_mul(l[one][one], s, t->x);
 		fp2_sub(l[one][one], t->y, l[one][one]);
-		fp_copy(l[zero][zero][0], p->y);
+		fp_neg(l[zero][zero][0], p->y);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -76,6 +76,7 @@ void pp_add_k8_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 
 void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4, t5;
+	fp_t u;
 	int one = 1, zero = 0;
 
 	fp2_null(t0);
@@ -84,6 +85,7 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_null(t3);
 	fp2_null(t4);
 	fp2_null(t5);
+	fp_null(u);
 
 	RLC_TRY {
 		fp2_new(t0);
@@ -92,6 +94,7 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_new(t3);
 		fp2_new(t4);
 		fp2_new(t5);
+		fp_new(u);
 
 		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
@@ -118,8 +121,9 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_mul(l[one][one], t3, q->x);
 		fp2_mul(t0, t4, q->y);
 		fp2_sub(l[one][one], l[one][one], t0);
-		fp_mul(l[one][zero][0], t3[0], p->x);
-		fp_mul(l[one][zero][1], t3[1], p->x);
+		fp_neg(u, p->x);
+		fp_mul(l[one][zero][0], t3[0], u);
+		fp_mul(l[one][zero][1], t3[1], u);
 		fp_mul(l[zero][zero][0], t4[0], p->y);
 		fp_mul(l[zero][zero][1], t4[1], p->y);
 
@@ -161,11 +165,13 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_free(t3);
 		fp2_free(t4);
 		fp2_free(t5);
+		fp_free(u);
 	}
 }
 
 void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4, t5;
+	fp_t u;
 	int one = 1, zero = 0;
 
 	fp2_null(t0);
@@ -174,6 +180,7 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_null(t3);
 	fp2_null(t4);
 	fp2_null(t5);
+	fp_null(u);
 
 	RLC_TRY {
 		fp2_new(t0);
@@ -182,6 +189,7 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_new(t3);
 		fp2_new(t4);
 		fp2_new(t5);
+		fp_new(u);
 
 		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
@@ -208,8 +216,9 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_mul(l[one][one], t3, q->x);
 		fp2_mul(t0, t4, q->y);
 		fp2_sub(l[one][one], l[one][one], t0);
-		fp_mul(l[one][zero][0], t3[0], p->x);
-		fp_mul(l[one][zero][1], t3[1], p->x);
+		fp_neg(u, p->x);
+		fp_mul(l[one][zero][0], t3[0], u);
+		fp_mul(l[one][zero][1], t3[1], u);
 		fp_mul(l[zero][zero][0], t4[0], p->y);
 		fp_mul(l[zero][zero][1], t4[1], p->y);
 
@@ -251,5 +260,6 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_free(t3);
 		fp2_free(t4);
 		fp2_free(t5);
+		fp_free(u);
 	}
 }
