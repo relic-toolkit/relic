@@ -82,8 +82,7 @@ void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		fp_new(t4);
 		fp_new(t5);
 
-		/* For these curves, we always can choose a = -3. */
-		/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */
+		/* dbl-2001-b formulas with alpha for a general a. */
 		/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b */
 
 		/* t0 = delta = z1^2. */
@@ -95,12 +94,22 @@ void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		/* t2 = beta = x1 * y1^2. */
 		fp_mul(t2, p->x, t1);
 
-		/* t3 = alpha = 3 * (x1 - z1^2) * (x1 + z1^2). */
-		fp_sub(t3, p->x, t0);
-		fp_add(t4, p->x, t0);
-		fp_mul(t4, t3, t4);
-		fp_dbl(t3, t4);
-		fp_add(t3, t3, t4);
+		/* t3 = alpha = 3 * x1^2 + a * z1^4. */
+		if (ep_curve_opt_a() == RLC_MIN3) {
+			/* Save one multiplication: alpha = 3 * (x1 - z1^2) * (x1 + z1^2). */
+			fp_sub(t3, p->x, t0);
+			fp_add(t4, p->x, t0);
+			fp_mul(t4, t3, t4);
+			fp_dbl(t3, t4);
+			fp_add(t3, t3, t4);
+		} else {
+			fp_sqr(t3, p->x);
+			fp_dbl(t4, t3);
+			fp_add(t3, t3, t4);
+			fp_sqr(t4, t0);
+			ep_curve_mul_a(t4, t4);
+			fp_add(t3, t3, t4);
+		}
 
 		fp_dbl(t2, t2);
 		fp_dbl(t2, t2);
@@ -172,8 +181,7 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		dv_new(u0);
 		dv_new(u1);
 
-		/* For these curves, we always can choose a = -3. */
-		/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */
+		/* dbl-2001-b formulas with alpha for a general a. */
 		/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b */
 
 		/* t0 = delta = z1^2. */
@@ -185,12 +193,22 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		/* t2 = beta = x1 * y1^2. */
 		fp_mul(t2, p->x, t1);
 
-		/* t3 = alpha = 3 * (x1 - z1^2) * (x1 + z1^2). */
-		fp_sub(t3, p->x, t0);
-		fp_add(t4, p->x, t0);
-		fp_mul(t4, t3, t4);
-		fp_dbl(t3, t4);
-		fp_add(t3, t3, t4);
+		/* t3 = alpha = 3 * x1^2 + a * z1^4. */
+		if (ep_curve_opt_a() == RLC_MIN3) {
+			/* Save one multiplication: alpha = 3 * (x1 - z1^2) * (x1 + z1^2). */
+			fp_sub(t3, p->x, t0);
+			fp_add(t4, p->x, t0);
+			fp_mul(t4, t3, t4);
+			fp_dbl(t3, t4);
+			fp_add(t3, t3, t4);
+		} else {
+			fp_sqr(t3, p->x);
+			fp_dbl(t4, t3);
+			fp_add(t3, t3, t4);
+			fp_sqr(t4, t0);
+			ep_curve_mul_a(t4, t4);
+			fp_add(t3, t3, t4);
+		}
 
 		/* t2 = 4 * beta. */
 		fp_dbl(t2, t2);

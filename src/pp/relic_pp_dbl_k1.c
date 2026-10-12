@@ -112,10 +112,7 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 		fp_dbl(t4, t1);
 		fp_add(t4, t4, t1);
 		fp_sqr(t1, v);
-		/* We could use ep_curve_mul_a(t0, t1), but optimize for a = -4. */
-		fp_dbl(t0, t1);
-		fp_dbl(t0, t0);
-		fp_neg(t0, t0);
+		ep_curve_mul_a(t0, t1);
 		fp_add(t4, t4, t0);
 
 		/* x3 = T = M^2 - 2S. */

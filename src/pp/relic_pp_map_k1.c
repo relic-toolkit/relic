@@ -92,6 +92,19 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 					fp_mul(r, r, l);
 					fp_mul(s, s, m);
 				}
+				if (b[i] < 0) {
+					ep_neg(p[j], p[j]);
+					pp_add_k1(l, m, t[j], p[j], q[j]);
+					ep_neg(p[j], p[j]);
+					/* Correct extended coordinate for next doubling. */
+					fp_sqr(w[j], t[j]->z);
+					fp_mul(r, r, l);
+					fp_mul(s, s, m);
+					/* Since f_{-1} = 1/v_P, subtracting P also divides by the
+					 * vertical line through P, which matters for k = 1. */
+					fp_sub(l, q[j]->x, p[j]->x);
+					fp_mul(s, s, l);
+				}
 			}
 		}
 
