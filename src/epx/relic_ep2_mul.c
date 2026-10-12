@@ -158,6 +158,8 @@ void ep2_mul_cof(ep2_t r, const ep2_t p) {
 	bn_null(k);
 
 	RLC_TRY {
+		bn_new(k);
+
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
 				ep2_mul_cof_bn(r, p);

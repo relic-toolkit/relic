@@ -69,8 +69,18 @@
 	}
 
 /**
+ * Multiplies an element of a subfield by a prime field element, which is a
+ * plain multiplication when the subfield is the prime field itself.
+ */
+#define TMPL_FPX_MUL_FP_fp(C, A, B)		fp_mul(C, A, B)
+#define TMPL_FPX_MUL_FP_fp2(C, A, B)	fp2_mul_fp(C, A, B)
+#define TMPL_FPX_MUL_FP_fp3(C, A, B)	fp3_mul_fp(C, A, B)
+#define TMPL_FPX_MUL_FP_fp4(C, A, B)	fp4_mul_fp(C, A, B)
+
+/**
  * Defines a template for addition, subtraction and multiplication by a digit in
- * an extension field of degree N over a subfield.
+ * an extension field of degree N over a subfield, and for multiplication by a
+ * prime field element.
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] S			- the subfield prefix.
@@ -94,6 +104,12 @@
 	void X##_mul_dig(X##_t c, const X##_t a, dig_t dig) {					\
 		for (int i = 0; i < (N); i++) {										\
 			S##_mul_dig(c[i], a[i], dig);									\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_fp(X##_t c, const X##_t a, const fp_t b) {					\
+		for (int i = 0; i < (N); i++) {										\
+			TMPL_FPX_MUL_FP_##S(c[i], a[i], b);								\
 		}																	\
 	}
 

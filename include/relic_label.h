@@ -2203,6 +2203,7 @@
 #undef fp2_mul_nor_integ
 #undef fp2_mul_frb
 #undef fp2_mul_dig
+#undef fp2_mul_fp
 #undef fp2_sqr_basic
 #undef fp2_sqr_integ
 #undef fp2_inv
@@ -2252,6 +2253,7 @@
 #define fp2_mul_nor_integ 	RLC_PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	RLC_PREFIX(fp2_mul_frb)
 #define fp2_mul_dig 	RLC_PREFIX(fp2_mul_dig)
+#define fp2_mul_fp 	RLC_PREFIX(fp2_mul_fp)
 #define fp2_sqr_basic 	RLC_PREFIX(fp2_sqr_basic)
 #define fp2_sqr_integ 	RLC_PREFIX(fp2_sqr_integ)
 #define fp2_inv 	RLC_PREFIX(fp2_inv)
@@ -2336,6 +2338,7 @@
 #undef fp3_mul_nor
 #undef fp3_mul_frb
 #undef fp3_mul_dig
+#undef fp3_mul_fp
 #undef fp3_sqr_basic
 #undef fp3_sqr_integ
 #undef fp3_inv
@@ -2374,6 +2377,7 @@
 #define fp3_mul_nor 	RLC_PREFIX(fp3_mul_nor)
 #define fp3_mul_frb 	RLC_PREFIX(fp3_mul_frb)
 #define fp3_mul_dig 	RLC_PREFIX(fp3_mul_dig)
+#define fp3_mul_fp 	RLC_PREFIX(fp3_mul_fp)
 #define fp3_sqr_basic 	RLC_PREFIX(fp3_sqr_basic)
 #define fp3_sqr_integ 	RLC_PREFIX(fp3_sqr_integ)
 #define fp3_inv 	RLC_PREFIX(fp3_inv)
@@ -2444,6 +2448,7 @@
 #undef fp4_mul_art
 #undef fp4_mul_frb
 #undef fp4_mul_dig
+#undef fp4_mul_fp
 #undef fp4_mul_dxs
 #undef fp4_sqr_unr
 #undef fp4_sqr_basic
@@ -2481,6 +2486,7 @@
 #define fp4_mul_art 	RLC_PREFIX(fp4_mul_art)
 #define fp4_mul_frb 	RLC_PREFIX(fp4_mul_frb)
 #define fp4_mul_dig 	RLC_PREFIX(fp4_mul_dig)
+#define fp4_mul_fp 	RLC_PREFIX(fp4_mul_fp)
 #define fp4_mul_dxs 	RLC_PREFIX(fp4_mul_dxs)
 #define fp4_sqr_unr 	RLC_PREFIX(fp4_sqr_unr)
 #define fp4_sqr_basic 	RLC_PREFIX(fp4_sqr_basic)
@@ -2574,6 +2580,7 @@
 #undef fp8_mul_art
 #undef fp8_mul_frb
 #undef fp8_mul_dig
+#undef fp8_mul_fp
 #undef fp8_mul_dxs
 #undef fp8_sqr_unr
 #undef fp8_sqr_basic
@@ -2619,6 +2626,7 @@
 #define fp8_mul_art 	RLC_PREFIX(fp8_mul_art)
 #define fp8_mul_frb 	RLC_PREFIX(fp8_mul_frb)
 #define fp8_mul_dig 	RLC_PREFIX(fp8_mul_dig)
+#define fp8_mul_fp 	RLC_PREFIX(fp8_mul_fp)
 #define fp8_mul_dxs 	RLC_PREFIX(fp8_mul_dxs)
 #define fp8_sqr_unr 	RLC_PREFIX(fp8_sqr_unr)
 #define fp8_sqr_basic 	RLC_PREFIX(fp8_sqr_basic)
@@ -2658,6 +2666,7 @@
 #undef fp9_neg
 #undef fp9_dbl
 #undef fp9_mul_dig
+#undef fp9_mul_fp
 #undef fp9_mul_unr
 #undef fp9_mul_basic
 #undef fp9_mul_lazyr
@@ -2692,6 +2701,7 @@
 #define fp9_neg 	RLC_PREFIX(fp9_neg)
 #define fp9_dbl 	RLC_PREFIX(fp9_dbl)
 #define fp9_mul_dig 	RLC_PREFIX(fp9_mul_dig)
+#define fp9_mul_fp 	RLC_PREFIX(fp9_mul_fp)
 #define fp9_mul_unr 	RLC_PREFIX(fp9_mul_unr)
 #define fp9_mul_basic 	RLC_PREFIX(fp9_mul_basic)
 #define fp9_mul_lazyr 	RLC_PREFIX(fp9_mul_lazyr)

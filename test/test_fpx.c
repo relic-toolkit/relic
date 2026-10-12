@@ -898,6 +898,15 @@ static int digit2(void) {
 			fp2_mul_dig(d, a, g);
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp2_rand(a);
+			fp2_zero(b);
+			fp_rand(b[0]);
+			fp2_mul(c, a, b);
+			fp2_mul_fp(d, a, b[0]);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1561,6 +1570,15 @@ static int digit3(void) {
 			fp3_mul_dig(d, a, g);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp3_rand(a);
+			fp3_zero(b);
+			fp_rand(b[0]);
+			fp3_mul(c, a, b);
+			fp3_mul_fp(d, a, b[0]);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2169,6 +2187,15 @@ static int digit4(void) {
 			fp4_set_dig(b, g);
 			fp4_mul(c, a, b);
 			fp4_mul_dig(d, a, g);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp4_rand(a);
+			fp4_zero(b);
+			fp_rand(b[0][0]);
+			fp4_mul(c, a, b);
+			fp4_mul_fp(d, a, b[0][0]);
 			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3038,6 +3065,15 @@ static int multiplication8(void) {
 			fp8_mul_dig(d, a, g);
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp8_rand(a);
+			fp8_zero(b);
+			fp_rand(b[0][0][0]);
+			fp8_mul(c, a, b);
+			fp8_mul_fp(d, a, b[0][0][0]);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3636,6 +3672,15 @@ static int multiplication9(void) {
 			fp9_mul(d, a, b);
 			fp9_mul(e, b, a);
 			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp9_rand(a);
+			fp9_zero(b);
+			fp_rand(b[0][0]);
+			fp9_mul(c, a, b);
+			fp9_mul_fp(d, a, b[0][0]);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("multiplication is associative") {

@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
@@ -37,137 +38,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_add_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
-	fp4_t s;
-	ep4_t t;
-	int two = 1, one = 1;
+TMPL_PP_ADD_BASIC(24, ep4, fp4);
 
-	fp4_null(s);
-	ep4_null(t);
-
-	RLC_TRY {
-		fp4_new(s);
-		ep4_new(t);
-
-		ep4_copy(t, r);
-		ep4_add_slp_basic(r, s, r, q);
-		fp24_zero(l);
-
-		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
-			two += 1;
-			one ^= 1;
-		}
-
-		fp_mul(l[two][one][0][0], s[0][0], p->x);
-		fp_mul(l[two][one][0][1], s[0][1], p->x);
-		fp_mul(l[two][one][1][0], s[1][0], p->x);
-		fp_mul(l[two][one][1][1], s[1][1], p->x);
-
-		fp4_mul(l[0][0], s, t->x);
-		fp4_sub(l[0][0], t->y, l[0][0]);
-
-		if (ep4_curve_is_twist() != RLC_EP_MTYPE) {
-			fp4_mul_art(l[0][0], l[0][0]);
-		}
-
-		fp_neg(l[0][1][0][0], p->y);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp4_free(s);
-		ep4_free(t);
-	}
-}
-
-void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
-	fp4_t t0, t1, t2, t3, t4;
-	int two = 1, one = 1;
-
-	fp4_null(t0);
-	fp4_null(t1);
-	fp4_null(t2);
-	fp4_null(t3);
-	fp4_null(t4);
-
-	if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
-		two += 1;
-		one ^= 1;
-	}
-
-	RLC_TRY {
-		fp4_new(t0);
-		fp4_new(t1);
-		fp4_new(t2);
-		fp4_new(t3);
-		fp4_new(t4);
-
-		/* B = t0 = x1 - x2 * z1. */
-		fp4_mul(t0, r->z, q->x);
-		fp4_sub(t0, r->x, t0);
-		/* A = t1 = y1 - y2 * z1. */
-		fp4_mul(t1, r->z, q->y);
-		fp4_sub(t1, r->y, t1);
-
-		/* D = B^2. */
-		fp4_sqr(t2, t0);
-		/* G = x1 * D. */
-		fp4_mul(r->x, r->x, t2);
-		/* E = B^3. */
-		fp4_mul(t2, t2, t0);
-		/* C = A^2. */
-		fp4_sqr(t3, t1);
-		/* F = E + z1 * C. */
-		fp4_mul(t3, t3, r->z);
-		fp4_add(t3, t2, t3);
-
-		/* l10 = - (A * xp). */
-		fp_neg(t4[0][0], p->x);
-		fp_mul(l[two][one][0][0], t1[0][0], t4[0][0]);
-		fp_mul(l[two][one][0][1], t1[0][1], t4[0][0]);
-		fp_mul(l[two][one][1][0], t1[1][0], t4[0][0]);
-		fp_mul(l[two][one][1][1], t1[1][1], t4[0][0]);
-
-		/* t4 = A * x2. */
-		fp4_mul(t4, q->x, t1);
-
-		/* H = E + F - 2 * G. */
-		fp4_sub(t3, t3, r->x);
-		fp4_sub(t3, t3, r->x);
-		/* y3 = A * (G - H) - y1 * E. */
-		fp4_sub(r->x, r->x, t3);
-		fp4_mul(t1, t1, r->x);
-		fp4_mul(r->y, t2, r->y);
-		fp4_sub(r->y, t1, r->y);
-		/* x3 = B * H. */
-		fp4_mul(r->x, t0, t3);
-		/* z3 = z1 * E. */
-		fp4_mul(r->z, r->z, t2);
-
-		/* l11 = J = A * x2 - B * y2. */
-		fp4_mul(t2, q->y, t0);
-		fp4_sub(l[0][0], t4, t2);
-
-		if (ep4_curve_is_twist() != RLC_EP_MTYPE) {
-			fp4_mul_art(l[0][0], l[0][0]);
-		}
-
-		/* l00 = B * yp. */
-		fp_mul(l[0][1][0][0], p->y, t0[0][0]);
-		fp_mul(l[0][1][0][1], p->y, t0[0][1]);
-		fp_mul(l[0][1][1][0], p->y, t0[1][0]);
-		fp_mul(l[0][1][1][1], p->y, t0[1][1]);
-
-		r->coord = PROJC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp4_free(t0);
-		fp4_free(t1);
-		fp4_free(t2);
-		fp4_free(t3);
-		fp4_free(t4);
-	}
-}
+TMPL_PP_ADD_PROJC(24, ep4, fp4);
