@@ -1978,19 +1978,8 @@ static int addition16(void) {
 			ep4_copy(s, r);
 			fp16_zero(e1);
 			fp16_zero(e2);
-			/* Precompute. */
-#if EP_ADD == BASIC
-			fp_neg(p->y, p->y);
-#else
-			fp_neg(p->x, p->x);
-#endif
 			pp_add_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
-#if EP_ADD != BASIC
-			/* Revert precompute. */
-			fp_neg(p->x, p->x);
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k16_basic(e2, s, q, p);
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
@@ -2004,17 +1993,8 @@ static int addition16(void) {
 			ep4_copy(s, r);
 			fp16_zero(e1);
 			fp16_zero(e2);
-#if EP_ADD == BASIC
-			fp_neg(p->y, p->y);
-#else
-			fp_neg(p->x, p->x);
-#endif
 			pp_add_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
-#if EP_ADD == BASIC
-			fp_neg(p->x, p->x);
-			fp_neg(p->y, p->y);
-#endif
 			pp_add_k16_projc(e2, s, q, p);
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);

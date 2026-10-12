@@ -331,11 +331,12 @@
  * Selects the final step of the Miller loop of degree K, which evaluates at
  * P the lines that the loop over the parameter leaves out. It only exists for
  * K = 54, where the optimal ate pairing needs f^3 times three more lines. For
- * K = 12 and 18 the final lines depend on the curve family, so the callers
- * add them.
+ * K = 12, 16 and 18 the final lines depend on the curve family, so the
+ * callers add them.
  */
 /** @{ */
 #define TMPL_PP_FIN_12(R, T, Q, P, _P, M)	/* Added by the callers. */
+#define TMPL_PP_FIN_16(R, T, Q, P, _P, M)	/* Added by the callers. */
 #define TMPL_PP_FIN_18(R, T, Q, P, _P, M)	/* Added by the callers. */
 #define TMPL_PP_FIN_24(R, T, Q, P, _P, M)	/* No final lines. */
 #define TMPL_PP_FIN_48(R, T, Q, P, _P, M)	/* No final lines. */
@@ -343,20 +344,33 @@
 /** @} */
 
 /**
- * Prepares the point of G_1 at which the doubling line is evaluated: its
- * negation for affine coordinates, and (3x_P, -y_P) for projective ones.
+ * Selects how the Miller loop of degree K prepares the point of G_1 for the
+ * doubling lines: its negation for affine coordinates, and for projective
+ * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists.
  *
  * @param[out] R		- the prepared point.
  * @param[in] P			- the point of G_1.
  */
+/** @{ */
 #if EP_ADD == BASIC
-#define TMPL_PP_MIL_P(R, P)		ep_neg(R, P);
+#define TMPL_PP_MIL_P6(R, P)	ep_neg(R, P);
+#define TMPL_PP_MIL_P4(R, P)	ep_neg(R, P);
 #else
-#define TMPL_PP_MIL_P(R, P)													\
+#define TMPL_PP_MIL_P6(R, P)												\
 	fp_add(R->x, P->x, P->x);												\
 	fp_add(R->x, R->x, P->x);												\
 	fp_neg(R->y, P->y);
+#define TMPL_PP_MIL_P4(R, P)												\
+	fp_neg(R->x, P->x);														\
+	fp_copy(R->y, P->y);
 #endif
+#define TMPL_PP_MIL_P_12(R, P)	TMPL_PP_MIL_P6(R, P)
+#define TMPL_PP_MIL_P_16(R, P)	TMPL_PP_MIL_P4(R, P)
+#define TMPL_PP_MIL_P_18(R, P)	TMPL_PP_MIL_P6(R, P)
+#define TMPL_PP_MIL_P_24(R, P)	TMPL_PP_MIL_P6(R, P)
+#define TMPL_PP_MIL_P_48(R, P)	TMPL_PP_MIL_P6(R, P)
+#define TMPL_PP_MIL_P_54(R, P)	TMPL_PP_MIL_P6(R, P)
+/** @} */
 
 /**
  * Defines a template for the Miller loop of pairings of type G_2 x G_1 over
@@ -400,7 +414,7 @@
 				C##_new(_q[j]);												\
 				C##_copy(t[j], q[j]);										\
 				C##_neg(_q[j], q[j]);										\
-				TMPL_PP_MIL_P(_p[j], p[j])									\
+				TMPL_PP_MIL_P_##K(_p[j], p[j])								\
 			}																\
 																			\
 			fp##K##_zero(l);												\

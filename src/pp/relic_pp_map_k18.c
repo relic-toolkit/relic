@@ -75,7 +75,7 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
 
 		switch (ep_curve_is_pairf()) {
 			case EP_K18:
-				TMPL_PP_MIL_P(_p, p)
+				TMPL_PP_MIL_P_18(_p, p)
 				/* _q = 3*p*Q. */
 		        pp_dbl_k18(u, _q, q, _p);
 		        pp_add_k18(v, _q, q, p);
