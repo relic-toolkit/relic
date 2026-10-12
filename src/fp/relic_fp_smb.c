@@ -258,8 +258,11 @@ int fp_smb_basic(const fp_t a) {
 	return r;
 }
 
+/* Shifts the double digit H:L left by I bits, for 0 <= I <= RLC_DIG, keeping
+ * the high digit. Shifting by RLC_DIG is undefined in C, but H is zero then. */
 #define RLC_LSH(H, L, I)													\
-		(H << I) | (L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
+		(H << (I & (RLC_DIG - 1))) |										\
+		(L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
 
 int fp_smb_binar(const fp_t a) {
 	const size_t s = RLC_DIG - 2;
@@ -516,6 +519,10 @@ int fp_smb_jmpds(const fp_t a) {
 	return r;
 }
 
+#if FP_SMB == LOWER
+
 int fp_smb_lower(const fp_t a) {
 	return fp_smbm_low(a);
 }
+
+#endif

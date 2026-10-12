@@ -122,6 +122,10 @@ enum {
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh384(B, BL, I, IL, D, DL)
 #elif MD_MAP == SH512
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh512(B, BL, I, IL, D, DL)
+#elif MD_MAP == B2S160
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_b2s160(B, BL, I, IL, D, DL)
+#elif MD_MAP == B2S256
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_b2s256(B, BL, I, IL, D, DL)
 #endif
 
 /*============================================================================*/
@@ -270,6 +274,34 @@ void md_xmd_sh384(uint8_t *buf, size_t buf_len, const uint8_t *in,
  * @param[in] dst_len				- the domain separation tag length in bytes.
  */
 void md_xmd_sh512(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the BLAKE2s-160 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_b2s160(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the BLAKE2s-256 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_b2s256(uint8_t *buf, size_t buf_len, const uint8_t *in,
 		size_t in_len, const uint8_t *dst, size_t dst_len);
 
 /** Size in bytes of a block produced by the BLAKE2s-based XOF. */

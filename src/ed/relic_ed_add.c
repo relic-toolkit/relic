@@ -26,7 +26,6 @@
  *
  * Implementation of the point addition on prime elliptic twisted Edwards curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 
@@ -39,19 +38,13 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_ADD == BASIC || !defined(STRIP)
-
 void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0, t1, t2;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
+	fp_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
+		fp_new_all(t0, t1, t2);
 
 		/* x3 = (x1*y2+y1*x2)/(1+d*x1*x2*y1*y2)
 		 * y3 = (y1*y2-a*x1*x2)/(1-d*x1*x2*y1*y2) */
@@ -87,9 +80,7 @@ void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
+		fp_free_all(t0, t1, t2);
 	}
 }
 
@@ -118,34 +109,22 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q) {
 	}
 }
 
-#endif /* ED_ADD == BASIC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
-
 void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0, t1, t2, t3, t4, t5, t6, t7;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
-	fp_null(t5);
-	fp_null(t6);
-	fp_null(t7);
+	fp_null_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
-		fp_new(t5);
-		fp_new(t6);
-		fp_new(t7);
+		fp_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
-		/* A = z1 * z2, B = A^2 */
-		fp_mul(t0, p->z, q->z);
+		/* A = z1 * z2, B = A^2, saving 1M if z1 = 1 or z2 = 1. */
+		if (q->coord == BASIC) {
+			fp_copy(t0, p->z);
+		} else if (p->coord == BASIC) {
+			fp_copy(t0, q->z);
+		} else {
+			fp_mul(t0, p->z, q->z);
+		}
 		fp_sqr(t1, t0);
 
 		/* C = x1 * x2, D = y1 * y2 */
@@ -184,20 +163,9 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
-		fp_free(t5);
-		fp_free(t6);
-		fp_free(t7);
+		fp_free_all(t0, t1, t2, t3, t4, t5, t6, t7);
 	}
 }
-
-#endif /* ED_ADD == PROJC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
 
 void ed_sub_projc(ed_t r, const ed_t p, const ed_t q) {
 	ed_t t;
@@ -223,10 +191,6 @@ void ed_sub_projc(ed_t r, const ed_t p, const ed_t q) {
 	}
 }
 
-#endif /* ED_ADD == PROJC || ED_ADD == EXTND */
-
-#if ED_ADD == EXTND || !defined(STRIP)
-
 void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t0;
 	fp_t t1;
@@ -234,18 +198,10 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	fp_t t3;
 	fp_t t4;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
+	fp_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
+		fp_new_all(t0, t1, t2, t3, t4);
 
 		/* A = x1 * x2, B = y1 * y2 */
 		fp_mul(t0, p->x, q->x);
@@ -255,8 +211,14 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(t2, core_get()->ed_d, p->t);
 		fp_mul(r->t, t2, q->t);
 
-		/* D = z1 * z2 */
-		fp_mul(r->z, p->z, q->z);
+		/* D = z1 * z2, saving 1M if z1 = 1 or z2 = 1. */
+		if (q->coord == BASIC) {
+			fp_copy(r->z, p->z);
+		} else if (p->coord == BASIC) {
+			fp_copy(r->z, q->z);
+		} else {
+			fp_mul(r->z, p->z, q->z);
+		}
 
 		/* E = (x1 + y1) * (x2 + y2) - A - B */
 		fp_add(t2, p->x, p->y);
@@ -285,11 +247,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
+		fp_free_all(t0, t1, t2, t3, t4);
 	}
 }
 
@@ -316,5 +274,3 @@ void ed_sub_extnd(ed_t r, const ed_t p, const ed_t q) {
 		ed_free(t);
 	}
 }
-
-#endif

@@ -45,3 +45,33 @@ void fb_sqrm_low(dig_t *c, const dig_t *a) {
 	dv_new(t);
 	fb_sqri_low(c, t, a);
 }
+
+void fb_sqrn_low(dig_t *c, const dig_t *a) {
+	dig_t *tmp, x, y, z;
+
+	tmp = c;
+	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+		x = a[i];
+		y = x & 0x0F;
+		z = x >> 4;
+		y = (y | (y << 2)) & 0x33;
+		y = (y | (y << 1)) & 0x55;
+		*tmp++ = y;
+		z = (z | (z << 2)) & 0x33;
+		z = (z | (z << 1)) & 0x55;
+		*tmp = z;
+	}
+}
+
+void fb_sqrl_low(dig_t *c, const dig_t *a) {
+	/* Squares of all polynomials of degree less than 4. */
+	static const dig_t table[16] = {
+		0x00, 0x01, 0x04, 0x05, 0x10, 0x11, 0x14, 0x15,
+		0x40, 0x41, 0x44, 0x45, 0x50, 0x51, 0x54, 0x55
+	};
+
+	for (int i = 0; i < RLC_FB_DIGS; i++) {
+		c[2 * i] = table[RLC_LOW(a[i])];
+		c[2 * i + 1] = table[RLC_HIGH(a[i])];
+	}
+}

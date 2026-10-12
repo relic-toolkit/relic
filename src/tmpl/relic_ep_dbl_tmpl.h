@@ -36,23 +36,25 @@
 /*============================================================================*/
 
 /**
- * Defines a template for point doubling in affine coordinates.
+ * Defines a template for point doubling in affine coordinates, with and
+ * without returning the slope.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_BASIC_IMP(C, F)											\
-	static void C##_dbl_basic_imp(C##_t r, F##_t s, const C##_t p) {		\
+#define TMPL_EP_DBL_BASIC(C, F)												\
+	void C##_dbl_slp_basic(C##_t r, F##_t s, const C##_t p) {				\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2;													\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
+		F##_null_all(t0, t1, t2);											\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
+			F##_new_all(t0, t1, t2);										\
 																			\
 			/* t0 = 1/(2 * y1). */											\
 			F##_dbl(t0, p->y);												\
@@ -91,14 +93,17 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		}																	\
 	}																		\
+																			\
+																			\
+	void C##_dbl_basic(C##_t r, const C##_t p) {							\
+		C##_dbl_slp_basic(r, NULL, p);										\
+	}
 
 /**
- * Defines a template for point tripling in projective coordinates.
+ * Defines a template for point doubling in projective coordinates.
  *
  * Formulas for point doubling from
  * "Complete addition formulas for prime order elliptic curves"
@@ -108,24 +113,19 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_PROJC_IMP(C, F)											\
-	static void C##_dbl_projc_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_DBL_PROJC(C, F)												\
+	void C##_dbl_projc(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
@@ -239,12 +239,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -256,23 +251,19 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_JACOB_IMP(C, F)											\
-	static void C##_dbl_jacob_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_DBL_JACOB(C, F)												\
+	void C##_dbl_jacob(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t1, t2, t3, t4, t5);									\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (p->coord != BASIC && C##_curve_opt_a() == RLC_MIN3) {		\
 				/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */	\
@@ -419,54 +410,6 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
-	}																		\
-
-/**
- * Defines a template for point doubling in affine coordinates, with and
- * without returning the slope.
- *
- * @param[in] C			- the curve.
- * @param[in] F			- the field prefix.
- */
-#define TMPL_DBL_BASIC(C, F)												\
-	void C##_dbl_basic(C##_t r, const C##_t p) {							\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
-		C##_dbl_basic_imp(r, NULL, p);										\
-	}																		\
-																			\
-	void C##_dbl_slp_basic(C##_t r, F##_t s, const C##_t p) {				\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
-		C##_dbl_basic_imp(r, s, p);											\
-	}
-
-/**
- * Defines a template for point doubling in projective or Jacobian
- * coordinates.
- *
- * @param[in] C			- the curve.
- * @param[in] M			- the coordinate system (projc or jacob).
- */
-#define TMPL_DBL(C, M)														\
-	void C##_dbl_##M(C##_t r, const C##_t p) {								\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
-		C##_dbl_##M##_imp(r, p);											\
 	}

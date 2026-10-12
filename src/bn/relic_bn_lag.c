@@ -38,17 +38,21 @@
 
 void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
     size_t i, j;
-	bn_t *t = RLC_ALLOCA(bn_t, n + 1);
+	bn_t *t = NULL;
 
     if (n == 0) {
         bn_zero(c[0]);
         return;
     }
 
+	/* Allocate after the early return, so that it does not leak. */
+	t = RLC_ALLOCA(bn_t, n + 1);
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	RLC_TRY {
-		if (t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i <= n; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);

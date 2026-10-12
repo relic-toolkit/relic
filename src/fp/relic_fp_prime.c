@@ -322,7 +322,7 @@ int fp_prime_get_2ad(void) {
 
 void fp_prime_set_dense(const bn_t p) {
 	fp_prime_set(p);
-#if FP_RDC == QUICK
+#if FP_RDC == QUICK || FP_RDC == LOWER
 	RLC_THROW(ERR_NO_CONFIG);
 #endif
 }
@@ -434,9 +434,9 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add_dig(p, p, 240);
 				bn_mul(p, p, t0);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 113);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 115);
 				bn_mul(p, p, t0);
 				bn_set_dig(t1, 9);
 				bn_lsh(t1, t1, 8);
@@ -464,11 +464,11 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_mul(p, p, t0);
 				bn_add_dig(p, p, 188);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 3);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 4);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 87);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 88);
 				bn_mul(p, p, t0);
 				bn_set_dig(t1, 6);
 				bn_lsh(t1, t1, 8);

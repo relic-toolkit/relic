@@ -235,6 +235,18 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen binary field elements at once,
+ * in order.
+ *
+ * @param[in,out] ...		- the binary field elements.
+ */
+/** @{ */
+#define fb_null_all(...)	RLC_EACH(fb_null, __VA_ARGS__)
+#define fb_new_all(...)		RLC_EACH(fb_new, __VA_ARGS__)
+#define fb_free_all(...)	RLC_EACH(fb_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiples two binary field elements. Computes c = a * b.
  *
  * @param[out] C			- the result.
@@ -327,8 +339,6 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #define fb_inv(C, A)		fb_inv_binar(C, A)
 #elif FB_INV == EXGCD
 #define fb_inv(C, A)		fb_inv_exgcd(C, A)
-#elif FB_INV == ALMOS
-#define fb_inv(C, A)		fb_inv_almos(C, A)
 #elif FB_INV == ITOHT
 #define fb_inv(C, A)		fb_inv_itoht(C, A)
 #elif FB_INV == CTAIA
@@ -495,7 +505,7 @@ void fb_poly_get_trc(int *a, int *b, int *c);
 /**
  * Returns the table of precomputed half-traces.
  *
- * @return the table of half-traces.
+ * @return the table of half-traces, or NULL if it is not kept.
  */
 const dig_t *fb_poly_get_slv(void);
 
@@ -539,6 +549,15 @@ void fb_poly_add(fb_t c, const fb_t a);
  * @param[in] a				- the binary field element to copy.
  */
 void fb_copy(fb_t c, const fb_t a);
+
+/**
+ * Conditionally copies a binary field element to another in constant time.
+ *
+ * @param[out] c			- the destination.
+ * @param[in] a				- the source.
+ * @param[in] bit			- the condition bit, 0 or 1.
+ */
+void fb_copy_sec(fb_t c, const fb_t a, dig_t bit);
 
 /**
  * Negates a binary field element.
@@ -875,15 +894,6 @@ void fb_inv_binar(fb_t c, const fb_t a);
  * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_exgcd(fb_t c, const fb_t a);
-
-/**
- * Inverts a binary field element using the Almost Inverse algorithm.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the binary field element to invert.
- * @throw ERR_NO_VALID		- if the field element is not invertible.
- */
-void fb_inv_almos(fb_t c, const fb_t a);
 
 /**
  * Inverts a binary field element using Itoh-Tsuji inversion.

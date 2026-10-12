@@ -44,7 +44,6 @@
 #define RLC_DSTAG		RLC_STRING
 #endif
 
-
 /**
  * Evaluate a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
@@ -54,25 +53,24 @@
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
  * @param[in] deg 		- the degree of the polynomial.
  */
-TMPL_MAP_HORNER(fp, fp_st);
+TMPL_EP_MAP_HORNER(fp, fp_st);
 
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
-
+TMPL_EP_MAP_ISOGENY_MAP(ep, fp, iso);
 
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-TMPL_MAP_SSWU(ep, fp, dig_t);
+TMPL_EP_MAP_SSWU(ep, fp, dig_t);
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t);
+TMPL_EP_MAP_SVDW(ep, fp, dig_t);
 
 static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 	bn_t x;
@@ -166,12 +164,12 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
 		EP_MAP_APPLY_MAP(p);
-		TMPL_MAP_CALL_ISOMAP(ep, p);
+		TMPL_EP_MAP_CALL_ISOMAP(ep, p);
 
 		/* second map invocation */
 		EP_MAP_CONVERT_BYTES(1);
 		EP_MAP_APPLY_MAP(q);
-		TMPL_MAP_CALL_ISOMAP(ep, q);
+		TMPL_EP_MAP_CALL_ISOMAP(ep, q);
 
 		/* XXX(rsw) could add p and q and then apply isomap,
 		 * but need ep_add to support addition on isogeny curves */

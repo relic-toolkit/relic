@@ -56,12 +56,10 @@ int eb_upk(eb_t r, const eb_t p) {
 	fb_t t0, t1;
 	int result = 0;
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		eb_rhs(t1, p->x);
 
@@ -90,8 +88,7 @@ int eb_upk(eb_t r, const eb_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 	return result;
 }

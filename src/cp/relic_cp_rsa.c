@@ -878,16 +878,18 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 	size_t size, pad_len;
 	/* We suppose that the signature is invalid. */
 	int result = 0;
-	uint8_t *h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
-	uint8_t *h2 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN));
+	uint8_t *h1, *h2;
 
-	if (h1 == NULL || h2 == NULL) {
-		RLC_FREE(h1);
-		RLC_FREE(h2);
+	if (pub == NULL) {
 		return 0;
 	}
 
-	if (pub == NULL || msg_len < 0) {
+	/* Allocate after the early return, so that it does not leak. */
+	h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
+	h2 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN));
+	if (h1 == NULL || h2 == NULL) {
+		RLC_FREE(h1);
+		RLC_FREE(h2);
 		return 0;
 	}
 

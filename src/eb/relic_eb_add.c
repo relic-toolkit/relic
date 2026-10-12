@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 /**
  * Adds two points represented in affine coordinates on an ordinary binary
  * elliptic curve.
@@ -51,14 +49,10 @@
 static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 	fb_t t0, t1, t2;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
+	fb_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
+		fb_new_all(t0, t1, t2);
 
 		/* t0 = (y1 + y2). */
 		fb_add(t0, p->y, q->y);
@@ -116,16 +110,9 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
+		fb_free_all(t0, t1, t2);
 	}
 }
-
-#endif /* EB_ADD == BASIC */
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
 
 /**
  * Adds a point represented in affine coordinates to a point represented in
@@ -138,20 +125,10 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 	fb_t t0, t1, t2, t3, t4, t5;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
-	fb_null(t3);
-	fb_null(t4);
-	fb_null(t5);
+	fb_null_all(t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
-		fb_new(t3);
-		fb_new(t4);
-		fb_new(t5);
+		fb_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* madd-2005-dl formulas: 7M + 4S + 9add + 1*4 + 3*2. */
 		/* http://www.hyperelliptic.org/EFD/g12o/auto-shortw-lopezdahab-1.html#addition-madd-2005-dl */
@@ -252,15 +229,9 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
-		fb_free(t3);
-		fb_free(t4);
-		fb_free(t5);
+		fb_free_all(t0, t1, t2, t3, t4, t5);
 	}
 }
-
 
 /**
  * Adds two points represented in projective coordinates on an ordinary binary
@@ -279,24 +250,10 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 	}
 	fb_t t0, t1, t2, t3, t4, t5, t6, t7;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
-	fb_null(t3);
-	fb_null(t4);
-	fb_null(t5);
-	fb_null(t6);
-	fb_null(t7);
+	fb_null_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
-		fb_new(t3);
-		fb_new(t4);
-		fb_new(t5);
-		fb_new(t6);
-		fb_new(t7);
+		fb_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 		/* t0 = B = x2 * z1. */
 		fb_mul(t0, q->x, p->z);
@@ -371,24 +328,13 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
-		fb_free(t3);
-		fb_free(t4);
-		fb_free(t5);
-		fb_free(t6);
-		fb_free(t7);
+		fb_free_all(t0, t1, t2, t3, t4, t5, t6, t7);
 	}
 }
-
-#endif /* EB_ADD == PROJC */
 
 /*============================================================================*/
 	/* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_ADD == BASIC || !defined(STRIP)
 
 void eb_add_basic(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
@@ -430,10 +376,6 @@ void eb_sub_basic(eb_t r, const eb_t p, const eb_t q) {
 	}
 }
 
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
 void eb_add_projc(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
 		eb_copy(r, q);
@@ -471,5 +413,3 @@ void eb_sub_projc(eb_t r, const eb_t p, const eb_t q) {
 		eb_free(t);
 	}
 }
-
-#endif

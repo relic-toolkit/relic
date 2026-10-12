@@ -26,284 +26,27 @@
  *
  * Implementation of the point multiplication on Twisted Edwards elliptic curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_MUL == LWNAF || !defined(STRIP)
+TMPL_EC_MUL_NAF_IMP(ed, RLC_FP_BITS);
 
-static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FP_BITS + 1];
-	ed_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_null(t[i]);
-			ed_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		ed_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		ed_set_infty(r);
-		for (i = l - 1; i > 0; i--) {
-			n = naf[i];
-			if (n == 0) {
-				/* This point will be doubled in the next iteration. */
-#if ED_ADD == EXTND
-				r->coord = EXTND;
-#endif
-			}
-			ed_dbl(r, r);
-			if (n > 0) {
-				ed_add(r, r, t[n / 2]);
-			} else if (n < 0) {
-				ed_sub(r, r, t[-n / 2]);
-			}
-		}
-
-		/* Last iteration. */
-		n = naf[0];
-		ed_dbl(r, r);
-		if (n > 0) {
-			ed_add(r, r, t[n / 2]);
-		} else if (n < 0) {
-			ed_sub(r, r, t[-n / 2]);
-		}
-
-		/* Convert r to affine coordinates. */
-		ed_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_free(t[i]);
-		}
-	}
-}
-
-#endif /* ED_MUL == LWNAF */
-
-#if ED_MUL == LWREG || !defined(STRIP)
-
-static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
-	bn_t _k;
-	int i, j, n;
-	int8_t s, reg[RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
-	ed_t t[1 << (RLC_WIDTH - 2)], u, v;
-	size_t l;
-
-	bn_null(_k);
-
-	RLC_TRY {
-		bn_new(_k);
-		ed_new(u);
-		ed_new(v);
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_null(t[i]);
-			ed_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		ed_tab(t, p, RLC_WIDTH);
-
-		/* Make a copy of the scalar for processing. */
-		bn_abs(_k, k);
-		_k->dp[0] |= bn_is_even(_k);
-
-		/* Compute the w-NAF representation of k. */
-		l = RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1) + 1;
-		bn_rec_reg(reg, &l, _k, RLC_FP_BITS, RLC_WIDTH);
-
-		ed_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			for (j = 0; j < RLC_WIDTH - 1; j++) {
-				ed_dbl(r, r);
-			}
-
-			n = reg[i];
-			s = (n >> 7);
-			n = ((n ^ s) - s) >> 1;
-
-			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				fp_copy_sec(u->x, t[j]->x, j == n);
-				fp_copy_sec(u->y, t[j]->y, j == n);
-				fp_copy_sec(u->z, t[j]->z, j == n);
-#if ED_ADD == EXTND
-				fp_copy_sec(u->t, t[j]->t, j == n);
-#endif
-			}
-			ed_neg(v, u);
-			fp_copy_sec(u->x, v->x, s != 0);
-#if ED_ADD == EXTND
-			fp_copy_sec(u->t, v->t, s != 0);
-#endif
-			ed_add(r, r, u);
-		}
-
-		/* t[0] has an unmodified copy of p. */
-		ed_sub(u, r, t[0]);
-		fp_copy_sec(r->x, u->x, bn_is_even(k));
-		fp_copy_sec(r->y, u->y, bn_is_even(k));
-		fp_copy_sec(r->z, u->z, bn_is_even(k));
-#if ED_Afp == EXTND
-		fp_copy_sec(r->t, u->t, bn_is_even(k));
-#endif
-		/* Convert r to affine coordinates. */
-		ed_norm(r, r);
-		ed_neg(u, r);
-		fp_copy_sec(r->x, u->x, bn_sign(k) == RLC_NEG);
-#if ED_ADD == EXTND
-		fp_copy_sec(r->t, u->t, bn_sign(k) == RLC_NEG);
-#endif
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ed_free(t[i]);
-		}
-		bn_free(_k);
-	}
-}
-
-#endif /* ED_MUL == LWNAF */
+TMPL_EC_MUL_REG_IMP(ed, RLC_FP_BITS);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_MUL == BASIC || !defined(STRIP)
+TMPL_EC_MUL_BASIC(ed);
 
-void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
-	ed_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
-	size_t l;
-
-	ed_null(t);
-
-	if (bn_is_zero(k) || ed_is_infty(p)) {
-		RLC_FREE(naf);
-		ed_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ed_new(t);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_BUFFER);
-		}
-
-		l = bn_bits(k) + 1;
-		bn_rec_naf(naf, &l, k, 2);
-		ed_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
-			ed_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				ed_add(t, t, p);
-			} else if (u < 0) {
-				ed_sub(t, t, p);
-			}
-		}
-
-		ed_norm(r, t);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(t);
-		RLC_FREE(naf);
-	}
-}
-
-#endif
-
-#if ED_MUL == MONTY || !defined(STRIP)
-
-void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
-	ed_t t[2];
-
-	ed_null(t[0]);
-	ed_null(t[1]);
-
-	if (bn_is_zero(k) || ed_is_infty(p)) {
-		ed_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ed_new(t[0]);
-		ed_new(t[1]);
-
-		ed_set_infty(t[0]);
-		ed_copy(t[1], p);
-
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
-
-			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
-#if ED_ADD == EXTND
-			dv_swap_sec(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
-#endif
-			ed_add(t[0], t[0], t[1]);
-			ed_dbl(t[1], t[1]);
-			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
-#if ED_ADD == EXTND
-			dv_swap_sec(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
-#endif
-		}
-
-		ed_norm(r, t[0]);
-		if (bn_sign(k) == RLC_NEG) {
-			ed_neg(r, r);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(t[1]);
-		ed_free(t[0]);
-	}
-}
-
-#endif
-
-#if ED_MUL == LWNAF || !defined(STRIP)
+TMPL_EC_MUL_MONTY(ed);
 
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k) || ed_is_infty(p)) {
@@ -314,10 +57,6 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 	ed_mul_naf_imp(r, p, k);
 }
 
-#endif
-
-#if ED_MUL == LWREG || !defined(STRIP)
-
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
@@ -327,76 +66,10 @@ void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 	ed_mul_reg_imp(r, p, k);
 }
 
-#endif
-
-void ed_mul_gen(ed_t r, const bn_t k) {
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
 #ifdef ED_PRECO
-	ed_mul_fix(r, ed_curve_get_tab(), k);
+TMPL_EC_MUL_GEN(ed, preco);
 #else
-	ed_t g;
-
-	ed_null(g);
-
-	RLC_TRY {
-		ed_new(g);
-		ed_curve_get_gen(g);
-		ed_mul(r, g, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(g);
-	}
+TMPL_EC_MUL_GEN(ed, plain);
 #endif
-}
 
-void ed_mul_dig(ed_t r, const ed_t p, dig_t k) {
-	ed_t t;
-	bn_t _k;
-	int8_t u, naf[RLC_DIG + 1];
-	size_t l;
-
-	ed_null(t);
-	bn_null(_k);
-
-	if (k == 0 || ed_is_infty(p)) {
-		ed_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ed_new(t);
-		bn_new(_k);
-
-		bn_set_dig(_k, k);
-
-		l = RLC_DIG + 1;
-		bn_rec_naf(naf, &l, _k, 2);
-
-		ed_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
-			ed_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				ed_add(t, t, p);
-			} else if (u < 0) {
-				ed_sub(t, t, p);
-			}
-		}
-
-		ed_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ed_free(t);
-		bn_free(_k);
-	}
-}
+TMPL_EC_MUL_DIG(ed);

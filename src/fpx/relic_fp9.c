@@ -43,6 +43,8 @@ TMPL_FPX_BASE(fp9, fp3, 3);
 
 TMPL_FPX_BIN(fp9, fp3, 3, 9);
 
+TMPL_FPX_ASM_DIG(fp9, fp3, 3);
+
 TMPL_FPX_MUL_CUBIC(fp9, fp3, fp3_mul_nor);
 
 TMPL_FPX_MUL_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_muln_low);

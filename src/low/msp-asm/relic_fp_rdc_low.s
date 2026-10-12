@@ -46,7 +46,6 @@
 
 .text
 .align 2
-#if FP_RDC == MONTY
 .global fp_rdcn_low
 
 
@@ -187,20 +186,22 @@ dont_subtract:
     pop r4
     ret
 
-#else
-.global fp_rdcs_low
+
+.global fp_rdcs_k1_low
+.global fp_rdcs_p1_low
 
 #if FP_PRIME == 160
 
 #include "relic_fp_rdc_low_160k1.s"
+#include "relic_fp_rdc_low_160p1.s"
 
 #elif FP_PRIME == 256
 
 #include "relic_fp_rdc_low_256k1.s"
+#include "relic_fp_rdc_low_256p1.s"
 
 #else
 
 #error Unsupported field size
 
-#endif
 #endif

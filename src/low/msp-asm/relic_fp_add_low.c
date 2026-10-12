@@ -55,7 +55,6 @@ void fp_dblm_low(dig_t *c, const dig_t *a) {
 	fp_dbl(c, a);
 }
 
-
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	fp_sub(c, a, b);
 }
@@ -76,6 +75,28 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	fp_add1_low(c + RLC_FP_DIGS, a + RLC_FP_DIGS, carry);
 
 	carry = fp_rsh1_low(c + RLC_FP_DIGS, c + RLC_FP_DIGS);
+	fp_rsh1_low(c, c);
+	if (carry) {
+		c[RLC_FP_DIGS - 1] ^= ((dig_t)1 << (RLC_DIG - 1));
+	}
+}
+
+void fp_negm_low(dig_t *c, const dig_t *a) {
+	if (fp_is_zero(a)) {
+		fp_zero(c);
+	} else {
+		fp_subn_low(c, fp_prime_get(), a);
+	}
+}
+
+void fp_hlvm_low(dig_t *c, const dig_t *a) {
+	dig_t carry = 0;
+
+	if (a[0] & 1) {
+		carry = fp_addn_low(c, a, fp_prime_get());
+	} else {
+		dv_copy(c, a, RLC_FP_DIGS);
+	}
 	fp_rsh1_low(c, c);
 	if (carry) {
 		c[RLC_FP_DIGS - 1] ^= ((dig_t)1 << (RLC_DIG - 1));

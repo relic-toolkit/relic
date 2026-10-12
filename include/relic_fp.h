@@ -379,6 +379,8 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_rdc(C, A)		fp_rdc_monty(C, A)
 #elif FP_RDC == QUICK
 #define fp_rdc(C, A)		fp_rdc_quick(C, A)
+#elif FP_RDC == LOWER
+#define fp_rdc(C, A)		fp_rdc_lower(C, A)
 #endif
 
 /**
@@ -1100,6 +1102,15 @@ void fp_rdc_monty_comba(fp_t c, dv_t a);
  * @param[in] a				- the multiplication result to reduce.
  */
 void fp_rdc_quick(fp_t c, dv_t a);
+
+/**
+ * Reduces a multiplication result modulo the prime field modulo using
+ * the implementation provided by the lower layer.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiplication result to reduce.
+ */
+void fp_rdc_lower(fp_t c, dv_t a);
 
 /**
  * Inverts a prime field element using Fermat's Little Theorem.

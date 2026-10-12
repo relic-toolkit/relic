@@ -41,12 +41,10 @@
 void eb_hlv(eb_t r, const eb_t p) {
 	fb_t l, t;
 
-	fb_null(l);
-	fb_null(t);
+	fb_null_all(l, t);
 
 	RLC_TRY {
-		fb_new(l);
-		fb_new(t);
+		fb_new_all(l, t);
 
 		/* Solve l^2 + l = u + a. */
 		switch (eb_curve_opt_a()) {
@@ -94,7 +92,6 @@ void eb_hlv(eb_t r, const eb_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(l);
-		fb_free(t);
+		fb_free_all(l, t);
 	}
 }

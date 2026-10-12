@@ -29,7 +29,6 @@
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -68,4 +67,11 @@ dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
 	}
 	return carry;
+}
+
+void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+
+	fp_muln_low(t, a, b);
+	fp_rdc(c, t);
 }

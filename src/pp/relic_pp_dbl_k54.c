@@ -41,8 +41,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 void pp_dbl_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 	fp9_t s;
 	ep9_t t;
@@ -80,10 +78,6 @@ void pp_dbl_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 		ep9_free(t);
 	}
 }
-
-#endif
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 	fp9_t t0, t1, t2, t3, t4, t5, t6;
@@ -192,5 +186,3 @@ void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 		fp9_free(t6);
 	}
 }
-
-#endif

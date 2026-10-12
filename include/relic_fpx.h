@@ -252,7 +252,6 @@ typedef dv18_t dv54_t[3];
 #define dv2_null(A)															\
 		dv_null(A[0]); dv_null(A[1]);										\
 
-
 /**
  * Allocates a double-precision quadratic extension field element.
  *
@@ -2660,7 +2659,6 @@ int fp4_srt(fp4_t c, const fp4_t a);
  */
 void fp6_copy(fp6_t c, const fp6_t a);
 
-
 /**
  * Conditionally copies the second argument to the first argument.
  *
@@ -3405,6 +3403,15 @@ void fp9_set_dig(fp9_t a, const dig_t b);
 void fp9_add(fp9_t c, const fp9_t a, const fp9_t b);
 
 /**
+ * Adds a nonic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp9_add_dig(fp9_t c, const fp9_t a, dig_t b);
+
+/**
  * Subtracts a nonic extension field element from another. Computes
  * c = a - b.
  *
@@ -3413,6 +3420,15 @@ void fp9_add(fp9_t c, const fp9_t a, const fp9_t b);
  * @param[in] b				- the nonic extension field element.
  */
 void fp9_sub(fp9_t c, const fp9_t a, const fp9_t b);
+
+/**
+ * Subtracts a nonic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp9_sub_dig(fp9_t c, const fp9_t a, dig_t b);
 
 /**
  * Negates a nonic extension field element. Computes c = -a.
@@ -3429,6 +3445,15 @@ void fp9_neg(fp9_t c, const fp9_t a);
  * @param[in] a				- the nonic extension field element to double.
  */
 void fp9_dbl(fp9_t c, const fp9_t a);
+
+/**
+ * Multiplies a nonic extension field element by a digit. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp9_mul_dig(fp9_t c, const fp9_t a, dig_t b);
 
 /**
  * Multiples two nonic extension field elements without performing modular

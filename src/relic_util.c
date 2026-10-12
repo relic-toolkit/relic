@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <string.h>
 
 #include "relic_core.h"
 #include "relic_conf.h"
@@ -81,33 +82,6 @@ FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-uint32_t util_conv_endian(uint32_t i) {
-	uint32_t i1, i2, i3, i4;
-	i1 = i & 0xFF;
-	i2 = (i >> 8) & 0xFF;
-	i3 = (i >> 16) & 0xFF;
-	i4 = (i >> 24) & 0xFF;
-
-	return ((uint32_t) i1 << 24) | ((uint32_t) i2 << 16) | ((uint32_t) i3 << 8)
-			| i4;
-}
-
-uint32_t util_conv_big(uint32_t i) {
-#ifdef BIGED
-	return i;
-#else
-	return util_conv_endian(i);
-#endif
-}
-
-uint32_t util_conv_little(uint32_t i) {
-#ifndef BIGED
-	return util_conv_endian(i);
-#else
-	return i;
-#endif
-}
 
 void util_write_uint32(uint8_t *bin, uint32_t a) {
 	bin[0] = (uint8_t)(a >> 24);
@@ -164,6 +138,14 @@ int util_cmp_sec(const void *a, const void *b, size_t size) {
 	return (result == 0 ? RLC_EQ : RLC_NE);
 }
 
+void util_zero(void *a, size_t n) {
+	/* Calling through a volatile pointer keeps the compiler from removing
+	 * the call when the buffer is dead afterwards. */
+	static void *(*const volatile set)(void *, int, size_t) = &memset;
+
+	set(a, 0, n);
+}
+
 void util_perm(uint_t p[], size_t n) {
 	size_t i, j, k;
 
@@ -176,7 +158,7 @@ void util_perm(uint_t p[], size_t n) {
 }
 
 #ifndef QUIET
-void util_print(const char *format, ...) {
+void util_printf(const char *format, ...) {
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;

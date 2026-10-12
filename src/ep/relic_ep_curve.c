@@ -365,11 +365,9 @@ const ep_t *ep_curve_get_tab(void) {
 #endif
 }
 
-
 iso_t ep_curve_get_iso() {
 	return &core_get()->ep_iso;
 }
-
 
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
@@ -389,8 +387,6 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
-
-
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
 	ctx_t *ctx = core_get();
@@ -400,124 +396,83 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
-
-
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap) {
 	uint_t bits = bn_bits(r);
 	ctx_t *ctx = core_get();
+	bn_st *v1 = ctx->ep_v1, *v2 = ctx->ep_v2;
+	ep_t p, q;
+	bn_t m;
+
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
 
 	ep_curve_set(a, b, g, r, h, ctmap);
 
-	/* Precompute endomorphism constants. */
-	ep_t p, q;
-	bn_t m, n, t;
-
 	ep_null(p);
 	ep_null(q);
 	bn_null(m);
-	bn_null(n);
-	bn_null(t);
 
 	RLC_TRY {
 		ep_new(p);
 		ep_new(q);
 		bn_new(m);
-		bn_new(n);
-		bn_new(t);
 
-		/* Check if [m]P = \psi(P). */
-		fp_copy(ctx->beta, beta);
-		/* Fix lambda in case it is negative. */
-		if (bn_sign(l) == RLC_NEG) {
-			bn_add(m, l, r);
-		} else {
-			bn_copy(m, l);
-		}
-		/* Now check that beta and lambda match each other. */
-		ep_psi(p, g);
+		/* The endomorphism must act on G as multiplication by lambda. */
+		bn_mod(m, l, r);
 		ep_mul_basic(q, g, m);
-		/* Fix beta in case it is the wrong value. */
-		if (ep_cmp(q, p) != RLC_EQ) {
+		fp_copy(ctx->beta, beta);
+		ep_psi(p, g);
+		if (ep_cmp(p, q) != RLC_EQ) {
+			/* Otherwise, beta is the conjugate root of unity: the other cube
+			 * root -beta - 1 when a = 0, the other fourth root -beta if not. */
 			fp_neg(ctx->beta, ctx->beta);
 			if (fp_is_zero(a)) {
-				/* In this case, look for other choice of beta. */
 				fp_sub_dig(ctx->beta, ctx->beta, 1);
 			}
 			ep_psi(p, g);
-			ep_mul_basic(q, g, m);
-			if (ep_cmp(q, p) != RLC_EQ) {
+			if (ep_cmp(p, q) != RLC_EQ) {
 				RLC_THROW(ERR_NO_VALID);
 			}
 		}
-		if (fp_is_zero(a)) {
-			/* Compute trace of Frobenius t = (p + 1) - n. */
-			bn_mul(n, r, h);
-			bn_add_dig(t, &(ctx->prime), 1);
-			bn_sub(t, t, n);
-			/* c = (4q - t^2)/3. */
-			bn_lsh(&(ctx->ep_v1[1]), &(ctx->prime), 2);
-			bn_sqr(&(ctx->ep_v1[0]), t);
-			bn_sub(&(ctx->ep_v1[1]), &(ctx->ep_v1[1]), &(ctx->ep_v1[0]));
-			bn_div_dig(&(ctx->ep_v1[1]), &(ctx->ep_v1[1]), 3);
-			/* v1 = ((t - c)/2 - 1, c), v2 = ((t + c)/2 + 1, 1 - (t - c)/2). */
-			bn_sub(&(ctx->ep_v1[0]), t, &(ctx->ep_v1[1]));
-			bn_hlv(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]));
-			bn_add(&(ctx->ep_v2[0]), t, &(ctx->ep_v1[1]));
-			bn_hlv(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
-			bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
-			bn_neg(&(ctx->ep_v2[1]), &(ctx->ep_v1[0]));
-			bn_add_dig(&(ctx->ep_v2[1]), &(ctx->ep_v2[1]), 1);
-			bn_sub_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
-			bn_copy(&(ctx->ep_v1[2]), &(ctx->ep_v1[1]));
-			bn_copy(&(ctx->ep_v1[1]), &(ctx->ep_v1[0]));
-			bn_copy(&(ctx->ep_v2[2]), &(ctx->ep_v2[1]));
-			bn_copy(&(ctx->ep_v2[1]), &(ctx->ep_v2[0]));
+
+		/* Short basis (v1[1], v1[2]), (v2[1], v2[2]) of the lattice of
+		 * (k0, k1) with k0 + k1 * lambda = 0 mod r, for GLV decompositions. */
+		bn_gcd_ext_mid(&v1[1], &v1[2], &v2[1], &v2[2], m, r);
+		/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
+		bn_mul(&v1[0], &v1[1], &v2[2]);
+		bn_mul(&v2[0], &v1[2], &v2[1]);
+		bn_sub(m, &v1[0], &v2[0]);
+		bn_hlv(m, m);
+		/* v1[0] = round(v2[2] * 2^(|r| + 1) / 2m) and
+		 * v2[0] = -round(v1[2] * 2^(|r| + 1) / 2m). */
+		bn_lsh(&v1[0], &v2[2], bits + 1);
+		bn_lsh(&v2[0], &v1[2], bits + 1);
+		for (int i = 0; i < 2; i++) {
+			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
+			if (bn_sign(v) == RLC_POS) {
+				bn_add(v, v, m);
+			} else {
+				bn_sub(v, v, m);
+			}
 		}
-			bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
-					&(ctx->ep_v2[2]), m, r);
-			/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
-			bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
-			bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
-			bn_sub(m, &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));
-			bn_hlv(m, m);
-			/* v1[0] = round(v2[2] * 2^|n| / m). */
-			bn_lsh(&(ctx->ep_v1[0]), &(ctx->ep_v2[2]), bits + 1);
-			if (bn_sign(&(ctx->ep_v1[0])) == RLC_POS) {
-				bn_add(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
-			} else {
-				bn_sub(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+		bn_dbl(m, m);
+		for (int i = 0; i < 2; i++) {
+			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
+			bn_div(v, v, m);
+			if (bn_sign(v) == RLC_NEG) {
+				bn_add_dig(v, v, 1);
 			}
-			bn_dbl(m, m);
-			bn_div(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
-			if (bn_sign(&ctx->ep_v1[0]) == RLC_NEG) {
-				bn_add_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
-			}
-			/* v2[0] = round(v1[2] * 2^|n| / m). */
-			bn_lsh(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), bits + 1);
-			if (bn_sign(&(ctx->ep_v2[0])) == RLC_POS) {
-				bn_add(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-			} else {
-				bn_sub(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-			}
-			bn_div(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-			if (bn_sign(&ctx->ep_v2[0]) == RLC_NEG) {
-				bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
-			}
-			bn_neg(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
+		}
+		bn_neg(&v2[0], &v2[0]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		ep_free(p);
 		ep_free(q);
 		bn_free(m);
-		bn_free(n);
-		bn_free(t);
 	}
 }
-
 
 int ep_curve_embed(void) {
 	switch (core_get()->ep_is_pairf) {

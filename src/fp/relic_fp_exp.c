@@ -87,7 +87,6 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 		return;
 	}
 
-
 	/* Initialize table. */
 	for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
 		fp_null(t[i]);

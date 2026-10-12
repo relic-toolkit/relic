@@ -214,7 +214,6 @@
 #define RLC_NULL(A)			A = NULL;
 #endif
 
-
 /**
  * Accumulates a double precision digit in a triple register variable.
  *
@@ -294,21 +293,6 @@
 /*============================================================================*/
 
 /**
- * Toggle endianness of a digit.
- */
-uint32_t util_conv_endian(uint32_t i);
-
-/**
- * Convert a digit to big-endian.
- */
-uint32_t util_conv_big(uint32_t i);
-
-/**
- * Convert a digit to little-endian.
- */
-uint32_t util_conv_little(uint32_t i);
-
-/**
  * Converts a small digit to a character.
  */
 char util_conv_char(dig_t i);
@@ -349,6 +333,14 @@ size_t util_bits_dig(dig_t a);
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
 int util_cmp_sec(const void *a, const void *b, size_t n);
+
+/**
+ * Overwrites a buffer with zeros, even when it is not read afterwards.
+ *
+ * @param[out] a			- the buffer.
+ * @param[in] n				- the length in bytes of the buffer.
+ */
+void util_zero(void *a, size_t n);
 
 /**
  * Computes a random permutation in [0, n-1].

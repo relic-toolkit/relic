@@ -37,7 +37,7 @@
  * Evaluates a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  */
-#define TMPL_MAP_HORNER(PFX, IN)											\
+#define TMPL_EP_MAP_HORNER(PFX, IN)											\
 	static void PFX##_eval(PFX##_t c, PFX##_t a, IN *coeffs, int deg) {		\
 		PFX##_copy(c, coeffs[deg]);											\
 		for (int i = deg; i > 0; --i) {										\
@@ -49,7 +49,7 @@
 /* conditionally normalize result of isogeny map when not using projective coords */
 #if EP_ADD == JACOB
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* Y = Ny * Dx * Z^2. */											\
 		PFX##_mul(q->y, p->y, t1);											\
@@ -66,7 +66,7 @@
 
 #elif EP_ADD == PROJC
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 		/* Z = Dx * Dy. */													\
 		PFX##_mul(q->z, t2, t3);											\
 		/* X = Nx * Dy. */													\
@@ -78,7 +78,7 @@
 
 #else
 
-#define TMPL_MAP_ISOMAP_NORM(PFX)											\
+#define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* when working with affine coordinates, clear denominator */		\
 		PFX##_mul(q->z, t2, t3);											\
@@ -100,7 +100,7 @@
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-#define TMPL_MAP_ISOGENY_MAP(CUR, PFX, ISO)									\
+#define TMPL_EP_MAP_ISOGENY_MAP(CUR, PFX, ISO)									\
 	/* declaring this function inline suppresses unused warnings */			\
 	static inline void CUR##_iso(CUR##_t q, CUR##_t p) {					\
 		PFX##_t t0, t1, t2, t3;												\
@@ -118,7 +118,7 @@
 		PFX##_null(t1);														\
 		PFX##_null(t2);														\
 		PFX##_null(t3);														\
-                                                                    		\
+																			\
 		RLC_TRY {															\
 			PFX##_new(t0);													\
 			PFX##_new(t1);													\
@@ -135,7 +135,7 @@
 			PFX##_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);				\
 																			\
 			/* normalize if necessary */									\
-			TMPL_MAP_ISOMAP_NORM(PFX);										\
+			TMPL_EP_MAP_ISOMAP_NORM(PFX);										\
 		}																	\
 		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }							\
 		RLC_FINALLY {														\
@@ -147,7 +147,7 @@
 	}																		\
 
 /* Call the isogeny map if the curve has one. */
-#define TMPL_MAP_CALL_ISOMAP(CUR, PT)										\
+#define TMPL_EP_MAP_CALL_ISOMAP(CUR, PT)										\
 	do {																	\
 		if (CUR##_curve_is_ctmap()) {										\
 			CUR##_iso(PT, PT);												\
@@ -158,7 +158,7 @@
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-#define TMPL_MAP_SSWU(CUR, PFX, PTR_TY)										\
+#define TMPL_EP_MAP_SSWU(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_sswu(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t0, t1, t2, t3;												\
 		ctx_t *ctx = core_get();											\
@@ -166,7 +166,7 @@
 		PTR_TY *a = ctx->CUR##_map_c[2];									\
 		PTR_TY *b = ctx->CUR##_map_c[3];									\
 		PTR_TY *u = ctx->CUR##_map_u;										\
-                                                                            \
+																			\
 		PFX##_null(t0);														\
 		PFX##_null(t1);														\
 		PFX##_null(t2);														\
@@ -190,9 +190,9 @@
 				const int e1 = PFX##_is_zero(t2);							\
 				PFX##_neg(t3, u);           /* t3 = -u */					\
 				/* exception: -u instead of u^2t^4 + ut^2 */				\
-				PFX##_copy_sec(t2, t3, e1);      							\
+				PFX##_copy_sec(t2, t3, e1);									\
 				/* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */					\
-				PFX##_inv(t2, t2);          								\
+				PFX##_inv(t2, t2);											\
 				PFX##_add_dig(t3, t2, 1);   /* t3 = 1 + t2 */				\
 				PFX##_copy_sec(t2, t3, e1 == 0); /* add 1 if t2 != -1/u */	\
 			}																\
@@ -204,7 +204,7 @@
 			PFX##_add(p->y, p->y, a);     /* x^2 + a */						\
 			PFX##_mul(p->y, p->y, p->x);  /* x^3 + a x */					\
 			PFX##_add(p->y, p->y, b);     /* x^3 + a x + b */				\
-                                                                            \
+																			\
 			/* compute x2, g(x2) */											\
 			PFX##_mul(t2, t0, p->x); /* t2 = u * t^2 * x1 */				\
 			PFX##_mul(t1, t0, t1);   /* t1 = u^3 * t^6 */					\
@@ -234,7 +234,7 @@
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-#define TMPL_MAP_SVDW(CUR, PFX, PTR_TY)										\
+#define TMPL_EP_MAP_SVDW(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_svdw(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t1, t2, t3, t4;												\
 		ctx_t *ctx = core_get();											\
@@ -248,7 +248,7 @@
 		PFX##_null(t2);														\
 		PFX##_null(t3);														\
 		PFX##_null(t4);														\
-                                                                            \
+																			\
 		RLC_TRY {															\
 			PFX##_new(t1);													\
 			PFX##_new(t2);													\
@@ -262,7 +262,7 @@
 			PFX##_sub_dig(t1, t1, 1);										\
 			PFX##_neg(t1, t1);     /* 1 - t^2 * g(u) */						\
 			PFX##_mul(t3, t1, t2); /* (1+t^2*g(u)) * (1-t^2*g(u)) */		\
-                                                                            \
+																			\
 			/* handle exceptional case */									\
 			{																\
 				/* compute inv0(t3), i.e., 0 if t3 == 0, 1/t3 otherwise */	\
@@ -395,21 +395,11 @@
 		bn_t k;																\
 																			\
 		bn_null(k);															\
-		F##_null(v);														\
-		F##_null(w);														\
-		F##_null(y);														\
-		F##_null(x1);														\
-		F##_null(y1);														\
-		F##_null(z1);														\
+		F##_null_all(v, w, y, x1, y1, z1);									\
 																			\
 		RLC_TRY {															\
 			bn_new(k);														\
-			F##_new(v);														\
-			F##_new(w);														\
-			F##_new(y);														\
-			F##_new(x1);													\
-			F##_new(y1);													\
-			F##_new(z1);													\
+			F##_new_all(v, w, y, x1, y1, z1);								\
 																			\
 			F##_sqr(x1, u);													\
 			F##_mul(x1, x1, u);												\
@@ -476,12 +466,7 @@
 		}																	\
 		RLC_FINALLY {														\
 			bn_free(k);														\
-			F##_free(v);													\
-			F##_free(w);													\
-			F##_free(y);													\
-			F##_free(x1);													\
-			F##_free(y1);													\
-			F##_free(z1);													\
+			F##_free_all(v, w, y, x1, y1, z1);								\
 		}																	\
 	}
 
@@ -501,32 +486,14 @@
 		bn_t k;																\
 																			\
 		bn_null(k);															\
-		F##_null(a);														\
-		F##_null(b);														\
-		F##_null(c);														\
-		F##_null(d);														\
-		F##_null(v);														\
-		F##_null(w);														\
-		F##_null(y);														\
-		F##_null(x1);														\
-		F##_null(y1);														\
-		F##_null(z1);														\
+		F##_null_all(a, b, c, d, v, w, y, x1, y1, z1);						\
 		F##_null(den[0]);													\
 		F##_null(den[1]);													\
 		F##_null(den[2]);													\
 																			\
 		RLC_TRY {															\
 			bn_new(k);														\
-			F##_new(a);														\
-			F##_new(b);														\
-			F##_new(c);														\
-			F##_new(d);														\
-			F##_new(v);														\
-			F##_new(w);														\
-			F##_new(y);														\
-			F##_new(x1);													\
-			F##_new(y1);													\
-			F##_new(z1);													\
+			F##_new_all(a, b, c, d, v, w, y, x1, y1, z1);					\
 			F##_new(den[0]);												\
 			F##_new(den[1]);												\
 			F##_new(den[2]);												\
@@ -644,16 +611,7 @@
 		}																	\
 		RLC_FINALLY {														\
 			bn_free(k);														\
-			F##_free(a);													\
-			F##_free(b);													\
-			F##_free(c);													\
-			F##_free(d);													\
-			F##_free(v);													\
-			F##_free(w);													\
-			F##_free(y);													\
-			F##_free(x1);													\
-			F##_free(y1);													\
-			F##_free(z1);													\
+			F##_free_all(a, b, c, d, v, w, y, x1, y1, z1);					\
 			F##_free(den[0]);												\
 			F##_free(den[1]);												\
 			F##_free(den[2]);												\
@@ -674,12 +632,10 @@
 		F##_t u, t;															\
 		uint8_t sign;														\
 																			\
-		F##_null(u);														\
-		F##_null(t);														\
+		F##_null_all(u, t);													\
 																			\
 		RLC_TRY {															\
-			F##_new(u);														\
-			F##_new(t);														\
+			F##_new_all(u, t);												\
 			sign = C##_map_input(u, t, msg, len);							\
 			C##_map_a0(p, u, t, sign);										\
 			C##_mul_cof(p, p);												\
@@ -688,8 +644,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(u);													\
-			F##_free(t);													\
+			F##_free_all(u, t);												\
 		}																	\
 	}
 
@@ -709,12 +664,10 @@
 		F##_t u, t;															\
 		uint8_t sign;														\
 																			\
-		F##_null(u);														\
-		F##_null(t);														\
+		F##_null_all(u, t);													\
 																			\
 		RLC_TRY {															\
-			F##_new(u);														\
-			F##_new(t);														\
+			F##_new_all(u, t);												\
 			sign = C##_map_input(u, t, msg, len);							\
 			if (C##_curve_opt_b() == RLC_ZERO) {							\
 				C##_map_b0(p, u, t, sign);									\
@@ -729,7 +682,6 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(u);													\
-			F##_free(t);													\
+			F##_free_all(u, t);												\
 		}																	\
 	}

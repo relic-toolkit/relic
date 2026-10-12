@@ -138,10 +138,11 @@ static void reset_font(void) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void test_fail(void) {
+void test_fail(const char *file, int line) {
 	fail_font();
 	util_print("[FAIL]\n");
 	reset_font();
+	util_print("(at %s:%d)\n", file, line);
 }
 
 void test_pass(void) {

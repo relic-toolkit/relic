@@ -31,6 +31,8 @@
 
 #include <avr/pgmspace.h>
 
+#include "relic_core.h"
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -51,26 +53,28 @@ void arch_copy_rom(char *dest, const char *src, size_t len) {
 	*dest = 0;
 }
 
-uint_t arch_lzcnt() {
+uint_t arch_lzcnt(dig_t a) {
+	/* Leading zeros of a nibble. */
 	static const uint8_t table[16] = {
-		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
+		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
 	};
+
+	/* The high nibble decides, unless it is zero. Zero gives WSIZE. */
 	if (a >> 4 == 0) {
-		return table[a & 0xF];
-	} else {
-		return table[a >> 4] + 4;
+		return table[a & 0xF] + 4;
 	}
-	return 0;
+	return table[a >> 4];
 }
 
-uint_t arch_tzcnt() {
+uint_t arch_tzcnt(dig_t a) {
+	/* Trailing zeros of a nibble. */
 	static const uint8_t table[16] = {
 		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
 	};
-	if (a >> 4 != 0) {
-		return table[a & 0xF];
-	} else {
+
+	/* The low nibble decides, unless it is zero. Zero gives WSIZE. */
+	if ((a & 0xF) == 0) {
 		return table[a >> 4] + 4;
 	}
-	return 0;
+	return table[a & 0xF];
 }

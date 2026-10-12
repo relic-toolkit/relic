@@ -211,6 +211,7 @@ static int addition2(void) {
 			TEST_ASSERT(fp2_is_zero(e), end);
 		} TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic addition is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -218,7 +219,9 @@ static int addition2(void) {
 			fp2_add_basic(e, a, b);
 			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated addition is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -226,6 +229,7 @@ static int addition2(void) {
 			fp2_add_integ(e, a, b);
 			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -271,6 +275,7 @@ static int subtraction2(void) {
 		}
 		TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic subtraction is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -278,7 +283,9 @@ static int subtraction2(void) {
 			fp2_sub_basic(d, a, b);
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated subtraction is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -286,6 +293,7 @@ static int subtraction2(void) {
 			fp2_sub_integ(d, a, b);
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -313,19 +321,23 @@ static int doubling2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic doubling is correct") {
 			fp2_rand(a);
 			fp2_dbl(b, a);
 			fp2_dbl_basic(c, a);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated doubling is correct") {
 			fp2_rand(a);
 			fp2_dbl(b, a);
 			fp2_dbl_integ(c, a);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -394,6 +406,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fp2_is_zero(e), end);
 		} TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -401,7 +414,9 @@ static int multiplication2(void) {
 			fp2_mul_basic(e, b, a);
 			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated multiplication is correct") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -409,6 +424,7 @@ static int multiplication2(void) {
 			fp2_mul_integ(e, b, a);
 			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("multiplication by adjoined root is correct") {
 			fp2_rand(a);
@@ -440,6 +456,7 @@ static int multiplication2(void) {
 		}
 		TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic multiplication by qnr/cnr is correct") {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
@@ -447,7 +464,9 @@ static int multiplication2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated multiplication by qnr/cnr is correct") {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
@@ -455,6 +474,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -483,19 +503,23 @@ static int squaring2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if PP_QDR == BASIC || !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp2_rand(a);
 			fp2_sqr(b, a);
 			fp2_sqr_basic(c, a);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_QDR == INTEG || !defined(STRIP)
 		TEST_CASE("integrated squaring is correct") {
 			fp2_rand(a);
 			fp2_sqr(b, a);
 			fp2_sqr_integ(c, a);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -643,7 +667,6 @@ static int exponentiation2(void) {
 	return code;
 }
 
-
 static int compression2(void) {
 	int code = RLC_ERR;
 	fp2_t a, b, c, d;
@@ -692,7 +715,6 @@ static int compression2(void) {
 	fp2_free_all(a, b, c, d);
 	return code;
 }
-
 
 static int square_root2(void) {
 	int code = RLC_ERR;
@@ -1065,6 +1087,7 @@ static int addition3(void) {
 			TEST_ASSERT(fp3_is_zero(e), end);
 		} TEST_END;
 
+#if PP_CBC == BASIC || !defined(STRIP)
 		TEST_CASE("basic addition is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1072,7 +1095,9 @@ static int addition3(void) {
 			fp3_add_basic(e, a, b);
 			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_CBC == INTEG || !defined(STRIP)
 		TEST_CASE("integrated addition is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1080,6 +1105,7 @@ static int addition3(void) {
 			fp3_add_integ(e, a, b);
 			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1125,6 +1151,7 @@ static int subtraction3(void) {
 		}
 		TEST_END;
 
+#if PP_CBC == BASIC || !defined(STRIP)
 		TEST_CASE("basic subtraction is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1132,7 +1159,9 @@ static int subtraction3(void) {
 			fp3_sub_basic(d, a, b);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_CBC == INTEG || !defined(STRIP)
 		TEST_CASE("integrated subtraction is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1140,6 +1169,7 @@ static int subtraction3(void) {
 			fp3_sub_integ(d, a, b);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1167,19 +1197,23 @@ static int doubling3(void) {
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if PP_CBC == BASIC || !defined(STRIP)
 		TEST_CASE("basic doubling is correct") {
 			fp3_rand(a);
 			fp3_dbl(b, a);
 			fp3_dbl_basic(c, a);
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_CBC == INTEG || !defined(STRIP)
 		TEST_CASE("integrated doubling is correct") {
 			fp3_rand(a);
 			fp3_dbl(b, a);
 			fp3_dbl_integ(c, a);
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1248,6 +1282,7 @@ static int multiplication3(void) {
 			TEST_ASSERT(fp3_is_zero(e), end);
 		} TEST_END;
 
+#if PP_CBC == BASIC || !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1255,7 +1290,9 @@ static int multiplication3(void) {
 			fp3_mul_basic(e, b, a);
 			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_CBC == INTEG || !defined(STRIP)
 		TEST_CASE("integrated multiplication is correct") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1263,6 +1300,7 @@ static int multiplication3(void) {
 			fp3_mul_integ(e, b, a);
 			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("multiplication by cubic non-residue is correct") {
 			fp3_rand(a);
@@ -1313,19 +1351,23 @@ static int squaring3(void) {
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if PP_CBC == BASIC || !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp3_rand(a);
 			fp3_sqr(b, a);
 			fp3_sqr_basic(c, a);
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if PP_CBC == INTEG || !defined(STRIP)
 		TEST_CASE("integrated squaring is correct") {
 			fp3_rand(a);
 			fp3_sqr(b, a);
 			fp3_sqr_integ(c, a);
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1849,6 +1891,7 @@ static int multiplication4(void) {
 			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp4_rand(a);
 			fp4_rand(b);
@@ -1856,7 +1899,9 @@ static int multiplication4(void) {
 			fp4_mul_basic(d, a, b);
 			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp4_rand(a);
 			fp4_rand(b);
@@ -1864,6 +1909,7 @@ static int multiplication4(void) {
 			fp4_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1891,19 +1937,23 @@ static int squaring4(void) {
 			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp4_rand(a);
 			fp4_sqr(b, a);
 			fp4_sqr_basic(c, a);
 			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp4_rand(a);
 			fp4_sqr(b, a);
 			fp4_sqr_lazyr(c, a);
 			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2451,6 +2501,7 @@ static int multiplication6(void) {
 			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp6_rand(a);
 			fp6_rand(b);
@@ -2458,7 +2509,9 @@ static int multiplication6(void) {
 			fp6_mul_basic(d, a, b);
 			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp6_rand(a);
 			fp6_rand(b);
@@ -2466,6 +2519,7 @@ static int multiplication6(void) {
 			fp6_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2493,19 +2547,23 @@ static int squaring6(void) {
 			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp6_rand(a);
 			fp6_sqr(b, a);
 			fp6_sqr_basic(c, a);
 			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp6_rand(a);
 			fp6_sqr(b, a);
 			fp6_sqr_lazyr(c, a);
 			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2931,6 +2989,7 @@ static int multiplication8(void) {
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp8_rand(a);
 			fp8_rand(b);
@@ -2938,7 +2997,9 @@ static int multiplication8(void) {
 			fp8_mul_basic(d, a, b);
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp8_rand(a);
 			fp8_rand(b);
@@ -2946,6 +3007,7 @@ static int multiplication8(void) {
 			fp8_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("addition of a single digit is consistent") {
 			dig_t g;
@@ -3003,19 +3065,23 @@ static int squaring8(void) {
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp8_rand(a);
 			fp8_sqr(b, a);
 			fp8_sqr_basic(c, a);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp8_rand(a);
 			fp8_sqr(b, a);
 			fp8_sqr_lazyr(c, a);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3616,6 +3682,7 @@ static int multiplication9(void) {
 			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp9_rand(a);
 			fp9_rand(b);
@@ -3623,7 +3690,9 @@ static int multiplication9(void) {
 			fp9_mul_basic(d, a, b);
 			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp9_rand(a);
 			fp9_rand(b);
@@ -3631,6 +3700,7 @@ static int multiplication9(void) {
 			fp9_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3658,19 +3728,23 @@ static int squaring9(void) {
 			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp9_rand(a);
 			fp9_sqr(b, a);
 			fp9_sqr_basic(c, a);
 			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp9_rand(a);
 			fp9_sqr(b, a);
 			fp9_sqr_lazyr(c, a);
 			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4126,6 +4200,7 @@ static int multiplication12(void) {
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
@@ -4133,7 +4208,9 @@ static int multiplication12(void) {
 			fp12_mul_basic(d, a, b);
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
@@ -4141,6 +4218,7 @@ static int multiplication12(void) {
 			fp12_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("sparse multiplication is correct") {
 			fp12_rand(a);
@@ -4157,6 +4235,7 @@ static int multiplication12(void) {
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic sparse multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
@@ -4167,7 +4246,9 @@ static int multiplication12(void) {
 			fp12_mul_dxs_basic(d, a, b);
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced sparse multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
@@ -4178,6 +4259,7 @@ static int multiplication12(void) {
 			fp12_mul_dxs_lazyr(d, a, b);
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -4204,19 +4286,23 @@ static int squaring12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp12_rand(a);
 			fp12_sqr(b, a);
 			fp12_sqr_basic(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp12_rand(a);
 			fp12_sqr(b, a);
 			fp12_sqr_lazyr(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4271,6 +4357,7 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
@@ -4278,7 +4365,9 @@ static int cyclotomic12(void) {
 			fp12_sqr_cyc_basic(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
@@ -4286,6 +4375,7 @@ static int cyclotomic12(void) {
 			fp12_sqr_cyc_lazyr(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("compressed squaring is correct") {
 			fp12_rand(a);
@@ -4300,6 +4390,7 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic compressed squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
@@ -4311,7 +4402,9 @@ static int cyclotomic12(void) {
 			fp12_sqr_pck_basic(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced compressed squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
@@ -4323,6 +4416,7 @@ static int cyclotomic12(void) {
 			fp12_sqr_pck_lazyr(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
         TEST_CASE("cyclotomic exponentiation is correct") {
 			fp12_rand(a);
@@ -4915,6 +5009,7 @@ static int multiplicatioAFG16(void) {
 			TEST_ASSERT(fp16_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp16_rand(a);
 			fp16_rand(b);
@@ -4922,7 +5017,9 @@ static int multiplicatioAFG16(void) {
 			fp16_mul_basic(d, a, b);
 			TEST_ASSERT(fp16_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp16_rand(a);
 			fp16_rand(b);
@@ -4930,6 +5027,7 @@ static int multiplicatioAFG16(void) {
 			fp16_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp16_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4957,19 +5055,23 @@ static int squaring16(void) {
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp16_rand(a);
 			fp16_sqr(b, a);
 			fp16_sqr_basic(c, a);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp16_rand(a);
 			fp16_sqr(b, a);
 			fp16_sqr_lazyr(c, a);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5376,7 +5478,6 @@ static int util18(void) {
 		}
 		TEST_END;
 
-
 		TEST_CASE("assignment to random and comparison are consistent") {
 			do {
 				fp18_rand(a);
@@ -5583,6 +5684,7 @@ static int multiplication18(void) {
 			TEST_ASSERT(fp18_is_zero(e), end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp18_rand(a);
 			fp18_rand(b);
@@ -5590,7 +5692,9 @@ static int multiplication18(void) {
 			fp18_mul_basic(d, a, b);
 			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp18_rand(a);
 			fp18_rand(b);
@@ -5598,6 +5702,7 @@ static int multiplication18(void) {
 			fp18_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -5624,19 +5729,23 @@ static int squaring18(void) {
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp18_rand(a);
 			fp18_sqr(b, a);
 			fp18_sqr_basic(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp18_rand(a);
 			fp18_sqr(b, a);
 			fp18_sqr_lazyr(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5691,6 +5800,7 @@ static int cyclotomic18(void) {
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
@@ -5698,7 +5808,9 @@ static int cyclotomic18(void) {
 			fp18_sqr_cyc_basic(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
@@ -5706,6 +5818,7 @@ static int cyclotomic18(void) {
 			fp18_sqr_cyc_lazyr(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("compressed squaring is correct") {
 			fp18_rand(a);
@@ -5720,6 +5833,7 @@ static int cyclotomic18(void) {
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic compressed squaring is correct") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
@@ -5731,7 +5845,9 @@ static int cyclotomic18(void) {
 			fp18_sqr_pck_basic(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced compressed squaring is correct") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
@@ -5743,6 +5859,7 @@ static int cyclotomic18(void) {
 			fp18_sqr_pck_lazyr(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("cyclotomic exponentiation is correct") {
 			fp18_rand(a);
@@ -6305,6 +6422,7 @@ static int multiplication24(void) {
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp24_rand(a);
 			fp24_rand(b);
@@ -6312,7 +6430,9 @@ static int multiplication24(void) {
 			fp24_mul_basic(d, a, b);
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp24_rand(a);
 			fp24_rand(b);
@@ -6320,6 +6440,7 @@ static int multiplication24(void) {
 			fp24_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -6346,19 +6467,23 @@ static int squaring24(void) {
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp24_rand(a);
 			fp24_sqr(b, a);
 			fp24_sqr_basic(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp24_rand(a);
 			fp24_sqr(b, a);
 			fp24_sqr_lazyr(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -6413,6 +6538,7 @@ static int cyclotomic24(void) {
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
@@ -6420,7 +6546,9 @@ static int cyclotomic24(void) {
 			fp24_sqr_cyc_basic(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
@@ -6428,6 +6556,7 @@ static int cyclotomic24(void) {
 			fp24_sqr_cyc_lazyr(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("compressed squaring is correct") {
 			fp24_rand(a);
@@ -6442,6 +6571,7 @@ static int cyclotomic24(void) {
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic compressed squaring is correct") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
@@ -6453,7 +6583,9 @@ static int cyclotomic24(void) {
 			fp24_sqr_pck_basic(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced compressed squaring is correct") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
@@ -6465,6 +6597,7 @@ static int cyclotomic24(void) {
 			fp24_sqr_pck_lazyr(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
         TEST_CASE("cyclotomic exponentiation is correct") {
 			fp24_rand(a);
@@ -6986,6 +7119,7 @@ static int multiplication48(void) {
 			TEST_ASSERT(fp48_is_zero(e), end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp48_rand(a);
 			fp48_rand(b);
@@ -6993,7 +7127,9 @@ static int multiplication48(void) {
 			fp48_mul_basic(d, a, b);
 			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp48_rand(a);
 			fp48_rand(b);
@@ -7001,6 +7137,7 @@ static int multiplication48(void) {
 			fp48_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -7027,19 +7164,23 @@ static int squaring48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp48_rand(a);
 			fp48_sqr(b, a);
 			fp48_sqr_basic(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp48_rand(a);
 			fp48_sqr(b, a);
 			fp48_sqr_lazyr(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -7169,6 +7310,7 @@ static int cyclotomic48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
@@ -7176,7 +7318,9 @@ static int cyclotomic48(void) {
 			fp48_sqr_cyc_basic(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
@@ -7184,6 +7328,7 @@ static int cyclotomic48(void) {
 			fp48_sqr_cyc_lazyr(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("compressed squaring is correct") {
 			fp48_rand(a);
@@ -7198,6 +7343,7 @@ static int cyclotomic48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic compressed squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
@@ -7209,7 +7355,9 @@ static int cyclotomic48(void) {
 			fp48_sqr_pck_basic(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced compressed squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
@@ -7221,6 +7369,7 @@ static int cyclotomic48(void) {
 			fp48_sqr_pck_lazyr(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
         TEST_CASE("cyclotomic exponentiation is correct") {
 			fp48_rand(a);
@@ -7694,6 +7843,7 @@ static int multiplication54(void) {
 			TEST_ASSERT(fp54_is_zero(e), end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp54_rand(a);
 			fp54_rand(b);
@@ -7701,7 +7851,9 @@ static int multiplication54(void) {
 			fp54_mul_basic(d, a, b);
 			TEST_ASSERT(fp54_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced multiplication is correct") {
 			fp54_rand(a);
 			fp54_rand(b);
@@ -7709,6 +7861,7 @@ static int multiplication54(void) {
 			fp54_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp54_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -7735,19 +7888,23 @@ static int squaring54(void) {
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp54_rand(a);
 			fp54_sqr(b, a);
 			fp54_sqr_basic(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced squaring is correct") {
 			fp54_rand(a);
 			fp54_sqr(b, a);
 			fp54_sqr_lazyr(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -7862,6 +8019,7 @@ static int cyclotomic54(void) {
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
@@ -7869,7 +8027,9 @@ static int cyclotomic54(void) {
 			fp54_sqr_cyc_basic(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
@@ -7877,6 +8037,7 @@ static int cyclotomic54(void) {
 			fp54_sqr_cyc_lazyr(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("compressed squaring is correct") {
 			fp54_rand(a);
@@ -7891,6 +8052,7 @@ static int cyclotomic54(void) {
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic compressed squaring is correct") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
@@ -7902,7 +8064,9 @@ static int cyclotomic54(void) {
 			fp54_sqr_pck_basic(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
+#if FPX_RDC == LAZYR || !defined(STRIP)
 		TEST_CASE("lazy-reduced compressed squaring is correct") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
@@ -7914,6 +8078,7 @@ static int cyclotomic54(void) {
 			fp54_sqr_pck_lazyr(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+#endif
 
         TEST_CASE("cyclotomic exponentiation is correct") {
 			fp54_rand(a);

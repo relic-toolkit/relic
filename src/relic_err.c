@@ -98,6 +98,16 @@ void err_get_msg(err_t *e, char **msg) {
 
 #endif /* CHECK */
 
+void err_throw(const char *file, int line) {
+	core_get()->code = RLC_ERR;
+#if ARCH == AVR
+	/* The file name is stored in program memory. */
+	util_print("ERROR THROWN in %S:%d\n", file, line);
+#else
+	util_print("ERROR THROWN in %s:%d\n", file, line);
+#endif
+}
+
 int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;

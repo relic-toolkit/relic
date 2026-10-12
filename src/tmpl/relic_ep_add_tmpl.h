@@ -36,24 +36,31 @@
 /*============================================================================*/
 
 /**
- * Defines a template for point addition in affine coordinates.
+ * Defines a template for point addition in affine coordinates, with and
+ * without returning the slope.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_ADD_BASIC_IMP(C, F)											\
-	static void C##_add_basic_imp(C##_t r, F##_t s, const C##_t p,			\
+#define TMPL_EP_ADD_BASIC(C, F)												\
+	void C##_add_slp_basic(C##_t r, F##_t s, const C##_t p,					\
 			const C##_t q) {												\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2;													\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
+		F##_null_all(t0, t1, t2);											\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
+			F##_new_all(t0, t1, t2);										\
 																			\
 			/* t0 = x2 - x1. */												\
 			F##_sub(t0, q->x, p->x);										\
@@ -94,23 +101,24 @@
 																			\
 				r->coord = BASIC;											\
 			}																\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		}																	\
 	}																		\
+																			\
+																			\
+	void C##_add_basic(C##_t r, const C##_t p, const C##_t q) {				\
+		C##_add_slp_basic(r, NULL, p, q);									\
+	}
 
 /**
- * Defines a template for mixed point addition in homogeneous projective
- * coordinates.
+ * Defines a template for point addition in homogeneous projective
+ * coordinates, using mixed addition when the second point is normalized.
  *
- * Formulas for mixed addition from
+ * Formulas for addition and mixed addition from
  * "Complete addition formulas for prime order elliptic curves"
  * by Joost Renes, Craig Costello, and Lejla Batina
  * https://eprint.iacr.org/2015/1060.pdf
@@ -119,24 +127,14 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_ADD_PROJC_MIX(C, F)											\
+#define TMPL_EP_ADD_PROJC(C, F)												\
 	static void C##_add_projc_mix(C##_t r, const C##_t p, const C##_t q) {	\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			F##_mul(t0, p->x, q->x);										\
 			F##_mul(t1, p->y, q->y);										\
@@ -257,31 +255,21 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
-	}
-
-/**
- * Defines a template for point addition in homogeneous projective
- * coordinates.
- *
- * Formulas for addition from
- * "Complete addition formulas for prime order elliptic curves"
- * by Joost Renes, Craig Costello, and Lejla Batina
- * https://eprint.iacr.org/2015/1060.pdf
- * with the six final products computed in 5M instead of 6M.
- *
- * @param[in] C			- the curve.
- * @param[in] F			- the field prefix.
- */
-
-#define TMPL_ADD_PROJC_IMP(C, F)											\
-	static void C##_add_projc_imp(C##_t r, const C##_t p, const C##_t q) {	\
+	}																		\
+																			\
+	void C##_add_projc(C##_t r, const C##_t p, const C##_t q) {				\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
 		if (q->coord == BASIC) {											\
@@ -289,20 +277,10 @@
 			return;															\
 		}																	\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			F##_mul(t0, p->x, q->x);										\
 			F##_mul(t1, p->y, q->y);										\
@@ -400,42 +378,30 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
-	}
+	}																		\
 
 /**
- * Defines a template for mixed point addition in Jacobian coordinates.
+ * Defines a template for point addition in Jacobian coordinates, using mixed
+ * addition when the second point is normalized.
  *
+ * add-2007-bl formulas: 11M + 5S + 9add + 4*2
+ * http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#addition-add-2007-bl
  * madd-2007-bl formulas: 7M + 4S + 9add + 1*4 + 3*2.
  * http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#addition-madd-2007-bl
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_ADD_JACOB_MIX(C, F)											\
+#define TMPL_EP_ADD_JACOB(C, F)												\
 	static void C##_add_jacob_mix(C##_t r, const C##_t p, const C##_t q) {	\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (p->coord != BASIC) {										\
 				/* t0 = z1^2. */											\
@@ -515,27 +481,21 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
-
-/**
- * Defines a template for point addition in Jacobian coordinates.
- *
- * add-2007-bl formulas: 11M + 5S + 9add + 4*2
- * http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#addition-add-2007-bl
- *
- * @param[in] C			- the curve.
- * @param[in] F			- the field prefix.
- */
-
-#define TMPL_ADD_JACOB_IMP(C, F)											\
-	static void C##_add_jacob_imp(C##_t r, const C##_t p, const C##_t q) {	\
+																			\
+	void C##_add_jacob(C##_t r, const C##_t p, const C##_t q) {				\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
 		if (q->coord == BASIC) {											\
@@ -543,22 +503,10 @@
 			return;															\
 		}																	\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
-		F##_null(t6);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
-			F##_new(t6);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
 																			\
 			/* t0 = z1^2. */												\
 			F##_sqr(t0, p->z);												\
@@ -633,81 +581,16 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
-			F##_free(t6);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 		}																	\
 	}																		\
-
-/**
- * Defines a template for point addition in affine coordinates, with and
- * without returning the slope.
- *
- * @param[in] C			- the curve.
- * @param[in] F			- the field prefix.
- */
-#define TMPL_ADD_BASIC(C, F)												\
-	void C##_add_basic(C##_t r, const C##_t p, const C##_t q) {				\
-		if (C##_is_infty(p)) {												\
-			C##_copy(r, q);													\
-			return;															\
-		}																	\
-																			\
-		if (C##_is_infty(q)) {												\
-			C##_copy(r, p);													\
-			return;															\
-		}																	\
-																			\
-		C##_add_basic_imp(r, NULL, p, q);									\
-	}																		\
-																			\
-	void C##_add_slp_basic(C##_t r, F##_t s, const C##_t p,					\
-			const C##_t q) {												\
-		if (C##_is_infty(p)) {												\
-			C##_copy(r, q);													\
-			return;															\
-		}																	\
-																			\
-		if (C##_is_infty(q)) {												\
-			C##_copy(r, p);													\
-			return;															\
-		}																	\
-																			\
-		C##_add_basic_imp(r, s, p, q);										\
-	}
-
-/**
- * Defines a template for point addition in projective or Jacobian
- * coordinates.
- *
- * @param[in] C			- the curve.
- * @param[in] M			- the coordinate system (projc or jacob).
- */
-#define TMPL_ADD(C, M)														\
-	void C##_add_##M(C##_t r, const C##_t p, const C##_t q) {				\
-		if (C##_is_infty(p)) {												\
-			C##_copy(r, q);													\
-			return;															\
-		}																	\
-																			\
-		if (C##_is_infty(q)) {												\
-			C##_copy(r, p);													\
-			return;															\
-		}																	\
-																			\
-		C##_add_##M##_imp(r, p, q);											\
-	}
 
 /**
  * Defines a template for point subtraction.
  *
  * @param[in] C			- the curve.
  */
-#define TMPL_SUB(C)															\
+#define TMPL_EP_SUB(C)														\
 	void C##_sub(C##_t r, const C##_t p, const C##_t q) {					\
 		C##_t t;															\
 																			\

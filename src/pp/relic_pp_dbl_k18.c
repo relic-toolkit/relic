@@ -39,8 +39,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 void pp_dbl_k18_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_t s;
 	ep3_t t;
@@ -75,12 +73,6 @@ void pp_dbl_k18_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		ep3_free(t);
 	}
 }
-
-#endif
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-
-#if PP_EXT == BASIC || !defined(STRIP)
 
 void pp_dbl_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_t t0, t1, t2, t3, t4, t5, t6;
@@ -181,10 +173,6 @@ void pp_dbl_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp3_free(t6);
 	}
 }
-
-#endif
-
-#if PP_EXT == LAZYR || !defined(STRIP)
 
 void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_t t0, t1, t2, t3, t4, t5, t6;
@@ -292,10 +280,6 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		dv2_free(u1);
 	}
 }
-
-#endif
-
-#endif
 
 void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_t t0, t1, t2, t3, t4, t5, t6;

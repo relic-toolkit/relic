@@ -39,8 +39,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
 /* Formulas from "Generation and Tate Pairing Computation
  * of Ordinary Elliptic Curves with Embedding Degree One", by Hu et al. */
 
@@ -66,10 +64,6 @@ void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_free(s);
 	}
 }
-
-#endif
-
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 		const ep_t q) {
@@ -164,5 +158,3 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 		fp_free(t4);
 	}
 }
-
-#endif

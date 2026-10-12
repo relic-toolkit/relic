@@ -104,11 +104,13 @@
 #undef err_simple_msg
 #undef err_full_msg
 #undef err_get_msg
+#undef err_throw
 #undef err_get_code
 
 #define err_simple_msg 	RLC_PREFIX(err_simple_msg)
 #define err_full_msg 	RLC_PREFIX(err_full_msg)
 #define err_get_msg 	RLC_PREFIX(err_get_msg)
+#define err_throw 	RLC_PREFIX(err_throw)
 #define err_get_code 	RLC_PREFIX(err_get_code)
 
 #undef rand_init
@@ -131,26 +133,22 @@
 #define test_fail 	RLC_PREFIX(test_fail)
 #define test_pass 	RLC_PREFIX(test_pass)
 
-#undef util_conv_endian
-#undef util_conv_big
-#undef util_conv_little
 #undef util_conv_char
 #undef util_write_uint32
 #undef util_write_size
 #undef util_bits_dig
 #undef util_cmp_sec
+#undef util_zero
 #undef util_perm
 #undef util_printf
 #undef util_print_dig
 
-#define util_conv_endian 	RLC_PREFIX(util_conv_endian)
-#define util_conv_big 	RLC_PREFIX(util_conv_big)
-#define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_write_uint32 	RLC_PREFIX(util_write_uint32)
 #define util_write_size 	RLC_PREFIX(util_write_size)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
 #define util_cmp_sec 	RLC_PREFIX(util_cmp_sec)
+#define util_zero 	RLC_PREFIX(util_zero)
 #define util_perm 	RLC_PREFIX(util_perm)
 #define util_printf 	RLC_PREFIX(util_printf)
 #define util_print_dig 	RLC_PREFIX(util_print_dig)
@@ -599,6 +597,7 @@
 #undef fp_rdc_monty_basic
 #undef fp_rdc_monty_comba
 #undef fp_rdc_quick
+#undef fp_rdc_lower
 #undef fp_inv_basic
 #undef fp_inv_binar
 #undef fp_inv_monty
@@ -700,6 +699,7 @@
 #define fp_rdc_monty_basic 	RLC_PREFIX(fp_rdc_monty_basic)
 #define fp_rdc_monty_comba 	RLC_PREFIX(fp_rdc_monty_comba)
 #define fp_rdc_quick 	RLC_PREFIX(fp_rdc_quick)
+#define fp_rdc_lower 	RLC_PREFIX(fp_rdc_lower)
 #define fp_inv_basic 	RLC_PREFIX(fp_inv_basic)
 #define fp_inv_binar 	RLC_PREFIX(fp_inv_binar)
 #define fp_inv_monty 	RLC_PREFIX(fp_inv_monty)
@@ -807,6 +807,7 @@
 #undef fb_param_print
 #undef fb_poly_add
 #undef fb_copy
+#undef fb_copy_sec
 #undef fb_neg
 #undef fb_zero
 #undef fb_is_zero
@@ -844,7 +845,6 @@
 #undef fb_inv_basic
 #undef fb_inv_binar
 #undef fb_inv_exgcd
-#undef fb_inv_almos
 #undef fb_inv_itoht
 #undef fb_inv_ctaia
 #undef fb_inv_lower
@@ -859,7 +859,6 @@
 #undef fb_itr_pre_quick
 #undef fb_itr_quick
 
-  This bounds the binary chain and the shorter chains #define fb_poly_set 	RLC_PREFIX(fb_poly_set)
 #define fb_poly_init 	RLC_PREFIX(fb_poly_init)
 #define fb_poly_clean 	RLC_PREFIX(fb_poly_clean)
 #define fb_poly_get 	RLC_PREFIX(fb_poly_get)
@@ -879,6 +878,7 @@
 #define fb_param_print 	RLC_PREFIX(fb_param_print)
 #define fb_poly_add 	RLC_PREFIX(fb_poly_add)
 #define fb_copy 	RLC_PREFIX(fb_copy)
+#define fb_copy_sec 	RLC_PREFIX(fb_copy_sec)
 #define fb_neg 	RLC_PREFIX(fb_neg)
 #define fb_zero 	RLC_PREFIX(fb_zero)
 #define fb_is_zero 	RLC_PREFIX(fb_is_zero)
@@ -916,7 +916,6 @@
 #define fb_inv_basic 	RLC_PREFIX(fb_inv_basic)
 #define fb_inv_binar 	RLC_PREFIX(fb_inv_binar)
 #define fb_inv_exgcd 	RLC_PREFIX(fb_inv_exgcd)
-#define fb_inv_almos 	RLC_PREFIX(fb_inv_almos)
 #define fb_inv_itoht 	RLC_PREFIX(fb_inv_itoht)
 #define fb_inv_ctaia 	RLC_PREFIX(fb_inv_ctaia)
 #define fb_inv_lower 	RLC_PREFIX(fb_inv_lower)
@@ -1021,6 +1020,8 @@
 #undef ep_is_infty
 #undef ep_set_infty
 #undef ep_copy
+#undef ep_copy_sec
+#undef ep_swap_sec
 #undef ep_cmp
 #undef ep_rand
 #undef ep_blind
@@ -1053,17 +1054,12 @@
 #undef ep_mul_dig
 #undef ep_mul_cof
 #undef ep_mul_pre_basic
-#undef ep_mul_pre_combs
+#undef ep_mul_pre_lwreg
 #undef ep_mul_pre_combd
-#undef ep_mul_pre_lwnaf
 #undef ep_mul_fix_basic
-#undef ep_mul_fix_combs
+#undef ep_mul_fix_lwreg
 #undef ep_mul_fix_combd
-#undef ep_mul_fix_lwnaf
-#undef ep_mul_sim_basic
-#undef ep_mul_sim_trick
-#undef ep_mul_sim_inter
-#undef ep_mul_sim_joint
+#undef ep_mul_sim
 #undef ep_mul_sim_lot
 #undef ep_mul_sim_gen
 #undef ep_mul_sim_dig
@@ -1116,6 +1112,8 @@
 #define ep_is_infty 	RLC_PREFIX(ep_is_infty)
 #define ep_set_infty 	RLC_PREFIX(ep_set_infty)
 #define ep_copy 	RLC_PREFIX(ep_copy)
+#define ep_copy_sec 	RLC_PREFIX(ep_copy_sec)
+#define ep_swap_sec 	RLC_PREFIX(ep_swap_sec)
 #define ep_cmp 	RLC_PREFIX(ep_cmp)
 #define ep_rand 	RLC_PREFIX(ep_rand)
 #define ep_blind 	RLC_PREFIX(ep_blind)
@@ -1148,17 +1146,12 @@
 #define ep_mul_dig 	RLC_PREFIX(ep_mul_dig)
 #define ep_mul_cof 	RLC_PREFIX(ep_mul_cof)
 #define ep_mul_pre_basic 	RLC_PREFIX(ep_mul_pre_basic)
-#define ep_mul_pre_combs 	RLC_PREFIX(ep_mul_pre_combs)
+#define ep_mul_pre_lwreg 	RLC_PREFIX(ep_mul_pre_lwreg)
 #define ep_mul_pre_combd 	RLC_PREFIX(ep_mul_pre_combd)
-#define ep_mul_pre_lwnaf 	RLC_PREFIX(ep_mul_pre_lwnaf)
 #define ep_mul_fix_basic 	RLC_PREFIX(ep_mul_fix_basic)
-#define ep_mul_fix_combs 	RLC_PREFIX(ep_mul_fix_combs)
+#define ep_mul_fix_lwreg 	RLC_PREFIX(ep_mul_fix_lwreg)
 #define ep_mul_fix_combd 	RLC_PREFIX(ep_mul_fix_combd)
-#define ep_mul_fix_lwnaf 	RLC_PREFIX(ep_mul_fix_lwnaf)
-#define ep_mul_sim_basic 	RLC_PREFIX(ep_mul_sim_basic)
-#define ep_mul_sim_trick 	RLC_PREFIX(ep_mul_sim_trick)
-#define ep_mul_sim_inter 	RLC_PREFIX(ep_mul_sim_inter)
-#define ep_mul_sim_joint 	RLC_PREFIX(ep_mul_sim_joint)
+#define ep_mul_sim 	RLC_PREFIX(ep_mul_sim)
 #define ep_mul_sim_lot 	RLC_PREFIX(ep_mul_sim_lot)
 #define ep_mul_sim_gen 	RLC_PREFIX(ep_mul_sim_gen)
 #define ep_mul_sim_dig 	RLC_PREFIX(ep_mul_sim_dig)
@@ -1191,6 +1184,8 @@
 #undef ed_blind
 #undef ed_rhs
 #undef ed_copy
+#undef ed_copy_sec
+#undef ed_swap_sec
 #undef ed_cmp
 #undef ed_set_infty
 #undef ed_is_infty
@@ -1212,20 +1207,14 @@
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
-#undef ed_mul_pre_combs
+#undef ed_mul_pre_lwreg
 #undef ed_mul_pre_combd
-#undef ed_mul_pre_lwnaf
 #undef ed_mul_fix_basic
-#undef ed_mul_fix_combs
+#undef ed_mul_fix_lwreg
 #undef ed_mul_fix_combd
-#undef ed_mul_fix_lwnaf
-#undef ed_mul_fix_lwnaf_mixed
 #undef ed_mul_gen
 #undef ed_mul_dig
-#undef ed_mul_sim_basic
-#undef ed_mul_sim_trick
-#undef ed_mul_sim_inter
-#undef ed_mul_sim_joint
+#undef ed_mul_sim
 #undef ed_mul_sim_lot
 #undef ed_mul_sim_gen
 #undef ed_tab
@@ -1255,6 +1244,8 @@
 #define ed_blind 	RLC_PREFIX(ed_blind)
 #define ed_rhs 	RLC_PREFIX(ed_rhs)
 #define ed_copy 	RLC_PREFIX(ed_copy)
+#define ed_copy_sec 	RLC_PREFIX(ed_copy_sec)
+#define ed_swap_sec 	RLC_PREFIX(ed_swap_sec)
 #define ed_cmp 	RLC_PREFIX(ed_cmp)
 #define ed_set_infty 	RLC_PREFIX(ed_set_infty)
 #define ed_is_infty 	RLC_PREFIX(ed_is_infty)
@@ -1276,20 +1267,14 @@
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
-#define ed_mul_pre_combs 	RLC_PREFIX(ed_mul_pre_combs)
+#define ed_mul_pre_lwreg 	RLC_PREFIX(ed_mul_pre_lwreg)
 #define ed_mul_pre_combd 	RLC_PREFIX(ed_mul_pre_combd)
-#define ed_mul_pre_lwnaf 	RLC_PREFIX(ed_mul_pre_lwnaf)
 #define ed_mul_fix_basic 	RLC_PREFIX(ed_mul_fix_basic)
-#define ed_mul_fix_combs 	RLC_PREFIX(ed_mul_fix_combs)
+#define ed_mul_fix_lwreg 	RLC_PREFIX(ed_mul_fix_lwreg)
 #define ed_mul_fix_combd 	RLC_PREFIX(ed_mul_fix_combd)
-#define ed_mul_fix_lwnaf 	RLC_PREFIX(ed_mul_fix_lwnaf)
-#define ed_mul_fix_lwnaf_mixed 	RLC_PREFIX(ed_mul_fix_lwnaf_mixed)
 #define ed_mul_gen 	RLC_PREFIX(ed_mul_gen)
 #define ed_mul_dig 	RLC_PREFIX(ed_mul_dig)
-#define ed_mul_sim_basic 	RLC_PREFIX(ed_mul_sim_basic)
-#define ed_mul_sim_trick 	RLC_PREFIX(ed_mul_sim_trick)
-#define ed_mul_sim_inter 	RLC_PREFIX(ed_mul_sim_inter)
-#define ed_mul_sim_joint 	RLC_PREFIX(ed_mul_sim_joint)
+#define ed_mul_sim 	RLC_PREFIX(ed_mul_sim)
 #define ed_mul_sim_lot 	RLC_PREFIX(ed_mul_sim_lot)
 #define ed_mul_sim_gen 	RLC_PREFIX(ed_mul_sim_gen)
 #define ed_tab 	RLC_PREFIX(ed_tab)
@@ -1332,6 +1317,8 @@
 #undef eb_is_infty
 #undef eb_set_infty
 #undef eb_copy
+#undef eb_copy_sec
+#undef eb_swap_sec
 #undef eb_cmp
 #undef eb_rand
 #undef eb_blind
@@ -1360,18 +1347,16 @@
 #undef eb_mul_gen
 #undef eb_mul_dig
 #undef eb_mul_pre_basic
-#undef eb_mul_pre_combs
+#undef eb_mul_pre_lwreg
 #undef eb_mul_pre_combd
 #undef eb_mul_pre_lwnaf
 #undef eb_mul_fix_basic
-#undef eb_mul_fix_combs
+#undef eb_mul_fix_lwreg
 #undef eb_mul_fix_combd
 #undef eb_mul_fix_lwnaf
-#undef eb_mul_sim_basic
-#undef eb_mul_sim_trick
-#undef eb_mul_sim_inter
-#undef eb_mul_sim_joint
+#undef eb_mul_sim
 #undef eb_mul_sim_gen
+#undef eb_mul_sim_lot
 #undef eb_norm
 #undef eb_norm_sim
 #undef eb_map
@@ -1400,6 +1385,8 @@
 #define eb_is_infty 	RLC_PREFIX(eb_is_infty)
 #define eb_set_infty 	RLC_PREFIX(eb_set_infty)
 #define eb_copy 	RLC_PREFIX(eb_copy)
+#define eb_copy_sec 	RLC_PREFIX(eb_copy_sec)
+#define eb_swap_sec 	RLC_PREFIX(eb_swap_sec)
 #define eb_cmp 	RLC_PREFIX(eb_cmp)
 #define eb_rand 	RLC_PREFIX(eb_rand)
 #define eb_blind 	RLC_PREFIX(eb_blind)
@@ -1428,18 +1415,16 @@
 #define eb_mul_gen 	RLC_PREFIX(eb_mul_gen)
 #define eb_mul_dig 	RLC_PREFIX(eb_mul_dig)
 #define eb_mul_pre_basic 	RLC_PREFIX(eb_mul_pre_basic)
-#define eb_mul_pre_combs 	RLC_PREFIX(eb_mul_pre_combs)
+#define eb_mul_pre_lwreg 	RLC_PREFIX(eb_mul_pre_lwreg)
 #define eb_mul_pre_combd 	RLC_PREFIX(eb_mul_pre_combd)
 #define eb_mul_pre_lwnaf 	RLC_PREFIX(eb_mul_pre_lwnaf)
 #define eb_mul_fix_basic 	RLC_PREFIX(eb_mul_fix_basic)
-#define eb_mul_fix_combs 	RLC_PREFIX(eb_mul_fix_combs)
+#define eb_mul_fix_lwreg 	RLC_PREFIX(eb_mul_fix_lwreg)
 #define eb_mul_fix_combd 	RLC_PREFIX(eb_mul_fix_combd)
 #define eb_mul_fix_lwnaf 	RLC_PREFIX(eb_mul_fix_lwnaf)
-#define eb_mul_sim_basic 	RLC_PREFIX(eb_mul_sim_basic)
-#define eb_mul_sim_trick 	RLC_PREFIX(eb_mul_sim_trick)
-#define eb_mul_sim_inter 	RLC_PREFIX(eb_mul_sim_inter)
-#define eb_mul_sim_joint 	RLC_PREFIX(eb_mul_sim_joint)
+#define eb_mul_sim 	RLC_PREFIX(eb_mul_sim)
 #define eb_mul_sim_gen 	RLC_PREFIX(eb_mul_sim_gen)
+#define eb_mul_sim_lot 	RLC_PREFIX(eb_mul_sim_lot)
 #define eb_norm 	RLC_PREFIX(eb_norm)
 #define eb_norm_sim 	RLC_PREFIX(eb_norm_sim)
 #define eb_map 	RLC_PREFIX(eb_map)
@@ -1471,6 +1456,8 @@
 #undef ep2_is_infty
 #undef ep2_set_infty
 #undef ep2_copy
+#undef ep2_copy_sec
+#undef ep2_swap_sec
 #undef ep2_cmp
 #undef ep2_rand
 #undef ep2_blind
@@ -1499,17 +1486,12 @@
 #undef ep2_mul_dig
 #undef ep2_mul_cof
 #undef ep2_mul_pre_basic
-#undef ep2_mul_pre_combs
+#undef ep2_mul_pre_lwreg
 #undef ep2_mul_pre_combd
-#undef ep2_mul_pre_lwnaf
 #undef ep2_mul_fix_basic
-#undef ep2_mul_fix_combs
+#undef ep2_mul_fix_lwreg
 #undef ep2_mul_fix_combd
-#undef ep2_mul_fix_lwnaf
-#undef ep2_mul_sim_basic
-#undef ep2_mul_sim_trick
-#undef ep2_mul_sim_inter
-#undef ep2_mul_sim_joint
+#undef ep2_mul_sim
 #undef ep2_mul_sim_lot
 #undef ep2_mul_sim_gen
 #undef ep2_mul_sim_dig
@@ -1543,6 +1525,8 @@
 #define ep2_is_infty 	RLC_PREFIX(ep2_is_infty)
 #define ep2_set_infty 	RLC_PREFIX(ep2_set_infty)
 #define ep2_copy 	RLC_PREFIX(ep2_copy)
+#define ep2_copy_sec 	RLC_PREFIX(ep2_copy_sec)
+#define ep2_swap_sec 	RLC_PREFIX(ep2_swap_sec)
 #define ep2_cmp 	RLC_PREFIX(ep2_cmp)
 #define ep2_rand 	RLC_PREFIX(ep2_rand)
 #define ep2_blind 	RLC_PREFIX(ep2_blind)
@@ -1571,17 +1555,12 @@
 #define ep2_mul_dig 	RLC_PREFIX(ep2_mul_dig)
 #define ep2_mul_cof 	RLC_PREFIX(ep2_mul_cof)
 #define ep2_mul_pre_basic 	RLC_PREFIX(ep2_mul_pre_basic)
-#define ep2_mul_pre_combs 	RLC_PREFIX(ep2_mul_pre_combs)
+#define ep2_mul_pre_lwreg 	RLC_PREFIX(ep2_mul_pre_lwreg)
 #define ep2_mul_pre_combd 	RLC_PREFIX(ep2_mul_pre_combd)
-#define ep2_mul_pre_lwnaf 	RLC_PREFIX(ep2_mul_pre_lwnaf)
 #define ep2_mul_fix_basic 	RLC_PREFIX(ep2_mul_fix_basic)
-#define ep2_mul_fix_combs 	RLC_PREFIX(ep2_mul_fix_combs)
+#define ep2_mul_fix_lwreg 	RLC_PREFIX(ep2_mul_fix_lwreg)
 #define ep2_mul_fix_combd 	RLC_PREFIX(ep2_mul_fix_combd)
-#define ep2_mul_fix_lwnaf 	RLC_PREFIX(ep2_mul_fix_lwnaf)
-#define ep2_mul_sim_basic 	RLC_PREFIX(ep2_mul_sim_basic)
-#define ep2_mul_sim_trick 	RLC_PREFIX(ep2_mul_sim_trick)
-#define ep2_mul_sim_inter 	RLC_PREFIX(ep2_mul_sim_inter)
-#define ep2_mul_sim_joint 	RLC_PREFIX(ep2_mul_sim_joint)
+#define ep2_mul_sim 	RLC_PREFIX(ep2_mul_sim)
 #define ep2_mul_sim_lot 	RLC_PREFIX(ep2_mul_sim_lot)
 #define ep2_mul_sim_gen 	RLC_PREFIX(ep2_mul_sim_gen)
 #define ep2_mul_sim_dig 	RLC_PREFIX(ep2_mul_sim_dig)
@@ -1618,6 +1597,8 @@
 #undef ep3_is_infty
 #undef ep3_set_infty
 #undef ep3_copy
+#undef ep3_copy_sec
+#undef ep3_swap_sec
 #undef ep3_cmp
 #undef ep3_rand
 #undef ep3_blind
@@ -1646,17 +1627,12 @@
 #undef ep3_mul_dig
 #undef ep3_mul_cof
 #undef ep3_mul_pre_basic
-#undef ep3_mul_pre_combs
+#undef ep3_mul_pre_lwreg
 #undef ep3_mul_pre_combd
-#undef ep3_mul_pre_lwnaf
 #undef ep3_mul_fix_basic
-#undef ep3_mul_fix_combs
+#undef ep3_mul_fix_lwreg
 #undef ep3_mul_fix_combd
-#undef ep3_mul_fix_lwnaf
-#undef ep3_mul_sim_basic
-#undef ep3_mul_sim_trick
-#undef ep3_mul_sim_inter
-#undef ep3_mul_sim_joint
+#undef ep3_mul_sim
 #undef ep3_mul_sim_lot
 #undef ep3_mul_sim_gen
 #undef ep3_mul_sim_dig
@@ -1686,6 +1662,8 @@
 #define ep3_is_infty 	RLC_PREFIX(ep3_is_infty)
 #define ep3_set_infty 	RLC_PREFIX(ep3_set_infty)
 #define ep3_copy 	RLC_PREFIX(ep3_copy)
+#define ep3_copy_sec 	RLC_PREFIX(ep3_copy_sec)
+#define ep3_swap_sec 	RLC_PREFIX(ep3_swap_sec)
 #define ep3_cmp 	RLC_PREFIX(ep3_cmp)
 #define ep3_rand 	RLC_PREFIX(ep3_rand)
 #define ep3_blind 	RLC_PREFIX(ep3_blind)
@@ -1714,17 +1692,12 @@
 #define ep3_mul_dig 	RLC_PREFIX(ep3_mul_dig)
 #define ep3_mul_cof 	RLC_PREFIX(ep3_mul_cof)
 #define ep3_mul_pre_basic 	RLC_PREFIX(ep3_mul_pre_basic)
-#define ep3_mul_pre_combs 	RLC_PREFIX(ep3_mul_pre_combs)
+#define ep3_mul_pre_lwreg 	RLC_PREFIX(ep3_mul_pre_lwreg)
 #define ep3_mul_pre_combd 	RLC_PREFIX(ep3_mul_pre_combd)
-#define ep3_mul_pre_lwnaf 	RLC_PREFIX(ep3_mul_pre_lwnaf)
 #define ep3_mul_fix_basic 	RLC_PREFIX(ep3_mul_fix_basic)
-#define ep3_mul_fix_combs 	RLC_PREFIX(ep3_mul_fix_combs)
+#define ep3_mul_fix_lwreg 	RLC_PREFIX(ep3_mul_fix_lwreg)
 #define ep3_mul_fix_combd 	RLC_PREFIX(ep3_mul_fix_combd)
-#define ep3_mul_fix_lwnaf 	RLC_PREFIX(ep3_mul_fix_lwnaf)
-#define ep3_mul_sim_basic 	RLC_PREFIX(ep3_mul_sim_basic)
-#define ep3_mul_sim_trick 	RLC_PREFIX(ep3_mul_sim_trick)
-#define ep3_mul_sim_inter 	RLC_PREFIX(ep3_mul_sim_inter)
-#define ep3_mul_sim_joint 	RLC_PREFIX(ep3_mul_sim_joint)
+#define ep3_mul_sim 	RLC_PREFIX(ep3_mul_sim)
 #define ep3_mul_sim_lot 	RLC_PREFIX(ep3_mul_sim_lot)
 #define ep3_mul_sim_gen 	RLC_PREFIX(ep3_mul_sim_gen)
 #define ep3_mul_sim_dig 	RLC_PREFIX(ep3_mul_sim_dig)
@@ -1759,6 +1732,8 @@
 #undef ep4_is_infty
 #undef ep4_set_infty
 #undef ep4_copy
+#undef ep4_copy_sec
+#undef ep4_swap_sec
 #undef ep4_cmp
 #undef ep4_rand
 #undef ep4_blind
@@ -1787,17 +1762,12 @@
 #undef ep4_mul_dig
 #undef ep4_mul_cof
 #undef ep4_mul_pre_basic
-#undef ep4_mul_pre_combs
+#undef ep4_mul_pre_lwreg
 #undef ep4_mul_pre_combd
-#undef ep4_mul_pre_lwnaf
 #undef ep4_mul_fix_basic
-#undef ep4_mul_fix_combs
+#undef ep4_mul_fix_lwreg
 #undef ep4_mul_fix_combd
-#undef ep4_mul_fix_lwnaf
-#undef ep4_mul_sim_basic
-#undef ep4_mul_sim_trick
-#undef ep4_mul_sim_inter
-#undef ep4_mul_sim_joint
+#undef ep4_mul_sim
 #undef ep4_mul_sim_lot
 #undef ep4_mul_sim_gen
 #undef ep4_mul_sim_dig
@@ -1827,6 +1797,8 @@
 #define ep4_is_infty 	RLC_PREFIX(ep4_is_infty)
 #define ep4_set_infty 	RLC_PREFIX(ep4_set_infty)
 #define ep4_copy 	RLC_PREFIX(ep4_copy)
+#define ep4_copy_sec 	RLC_PREFIX(ep4_copy_sec)
+#define ep4_swap_sec 	RLC_PREFIX(ep4_swap_sec)
 #define ep4_cmp 	RLC_PREFIX(ep4_cmp)
 #define ep4_rand 	RLC_PREFIX(ep4_rand)
 #define ep4_blind 	RLC_PREFIX(ep4_blind)
@@ -1855,17 +1827,12 @@
 #define ep4_mul_dig 	RLC_PREFIX(ep4_mul_dig)
 #define ep4_mul_cof 	RLC_PREFIX(ep4_mul_cof)
 #define ep4_mul_pre_basic 	RLC_PREFIX(ep4_mul_pre_basic)
-#define ep4_mul_pre_combs 	RLC_PREFIX(ep4_mul_pre_combs)
+#define ep4_mul_pre_lwreg 	RLC_PREFIX(ep4_mul_pre_lwreg)
 #define ep4_mul_pre_combd 	RLC_PREFIX(ep4_mul_pre_combd)
-#define ep4_mul_pre_lwnaf 	RLC_PREFIX(ep4_mul_pre_lwnaf)
 #define ep4_mul_fix_basic 	RLC_PREFIX(ep4_mul_fix_basic)
-#define ep4_mul_fix_combs 	RLC_PREFIX(ep4_mul_fix_combs)
+#define ep4_mul_fix_lwreg 	RLC_PREFIX(ep4_mul_fix_lwreg)
 #define ep4_mul_fix_combd 	RLC_PREFIX(ep4_mul_fix_combd)
-#define ep4_mul_fix_lwnaf 	RLC_PREFIX(ep4_mul_fix_lwnaf)
-#define ep4_mul_sim_basic 	RLC_PREFIX(ep4_mul_sim_basic)
-#define ep4_mul_sim_trick 	RLC_PREFIX(ep4_mul_sim_trick)
-#define ep4_mul_sim_inter 	RLC_PREFIX(ep4_mul_sim_inter)
-#define ep4_mul_sim_joint 	RLC_PREFIX(ep4_mul_sim_joint)
+#define ep4_mul_sim 	RLC_PREFIX(ep4_mul_sim)
 #define ep4_mul_sim_lot 	RLC_PREFIX(ep4_mul_sim_lot)
 #define ep4_mul_sim_gen 	RLC_PREFIX(ep4_mul_sim_gen)
 #define ep4_mul_sim_dig 	RLC_PREFIX(ep4_mul_sim_dig)
@@ -1900,6 +1867,8 @@
 #undef ep8_is_infty
 #undef ep8_set_infty
 #undef ep8_copy
+#undef ep8_copy_sec
+#undef ep8_swap_sec
 #undef ep8_cmp
 #undef ep8_rand
 #undef ep8_blind
@@ -1928,17 +1897,12 @@
 #undef ep8_mul_dig
 #undef ep8_mul_cof
 #undef ep8_mul_pre_basic
-#undef ep8_mul_pre_combs
+#undef ep8_mul_pre_lwreg
 #undef ep8_mul_pre_combd
-#undef ep8_mul_pre_lwnaf
 #undef ep8_mul_fix_basic
-#undef ep8_mul_fix_combs
+#undef ep8_mul_fix_lwreg
 #undef ep8_mul_fix_combd
-#undef ep8_mul_fix_lwnaf
-#undef ep8_mul_sim_basic
-#undef ep8_mul_sim_trick
-#undef ep8_mul_sim_inter
-#undef ep8_mul_sim_joint
+#undef ep8_mul_sim
 #undef ep8_mul_sim_lot
 #undef ep8_mul_sim_gen
 #undef ep8_mul_sim_dig
@@ -1968,6 +1932,8 @@
 #define ep8_is_infty 	RLC_PREFIX(ep8_is_infty)
 #define ep8_set_infty 	RLC_PREFIX(ep8_set_infty)
 #define ep8_copy 	RLC_PREFIX(ep8_copy)
+#define ep8_copy_sec 	RLC_PREFIX(ep8_copy_sec)
+#define ep8_swap_sec 	RLC_PREFIX(ep8_swap_sec)
 #define ep8_cmp 	RLC_PREFIX(ep8_cmp)
 #define ep8_rand 	RLC_PREFIX(ep8_rand)
 #define ep8_blind 	RLC_PREFIX(ep8_blind)
@@ -1996,17 +1962,12 @@
 #define ep8_mul_dig 	RLC_PREFIX(ep8_mul_dig)
 #define ep8_mul_cof 	RLC_PREFIX(ep8_mul_cof)
 #define ep8_mul_pre_basic 	RLC_PREFIX(ep8_mul_pre_basic)
-#define ep8_mul_pre_combs 	RLC_PREFIX(ep8_mul_pre_combs)
+#define ep8_mul_pre_lwreg 	RLC_PREFIX(ep8_mul_pre_lwreg)
 #define ep8_mul_pre_combd 	RLC_PREFIX(ep8_mul_pre_combd)
-#define ep8_mul_pre_lwnaf 	RLC_PREFIX(ep8_mul_pre_lwnaf)
 #define ep8_mul_fix_basic 	RLC_PREFIX(ep8_mul_fix_basic)
-#define ep8_mul_fix_combs 	RLC_PREFIX(ep8_mul_fix_combs)
+#define ep8_mul_fix_lwreg 	RLC_PREFIX(ep8_mul_fix_lwreg)
 #define ep8_mul_fix_combd 	RLC_PREFIX(ep8_mul_fix_combd)
-#define ep8_mul_fix_lwnaf 	RLC_PREFIX(ep8_mul_fix_lwnaf)
-#define ep8_mul_sim_basic 	RLC_PREFIX(ep8_mul_sim_basic)
-#define ep8_mul_sim_trick 	RLC_PREFIX(ep8_mul_sim_trick)
-#define ep8_mul_sim_inter 	RLC_PREFIX(ep8_mul_sim_inter)
-#define ep8_mul_sim_joint 	RLC_PREFIX(ep8_mul_sim_joint)
+#define ep8_mul_sim 	RLC_PREFIX(ep8_mul_sim)
 #define ep8_mul_sim_lot 	RLC_PREFIX(ep8_mul_sim_lot)
 #define ep8_mul_sim_gen 	RLC_PREFIX(ep8_mul_sim_gen)
 #define ep8_mul_sim_dig 	RLC_PREFIX(ep8_mul_sim_dig)
@@ -2040,6 +2001,8 @@
 #undef ep9_is_infty
 #undef ep9_set_infty
 #undef ep9_copy
+#undef ep9_copy_sec
+#undef ep9_swap_sec
 #undef ep9_cmp
 #undef ep9_rand
 #undef ep9_blind
@@ -2068,17 +2031,12 @@
 #undef ep9_mul_dig
 #undef ep9_mul_cof
 #undef ep9_mul_pre_basic
-#undef ep9_mul_pre_combs
+#undef ep9_mul_pre_lwreg
 #undef ep9_mul_pre_combd
-#undef ep9_mul_pre_lwnaf
 #undef ep9_mul_fix_basic
-#undef ep9_mul_fix_combs
+#undef ep9_mul_fix_lwreg
 #undef ep9_mul_fix_combd
-#undef ep9_mul_fix_lwnaf
-#undef ep9_mul_sim_basic
-#undef ep9_mul_sim_trick
-#undef ep9_mul_sim_inter
-#undef ep9_mul_sim_joint
+#undef ep9_mul_sim
 #undef ep9_mul_sim_lot
 #undef ep9_mul_sim_gen
 #undef ep9_mul_sim_dig
@@ -2107,6 +2065,8 @@
 #define ep9_is_infty 	RLC_PREFIX(ep9_is_infty)
 #define ep9_set_infty 	RLC_PREFIX(ep9_set_infty)
 #define ep9_copy 	RLC_PREFIX(ep9_copy)
+#define ep9_copy_sec 	RLC_PREFIX(ep9_copy_sec)
+#define ep9_swap_sec 	RLC_PREFIX(ep9_swap_sec)
 #define ep9_cmp 	RLC_PREFIX(ep9_cmp)
 #define ep9_rand 	RLC_PREFIX(ep9_rand)
 #define ep9_blind 	RLC_PREFIX(ep9_blind)
@@ -2135,17 +2095,12 @@
 #define ep9_mul_dig 	RLC_PREFIX(ep9_mul_dig)
 #define ep9_mul_cof 	RLC_PREFIX(ep9_mul_cof)
 #define ep9_mul_pre_basic 	RLC_PREFIX(ep9_mul_pre_basic)
-#define ep9_mul_pre_combs 	RLC_PREFIX(ep9_mul_pre_combs)
+#define ep9_mul_pre_lwreg 	RLC_PREFIX(ep9_mul_pre_lwreg)
 #define ep9_mul_pre_combd 	RLC_PREFIX(ep9_mul_pre_combd)
-#define ep9_mul_pre_lwnaf 	RLC_PREFIX(ep9_mul_pre_lwnaf)
 #define ep9_mul_fix_basic 	RLC_PREFIX(ep9_mul_fix_basic)
-#define ep9_mul_fix_combs 	RLC_PREFIX(ep9_mul_fix_combs)
+#define ep9_mul_fix_lwreg 	RLC_PREFIX(ep9_mul_fix_lwreg)
 #define ep9_mul_fix_combd 	RLC_PREFIX(ep9_mul_fix_combd)
-#define ep9_mul_fix_lwnaf 	RLC_PREFIX(ep9_mul_fix_lwnaf)
-#define ep9_mul_sim_basic 	RLC_PREFIX(ep9_mul_sim_basic)
-#define ep9_mul_sim_trick 	RLC_PREFIX(ep9_mul_sim_trick)
-#define ep9_mul_sim_inter 	RLC_PREFIX(ep9_mul_sim_inter)
-#define ep9_mul_sim_joint 	RLC_PREFIX(ep9_mul_sim_joint)
+#define ep9_mul_sim 	RLC_PREFIX(ep9_mul_sim)
 #define ep9_mul_sim_lot 	RLC_PREFIX(ep9_mul_sim_lot)
 #define ep9_mul_sim_gen 	RLC_PREFIX(ep9_mul_sim_gen)
 #define ep9_mul_sim_dig 	RLC_PREFIX(ep9_mul_sim_dig)
@@ -2697,9 +2652,12 @@
 #undef fp9_cmp_dig
 #undef fp9_set_dig
 #undef fp9_add
+#undef fp9_add_dig
 #undef fp9_sub
+#undef fp9_sub_dig
 #undef fp9_neg
 #undef fp9_dbl
+#undef fp9_mul_dig
 #undef fp9_mul_unr
 #undef fp9_mul_basic
 #undef fp9_mul_lazyr
@@ -2728,9 +2686,12 @@
 #define fp9_cmp_dig 	RLC_PREFIX(fp9_cmp_dig)
 #define fp9_set_dig 	RLC_PREFIX(fp9_set_dig)
 #define fp9_add 	RLC_PREFIX(fp9_add)
+#define fp9_add_dig 	RLC_PREFIX(fp9_add_dig)
 #define fp9_sub 	RLC_PREFIX(fp9_sub)
+#define fp9_sub_dig 	RLC_PREFIX(fp9_sub_dig)
 #define fp9_neg 	RLC_PREFIX(fp9_neg)
 #define fp9_dbl 	RLC_PREFIX(fp9_dbl)
+#define fp9_mul_dig 	RLC_PREFIX(fp9_mul_dig)
 #define fp9_mul_unr 	RLC_PREFIX(fp9_mul_unr)
 #define fp9_mul_basic 	RLC_PREFIX(fp9_mul_basic)
 #define fp9_mul_lazyr 	RLC_PREFIX(fp9_mul_lazyr)
@@ -3289,13 +3250,13 @@
 #define fp54_upk 	RLC_PREFIX(fp54_upk)
 
 #undef fb2_mul
- #undef fb2_mul_nor
+#undef fb2_mul_nor
 #undef fb2_sqr
 #undef fb2_slv
 #undef fb2_inv
 
 #define fb2_mul 	RLC_PREFIX(fb2_mul)
- #define fb2_mul_nor 	RLC_PREFIX(fb2_mul_nor)
+#define fb2_mul_nor 	RLC_PREFIX(fb2_mul_nor)
 #define fb2_sqr 	RLC_PREFIX(fb2_sqr)
 #define fb2_slv 	RLC_PREFIX(fb2_slv)
 #define fb2_inv 	RLC_PREFIX(fb2_inv)
@@ -3974,6 +3935,8 @@
 #undef md_xmd_sh256
 #undef md_xmd_sh384
 #undef md_xmd_sh512
+#undef md_xmd_b2s160
+#undef md_xmd_b2s256
 #undef md_xof_init
 #undef md_xof_bytes
 #undef md_xof_double
@@ -3993,6 +3956,8 @@
 #define md_xmd_sh256 	RLC_PREFIX(md_xmd_sh256)
 #define md_xmd_sh384 	RLC_PREFIX(md_xmd_sh384)
 #define md_xmd_sh512 	RLC_PREFIX(md_xmd_sh512)
+#define md_xmd_b2s160 	RLC_PREFIX(md_xmd_b2s160)
+#define md_xmd_b2s256 	RLC_PREFIX(md_xmd_b2s256)
 #define md_xof_init 	RLC_PREFIX(md_xof_init)
 #define md_xof_bytes 	RLC_PREFIX(md_xof_bytes)
 #define md_xof_double 	RLC_PREFIX(md_xof_double)

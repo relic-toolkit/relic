@@ -50,8 +50,8 @@
  */
 static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 	fp18_t l;
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
+	ep_t *_p = NULL;
+	ep3_t *_q = NULL;
 	int i, j;
 	size_t len = bn_bits(a) + 1;
 	int8_t s[RLC_FP_BITS + 1];
@@ -60,13 +60,20 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 		return;
 	}
 
+	/* Allocate after the early return, so that it does not leak. */
+	_p = RLC_ALLOCA(ep_t, m);
+	_q = RLC_ALLOCA(ep3_t, m);
+	if (_p == NULL || _q == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	fp18_null(l);
 
 	RLC_TRY {
 		fp18_new(l);
-		if (_p == NULL || _q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
 			ep3_null(_q[j]);
@@ -133,8 +140,6 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 	}
 }
 
-#if PP_MAP == TATEP || PP_MAP == WEILP || !defined(STRIP)
-
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -190,8 +195,6 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 		RLC_FREE(_q);
 	}
 }
-
-#endif
 
 /**
  * Compute the final lines for optimal ate pairings.
@@ -267,8 +270,6 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if PP_MAP == TATEP || !defined(STRIP)
 
 void pp_map_tatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1], t[1];
@@ -364,10 +365,6 @@ void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(_q);
 	}
 }
-
-#endif
-
-#if PP_MAP == WEILP || !defined(STRIP)
 
 void pp_map_weilp_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1], t0[1];
@@ -503,10 +500,6 @@ void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(t1);
 	}
 }
-
-#endif
-
-#if PP_MAP == OATEP || !defined(STRIP)
 
 void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 	ep_t _p[1];
@@ -670,5 +663,3 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
-
-#endif

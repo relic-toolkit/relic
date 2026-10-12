@@ -54,7 +54,7 @@
 /**
  * Maximum number of attempts when hashing to a prime.
  */
-#define BN_MAP_TRIES	(1 << 20)
+#define BN_MAP_TRIES	((uint32_t)1 << 20)
 
 /**
  * Small prime numbers table.

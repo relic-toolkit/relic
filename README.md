@@ -35,6 +35,8 @@ RELIC implements to date:
 
 Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
 
+To reduce code size, configure with `-DSTRIP=on`. This compiles the library with `-ffunction-sections -fdata-sections` and drops precomputed tables of algorithms that were not selected. Unused functions are then removed at link time, which only happens for static linking: applications linking against `librelic_s.a` must pass `-Wl,--gc-sections` (or `-Wl,-dead_strip` on macOS, `/OPT:REF` with MSVC) to their own linker. The shared library is not reduced.
+
 For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp` testing binary, and entries with prefix `cp_amore_* (1)` (for the sequential version), `cp_amore_* (AGGS)` (for the batch version) in the output of the `bench_cp` benchmarking binary. You can change the parameter `AGGS` in the source code to adjust the number of pairings.
 
 ### Support

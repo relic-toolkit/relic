@@ -51,13 +51,20 @@
 static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
 		int m, const bn_t a) {
 	fp54_t l;
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
+	ep_t *_p = NULL;
 	ep9_t s, u;
 	size_t len = bn_bits(a) + 1;
 	int i, j;
 	int8_t naf[RLC_FP_BITS + 1];
 
 	if (m == 0) {
+		return;
+	}
+
+	/* Allocate after the early return, so that it does not leak. */
+	_p = RLC_ALLOCA(ep_t, m);
+	if (_p == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
@@ -69,9 +76,6 @@ static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
 		fp54_new(l);
 		ep9_new(s);
 		ep9_new(u);
-		if (_p == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
 			ep_new(_p[j]);

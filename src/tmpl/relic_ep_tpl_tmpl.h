@@ -41,24 +41,19 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_BASIC_IMP(C, F)											\
-	static void C##_tpl_basic_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_BASIC(C, F)												\
+	void C##_tpl_basic(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			/* t0 = A = 3x^2 + a */											\
 			F##_sqr(t0, p->x);												\
@@ -104,12 +99,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -119,8 +109,13 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_PROJC_IMP(C, F)											\
-	static void C##_tpl_projc_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_PROJC(C, F)												\
+	void C##_tpl_projc(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		C##_t q;															\
 																			\
 		C##_null(q);														\
@@ -145,26 +140,19 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_JACOB_IMP(C, F)											\
-	static void C##_tpl_jacob_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_JACOB(C, F)												\
+	void C##_tpl_jacob(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
-		F##_null(t6);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
-			F##_new(t6);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
 																			\
 			/* t0 = XX = X1^2 */											\
 			F##_sqr(t0, p->x);												\
@@ -249,8 +237,8 @@
 				F##_sub(t3, t3, t2);										\
 				/* X3 = 4*(X1*EE - 4*YY*U) */								\
 				F##_mul(t4, p->x, t0);										\
-				F##_sqr(t5, p->y); 											\
-				F##_dbl(t5, t5); 											\
+				F##_sqr(t5, p->y);											\
+				F##_dbl(t5, t5);											\
 				F##_dbl(t5, t5);											\
 				F##_mul(t5, t5, t3);										\
 				F##_sub(r->x, t4, t5);										\
@@ -270,13 +258,7 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
-			F##_free(t6);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 		}																	\
 	}																		\
 

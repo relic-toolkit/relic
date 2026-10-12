@@ -29,6 +29,7 @@
  * @ingroup rand
  */
 
+#include <errno.h>
 #include <unistd.h>
 
 #include "relic_conf.h"
@@ -52,17 +53,22 @@
 #if RAND == UDEV
 
 void rand_bytes(uint8_t *buf, size_t size) {
-	int c, l, *fd = (int *)&(core_get()->rand);
+	int *fd = (int *)&(core_get()->rand);
+	ssize_t c;
+	size_t l;
 
-	l = 0;
-	do {
+	for (l = 0; l < size; l += c) {
 		c = read(*fd, buf + l, size - l);
-		l += c;
-		if (c == -1) {
+		if (c == -1 && errno == EINTR) {
+			c = 0;
+			continue;
+		}
+		/* An error or the end of the file leaves the output incomplete. */
+		if (c <= 0) {
 			RLC_THROW(ERR_NO_READ);
 			return;
 		}
-	} while (l < size);
+	}
 }
 
 void rand_seed(uint8_t *buf, size_t size) {

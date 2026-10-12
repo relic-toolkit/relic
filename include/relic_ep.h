@@ -212,14 +212,15 @@ enum {
 #define RLC_EP_MTYPE			2
 
 /**
- * Size of a precomputation table using the binary method.
- */
-#define RLC_EP_TABLE_BASIC		(RLC_FP_BITS + 1)
-
-/**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EP_TABLE_COMBS      (1 << RLC_DEPTH)
+#define RLC_EP_TABLE_BASIC      (1 << RLC_DEPTH)
+
+/**
+ * Size of a precomputation table using the regular signed comb method: two
+ * combs and the point itself.
+ */
+#define RLC_EP_TABLE_LWREG		((1 << RLC_DEPTH) + 1)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -227,27 +228,25 @@ enum {
 #define RLC_EP_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
- * Size of a precomputation table using the w-NAF method.
- */
-#define RLC_EP_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
-
-/**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
 #define RLC_EP_TABLE			RLC_EP_TABLE_BASIC
-#elif EP_FIX == COMBS
-#define RLC_EP_TABLE			RLC_EP_TABLE_COMBS
+#elif EP_FIX == LWREG
+#define RLC_EP_TABLE			RLC_EP_TABLE_LWREG
 #elif EP_FIX == COMBD
 #define RLC_EP_TABLE			RLC_EP_TABLE_COMBD
-#elif EP_FIX == LWNAF
-#define RLC_EP_TABLE			RLC_EP_TABLE_LWNAF
 #endif
 
 /**
- * Maximum size of a precomputation table.
+ * Maximum size of a precomputation table, which only needs to fit the
+ * chosen method when unused methods are stripped.
  */
+#ifdef STRIP
+#define RLC_EP_TABLE_MAX 		RLC_EP_TABLE
+#else
 #define RLC_EP_TABLE_MAX 		RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
+#endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.
@@ -368,6 +367,17 @@ typedef iso_st *iso_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep_null_all(...)	RLC_EACH(ep_null, __VA_ARGS__)
+#define ep_new_all(...)		RLC_EACH(ep_new, __VA_ARGS__)
+#define ep_free_all(...)	RLC_EACH(ep_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two prime elliptic curve points. Computes R = P + Q.
  *
  * @param[out] R			- the result.
@@ -435,12 +445,10 @@ typedef iso_st *iso_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_pre(T, P)	ep_mul_pre_basic(T, P)
-#elif EP_FIX == COMBS
-#define ep_mul_pre(T, P)	ep_mul_pre_combs(T, P)
+#elif EP_FIX == LWREG
+#define ep_mul_pre(T, P)	ep_mul_pre_lwreg(T, P)
 #elif EP_FIX == COMBD
 #define ep_mul_pre(T, P)	ep_mul_pre_combd(T, P)
-#elif EP_FIX == LWNAF
-#define ep_mul_pre(T, P)	ep_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -453,32 +461,10 @@ typedef iso_st *iso_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
-#elif EP_FIX == COMBS
-#define ep_mul_fix(R, T, K)		ep_mul_fix_combs(R, T, K)
+#elif EP_FIX == LWREG
+#define ep_mul_fix(R, T, K)		ep_mul_fix_lwreg(R, T, K)
 #elif EP_FIX == COMBD
 #define ep_mul_fix(R, T, K)		ep_mul_fix_combd(R, T, K)
-#elif EP_FIX == LWNAF
-#define ep_mul_fix(R, T, K)		ep_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously.
- * Computes R = [k]P + [m]Q.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the first point to multiply.
- * @param[in] K				- the first integer.
- * @param[in] Q				- the second point to multiply.
- * @param[in] M				- the second integer,
- */
-#if EP_SIM == BASIC
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_basic(R, P, K, Q, M)
-#elif EP_SIM == TRICK
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_trick(R, P, K, Q, M)
-#elif EP_SIM == INTER
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_inter(R, P, K, Q, M)
-#elif EP_SIM == JOINT
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /**
@@ -801,6 +787,25 @@ void ep_set_infty(ep_t p);
 void ep_copy(ep_t r, const ep_t p);
 
 /**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the prime elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep_copy_sec(ep_t r, const ep_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep_swap_sec(ep_t p, ep_t q, dig_t bit);
+
+/**
  * Compares two prime elliptic curve points.
  *
  * @param[in] p				- the first prime elliptic curve point.
@@ -1079,7 +1084,7 @@ void ep_mul_cof(ep_t r, const ep_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the binary method.
+ * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -1088,12 +1093,12 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the single-table comb method.
+ * using the regular signed comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ep_mul_pre_combs(ep_t *t, const ep_t p);
+void ep_mul_pre_lwreg(ep_t *t, const ep_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
@@ -1105,17 +1110,8 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p);
 void ep_mul_pre_combd(ep_t *t, const ep_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep_mul_pre_lwnaf(ep_t *t, const ep_t p);
-
-/**
  * Multiplies a fixed prime elliptic point using a precomputation table and
- * the binary method.
+ * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
@@ -1124,14 +1120,14 @@ void ep_mul_pre_lwnaf(ep_t *t, const ep_t p);
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the single-table comb method.
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k);
+void ep_mul_fix_lwreg(ep_t r, const ep_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -1144,18 +1140,8 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k);
 void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -1163,46 +1149,7 @@ void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep_mul_sim_basic(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
+void ep_mul_sim(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m);
 
 /**

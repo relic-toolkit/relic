@@ -289,7 +289,6 @@ static int paillier(void) {
 	return code;
 }
 
-
 static int subgroup_paillier() {
 	int code = RLC_ERR;
 	bn_t a, b, c, d;
@@ -517,6 +516,8 @@ static int ecmqv(void) {
 	return code;
 }
 
+#if defined(WITH_BC)
+
 static int ecies(void) {
 	int code = RLC_ERR;
 	ec_t r;
@@ -559,7 +560,7 @@ static int ecies(void) {
 
 		switch (ec_param_get()) {
 
-#if FP_PRIME == 256
+#if FP_PRIME == 256 && EC_CUR == PRIME
 			case NIST_P256:
 				ASSIGNP(NIST_P256);
 				memcpy(msg, expected, sizeof(expected));
@@ -607,6 +608,8 @@ static int ecies(void) {
 	ec_free(q_b);
 	return code;
 }
+
+#endif
 
 static int ecdsa(void) {
 	int code = RLC_ERR;

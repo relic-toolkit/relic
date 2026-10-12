@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of an extensible-output function from a Merkle-Damgaard hash.
+ * Implementation of an extensible-output function from a hash function.
  *
  * @ingroup md
  */
@@ -33,14 +33,17 @@
 
 #include "relic_conf.h"
 #include "relic_core.h"
+#include "relic_md.h"
 #include "sha.h"
+#include "blake2.h"
 
 /*============================================================================*/
 /* Private definitions														*/
 /*============================================================================*/
 
 /**
- * Helper: check result of a SHA call.
+ * Helper: check result of a hash call. Both the SHA and the BLAKE2s
+ * implementations return zero on success.
  */
 #define _check_md(EXPR)														\
 	do {																	\
@@ -51,8 +54,28 @@
 	} while (0)
 
 /**
+ * BLAKE2s-160 under the names expected by make_md_xmd.
+ */
+#define B2S160_Message_Block_Size	BLAKE2S_BLOCKBYTES
+#define B2S160HashSize				RLC_MD_LEN_B2S160
+#define B2S160Context				blake2s_state
+#define B2S160Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S160)
+#define B2S160Input					blake2s_update
+#define B2S160Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S160)
+
+/**
+ * BLAKE2s-256 under the names expected by make_md_xmd.
+ */
+#define B2S256_Message_Block_Size	BLAKE2S_BLOCKBYTES
+#define B2S256HashSize				RLC_MD_LEN_B2S256
+#define B2S256Context				blake2s_state
+#define B2S256Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S256)
+#define B2S256Input					blake2s_update
+#define B2S256Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S256)
+
+/**
  * Construct an extensible-output function based on HASH, which must be
- * one of SHA224, SHA256, SHA384, or SHA512.
+ * one of SHA224, SHA256, SHA384, SHA512, B2S160 or B2S256.
  */
 #define make_md_xmd(HASH, HNAME)											\
 	_make_md_xmd(md_xmd_##HNAME, HASH##_Message_Block_Size, HASH##HashSize,	\
@@ -116,18 +139,14 @@
 /* Public definitions															*/
 /*============================================================================*/
 
-#if MD_MAP == SH224 || !defined(STRIP)
 make_md_xmd(SHA224, sh224)
-#endif
 
-#if MD_MAP == SH256 || !defined(STRIP)
 make_md_xmd(SHA256, sh256)
-#endif
 
-#if MD_MAP == SH384 || !defined(STRIP)
 make_md_xmd(SHA384, sh384)
-#endif
 
-#if MD_MAP == SH512 || !defined(STRIP)
 make_md_xmd(SHA512, sh512)
-#endif
+
+make_md_xmd(B2S160, b2s160)
+
+make_md_xmd(B2S256, b2s256)

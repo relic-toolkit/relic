@@ -92,7 +92,6 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 		return;
 	}
 
-
 	/* Initialize table. */
 	for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
 		fb_null(t[i]);

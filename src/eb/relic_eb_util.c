@@ -55,15 +55,23 @@ void eb_copy(eb_t r, const eb_t p) {
 	r->coord = p->coord;
 }
 
+void eb_copy_sec(eb_t r, const eb_t p, dig_t bit) {
+	/* Copy all coordinates and the coordinate system at once. */
+	dv_copy_sec((dig_t *)r, (const dig_t *)p, sizeof(eb_st) / sizeof(dig_t),
+		bit);
+}
+
+void eb_swap_sec(eb_t p, eb_t q, dig_t bit) {
+	dv_swap_sec((dig_t *)p, (dig_t *)q, sizeof(eb_st) / sizeof(dig_t), bit);
+}
+
 void eb_rand(eb_t p) {
 	bn_t n, k;
 
-	bn_null(n);
-	bn_null(k);
+	bn_null_all(n, k);
 
 	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
+		bn_new_all(k, n);
 
 		eb_curve_get_ord(n);
 
@@ -73,20 +81,17 @@ void eb_rand(eb_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
+		bn_free_all(k, n);
 	}
 }
 
 void eb_rhs(fb_t rhs, const fb_t x) {
 	fb_t t0, t1;
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		/* t0 = x1^2. */
 		fb_sqr(t0, x);
@@ -130,8 +135,7 @@ void eb_rhs(fb_t rhs, const fb_t x) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 
@@ -213,6 +217,9 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		}
 
 		switch (w) {
+			case 2:
+				eb_copy(t[0], p);
+				break;
 			/* Formulas from https://eprint.iacr.org/2014/664. */
 #if RLC_DEPTH == 3 || RLC_WIDTH ==  3
 			case 3:
@@ -520,7 +527,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return;
 		}
 		eb_upk(a, a);
 	}

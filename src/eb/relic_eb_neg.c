@@ -38,8 +38,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 void eb_neg_basic(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -55,10 +53,6 @@ void eb_neg_basic(eb_t r, const eb_t p) {
 
 	r->coord = BASIC;
 }
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
 
 void eb_neg_projc(eb_t r, const eb_t p) {
 	fb_t t;
@@ -100,5 +94,3 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 		fb_free(t);
 	}
 }
-
-#endif

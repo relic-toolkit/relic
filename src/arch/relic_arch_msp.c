@@ -91,60 +91,44 @@ ull_t arch_cycles(void) {
 
 #endif /* TIMER = CYCLE */
 
-uint_t arch_lzcnt() {
-    static const uint8_t table[16] = {
-    	0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
-    };
-#if WSIZE == 8
-	if (a >> 4 == 0) {
-		return table[a & 0xF];
-	} else {
-		return table[a >> 4] + 4;
-	}
-	return 0;
-#elif WSIZE == 16
-	int offset;
+uint_t arch_lzcnt(dig_t a) {
+	/* Leading zeros of a nibble. */
+	static const uint8_t table[16] = {
+		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+	};
+	uint_t offset = 0;
 
-	if (a >= ((dig_t)1 << 8)) {
+	if (a == 0) {
+		return WSIZE;
+	}
+	/* Find the most significant non-zero byte, then its leading nibble. */
+	if (a >> 8 == 0) {
 		offset = 8;
-	} else {
-		offset = 0;
+		a <<= 8;
 	}
-	a = a >> offset;
-	if (a >> 4 == 0) {
-		return table[a & 0xF] + offset;
-	} else {
-		return table[a >> 4] + 4 + offset;
+	if (a >> 12 == 0) {
+		return table[(a >> 8) & 0xF] + 4 + offset;
 	}
-	return 0;
-#endif
+	return table[a >> 12] + offset;
 }
 
-uint_t arch_tzcnt() {
-    static const uint8_t table[16] = {
-    	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
-    };
-#if WSIZE == 8
-	if (a >> 4 != 0) {
-		return table[a & 0xF];
-	} else {
-		return table[a >> 4] + 4;
-	}
-	return 0;
-#elif WSIZE == 16
-	int offset;
+uint_t arch_tzcnt(dig_t a) {
+	/* Trailing zeros of a nibble. */
+	static const uint8_t table[16] = {
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+	};
+	uint_t offset = 0;
 
-	if (a & 0xFF == 0) {
+	if (a == 0) {
+		return WSIZE;
+	}
+	/* Find the least significant non-zero byte, then its trailing nibble. */
+	if ((a & 0xFF) == 0) {
 		offset = 8;
-	} else {
-		offset = 0;
+		a >>= 8;
 	}
-	a = a >> offset;
-	if (a >> 4 != 0) {
-		return table[a & 0xF] + offset;
-	} else {
-		return table[a >> 4] + 4 + offset;
+	if ((a & 0xF) == 0) {
+		return table[(a >> 4) & 0xF] + 4 + offset;
 	}
-	return 0;
-#endif
+	return table[a & 0xF] + offset;
 }

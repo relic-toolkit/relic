@@ -49,14 +49,12 @@
 #cmakedefine OVERH
 /** Build documentation. */
 #cmakedefine DOCUM
-/** Build only the selected algorithms. */
+/** Remove unused code and tables of unselected algorithms. */
 #cmakedefine STRIP
 /** Build with printing disabled. */
 #cmakedefine QUIET
 /** Build with colored output. */
 #cmakedefine COLOR
-/** Build with big-endian support. */
-#cmakedefine BIGED
 /** Build shared library. */
 #cmakedefine SHLIB
 /** Build static library. */
@@ -200,8 +198,6 @@
 #define FP_PRIME @FP_PRIME@
 /** Number of Karatsuba steps. */
 #define FP_KARAT @FP_KARAT@
-/** Prefer Pseudo-Mersenne primes over random primes. */
-#cmakedefine FP_PMERS
 /** Use -1 as quadratic non-residue. */
 #cmakedefine FP_QNRES
 
@@ -238,6 +234,8 @@
 #define QUICK    2
 /** Montgomery modular reduction. */
 #define MONTY    3
+/** Use implementation provided by the lower layer. */
+#define LOWER    7
 /** Chosen prime field reduction method. */
 #define FP_RDC   @FP_RDC@
 
@@ -368,14 +366,12 @@
 #define BASIC    1
 /** Binary inversion. */
 #define BINAR    2
-/** Almost inverse algorithm. */
-#define ALMOS    3
+/** Constant-time version of almost inverse. */
+#define CTAIA    3
 /** Extended Euclidean algorithm. */
 #define EXGCD    4
 /** Itoh-Tsuji inversion. */
 #define ITOHT    5
-/** Constant-time version of almost inverse. */
-#define CTAIA    6
 /** Use implementation provided by the lower layer. */
 #define LOWER    7
 /** Chosen binary field inversion method. */
@@ -423,27 +419,14 @@
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
 
-/** Binary point multiplication. */
-#define BASIC	 1
 /** Single-table comb method. */
-#define COMBS	 2
+#define BASIC	 1
+/** Regular signed comb method. */
+#define LWREG	 2
 /** Double-table comb method. */
 #define COMBD    3
-/** Left-to-right Width-w NAF. */
-#define LWNAF	 4
-/** Chosen prime elliptic curve point multiplication method. */
+/** Chosen prime elliptic curve fixed point multiplication method. */
 #define EP_FIX	 @EP_FIX@
-
-/** Basic simultaneouns point multiplication. */
-#define BASIC    1
-/** Shamir's trick. */
-#define TRICK    2
-/** Interleaving of w-(T)NAFs. */
-#define INTER    3
-/** Joint sparse form. */
-#define JOINT    4
-/** Chosen prime elliptic curve simulteanous point multiplication method. */
-#define EP_SIM   @EP_SIM@
 
 /** Basic hash to x-coordinate and increment. */
 #define BASIC    1
@@ -483,27 +466,16 @@
 /** Chosen binary elliptic curve point multiplication method. */
 #define EB_MUL	 @EB_MUL@
 
-/** Binary point multiplication. */
-#define BASIC	 1
 /** Single-table comb method. */
-#define COMBS	 2
+#define BASIC	 1
+/** Regular signed comb method. */
+#define LWREG	 2
 /** Double-table comb method. */
 #define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Chosen binary elliptic curve point multiplication method. */
+/** Chosen binary elliptic curve fixed point multiplication method. */
 #define EB_FIX	 @EB_FIX@
-
-/** Basic simultaneouns point multiplication. */
-#define BASIC    1
-/** Shamir's trick. */
-#define TRICK    2
-/** Interleaving of w-(T)NAFs. */
-#define INTER    3
-/** Joint sparse form. */
-#define JOINT    4
-/** Chosen binary elliptic curve simulteanous point multiplication method. */
-#define EB_SIM   @EB_SIM@
 
 /** Build precomputation table for generator. */
 #cmakedefine ED_PRECO
@@ -531,27 +503,14 @@
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_MUL	 @ED_MUL@
 
-/** Binary point multiplication. */
-#define BASIC	 1
 /** Single-table comb method. */
-#define COMBS	 2
+#define BASIC	 1
+/** Regular signed comb method. */
+#define LWREG	 2
 /** Double-table comb method. */
 #define COMBD    3
-/** Left-to-right Width-w NAF. */
-#define LWNAF	 4
-/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
+/** Chosen prime elliptic twisted Edwards curve fixed point multiplication method. */
 #define ED_FIX	 @ED_FIX@
-
-/** Basic simultaneouns point multiplication. */
-#define BASIC    1
-/** Shamir's trick. */
-#define TRICK    2
-/** Interleaving of w-(T)NAFs. */
-#define INTER    3
-/** Joint sparse form. */
-#define JOINT    4
-/** Chosen prime elliptic curve simulteanous point multiplication method. */
-#define ED_SIM   @ED_SIM@
 
 /** Prime curves. */
 #define PRIME    1

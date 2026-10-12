@@ -54,14 +54,12 @@ static void find_trace(void) {
 	int counter;
 	ctx_t *ctx = core_get();
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	ctx->fb_ta = ctx->fb_tb = ctx->fb_tc = -1;
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		counter = 0;
 		for (int i = 0; i < RLC_FB_BITS; i++) {
@@ -97,10 +95,11 @@ static void find_trace(void) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
+
+#if FB_SLV == QUICK || !defined(STRIP)
 
 /**
  * Precomputes half-traces for z^i with odd i.
@@ -133,7 +132,6 @@ static void find_solve(void) {
 					fb_add(ctx->fb_half[l][j], ctx->fb_half[l][j], t0);
 				}
 			}
-			fb_rsh(ctx->fb_half[l][j], ctx->fb_half[l][j], 1);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -143,6 +141,8 @@ static void find_solve(void) {
 		fb_free(t0);
 	}
 }
+
+#endif
 
 /**
  * Precomputes the square root of z.
@@ -253,6 +253,12 @@ static void find_chain(void) {
 			break;
 	}
 
+	if (ctx->chain_len >= RLC_TERMS) {
+		/* The chain does not fit in the context. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	u[0] = 1;
 	u[1] = 2;
 	for (i = 2; i <= ctx->chain_len; i++) {
@@ -287,7 +293,9 @@ static void find_chain(void) {
 static void fb_poly_set(const fb_t f) {
 	fb_copy(core_get()->fb_poly, f);
 	find_trace();
+#if FB_SLV == QUICK || !defined(STRIP)
 	find_solve();
+#endif
 	find_srz();
 	find_chain();
 }
@@ -445,7 +453,11 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 }
 
 const dig_t *fb_poly_get_slv(void) {
+#if FB_SLV == QUICK || !defined(STRIP)
 	return (dig_t *)&(core_get()->fb_half);
+#else
+	return NULL;
+#endif
 }
 
 const int *fb_poly_get_chain(int *len) {

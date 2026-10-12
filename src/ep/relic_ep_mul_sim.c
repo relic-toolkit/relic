@@ -38,20 +38,18 @@
 /*============================================================================*/
 
 /**
- * Multiplies and adds two prime elliptic curve points simultaneously,
- * optionally choosing the first point as the generator depending on an optional
- * table of precomputed points.
+ * Multiplies and adds two prime elliptic curve points simultaneously, using
+ * the GLV endomorphism.
  *
  * @param[out] r 				- the result.
  * @param[in] p					- the first point to multiply.
  * @param[in] k					- the first integer.
  * @param[in] q					- the second point to multiply.
  * @param[in] m					- the second integer.
- * @param[in] t					- the pointer to the precomputed table.
  */
 static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m, const ep_t *t) {
-	int i, sk0, sk1, sl0, sl1, w, g = 0;
+		const bn_t m) {
+	int i, sk0, sk1, sl0, sl1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1, u;
 	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
 	bn_t n, k0, k1, m0, m1;
@@ -93,31 +91,18 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_abs(m0, m0);
 		bn_abs(m1, m1);
 
-		g = (t == NULL ? 0 : 1);
-		if (!g) {
-			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-				ep_new(tab0[i]);
-			}
-			ep_tab(tab0, p, RLC_WIDTH);
-			t = (const ep_t *)tab0;
-		}
-
-		/* Prepare the precomputation table. */
+		/* Compute the precomputation tables. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ep_new(tab0[i]);
 			ep_new(tab1[i]);
 		}
-		/* Compute the precomputation table. */
+		ep_tab(tab0, p, RLC_WIDTH);
 		ep_tab(tab1, q, RLC_WIDTH);
 
-		/* Compute the w-TNAF representation of k and l */
-		if (g) {
-			w = RLC_DEPTH;
-		} else {
-			w = RLC_WIDTH;
-		}
+		/* Compute the w-NAF representations of the subscalars. */
 		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, k0, w);
-		bn_rec_naf(naf1, &l1, k1, w);
+		bn_rec_naf(naf0, &l0, k0, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, k1, RLC_WIDTH);
 		bn_rec_naf(naf2, &l2, m0, RLC_WIDTH);
 		bn_rec_naf(naf3, &l3, m1, RLC_WIDTH);
 
@@ -151,28 +136,28 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			u = *t0;
 			if (u > 0) {
 				if (sk0 == RLC_POS) {
-					ep_add(r, r, t[u / 2]);
+					ep_add(r, r, tab0[u / 2]);
 				} else {
-					ep_sub(r, r, t[u / 2]);
+					ep_sub(r, r, tab0[u / 2]);
 				}
 			}
 			if (u < 0) {
 				if (sk0 == RLC_POS) {
-					ep_sub(r, r, t[-u / 2]);
+					ep_sub(r, r, tab0[-u / 2]);
 				} else {
-					ep_add(r, r, t[-u / 2]);
+					ep_add(r, r, tab0[-u / 2]);
 				}
 			}
 			u = *t1;
 			if (u > 0) {
-				ep_psi(v, t[u / 2]);
+				ep_psi(v, tab0[u / 2]);
 				if (sk1 == RLC_NEG) {
 					ep_neg(v, v);
 				}
 				ep_add(r, r, v);
 			}
 			if (u < 0) {
-				ep_psi(v, t[-u / 2]);
+				ep_psi(v, tab0[-u / 2]);
 				if (sk1 == RLC_NEG) {
 					ep_neg(v, v);
 				}
@@ -224,13 +209,9 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_free(m1);
 		ep_free(v);
 
-		if (!g) {
-			for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
-				ep_free(tab0[i]);
-			}
-		}
 		/* Free the precomputation tables. */
 		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
+			ep_free(tab0[i]);
 			ep_free(tab1[i]);
 		}
 	}
@@ -437,88 +418,17 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 	}
 }
 
-TMPL_EP_MUL_SIM_PLAIN(ep);
+TMPL_EC_MUL_SIM_PLAIN(ep, RLC_FP_BITS);
 
-/**
- * Multiplies and adds multiple elliptic curve points simultaneously.
- * Computes R = \Sum_i=0..n [k_i]P_i.
- *
- * @param[out] r			- the result.
- * @param[out] p			- the elements to multiply.
- * @param[out] k			- the integer scalars.
- * @param[out] n			- the number of elements to multiply.
- */
-static void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[],
-		int n) {
-	int i, j;
-	int8_t *naf = NULL;
-	ep_t *_p = RLC_ALLOCA(ep_t, n);
-	size_t l, *_l = RLC_ALLOCA(size_t, n);
-
-	RLC_TRY {
-		l = 0;
-		for (i = 0; i < n; i++) {
-			l = RLC_MAX(l, bn_bits(k[i]) + 1);
-		}
-		naf = RLC_ALLOCA(int8_t, n * l);
-		if (naf == NULL || _p == NULL || _l == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-
-		for (i = 0; i < n; i++) {
-			ep_null(_p[i]);
-			ep_new(_p[i]);
-		}
-
-		for (i = 0; i < n; i++) {
-			_l[i] = l;
-			ep_norm(_p[i], p[i]);
-			bn_rec_naf(&naf[i*l], &_l[i], k[i], 2);
-			if (bn_sign(k[i]) == RLC_NEG) {
-				ep_neg(_p[i], _p[i]);
-			}
-		}
-
-		ep_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			ep_dbl(r, r);
-			for (j = 0; j < n; j++) {
-				if (naf[j*l + i] > 0) {
-					ep_add(r, r, _p[j]);
-				}
-				if (naf[j*l + i] < 0) {
-					ep_sub(r, r, _p[j]);
-				}
-			}
-		}
-
-		/* Convert r to affine coordinates. */
-		ep_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			ep_free(_p[i]);
-		}
-		RLC_FREE(_l);
-		RLC_FREE(_p);
-		RLC_FREE(naf);
-	}
-}
+TMPL_EC_MUL_SIM_LOT_PLAIN(ep);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_SIM_BASIC(ep);
+TMPL_EP_MUL_SIM(ep, glv);
 
-TMPL_EP_MUL_SIM_TRICK(ep);
-
-TMPL_EP_MUL_SIM_INTER(ep);
-
-TMPL_EP_MUL_SIM_JOINT(ep);
-
-TMPL_EP_MUL_SIM_GEN(ep);
+TMPL_EC_MUL_SIM_GEN(ep);
 
 void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 	ep_t t;

@@ -646,6 +646,8 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	}
 }
 
+#if BN_GCD == LOWER
+
 void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, g;
 	size_t shift = 0;
@@ -785,6 +787,8 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_free_all(u, v, g, s, t);
 	}
 }
+
+#endif
 
 void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		const bn_t a, const bn_t b, const bn_t l) {

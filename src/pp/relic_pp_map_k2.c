@@ -101,8 +101,6 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	}
 }
 
-#if PP_MAP == WEILP || !defined(STRIP)
-
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -175,13 +173,9 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	}
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 
 void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t[1];
@@ -274,10 +268,6 @@ void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
-
-#endif
-
-#if PP_MAP == WEILP || !defined(STRIP)
 
 void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t0[1], t1[1];
@@ -405,5 +395,3 @@ void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 		RLC_FREE(t1);
 	}
 }
-
-#endif

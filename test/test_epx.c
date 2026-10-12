@@ -745,7 +745,7 @@ static int test_##C##_fixed(void) {											\
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {						\
 			C##_new(t[i]);													\
 		}																	\
-		TEST_CASE("binary fixed point multiplication is correct") {			\
+		TEST_CASE("single-table comb fixed point multiplication is correct") {\
 			C##_rand(p);													\
 			C##_mul_pre_basic(t, p);										\
 			bn_zero(k);														\
@@ -777,38 +777,38 @@ static int test_##C##_fixed(void) {											\
 			C##_free(t[i]);													\
 		}																	\
 																			\
-		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {						\
+		for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {						\
 			C##_new(t[i]);													\
 		}																	\
-		TEST_CASE("single-table comb fixed point multiplication is correct") {\
+		TEST_CASE("regular signed comb fixed point multiplication is correct") {\
 			C##_rand(p);													\
-			C##_mul_pre_combs(t, p);										\
+			C##_mul_pre_lwreg(t, p);										\
 			bn_zero(k);														\
-			C##_mul_fix_combs(r, t, k);										\
+			C##_mul_fix_lwreg(r, t, k);										\
 			TEST_ASSERT(C##_is_infty(r), end);								\
-			C##_mul_fix_combs(r, t, n);										\
+			C##_mul_fix_lwreg(r, t, n);										\
 			TEST_ASSERT(C##_is_infty(r), end);								\
 			bn_set_dig(k, 1);												\
-			C##_mul_fix_combs(r, t, k);										\
+			C##_mul_fix_lwreg(r, t, k);										\
 			TEST_ASSERT(C##_cmp(p, r) == RLC_EQ, end);						\
 			bn_rand_mod(k, n);												\
 			C##_mul(r, p, k);												\
-			C##_mul_fix_combs(q, t, k);										\
+			C##_mul_fix_lwreg(q, t, k);										\
 			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
 			bn_neg(k, k);													\
-			C##_mul_fix_combs(r, t, k);										\
+			C##_mul_fix_lwreg(r, t, k);										\
 			C##_neg(r, r);													\
 			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
 			bn_rand_mod(k, n);												\
-			C##_mul_fix_combs(q, t, k);										\
+			C##_mul_fix_lwreg(q, t, k);										\
 			/* Add a multiple of n beyond the bit length of the table. */	\
 			bn_lsh(n, n, RLC_DIG);											\
 			bn_add(k, k, n);												\
 			bn_rsh(n, n, RLC_DIG);											\
-			C##_mul_fix_combs(r, t, k);										\
+			C##_mul_fix_lwreg(r, t, k);										\
 			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
 		} TEST_END;															\
-		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {						\
+		for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {						\
 			C##_free(t[i]);													\
 		}																	\
 																			\
@@ -847,40 +847,6 @@ static int test_##C##_fixed(void) {											\
 			C##_free(t[i]);													\
 		}																	\
 																			\
-		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {						\
-			C##_new(t[i]);													\
-		}																	\
-		TEST_CASE("left-to-right w-naf fixed point multiplication is correct") {\
-			C##_rand(p);													\
-			C##_mul_pre_lwnaf(t, p);										\
-			bn_zero(k);														\
-			C##_mul_fix_lwnaf(r, t, k);										\
-			TEST_ASSERT(C##_is_infty(r), end);								\
-			C##_mul_fix_lwnaf(r, t, n);										\
-			TEST_ASSERT(C##_is_infty(r), end);								\
-			bn_set_dig(k, 1);												\
-			C##_mul_fix_lwnaf(r, t, k);										\
-			TEST_ASSERT(C##_cmp(p, r) == RLC_EQ, end);						\
-			bn_rand_mod(k, n);												\
-			C##_mul(r, p, k);												\
-			C##_mul_fix_lwnaf(q, t, k);										\
-			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
-			bn_neg(k, k);													\
-			C##_mul_fix_lwnaf(r, t, k);										\
-			C##_neg(r, r);													\
-			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
-			bn_rand_mod(k, n);												\
-			C##_mul_fix_lwnaf(q, t, k);										\
-			/* Add a multiple of n beyond the bit length of the table. */	\
-			bn_lsh(n, n, RLC_DIG);											\
-			bn_add(k, k, n);												\
-			bn_rsh(n, n, RLC_DIG);											\
-			C##_mul_fix_lwnaf(r, t, k);										\
-			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
-		} TEST_END;															\
-		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {						\
-			C##_free(t[i]);													\
-		}																	\
 	}																		\
 	RLC_CATCH_ANY {															\
 		util_print("FATAL ERROR!\n");										\
@@ -965,134 +931,6 @@ static int test_##C##_simultaneous(void) {									\
 			bn_add(k[1], k[1], n);											\
 			bn_rsh(n, n, RLC_DIG);											\
 			C##_mul_sim_lot(p[1], p, k, 2);									\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-		} TEST_END;															\
-																			\
-		TEST_CASE("basic simultaneous point multiplication is correct") {	\
-			bn_zero(k[0]);													\
-			bn_rand_mod(k[1], n);											\
-			C##_mul(p[1], p[0], k[1]);										\
-			C##_mul_sim_basic(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_zero(k[1]);													\
-			C##_mul(p[1], p[0], k[0]);										\
-			C##_mul_sim_basic(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_rand_mod(k[1], n);											\
-			C##_mul_sim_basic(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[0], k[0]);												\
-			C##_mul_sim_basic(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[1], k[1]);												\
-			C##_mul_sim_basic(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-		} TEST_END;															\
-																			\
-		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {\
-			bn_zero(k[0]);													\
-			bn_rand_mod(k[1], n);											\
-			C##_mul(p[1], p[0], k[1]);										\
-			C##_mul_sim_trick(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_zero(k[1]);													\
-			C##_mul(p[1], p[0], k[0]);										\
-			C##_mul_sim_trick(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_rand_mod(k[1], n);											\
-			C##_mul_sim_trick(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[0], k[0]);												\
-			C##_mul_sim_trick(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[1], k[1]);												\
-			C##_mul_sim_trick(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-		} TEST_END;															\
-																			\
-		TEST_CASE("interleaving for simultaneous multiplication is correct") {\
-			bn_zero(k[0]);													\
-			bn_rand_mod(k[1], n);											\
-			C##_mul(p[1], p[0], k[1]);										\
-			C##_mul_sim_inter(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_zero(k[1]);													\
-			C##_mul(p[1], p[0], k[0]);										\
-			C##_mul_sim_inter(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_rand_mod(k[1], n);											\
-			C##_mul_sim_inter(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[0], k[0]);												\
-			C##_mul_sim_inter(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[1], k[1]);												\
-			C##_mul_sim_inter(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-		} TEST_END;															\
-																			\
-		TEST_CASE("jsf for simultaneous multiplication is correct") {		\
-			bn_zero(k[0]);													\
-			bn_rand_mod(k[1], n);											\
-			C##_mul(p[1], p[0], k[1]);										\
-			C##_mul_sim_joint(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_zero(k[1]);													\
-			C##_mul(p[1], p[0], k[0]);										\
-			C##_mul_sim_joint(r, p[0], k[0], p[0], k[1]);					\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_rand_mod(k[0], n);											\
-			bn_rand_mod(k[1], n);											\
-			C##_mul_sim_joint(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[0], k[0]);												\
-			C##_mul_sim_joint(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
-			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
-			bn_neg(k[1], k[1]);												\
-			C##_mul_sim_joint(r, p[0], k[0], p[1], k[1]);					\
-			C##_mul(p[0], p[0], k[0]);										\
-			C##_mul(p[1], p[1], k[1]);										\
-			C##_add(p[1], p[1], p[0]);										\
 			TEST_ASSERT(C##_cmp(p[1], r) == RLC_EQ, end);					\
 		} TEST_END;															\
 																			\

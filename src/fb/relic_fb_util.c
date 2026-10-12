@@ -78,6 +78,10 @@ void fb_copy(fb_t c, const fb_t a) {
 	dv_copy(c, a, RLC_FB_DIGS);
 }
 
+void fb_copy_sec(fb_t c, const fb_t a, dig_t bit) {
+	dv_copy_sec(c, a, RLC_FB_DIGS, bit);
+}
+
 void fb_zero(fb_t a) {
 	dv_zero(a, RLC_FB_DIGS);
 }
@@ -189,6 +193,7 @@ void fb_read_str(fb_t a, const char *str, size_t len, uint_t radix) {
 
 	if (!valid_radix(radix)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -197,11 +202,12 @@ void fb_read_str(fb_t a, const char *str, size_t len, uint_t radix) {
 		bn_read_str(t, str, len, radix);
 
 		if (bn_bits(t) > RLC_FB_BITS) {
+			/* Without error checking the throw returns, so do not copy. */
 			RLC_THROW(ERR_NO_BUFFER);
+		} else {
+			fb_zero(a);
+			dv_copy(a, t->dp, t->used);
 		}
-
-		fb_zero(a);
-		dv_copy(a, t->dp, t->used);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -285,7 +291,12 @@ void fb_read_bin(fb_t a, const uint8_t *bin, size_t len) {
 
 		bn_read_bin(t, bin, len);
 
-		fb_copy(a, t->dp);
+		/* Reject values with bits beyond the degree of the field. */
+		if (bn_bits(t) > RLC_FB_BITS) {
+			RLC_THROW(ERR_NO_VALID);
+		} else {
+			fb_copy(a, t->dp);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
