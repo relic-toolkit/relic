@@ -328,6 +328,193 @@
 	}
 
 /**
+ * Selects where the line functions of curves with quartic twists (K = 8 and
+ * 16) store their coefficients, as the selectors above do for sextic twists:
+ * the term multiplied by x_P (LX), the one multiplied by y_P (LY) and its
+ * first coordinate in the prime field (LY0), and the remaining term (LJ).
+ * Quartic twists need no correction of that term.
+ */
+/** @{ */
+#define TMPL_PP_LX_8(L)														\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[0][1] : L[1][0])
+#define TMPL_PP_LY_8(L)														\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
+#define TMPL_PP_LJ_8(L)														\
+	(ep2_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
+#define TMPL_PP_LY0_8(L)		TMPL_PP_LY_8(L)[0]
+#define TMPL_PP_ART_8(L)		/* No correction for quartic twists. */
+
+#define TMPL_PP_LX_16(L)													\
+	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[0][1] : L[1][0])
+#define TMPL_PP_LY_16(L)													\
+	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[1][1] : L[0][0])
+#define TMPL_PP_LJ_16(L)													\
+	(ep4_curve_is_twist() == RLC_EP_MTYPE ? L[0][0] : L[1][1])
+#define TMPL_PP_LY0_16(L)		TMPL_PP_LY_16(L)[0][0]
+#define TMPL_PP_ART_16(L)		/* No correction for quartic twists. */
+/** @} */
+
+/**
+ * Defines a template for adding two points of a quartic twist, the first in
+ * Jacobian coordinates, and evaluating the line through them at a point.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ * @param[in] V			- the suffix of the function name.
+ */
+#define TMPL_PP_ADD_PROJC4(K, C, F, V)										\
+	void pp_add_k##K##_projc_##V(fp##K##_t l, C##_t r, const C##_t q,		\
+			const ep_t p) {													\
+		F##_t t0, t1, t2, t3, t4, t5;										\
+		fp_t u;																\
+																			\
+		TMPL_PP_TWIST_##K													\
+																			\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
+		fp_null(u);															\
+																			\
+		RLC_TRY {															\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
+			fp_new(u);														\
+																			\
+			/* t0 = A = Z1^2, t1 = B = X2*Z1. */							\
+			F##_sqr(t0, r->z);												\
+			F##_mul(t1, r->z, q->x);										\
+																			\
+			/* t0 = C = y2*A, t2 = D = (x1 - B) */							\
+			F##_mul(t0, t0, q->y);											\
+			F##_sub(t2, r->x, t1);											\
+																			\
+			/* t3 = E = 2*(y1 - C), t4 = F = 2*D*z1, t2 = G = 4*D*F. */		\
+			F##_sub(t3, r->y, t0);											\
+			F##_dbl(t3, t3);												\
+			F##_dbl(t2, t2);												\
+			F##_mul(t4, t2, r->z);											\
+			F##_mul(t2, t2, t4);											\
+			F##_dbl(t2, t2);												\
+																			\
+			/* l = E*X2 - F*Y2 - E*xQ + F*yQ. */							\
+			F##_mul(TMPL_PP_LJ_##K(l), t3, q->x);							\
+			F##_mul(t0, t4, q->y);											\
+			F##_sub(TMPL_PP_LJ_##K(l), TMPL_PP_LJ_##K(l), t0);				\
+			fp_neg(u, p->x);												\
+			F##_mul_fp(TMPL_PP_LX_##K(l), t3, u);							\
+			F##_mul_fp(TMPL_PP_LY_##K(l), t4, p->y);						\
+																			\
+			/* z3 = F^2, t4 = (F + E)^2, t3 = E^2. */						\
+			F##_sqr(r->z, t4);												\
+			F##_add(t4, t4, t3);											\
+			F##_sqr(t4, t4);												\
+			F##_sqr(t3, t3);												\
+																			\
+			/* t5 = x3 = 2*E^2 - (x1 + B)*G. */								\
+			F##_add(t1, t1, r->x);											\
+			F##_mul(t1, t1, t2);											\
+			F##_dbl(t5, t3);												\
+			F##_sub(t5, t5, t1);											\
+																			\
+			/* y3 = ((F + E)^2 - E^2 - F^2)*(x1*G - x3) - y1*G^2. */		\
+			F##_sub(t4, t4, r->z);											\
+			F##_sub(t4, t4, t3);											\
+			F##_mul(t1, r->x, t2);											\
+			F##_sub(t1, t1, t5);											\
+			F##_mul(t4, t4, t1);											\
+			F##_sqr(t2, t2);												\
+			F##_mul(r->y, r->y, t2);										\
+			F##_sub(r->y, t4, r->y);										\
+																			\
+			/* Z3 = 2*F^2. */												\
+			F##_dbl(r->z, r->z);											\
+			F##_copy(r->x, t5);												\
+																			\
+			r->coord = PROJC;												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
+			fp_free(u);														\
+		}																	\
+	}
+
+/**
+ * Defines a template for doubling a point of a quartic twist in Jacobian
+ * coordinates and evaluating the tangent line at a point.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ * @param[in] V			- the suffix of the function name.
+ */
+#define TMPL_PP_DBL_PROJC4(K, C, F, V)										\
+	void pp_dbl_k##K##_projc_##V(fp##K##_t l, C##_t r, const C##_t q,		\
+			const ep_t p) {													\
+		F##_t t0, t1, t2, t3, t4, t5, t6;									\
+																			\
+		TMPL_PP_TWIST_##K													\
+																			\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
+																			\
+		RLC_TRY {															\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
+																			\
+			/* t0 = A = X1^2, t1 = B = Y1^2, t2 = C = Z1^2, t3 = D = a*C. */\
+			F##_sqr(t0, q->x);												\
+			F##_sqr(t1, q->y);												\
+			F##_sqr(t2, q->z);												\
+			C##_curve_mul_a(t3, t2);										\
+																			\
+			/* x3 = (A - D)^2, l11 = (A - D + x1)^2 - x3 - A. */			\
+			F##_sub(t5, t0, t3);											\
+			F##_add(TMPL_PP_LJ_##K(l), t5, q->x);							\
+			F##_sqr(r->x, t5);												\
+			F##_sqr(TMPL_PP_LJ_##K(l), TMPL_PP_LJ_##K(l));					\
+			F##_sub(TMPL_PP_LJ_##K(l), TMPL_PP_LJ_##K(l), r->x);			\
+			F##_sub(TMPL_PP_LJ_##K(l), TMPL_PP_LJ_##K(l), t0);				\
+																			\
+			/* l10 := -xp*z1*2*(3A + D). */									\
+			F##_add(t6, t0, t3);											\
+			F##_dbl(t0, t0);												\
+			F##_add(t0, t0, t6);											\
+			F##_dbl(t0, t0);												\
+			F##_mul(TMPL_PP_LX_##K(l), t0, q->z);							\
+			F##_mul_fp(TMPL_PP_LX_##K(l), TMPL_PP_LX_##K(l), p->x);			\
+																			\
+			/* l01 = 2*((y1 + z1)^2 - B - C)*yP. */							\
+			F##_add(TMPL_PP_LY_##K(l), q->y, q->z);							\
+			F##_sqr(TMPL_PP_LY_##K(l), TMPL_PP_LY_##K(l));					\
+			F##_sub(TMPL_PP_LY_##K(l), TMPL_PP_LY_##K(l), t1);				\
+			F##_sub(TMPL_PP_LY_##K(l), TMPL_PP_LY_##K(l), t2);				\
+			F##_dbl(TMPL_PP_LY_##K(l), TMPL_PP_LY_##K(l));					\
+			F##_mul_fp(TMPL_PP_LY_##K(l), TMPL_PP_LY_##K(l), p->y);			\
+																			\
+			/* t4 = E = 2*(A + D)^2 - x3. */								\
+			F##_sqr(t4, t6);												\
+			F##_dbl(t4, t4);												\
+			F##_sub(t4, t4, r->x);											\
+			/* y3 = E * ((A - D + y1)^2 - B - x3). */						\
+			F##_add(r->y, t5, q->y);										\
+			F##_sqr(r->y, r->y);											\
+			F##_sub(r->y, r->y, t1);										\
+			F##_sub(r->y, r->y, r->x);										\
+			F##_mul(r->y, r->y, t4);										\
+			/* z3 = 4*B. */													\
+			F##_dbl(r->z, t1);												\
+			F##_dbl(r->z, r->z);											\
+																			\
+			r->coord = PROJC;												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
+		}																	\
+	}
+
+/**
  * Selects how the Miller loop of degree K prepares the point of G_1 for the
  * doubling lines: its negation for affine coordinates, and for projective
  * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists
@@ -658,13 +845,14 @@
 /**
  * Defines a template for doubling a point of G_1 in projective coordinates
  * and evaluating the line through it at a point of the twist, for curves
- * y^2 = x^3 + ax + b with a != 0, as the ones with quartic twists.
+ * y^2 = x^3 + ax + b with a != 0, as the ones with quartic twists (K = 8
+ * and 16).
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
  * @param[in] F			- the prefix of the twist field.
  */
-#define TMPL_PP_DBL_LIT_A(K, C, F)											\
+#define TMPL_PP_DBL_LIT4(K, C, F)											\
 	void pp_dbl_lit_k##K(fp##K##_t l, ep_t r, const ep_t p, const C##_t q) {\
 		fp_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
@@ -768,9 +956,11 @@
 /**
  * Selects the final lines of the optimal ate pairing of degree K, which
  * evaluate at P the lines that the loop over the parameter leaves out. Only
- * K = 54 has them: f^3 times three more lines.
+ * K = 54 has them: f^3 times three more lines. Degrees 12, 16 and 18 add
+ * their family-specific final lines by hand.
  */
 /** @{ */
+#define TMPL_PP_FIN_8(R, T, Q, P, M)	/* No final lines. */
 #define TMPL_PP_FIN_24(R, T, Q, P, M)	/* No final lines. */
 #define TMPL_PP_FIN_48(R, T, Q, P, M)	/* No final lines. */
 #define TMPL_PP_FIN_54(R, T, Q, P, M)	pp_fin_k54(R, T, Q, P, M);
