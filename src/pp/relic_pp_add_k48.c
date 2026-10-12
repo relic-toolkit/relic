@@ -41,3 +41,5 @@
 TMPL_PP_ADD_BASIC(48, ep8, fp8);
 
 TMPL_PP_ADD_PROJC(48, ep8, fp8);
+
+TMPL_PP_ADD_LIT(48, ep8, fp8);

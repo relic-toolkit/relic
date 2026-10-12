@@ -3285,6 +3285,7 @@
 #undef pp_add_k8_basic
 #undef pp_add_k8_projc_basic
 #undef pp_add_k8_projc_lazyr
+#undef pp_add_lit_k8
 #undef pp_add_k12_basic
 #undef pp_add_k12_projc_basic
 #undef pp_add_k12_projc_lazyr
@@ -3299,10 +3300,13 @@
 #undef pp_add_lit_k18
 #undef pp_add_k24_basic
 #undef pp_add_k24_projc
+#undef pp_add_lit_k24
 #undef pp_add_k48_basic
 #undef pp_add_k48_projc
+#undef pp_add_lit_k48
 #undef pp_add_k54_basic
 #undef pp_add_k54_projc
+#undef pp_add_lit_k54
 #undef pp_dbl_k1_basic
 #undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
@@ -3311,6 +3315,7 @@
 #undef pp_dbl_k8_basic
 #undef pp_dbl_k8_projc_basic
 #undef pp_dbl_k8_projc_lazyr
+#undef pp_dbl_lit_k8
 #undef pp_dbl_k12_basic
 #undef pp_dbl_k12_projc_basic
 #undef pp_dbl_k12_projc_lazyr
@@ -3322,10 +3327,13 @@
 #undef pp_dbl_k18_projc_lazyr
 #undef pp_dbl_k24_basic
 #undef pp_dbl_k24_projc
+#undef pp_dbl_lit_k24
 #undef pp_dbl_k48_basic
 #undef pp_dbl_k48_projc
+#undef pp_dbl_lit_k48
 #undef pp_dbl_k54_basic
 #undef pp_dbl_k54_projc
+#undef pp_dbl_lit_k54
 #undef pp_dbl_lit_k12
 #undef pp_dbl_lit_k16
 #undef pp_dbl_lit_k18
@@ -3355,6 +3363,10 @@
 #undef pp_map_sim_weilp_k1
 #undef pp_map_weilp_k2
 #undef pp_map_sim_weilp_k2
+#undef pp_map_tatep_k8
+#undef pp_map_sim_tatep_k8
+#undef pp_map_weilp_k8
+#undef pp_map_sim_weilp_k8
 #undef pp_map_oatep_k8
 #undef pp_map_sim_oatep_k8
 #undef pp_map_tatep_k12
@@ -3375,12 +3387,24 @@
 #undef pp_map_sim_weilp_k18
 #undef pp_map_oatep_k18
 #undef pp_map_sim_oatep_k18
-#undef pp_map_k24
-#undef pp_map_sim_k24
-#undef pp_map_k48
-#undef pp_map_sim_k48
-#undef pp_map_k54
-#undef pp_map_sim_k54
+#undef pp_map_tatep_k24
+#undef pp_map_sim_tatep_k24
+#undef pp_map_weilp_k24
+#undef pp_map_sim_weilp_k24
+#undef pp_map_oatep_k24
+#undef pp_map_sim_oatep_k24
+#undef pp_map_tatep_k48
+#undef pp_map_sim_tatep_k48
+#undef pp_map_weilp_k48
+#undef pp_map_sim_weilp_k48
+#undef pp_map_oatep_k48
+#undef pp_map_sim_oatep_k48
+#undef pp_map_tatep_k54
+#undef pp_map_sim_tatep_k54
+#undef pp_map_weilp_k54
+#undef pp_map_sim_weilp_k54
+#undef pp_map_oatep_k54
+#undef pp_map_sim_oatep_k54
 
 #define pp_map_init 	RLC_PREFIX(pp_map_init)
 #define pp_map_clean 	RLC_PREFIX(pp_map_clean)
@@ -3392,6 +3416,7 @@
 #define pp_add_k8_basic 	RLC_PREFIX(pp_add_k8_basic)
 #define pp_add_k8_projc_basic 	RLC_PREFIX(pp_add_k8_projc_basic)
 #define pp_add_k8_projc_lazyr 	RLC_PREFIX(pp_add_k8_projc_lazyr)
+#define pp_add_lit_k8 	RLC_PREFIX(pp_add_lit_k8)
 #define pp_add_k12_basic 	RLC_PREFIX(pp_add_k12_basic)
 #define pp_add_k12_projc_basic 	RLC_PREFIX(pp_add_k12_projc_basic)
 #define pp_add_k12_projc_lazyr 	RLC_PREFIX(pp_add_k12_projc_lazyr)
@@ -3406,10 +3431,13 @@
 #define pp_add_lit_k18 	RLC_PREFIX(pp_add_lit_k18)
 #define pp_add_k24_basic 	RLC_PREFIX(pp_add_k24_basic)
 #define pp_add_k24_projc 	RLC_PREFIX(pp_add_k24_projc)
+#define pp_add_lit_k24 	RLC_PREFIX(pp_add_lit_k24)
 #define pp_add_k48_basic 	RLC_PREFIX(pp_add_k48_basic)
 #define pp_add_k48_projc 	RLC_PREFIX(pp_add_k48_projc)
+#define pp_add_lit_k48 	RLC_PREFIX(pp_add_lit_k48)
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
 #define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
+#define pp_add_lit_k54 	RLC_PREFIX(pp_add_lit_k54)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
 #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
@@ -3418,6 +3446,7 @@
 #define pp_dbl_k8_basic 	RLC_PREFIX(pp_dbl_k8_basic)
 #define pp_dbl_k8_projc_basic 	RLC_PREFIX(pp_dbl_k8_projc_basic)
 #define pp_dbl_k8_projc_lazyr 	RLC_PREFIX(pp_dbl_k8_projc_lazyr)
+#define pp_dbl_lit_k8 	RLC_PREFIX(pp_dbl_lit_k8)
 #define pp_dbl_k12_basic 	RLC_PREFIX(pp_dbl_k12_basic)
 #define pp_dbl_k12_projc_basic 	RLC_PREFIX(pp_dbl_k12_projc_basic)
 #define pp_dbl_k12_projc_lazyr 	RLC_PREFIX(pp_dbl_k12_projc_lazyr)
@@ -3429,10 +3458,13 @@
 #define pp_dbl_k18_projc_lazyr 	RLC_PREFIX(pp_dbl_k18_projc_lazyr)
 #define pp_dbl_k24_basic 	RLC_PREFIX(pp_dbl_k24_basic)
 #define pp_dbl_k24_projc 	RLC_PREFIX(pp_dbl_k24_projc)
+#define pp_dbl_lit_k24 	RLC_PREFIX(pp_dbl_lit_k24)
 #define pp_dbl_k48_basic 	RLC_PREFIX(pp_dbl_k48_basic)
 #define pp_dbl_k48_projc 	RLC_PREFIX(pp_dbl_k48_projc)
+#define pp_dbl_lit_k48 	RLC_PREFIX(pp_dbl_lit_k48)
 #define pp_dbl_k54_basic 	RLC_PREFIX(pp_dbl_k54_basic)
 #define pp_dbl_k54_projc 	RLC_PREFIX(pp_dbl_k54_projc)
+#define pp_dbl_lit_k54 	RLC_PREFIX(pp_dbl_lit_k54)
 #define pp_dbl_lit_k12 	RLC_PREFIX(pp_dbl_lit_k12)
 #define pp_dbl_lit_k16 	RLC_PREFIX(pp_dbl_lit_k16)
 #define pp_dbl_lit_k18 	RLC_PREFIX(pp_dbl_lit_k18)
@@ -3462,6 +3494,10 @@
 #define pp_map_sim_weilp_k1 	RLC_PREFIX(pp_map_sim_weilp_k1)
 #define pp_map_weilp_k2 	RLC_PREFIX(pp_map_weilp_k2)
 #define pp_map_sim_weilp_k2 	RLC_PREFIX(pp_map_sim_weilp_k2)
+#define pp_map_tatep_k8 	RLC_PREFIX(pp_map_tatep_k8)
+#define pp_map_sim_tatep_k8 	RLC_PREFIX(pp_map_sim_tatep_k8)
+#define pp_map_weilp_k8 	RLC_PREFIX(pp_map_weilp_k8)
+#define pp_map_sim_weilp_k8 	RLC_PREFIX(pp_map_sim_weilp_k8)
 #define pp_map_oatep_k8 	RLC_PREFIX(pp_map_oatep_k8)
 #define pp_map_sim_oatep_k8 	RLC_PREFIX(pp_map_sim_oatep_k8)
 #define pp_map_tatep_k12 	RLC_PREFIX(pp_map_tatep_k12)
@@ -3482,12 +3518,24 @@
 #define pp_map_sim_weilp_k18 	RLC_PREFIX(pp_map_sim_weilp_k18)
 #define pp_map_oatep_k18 	RLC_PREFIX(pp_map_oatep_k18)
 #define pp_map_sim_oatep_k18 	RLC_PREFIX(pp_map_sim_oatep_k18)
-#define pp_map_k24 	RLC_PREFIX(pp_map_k24)
-#define pp_map_sim_k24 	RLC_PREFIX(pp_map_sim_k24)
-#define pp_map_k48 	RLC_PREFIX(pp_map_k48)
-#define pp_map_sim_k48 	RLC_PREFIX(pp_map_sim_k48)
-#define pp_map_k54 	RLC_PREFIX(pp_map_k54)
-#define pp_map_sim_k54 	RLC_PREFIX(pp_map_sim_k54)
+#define pp_map_tatep_k24 	RLC_PREFIX(pp_map_tatep_k24)
+#define pp_map_sim_tatep_k24 	RLC_PREFIX(pp_map_sim_tatep_k24)
+#define pp_map_weilp_k24 	RLC_PREFIX(pp_map_weilp_k24)
+#define pp_map_sim_weilp_k24 	RLC_PREFIX(pp_map_sim_weilp_k24)
+#define pp_map_oatep_k24 	RLC_PREFIX(pp_map_oatep_k24)
+#define pp_map_sim_oatep_k24 	RLC_PREFIX(pp_map_sim_oatep_k24)
+#define pp_map_tatep_k48 	RLC_PREFIX(pp_map_tatep_k48)
+#define pp_map_sim_tatep_k48 	RLC_PREFIX(pp_map_sim_tatep_k48)
+#define pp_map_weilp_k48 	RLC_PREFIX(pp_map_weilp_k48)
+#define pp_map_sim_weilp_k48 	RLC_PREFIX(pp_map_sim_weilp_k48)
+#define pp_map_oatep_k48 	RLC_PREFIX(pp_map_oatep_k48)
+#define pp_map_sim_oatep_k48 	RLC_PREFIX(pp_map_sim_oatep_k48)
+#define pp_map_tatep_k54 	RLC_PREFIX(pp_map_tatep_k54)
+#define pp_map_sim_tatep_k54 	RLC_PREFIX(pp_map_sim_tatep_k54)
+#define pp_map_weilp_k54 	RLC_PREFIX(pp_map_weilp_k54)
+#define pp_map_sim_weilp_k54 	RLC_PREFIX(pp_map_sim_weilp_k54)
+#define pp_map_oatep_k54 	RLC_PREFIX(pp_map_oatep_k54)
+#define pp_map_sim_oatep_k54 	RLC_PREFIX(pp_map_sim_oatep_k54)
 
 #undef pc_core_init
 #undef pc_core_calc

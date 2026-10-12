@@ -509,13 +509,19 @@
 
 /**
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
- * curves of embedding degree 8. Computes e(P, Q).
+ * curve of embedding degree 8. Computes e(P, Q).
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first elliptic curve point.
  * @param[in] Q				- the second elliptic curve point.
  */
+#if PP_MAP == TATEP
+#define pp_map_k8(R, P, Q)		pp_map_tatep_k8(R, P, Q)
+#elif PP_MAP == WEILP
+#define pp_map_k8(R, P, Q)		pp_map_weilp_k8(R, P, Q)
+#elif PP_MAP == OATEP
 #define pp_map_k8(R, P, Q)		pp_map_oatep_k8(R, P, Q)
+#endif
 
 /**
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
@@ -604,7 +610,13 @@
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairings to evaluate.
  */
+#if PP_MAP == TATEP
+#define pp_map_sim_k8(R, P, Q, M)	pp_map_sim_tatep_k8(R, P, Q, M)
+#elif PP_MAP == WEILP
+#define pp_map_sim_k8(R, P, Q, M)	pp_map_sim_weilp_k8(R, P, Q, M)
+#elif PP_MAP == OATEP
 #define pp_map_sim_k8(R, P, Q, M)	pp_map_sim_oatep_k8(R, P, Q, M)
+#endif
 
 /**
  * Computes a multi-pairing of elliptic curve points defined on an elliptic
@@ -655,6 +667,105 @@
 #define pp_map_sim_k18(R, P, Q, M)	pp_map_sim_weilp_k18(R, P, Q, M)
 #elif PP_MAP == OATEP
 #define pp_map_sim_k18(R, P, Q, M)	pp_map_sim_oatep_k18(R, P, Q, M)
+#endif
+
+/**
+ * Computes a pairing of two prime elliptic curve points defined on an elliptic
+ * curve of embedding degree 24. Computes e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#if PP_MAP == TATEP
+#define pp_map_k24(R, P, Q)		pp_map_tatep_k24(R, P, Q)
+#elif PP_MAP == WEILP
+#define pp_map_k24(R, P, Q)		pp_map_weilp_k24(R, P, Q)
+#elif PP_MAP == OATEP
+#define pp_map_k24(R, P, Q)		pp_map_oatep_k24(R, P, Q)
+#endif
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 24. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#if PP_MAP == TATEP
+#define pp_map_sim_k24(R, P, Q, M)	pp_map_sim_tatep_k24(R, P, Q, M)
+#elif PP_MAP == WEILP
+#define pp_map_sim_k24(R, P, Q, M)	pp_map_sim_weilp_k24(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k24(R, P, Q, M)	pp_map_sim_oatep_k24(R, P, Q, M)
+#endif
+
+/**
+ * Computes a pairing of two prime elliptic curve points defined on an elliptic
+ * curve of embedding degree 48. Computes e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#if PP_MAP == TATEP
+#define pp_map_k48(R, P, Q)		pp_map_tatep_k48(R, P, Q)
+#elif PP_MAP == WEILP
+#define pp_map_k48(R, P, Q)		pp_map_weilp_k48(R, P, Q)
+#elif PP_MAP == OATEP
+#define pp_map_k48(R, P, Q)		pp_map_oatep_k48(R, P, Q)
+#endif
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 48. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#if PP_MAP == TATEP
+#define pp_map_sim_k48(R, P, Q, M)	pp_map_sim_tatep_k48(R, P, Q, M)
+#elif PP_MAP == WEILP
+#define pp_map_sim_k48(R, P, Q, M)	pp_map_sim_weilp_k48(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k48(R, P, Q, M)	pp_map_sim_oatep_k48(R, P, Q, M)
+#endif
+
+/**
+ * Computes a pairing of two prime elliptic curve points defined on an elliptic
+ * curve of embedding degree 54. Computes e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#if PP_MAP == TATEP
+#define pp_map_k54(R, P, Q)		pp_map_tatep_k54(R, P, Q)
+#elif PP_MAP == WEILP
+#define pp_map_k54(R, P, Q)		pp_map_weilp_k54(R, P, Q)
+#elif PP_MAP == OATEP
+#define pp_map_k54(R, P, Q)		pp_map_oatep_k54(R, P, Q)
+#endif
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 54. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#if PP_MAP == TATEP
+#define pp_map_sim_k54(R, P, Q, M)	pp_map_sim_tatep_k54(R, P, Q, M)
+#elif PP_MAP == WEILP
+#define pp_map_sim_k54(R, P, Q, M)	pp_map_sim_weilp_k54(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k54(R, P, Q, M)	pp_map_sim_oatep_k54(R, P, Q, M)
 #endif
 
 /*============================================================================*/
@@ -765,6 +876,18 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p);
  * @param[in] p				- the affine point to evaluate the line function.
  */
 void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p);
+
+/**
+ * Adds two points of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 8, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] p				- the second point to add.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_add_lit_k8(fp8_t l, ep_t r, const ep_t p, const ep2_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -931,6 +1054,18 @@ void pp_add_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p);
 void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p);
 
 /**
+ * Adds two points of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 24, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] p				- the second point to add.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_add_lit_k24(fp24_t l, ep_t r, const ep_t p, const ep4_t q);
+
+/**
  * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 48 using affine coordinates.
  *
@@ -954,6 +1089,18 @@ void pp_add_k48_basic(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
 void pp_add_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
 
 /**
+ * Adds two points of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 48, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] p				- the second point to add.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_add_lit_k48(fp48_t l, ep_t r, const ep_t p, const ep8_t q);
+
+/**
  * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 54 using affine coordinates.
  *
@@ -975,6 +1122,18 @@ void pp_add_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
  * @param[in] p				- the affine point to evaluate the line function.
  */
 void pp_add_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
+
+/**
+ * Adds two points of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 54, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] p				- the second point to add.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_add_lit_k54(fp54_t l, ep_t r, const ep_t p, const ep9_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1076,6 +1235,18 @@ void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p);
  * @param[in] p				- the affine point to evaluate the line function.
  */
 void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p);
+
+/**
+ * Doubles a point of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 8, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k8(fp8_t l, ep_t r, const ep_t p, const ep2_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1210,6 +1381,18 @@ void pp_dbl_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p);
 void pp_dbl_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p);
 
 /**
+ * Doubles a point of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 24, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k24(fp24_t l, ep_t r, const ep_t p, const ep4_t q);
+
+/**
  * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 48 using affine
  * coordinates.
@@ -1234,6 +1417,18 @@ void pp_dbl_k48_basic(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
 void pp_dbl_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p);
 
 /**
+ * Doubles a point of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 48, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k48(fp48_t l, ep_t r, const ep_t p, const ep8_t q);
+
+/**
  * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 54 using affine
  * coordinates.
@@ -1256,6 +1451,18 @@ void pp_dbl_k54_basic(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
  * @param[in] p				- the affine point to evaluate the line function.
  */
 void pp_dbl_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p);
+
+/**
+ * Doubles a point of G_1 and evaluates the corresponding line function at a
+ * point of the twist of a curve with embedding degree 54, using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k54(fp54_t l, ep_t r, const ep_t p, const ep9_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -1540,6 +1747,48 @@ void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q);
 void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
 
 /**
+ * Computes the Tate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_tatep_k8(fp8_t r, const ep_t p, const ep2_t q);
+
+/**
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m);
+
+/**
+ * Computes the Weil pairing of two points in a parameterized elliptic curve
+ * with embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_weilp_k8(fp8_t r, const ep_t p, const ep2_t q);
+
+/**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m);
+
+/**
  * Computes the optimal ate pairing of two points in a parameterized elliptic
  * curve with embedding degree 8.
  *
@@ -1750,66 +1999,192 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q);
 void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m);
 
 /**
- * Computes the Optimal Ate pairing of two points in a parameterized elliptic
- * curve with embedding degree 24.
+ * Computes the Tate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 24.
  *
  * @param[out] r			- the result.
- * @param[in] q				- the first elliptic curve point.
- * @param[in] p				- the second elliptic curve point.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
  */
-void pp_map_k24(fp24_t r, const ep_t p, const ep4_t q);
+void pp_map_tatep_k24(fp24_t r, const ep_t p, const ep4_t q);
 
 /**
- * Computes the optimal ate multi-pairing in a parameterized elliptic
- * curve with embedding degree 24.
- *
- * @param[out] r			- the result.
- * @param[in] q				- the first pairing arguments.
- * @param[in] p				- the second pairing arguments.
- * @param[in] m 			- the number of pairings to evaluate.
- */
-void pp_map_sim_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m);
-
-/**
- * Computes the Optimal Ate pairing of two points in a parameterized elliptic
- * curve with embedding degree 48.
- *
- * @param[out] r			- the result.
- * @param[in] q				- the first elliptic curve point.
- * @param[in] p				- the second elliptic curve point.
- */
-void pp_map_k48(fp48_t r, const ep_t p, const ep8_t q);
-
-/**
- * Computes the optimal ate multi-pairing in a parameterized elliptic
- * curve with embedding degree 48.
- *
- * @param[out] r			- the result.
- * @param[in] q				- the first pairing arguments.
- * @param[in] p				- the second pairing arguments.
- * @param[in] m 			- the number of pairings to evaluate.
- */
-void pp_map_sim_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m);
-
-/**
- * Computes the Optimal Ate pairing of two points in a parameterized elliptic
- * curve with embedding degree 54.
- *
- * @param[out] r			- the result.
- * @param[in] q				- the first elliptic curve point.
- * @param[in] p				- the second elliptic curve point.
- */
-void pp_map_k54(fp54_t r, const ep_t p, const ep9_t q);
-
-/**
- * Computes the multi-pairing of points in a parameterized elliptic curve with
- * embedding degree 54. Computes \prod e(P_i, Q_i).
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 24.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first pairing arguments.
  * @param[in] q				- the second pairing arguments.
- * @param[in] m				- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m);
+void pp_map_sim_tatep_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Computes the Weil pairing of two points in a parameterized elliptic curve
+ * with embedding degree 24.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_weilp_k24(fp24_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 24.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Computes the optimal ate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 24.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_oatep_k24(fp24_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Computes the optimal ate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 24.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Computes the Tate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_tatep_k48(fp48_t r, const ep_t p, const ep8_t q);
+
+/**
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m);
+
+/**
+ * Computes the Weil pairing of two points in a parameterized elliptic curve
+ * with embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_weilp_k48(fp48_t r, const ep_t p, const ep8_t q);
+
+/**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m);
+
+/**
+ * Computes the optimal ate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_oatep_k48(fp48_t r, const ep_t p, const ep8_t q);
+
+/**
+ * Computes the optimal ate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 48.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m);
+
+/**
+ * Computes the Tate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_tatep_k54(fp54_t r, const ep_t p, const ep9_t q);
+
+/**
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m);
+
+/**
+ * Computes the Weil pairing of two points in a parameterized elliptic curve
+ * with embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_weilp_k54(fp54_t r, const ep_t p, const ep9_t q);
+
+/**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m);
+
+/**
+ * Computes the optimal ate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_oatep_k54(fp54_t r, const ep_t p, const ep9_t q);
+
+/**
+ * Computes the optimal ate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 54.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m);
 
 #endif /* !RLC_PP_H */

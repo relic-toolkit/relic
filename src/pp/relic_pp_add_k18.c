@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
@@ -240,67 +241,4 @@ void pp_add_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	}
 }
 
-void pp_add_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
-	fp_t t0, t1, t2, t3;
-	int two = 2, one = 1, zero = 0;
-
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-
-	/* An M-type twist puts x_Q in w^4, and a D-type twist in w^2. */
-	if (ep3_curve_is_twist() == RLC_EP_DTYPE) {
-		two = 1;
-	}
-
-	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-
-		fp_mul(t0, r->z, p->x);
-		fp_sub(t0, r->x, t0);
-		fp_mul(t1, r->z, p->y);
-		fp_sub(t1, r->y, t1);
-		fp_mul(t2, p->x, t1);
-		r->coord = PROJC;
-
-		fp_mul(l[zero][zero][0], t0, p->y);
-		fp_sub(l[zero][zero][0], t2, l[zero][zero][0]);
-
-		fp_mul(l[zero][two][0], q->x[0], t1);
-		fp_mul(l[zero][two][1], q->x[1], t1);
-		fp_mul(l[zero][two][2], q->x[2], t1);
-		fp3_neg(l[zero][two], l[zero][two]);
-
-		fp_mul(l[one][one][0], q->y[0], t0);
-		fp_mul(l[one][one][1], q->y[1], t0);
-		fp_mul(l[one][one][2], q->y[2], t0);
-
-		fp_sqr(t2, t0);
-		fp_mul(r->x, t2, r->x);
-		fp_mul(t2, t0, t2);
-		fp_sqr(t3, t1);
-		fp_mul(t3, t3, r->z);
-		fp_add(t3, t2, t3);
-		fp_sub(t3, t3, r->x);
-		fp_sub(t3, t3, r->x);
-		fp_sub(r->x, r->x, t3);
-		fp_mul(t1, t1, r->x);
-		fp_mul(r->y, t2, r->y);
-		fp_sub(r->y, t1, r->y);
-		fp_mul(r->x, t0, t3);
-		fp_mul(r->z, r->z, t2);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-	}
-}
+TMPL_PP_ADD_LIT(18, ep3, fp3);

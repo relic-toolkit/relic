@@ -35,11 +35,25 @@
 #include "relic_util.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
 TMPL_PP_MIL(24, ep4);
 
-TMPL_PP_MAP(24, ep4, EP_B24);
+TMPL_PP_MIL_LIT(24, ep4);
 
-TMPL_PP_MAP_SIM(24, ep4, EP_B24);
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+TMPL_PP_MAP_TATEP(24, ep4);
+
+TMPL_PP_MAP_SIM_TATEP(24, ep4);
+
+TMPL_PP_MAP_WEILP(24, ep4);
+
+TMPL_PP_MAP_SIM_WEILP(24, ep4);
+
+TMPL_PP_MAP_OATEP(24, ep4, EP_B24);
+
+TMPL_PP_MAP_SIM_OATEP(24, ep4, EP_B24);

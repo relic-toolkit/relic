@@ -41,3 +41,5 @@
 TMPL_PP_DBL_BASIC(24, ep4, fp4);
 
 TMPL_PP_DBL_PROJC(24, ep4, fp4);
+
+TMPL_PP_DBL_LIT(24, ep4, fp4);

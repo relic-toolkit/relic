@@ -40,9 +40,19 @@
 
 TMPL_PP_MIL(8, ep2);
 
+TMPL_PP_MIL_LIT(8, ep2);
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_PP_MAP_TATEP(8, ep2);
+
+TMPL_PP_MAP_SIM_TATEP(8, ep2);
+
+TMPL_PP_MAP_WEILP(8, ep2);
+
+TMPL_PP_MAP_SIM_WEILP(8, ep2);
 
 void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q) {
 	ep_t _p[1];

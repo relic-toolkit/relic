@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
@@ -263,3 +264,5 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp_free(u);
 	}
 }
+
+TMPL_PP_ADD_LIT(8, ep2, fp2);

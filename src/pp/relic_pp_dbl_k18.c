@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
@@ -274,88 +275,4 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	}
 }
 
-void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
-	fp_t t0, t1, t2, t3, t4, t5, t6;
-	int two = 2, one = 1, zero = 0;
-
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
-	fp_null(t5);
-	fp_null(t6);
-
-	/* An M-type twist puts x_Q in w^4, and a D-type twist in w^2. */
-	if (ep3_curve_is_twist() == RLC_EP_DTYPE) {
-		two = 1;
-	}
-
-	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
-		fp_new(t5);
-		fp_new(t6);
-
-		fp_sqr(t0, p->x);
-		fp_sqr(t1, p->y);
-		fp_sqr(t2, p->z);
-
-		fp_mul(t4, ep_curve_get_b(), t2);
-
-		fp_dbl(t3, t4);
-		fp_add(t3, t3, t4);
-
-		fp_add(t4, p->x, p->y);
-		fp_sqr(t4, t4);
-		fp_sub(t4, t4, t0);
-		fp_sub(t4, t4, t1);
-		fp_add(t5, p->y, p->z);
-		fp_sqr(t5, t5);
-		fp_sub(t5, t5, t1);
-		fp_sub(t5, t5, t2);
-		fp_dbl(t6, t3);
-		fp_add(t6, t6, t3);
-		fp_sub(r->x, t1, t6);
-		fp_mul(r->x, r->x, t4);
-		fp_add(r->y, t1, t6);
-		fp_sqr(r->y, r->y);
-		fp_sqr(t4, t3);
-		fp_dbl(t6, t4);
-		fp_add(t6, t6, t4);
-		fp_dbl(t6, t6);
-		fp_dbl(t6, t6);
-		fp_sub(r->y, r->y, t6);
-		fp_mul(r->z, t1, t5);
-		fp_dbl(r->z, r->z);
-		fp_dbl(r->z, r->z);
-		r->coord = PROJC;
-
-		fp3_dbl(l[zero][two], q->x);
-		fp3_add(l[zero][two], l[zero][two], q->x);
-		fp_mul(l[zero][two][0], l[zero][two][0], t0);
-		fp_mul(l[zero][two][1], l[zero][two][1], t0);
-		fp_mul(l[zero][two][2], l[zero][two][2], t0);
-
-		fp_sub(l[zero][zero][0], t3, t1);
-
-		fp_mul(l[one][one][0], q->y[0], t5);
-		fp_mul(l[one][one][1], q->y[1], t5);
-		fp_mul(l[one][one][2], q->y[2], t5);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
-		fp_free(t5);
-		fp_free(t6);
-	}
-}
+TMPL_PP_DBL_LIT(18, ep3, fp3);

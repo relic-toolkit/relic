@@ -38,6 +38,10 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+TMPL_PP_MIL(54, ep9);
+
+TMPL_PP_MIL_LIT(54, ep9);
+
 /**
  * Multiplies the result of the Miller loop over the parameter by the final
  * lines of the optimal ate pairing, so that it becomes
@@ -47,21 +51,22 @@
  * @param[in] t				- the points aQ produced by the loop.
  * @param[in] q				- the vector of affine points in G_2.
  * @param[in] p				- the vector of affine points in G_1.
- * @param[in] _p			- the points of G_1 prepared for the doubling lines.
  * @param[in] m				- the number of pairings to evaluate.
  */
-static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, ep_t *_p,
-		int m) {
+static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, int m) {
 	fp54_t l;
 	ep9_t s, u;
+	ep_t _p;
 	int j;
 
 	fp54_null(l);
 	ep9_null_all(s, u);
+	ep_null(_p);
 
 	RLC_TRY {
 		fp54_new(l);
 		ep9_new_all(s, u);
+		ep_new(_p);
 
 		/* Compute f^3. */
 		fp54_sqr(l, r);
@@ -69,8 +74,9 @@ static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, ep_t *_p,
 
 		for (j = 0; j < m; j++) {
 			/* Multiply by the lines through T and 2T. */
+			TMPL_PP_MIL_P_54(_p, p[j])
 			fp54_zero(l);
-			pp_dbl_k54(l, s, t[j], _p[j]);
+			pp_dbl_k54(l, s, t[j], _p);
 			fp54_mul_dxs(r, r, l);
 			pp_norm_k54(s, s);
 			pp_add_k54(l, t[j], s, p[j]);
@@ -89,6 +95,7 @@ static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, ep_t *_p,
 	RLC_FINALLY {
 		fp54_free(l);
 		ep9_free_all(s, u);
+		ep_free(_p);
 	}
 }
 
@@ -96,8 +103,14 @@ static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, ep_t *_p,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_PP_MIL(54, ep9);
+TMPL_PP_MAP_TATEP(54, ep9);
 
-TMPL_PP_MAP(54, ep9, EP_SG54);
+TMPL_PP_MAP_SIM_TATEP(54, ep9);
 
-TMPL_PP_MAP_SIM(54, ep9, EP_SG54);
+TMPL_PP_MAP_WEILP(54, ep9);
+
+TMPL_PP_MAP_SIM_WEILP(54, ep9);
+
+TMPL_PP_MAP_OATEP(54, ep9, EP_SG54);
+
+TMPL_PP_MAP_SIM_OATEP(54, ep9, EP_SG54);
