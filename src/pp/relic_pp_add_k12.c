@@ -120,7 +120,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp_mul(l[one][zero][0], t1[0], t4[0]);
 		fp_mul(l[one][zero][1], t1[1], t4[0]);
 
-		/* t4 = B * x2. */
+		/* t4 = A * x2. */
 		fp2_mul(t4, q->x, t1);
 
 		/* H = F - 2 * G. */

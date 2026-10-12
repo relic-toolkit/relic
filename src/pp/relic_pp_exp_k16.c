@@ -297,8 +297,14 @@ static void pp_exp_afg16(fp16_t c, fp16_t a) {
 		} else {
 			fp16_exp_cyc(t3, t2, x_);
 			fp16_exp_cyc(t3, t3, x_);
+			/* Compute (u^3 + 1)/2 with the sign of u, and drop the sign of the
+			 * result because it is applied twice. */
+			int neg = (bn_sign(x) == RLC_NEG);
 			bn_sqr(x, x_);
 			bn_mul(x, x, x_);
+			if (neg) {
+				bn_neg(x, x);
+			}
 			bn_add_dig(x, x, 1);
 			bn_hlv(x, x);
 			bn_abs(x, x);

@@ -282,8 +282,9 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 			 * Improving the computation of the optimal ate pairing for a high
 			 * security level
 			 */
-			int _b[RLC_TERMS + 1];
+			int _b[RLC_TERMS + 1], _l = l;
 
+			/* Halve x by decrementing the exponent of each term. */
 			for (int i = 0; i < l; i++) {
 				if (b[i] > 0) {
 					_b[i] = b[i] - 1;
@@ -291,12 +292,22 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 					_b[i] = b[i] + 1;
 				}
 			}
+			/* A lowest term -2 becomes -1, which the sparse form cannot hold
+			 * as -0, so write it as 1 - 2 as in fp_prime_set_pairf(). */
+			if (b[0] == -1) {
+				for (int i = l; i > 0; i--) {
+					_b[i] = _b[i - 1];
+				}
+				_b[0] = 0;
+				_b[1] = -1;
+				_l = l + 1;
+			}
 
 			/* t1 = f^x. */
 			fp12_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
 
 			/* t2 = f^(x^2). */
-			fp12_exp_cyc_sps(t2, t1, _b, l, bn_sign(x));
+			fp12_exp_cyc_sps(t2, t1, _b, _l, bn_sign(x));
 		}
 
 		/* t1 = f^(u^2 - 2u + 1). */
@@ -348,6 +359,9 @@ void pp_exp_k12(fp12_t c, fp12_t a) {
 			break;
 		case EP_B12:
 			pp_exp_b12(c, a);
+			break;
+		default:
+			RLC_THROW(ERR_NO_VALID);
 			break;
 	}
 }

@@ -107,6 +107,15 @@ static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
 				}
 			}
 		}
+		/* For a negative parameter, f_{a,Q} = 1/f_{|a|,Q} and T = aQ, which the
+		 * final lines below need, so adjust both before them. */
+		if (bn_sign(a) == RLC_NEG) {
+			fp54_inv_cyc(r, r);
+			for (j = 0; j < m; j++) {
+				ep9_neg(t[j], t[j]);
+			}
+		}
+
 		/* Compute f^3. */
 		fp54_sqr(l, r);
 		fp54_mul(r, r, l);
@@ -170,11 +179,8 @@ void pp_map_k54(fp54_t r, const ep_t p, const ep9_t q) {
 		if (!ep_is_infty(_p[0]) && !ep9_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
 				case EP_SG54:
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P), including the final lines. */
 					pp_mil_k54(r, t, (const ep9_t *)_q, (const ep_t *)_p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp54_inv_cyc(r, r);
-					}
 					pp_exp_k54(r, r);
 					break;
 			}
@@ -234,11 +240,8 @@ void pp_map_sim_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m) {
 		if (j > 0) {
 			switch (ep_curve_is_pairf()) {
 				case EP_SG54:
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P), including the final lines. */
 					pp_mil_k54(r, t, (const ep9_t *)_q, (const ep_t *)_p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp54_inv_cyc(r, r);
-					}
 					pp_exp_k54(r, r);
 					break;
 			}

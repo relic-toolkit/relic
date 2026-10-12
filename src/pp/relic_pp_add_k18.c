@@ -122,7 +122,7 @@ void pp_add_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp_mul(l[one][zero][1], t1[1], t4[0]);
 		fp_mul(l[one][zero][2], t1[2], t4[0]);
 
-		/* t4 = B * x2. */
+		/* t4 = A * x2. */
 		fp3_mul(t4, q->x, t1);
 
 		/* H = F - 2 * G. */

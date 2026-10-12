@@ -106,7 +106,12 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		/* t2 = C = z1^2. */
 		fp2_sqr(t2, q->z);
 
-		if (ep_curve_opt_b() == RLC_TWO) {
+		/* The fast path below hardcodes b' = 1 - i, which holds for b = 2 with a
+		 * D-type twist by xi = 1 + i, so check b' itself. */
+		fp_neg(t3[0], ep2_curve_get_b()[1]);
+		if (ep_curve_opt_b() == RLC_TWO &&
+				fp_cmp_dig(ep2_curve_get_b()[0], 1) == RLC_EQ &&
+				fp_cmp_dig(t3[0], 1) == RLC_EQ) {
 			/* t3 = E = 3b'C = 3C * (1 - i). */
 			fp2_dbl(t3, t2);
 			fp2_add(t2, t2, t3);
@@ -248,8 +253,13 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp2_dbl(t3, t2);
 		fp2_add(t3, t3, t2);
 
-		if (ep_curve_opt_b() == RLC_TWO) {
-			/* t6 = E = 3b'C = 3C * (1 - i). */
+		/* The fast path below hardcodes b' = 1 - i, which holds for b = 2 with a
+		 * D-type twist by xi = 1 + i, so check b' itself. */
+		fp_neg(t4[0], ep2_curve_get_b()[1]);
+		if (ep_curve_opt_b() == RLC_TWO &&
+				fp_cmp_dig(ep2_curve_get_b()[0], 1) == RLC_EQ &&
+				fp_cmp_dig(t4[0], 1) == RLC_EQ) {
+			/* t2 = E = 3b'C = 3C * (1 - i). */
 			fp_add(t2[0], t3[0], t3[1]);
 			fp_sub(t2[1], t3[1], t3[0]);
 

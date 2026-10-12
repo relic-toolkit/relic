@@ -251,6 +251,15 @@ static int pairing1(void) {
 		}
 
 		ep_curve_get_ord(n);
+		TEST_CASE("final exponentiation is correct") {
+			fp_rand(e1);
+			pp_exp_k1(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp_exp(e2, e1, n);
+			TEST_ASSERT(fp_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
@@ -724,6 +733,15 @@ static int pairing2(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp2_rand(e1);
+			pp_exp_k2(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp2_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp2_exp(e2, e1, n);
+			TEST_ASSERT(fp2_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
@@ -1185,6 +1203,15 @@ static int pairing8(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp8_rand(e1);
+			pp_exp_k8(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp8_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp8_exp(e2, e1, n);
+			TEST_ASSERT(fp8_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_curve_get_gen(q[0]);
@@ -1495,6 +1522,15 @@ static int pairing12(void) {
 		}
 
 		ep_curve_get_ord(n);
+
+		TEST_CASE("final exponentiation is correct") {
+			fp12_rand(e1);
+			pp_exp_k12(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp12_exp(e2, e1, n);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
@@ -2030,6 +2066,15 @@ static int pairing16(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp16_rand(e1);
+			pp_exp_k16(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp16_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp16_exp(e2, e1, n);
+			TEST_ASSERT(fp16_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
@@ -2550,6 +2595,15 @@ static int pairing18(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp18_rand(e1);
+			pp_exp_k18(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp18_exp(e2, e1, n);
+			TEST_ASSERT(fp18_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep3_rand(q[0]);
@@ -3022,6 +3076,15 @@ static int pairing24(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp24_rand(e1);
+			pp_exp_k24(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp24_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp24_exp(e2, e1, n);
+			TEST_ASSERT(fp24_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
@@ -3315,6 +3378,15 @@ static int pairing48(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_CASE("final exponentiation is correct") {
+			fp48_rand(e1);
+			pp_exp_k48(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp48_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp48_exp(e2, e1, n);
+			TEST_ASSERT(fp48_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep8_rand(q[0]);
@@ -3607,6 +3679,15 @@ static int pairing54(void) {
 		}
 
 		ep_curve_get_ord(n);
+
+		TEST_CASE("final exponentiation is correct") {
+			fp54_rand(e1);
+			pp_exp_k54(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp54_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp54_exp(e2, e1, n);
+			TEST_ASSERT(fp54_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);

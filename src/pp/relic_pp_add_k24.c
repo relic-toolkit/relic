@@ -51,6 +51,7 @@ void pp_add_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 
 		ep4_copy(t, r);
 		ep4_add_slp_basic(r, s, r, q);
+		fp24_zero(l);
 
 		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
 			two += 1;
@@ -128,7 +129,7 @@ void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp_mul(l[two][one][1][0], t1[1][0], t4[0][0]);
 		fp_mul(l[two][one][1][1], t1[1][1], t4[0][0]);
 
-		/* t4 = B * x2. */
+		/* t4 = A * x2. */
 		fp4_mul(t4, q->x, t1);
 
 		/* H = E + F - 2 * G. */
@@ -144,7 +145,7 @@ void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		/* z3 = z1 * E. */
 		fp4_mul(r->z, r->z, t2);
 
-		/* l11 = J = B * x2 - A * y2. */
+		/* l11 = J = A * x2 - B * y2. */
 		fp4_mul(t2, q->y, t0);
 		fp4_sub(l[0][0], t4, t2);
 

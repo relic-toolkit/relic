@@ -127,7 +127,7 @@ void pp_add_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 		fp_mul(l[2][0][2][1], t1[2][1], t4[0][0]);
 		fp_mul(l[2][0][2][2], t1[2][2], t4[0][0]);
 
-		/* t4 = B * x2. */
+		/* t4 = A * x2. */
 		fp9_mul(t4, q->x, t1);
 
 		/* H = E + F - 2 * G. */
@@ -144,7 +144,7 @@ void pp_add_k54_projc(fp54_t l, ep9_t r, const ep9_t q, const ep_t p) {
 		fp9_mul(r->z, r->z, t2);
 		r->coord = PROJC;
 
-		/* l11 = J = B * x2 - A * y2. */
+		/* l11 = J = A * x2 - B * y2. */
 		fp9_mul(t2, q->y, t0);
 		fp9_sub(l[0][0], t4, t2);
 
