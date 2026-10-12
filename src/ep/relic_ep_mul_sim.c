@@ -418,82 +418,17 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 	}
 }
 
-TMPL_EP_MUL_SIM_PLAIN(ep);
+TMPL_EC_MUL_SIM_PLAIN(ep, RLC_FP_BITS);
 
-/**
- * Multiplies and adds multiple elliptic curve points simultaneously.
- * Computes R = \Sum_i=0..n [k_i]P_i.
- *
- * @param[out] r			- the result.
- * @param[out] p			- the elements to multiply.
- * @param[out] k			- the integer scalars.
- * @param[out] n			- the number of elements to multiply.
- */
-static void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[],
-		int n) {
-	int i, j;
-	int8_t *naf = NULL;
-	ep_t *_p = RLC_ALLOCA(ep_t, n);
-	size_t l, *_l = RLC_ALLOCA(size_t, n);
-
-	RLC_TRY {
-		l = 0;
-		for (i = 0; i < n; i++) {
-			l = RLC_MAX(l, bn_bits(k[i]) + 1);
-		}
-		naf = RLC_ALLOCA(int8_t, n * l);
-		if (naf == NULL || _p == NULL || _l == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-
-		for (i = 0; i < n; i++) {
-			ep_null(_p[i]);
-			ep_new(_p[i]);
-		}
-
-		for (i = 0; i < n; i++) {
-			_l[i] = l;
-			ep_norm(_p[i], p[i]);
-			bn_rec_naf(&naf[i*l], &_l[i], k[i], 2);
-			if (bn_sign(k[i]) == RLC_NEG) {
-				ep_neg(_p[i], _p[i]);
-			}
-		}
-
-		ep_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			ep_dbl(r, r);
-			for (j = 0; j < n; j++) {
-				if (naf[j*l + i] > 0) {
-					ep_add(r, r, _p[j]);
-				}
-				if (naf[j*l + i] < 0) {
-					ep_sub(r, r, _p[j]);
-				}
-			}
-		}
-
-		/* Convert r to affine coordinates. */
-		ep_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			ep_free(_p[i]);
-		}
-		RLC_FREE(_l);
-		RLC_FREE(_p);
-		RLC_FREE(naf);
-	}
-}
+TMPL_EC_MUL_SIM_LOT_PLAIN(ep);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_MUL_SIM(ep);
+TMPL_EP_MUL_SIM(ep, glv);
 
-TMPL_EP_MUL_SIM_GEN(ep);
+TMPL_EC_MUL_SIM_GEN(ep);
 
 void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 	ep_t t;

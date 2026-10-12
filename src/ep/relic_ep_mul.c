@@ -127,7 +127,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-TMPL_EP_MUL_NAF_IMP(ep);
+TMPL_EC_MUL_NAF_IMP(ep, RLC_FP_BITS);
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	int8_t reg[2][RLC_FP_BITS + 1], s[2], b[2], c0, c1, n0, n1;
@@ -241,7 +241,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-TMPL_EP_MUL_REG_IMP(ep);
+TMPL_EC_MUL_REG_IMP(ep, RLC_FP_BITS);
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -308,7 +308,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-TMPL_EP_MUL_MONTY(ep);
+TMPL_EC_MUL_MONTY(ep);
 
 TMPL_EP_MUL_LWNAF(ep, glv);
 

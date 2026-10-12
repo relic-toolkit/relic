@@ -36,9 +36,9 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-TMPL_EP_MUL_NAF_IMP(ed);
+TMPL_EC_MUL_NAF_IMP(ed, RLC_FP_BITS);
 
-TMPL_EP_MUL_REG_IMP(ed);
+TMPL_EC_MUL_REG_IMP(ed, RLC_FP_BITS);
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -46,7 +46,7 @@ TMPL_EP_MUL_REG_IMP(ed);
 
 TMPL_EC_MUL_BASIC(ed);
 
-TMPL_EP_MUL_MONTY(ed);
+TMPL_EC_MUL_MONTY(ed);
 
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k) || ed_is_infty(p)) {

@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -136,6 +137,8 @@ static void eb_mul_sim_imp(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 }
 
+TMPL_EC_MUL_SIM_LOT_PLAIN(eb);
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -214,66 +217,10 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 }
 
 void eb_mul_sim_lot(eb_t r, const eb_t p[], const bn_t k[], int n) {
-	int i, j;
-	int8_t *naf = NULL;
-	eb_t *_p;
-	size_t l, *_l;
-
 	if (n == 0) {
 		eb_set_infty(r);
 		return;
 	}
 
-	_p = RLC_ALLOCA(eb_t, n);
-	_l = RLC_ALLOCA(size_t, n);
-
-	RLC_TRY {
-		l = 0;
-		for (i = 0; i < n; i++) {
-			l = RLC_MAX(l, bn_bits(k[i]) + 1);
-		}
-		naf = RLC_ALLOCA(int8_t, n * l);
-		if (naf == NULL || _p == NULL || _l == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-
-		for (i = 0; i < n; i++) {
-			eb_null(_p[i]);
-			eb_new(_p[i]);
-		}
-
-		for (i = 0; i < n; i++) {
-			_l[i] = l;
-			eb_norm(_p[i], p[i]);
-			bn_rec_naf(&naf[i*l], &_l[i], k[i], 2);
-			if (bn_sign(k[i]) == RLC_NEG) {
-				eb_neg(_p[i], _p[i]);
-			}
-		}
-
-		eb_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			eb_dbl(r, r);
-			for (j = 0; j < n; j++) {
-				if (naf[j*l + i] > 0) {
-					eb_add(r, r, _p[j]);
-				}
-				if (naf[j*l + i] < 0) {
-					eb_sub(r, r, _p[j]);
-				}
-			}
-		}
-
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			eb_free(_p[i]);
-		}
-		RLC_FREE(_l);
-		RLC_FREE(_p);
-		RLC_FREE(naf);
-	}
+	eb_mul_sim_lot_plain(r, p, k, n);
 }
