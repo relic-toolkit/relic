@@ -134,6 +134,7 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 	bn_t n, r;
 	ec_t g[2], y[2];
 	int result = RLC_OK;
+	(void)pp;
 
 	bn_null(n);
 	bn_null(r);

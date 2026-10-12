@@ -88,7 +88,7 @@
 	void HName(uint8_t *buf, size_t buf_len, const uint8_t *in, size_t in_len,				\
 			const uint8_t *dst, size_t dst_len) {											\
 		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;							\
-		if (buf_len < 0 || ell > 255 || dst_len > 255) {									\
+		if (ell > 255 || dst_len > 255) {													\
 			RLC_THROW(ERR_NO_VALID);														\
 			return;																			\
 		}																					\

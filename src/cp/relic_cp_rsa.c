@@ -789,7 +789,7 @@ int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
 
-	if (prv == NULL || msg_len < 0) {
+	if (prv == NULL) {
 		return RLC_ERR;
 	}
 

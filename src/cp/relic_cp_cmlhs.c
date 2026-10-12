@@ -112,6 +112,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 	size_t len, dlen = strlen(data);
 	uint8_t *buf = NULL;
 	int result = RLC_OK;
+	(void)label;
 
 	bn_null(k);
 	bn_null(m);
@@ -324,6 +325,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
+	(void)h;
 
 	gt_null(v);
 

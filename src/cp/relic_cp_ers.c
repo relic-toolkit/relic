@@ -152,6 +152,7 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 	bn_t n, r;
 	ec_t y[2];
 	int result = RLC_OK;
+	(void)pp;
 
 	bn_null(n);
 	bn_null(r);
