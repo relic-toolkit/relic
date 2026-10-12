@@ -189,8 +189,6 @@
 #define dv_lshd 	RLC_PREFIX(dv_lshd)
 #define dv_rshd 	RLC_PREFIX(dv_rshd)
 
-
-
 #undef bn_st
 #undef bn_t
 #define bn_st     	RLC_PREFIX(bn_st)
@@ -3273,8 +3271,6 @@
 #define fb2_slv 	RLC_PREFIX(fb2_slv)
 #define fb2_inv 	RLC_PREFIX(fb2_inv)
 
-
-
 #undef pp_map_init
 #undef pp_map_clean
 #undef pp_add_k1_basic
@@ -3299,13 +3295,16 @@
 #undef pp_add_k18_projc_lazyr
 #undef pp_add_lit_k18
 #undef pp_add_k24_basic
-#undef pp_add_k24_projc
+#undef pp_add_k24_projc_basic
+#undef pp_add_k24_projc_lazyr
 #undef pp_add_lit_k24
 #undef pp_add_k48_basic
-#undef pp_add_k48_projc
+#undef pp_add_k48_projc_basic
+#undef pp_add_k48_projc_lazyr
 #undef pp_add_lit_k48
 #undef pp_add_k54_basic
-#undef pp_add_k54_projc
+#undef pp_add_k54_projc_basic
+#undef pp_add_k54_projc_lazyr
 #undef pp_add_lit_k54
 #undef pp_dbl_k1_basic
 #undef pp_dbl_k1_projc
@@ -3313,26 +3312,27 @@
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
 #undef pp_dbl_k8_basic
-#undef pp_dbl_k8_projc_basic
-#undef pp_dbl_k8_projc_lazyr
+#undef pp_dbl_k8_projc
 #undef pp_dbl_lit_k8
 #undef pp_dbl_k12_basic
 #undef pp_dbl_k12_projc_basic
 #undef pp_dbl_k12_projc_lazyr
 #undef pp_dbl_k16_basic
-#undef pp_dbl_k16_projc_basic
-#undef pp_dbl_k16_projc_lazyr
+#undef pp_dbl_k16_projc
 #undef pp_dbl_k18_basic
 #undef pp_dbl_k18_projc_basic
 #undef pp_dbl_k18_projc_lazyr
 #undef pp_dbl_k24_basic
-#undef pp_dbl_k24_projc
+#undef pp_dbl_k24_projc_basic
+#undef pp_dbl_k24_projc_lazyr
 #undef pp_dbl_lit_k24
 #undef pp_dbl_k48_basic
-#undef pp_dbl_k48_projc
+#undef pp_dbl_k48_projc_basic
+#undef pp_dbl_k48_projc_lazyr
 #undef pp_dbl_lit_k48
 #undef pp_dbl_k54_basic
-#undef pp_dbl_k54_projc
+#undef pp_dbl_k54_projc_basic
+#undef pp_dbl_k54_projc_lazyr
 #undef pp_dbl_lit_k54
 #undef pp_dbl_lit_k12
 #undef pp_dbl_lit_k16
@@ -3430,13 +3430,16 @@
 #define pp_add_k18_projc_lazyr 	RLC_PREFIX(pp_add_k18_projc_lazyr)
 #define pp_add_lit_k18 	RLC_PREFIX(pp_add_lit_k18)
 #define pp_add_k24_basic 	RLC_PREFIX(pp_add_k24_basic)
-#define pp_add_k24_projc 	RLC_PREFIX(pp_add_k24_projc)
+#define pp_add_k24_projc_basic 	RLC_PREFIX(pp_add_k24_projc_basic)
+#define pp_add_k24_projc_lazyr 	RLC_PREFIX(pp_add_k24_projc_lazyr)
 #define pp_add_lit_k24 	RLC_PREFIX(pp_add_lit_k24)
 #define pp_add_k48_basic 	RLC_PREFIX(pp_add_k48_basic)
-#define pp_add_k48_projc 	RLC_PREFIX(pp_add_k48_projc)
+#define pp_add_k48_projc_basic 	RLC_PREFIX(pp_add_k48_projc_basic)
+#define pp_add_k48_projc_lazyr 	RLC_PREFIX(pp_add_k48_projc_lazyr)
 #define pp_add_lit_k48 	RLC_PREFIX(pp_add_lit_k48)
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
-#define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
+#define pp_add_k54_projc_basic 	RLC_PREFIX(pp_add_k54_projc_basic)
+#define pp_add_k54_projc_lazyr 	RLC_PREFIX(pp_add_k54_projc_lazyr)
 #define pp_add_lit_k54 	RLC_PREFIX(pp_add_lit_k54)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
 #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
@@ -3444,26 +3447,27 @@
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
 #define pp_dbl_k8_basic 	RLC_PREFIX(pp_dbl_k8_basic)
-#define pp_dbl_k8_projc_basic 	RLC_PREFIX(pp_dbl_k8_projc_basic)
-#define pp_dbl_k8_projc_lazyr 	RLC_PREFIX(pp_dbl_k8_projc_lazyr)
+#define pp_dbl_k8_projc 	RLC_PREFIX(pp_dbl_k8_projc)
 #define pp_dbl_lit_k8 	RLC_PREFIX(pp_dbl_lit_k8)
 #define pp_dbl_k12_basic 	RLC_PREFIX(pp_dbl_k12_basic)
 #define pp_dbl_k12_projc_basic 	RLC_PREFIX(pp_dbl_k12_projc_basic)
 #define pp_dbl_k12_projc_lazyr 	RLC_PREFIX(pp_dbl_k12_projc_lazyr)
 #define pp_dbl_k16_basic 	RLC_PREFIX(pp_dbl_k16_basic)
-#define pp_dbl_k16_projc_basic 	RLC_PREFIX(pp_dbl_k16_projc_basic)
-#define pp_dbl_k16_projc_lazyr 	RLC_PREFIX(pp_dbl_k16_projc_lazyr)
+#define pp_dbl_k16_projc 	RLC_PREFIX(pp_dbl_k16_projc)
 #define pp_dbl_k18_basic 	RLC_PREFIX(pp_dbl_k18_basic)
 #define pp_dbl_k18_projc_basic 	RLC_PREFIX(pp_dbl_k18_projc_basic)
 #define pp_dbl_k18_projc_lazyr 	RLC_PREFIX(pp_dbl_k18_projc_lazyr)
 #define pp_dbl_k24_basic 	RLC_PREFIX(pp_dbl_k24_basic)
-#define pp_dbl_k24_projc 	RLC_PREFIX(pp_dbl_k24_projc)
+#define pp_dbl_k24_projc_basic 	RLC_PREFIX(pp_dbl_k24_projc_basic)
+#define pp_dbl_k24_projc_lazyr 	RLC_PREFIX(pp_dbl_k24_projc_lazyr)
 #define pp_dbl_lit_k24 	RLC_PREFIX(pp_dbl_lit_k24)
 #define pp_dbl_k48_basic 	RLC_PREFIX(pp_dbl_k48_basic)
-#define pp_dbl_k48_projc 	RLC_PREFIX(pp_dbl_k48_projc)
+#define pp_dbl_k48_projc_basic 	RLC_PREFIX(pp_dbl_k48_projc_basic)
+#define pp_dbl_k48_projc_lazyr 	RLC_PREFIX(pp_dbl_k48_projc_lazyr)
 #define pp_dbl_lit_k48 	RLC_PREFIX(pp_dbl_lit_k48)
 #define pp_dbl_k54_basic 	RLC_PREFIX(pp_dbl_k54_basic)
-#define pp_dbl_k54_projc 	RLC_PREFIX(pp_dbl_k54_projc)
+#define pp_dbl_k54_projc_basic 	RLC_PREFIX(pp_dbl_k54_projc_basic)
+#define pp_dbl_k54_projc_lazyr 	RLC_PREFIX(pp_dbl_k54_projc_lazyr)
 #define pp_dbl_lit_k54 	RLC_PREFIX(pp_dbl_lit_k54)
 #define pp_dbl_lit_k12 	RLC_PREFIX(pp_dbl_lit_k12)
 #define pp_dbl_lit_k16 	RLC_PREFIX(pp_dbl_lit_k16)

@@ -1025,28 +1025,6 @@ static int doubling8(void) {
 			pp_exp_k8(e1, e1);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-
-		TEST_CASE("basic projective miller doubling is correct") {
-			ep_rand(p);
-			ep2_rand(q);
-			ep2_rand(r);
-			fp8_zero(e1);
-			fp8_zero(e2);
-			pp_dbl_k8_projc(e1, r, q, p);
-			pp_dbl_k8_projc_basic(e2, r, q, p);
-			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
-			ep_rand(p);
-			ep2_rand(q);
-			ep2_rand(r);
-			fp8_zero(e1);
-			fp8_zero(e2);
-			pp_dbl_k8_projc(e1, r, q, p);
-			pp_dbl_k8_projc_lazyr(e2, r, q, p);
-			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1466,9 +1444,10 @@ static int doubling12(void) {
 			ep2_rand(r);
 			fp12_zero(e1);
 			fp12_zero(e2);
-			pp_dbl_k12_projc(e1, r, q, p);
-			pp_dbl_k12_projc_lazyr(e2, r, q, p);
+			pp_dbl_k12_projc_basic(e1, r, q, p);
+			pp_dbl_k12_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1575,9 +1554,10 @@ static int addition12(void) {
 			ep2_copy(s, r);
 			fp12_zero(e1);
 			fp12_zero(e2);
-			pp_add_k12_projc(e1, r, q, p);
+			pp_add_k12_projc_basic(e1, r, q, p);
 			pp_add_k12_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1990,28 +1970,6 @@ static int doubling16(void) {
 #endif
 			pp_dbl_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
-			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("basic projective miller doubling is correct") {
-			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
-			fp16_zero(e1);
-			fp16_zero(e2);
-			pp_dbl_k16_projc(e1, r, q, p);
-			pp_dbl_k16_projc_basic(e2, r, q, p);
-			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
-			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
-			fp16_zero(e1);
-			fp16_zero(e2);
-			pp_dbl_k16_projc(e1, r, q, p);
-			pp_dbl_k16_projc_lazyr(e2, r, q, p);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -2518,9 +2476,10 @@ static int doubling18(void) {
 			ep3_rand(r);
 			fp18_zero(e1);
 			fp18_zero(e2);
-			pp_dbl_k18_projc(e1, r, q, p);
-			pp_dbl_k18_projc_lazyr(e2, r, q, p);
+			pp_dbl_k18_projc_basic(e1, r, q, p);
+			pp_dbl_k18_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2627,9 +2586,10 @@ static int addition18(void) {
 			ep3_copy(s, r);
 			fp18_zero(e1);
 			fp18_zero(e2);
-			pp_add_k18_projc(e1, r, q, p);
+			pp_add_k18_projc_basic(e1, r, q, p);
 			pp_add_k18_projc_lazyr(e2, s, q, p);
 			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3027,6 +2987,17 @@ static int doubling24(void) {
 			pp_exp_k24(e1, e1);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
+			ep_rand(p);
+			ep4_rand(q);
+			fp24_zero(e1);
+			fp24_zero(e2);
+			pp_dbl_k24_projc_basic(e1, r, q, p);
+			pp_dbl_k24_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3111,6 +3082,19 @@ static int addition24(void) {
 			pp_add_k24_projc(e2, s, q, p);
 			pp_exp_k24(e2, e2);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
+			ep_rand(p);
+			ep4_rand(q);
+			ep4_rand(r);
+			ep4_copy(s, r);
+			fp24_zero(e1);
+			fp24_zero(e2);
+			pp_add_k24_projc_basic(e1, r, q, p);
+			pp_add_k24_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3512,6 +3496,17 @@ static int doubling48(void) {
 			pp_exp_k48(e1, e1);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
+			ep_rand(p);
+			ep8_rand(q);
+			fp48_zero(e1);
+			fp48_zero(e2);
+			pp_dbl_k48_projc_basic(e1, r, q, p);
+			pp_dbl_k48_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep8_cmp(r, s) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3596,6 +3591,19 @@ static int addition48(void) {
 			pp_add_k48_projc(e2, s, q, p);
 			pp_exp_k48(e2, e2);
 			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
+			ep_rand(p);
+			ep8_rand(q);
+			ep8_rand(r);
+			ep8_copy(s, r);
+			fp48_zero(e1);
+			fp48_zero(e2);
+			pp_add_k48_projc_basic(e1, r, q, p);
+			pp_add_k48_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp48_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep8_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3997,6 +4005,17 @@ static int doubling54(void) {
 			pp_exp_k54(e1, e1);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
+			ep_rand(p);
+			ep9_rand(q);
+			fp54_zero(e1);
+			fp54_zero(e2);
+			pp_dbl_k54_projc_basic(e1, r, q, p);
+			pp_dbl_k54_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep9_cmp(r, s) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4081,6 +4100,19 @@ static int addition54(void) {
 			pp_add_k54_projc(e2, s, q, p);
 			pp_exp_k54(e2, e2);
 			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
+			ep_rand(p);
+			ep9_rand(q);
+			ep9_rand(r);
+			ep9_copy(s, r);
+			fp54_zero(e1);
+			fp54_zero(e2);
+			pp_add_k54_projc_basic(e1, r, q, p);
+			pp_add_k54_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp54_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(ep9_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

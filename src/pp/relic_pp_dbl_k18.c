@@ -42,8 +42,8 @@
 
 TMPL_PP_DBL_BASIC(18, ep3, fp3);
 
-TMPL_PP_DBL_PROJC(18, ep3, fp3, projc_basic);
+TMPL_PP_DBL_PROJC(18, ep3, fp3);
 
-TMPL_PP_DBL_PROJC(18, ep3, fp3, projc_lazyr);
+TMPL_PP_DBL_LAZYR(18, ep3, fp3, dv3);
 
 TMPL_PP_DBL_LIT(18, ep3, fp3);

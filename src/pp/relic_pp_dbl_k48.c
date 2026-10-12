@@ -40,6 +40,8 @@
 
 TMPL_PP_DBL_BASIC(48, ep8, fp8);
 
-TMPL_PP_DBL_PROJC(48, ep8, fp8, projc);
+TMPL_PP_DBL_PROJC(48, ep8, fp8);
+
+TMPL_PP_DBL_LAZYR(48, ep8, fp8, dv8);
 
 TMPL_PP_DBL_LIT(48, ep8, fp8);

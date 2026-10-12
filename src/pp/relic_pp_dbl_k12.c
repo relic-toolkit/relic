@@ -290,15 +290,15 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 			fp2_sub(r->x, t1, t6);
 			fp2_mul(r->x, r->x, t4);
 
-			/* y3 = (B + G)^2 -12D^2. */
+			/* y3 = (B + G)^2 - 3(2D)^2, reduced once. */
 			fp2_add(t6, t6, t1);
-			fp2_sqr(t6, t6);
-			fp2_sqr(t2, t3);
-			fp2_dbl(r->y, t2);
-			fp2_dbl(t2, r->y);
-			fp2_dbl(r->y, t2);
-			fp2_add(r->y, r->y, t2);
-			fp2_sub(r->y, t6, r->y);
+			fp2_dbl(t2, t3);
+			fp2_sqrn_low(u1, t2);
+			fp2_addc_low(u0, u1, u1);
+			fp2_addc_low(u1, u0, u1);
+			fp2_sqrn_low(u0, t6);
+			fp2_subc_low(u0, u0, u1);
+			fp2_rdcn_low(r->y, u0);
 
 			/* z3 = 4B * F. */
 			fp2_dbl(r->z, t1);
@@ -307,7 +307,6 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 
 			/* l00 = D - B. */
 			fp2_sub(l[one][one], t3, t1);
-
 		}
 		/* l01 = F * (-yp). */
 		fp_mul(l[zero][zero][0], t5[0], p->y);

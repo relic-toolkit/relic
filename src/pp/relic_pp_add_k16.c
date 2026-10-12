@@ -42,8 +42,8 @@
 
 TMPL_PP_ADD_BASIC(16, ep4, fp4);
 
-TMPL_PP_ADD_PROJC4(16, ep4, fp4, projc_basic);
+TMPL_PP_ADD_PROJC4(16, ep4, fp4);
 
-TMPL_PP_ADD_PROJC4(16, ep4, fp4, projc_lazyr);
+TMPL_PP_ADD_LAZYR4(16, ep4, fp4, dv4);
 
 TMPL_PP_ADD_LIT(16, ep4, fp4);
