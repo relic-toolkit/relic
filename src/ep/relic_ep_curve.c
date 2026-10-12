@@ -422,7 +422,8 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ctx_t *ctx = core_get();
 	bn_st *v1 = ctx->ep_v1, *v2 = ctx->ep_v2;
 	ep_t p, q;
-	bn_t m;
+	bn_t m, t;
+	int sm;
 
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
@@ -431,12 +432,12 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	ep_null(p);
 	ep_null(q);
-	bn_null(m);
+	bn_null_all(m, t);
 
 	RLC_TRY {
 		ep_new(p);
 		ep_new(q);
-		bn_new(m);
+		bn_new_all(m, t);
 
 		/* The endomorphism must act on G as multiplication by lambda. */
 		bn_mod(m, l, r);
@@ -459,38 +460,37 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		/* Short basis (v1[1], v1[2]), (v2[1], v2[2]) of the lattice of
 		 * (k0, k1) with k0 + k1 * lambda = 0 mod r, for GLV decompositions. */
 		bn_gcd_ext_mid(&v1[1], &v1[2], &v2[1], &v2[2], m, r);
-		/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
+		/* m = v1[1] * v2[2] - v1[2] * v2[1], the determinant. */
 		bn_mul(&v1[0], &v1[1], &v2[2]);
 		bn_mul(&v2[0], &v1[2], &v2[1]);
 		bn_sub(m, &v1[0], &v2[0]);
-		bn_hlv(m, m);
-		/* v1[0] = round(v2[2] * 2^(|r| + 1) / 2m) and
-		 * v2[0] = -round(v1[2] * 2^(|r| + 1) / 2m). */
+		/* v1[0] = round(v2[2] * 2^(|r| + 1) / m) and
+		 * v2[0] = round(-v1[2] * 2^(|r| + 1) / m), rounding the absolute
+		 * values as floor((2|v| + |m|) / 2|m|) and restoring the signs. */
 		bn_lsh(&v1[0], &v2[2], bits + 1);
 		bn_lsh(&v2[0], &v1[2], bits + 1);
-		for (int i = 0; i < 2; i++) {
-			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
-			if (bn_sign(v) == RLC_POS) {
-				bn_add(v, v, m);
-			} else {
-				bn_sub(v, v, m);
-			}
-		}
-		bn_dbl(m, m);
-		for (int i = 0; i < 2; i++) {
-			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
-			bn_div(v, v, m);
-			if (bn_sign(v) == RLC_NEG) {
-				bn_add_dig(v, v, 1);
-			}
-		}
 		bn_neg(&v2[0], &v2[0]);
+		sm = bn_sign(m);
+		bn_abs(m, m);
+		bn_dbl(t, m);
+		for (int i = 0; i < 2; i++) {
+			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
+			int s = bn_sign(v) ^ sm;
+
+			bn_abs(v, v);
+			bn_dbl(v, v);
+			bn_add(v, v, m);
+			bn_div(v, v, t);
+			if (s) {
+				bn_neg(v, v);
+			}
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		ep_free(p);
 		ep_free(q);
-		bn_free(m);
+		bn_free_all(m, t);
 	}
 }
 
