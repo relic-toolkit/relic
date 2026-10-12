@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
@@ -140,65 +141,8 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 	}
 }
 
-/**
- * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
- * given parameter.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] p				- the first pairing argument in affine coordinates.
- * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] m 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep4_t *q, int m, bn_t a) {
-	fp16_t l;
-	ep4_t *_q = RLC_ALLOCA(ep4_t, m);
-	int j;
+TMPL_PP_MIL_LIT(16, ep4);
 
-	fp16_null(l);
-
-	if (_q == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	for (j = 0; j < m; j++) {
-		ep4_null(_q[j]);
-	}
-
-	RLC_TRY {
-		fp16_new(l);
-		for (j = 0; j < m; j++) {
-			ep4_new(_q[j]);
-			ep_copy(t[j], p[j]);
-			ep4_neg(_q[j], q[j]);
-		}
-
-		fp16_zero(l);
-		for (int i = bn_bits(a) - 2; i >= 0; i--) {
-			fp16_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_lit_k16(l, t[j], t[j], _q[j]);
-				fp16_mul(r, r, l);
-				if (bn_get_bit(a, i)) {
-					pp_add_lit_k16(l, t[j], p[j], q[j]);
-					fp16_mul(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp16_free(l);
-		for (j = 0; j < m; j++) {
-			ep4_free(_q[j]);
-		}
-		RLC_FREE(_q);
-	}
-}
 
 /**
  * Compute the final lines for optimal ate pairings.

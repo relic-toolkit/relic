@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
@@ -37,168 +38,9 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/**
- * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter represented in sparse form.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] q				- the vector of first arguments in affine coordinates.
- * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] m 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
-	fp12_t l;
-	ep_t *_p = NULL;
-	ep2_t *_q = NULL;
-	size_t len = bn_bits(a) + 1;
-	int i, j;
-	int8_t s[RLC_FP_BITS + 1];
+TMPL_PP_MIL(12, ep2);
 
-	if (m == 0) {
-		return;
-	}
-
-	/* Allocate after the early return, so that it does not leak. */
-	_p = RLC_ALLOCA(ep_t, m);
-	_q = RLC_ALLOCA(ep2_t, m);
-	if (_p == NULL || _q == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	fp12_null(l);
-
-	RLC_TRY {
-		fp12_new(l);
-		for (j = 0; j < m; j++) {
-			ep_null(_p[j]);
-			ep2_null(_q[j]);
-			ep_new(_p[j]);
-			ep2_new(_q[j]);
-			ep2_copy(t[j], q[j]);
-			ep2_neg(_q[j], q[j]);
-#if EP_ADD == BASIC
-			ep_neg(_p[j], p[j]);
-#else
-			fp_add(_p[j]->x, p[j]->x, p[j]->x);
-			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
-			fp_neg(_p[j]->y, p[j]->y);
-#endif
-		}
-
-		fp12_zero(l);
-		bn_rec_naf(s, &len, a, 2);
-		pp_dbl_k12(r, t[0], t[0], _p[0]);
-		for (j = 1; j < m; j++) {
-			pp_dbl_k12(l, t[j], t[j], _p[j]);
-			fp12_mul_dxs(r, r, l);
-		}
-		if (s[len - 2] > 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k12(l, t[j], q[j], p[j]);
-				fp12_mul_dxs(r, r, l);
-			}
-		}
-		if (s[len - 2] < 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k12(l, t[j], _q[j], p[j]);
-				fp12_mul_dxs(r, r, l);
-			}
-		}
-
-		for (i = len - 3; i >= 0; i--) {
-			fp12_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_k12(l, t[j], t[j], _p[j]);
-				fp12_mul_dxs(r, r, l);
-				if (s[i] > 0) {
-					pp_add_k12(l, t[j], q[j], p[j]);
-					fp12_mul_dxs(r, r, l);
-				}
-				if (s[i] < 0) {
-					pp_add_k12(l, t[j], _q[j], p[j]);
-					fp12_mul_dxs(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp12_free(l);
-		for (j = 0; j < m; j++) {
-			ep_free(_p[j]);
-			ep2_free(_q[j]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-	}
-}
-
-/**
- * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
- * given parameter.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] p				- the first pairing argument in affine coordinates.
- * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] m 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) {
-	fp12_t l;
-	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
-	int j;
-
-	fp12_null(l);
-
-	if (_q == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	for (j = 0; j < m; j++) {
-		ep2_null(_q[j]);
-	}
-
-	RLC_TRY {
-		fp12_new(l);
-		for (j = 0; j < m; j++) {
-			ep2_new(_q[j]);
-			ep_copy(t[j], p[j]);
-			ep2_neg(_q[j], q[j]);
-		}
-
-		fp12_zero(l);
-		for (int i = bn_bits(a) - 2; i >= 0; i--) {
-			fp12_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_lit_k12(l, t[j], t[j], _q[j]);
-				fp12_mul(r, r, l);
-				if (bn_get_bit(a, i)) {
-					pp_add_lit_k12(l, t[j], p[j], q[j]);
-					fp12_mul(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp12_free(l);
-		for (j = 0; j < m; j++) {
-			ep2_free(_q[j]);
-		}
-		RLC_FREE(_q);
-	}
-}
+TMPL_PP_MIL_LIT(12, ep2);
 
 /**
  * Compute the final lines for optimal ate pairings.
@@ -506,23 +348,14 @@ void pp_map_oatep_k12(fp12_t r, const ep_t p, const ep2_t q) {
 				case EP_BN:
 					bn_mul_dig(a, a, 6);
 					bn_add_dig(a, a, 2);
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp12_inv_cyc(r, r);
-						ep2_neg(t[0], t[0]);
-					}
 					pp_fin_k12_oatep(r, t[0], _q[0], _p[0]);
 					pp_exp_k12(r, r);
 					break;
 				case EP_B12:
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp12_inv_cyc(r, r);
-						ep2_neg(t[0], t[0]);
-					}
 					pp_exp_k12(r, r);
 					break;
 			}
@@ -584,26 +417,16 @@ void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 				case EP_BN:
 					bn_mul_dig(a, a, 6);
 					bn_add_dig(a, a, 2);
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp12_inv_cyc(r, r);
-					}
 					for (i = 0; i < j; i++) {
-						if (bn_sign(a) == RLC_NEG) {
-							ep2_neg(t[i], t[i]);
-						}
 						pp_fin_k12_oatep(r, t[i], _q[i], _p[i]);
 					}
 					pp_exp_k12(r, r);
 					break;
 				case EP_B12:
-					/* r = f_{|a|,Q}(P). */
+					/* r = f_{a,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp12_inv_cyc(r, r);
-					}
 					pp_exp_k12(r, r);
 					break;
 			}
