@@ -263,14 +263,15 @@ static int pairing1(void) {
 			ep_set_infty(q[0]);
 			pp_map_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
+			/* Self-pairings are non-trivial and bilinear with the distortion map. */
 			ep_rand(p[0]);
 			pp_map_k1(e1, p[0], p[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
-			ep_rand(p[0]);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_dbl(q[0], p[0]);
 			ep_norm(q[0], q[0]);
-			pp_map_k1(e1, p[0], q[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
+			pp_map_k1(e2, p[0], q[0]);
+			fp_sqr(e1, e1);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("pairing is bilinear") {
@@ -333,11 +334,15 @@ static int pairing1(void) {
 			ep_set_infty(q[0]);
 			pp_map_tatep_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
+			/* Self-pairings are non-trivial and bilinear with the distortion map. */
 			ep_rand(p[0]);
+			pp_map_tatep_k1(e1, p[0], p[0]);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_dbl(q[0], p[0]);
 			ep_norm(q[0], q[0]);
-			pp_map_tatep_k1(e1, p[0], q[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
+			pp_map_tatep_k1(e2, p[0], q[0]);
+			fp_sqr(e1, e1);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("tate pairing is bilinear") {
@@ -401,6 +406,15 @@ static int pairing1(void) {
 			ep_rand(q[0]);
 			pp_map_weilp_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
+			/* Self-pairings are non-trivial and bilinear with the distortion map. */
+			ep_rand(p[0]);
+			pp_map_weilp_k1(e1, p[0], p[0]);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep_dbl(q[0], p[0]);
+			ep_norm(q[0], q[0]);
+			pp_map_weilp_k1(e2, p[0], q[0]);
+			fp_sqr(e1, e1);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("weil pairing is bilinear") {

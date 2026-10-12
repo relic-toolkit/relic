@@ -136,7 +136,12 @@ void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 		bn_new(n);
 
 		ep_norm(_p[0], p);
-		ep_norm(_q[0], q);
+		/* Evaluate at Q + psi(P), which keeps the value because the pairing of
+		 * P and psi(P) is trivial, but stays off the lines through multiples
+		 * of P when Q is one of them. */
+		ep_psi(_q[0], p);
+		ep_add(_q[0], _q[0], q);
+		ep_norm(_q[0], _q[0]);
 		ep_curve_get_ord(n);
 		fp_set_dig(r, 1);
 
@@ -190,6 +195,7 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
+				/* Evaluate at Q + psi(P), as in the single pairing. */
 				ep_psi(_q[j], p[i]);
 				ep_add(_q[j], _q[j], q[i]);
 				ep_norm(_q[j], _q[j]);
@@ -244,6 +250,8 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q) {
 
 		ep_norm(_p[0], p);
 		ep_norm(_q[0], q);
+		/* The Weil pairing is trivial on a cyclic group, so apply the
+		 * distortion map to make self-pairings non-trivial. */
 		ep_psi(_q[0], _q[0]);
 		ep_curve_get_ord(n);
 		fp_set_dig(r, 1);
