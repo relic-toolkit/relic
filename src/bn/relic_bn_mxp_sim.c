@@ -36,9 +36,12 @@
 /*============================================================================*/
 
 /**
- * Size of precomputation table.
+ * Number of bases exponentiated together, each block using a precomputation
+ * table of 2^RLC_BASES entries.
  */
-#define XP_WIDTH	RLC_MAX(8, RLC_WIDTH)
+#ifndef RLC_BASES
+#define RLC_BASES	8
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -93,7 +96,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		return;
 	}
 
-	if (n > 8) {
+	if (n > RLC_BASES) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -177,7 +180,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
 	uint_t i, j;
-    bn_t _a[XP_WIDTH], _b[XP_WIDTH], r, t;
+    bn_t _a[RLC_BASES], _b[RLC_BASES], r, t;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -185,27 +188,27 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 	}
 
 	RLC_TRY {
-        // Will use blocks of size XP_WIDTH
+        // Will use blocks of size RLC_BASES
         bn_null_all(r, t);
 		bn_new_all(r, t);
-        for(int j = 0; j < XP_WIDTH; j++) {
+        for(int j = 0; j < RLC_BASES; j++) {
             bn_null(_a[j]);
             bn_null(_b[j]);
 			bn_new(_a[j]);
 			bn_new(_b[j]);
         }
 
-        // Largest multiple of XP_WIDTH lower than n
-        const size_t endblockingloop = ((n / XP_WIDTH) * XP_WIDTH);
+        // Largest multiple of RLC_BASES lower than n
+        const size_t endblockingloop = ((n / RLC_BASES) * RLC_BASES);
         /* Accumulate in r, since c may alias m. */
         bn_set_dig(r, 1);
         // Exponentiate by blocks of size RLC_WIDTH
 		for(i = 0; i < endblockingloop;) {
-            for(j = 0; j < 8; j++, i++) {
+            for(j = 0; j < RLC_BASES; j++, i++) {
                 bn_copy(_a[j], a[i]);
                 bn_copy(_b[j], b[i]);
             }
-            bn_mxp_sim_few(t, _a, _b, m, XP_WIDTH);
+            bn_mxp_sim_few(t, _a, _b, m, RLC_BASES);
             bn_mul(r, r, t);
             bn_mod(r, r, m);
         }
@@ -230,7 +233,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-        for(j = 0; j < XP_WIDTH; j++) {
+        for(j = 0; j < RLC_BASES; j++) {
             bn_free(_a[j]);
 			bn_free(_b[j]);
         }
