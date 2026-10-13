@@ -39,8 +39,6 @@
 
 /** Debugging support. */
 #cmakedefine DEBUG
-/** Profiling support. */
-#cmakedefine PROFL
 /** Error handling support. */
 #cmakedefine CHECK
 /** Verbose error messages. */
