@@ -525,6 +525,7 @@
 #undef fp_prime_clean
 #undef fp_prime_get
 #undef fp_prime_get_rdc
+#undef fp_prime_get_rdc1
 #undef fp_prime_get_conv
 #undef fp_prime_get_srt
 #undef fp_prime_get_crt
@@ -627,6 +628,7 @@
 #define fp_prime_clean 	RLC_PREFIX(fp_prime_clean)
 #define fp_prime_get 	RLC_PREFIX(fp_prime_get)
 #define fp_prime_get_rdc 	RLC_PREFIX(fp_prime_get_rdc)
+#define fp_prime_get_rdc1 	RLC_PREFIX(fp_prime_get_rdc1)
 #define fp_prime_get_conv 	RLC_PREFIX(fp_prime_get_conv)
 #define fp_prime_get_srt 	RLC_PREFIX(fp_prime_get_srt)
 #define fp_prime_get_crt 	RLC_PREFIX(fp_prime_get_crt)

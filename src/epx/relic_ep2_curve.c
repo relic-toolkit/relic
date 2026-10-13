@@ -663,8 +663,9 @@ void ep2_curve_mul_a(fp2_t c, const fp2_t a) {
 #endif
 		default:
 			if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-				fp_mul(c[0], a[0], ep_curve_get_a());
-				fp_mul(c[1], a[1], ep_curve_get_a());
+				/* Use the shortcuts for the coefficient of the curve. */
+				ep_curve_mul_a(c[0], a[0]);
+				ep_curve_mul_a(c[1], a[1]);
 				fp2_mul_art(c, c);
 			} else {
 				fp2_mul(c, a, ctx->ep2_a);
@@ -690,8 +691,9 @@ void ep2_curve_mul_b(fp2_t c, const fp2_t a) {
 #endif
 		default:
 			if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-				fp_mul(c[0], a[0], ep_curve_get_b());
-				fp_mul(c[1], a[1], ep_curve_get_b());
+				/* Use the shortcuts for the coefficient of the curve. */
+				ep_curve_mul_b(c[0], a[0]);
+				ep_curve_mul_b(c[1], a[1]);
 				fp2_mul_nor(c, c);
 			} else {
 				fp2_mul(c, a, ctx->ep2_b);

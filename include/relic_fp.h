@@ -480,6 +480,14 @@ const dig_t *fp_prime_get(void);
 const dig_t *fp_prime_get_rdc(void);
 
 /**
+ * Returns the additional value used for multiplying by a digit with modular
+ * reduction.
+ *
+ * @return the additional value used for multiplying by a digit.
+ */
+const dig_t *fp_prime_get_rdc1(void);
+
+/**
  * Returns the additional value used for conversion from multiple precision
  * integer to prime field element.
  *
