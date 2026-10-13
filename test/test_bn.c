@@ -215,6 +215,11 @@ static int util(void) {
 			TEST_ASSERT(bn_get_bit(a, bits) == 1, end);
 			bn_set_bit(a, bits, 0);
 			TEST_ASSERT(bn_get_bit(a, bits) == 0, end);
+			/* Digits between the old and the new top are cleared. */
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_set_dig(a, 1);
+			bn_set_bit(a, RLC_BN_BITS - 1, 1);
+			TEST_ASSERT(bn_ham(a) == 2 && bn_bits(a) == RLC_BN_BITS, end);
 			bits = (bits + 1) % RLC_BN_BITS;
 		}
 		TEST_END;
@@ -245,6 +250,17 @@ static int util(void) {
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_GT, end);
+		}
+		TEST_END;
+
+		TEST_CASE("generating a random integer modulo one fails") {
+			bn_set_dig(b, 1);
+			err_get_code();
+			RLC_TRY {
+				bn_rand_mod(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -342,6 +358,23 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bn_read_raw(b, raw, 0);
 			TEST_ASSERT(bn_is_zero(b), end);
+			/* Radix 36 is case insensitive. */
+			bits = bn_size_str(a, 36);
+			bn_write_str(str, bits, a, 36);
+			for (size_t j = 0; j < bits; j++) {
+				if (str[j] >= 'A' && str[j] <= 'Z') {
+					str[j] = (char)(str[j] - 'A' + 'a');
+				}
+			}
+			bn_read_str(b, str, bits, 36);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* Invalid digits are rejected. */
+			err_get_code();
+			RLC_TRY {
+				bn_read_str(b, "12x4", 4, 10);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
@@ -431,7 +464,24 @@ static int addition(void) {
 			bn_neg(d, a);
 			bn_add(e, a, d);
 			TEST_ASSERT(bn_is_zero(e), end);
+			/* Zero can't be negative. */
+			TEST_ASSERT(bn_sign(e) == RLC_POS, end);
+			bn_add(e, d, a);
+			TEST_ASSERT(bn_is_zero(e) && bn_sign(e) == RLC_POS, end);
 		} TEST_END;
+
+#if ALLOC == DYNAMIC
+		TEST_CASE("addition of a digit grows the result") {
+			/* The input is longer than a fresh result. */
+			bn_set_dig(d, 1);
+			bn_lsh(d, d, 3 * RLC_BN_BITS);
+			bn_sub_dig(a, d, 1);
+			bn_free(e);
+			bn_new(e);
+			bn_add_dig(e, a, 1);
+			TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -477,6 +527,10 @@ static int subtraction(void) {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_sub(c, a, a);
 			TEST_ASSERT(bn_is_zero(c), end);
+			/* Zero can't be negative. */
+			bn_neg(b, a);
+			bn_sub(c, b, b);
+			TEST_ASSERT(bn_is_zero(c) && bn_sign(c) == RLC_POS, end);
 		}
 		TEST_END;
 	}
@@ -771,6 +825,23 @@ static int shifting(void) {
 			bn_lsh(b, a, 1);
 			bn_rsh(c, b, 1);
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("shifting a negative number rounds down") {
+			/* Check that b * 2^k <= a < (b + 1) * 2^k for b = a >> k. */
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - RLC_DIG - 1);
+			for (uint_t k = 1; k <= 2 * RLC_DIG; k += RLC_DIG / 2) {
+				bn_rsh(b, a, k);
+				bn_lsh(c, b, k);
+				TEST_ASSERT(bn_cmp(c, a) != RLC_GT, end);
+				bn_add_dig(b, b, 1);
+				bn_lsh(c, b, k);
+				TEST_ASSERT(bn_cmp(c, a) == RLC_GT, end);
+			}
+			bn_set_dig(a, 1);
+			bn_neg(a, a);
+			bn_rsh(b, a, RLC_DIG);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by 2 bits is consistent") {

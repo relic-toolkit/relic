@@ -191,16 +191,27 @@ void bn_set_bit(bn_t a, uint_t bit, int value) {
 
 	RLC_RIP(bit, d, bit);
 
-	bn_grow(a, d);
+	if ((size_t)d >= a->used && value != 1) {
+		/* The bit is already zero. */
+		return;
+	}
 
-	if (value == 1) {
-		a->dp[d] |= ((dig_t)1 << bit);
-		if ((size_t)d + 1 > a->used) {
-			a->used = d + 1;
+	RLC_TRY {
+		bn_grow(a, d + 1);
+
+		if (value == 1) {
+			if ((size_t)d >= a->used) {
+				/* Clear the digits between the old and the new top. */
+				dv_zero(a->dp + a->used, d + 1 - a->used);
+				a->used = d + 1;
+			}
+			a->dp[d] |= ((dig_t)1 << bit);
+		} else {
+			a->dp[d] &= ~((dig_t)1 << bit);
+			bn_trim(a);
 		}
-	} else {
-		a->dp[d] &= ~((dig_t)1 << bit);
-		bn_trim(a);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
 }
 
@@ -290,6 +301,12 @@ void bn_rand_mod(bn_t a, const bn_t b) {
 	bn_t t;
 
 	bn_null(t);
+
+	if (bn_bits(b) <= 1) {
+		/* There is no nonzero integer below |b|. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	RLC_TRY {
 		bn_new(t);
@@ -414,7 +431,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 	}
 
 	j = 0;
-	if (str[0] == '-') {
+	if (len > 0 && str[0] == '-') {
 		j++;
 		sign = RLC_NEG;
 	} else {
@@ -429,19 +446,21 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 			if (str[j] == 0) {
 				break;
 			}
-			c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
+			c = (char)((radix <= 36) ? RLC_UPP(str[j]) : str[j]);
 			for (i = 0; i < 64; i++) {
 				if (c == util_conv_char(i)) {
 					break;
 				}
 			}
 
-			if (i < radix) {
-				bn_mul_dig(a, a, (dig_t)radix);
-				bn_add_dig(a, a, (dig_t)i);
-			} else {
+			if (i >= radix) {
+				/* Reject invalid digits instead of reading a prefix. */
+				bn_zero(a);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
+			bn_mul_dig(a, a, (dig_t)radix);
+			bn_add_dig(a, a, (dig_t)i);
 			j++;
 		}
 
@@ -537,9 +556,15 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	dig_t d = (RLC_DIG / 8);
 	int digs = (len % d == 0 ? len / d : len / d + 1);
 
-	bn_grow(a, digs);
 	bn_zero(a);
 	if (len == 0) {
+		return;
+	}
+
+	RLC_TRY {
+		bn_grow(a, digs);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 		return;
 	}
 

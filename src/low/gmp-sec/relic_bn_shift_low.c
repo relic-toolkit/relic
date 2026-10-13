@@ -79,6 +79,13 @@ dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	mask = RLC_MASK(bits);
 	r = a[size - 1] & mask;
 	c[size - 1] = (dis_t)a[size - 1] >> bits;
+	/* GMP requires at least one digit and a nonzero shift. */
+	if (size == 1 || bits == 0) {
+		if (bits == 0) {
+			dv_copy(c, a, size - 1);
+		}
+		return r;
+	}
 	carry = mpn_rshift((mp_ptr)c, (mp_srcptr)a, size - 1, bits);
 	c[size - 2] |= (r << shift);
 	return carry;
