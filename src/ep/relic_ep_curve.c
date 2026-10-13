@@ -39,17 +39,26 @@
  * Detects an optimization based on the curve coefficients.
  *
  * @param[out] opt		- the resulting optimization.
+ * @param[out] d		- the coefficient if it fits in a digit, or NULL.
  * @param[in] a			- the curve coefficient.
  */
-static void detect_opt(int *opt, fp_t a) {
+static void detect_opt(int *opt, dig_t *d, fp_t a) {
 	fp_t t;
+	bn_t u;
 
 	fp_null(t);
+	bn_null(u);
 
 	RLC_TRY {
 		fp_new(t);
+		bn_new(u);
 		fp_prime_conv_dig(t, 3);
 		fp_neg(t, t);
+		/* Test the size of the integer, not of its representation. */
+		fp_prime_back(u, a);
+		if (d != NULL) {
+			*d = (bn_bits(u) <= RLC_DIG ? u->dp[0] : 0);
+		}
 
 		if (fp_cmp(a, t) == RLC_EQ) {
 			*opt = RLC_MIN3;
@@ -59,7 +68,7 @@ static void detect_opt(int *opt, fp_t a) {
 			*opt = RLC_ONE;
 		} else if (fp_cmp_dig(a, 2) == RLC_EQ) {
 			*opt = RLC_TWO;
-		} else if (fp_bits(a) <= RLC_DIG) {
+		} else if (bn_bits(u) <= RLC_DIG) {
 			*opt = RLC_TINY;
 		} else {
 			*opt = RLC_HUGE;
@@ -70,6 +79,7 @@ static void detect_opt(int *opt, fp_t a) {
 	}
 	RLC_FINALLY {
 		fp_free(t);
+		bn_free(u);
 	}
 }
 
@@ -203,8 +213,8 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
 
-	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
-	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
+	detect_opt(&(ctx->ep_opt_a), NULL, ctx->ep_a);
+	detect_opt(&(ctx->ep_opt_b), &(ctx->ep_b_dig), ctx->ep_b);
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map();
@@ -330,9 +340,32 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 		case RLC_ONE:
 			fp_copy(c, a);
 			break;
-#if FP_RDC != MONTY
+		case RLC_TWO:
+			fp_dbl(c, a);
+			break;
 		case RLC_TINY:
-			fp_mul_dig(c, a, ctx->ep_b[0]);
+			if (ctx->ep_b_dig < 8) {
+				/* At most four doublings and additions for 3 <= b < 8,
+				 * copying a to a digit vector to avoid allocating when b
+				 * is not a power of two. */
+				dig_t t[RLC_FP_DIGS];
+
+				if (ctx->ep_b_dig & (ctx->ep_b_dig - 1)) {
+					dv_copy(t, a, RLC_FP_DIGS);
+				}
+				fp_dbl(c, a);
+				for (int i = util_bits_dig(ctx->ep_b_dig) - 2; i >= 0; i--) {
+					if ((ctx->ep_b_dig >> i) & 1) {
+						fp_add(c, c, t);
+					}
+					if (i > 0) {
+						fp_dbl(c, c);
+					}
+				}
+				break;
+			}
+#if FP_RDC != MONTY
+			fp_mul_dig(c, a, ctx->ep_b_dig);
 			break;
 #endif
 		default:
@@ -422,7 +455,8 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ctx_t *ctx = core_get();
 	bn_st *v1 = ctx->ep_v1, *v2 = ctx->ep_v2;
 	ep_t p, q;
-	bn_t m;
+	bn_t m, t;
+	int sm;
 
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
@@ -431,12 +465,12 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	ep_null(p);
 	ep_null(q);
-	bn_null(m);
+	bn_null_all(m, t);
 
 	RLC_TRY {
 		ep_new(p);
 		ep_new(q);
-		bn_new(m);
+		bn_new_all(m, t);
 
 		/* The endomorphism must act on G as multiplication by lambda. */
 		bn_mod(m, l, r);
@@ -459,38 +493,37 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		/* Short basis (v1[1], v1[2]), (v2[1], v2[2]) of the lattice of
 		 * (k0, k1) with k0 + k1 * lambda = 0 mod r, for GLV decompositions. */
 		bn_gcd_ext_mid(&v1[1], &v1[2], &v2[1], &v2[2], m, r);
-		/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
+		/* m = v1[1] * v2[2] - v1[2] * v2[1], the determinant. */
 		bn_mul(&v1[0], &v1[1], &v2[2]);
 		bn_mul(&v2[0], &v1[2], &v2[1]);
 		bn_sub(m, &v1[0], &v2[0]);
-		bn_hlv(m, m);
-		/* v1[0] = round(v2[2] * 2^(|r| + 1) / 2m) and
-		 * v2[0] = -round(v1[2] * 2^(|r| + 1) / 2m). */
+		/* v1[0] = round(v2[2] * 2^(|r| + 1) / m) and
+		 * v2[0] = round(-v1[2] * 2^(|r| + 1) / m), rounding the absolute
+		 * values as floor((2|v| + |m|) / 2|m|) and restoring the signs. */
 		bn_lsh(&v1[0], &v2[2], bits + 1);
 		bn_lsh(&v2[0], &v1[2], bits + 1);
-		for (int i = 0; i < 2; i++) {
-			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
-			if (bn_sign(v) == RLC_POS) {
-				bn_add(v, v, m);
-			} else {
-				bn_sub(v, v, m);
-			}
-		}
-		bn_dbl(m, m);
-		for (int i = 0; i < 2; i++) {
-			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
-			bn_div(v, v, m);
-			if (bn_sign(v) == RLC_NEG) {
-				bn_add_dig(v, v, 1);
-			}
-		}
 		bn_neg(&v2[0], &v2[0]);
+		sm = bn_sign(m);
+		bn_abs(m, m);
+		bn_dbl(t, m);
+		for (int i = 0; i < 2; i++) {
+			bn_st *v = (i == 0 ? &v1[0] : &v2[0]);
+			int s = bn_sign(v) ^ sm;
+
+			bn_abs(v, v);
+			bn_dbl(v, v);
+			bn_add(v, v, m);
+			bn_div(v, v, t);
+			if (s) {
+				bn_neg(v, v);
+			}
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		ep_free(p);
 		ep_free(q);
-		bn_free(m);
+		bn_free_all(m, t);
 	}
 }
 
