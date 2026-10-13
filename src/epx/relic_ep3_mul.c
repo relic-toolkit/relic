@@ -96,9 +96,11 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		fp3_set_dig(q[1]->z, 1);
 		r->coord = q[1]->coord = BASIC;
 
-		ep3_set_infty(r);
+		/* The first digit initializes the accumulator. */
 		for (int j = l - 1; j >= 0; j--) {
-			ep3_dbl(r, r);
+			if (j < (int)l - 1) {
+				ep3_dbl(r, r);
+			}
 
 			col = 0;
 			for (int i = 5; i > 0; i--) {
@@ -106,11 +108,16 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 				col += sac[i * l + j];
 			}
 
-			if (sac[j]) {
+			if (j == (int)l - 1) {
+				ep3_copy(r, t[col]);
+				if (sac[j]) {
+					ep3_neg(r, r);
+				}
+			} else if (sac[j]) {
 				ep3_sub(r, r, t[col]);
 			} else {
 				ep3_add(r, r, t[col]);
-			}			
+			}
 		}
 
 		if (even) {

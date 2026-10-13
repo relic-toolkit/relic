@@ -149,9 +149,12 @@
 				}															\
 			}																\
 																			\
+			/* The first doubling would be of the point at infinity. */		\
 			C##_set_infty(r);												\
 			for (int j = l - 1; j >= 0; j--) {								\
-				C##_dbl(r, r);												\
+				if (j < (int)l - 1) {										\
+					C##_dbl(r, r);											\
+				}															\
 																			\
 				for (size_t i = 0; i < S; i++) {							\
 					if (naf[i][j] > 0) {									\
@@ -260,9 +263,12 @@
 																			\
 			F##_set_dig(q[1]->z, 1);										\
 			q[1]->coord = BASIC;											\
-			C##_set_infty(r);												\
+			/* The first digit initializes the accumulator, which only		\
+			 * depends on the loop counters. */								\
 			for (int j = l - 1; j >= 0; j--) {								\
-				C##_dbl(r, r);												\
+				if (j < (int)l - 1) {										\
+					C##_dbl(r, r);											\
+				}															\
 				for (int i = 0; i < T; i++) {								\
 					col = 0;												\
 					for (int m = S / T - 1; m > 0; m--) {					\
@@ -275,7 +281,11 @@
 					}														\
 					C##_neg(q[2], q[1]);									\
 					F##_copy_sec(q[1]->y, q[2]->y, sac[i][j]);				\
-					C##_add(r, r, q[1]);									\
+					if (j == (int)l - 1 && i == 0) {						\
+						C##_copy(r, q[1]);									\
+					} else {												\
+						C##_add(r, r, q[1]);								\
+					}														\
 				}															\
 			}																\
 																			\
@@ -430,7 +440,9 @@
 			 * unit (-w)^m only changes the unit of the digit. */			\
 			C##_set_infty(r);												\
 			for (int m = ((int)l - 1) / 2; m >= 0 && l > 0; m--) {			\
-				C##_tpl(r, r);												\
+				if (m < ((int)l - 1) / 2) {									\
+					C##_tpl(r, r);											\
+				}															\
 				for (int i = 2 * m; i < RLC_MIN(2 * m + 2, (int)l); i++) {	\
 					for (int k = 0; k < e; k++) {							\
 						if (i >= (int)len[k] || naf[k][i] == 0) {			\

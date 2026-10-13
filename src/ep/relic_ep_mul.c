@@ -83,9 +83,12 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		t0 = naf0 + l - 1;
 		t1 = naf1 + l - 1;
 
+		/* The first doubling would be of the point at infinity. */
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--, t0--, t1--) {
-			ep_dbl(r, r);
+			if (i < (int)l - 1) {
+				ep_dbl(r, r);
+			}
 
 			n0 = *t0;
 			n1 = *t1;
@@ -182,9 +185,10 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		fp_set_dig(u->z, 1);
 		fp_set_dig(w->z, 1);
 		u->coord = w->coord = BASIC;
-		ep_set_infty(r);
+		/* The first digit initializes the accumulator, which depends only
+		 * on the loop counters. */
 		for (int i = l - 1; i >= 0; i--) {
-			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {
+			for (size_t j = 0; i < (int)l - 1 && j < RLC_WIDTH - 1; j++) {
 				ep_dbl(r, r);
 			}
 
@@ -203,7 +207,11 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 			}
 			ep_neg(q, u);
 			fp_copy_sec(q->y, u->y, c0 == 0);
-			ep_add(r, r, q);
+			if (i == (int)l - 1) {
+				ep_copy(r, q);
+			} else {
+				ep_add(r, r, q);
+			}
 
 			ep_psi(w, w);
 			ep_neg(q, w);
