@@ -21,8 +21,15 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_fp_low.h"
+/**
+ * @file
+ *
+ * Implementation of the low-level prime field shifting functions.
+ *
+ * @ingroup fp
+ */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
@@ -34,10 +41,12 @@ cdecl(fp_rsh1_low):
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
 	movq	24(%rsi), %r11
+	movq	%r8, %rax
+	andq	$1, %rax
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
-	shr	$1, %r11
+	shr	    $1, %r11
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
@@ -45,17 +54,18 @@ cdecl(fp_rsh1_low):
 	ret
 
 cdecl(fp_lsh1_low):
-        movq    0(%rsi), %r8
-        movq    8(%rsi), %r9
-        movq    16(%rsi), %r10
-        movq    24(%rsi), %r11
-        shld    $1, %r10, %r11
-        shld    $1, %r9, %r10
-        shld    $1, %r8, %r9
-        shl     $1, %r8
-        movq    %r8,0(%rdi)
-        movq    %r9,8(%rdi)
-        movq    %r10,16(%rdi)
-        movq    %r11,24(%rdi)
-        xorq    %rax, %rax
-        ret
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	%r11, %rax
+	shrq	$63, %rax
+	shld	$1, %r10, %r11
+	shld	$1, %r9, %r10
+	shld	$1, %r8, %r9
+	shl     $1, %r8
+	movq	%r8,0(%rdi)
+	movq	%r9,8(%rdi)
+	movq	%r10,16(%rdi)
+	movq	%r11,24(%rdi)
+	ret

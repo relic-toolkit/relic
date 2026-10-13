@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -36,6 +36,125 @@
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+#ifdef FP_QNRES
+
+void fp2_sqrn_c0(fp_t c, const fp2_t a);
+void fp2_sqrn_c1(fp_t c, const fp2_t a);
+
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
+	fp2_sqrn_c0(c[0], a);
+	fp2_sqrn_c1(c[1], a);
+}
+
+/*
+ * The real part is reduced from (a0 + a1) * (a0 - a1 + p) < 4p^2, which lands
+ * below 2p and fits the reduction only when 4p < 2^256.
+ */
+#if FP_PRIME < 255
+
+void fp2_sqrm_c0(fp_t c, const fp2_t a);
+void fp2_sqrm_c1(fp_t c, const fp2_t a);
+
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
+	rlc_align dig_t t[RLC_FP_DIGS];
+
+	fp2_sqrm_c0(t, a);
+	fp2_sqrm_c1(c[1], a);
+	fp_copy(c[0], t);
+}
+
+#endif
+
+#else
+
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
+
+	/* t0 = (a0 + a1). */
+#ifdef RLC_FP_ROOM
+	/* if we have room for carries, we can avoid reductions here. */
+	fp_addn_low(t0, a[0], a[1]);
+#else
+	fp_addm_low(t0, a[0], a[1]);
+#endif
+	/* t1 = (a0 - a1). */
+	fp_subm_low(t1, a[0], a[1]);
+
+#ifdef FP_QNRES
+
+#ifdef RLC_FP_ROOM
+	fp_dbln_low(t2, a[0]);
+#else
+	fp_dblm_low(t2, a[0]);
+#endif
+	/* c1 = 2 * a0 * a1. */
+	fp_muln_low(c[1], t2, a[1]);
+	/* c_0 = a_0^2 + a_1^2 * u^2. */
+	fp_muln_low(c[0], t0, t1);
+
+#else /* !FP_QNRES */
+
+	/* t1 = a0 - a1 * u^2. */
+	for (int i = -1; i > fp_prime_get_qnr(); i--) {
+		fp_subm_low(t1, t1, a[1]);
+	}
+	for (int i = 1; i < fp_prime_get_qnr(); i++) {
+		fp_addm_low(t1, t1, a[1]);
+	}
+
+	if (fp_prime_get_qnr() == -1) {
+		/* t2 = 2 * a0. */
+		fp_dbl(t2, a[0]);
+		/* c1 = 2 * a0 * a1. */
+		fp_muln_low(c[1], t2, a[1]);
+		/* c0 = a0^2 + a_1^2 * u^2. */
+		fp_muln_low(c[0], t0, t1);
+	} else {
+		/* c1 = a0 * a1. */
+		fp_muln_low(c[1], a[0], a[1]);
+		/* c0 = a0^2 + b_0^2 * u^2. */
+		fp_muln_low(c[0], t0, t1);
+
+		for (int i = -1; i > fp_prime_get_qnr(); i--) {
+			fp_addc_low(c[0], c[0], c[1]);
+		}
+		for (int i = 1; i < fp_prime_get_qnr(); i++) {
+			fp_subc_low(c[0], c[0], c[1]);
+		}
+#ifdef RLC_FP_ROOM
+		/* c1 = 2 * a0 * a1. */
+		fp_addd_low(c[1], c[1], c[1]);
+#else
+		/* c1 = 2 * a0 * a1. */
+		fp_addc_low(c[1], c[1], c[1]);
+#endif
+	}
+#endif
+	/* c = c0 + c1 * u. */
+}
+
+#endif
+
+#if !defined(FP_QNRES) || FP_PRIME >= 255
+
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
+	rlc_align dv2_t t;
+
+	dv2_null(t);
+
+	RLC_TRY {
+		dv2_new(t);
+		fp2_sqrn_low(t, a);
+		fp2_rdcn_low(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv2_free(t);
+	}
+}
+
+#endif
 
 void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
@@ -104,7 +223,7 @@ void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 }
 
 void fp3_sqrm_low(fp3_t c, const fp3_t a) {
-	dv3_t t;
+	rlc_align dv3_t t;
 
 	dv3_null(t);
 

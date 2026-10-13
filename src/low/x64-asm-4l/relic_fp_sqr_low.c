@@ -26,8 +26,11 @@
  *
  * Implementation of low-level prime field squaring functions.
  *
+ * @version $Id: relic_fp_sqr_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup fp
  */
+
+#include <gmp.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
@@ -36,9 +39,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	dig_t rlc_align t[2 * RLC_FP_DIGS];
+void fp_sqrn_low(dig_t *c, const dig_t *a) {
+	fp_muln_low(c, a, a);
+}
 
-	fp_sqrn_low(t, a);
-	fp_rdc(c, t);
+void fp_sqrm_low(dig_t *c, const dig_t *a) {
+	fp_mulm_low(c, a, a);
 }
