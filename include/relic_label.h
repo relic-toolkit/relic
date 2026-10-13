@@ -2206,6 +2206,7 @@
 #undef fp2_sqr_integ
 #undef fp2_inv
 #undef fp2_inv_cyc
+#undef fp2_sqr_cyc
 #undef fp2_inv_sim
 #undef fp2_test_cyc
 #undef fp2_conv_cyc
@@ -2256,6 +2257,7 @@
 #define fp2_sqr_integ 	RLC_PREFIX(fp2_sqr_integ)
 #define fp2_inv 	RLC_PREFIX(fp2_inv)
 #define fp2_inv_cyc 	RLC_PREFIX(fp2_inv_cyc)
+#define fp2_sqr_cyc 	RLC_PREFIX(fp2_sqr_cyc)
 #define fp2_inv_sim 	RLC_PREFIX(fp2_inv_sim)
 #define fp2_test_cyc 	RLC_PREFIX(fp2_test_cyc)
 #define fp2_conv_cyc 	RLC_PREFIX(fp2_conv_cyc)

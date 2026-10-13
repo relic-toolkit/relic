@@ -449,6 +449,44 @@ void fp2_inv_cyc(fp2_t c, const fp2_t a) {
 	fp_neg(c[1], a[1]);
 }
 
+void fp2_sqr_cyc(fp2_t c, const fp2_t a) {
+	fp_t t0, t1, t2;
+
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+
+	RLC_TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+
+		/* With a_0^2 - u^2 * a_1^2 = 1, the real part a_0^2 + u^2 * a_1^2 of
+		 * the square is 2 * a_0^2 - 1. */
+		fp_sqr(t0, a[0]);
+		fp_add(t1, a[0], a[1]);
+		fp_sqr(t1, t1);
+		/* The imaginary part is 2 * a_0 * a_1 = (a_0 + a_1)^2 - a_0^2 - a_1^2,
+		 * where a_1^2 = 1 - a_0^2 when u^2 = -1. */
+		if (fp_prime_get_qnr() == -1) {
+			fp_sub_dig(t1, t1, 1);
+		} else {
+			fp_sqr(t2, a[1]);
+			fp_sub(t1, t1, t0);
+			fp_sub(t1, t1, t2);
+		}
+		fp_dbl(c[0], t0);
+		fp_sub_dig(c[0], c[0], 1);
+		fp_copy(c[1], t1);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+	}
+}
+
 TMPL_FPX_INV_SIM(fp2);
 
 void fp2_exp(fp2_t c, const fp2_t a, const bn_t b) {
@@ -534,9 +572,9 @@ TMPL_FPX_CONV_CYC_QUAD(fp2);
 
 TMPL_FPX_TEST_CYC_QUAD(fp2);
 
-TMPL_EXP_CYC_NAF(fp2, fp2_sqr);
+TMPL_EXP_CYC_NAF(fp2, fp2_sqr_cyc);
 
-TMPL_EXP_CYC_SIM(fp2, fp2_sqr);
+TMPL_EXP_CYC_SIM(fp2, fp2_sqr_cyc);
 
 void fp2_pck(fp2_t c, const fp2_t a) {
 	int b = fp_get_bit(a[1], 0);
