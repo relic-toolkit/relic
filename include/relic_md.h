@@ -77,6 +77,14 @@ enum {
 #define RLC_MD_LEN					RLC_MD_LEN_B2S256
 #endif
 
+/**
+ * Default domain separation tag for expanding messages, which can be replaced
+ * at build time.
+ */
+#ifndef RLC_DSTAG
+#define RLC_DSTAG				RLC_STRING
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/

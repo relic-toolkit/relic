@@ -360,7 +360,8 @@
 			if (r == NULL) {												\
 				RLC_THROW(ERR_NO_MEMORY);									\
 			}																\
-			md_xmd(r, 2 * D * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);\
+			md_xmd(r, 2 * D * elm + 1, msg, len,							\
+					(const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));			\
 			for (int i = 0; i < D; i++) {									\
 				bn_read_bin(k, r + 2 * i * elm, elm);						\
 				fp_prime_conv(((fp_t *)u)[i], k);							\

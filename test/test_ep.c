@@ -1446,6 +1446,20 @@ static int hashing(void) {
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+		TEST_CASE("point hashing with a domain separation tag is correct") {
+			rand_bytes(msg, ep_map_rnd_size());
+			ep_map_dst(a, msg, ep_map_rnd_size(), (const uint8_t *)RLC_DSTAG,
+					strlen(RLC_DSTAG));
+			ep_map_sswum(b, msg, ep_map_rnd_size());
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			ep_map_dst(b, msg, ep_map_rnd_size(), (const uint8_t *)"TAG", 3);
+			TEST_ASSERT(ep_cmp(a, b) != RLC_EQ, end);
+			TEST_ASSERT(ep_on_curve(b) && ep_is_infty(b) == 0, end);
+			ep_mul_basic(b, b, n);
+			TEST_ASSERT(ep_on_curve(b) && ep_is_infty(b) == 1, end);
+		}
+		TEST_END;
 #endif
 
 #if EP_MAP == SSWUM && (FP_PRIME == 256 || FP_PRIME == 384 || FP_PRIME == 521)

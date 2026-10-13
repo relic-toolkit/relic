@@ -361,5 +361,5 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 }
 
 void ed_map(ed_t p, const uint8_t *msg, size_t len) {
-	ed_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
+	ed_map_dst(p, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
 }

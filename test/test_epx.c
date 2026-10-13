@@ -1184,15 +1184,17 @@ TMPL_TEST_EPX(ep9, fp9)
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
-	ep2_t a;
+	ep2_t a, b;
 	uint8_t msg[5];
 
 	bn_null(n);
 	ep2_null(a);
+	ep2_null(b);
 
 	RLC_TRY {
 		bn_new(n);
 		ep2_new(a);
+		ep2_new(b);
 
 		ep2_curve_get_ord(n);
 
@@ -1211,6 +1213,20 @@ static int hashing2(void) {
 			TEST_ASSERT(ep2_is_infty(a) == 0, end);
 			ep2_mul_basic(a, a, n);
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("point hashing with a domain separation tag is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_dst(a, msg, sizeof(msg), (const uint8_t *)RLC_DSTAG,
+					strlen(RLC_DSTAG));
+			ep2_map_sswum(b, msg, sizeof(msg));
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
+			ep2_map_dst(b, msg, sizeof(msg), (const uint8_t *)"TAG", 3);
+			TEST_ASSERT(ep2_cmp(a, b) != RLC_EQ, end);
+			TEST_ASSERT(ep2_on_curve(b) && ep2_is_infty(b) == 0, end);
+			ep2_mul_basic(b, b, n);
+			TEST_ASSERT(ep2_is_infty(b) == 1, end);
 		}
 		TEST_END;
 
@@ -1233,6 +1249,7 @@ static int hashing2(void) {
   end:
 	bn_free(n);
 	ep2_free(a);
+	ep2_free(b);
 	return code;
 }
 

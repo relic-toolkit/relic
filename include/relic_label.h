@@ -1068,6 +1068,7 @@
 #undef ep_map_basic
 #undef ep_map_sswum
 #undef ep_map_swift
+#undef ep_map_dst
 #undef ep_map_rnd_size
 #undef ep_map_rnd
 #undef ep_pck
@@ -1160,6 +1161,7 @@
 #define ep_map_basic 	RLC_PREFIX(ep_map_basic)
 #define ep_map_sswum 	RLC_PREFIX(ep_map_sswum)
 #define ep_map_swift 	RLC_PREFIX(ep_map_swift)
+#define ep_map_dst 	RLC_PREFIX(ep_map_dst)
 #define ep_map_rnd_size 	RLC_PREFIX(ep_map_rnd_size)
 #define ep_map_rnd 	RLC_PREFIX(ep_map_rnd)
 #define ep_pck 	RLC_PREFIX(ep_pck)
@@ -1500,6 +1502,7 @@
 #undef ep2_map_basic
 #undef ep2_map_sswum
 #undef ep2_map_swift
+#undef ep2_map_dst
 #undef ep2_frb
 #undef ep2_psi
 #undef ep2_pck
@@ -1569,6 +1572,7 @@
 #define ep2_map_basic 	RLC_PREFIX(ep2_map_basic)
 #define ep2_map_sswum 	RLC_PREFIX(ep2_map_sswum)
 #define ep2_map_swift 	RLC_PREFIX(ep2_map_swift)
+#define ep2_map_dst 	RLC_PREFIX(ep2_map_dst)
 #define ep2_frb 	RLC_PREFIX(ep2_frb)
 #define ep2_psi 	RLC_PREFIX(ep2_psi)
 #define ep2_pck 	RLC_PREFIX(ep2_pck)

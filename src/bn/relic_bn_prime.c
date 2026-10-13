@@ -45,13 +45,6 @@
 #define BASIC_TESTS	((int)(sizeof(primes)/sizeof(dig_t)))
 
 /**
- * Domain separation tag.
- */
-#ifndef RLC_DSTAG
-#define RLC_DSTAG		RLC_STRING
-#endif
-
-/**
  * Maximum number of attempts when hashing to a prime.
  */
 #define BN_MAP_TRIES	((uint32_t)1 << 20)
@@ -733,7 +726,7 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 	/* Callers with no tag of their own get the one of the library. */
 	if (tag == NULL) {
 		tag = (const uint8_t *)RLC_DSTAG;
-		tl = sizeof(RLC_DSTAG) - 1;
+		tl = strlen(RLC_DSTAG);
 	}
 
 	if (bits < 2 || nb == 0) {

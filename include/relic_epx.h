@@ -1585,6 +1585,20 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len);
 void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
+ * Maps a byte array to a point in an elliptic curve over a quadratic
+ * extension with an explicit domain separation tag, as hash_to_curve from
+ * RFC 9380 does.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
+
+/**
  * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
  * quadratic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
