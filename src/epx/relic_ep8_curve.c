@@ -180,6 +180,8 @@ void ep8_curve_init(void) {
 	ep8_new(ctx->ep8_g);
 	fp8_new(ctx->ep8_a);
 	fp8_new(ctx->ep8_b);
+	fp8_new(ctx->ep8_frb[0]);
+	fp8_new(ctx->ep8_frb[1]);
 #endif
 
 #ifdef EP_PRECO
@@ -210,6 +212,8 @@ void ep8_curve_clean(void) {
 		ep8_free(ctx->ep8_g);
 		fp8_free(ctx->ep8_a);
 		fp8_free(ctx->ep8_b);
+		fp8_free(ctx->ep8_frb[0]);
+		fp8_free(ctx->ep8_frb[1]);
 	}
 }
 
@@ -367,6 +371,11 @@ void ep8_curve_set_twist(int type) {
 			fp_copy(ctx->fp8_p1[0], a[1][0][0]);
 			fp_copy(ctx->fp8_p1[1], a[1][0][1]);
 		}
+
+		/* Precompute the constants that multiply the Frobenius coordinates. */
+		fp8_set_dig(a, 1);
+		fp8_mul_frb(ctx->ep8_frb[0], a, 1, 2);
+		fp8_mul_frb(ctx->ep8_frb[1], a, 1, 3);
 
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
