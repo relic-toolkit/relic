@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	int i;
+	size_t i;
 	dig_t r, carry;
 
 	carry = 0;
@@ -54,7 +54,7 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	int i;
+	size_t i;
 	dig_t r, carry, shift, mask;
 
 	shift = (RLC_DIG - bits) % RLC_DIG;

@@ -222,7 +222,7 @@ static int util(void) {
 		bits = 0;
 		TEST_CASE("hamming weight is correct") {
 			bn_zero(a);
-			for (int j = 0; j < bits; j++) {
+			for (uint_t j = 0; j < bits; j++) {
 				bn_set_bit(a, j, 1);
 			}
 			TEST_ASSERT(bn_ham(a) == bits, end);
@@ -2531,7 +2531,7 @@ static int recoding(void) {
 				l = RLC_BN_BITS + 1;
 				bn_rec_slw(d, &l, a, w);
 				bn_zero(b);
-				for (k = 0; k < l; k++) {
+				for (k = 0; (size_t)k < l; k++) {
 					if (d[k] == 0) {
 						bn_dbl(b, b);
 					} else {

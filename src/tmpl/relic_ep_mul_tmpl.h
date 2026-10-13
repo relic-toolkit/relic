@@ -542,7 +542,7 @@
 		}																	\
 		C##_tab(T, V, W);													\
 	} else {																\
-		for (int _j = 0; _j < E; _j++) {									\
+		for (size_t _j = 0; _j < E; _j++) {									\
 			C##_psi(T[I * E + _j], T[(I - 1) * E + _j]);					\
 			if (bn_sign(K[I]) != bn_sign(K[I - 1])) {						\
 				C##_neg(T[I * E + _j], T[I * E + _j]);						\

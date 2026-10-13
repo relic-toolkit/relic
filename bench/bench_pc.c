@@ -148,6 +148,9 @@ static void util1(void) {
 		g1_write_bin(bin, l, p, 1);
 		BENCH_ADD(g1_read_bin(p, bin, l));
 	} BENCH_END;
+
+	g1_free(p);
+	g1_free(q);
 }
 
 static void arith1(void) {
@@ -283,6 +286,7 @@ static void arith1(void) {
 
 	g1_free(p);
 	g1_free(q);
+	g1_free(r);
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
@@ -551,6 +555,7 @@ static void arith2(void) {
 
 	g2_free(p);
 	g2_free(q);
+	g2_free(r);
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);

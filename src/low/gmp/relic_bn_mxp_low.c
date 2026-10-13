@@ -56,7 +56,8 @@ extern void __gmpn_powm(mp_limb_t *rp, const mp_limb_t *bp, mp_size_t bn,
 
 void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		const dig_t *m, size_t sm, dig_t u) {
-	dig_t *t = RLC_ALLOCA(dig_t, RLC_MAX(__gmpn_binvert_itch(sm), 2 * sm));
+	dig_t *t = RLC_ALLOCA(dig_t,
+			RLC_MAX((size_t)__gmpn_binvert_itch(sm), 2 * sm));
 	(void)u;
 
 	__gmpn_powm((mp_limb_t *)c, (const mp_limb_t *)a, (mp_size_t)sa,

@@ -910,7 +910,7 @@ static int exponentiation(void) {
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, d->dp[0]);
 			fb_itr(b, a, d->dp[0], (const fb_st *)t);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_sqr(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -921,7 +921,7 @@ static int exponentiation(void) {
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, -d->dp[0]);
 			fb_itr(b, a, -d->dp[0], (const fb_st *)t);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_srt(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -932,7 +932,7 @@ static int exponentiation(void) {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_basic(b, a, d->dp[0]);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_sqr(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -942,7 +942,7 @@ static int exponentiation(void) {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_basic(b, a, -d->dp[0]);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_srt(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -955,7 +955,7 @@ static int exponentiation(void) {
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, d->dp[0]);
 			fb_itr_quick(b, a, (const fb_st *)t);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_sqr(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -966,7 +966,7 @@ static int exponentiation(void) {
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, -d->dp[0]);
 			fb_itr_quick(b, a, (const fb_st *)t);
-			for (int j = 0; j < d->dp[0]; j++) {
+			for (dig_t j = 0; j < d->dp[0]; j++) {
 				fb_srt(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
@@ -1004,7 +1004,7 @@ static int digit(void) {
 		TEST_CASE("addition of a single digit is consistent") {
 			fb_rand(a);
 			fb_rand(b);
-			for (int j = 1; j < RLC_FB_DIGS; j++)
+			for (size_t j = 1; j < RLC_FB_DIGS; j++)
 				b[j] = 0;
 			g = b[0];
 			fb_add(c, a, b);
@@ -1015,7 +1015,7 @@ static int digit(void) {
 		TEST_CASE("multiplication by a single digit is consistent") {
 			fb_rand(a);
 			fb_rand(b);
-			for (int j = 1; j < RLC_FB_DIGS; j++) {
+			for (size_t j = 1; j < RLC_FB_DIGS; j++) {
 				b[j] = 0;
 			}
 			g = b[0];

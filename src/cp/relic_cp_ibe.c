@@ -67,7 +67,8 @@ int cp_ibe_gen_prv(g2_t prv, const char *id, const bn_t master) {
 
 int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		const char *id, const g1_t pub) {
-	int l, result = RLC_OK;
+	int result = RLC_OK;
+	size_t l;
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	bn_t n;
 	bn_t r;
@@ -144,7 +145,8 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 
 int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		const g2_t prv) {
-	int l, result = RLC_OK;
+	int result = RLC_OK;
+	size_t l;
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	g1_t p;
 	gt_t e;

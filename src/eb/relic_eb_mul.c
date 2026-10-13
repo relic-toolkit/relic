@@ -340,7 +340,8 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 }
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
-	int i, d, kbltz = eb_curve_is_kbltz();
+	size_t i;
+	int d, kbltz = eb_curve_is_kbltz();
 	int8_t u, naf[RLC_FB_BITS + 8];
 	int8_t beta[1 << (RLC_WIDTH - 2)], gama[1 << (RLC_WIDTH - 2)];
 	uint8_t t_w;
@@ -430,7 +431,8 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 }
 
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
-	int i, j, trc, cof;
+	int i, j, cof;
+	dig_t trc;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
 	eb_t a, q, s, t[1 << (RLC_WIDTH - 2)];
 	bn_t n, m;

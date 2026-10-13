@@ -289,8 +289,8 @@
 	void C##_mul_pre_lwreg(C##_t *t, const C##_t p) {						\
 		const int h = 1 << (RLC_DEPTH - 1);									\
 		const int dim = TMPL_EP_MUL_FIX_DIM_##E(S);							\
-		int i, j, e;														\
-		size_t s;															\
+		int i, e;															\
+		size_t j, s;														\
 		C##_t b[2 * RLC_DEPTH];												\
 		bn_t n;																\
 																			\
@@ -420,7 +420,7 @@
 																			\
 			C##_set_infty(r);												\
 			for (i = s - 1; i >= 0; i--) {									\
-				if (i != s - 1) {											\
+				if ((size_t)i != s - 1) {									\
 					C##_dbl(r, r);											\
 				}															\
 				for (j = 0; j < dim; j++) {									\
@@ -977,7 +977,7 @@
 																			\
 		max = util_bits_dig(k[0]);											\
 		for (size_t i = 1; i < len; i++) {									\
-			max = RLC_MAX(max, util_bits_dig(k[i]));						\
+			max = RLC_MAX(max, (int)util_bits_dig(k[i]));					\
 		}																	\
 																			\
 		RLC_TRY {															\

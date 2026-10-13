@@ -159,15 +159,20 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 	bn_null(u);
 	gt_null(q);
 
+	for (size_t i = 0; i < m * f; i++) {
+		bn_null(_b[i]);
+	}
+	for (size_t i = 0; i < m * f * RLC_GT_TABLE; i++) {
+		gt_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
 		gt_new(q);
 		for (size_t i = 0; i < m * f; i++) {
-			bn_null(_b[i]);
 			bn_new(_b[i]);
 			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_null(t[i * RLC_GT_TABLE + j]);
 				gt_new(t[i * RLC_GT_TABLE + j]);
 			}
 		}
@@ -242,7 +247,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 				}
 				gt_copy(_t[0], q);
 				for (size_t i = 1; i < f; i++) {
-					for (size_t j = 0; j < (1 << (w - 2)); j++) {
+					for (size_t j = 0; j < ((size_t)1 << (w - 2)); j++) {
 						gt_psi(_t[i * RLC_GT_TABLE + j],
 								_t[(i - 1) * RLC_GT_TABLE + j]);
 						if (_s[i] != _s[i - 1]) {
@@ -320,18 +325,23 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	bn_null(n);
 	bn_null(u);
 
+	for (size_t i = 0; i < f; i++) {
+		bn_null(_b[i]);
+		gt_null(q[i]);
+	}
+	for (size_t i = 0; i < d * s; i++) {
+		gt_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < f; i++) {
-			bn_null(_b[i]);
-			gt_null(q[i]);
+		for (size_t i = 0; i < f; i++) {
 			bn_new(_b[i]);
 			gt_new(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
-				gt_null(t[i * s + j]);
+			for (size_t j = 0; j < s; j++) {
 				gt_new(t[i * s + j]);
 			}
 		}
@@ -401,12 +411,12 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_free(_b[i]);
 			gt_free(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_free(t[i * s + j]);
 			}
 		}
@@ -451,18 +461,23 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	bn_null(n);
 	bn_null(u);
 
+	for (size_t i = 0; i < f; i++) {
+		bn_null(_b[i]);
+		gt_null(q[i]);
+	}
+	for (size_t i = 0; i < d * s; i++) {
+		gt_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < f; i++) {
-			bn_null(_b[i]);
-			gt_null(q[i]);
+		for (size_t i = 0; i < f; i++) {
 			bn_new(_b[i]);
 			gt_new(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
-				gt_null(t[i * s + j]);
+			for (size_t j = 0; j < s; j++) {
 				gt_new(t[i * s + j]);
 			}
 		}
@@ -509,7 +524,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 				}
 			
 				for (size_t m = 0; m < s; m++) {
-					gt_copy_sec(q[1], t[i * s + m], m == col);
+					gt_copy_sec(q[1], t[i * s + m], m == (size_t)col);
 				}
 				gt_inv(q[2], q[1]);
 				gt_copy_sec(q[1], q[2], sac[i * f * RLC_FP_BITS + j]);
@@ -529,12 +544,12 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_free(_b[i]);
 			gt_free(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_free(t[i * s + j]);
 			}
 		}
@@ -592,16 +607,21 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	gt_null(q);
 	gt_null(w);
 
+	for (size_t i = 0; i < f; i++) {
+		bn_null(_b[i]);
+	}
+	for (size_t i = 0; i < f * RLC_GT_TABLE; i++) {
+		gt_null(t[i]);
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
 		gt_new(q);
 		gt_new(w);
 		for (size_t i = 0; i < f; i++) {
-			bn_null(_b[i]);
 			bn_new(_b[i]);
 			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_null(t[i * RLC_GT_TABLE + j]);
 				gt_new(t[i * RLC_GT_TABLE + j]);
 			}
 		}
@@ -664,7 +684,7 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 				n0 = ((n0 ^ c0) - c0) >> 1;
 
 				for (size_t m = 0; m < RLC_GT_TABLE; m++) {
-					gt_copy_sec(w, t[i * RLC_GT_TABLE + m], m == n0);
+					gt_copy_sec(w, t[i * RLC_GT_TABLE + m], m == (size_t)n0);
 				}
 
 				gt_inv(q, w);
@@ -824,7 +844,25 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 	}
 
 #if FP_PRIME == 1536 || FP_PRIME == 544
-	RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, b);
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		/* The exponentiation takes exponents up to the size of the field. */
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+		RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
 #elif FP_PRIME < 1536
 	if (ep_curve_embed() == 18) {
 		/* A variable-time GLS-SAC is actually faster due to shorter table. */
@@ -838,14 +876,6 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 }
 
 void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
-	if (bn_bits(b) <= RLC_DIG) {
-		gt_exp_dig(c, a, b->dp[0]);
-		if (bn_sign(b) == RLC_NEG) {
-			gt_inv(c, c);
-		}
-		return;
-	}
-
 #if FP_PRIME < 1536 && FP_PRIME != 544
 	size_t d = ep_curve_frdim();
 	d = (d > 4 ? d / 4 : 1);

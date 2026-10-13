@@ -339,7 +339,7 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 
 		/* Clear the cofactor, which is a power of two. */
 		ed_curve_get_cof(k);
-		for (int i = 1; i < bn_bits(k); i++) {
+		for (size_t i = 1; i < bn_bits(k); i++) {
 			ed_dbl(p, p);
 		}
 

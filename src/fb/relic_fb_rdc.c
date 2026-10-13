@@ -69,7 +69,7 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 				}
 			}
 		}
-		for (int i = fb_bits(a) - 1; i >= RLC_FB_BITS; i--) {
+		for (int i = fb_bits(a) - 1; i >= (int)RLC_FB_BITS; i--) {
 			if (fb_get_bit(a, i)) {
 				RLC_RIP(k, j, i - RLC_FB_BITS);
 				if (k == 0) {

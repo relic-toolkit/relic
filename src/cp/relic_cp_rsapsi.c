@@ -79,7 +79,8 @@ int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 
 int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 		const bn_t *x, size_t m) {
-	int i, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	int result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	size_t i;
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 
 	/* Compute R = g^r mod N. */
@@ -105,7 +106,8 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 
 int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 		const bn_t y[], size_t l) {
-	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	int result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	size_t j;
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	uint_t *shuffle = RLC_ALLOCA(uint_t, l);
 	bn_t p;
@@ -149,7 +151,8 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
 		const bn_t n, const bn_t *x, size_t m, const bn_t *t, const bn_t *u,
 		size_t l) {
-	int i, j, k, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i, j, k;
 	bn_t e, f;
 
 	bn_null(e);

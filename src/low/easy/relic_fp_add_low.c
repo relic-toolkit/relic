@@ -39,7 +39,7 @@
 /*============================================================================*/
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 	dig_t carry, r0;
 
 	carry = digit;
@@ -55,7 +55,7 @@ dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -71,7 +71,7 @@ dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -89,7 +89,7 @@ void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -113,7 +113,7 @@ void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 	dig_t carry, r0;
 
 	carry = digit;
@@ -126,7 +126,7 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -141,7 +141,7 @@ dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -164,7 +164,7 @@ void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -187,7 +187,7 @@ void fp_negm_low(dig_t *c, const dig_t *a) {
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -203,7 +203,7 @@ dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
