@@ -10,9 +10,7 @@ macro(ADD_MODULE MODULE)
 	add_test(test_${MODULE} ${SIMUL} ${SIMAR} ${EXECUTABLE_OUTPUT_PATH}/test_${MODULE})
 endmacro(ADD_MODULE)
 
-if (CHECK)
-	ADD_MODULE(err)
-endif(CHECK)
+ADD_MODULE(err)
 
 if (WITH_BN)
 	ADD_MODULE(bn)

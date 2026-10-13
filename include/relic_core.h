@@ -145,18 +145,23 @@ extern "C" {
 typedef struct _ctx_t {
 	/** The value returned by the last call, can be RLC_OK or RLC_ERR. */
 	int code;
+	/** Error number of the last error thrown. */
+	err_t number;
 
 #ifdef CHECK
 	/** The state of the last error caught. */
 	sts_t *last;
 	/** Error state to be used outside try-catch blocks. */
 	sts_t error;
-	/** Error number to be used outside try-catch blocks. */
-	err_t number;
 	/** The error message respective to the last error. */
 	char *reason[ERR_MAX];
 	/** A flag to indicate if the last error was already caught. */
 	int caught;
+#else
+	/** Number of try-catch blocks entered and not yet caught. */
+	int depth;
+	/** A flag to indicate if an error thrown inside a try-catch is pending. */
+	int pending;
 #endif /* CHECK */
 
 #ifdef WITH_FB
@@ -546,12 +551,33 @@ int core_init(void);
  */
 int core_clean(void);
 
+#if defined(MULTI)
+
 /**
  * Returns a pointer to the current library context.
  *
  * @return a pointer to the library context.
  */
 ctx_t *core_get(void);
+
+#else
+
+/**
+ * Pointer to the current library context.
+ */
+extern ctx_t *core_ctx;
+
+/**
+ * Returns a pointer to the current library context. Without multithreading,
+ * the context is a single pointer, so the call is inlined.
+ *
+ * @return a pointer to the library context.
+ */
+static inline ctx_t *core_get(void) {
+	return core_ctx;
+}
+
+#endif
 
 /**
  * Switched the library context to a new context.

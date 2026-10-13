@@ -50,16 +50,16 @@ cat << PREAMBLE
 PREAMBLE
 
 REDEF() {
-	U=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
-	D=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	U=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
 	if [ -n "$U" ]; then
 		printf '%s\n\n%s\n\n' "$U" "$D"
 	fi
 }
 
 REDEF2() {
-	U=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
-	D=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	U=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
 	if [ -n "$U" ]; then
 		printf '%s\n\n%s\n\n' "$U" "$D"
 	fi

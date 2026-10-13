@@ -219,9 +219,11 @@ typedef struct _sts_t {
 #define RLC_TRY					RLC_ERR_TRY
 #else
 /**
- * Stub for the TRY clause.
+ * Implements a TRY clause without error checking. The block always runs to
+ * the end, and the number of blocks entered is counted so that errors thrown
+ * inside them are reported to their CATCH clause.
  */
-#define RLC_TRY					if (1)
+#define RLC_TRY					if ((core_get()->depth++, 1))
 #endif
 
 #ifdef CHECK
@@ -231,9 +233,12 @@ typedef struct _sts_t {
 #define RLC_CATCH(E)			RLC_ERR_CATCH(&(E))
 #else
 /**
- * Stub for the CATCH clause.
+ * Implements a CATCH clause without error checking, which runs if an error was
+ * thrown in its TRY clause and consumes it.
  */
-#define RLC_CATCH(E)			else
+#define RLC_CATCH(E)														\
+	if ((core_get()->depth--, core_get()->pending) &&						\
+			(core_get()->pending = 0, (E) = core_get()->number, 1))
 #endif
 
 #ifdef CHECK
@@ -246,9 +251,12 @@ typedef struct _sts_t {
 #define RLC_CATCH_ANY			RLC_ERR_CATCH(NULL)
 #else
 /**
- * Stub for the RLC_CATCH_ANY clause.
+ * Implements a CATCH clause for any possible error without error checking,
+ * which runs if an error was thrown in its TRY clause and consumes it.
  */
-#define RLC_CATCH_ANY			if (0)
+#define RLC_CATCH_ANY														\
+	if ((core_get()->depth--, core_get()->pending) &&						\
+			(core_get()->pending = 0, 1))
 #endif
 
 #ifdef CHECK
@@ -267,14 +275,32 @@ typedef struct _sts_t {
 #define RLC_THROW				RLC_ERR_THROW
 #else
 /**
- * Stub for the THROW clause.
+ * Implements a THROW clause without error checking. The error is recorded in
+ * the code returned by err_get_code() and execution continues; inside a
+ * try-catch block, the error is also passed on to its CATCH clause.
+ *
+ * @param[in] E		- the exception being thrown.
  */
 #ifdef QUIET
-#define RLC_THROW(E)			do { core_get()->code = RLC_ERR; } while (0)
+#define RLC_ERR_PRINT_OFF(E)	/* empty */
 #else
-#define RLC_THROW(E)			do { err_throw(RLC_FILE, __LINE__); } while (0)
-
+#define RLC_ERR_PRINT_OFF(E)												\
+	if (E != ERR_CAUGHT) {													\
+		err_throw(RLC_FILE, __LINE__);										\
+	}
 #endif
+#define RLC_THROW(E)														\
+	do {																	\
+		ctx_t *_ctx = core_get();											\
+		_ctx->code = RLC_ERR;												\
+		if (E != ERR_CAUGHT) {												\
+			_ctx->number = E;												\
+		}																	\
+		if (_ctx->depth > 0) {												\
+			_ctx->pending = 1;												\
+		}																	\
+		RLC_ERR_PRINT_OFF(E);												\
+	} while (0)
 #endif
 
 /**

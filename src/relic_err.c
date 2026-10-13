@@ -124,6 +124,8 @@ int err_get_code(void) {
 	if (ctx->last == &(ctx->error)) {
 		ctx->last = NULL;
 	}
+#else
+	ctx->pending = 0;
 #endif
 	return r;
 }
