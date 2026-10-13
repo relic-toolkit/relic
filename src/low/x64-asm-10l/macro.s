@@ -21,6 +21,7 @@
  * or <https://www.apache.org/licenses/>.
  */
 
+
 #include "relic_fp_low.h"
 
 /**
@@ -28,11 +29,15 @@
  *
  * Implementation of low-level prime field multiplication.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
-#ifdef FP_QNRES
+/*
+ * The constants below are for the prime that fp_param_set_any() picks: BLS12-P638
+ * when FP_QNRES is defined and KSS18-P638 otherwise. BN-P638 and SG18-P638 are
+ * not supported by this backend.
+ */
+#if FP_PRIME == 638 && defined(FP_QNRES)
 /* BLS12-P638 */
 #define P0	0xAAAAAAAABEAB000B
 #define P1	0xEAF3FF000AAAAAAA
@@ -48,7 +53,7 @@
 #define BAR	0x86E9E19FD94C0210
 #define BARS	61
 #define BARJ	9
-#else
+#elif FP_PRIME == 638
 /* KSS18-P638 */
 #define P0	0xB0BE48934E64EB1D
 #define P1	0xFB8F59E264FB7A71
@@ -64,265 +69,843 @@
 #define BAR	0xA9F1AC5D7ED6C221
 #define BARS	61
 #define BARJ	9
-/* SG18-P638
-#define P0	0xFFF6FFFD00000001
-#define P1	0xD280D90D7972FE88
-#define P2	0x9236BAE2400DC1A2
-#define P3	0x6CE743402AE2256D
-#define P4	0xDA5FDF97A06CD484
-#define P5	0xC40C2D448F3DDFB4
-#define P6	0x0F06F4142B874648
-#define P7	0xE74D7252BF71E530
-#define P8	0x67A9E2D0DF0E0F74
-#define P9	0x3DF26F025F3C0415
-#define U0	0xFFF6FFFCFFFFFFFF */
+#else
+#error "x64-asm-10l only supports FP_PRIME = 638."
 #endif
 
 #if defined(__APPLE__)
-#define cdecl(S) _PREFIX(,S)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
 #else
 #define cdecl(S) S
 #endif
 
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
+#endif
+
 .text
 
-.macro ADD1 i, j
+.macro ADD1 i j
 	movq	8*\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\i(%rdi)
 	.if \i - \j
-		ADD1 "(\i + 1)", \j
+		ADD1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro ADDN i, j
+.macro ADDN i j
 	movq	8*\i(%rdx), %r11
 	adcq	8*\i(%rsi), %r11
 	movq	%r11, 8*\i(%rdi)
 	.if \i - \j
-		ADDN "(\i + 1)", \j
+		ADDN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUB1 i, j
+.macro SUB1 i j
 	movq	8*\i(%rsi),%r10
 	sbbq	$0, %r10
 	movq	%r10,8*\i(%rdi)
 	.if \i - \j
-		SUB1 "(\i + 1)", \j
+		SUB1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUBN i, j
+.macro SUBN i j
 	movq	8*\i(%rsi), %r8
 	sbbq	8*\i(%rdx), %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		SUBN "(\i + 1)", \j
+		SUBN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro DBLN i, j
+.macro DBLN i j
 	movq	8*\i(%rsi), %r8
 	adcq	%r8, %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		DBLN "(\i + 1)", \j
+		DBLN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro MULN i, j, k, C, R0, R1, R2, A, B
-	.if \j > \k
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-		MULN	"(\i + 1)", "(\j - 1)", \k, \C, \R0, \R1, \R2, \A, \B
-	.else
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		movq	\R0     , 8*(\i+\j)(\C)
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-	.endif
+/*
+ * The accumulator z has eleven digits Z0..Z10, which with T0, T1, rdx and the
+ * base register of b take all fifteen registers, so the pointers to a and c
+ * are read from the stack through the memory operands A and C. MULADD has no
+ * zero register and clears T1 for its last carry instead.
+ */
+.macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T
+	movq	\A, %rdx
+	movq	0(%rdx), %rdx
+	mulx	0+\B, \Z0, \Z1
+	mulx	8+\B, \T, \Z2
+	addq	\T, \Z1
+	mulx	16+\B, \T, \Z3
+	adcq	\T, \Z2
+	mulx	24+\B, \T, \Z4
+	adcq	\T, \Z3
+	mulx	32+\B, \T, \Z5
+	adcq	\T, \Z4
+	mulx	40+\B, \T, \Z6
+	adcq	\T, \Z5
+	mulx	48+\B, \T, \Z7
+	adcq	\T, \Z6
+	mulx	56+\B, \T, \Z8
+	adcq	\T, \Z7
+	mulx	64+\B, \T, \Z9
+	adcq	\T, \Z8
+	mulx	72+\B, \T, \Z10
+	adcq	\T, \Z9
+	adcq	$0, \Z10
 .endm
 
-.macro FP_MULN_LOW C, R0, R1, R2, A, B
-	movq 	0(\A),%rax
-	mulq 	0(\B)
-	movq 	%rax ,0(\C)
-	movq 	%rdx ,\R0
-
-	xorq 	\R1,\R1
-	xorq 	\R2,\R2
-	MULN 	0, 1, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 2, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 3, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0, 4, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 5, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 6, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0, 7, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 8, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 9, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	1, 9, 1, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	2, 9, 2, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	3, 9, 3, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	4, 9, 4, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	5, 9, 5, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	6, 9, 6, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	7, 9, 7, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	8, 9, 8, \C, \R1, \R2, \R0, \A, \B
-
-	movq	72(\A),%rax
-	mulq	72(\B)
-	addq	%rax  ,\R2
-	movq	\R2   ,144(\C)
-	adcq	%rdx  ,\R0
-	movq	\R0   ,152(\C)
+.macro MULADD Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, M
+	mulx	0+\M, \T1, \T0
+	adox	\T1, \Z0
+	adox	\T0, \Z1
+	mulx	8+\M, \T1, \T0
+	adcx	\T1, \Z1
+	adox	\T0, \Z2
+	mulx	16+\M, \T1, \T0
+	adcx	\T1, \Z2
+	adox	\T0, \Z3
+	mulx	24+\M, \T1, \T0
+	adcx	\T1, \Z3
+	adox	\T0, \Z4
+	mulx	32+\M, \T1, \T0
+	adcx	\T1, \Z4
+	adox	\T0, \Z5
+	mulx	40+\M, \T1, \T0
+	adcx	\T1, \Z5
+	adox	\T0, \Z6
+	mulx	48+\M, \T1, \T0
+	adcx	\T1, \Z6
+	adox	\T0, \Z7
+	mulx	56+\M, \T1, \T0
+	adcx	\T1, \Z7
+	adox	\T0, \Z8
+	mulx	64+\M, \T1, \T0
+	adcx	\T1, \Z8
+	adox	\T0, \Z9
+	mulx	72+\M, \T1, \T0
+	adcx	\T1, \Z9
+	adox	\T0, \Z10
+	movq	$0, \T1
+	adcx	\T1, \Z10
 .endm
 
-.macro _RDCN0 i, j, k, R0, R1, R2 A, P
-	movq	8*\i(\A), %rax
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-	.if \j > 1
-		_RDCN0 "(\i + 1)", "(\j - 1)", \k, \R0, \R1, \R2, \A, \P
-	.else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, %rax
-		mulq	%rcx
-		movq	%rax, 8*\k(\A)
-		mulq	0(\P)
-		addq	%rax , \R0
-		adcq	%rdx , \R1
-		adcq	$0   , \R2
-		xorq	\R0, \R0
-	.endif
+.macro MULSUB Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, M
+	mulx	8+\M, \T1, \T0
+	subq	\T1, \Z1
+	sbbq	\T0, \Z2
+	mulx	24+\M, \T1, \T0
+	sbbq	\T1, \Z3
+	sbbq	\T0, \Z4
+	mulx	40+\M, \T1, \T0
+	sbbq	\T1, \Z5
+	sbbq	\T0, \Z6
+	mulx	56+\M, \T1, \T0
+	sbbq	\T1, \Z7
+	sbbq	\T0, \Z8
+	mulx	72+\M, \T1, \T0
+	sbbq	\T1, \Z9
+	sbbq	\T0, \Z10
+	mulx	0+\M, \T1, \T0
+	subq	\T1, \Z0
+	sbbq	\T0, \Z1
+	mulx	16+\M, \T1, \T0
+	sbbq	\T1, \Z2
+	sbbq	\T0, \Z3
+	mulx	32+\M, \T1, \T0
+	sbbq	\T1, \Z4
+	sbbq	\T0, \Z5
+	mulx	48+\M, \T1, \T0
+	sbbq	\T1, \Z6
+	sbbq	\T0, \Z7
+	mulx	64+\M, \T1, \T0
+	sbbq	\T1, \Z8
+	sbbq	\T0, \Z9
+	sbbq	$0, \Z10
 .endm
 
-.macro RDCN0 i, j, R0, R1, R2, A, P
-	_RDCN0	\i, \j, \j, \R0, \R1, \R2, \A, \P
+// Final correction, keeping the input in C while p is subtracted.
+.macro FINALC R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, C
+	movq	\R0, 0+\C
+	movq	\R1, 8+\C
+	movq	\R2, 16+\C
+	movq	\R3, 24+\C
+	movq	\R4, 32+\C
+	movq	\R5, 40+\C
+	movq	\R6, 48+\C
+	movq	\R7, 56+\C
+	movq	\R8, 64+\C
+	movq	\R9, 72+\C
+	subq	p0(%rip), \R0
+	sbbq	p1(%rip), \R1
+	sbbq	p2(%rip), \R2
+	sbbq	p3(%rip), \R3
+	sbbq	p4(%rip), \R4
+	sbbq	p5(%rip), \R5
+	sbbq	p6(%rip), \R6
+	sbbq	p7(%rip), \R7
+	sbbq	p8(%rip), \R8
+	sbbq	p9(%rip), \R9
+	cmovc	0+\C, \R0
+	cmovc	8+\C, \R1
+	cmovc	16+\C, \R2
+	cmovc	24+\C, \R3
+	cmovc	32+\C, \R4
+	cmovc	40+\C, \R5
+	cmovc	48+\C, \R6
+	cmovc	56+\C, \R7
+	cmovc	64+\C, \R8
+	cmovc	72+\C, \R9
+	movq	\R0, 0+\C
+	movq	\R1, 8+\C
+	movq	\R2, 16+\C
+	movq	\R3, 24+\C
+	movq	\R4, 32+\C
+	movq	\R5, 40+\C
+	movq	\R6, 48+\C
+	movq	\R7, 56+\C
+	movq	\R8, 64+\C
+	movq	\R9, 72+\C
 .endm
 
-.macro _RDCN1 i, j, k, l, R0, R1, R2 A, P
-	movq	8*\i(\A), %rax
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-	.if \j > \l
-		_RDCN1 "(\i + 1)", "(\j - 1)", \k, \l, \R0, \R1, \R2, \A, \P
-	.else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, 8*\k(\A)
-		xorq	\R0, \R0
-	.endif
+.macro FP_MULM_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, P, RDC, C
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z0, 0(\T0)
+.else
+	// z = (z + ((z0 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, \P
+.endif
+
+	// z += a_1 x b
+	xorq	\Z0, \Z0
+	movq	\A, %rdx
+	movq	8(%rdx), %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z1, 8(\T0)
+.else
+	// z = (z + ((z1 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, \T0
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \P
+.endif
+
+	// z += a_2 x b
+	xorq	\Z1, \Z1
+	movq	\A, %rdx
+	movq	16(%rdx), %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z2, 16(\T0)
+.else
+	// z = (z + ((z2 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, \T0
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \P
+.endif
+
+	// z += a_3 x b
+	xorq	\Z2, \Z2
+	movq	\A, %rdx
+	movq	24(%rdx), %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z3, 24(\T0)
+.else
+	// z = (z + ((z3 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, \T0
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
+
+	// z += a_4 x b
+	xorq	\Z3, \Z3
+	movq	\A, %rdx
+	movq	32(%rdx), %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z4, 32(\T0)
+.else
+	// z = (z + ((z4 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, \T0
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
+
+	// z += a_5 x b
+	xorq	\Z4, \Z4
+	movq	\A, %rdx
+	movq	40(%rdx), %rdx
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z5, 40(\T0)
+.else
+	// z = (z + ((z5 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, \T0
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+
+	// z += a_6 x b
+	xorq	\Z5, \Z5
+	movq	\A, %rdx
+	movq	48(%rdx), %rdx
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z6, 48(\T0)
+.else
+	// z = (z + ((z6 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z6, %rdx, \T0
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+.endif
+
+	// z += a_7 x b
+	xorq	\Z6, \Z6
+	movq	\A, %rdx
+	movq	56(%rdx), %rdx
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z7, 56(\T0)
+.else
+	// z = (z + ((z7 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z7, %rdx, \T0
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+
+	// z += a_8 x b
+	xorq	\Z7, \Z7
+	movq	\A, %rdx
+	movq	64(%rdx), %rdx
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z8, 64(\T0)
+.else
+	// z = (z + ((z8 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z8, %rdx, \T0
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+.endif
+
+	// z += a_9 x b
+	xorq	\Z8, \Z8
+	movq	\A, %rdx
+	movq	72(%rdx), %rdx
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z9, 72(\T0)
+.else
+	// z = (z + ((z9 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z9, %rdx, \T0
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P
+.endif
+
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z10, 80(\T0)
+	movq	\Z0, 88(\T0)
+	movq	\Z1, 96(\T0)
+	movq	\Z2, 104(\T0)
+	movq	\Z3, 112(\T0)
+	movq	\Z4, 120(\T0)
+	movq	\Z5, 128(\T0)
+	movq	\Z6, 136(\T0)
+	movq	\Z7, 144(\T0)
+	movq	\Z8, 152(\T0)
+.else
+	movq	\C, \T0
+	FINALC	\Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, 0(\T0)
+.endif
 .endm
 
-.macro RDCN1 i, j, R0, R1, R2, A, P
-	_RDCN1	\i, \j, "(\i + \j)", \i, \R0, \R1, \R2, \A, \P
+.macro FP2_MUL0_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, P, RDC, C
+	// z -= a_10 x b_1
+	movq	\A, %rdx
+	movq	80(%rdx), %rdx
+	MULSUB	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z0, 0(\T0)
+.else
+	// z = (z + ((z0 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, \P
+.endif
+	xorq	\Z0, \Z0
+	btq	$63, \Z10
+	sbbq	$0, \Z0
+
+	// z += a_01 x b_0
+	movq	\A, %rdx
+	movq	8(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \B
+	// z -= a_11 x b_1
+	movq	\A, %rdx
+	movq	88(%rdx), %rdx
+	MULSUB	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z1, 8(\T0)
+.else
+	// z = (z + ((z1 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \P
+.endif
+	xorq	\Z1, \Z1
+	btq	$63, \Z0
+	sbbq	$0, \Z1
+
+	// z += a_02 x b_0
+	movq	\A, %rdx
+	movq	16(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \B
+	// z -= a_12 x b_1
+	movq	\A, %rdx
+	movq	96(%rdx), %rdx
+	MULSUB	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z2, 16(\T0)
+.else
+	// z = (z + ((z2 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \P
+.endif
+	xorq	\Z2, \Z2
+	btq	$63, \Z1
+	sbbq	$0, \Z2
+
+	// z += a_03 x b_0
+	movq	\A, %rdx
+	movq	24(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \B
+	// z -= a_13 x b_1
+	movq	\A, %rdx
+	movq	104(%rdx), %rdx
+	MULSUB	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z3, 24(\T0)
+.else
+	// z = (z + ((z3 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
+	xorq	\Z3, \Z3
+	btq	$63, \Z2
+	sbbq	$0, \Z3
+
+	// z += a_04 x b_0
+	movq	\A, %rdx
+	movq	32(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+	// z -= a_14 x b_1
+	movq	\A, %rdx
+	movq	112(%rdx), %rdx
+	MULSUB	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z4, 32(\T0)
+.else
+	// z = (z + ((z4 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
+	xorq	\Z4, \Z4
+	btq	$63, \Z3
+	sbbq	$0, \Z4
+
+	// z += a_05 x b_0
+	movq	\A, %rdx
+	movq	40(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+	// z -= a_15 x b_1
+	movq	\A, %rdx
+	movq	120(%rdx), %rdx
+	MULSUB	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z5, 40(\T0)
+.else
+	// z = (z + ((z5 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+	xorq	\Z5, \Z5
+	btq	$63, \Z4
+	sbbq	$0, \Z5
+
+	// z += a_06 x b_0
+	movq	\A, %rdx
+	movq	48(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
+	// z -= a_16 x b_1
+	movq	\A, %rdx
+	movq	128(%rdx), %rdx
+	MULSUB	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z6, 48(\T0)
+.else
+	// z = (z + ((z6 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z6, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+.endif
+	xorq	\Z6, \Z6
+	btq	$63, \Z5
+	sbbq	$0, \Z6
+
+	// z += a_07 x b_0
+	movq	\A, %rdx
+	movq	56(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
+	// z -= a_17 x b_1
+	movq	\A, %rdx
+	movq	136(%rdx), %rdx
+	MULSUB	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z7, 56(\T0)
+.else
+	// z = (z + ((z7 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z7, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+	xorq	\Z7, \Z7
+	btq	$63, \Z6
+	sbbq	$0, \Z7
+
+	// z += a_08 x b_0
+	movq	\A, %rdx
+	movq	64(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
+	// z -= a_18 x b_1
+	movq	\A, %rdx
+	movq	144(%rdx), %rdx
+	MULSUB	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z8, 64(\T0)
+.else
+	// z = (z + ((z8 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z8, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+.endif
+	xorq	\Z8, \Z8
+	btq	$63, \Z7
+	sbbq	$0, \Z8
+
+	// z += a_09 x b_0
+	movq	\A, %rdx
+	movq	72(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \B
+	// z -= a_19 x b_1
+	movq	\A, %rdx
+	movq	152(%rdx), %rdx
+	MULSUB	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, 80+\B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z9, 72(\T0)
+.else
+	// z = (z + ((z9 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z9, %rdx, \T0
+	xorq	\T1, \T1
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P
+.endif
+
+	// Add p if the result is negative. Only adcx touches the flags, so SF
+	// keeps the sign through the chain.
+	testq	\Z8, \Z8
+	movq	$0, \T0
+	cmovs	p0(%rip), \T0
+	adcx	\T0, \Z10
+	movq	$0, \T1
+	cmovs	p1(%rip), \T1
+	adcx	\T1, \Z0
+	movq	$0, \T0
+	cmovs	p2(%rip), \T0
+	adcx	\T0, \Z1
+	movq	$0, \T1
+	cmovs	p3(%rip), \T1
+	adcx	\T1, \Z2
+	movq	$0, \T0
+	cmovs	p4(%rip), \T0
+	adcx	\T0, \Z3
+	movq	$0, \T1
+	cmovs	p5(%rip), \T1
+	adcx	\T1, \Z4
+	movq	$0, \T0
+	cmovs	p6(%rip), \T0
+	adcx	\T0, \Z5
+	movq	$0, \T1
+	cmovs	p7(%rip), \T1
+	adcx	\T1, \Z6
+	movq	$0, \T0
+	cmovs	p8(%rip), \T0
+	adcx	\T0, \Z7
+	movq	$0, \T1
+	cmovs	p9(%rip), \T1
+	adcx	\T1, \Z8
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z10, 80(\T0)
+	movq	\Z0, 88(\T0)
+	movq	\Z1, 96(\T0)
+	movq	\Z2, 104(\T0)
+	movq	\Z3, 112(\T0)
+	movq	\Z4, 120(\T0)
+	movq	\Z5, 128(\T0)
+	movq	\Z6, 136(\T0)
+	movq	\Z7, 144(\T0)
+	movq	\Z8, 152(\T0)
+.else
+	movq	\C, \T0
+	FINALC	\Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, 0(\T0)
+.endif
 .endm
 
-// r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
-.macro FP_RDCN_LOW C, R0, R1, R2, A, P
-	xorq	\R1, \R1
-	movq	$U0, %rcx
+.macro FP2_MUL1_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, P, RDC, C
+	// z += a_10 x b_0
+	movq	\A, %rdx
+	movq	80(%rdx), %rdx
+	xorq	\T1, \T1
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z0, 0(\T0)
+.else
+	// z = (z + ((z0 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T0
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, \P
+.endif
 
-	movq	0(\A), \R0
-	movq	\R0  , %rax
-	mulq	%rcx
-	movq	%rax , 0(\A)
-	mulq	0(\P)
-	addq	%rax , \R0
-	adcq	%rdx , \R1
-	xorq    \R2  , \R2
-	xorq    \R0  , \R0
+	// z += a_01 x b_1 + a_11 x b_0
+	xorq	\Z0, \Z0
+	movq	\A, %rdx
+	movq	8(%rdx), %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	88(%rdx), %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z1, 8(\T0)
+.else
+	// z = (z + ((z1 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, \T0
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \T0, \T1, \P
+.endif
 
-	RDCN0	0, 1, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 2, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 3, \R0, \R1, \R2, \A, \P
-	RDCN0	0, 4, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 5, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 6, \R0, \R1, \R2, \A, \P
-	RDCN0	0, 7, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 8, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	1, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	2, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	3, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	4, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	5, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	6, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	7, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	8, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	9, 9, \R0, \R1, \R2, \A, \P
-	addq	152(\A), \R1
-	movq	\R1, 152(\A)
+	// z += a_02 x b_1 + a_12 x b_0
+	xorq	\Z1, \Z1
+	movq	\A, %rdx
+	movq	16(%rdx), %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	96(%rdx), %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z2, 16(\T0)
+.else
+	// z = (z + ((z2 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, \T0
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \T0, \T1, \P
+.endif
 
-	movq	80(\A), %r11
-	movq	88(\A), %r12
-	movq	96(\A), %r13
-	movq	104(\A), %r14
-	movq	112(\A), %r15
-	movq	120(\A), %rcx
-	movq	128(\A), %rbp
-	movq	136(\A), %rdx
-	movq	144(\A), %r8
-	movq	152(\A), %r9
+	// z += a_03 x b_1 + a_13 x b_0
+	xorq	\Z2, \Z2
+	movq	\A, %rdx
+	movq	24(%rdx), %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	104(%rdx), %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z3, 24(\T0)
+.else
+	// z = (z + ((z3 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, \T0
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
 
-	subq	p0(%rip), %r11
-	sbbq	p1(%rip), %r12
-	sbbq	p2(%rip), %r13
-	sbbq	p3(%rip), %r14
-	sbbq	p4(%rip), %r15
-	sbbq	p5(%rip), %rcx
-	sbbq	p6(%rip), %rbp
-	sbbq	p7(%rip), %rdx
-	sbbq	p8(%rip), %r8
-	sbbq	p9(%rip), %r9
+	// z += a_04 x b_1 + a_14 x b_0
+	xorq	\Z3, \Z3
+	movq	\A, %rdx
+	movq	32(%rdx), %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	112(%rdx), %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z4, 32(\T0)
+.else
+	// z = (z + ((z4 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, \T0
+	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
 
-	cmovc	80(\A), %r11
-	cmovc	88(\A), %r12
-	cmovc	96(\A), %r13
-	cmovc	104(\A), %r14
-	cmovc	112(\A), %r15
-	cmovc	120(\A), %rcx
-	cmovc	128(\A), %rbp
-	cmovc	136(\A), %rdx
-	cmovc	144(\A), %r8
-	cmovc	152(\A), %r9
-	movq	%r11,0(\C)
-	movq	%r12,8(\C)
-	movq	%r13,16(\C)
-	movq	%r14,24(\C)
-	movq	%r15,32(\C)
-	movq	%rcx,40(\C)
-	movq	%rbp,48(\C)
-	movq	%rdx,56(\C)
-	movq	%r8,64(\C)
-	movq	%r9,72(\C)
+	// z += a_05 x b_1 + a_15 x b_0
+	xorq	\Z4, \Z4
+	movq	\A, %rdx
+	movq	40(%rdx), %rdx
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	120(%rdx), %rdx
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z5, 40(\T0)
+.else
+	// z = (z + ((z5 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, \T0
+	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+
+	// z += a_06 x b_1 + a_16 x b_0
+	xorq	\Z5, \Z5
+	movq	\A, %rdx
+	movq	48(%rdx), %rdx
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	128(%rdx), %rdx
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z6, 48(\T0)
+.else
+	// z = (z + ((z6 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z6, %rdx, \T0
+	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+.endif
+
+	// z += a_07 x b_1 + a_17 x b_0
+	xorq	\Z6, \Z6
+	movq	\A, %rdx
+	movq	56(%rdx), %rdx
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	136(%rdx), %rdx
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z7, 56(\T0)
+.else
+	// z = (z + ((z7 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z7, %rdx, \T0
+	MULADD	\Z7, \Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+
+	// z += a_08 x b_1 + a_18 x b_0
+	xorq	\Z7, \Z7
+	movq	\A, %rdx
+	movq	64(%rdx), %rdx
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	144(%rdx), %rdx
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z8, 64(\T0)
+.else
+	// z = (z + ((z8 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z8, %rdx, \T0
+	MULADD	\Z8, \Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+.endif
+
+	// z += a_09 x b_1 + a_19 x b_0
+	xorq	\Z8, \Z8
+	movq	\A, %rdx
+	movq	72(%rdx), %rdx
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, 80+\B
+	movq	\A, %rdx
+	movq	152(%rdx), %rdx
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \B
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z9, 72(\T0)
+.else
+	// z = (z + ((z9 x u0) mod 2^64) x p) / 2^64
+	movq	$U0, %rdx
+	mulx	\Z9, %rdx, \T0
+	MULADD	\Z9, \Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P
+.endif
+
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z10, 80(\T0)
+	movq	\Z0, 88(\T0)
+	movq	\Z1, 96(\T0)
+	movq	\Z2, 104(\T0)
+	movq	\Z3, 112(\T0)
+	movq	\Z4, 120(\T0)
+	movq	\Z5, 128(\T0)
+	movq	\Z6, 136(\T0)
+	movq	\Z7, 144(\T0)
+	movq	\Z8, 152(\T0)
+.else
+	movq	\C, \T0
+	FINALC	\Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, 0(\T0)
+.endif
 .endm

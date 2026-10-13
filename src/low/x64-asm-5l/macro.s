@@ -28,7 +28,6 @@
  *
  * Implementation of low-level prime field multiplication.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
@@ -52,6 +51,19 @@
 #define BAR	0xFA91822BBE91B750
 #define BARS	60
 #define BARJ	4
+#else
+#error "x64-asm-5l supports FP_PRIME = 315 or 317 only."
+#endif
+
+#if defined(__APPLE__)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
+#else
+#define cdecl(S) S
+#endif
+
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
 #endif
 
 .text
@@ -274,6 +286,7 @@
 	movq	\Z0, 0(%rdi)
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, %rcx
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
@@ -292,6 +305,7 @@
 	movq	\Z1, 8(%rdi)
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, %rcx
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
@@ -310,6 +324,7 @@
 	movq	\Z2, 16(%rdi)
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, %rcx
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
@@ -328,6 +343,7 @@
 	movq	\Z3, 24(%rdi)
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, %rcx
 	MULADD	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
@@ -346,6 +362,7 @@
 	movq	\Z4, 32(%rdi)
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, %rcx
 	MULADD	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P

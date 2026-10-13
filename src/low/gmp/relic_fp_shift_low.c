@@ -54,14 +54,15 @@ dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 }
 
 dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_rshift(c, a, RLC_FP_DIGS, 1);
+	/* GMP returns the bits shifted out in the top of the digit. */
+	return mpn_rshift(c, a, RLC_FP_DIGS, 1) >> (RLC_DIG - 1);
 }
 
 dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	dig_t carry = 0;
 	/* GMP requires the shift count to be nonzero. */
 	if (bits > 0) {
-		carry = mpn_rshift(c, a, RLC_FP_DIGS, bits);
+		carry = mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
 	} else {
 		dv_copy(c, a, RLC_FP_DIGS);
 	}

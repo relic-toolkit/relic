@@ -334,8 +334,36 @@ cdecl(fp_mul1_low):
 	ret
 
 cdecl(fp_muln_low):
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$FRAME, %rsp
+
+	movq	%rdi, CPTR
+	movq	%rsi, APTR
+	movq	$0, ZERO
+	movq	$-1, ONES
+	movq	$0, CARRY
+	.set	k, 0
+	.rept	RLC_FP_DIGS
+	movq	8*k(%rdx), %rax
+	movq	%rax, 8*k+BCPY
+	.set	k, k + 1
+	.endr
+
+	MULM	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax
+	FP_MULM_LOW	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 0
+
+	addq	$FRAME, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_mulm_low):
@@ -343,19 +371,26 @@ cdecl(fp_mulm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	subq 	$240, %rsp
+	subq	$FRAME, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdi, CPTR
+	movq	%rsi, APTR
+	movq	$0, ZERO
+	movq	$-1, ONES
+	movq	$0, CARRY
+	.set	k, 0
+	.rept	RLC_FP_DIGS
+	movq	8*k(%rdx), %rax
+	movq	%rax, 8*k+BCPY
+	.set	k, k + 1
+	.endr
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax
+	FP_MULM_LOW	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 1
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$240, %rsp
-
+	addq	$FRAME, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

@@ -29,7 +29,7 @@
  * @ingroup bn
  */
 
-#include "gmp.h"
+#include <gmp.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
@@ -41,4 +41,3 @@
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
-

@@ -84,7 +84,7 @@ __GMP_DECLSPEC mp_size_t __gmpn_hgcd_mul_matrix1_vector(
 		mp_size_t _i; \
 		for (_i = 0; _i < (mp_size_t)(n); _i++) (d)[_i] = (s)[_i]; \
 	} while (0)
-#define GP_CLZ(c, x)	((c) = __builtin_clzll((unsigned long long)(x)))
+#define GP_CLZ(c, x)	((c) = __builtin_clzll((unsigned long long)(x)) - (64 - GMP_NUMB_BITS))
 
 /* rp <- rp + qp * sp, returning the new limb count. */
 static mp_size_t gcdh_addmul(mp_ptr rp, mp_srcptr qp, mp_size_t qn,

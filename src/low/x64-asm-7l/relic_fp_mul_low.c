@@ -26,7 +26,6 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 
@@ -42,4 +41,3 @@
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
-

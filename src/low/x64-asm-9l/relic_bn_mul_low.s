@@ -30,13 +30,16 @@
  * @ingroup bn
  */
 
+#include "relic_bn_low.h"
+#include "macro.s"
+
 .text
-.global bn_smul_low
+.global cdecl(bn_smul_low)
 
 /**
  * c = rdi, a = rsi, sa = rdx, digit = rcx, size = RLC_FP_DIGS
  */
-bn_smul_low:
+cdecl(bn_smul_low):
     pushq   %r12
     pushq   %r13
     pushq   %r14

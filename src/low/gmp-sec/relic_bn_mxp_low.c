@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -18,31 +18,43 @@
  *
  * You should have received a copy of the GNU Lesser General Public or the
  * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
- * or <https://www.apache.org/licenses/>.
+ * or <https://www.apache.org/licenses/>
  */
 
 /**
  * @file
  *
- * Implementation of low-level prime field squaring functions.
+ * Implementation of low-level modular exponentiation.
  *
- * @version $Id: relic_fp_sqr_low.c 677 2011-03-05 22:19:43Z dfaranha $
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
 
-#include "relic_fp.h"
-#include "relic_fp_low.h"
+#include "relic_bn.h"
+#include "relic_bn_low.h"
+#include "relic_dv.h"
+#include "relic_util.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	fp_muln_low(c, a, a);
-}
+void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		const dig_t *m, size_t sm, dig_t u) {
+	mp_bitcnt_t enb = (mp_bitcnt_t)sb * RLC_DIG;
+	dig_t *s = RLC_ALLOCA(dig_t, sm + 1);
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_powm_itch(sm + 1, enb, sm));
+	(void)u;
 
-void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	fp_mulm_low(c, a, a);
+	/* GMP needs a positive base, so pass a + m, which is congruent to a. */
+	dv_zero(s, sm);
+	dv_copy(s, a, RLC_MIN(sa, sm));
+	s[sm] = mpn_add_n((mp_ptr)s, (mp_srcptr)s, (mp_srcptr)m, sm);
+
+	mpn_sec_powm((mp_ptr)c, (mp_srcptr)s, sm + 1, (mp_srcptr)b, enb,
+		(mp_srcptr)m, sm, (mp_ptr)t);
+	RLC_FREE(t);
+	RLC_FREE(s);
 }

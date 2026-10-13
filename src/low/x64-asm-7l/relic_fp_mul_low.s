@@ -26,235 +26,179 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
+ * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 
 #include "macro.s"
 
-.text
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
-.global fp_mul1_low
-.global fp_muln_low
-.global fp_mulm_low
+.text
+.global cdecl(fp_mul1_low)
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
 /*
  * Function: fp_mul1_low
  * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
  * Output: c = a * digit mod p, in constant time
  */
-fp_mul1_low:
+cdecl(fp_mul1_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
 	push	%rbx
-	subq	$128, %rsp
+	push	%rbp
+	push	%rdi
 
-	/* d = a * digit. */
-	mulxq	0(%rsi), %rax, %r8
-	movq	%rax, 0(%rsp)
-	mulxq	8(%rsi), %rax, %r9
-	addq	%r8, %rax
-	movq	%rax, 8(%rsp)
-	mulxq	16(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 16(%rsp)
-	mulxq	24(%rsi), %rax, %r9
-	adcq	%r8, %rax
-	movq	%rax, 24(%rsp)
-	mulxq	32(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 32(%rsp)
-	mulxq	40(%rsi), %rax, %r9
-	adcq	%r8, %rax
-	movq	%rax, 40(%rsp)
-	mulxq	48(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 48(%rsp)
-	adcq	$0, %r8
-	movq	%r8, 56(%rsp)
+	/* d = a * digit in r8-r15. */
+	mulxq	0(%rsi), %r8, %rax
+	mulxq	8(%rsi), %r9, %rbx
+	addq	%rax, %r9
+	mulxq	16(%rsi), %r10, %rax
+	adcq	%rbx, %r10
+	mulxq	24(%rsi), %r11, %rbx
+	adcq	%rax, %r11
+	mulxq	32(%rsi), %r12, %rax
+	adcq	%rbx, %r12
+	mulxq	40(%rsi), %r13, %rbx
+	adcq	%rax, %r13
+	mulxq	48(%rsi), %r14, %r15
+	adcq	%rbx, %r14
+	adcq	$0, %r15
 
 	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
 	 * floor(d / p). */
-	movq	(8 * BARJ)(%rsp), %rax
-	movq	(8 * BARJ + 8)(%rsp), %rdx
-	shrdq	$BARS, %rdx, %rax
+	movq	%r14, %rax
+	shrdq	$BARS, %r15, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	/* Subtract the low halves of q * p, keeping the high halves in t. */
+	/* Subtract the low halves of q * p, keeping the high halves. Since
+	 * d - q * p < 3p < 2^448, it is computed modulo 2^448 in r8-r14. */
 	movq	$P0, %rax
-	mulxq	%rax, %rax, %rcx
-	subq	%rax, 0(%rsp)
-	movq	%rcx, 64(%rsp)
+	mulxq	%rax, %rax, %rbx
+	subq	%rax, %r8
 	movq	$P1, %rax
 	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 8(%rsp)
-	movq	%rcx, 72(%rsp)
+	sbbq	%rax, %r9
 	movq	$P2, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 16(%rsp)
-	movq	%rcx, 80(%rsp)
+	mulxq	%rax, %rax, %rsi
+	sbbq	%rax, %r10
 	movq	$P3, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 24(%rsp)
-	movq	%rcx, 88(%rsp)
+	mulxq	%rax, %rax, %rdi
+	sbbq	%rax, %r11
 	movq	$P4, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 32(%rsp)
-	movq	%rcx, 96(%rsp)
+	mulxq	%rax, %rax, %rbp
+	sbbq	%rax, %r12
 	movq	$P5, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 40(%rsp)
-	movq	%rcx, 104(%rsp)
+	mulxq	%rax, %rax, %r15
+	sbbq	%rax, %r13
 	movq	$P6, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 48(%rsp)
-	movq	%rcx, 112(%rsp)
-	sbbq	$0, 56(%rsp)
+	mulxq	%rax, %rax, %rdx
+	sbbq	%rax, %r14
 
 	/* Subtract the high halves, leaving d - q * p below 3p. */
-	movq	64(%rsp), %rax
-	subq	%rax, 8(%rsp)
-	movq	72(%rsp), %rax
-	sbbq	%rax, 16(%rsp)
-	movq	80(%rsp), %rax
-	sbbq	%rax, 24(%rsp)
-	movq	88(%rsp), %rax
-	sbbq	%rax, 32(%rsp)
-	movq	96(%rsp), %rax
-	sbbq	%rax, 40(%rsp)
-	movq	104(%rsp), %rax
-	sbbq	%rax, 48(%rsp)
-	movq	112(%rsp), %rax
-	sbbq	%rax, 56(%rsp)
+	subq	%rbx, %r9
+	sbbq	%rcx, %r10
+	sbbq	%rsi, %r11
+	sbbq	%rdi, %r12
+	sbbq	%rbp, %r13
+	sbbq	%r15, %r14
 
 	/* Subtract p twice, keeping the difference when there is no borrow. */
 	.rept 2
-	movq	0(%rsp), %rax
+	movq	%r8, %rax
 	movq	$P0, %rdx
 	subq	%rdx, %rax
-	movq	%rax, 64(%rsp)
-	movq	8(%rsp), %rax
+	movq	%r9, %rbx
 	movq	$P1, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 72(%rsp)
-	movq	16(%rsp), %rax
+	sbbq	%rdx, %rbx
+	movq	%r10, %rcx
 	movq	$P2, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 80(%rsp)
-	movq	24(%rsp), %rax
+	sbbq	%rdx, %rcx
+	movq	%r11, %rsi
 	movq	$P3, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 88(%rsp)
-	movq	32(%rsp), %rax
+	sbbq	%rdx, %rsi
+	movq	%r12, %rdi
 	movq	$P4, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 96(%rsp)
-	movq	40(%rsp), %rax
+	sbbq	%rdx, %rdi
+	movq	%r13, %rbp
 	movq	$P5, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 104(%rsp)
-	movq	48(%rsp), %rax
+	sbbq	%rdx, %rbp
+	movq	%r14, %r15
 	movq	$P6, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 112(%rsp)
-	movq	56(%rsp), %rax
-	sbbq	$0, %rax
-	movq	%rax, 120(%rsp)
-	sbbq	%rbx, %rbx
-	notq	%rbx
-	movq	0(%rsp), %rax
-	movq	64(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 0(%rsp)
-	movq	8(%rsp), %rax
-	movq	72(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 8(%rsp)
-	movq	16(%rsp), %rax
-	movq	80(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 16(%rsp)
-	movq	24(%rsp), %rax
-	movq	88(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 24(%rsp)
-	movq	32(%rsp), %rax
-	movq	96(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 32(%rsp)
-	movq	40(%rsp), %rax
-	movq	104(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 40(%rsp)
-	movq	48(%rsp), %rax
-	movq	112(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 48(%rsp)
-	movq	56(%rsp), %rax
-	movq	120(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 56(%rsp)
+	sbbq	%rdx, %r15
+	cmovncq	%rax, %r8
+	cmovncq	%rbx, %r9
+	cmovncq	%rcx, %r10
+	cmovncq	%rsi, %r11
+	cmovncq	%rdi, %r12
+	cmovncq	%rbp, %r13
+	cmovncq	%r15, %r14
 	.endr
 
-	movq	0(%rsp), %rax
-	movq	%rax, 0(%rdi)
-	movq	8(%rsp), %rax
-	movq	%rax, 8(%rdi)
-	movq	16(%rsp), %rax
-	movq	%rax, 16(%rdi)
-	movq	24(%rsp), %rax
-	movq	%rax, 24(%rdi)
-	movq	32(%rsp), %rax
-	movq	%rax, 32(%rdi)
-	movq	40(%rsp), %rax
-	movq	%rax, 40(%rdi)
-	movq	48(%rsp), %rax
-	movq	%rax, 48(%rdi)
-	addq	$128, %rsp
+	pop	%rdi
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+
+	pop	%rbp
 	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
 	ret
 
-fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
-	ret
-
-fp_mulm_low:
+cdecl(fp_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	subq 	$128, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rcx
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
+    popq	%rbp
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
 
-	addq	$128, %rsp
+cdecl(fp_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push 	%rbx
+	push	%rbp
 
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
+
+    popq	%rbp
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret

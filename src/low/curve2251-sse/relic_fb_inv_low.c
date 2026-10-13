@@ -95,4 +95,8 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 		fb_mul(table[i], table[i], table[y]);
 	}
 	fb_sqr(c, table[len]);
+
+	for (i = 0; i <= len; i++) {
+		fb_free(table[i]);
+	}
 }

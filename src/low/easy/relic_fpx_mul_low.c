@@ -38,6 +38,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/* Defining FP2_ASM leaves out the Fp2 functions, so they can be replaced. */
+#ifndef FP2_ASM
+
 void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
@@ -97,6 +100,8 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 		dv2_free(t);
 	}
 }
+
+#endif
 
 void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];

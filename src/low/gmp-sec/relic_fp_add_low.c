@@ -53,10 +53,12 @@ dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[RLC_FP_DIGS];
 	dig_t carry = mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, RLC_FP_DIGS);
-	dig_t cond = dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, (mp_ptr)c,
-		(mp_srcptr)c, (mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	/* Keep c - p unless it borrowed without a carry from the addition. */
+	dig_t borrow = mpn_sub_n((mp_ptr)t, (mp_srcptr)c,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	dv_copy_sec(c, t, RLC_FP_DIGS, carry | (borrow ^ 1));
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
@@ -64,11 +66,12 @@ dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[RLC_FP_DIGS];
 	dig_t carry =
 		mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, 2 * RLC_FP_DIGS);
-	dig_t cond = dv_cmp(c + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, (mp_ptr)c + RLC_FP_DIGS,
-		(mp_srcptr)c + RLC_FP_DIGS, (mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	dig_t borrow = mpn_sub_n((mp_ptr)t, (mp_srcptr)c + RLC_FP_DIGS,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	dv_copy_sec(c + RLC_FP_DIGS, t, RLC_FP_DIGS, carry | (borrow ^ 1));
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, const dig_t digit) {
@@ -101,11 +104,19 @@ void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	if (fp_is_zero(a)) {
-		fp_zero(c);
-	} else {
-		mpn_sub_n((mp_ptr)c, (mp_srcptr)fp_prime_get(), (mp_srcptr)a,
-			RLC_FP_DIGS);
+	const dig_t *p = fp_prime_get();
+	dig_t t = 0, u = 0, mask;
+
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		t |= a[i];
+		u |= a[i] ^ p[i];
+	}
+	/* All ones unless a is 0 or p, in which case p - a is masked to zero. */
+	mask = (dig_t)0 - (dig_t)((t != 0) & (u != 0));
+
+	mpn_sub_n((mp_ptr)c, (mp_srcptr)p, (mp_srcptr)a, RLC_FP_DIGS);
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		c[i] &= mask;
 	}
 }
 
@@ -114,10 +125,11 @@ dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
+	rlc_align dig_t t[RLC_FP_DIGS];
 	dig_t carry = mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)a, RLC_FP_DIGS);
-	dig_t cond = dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, (mp_ptr)c, (mp_srcptr)c,
+	dig_t borrow = mpn_sub_n((mp_ptr)t, (mp_srcptr)c,
 		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	dv_copy_sec(c, t, RLC_FP_DIGS, carry | (borrow ^ 1));
 }
 
 void fp_hlvm_low(dig_t *c, const dig_t *a) {

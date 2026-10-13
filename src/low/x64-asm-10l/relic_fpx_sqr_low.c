@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,47 +24,48 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level extension field squaring functions.
  *
- * @&version $Id$
- * @ingroup fp
+ * @ingroup fpx
  */
 
-#include <gmp.h>
-
-#include "relic_fp.h"
-#include "relic_fp_low.h"
 #include "relic_core.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
+
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_sqr_low.c"
+
+#ifdef FP2_ASM
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+void fp2_sqrn_c0(fp_t c, const fp2_t a);
+void fp2_sqrn_c1(fp_t c, const fp2_t a);
+void fp2_sqrm_c0(fp_t c, const fp2_t a);
+void fp2_sqrm_c1(fp_t c, const fp2_t a);
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
-
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
-
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
-	}
-
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
+	fp2_sqrn_c0(c[0], a);
+	fp2_sqrn_c1(c[1], a);
 }
+
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {    
+	rlc_align dig_t t[RLC_FP_DIGS];
+
+	fp2_sqrm_c0(t, a);
+	fp2_sqrm_c1(c[1], a);
+	fp_copy(c[0], t);
+}
+
+#endif

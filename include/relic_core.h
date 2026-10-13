@@ -234,7 +234,7 @@ typedef struct _ctx_t {
 	fp_st conv;
 	/** Value of constant one in Montgomery form. */
 	fp_st one;
-	/** Value of constant for divstep-based inversion. */
+	/** Value of R^3 mod p for inversion by jump division steps. */
 	fp_st inv;
 	/** Square root of unity for square root extraction. */
 	fp_st srt;
@@ -465,6 +465,7 @@ typedef struct _ctx_t {
 	/** Integer part of the quadratic non-residue in the quadratic extension. */
 	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
+	fp_st fp2_p0[2];
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[4];
 	int frb3[3];

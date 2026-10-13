@@ -29,29 +29,35 @@
  * @ingroup bn
  */
 
-.text
-.global bn_srsh_low
+#include "relic_bn_low.h"
+#include "macro.s"
 
-bn_srsh_low:
+.text
+.global cdecl(bn_srsh_low)
+
+cdecl(bn_srsh_low):
+	/* The shift amount arrives in %rcx and the size is RLC_FP_DIGS + 1. */
 	movq	0(%rsi), %r8
+	xorq	%rax, %rax
+	shrd	%cl, %r8, %rax
 	movq	8(%rsi), %r9
+	shrd	%cl, %r9, %r8
+	movq	%r8, 0(%rdi)
 	movq	16(%rsi), %r10
+	shrd	%cl, %r10, %r9
+	movq	%r9, 8(%rdi)
 	movq	24(%rsi), %r11
-	movq	32(%rsi), %rax
-	movq	40(%rsi), %rcx
-	movq	48(%rsi), %rsi
-	shrd	$62, %r9, %r8
-	shrd	$62, %r10, %r9
-	shrd	$62, %r11, %r10
-	shrd	$62, %rax, %r11
-	shrd	$62, %rcx, %rax
-	shrd	$62, %rsi, %rcx
-	sar	    $62, %rsi
-	movq	%r8,0(%rdi)
-	movq	%r9,8(%rdi)
-	movq	%r10,16(%rdi)
-	movq	%r11,24(%rdi)
-	movq	%rax,32(%rdi)
-	movq	%rcx,40(%rdi)
-	movq	%rsi,48(%rdi)
+	shrd	%cl, %r11, %r10
+	movq	%r10, 16(%rdi)
+	movq	32(%rsi), %r8
+	shrd	%cl, %r8, %r11
+	movq	%r11, 24(%rdi)
+	movq	40(%rsi), %r9
+	shrd	%cl, %r9, %r8
+	movq	%r8, 32(%rdi)
+	movq	48(%rsi), %r10
+	shrd	%cl, %r10, %r9
+	movq	%r9, 40(%rdi)
+	sar		%cl, %r10
+	movq	%r10, 48(%rdi)
 	ret

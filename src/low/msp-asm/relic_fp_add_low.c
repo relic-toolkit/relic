@@ -52,15 +52,16 @@ void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	fp_dbl(c, a);
+	/* The basic versions, since the others may call these functions. */
+	fp_dbl_basic(c, a);
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	fp_sub(c, a, b);
+	fp_sub_basic(c, a, b);
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	fp_add(c, a, b);
+	fp_add_basic(c, a, b);
 }
 
 void fp_hlvd_low(dig_t *c, const dig_t *a) {

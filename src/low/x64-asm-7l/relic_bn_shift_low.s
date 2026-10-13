@@ -24,42 +24,50 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of the ASM multiple precision bit shifting functions.
  *
- * @ingroup fp
+ * @ingroup bn
  */
 
-#include "relic_dv_low.h"
-
+#include "relic_bn_low.h"
 #include "macro.s"
 
 .text
-
-.global cdecl(fp2_rdcn_low)
+.global cdecl(bn_srsh_low)
+.text
+.global cdecl(bn_srsh_low)
 
 /*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
+ * Function: bn_srsh_low
+ * Inputs: rdi = c, rsi = a, rdx = size = RLC_FP_DIGS + 1, rcx = 0 < bits < 64
+ * Output: c = a >> bits (arithmetic), returns the bits shifted out of a[0]
+ * in the most significant bits of the digit.
  */
-cdecl(fp2_rdcn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
-
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*RLC_DV_DIGS), %rsi
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
+cdecl(bn_srsh_low):
+	movq	0(%rsi), %r8
+	xorq	%rax, %rax
+	shrd	%cl, %r8, %rax
+	movq	8(%rsi), %r9
+	shrd	%cl, %r9, %r8
+	movq	%r8, 0(%rdi)
+	movq	16(%rsi), %r10
+	shrd	%cl, %r10, %r9
+	movq	%r9, 8(%rdi)
+	movq	24(%rsi), %r11
+	shrd	%cl, %r11, %r10
+	movq	%r10, 16(%rdi)
+	movq	32(%rsi), %r8
+	shrd	%cl, %r8, %r11
+	movq	%r11, 24(%rdi)
+	movq	40(%rsi), %r9
+	shrd	%cl, %r9, %r8
+	movq	%r8, 32(%rdi)
+	movq	48(%rsi), %r10
+	shrd	%cl, %r10, %r9
+	movq	%r9, 40(%rdi)
+	movq	56(%rsi), %r11
+	shrd	%cl, %r11, %r10
+	movq	%r10, 48(%rdi)
+	sar		%cl, %r11
+	movq	%r11, 56(%rdi)
 	ret

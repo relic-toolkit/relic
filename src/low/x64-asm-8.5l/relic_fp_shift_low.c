@@ -21,23 +21,28 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_dv_low.h"
+/**
+ * @file
+ *
+ * Implementation of the low-level prime field shifting functions.
+ *
+ * @ingroup bn
+ */
 
-#include "macro.s"
+#include <gmp.h>
 
-.global cdecl(fp2_rdcn_low)
+#include "relic_fp.h"
+#include "relic_fp_low.h"
 
-cdecl(fp2_rdcn_low):
-	push %r12
-	push %r13
-	push %r14
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
 
-	FP_RDCN_LOW %rdi, %rsi
-	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*RLC_DV_DIGS), %rsi
-	FP_RDCN_LOW %rdi, %rsi
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
+}
 
-	pop %r14
-	pop %r13
-	pop %r12
-	ret
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	/* GMP returns the bits shifted out in the top of the digit. */
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
+}

@@ -2806,6 +2806,8 @@
 #undef fp12_sqr_cyc_lazyr
 #undef fp12_sqr_pck_basic
 #undef fp12_sqr_pck_lazyr
+#undef fp12_cub_cyc_basic
+#undef fp12_cub_cyc_lazyr
 #undef fp12_test_cyc
 #undef fp12_conv_cyc
 #undef fp12_back_cyc
@@ -2853,6 +2855,8 @@
 #define fp12_sqr_cyc_lazyr 	RLC_PREFIX(fp12_sqr_cyc_lazyr)
 #define fp12_sqr_pck_basic 	RLC_PREFIX(fp12_sqr_pck_basic)
 #define fp12_sqr_pck_lazyr 	RLC_PREFIX(fp12_sqr_pck_lazyr)
+#define fp12_cub_cyc_basic 	RLC_PREFIX(fp12_cub_cyc_basic)
+#define fp12_cub_cyc_lazyr 	RLC_PREFIX(fp12_cub_cyc_lazyr)
 #define fp12_test_cyc 	RLC_PREFIX(fp12_test_cyc)
 #define fp12_conv_cyc 	RLC_PREFIX(fp12_conv_cyc)
 #define fp12_back_cyc 	RLC_PREFIX(fp12_back_cyc)
@@ -2988,6 +2992,8 @@
 #undef fp18_sqr_cyc_lazyr
 #undef fp18_sqr_pck_basic
 #undef fp18_sqr_pck_lazyr
+#undef fp18_cub_cyc_basic
+#undef fp18_cub_cyc_lazyr
 #undef fp18_test_cyc
 #undef fp18_conv_cyc
 #undef fp18_back_cyc
@@ -3035,6 +3041,8 @@
 #define fp18_sqr_cyc_lazyr 	RLC_PREFIX(fp18_sqr_cyc_lazyr)
 #define fp18_sqr_pck_basic 	RLC_PREFIX(fp18_sqr_pck_basic)
 #define fp18_sqr_pck_lazyr 	RLC_PREFIX(fp18_sqr_pck_lazyr)
+#define fp18_cub_cyc_basic 	RLC_PREFIX(fp18_cub_cyc_basic)
+#define fp18_cub_cyc_lazyr 	RLC_PREFIX(fp18_cub_cyc_lazyr)
 #define fp18_test_cyc 	RLC_PREFIX(fp18_test_cyc)
 #define fp18_conv_cyc 	RLC_PREFIX(fp18_conv_cyc)
 #define fp18_back_cyc 	RLC_PREFIX(fp18_back_cyc)
@@ -3169,6 +3177,8 @@
 #undef fp48_sqr_cyc_lazyr
 #undef fp48_sqr_pck_basic
 #undef fp48_sqr_pck_lazyr
+#undef fp48_cub_cyc_basic
+#undef fp48_cub_cyc_lazyr
 #undef fp48_test_cyc
 #undef fp48_conv_cyc
 #undef fp48_back_cyc
@@ -3215,6 +3225,8 @@
 #define fp48_sqr_cyc_lazyr 	RLC_PREFIX(fp48_sqr_cyc_lazyr)
 #define fp48_sqr_pck_basic 	RLC_PREFIX(fp48_sqr_pck_basic)
 #define fp48_sqr_pck_lazyr 	RLC_PREFIX(fp48_sqr_pck_lazyr)
+#define fp48_cub_cyc_basic 	RLC_PREFIX(fp48_cub_cyc_basic)
+#define fp48_cub_cyc_lazyr 	RLC_PREFIX(fp48_cub_cyc_lazyr)
 #define fp48_test_cyc 	RLC_PREFIX(fp48_test_cyc)
 #define fp48_conv_cyc 	RLC_PREFIX(fp48_conv_cyc)
 #define fp48_back_cyc 	RLC_PREFIX(fp48_back_cyc)

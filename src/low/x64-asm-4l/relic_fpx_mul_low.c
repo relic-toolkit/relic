@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -34,95 +34,61 @@
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
 
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_mul_low.c"
+
+#ifdef FP2_ASM
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
-	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
+void fp2_muln_c0(dv_t c, const fp2_t a, const fp2_t b);
+void fp2_muln_c1(dv_t c, const fp2_t a, const fp2_t b);
 
-	/* Karatsuba algorithm. */
+void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS];
 
-	/* t0 = a_0 * b_0, t1 = a_1 * b_1, t2 = a_2 * b_2. */
-	fp_muln_low(t0, a[0], b[0]);
-	fp_muln_low(t1, a[1], b[1]);
-	fp_muln_low(t2, a[2], b[2]);
-
-	/* t3 = (a_1 + a_2) * (b_1 + b_2). */
-#ifdef RLC_FP_ROOM
-	fp_addn_low(t3, a[1], a[2]);
-	fp_addn_low(t4, b[1], b[2]);
-#else
-	fp_addm_low(t3, a[1], a[2]);
-	fp_addm_low(t4, b[1], b[2]);
-#endif
-	fp_muln_low(t5, t3, t4);
-#ifdef RLC_FP_ROOM
-	fp_addc_low(t6, t1, t2);
-#else
-	fp_addc_low(t6, t1, t2);
-#endif
-	fp_subc_low(t4, t5, t6);
-	fp_addc_low(c[0], t0, t4);
-	for (int i = 1; i < fp_prime_get_cnr(); i++) {
-		fp_addc_low(c[0], c[0], t4);
-	}
-	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-		fp_subc_low(c[0], c[0], t4);
-	}
-
-#ifdef RLC_FP_ROOM
-	fp_addn_low(t4, a[0], a[1]);
-	fp_addn_low(t5, b[0], b[1]);
-#else
-	fp_addm_low(t4, a[0], a[1]);
-	fp_addm_low(t5, b[0], b[1]);
-#endif
-	fp_muln_low(t6, t4, t5);
-#ifdef RLC_FP_ROOM
-	fp_addc_low(t4, t0, t1);
-#else
-	fp_addc_low(t4, t0, t1);
-#endif
-	fp_subc_low(t4, t6, t4);
-	fp_addc_low(c[1], t4, t2);
-	for (int i = 1; i < fp_prime_get_cnr(); i++) {
-		fp_addc_low(c[1], c[1], t2);
-	}
-	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-		fp_subc_low(c[1], c[1], t2);
-	}
-
-#ifdef RLC_FP_ROOM
-	fp_addn_low(t5, a[0], a[2]);
-	fp_addn_low(t6, b[0], b[2]);
-#else
-	fp_addm_low(t5, a[0], a[2]);
-	fp_addm_low(t6, b[0], b[2]);
-#endif
-	fp_muln_low(t4, t5, t6);
-#ifdef RLC_FP_ROOM
-	fp_addc_low(t6, t0, t2);
-#else
-	fp_addc_low(t6, t0, t2);
-#endif
-	fp_subc_low(t5, t4, t6);
-	fp_addc_low(c[2], t5, t1);
+    fp2_muln_c0(t0, a, b);
+    fp2_muln_c1(t1, a, b);
+    dv_copy(c[0], t0, 2 * RLC_FP_DIGS);
+    dv_copy(c[1], t1, 2 * RLC_FP_DIGS);
 }
 
-void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
-	dv3_t t;
+/*
+ * The real part is accumulated as a signed value of RLC_FP_DIGS digits, so
+ * results in (-p, 2p) must fit in (-2^255, 2^255), which needs 2p < 2^255.
+ */
+#if FP_PRIME < 255
 
-	dv3_null(t);
+void fp2_mulm_c0(dv_t c, const fp2_t a, const fp2_t b);
+void fp2_mulm_c1(dv_t c, const fp2_t a, const fp2_t b);
 
-	RLC_TRY {
-		dv3_new(t);
-		fp3_muln_low(t, a, b);
-		fp3_rdcn_low(c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv3_free(t);
-	}
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
+    rlc_align dig_t t0[RLC_FP_DIGS];
+
+    fp2_mulm_c0(t0, a, b);
+    fp2_mulm_c1(c[1], a, b);
+    fp_copy(c[0], t0);
 }
+
+#else
+
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
+	dv2_t t;
+
+	fp2_muln_low(t, a, b);
+	fp2_rdcn_low(c, t);
+}
+
+#endif
+
+#endif

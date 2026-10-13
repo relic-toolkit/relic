@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2011 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,59 +24,48 @@
 /**
  * @file
  *
- * Interface of the low-level digit vector module.
+ * Implementation of the low-level extension field squaring functions.
  *
- * @ingroup dv
+ * @ingroup fpx
  */
 
-#ifndef RELIC_DV_LOW_H
-#define RELIC_DV_LOW_H
-
-#include "relic_bn_low.h"
-#include "relic_fb_low.h"
+#include "relic_core.h"
 #include "relic_fp_low.h"
+#include "relic_fpx_low.h"
+
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_sqr_low.c"
+
+#ifdef FP2_ASM
 
 /*============================================================================*/
-/* Constant definitions                                                       */
+/* Public definitions                                                         */
 /*============================================================================*/
 
-#ifdef ASM
+void fp2_sqrn_c0(fp_t c, const fp2_t a);
+void fp2_sqrn_c1(fp_t c, const fp2_t a);
+void fp2_sqrm_c0(fp_t c, const fp2_t a);
+void fp2_sqrm_c1(fp_t c, const fp2_t a);
 
-/**
- * Size in digits of a squaring result in a prime field.
- */
-#ifdef WITH_FP
-#define DV_FP	(2 * FP_DIGS + 1)
-#else
-#define DV_FP	(0)
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
+	fp2_sqrn_c0(c[0], a);
+	fp2_sqrn_c1(c[1], a);
+}
+
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {    
+	rlc_align dig_t t[RLC_FP_DIGS];
+
+	fp2_sqrm_c0(t, a);
+	fp2_sqrm_c1(c[1], a);
+	fp_copy(c[0], t);
+}
+
 #endif
-
-/**
- * Size in digits of a squaring result in a binary field.
- */
-#ifdef WITH_FB
-#define DV_FB	(2 * FB_DIGS)
-#else
-#define DV_FB	(0)
-#endif
-
-/**
- * Size in digits of a temporary vector.
- *
- * A temporary vector has enough size to store a multiplication/squaring/cubing
- * result in any finite field.
- */
-#if DV_FB > DV_FP
-#define RLC_DV_DIGS		DV_FB
-#else
-#define RLC_DV_DIGS		DV_FP
-#endif
-
-#if RLC_BN_SIZE > DV_DIGS
-#undef RLC_DV_DIGS
-#define RLC_DV_DIGS 	RLC_BN_SIZE
-#endif
-
-#endif /* ASM */
-
-#endif /* !RELIC_DV_LOW_H */

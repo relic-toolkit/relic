@@ -33,6 +33,10 @@
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
 
+/* Fp2 is specific to this representation, while Fp3 is the portable version. */
+#define FP2_ASM
+#include "../easy/relic_fpx_sqr_low.c"
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -40,41 +44,61 @@
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
-	/* t0 = (a0 + a1). */
-#if RLC_FP_ROOM
-	fp_addn_low(t0, a[0], a[1]);
-#else
-	fp_addm_low(t0, a[0], a[1]);
-#endif
-
-	/* t1 = (a0 - a1). */
-	fp_subm_low(t1, a[0], a[1]);
-
-	/* t1 = a0 - a1 * u^2. */
-	fp_dblm_low(t2, a[1]);
-	fp_dblm_low(t2, t2);
-	fp_subm_low(t1, t1, t2);
-
-	/* c1 = a0 * a1. */
-	fp_muln_low(c[1], a[0], a[1]);
-	/* c0 = a0^2 + a_1^2 * u^2. */
-	fp_muln_low(c[0], t0, t1);
-
-	/* c1 = 2 * a0 * a1. */
-#if RLC_FP_ROOM
-	fp_addd_low(c[1], c[1], c[1]);
-	fp_addd_low(t2, c[1], c[1]);
-	fp_addd_low(c[0], c[0], t2);
-#else
-	fp_addc_low(c[1], c[1], c[1]);
-	fp_addc_low(t2, c[1], c[1]);
-	fp_addc_low(c[0], c[0], t2);
-#endif
+	if (fp_prime_get_qnr() == -5) {
+		/* c_0 = (a_0 + a_1) * (a_0 - 5 * a_1) + 4 * a_0 * a_1. */
+		/* t0 = (a0 + a1). */
+		fp_addm_low(t0, a[0], a[1]);
+		/* t1 = a0 - 5 * a1. */
+		fp_subm_low(t1, a[0], a[1]);
+		fp_dblm_low(t2, a[1]);
+		fp_dblm_low(t2, t2);
+		fp_subm_low(t1, t1, t2);
+		/* c1 = a0 * a1. */
+		fp_muln_low(c[1], a[0], a[1]);
+		/* c0 = (a0 + a1) * (a0 - 5 * a1). */
+		fp_muln_low(c[0], t0, t1);
+		/* c1 = 2 * a0 * a1, c0 = c0 + 2 * c1. */
+		fp_addc_low(c[1], c[1], c[1]);
+		fp_addc_low(t2, c[1], c[1]);
+		fp_addc_low(c[0], c[0], t2);
+	} else {
+		/* c_0 = a_0^2 + u^2 * a_1^2, c_1 = 2 * a_0 * a_1. */
+		fp_muln_low(c[0], a[0], a[0]);
+		fp_muln_low(t0, a[1], a[1]);
+		for (int i = 0; i > fp_prime_get_qnr(); i--) {
+			fp_subc_low(c[0], c[0], t0);
+		}
+		for (int i = 0; i < fp_prime_get_qnr(); i++) {
+			fp_addc_low(c[0], c[0], t0);
+		}
+		fp_dblm_low(t1, a[0]);
+		fp_muln_low(c[1], t1, a[1]);
+	}
 	/* c = c0 + c1 * u. */
 }
 
 void fp2_sqrm_low(fp2_t c, const fp2_t a) {
+	rlc_align dig_t t0[RLC_FP_DIGS], t1[RLC_FP_DIGS], t2[RLC_FP_DIGS];
 	rlc_align dv2_t t;
+
+	if (fp_prime_get_qnr() == -5) {
+		/* fp_mulm_low() takes products below p * 2^576, so the unreduced sum
+		 * t0 < 2p and the double t2 < 2p are valid inputs. */
+		/* t0 = a0 + a1, t1 = a0 - 5 * a1. */
+		fp_addn_low(t0, a[0], a[1]);
+		fp_subm_low(t1, a[0], a[1]);
+		fp_dblm_low(t2, a[1]);
+		fp_dblm_low(t2, t2);
+		fp_subm_low(t1, t1, t2);
+		/* c1 = 2 * a0 * a1. */
+		fp_dbln_low(t2, a[0]);
+		fp_mulm_low(c[1], t2, a[1]);
+		/* c0 = (a0 + a1) * (a0 - 5 * a1) + 2 * c1. */
+		fp_mulm_low(c[0], t0, t1);
+		fp_dblm_low(t2, c[1]);
+		fp_addm_low(c[0], c[0], t2);
+		return;
+	}
 
 	dv2_null(t);
 
@@ -86,87 +110,5 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		dv2_free(t);
-	}
-}
-
-void fp3_sqrn_low(dv3_t c, const fp3_t a) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
-	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS];
-
-	/* t0 = a_0^2. */
-	fp_sqrn_low(t0, a[0]);
-
-	/* t1 = 2 * a_1 * a_2. */
-#ifdef RLC_FP_ROOM
-	fp_dbln_low(t2, a[1]);
-#else
-	fp_dblm_low(t2, a[1]);
-#endif
-
-	fp_muln_low(t1, t2, a[2]);
-
-	/* t3 = (a_0 + a_2 + a_1)^2, t4 = (a_0 + a_2 - a_1)^2. */
-#ifdef RLC_FP_ROOM
-	fp_addn_low(t3, a[0], a[2]);
-	fp_addn_low(t4, t3, a[1]);
-#else
-	fp_addm_low(t3, a[0], a[2]);
-	fp_addm_low(t4, t3, a[1]);
-#endif
-	fp_subm_low(t2, t3, a[1]);
-	fp_sqrn_low(t3, t4);
-	fp_sqrn_low(t4, t2);
-
-	/* t2 = a_2^2. */
-	fp_sqrn_low(t2, a[2]);
-
-	/* t4 = (t4 + t3)/2. */
-#ifdef RLC_FP_ROOM
-	fp_addd_low(t4, t4, t3);
-#else
-	fp_addc_low(t4, t4, t3);
-#endif
-	fp_hlvd_low(t4, t4);
-
-	/* t3 = t3 - t4 - t1. */
-	fp_subc_low(t3, t3, t4);
-	fp_subc_low(t3, t3, t1);
-
-	/* c_2 = t4 - t0 - t2. */
-	fp_subc_low(c[2], t4, t0);
-	fp_subc_low(c[2], c[2], t2);
-
-	/* c_0 = t0 + t1 * B. */
-	fp_addc_low(c[0], t0, t1);
-	for (int i = 1; i < fp_prime_get_cnr(); i++) {
-		fp_addc_low(c[0], c[0], t1);
-	}
-	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-		fp_subc_low(c[0], c[0], t1);
-	}
-
-	/* c_1 = t3 + t2 * B. */
-	fp_addc_low(c[1], t3, t2);
-	for (int i = 1; i < fp_prime_get_cnr(); i++) {
-		fp_addc_low(c[1], c[1], t2);
-	}
-	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-		fp_subc_low(c[1], c[1], t2);
-	}
-}
-
-void fp3_sqrm_low(fp3_t c, const fp3_t a) {
-	rlc_align dv3_t t;
-
-	dv3_null(t);
-
-	RLC_TRY {
-		dv3_new(t);
-		fp3_sqrn_low(t, a);
-		fp3_rdcn_low(c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv3_free(t);
 	}
 }

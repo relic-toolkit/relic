@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level binary field bit shifting functions.
+ * Implementation of the low-level multiple precision addition and subtraction
+ * functions.
  *
  * @ingroup bn
  */
@@ -81,7 +82,7 @@ bn_addn_low:
 
 	clc
 	tst		r18
-	breq	bn_add1_end
+	breq	bn_addn_end
 
 bn_addn_loop:
 	ld		r23, x+
@@ -110,7 +111,7 @@ bn_sub1_low:
 	sbc		r23, r20
 	st		z+, r23
 	dec		r18
-	breq	bn_add1_end
+	breq	bn_sub1_end
 
 bn_sub1_loop:
 	ld		r23, x+
@@ -135,7 +136,7 @@ bn_subn_low:
 
 	clc
 	tst		r18
-	breq	bn_add1_end
+	breq	bn_subn_end
 
 bn_subn_loop:
 	ld		r23, x+

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,27 +24,59 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field modular reduction functions.
+ * Implementation of the low-level extension field multiplication functions.
  *
  * @ingroup fpx
  */
 
 #include "relic_core.h"
+#include "relic_bn_low.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_mul_low.c"
+
+#ifdef FP2_ASM
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_rdcn_low(fp3_t c, dv3_t a) {
-#if FP_RDC == MONTY
-	fp_rdcn_low(c[0], a[0]);
-	fp_rdcn_low(c[1], a[1]);
-	fp_rdcn_low(c[2], a[2]);
-#else
-	fp_rdc(c[0], a[0]);
-	fp_rdc(c[1], a[1]);
-	fp_rdc(c[2], a[2]);
-#endif
+void fp2_muln_c0(dv_t c, const fp2_t a, const fp2_t b);
+void fp2_muln_c1(dv_t c, const fp2_t a, const fp2_t b);
+
+void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS];
+
+    fp2_muln_c0(t0, a, b);
+    fp2_muln_c1(t1, a, b);
+    dv_copy(c[0], t0, 2 * RLC_FP_DIGS);
+    dv_copy(c[1], t1, 2 * RLC_FP_DIGS);
 }
+
+/*
+ * The real part is accumulated as a signed value of RLC_FP_DIGS digits, so
+ * results in (-p, 2p) must fit in (-2^447, 2^447), which needs 2p < 2^447.
+ * This holds for both 446-bit primes.
+ */
+void fp2_mulm_c0(dv_t c, const fp2_t a, const fp2_t b);
+void fp2_mulm_c1(dv_t c, const fp2_t a, const fp2_t b);
+
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
+    rlc_align dig_t t0[RLC_FP_DIGS];
+
+    fp2_mulm_c0(t0, a, b);
+    fp2_mulm_c1(c[1], a, b);
+    fp_copy(c[0], t0);
+}
+
+#endif

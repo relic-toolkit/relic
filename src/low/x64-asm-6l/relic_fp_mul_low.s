@@ -39,16 +39,16 @@
  */
 
 .text
-.global fp_mul1_low
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_mul1_low)
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
 /*
  * Function: fp_mul1_low
  * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
  * Output: c = a * digit mod p, in constant time
  */
-fp_mul1_low:
+cdecl(fp_mul1_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -154,7 +154,7 @@ fp_mul1_low:
 	pop	%r12
 	ret
 
-fp_muln_low:
+cdecl(fp_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -164,7 +164,7 @@ fp_muln_low:
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
     popq	%rbx
     popq	%r15
@@ -173,7 +173,7 @@ fp_muln_low:
     popq	%r12
     ret
 
-fp_mulm_low:
+cdecl(fp_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -183,7 +183,7 @@ fp_mulm_low:
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
 
     popq	%rbx
     popq	%r15

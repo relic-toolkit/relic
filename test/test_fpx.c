@@ -4425,6 +4425,39 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("cyclotomic cubing is correct") {
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_sqr(b, a);
+			fp12_mul(b, b, a);
+			fp12_cub_cyc(c, a);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			fp12_cub_cyc(a, a);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+		TEST_CASE("basic cyclotomic cubing is correct") {
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_cub_cyc(b, a);
+			fp12_cub_cyc_basic(c, a);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced cyclotomic cubing is correct") {
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_cub_cyc(b, a);
+			fp12_cub_cyc_lazyr(c, a);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			fp12_cub_cyc_lazyr(a, a);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
 #if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
 			fp12_rand(a);
@@ -4654,6 +4687,12 @@ static int exponentiation12(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp12_exp(c, a, d);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			/* Higher powers agree with repeated Frobenius. */
+			for (int j = 2; j < 12; j++) {
+				fp12_frb(b, b, 1);
+				fp12_frb(c, a, j);
+				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5867,6 +5906,39 @@ static int cyclotomic18(void) {
 			fp18_sqr_cyc(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("cyclotomic cubing is correct") {
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_sqr(b, a);
+			fp18_mul(b, b, a);
+			fp18_cub_cyc(c, a);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			fp18_cub_cyc(a, a);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+		TEST_CASE("basic cyclotomic cubing is correct") {
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_cub_cyc(b, a);
+			fp18_cub_cyc_basic(c, a);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced cyclotomic cubing is correct") {
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_cub_cyc(b, a);
+			fp18_cub_cyc_lazyr(c, a);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			fp18_cub_cyc_lazyr(a, a);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {
@@ -7377,6 +7449,39 @@ static int cyclotomic48(void) {
 			fp48_sqr_cyc(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("cyclotomic cubing is correct") {
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_sqr(b, a);
+			fp48_mul(b, b, a);
+			fp48_cub_cyc(c, a);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			fp48_cub_cyc(a, a);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+		TEST_CASE("basic cyclotomic cubing is correct") {
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_cub_cyc(b, a);
+			fp48_cub_cyc_basic(c, a);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced cyclotomic cubing is correct") {
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_cub_cyc(b, a);
+			fp48_cub_cyc_lazyr(c, a);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			fp48_cub_cyc_lazyr(a, a);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 		TEST_CASE("basic cyclotomic squaring is correct") {

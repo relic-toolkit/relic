@@ -699,12 +699,18 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_dbl(R, P)		RLC_CAT(RLC_G2_LOWER, dbl)(R, P)
 
 /**
- * Squares a G_T element. Computes C = A^2.
+ * Squares a G_T element. Computes C = A^2. Elements of G_T lie in the
+ * cyclotomic subgroup, so the cheaper cyclotomic squaring is used when the
+ * extension field has one.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the element to square.
  */
+#if FP_PRIME < 1536
+#define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr_cyc)(C, A)
+#else
 #define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr)(C, A)
+#endif
 
 /**
  * Normalizes an element of G_1.
