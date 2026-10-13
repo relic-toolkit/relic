@@ -613,8 +613,10 @@ typedef iso2_st *iso2_t;
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
 #elif EP_MUL == TWNAF
 #define ep2_mul(R, P, K)		ep2_mul_twnaf(R, P, K)
-#elif EP_MUL == LWREG || EP_MUL == TWREG
+#elif EP_MUL == LWREG
 #define ep2_mul(R, P, K)		ep2_mul_lwreg(R, P, K)
+#elif EP_MUL == TWREG
+#define ep2_mul(R, P, K)		ep2_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -1462,6 +1464,19 @@ void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep2_mul_twnaf(ep2_t r, const ep2_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a quadratic extension by an
+ * integer using two regular tau-adic expansions and complete formulas, in
+ * constant time and without exceptions, with tau = 1 - w for the cube root of
+ * unity w of the endomorphism and the decomposition along psi. Curves where
+ * psi^2 does not act as a unit use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_twreg(ep2_t r, const ep2_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.

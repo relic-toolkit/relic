@@ -150,22 +150,26 @@ TMPL_EP_MUL_TW_TAB(ep2, fp2);
 
 TMPL_EP_MUL_TW_NAF(ep2, fp2);
 
+TMPL_EP_MUL_TW_REG(ep2, fp2);
+
 /**
- * Multiplies a point by an integer using two tau-adic NAFs, when psi^2 acts
- * on the point as a unit u of Z[w]: the decomposition
- * k = k0 + k1 * psi + k2 * psi^2 + k3 * psi^3 regroups as
+ * Multiplies a point by an integer using two tau-adic NAFs or two regular
+ * tau-adic expansions, when psi^2 acts on the point as a unit u of Z[w]: the
+ * decomposition k = k0 + k1 * psi + k2 * psi^2 + k3 * psi^3 regroups as
  * (k0 + k2 * u) + (k1 + k3 * u) * psi.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
  * @param[in] k				- the integer.
+ * @param[in] reg			- the flag for the regular method.
  * @return RLC_OK if psi^2 acts as a unit, RLC_ERR otherwise.
  */
-static int ep2_mul_twnaf_imp(ep2_t r, const ep2_t p, const bn_t k) {
+static int ep2_mul_tw_imp(ep2_t r, const ep2_t p, const bn_t k, int reg) {
 	/* The units (-1)^(j / 3) * w^(j % 3) as u0 + u1 * w. */
 	const int u0[6] = { 1, 0, -1, -1, 0, 1 }, u1[6] = { 0, 1, -1, 0, -1, 1 };
-	int8_t naf[2][RLC_FP_BITS + 1];
-	size_t len[2] = { RLC_FP_BITS + 1, RLC_FP_BITS + 1 };
+	const int s = (reg ? 6 : 3);
+	int8_t c[2], naf[2][RLC_FP_BITS + 1];
+	size_t l, len[2] = { RLC_FP_BITS + 1, RLC_FP_BITS + 1 };
 	int j, result = RLC_ERR;
 	bn_t n, x, _k[4], a, b;
 	fp2_t beta;
@@ -194,7 +198,7 @@ static int ep2_mul_twnaf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 		fp2_zero(beta);
 		fp_copy(beta[0], ep_curve_get_beta());
-		ep2_tw_tab(t[0], p, 3, beta);
+		ep2_tw_tab(t[0], p, s, beta);
 
 		/* Find the unit (-1)^s * w^e with psi^2(P) = (beta^e * x, (-1)^s * y),
 		 * using w^2(x) = -x - w(x). */
@@ -216,6 +220,12 @@ static int ep2_mul_twnaf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		if (j >= 0) {
 			ep2_curve_get_ord(n);
 			ep_curve_frbase(x);
+			/* The subscalars of the Frobenius decomposition are below |x| for
+			 * BLS curves and below 2^3 * |x| for BN curves, so the regrouped
+			 * coefficients are below 2^l in absolute value. The regular
+			 * expansions need more than 2 * (l + 0.06) / log2(27) digits. */
+			l = bn_bits(x) + (ep_curve_is_pairf() == EP_BN ? 4 : 1);
+			len[0] = len[1] = (20000 * l + 1200) / 47549 + 1;
 			bn_mod(_k[0], k, n);
 			bn_rec_frb(_k, 4, _k[0], x, n, ep_curve_is_pairf() == EP_BN);
 			for (int i = 0; i < 2; i++) {
@@ -232,16 +242,25 @@ static int ep2_mul_twnaf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 				} else if (u1[j] < 0) {
 					bn_neg(b, _k[i + 2]);
 				}
-				bn_rec_etnaf(naf[i], &len[i], a, b);
+				if (reg) {
+					bn_rec_retnaf(naf[i], &c[i], len[i], a, b);
+				} else {
+					len[i] = RLC_FP_BITS + 1;
+					bn_rec_etnaf(naf[i], &len[i], a, b);
+				}
 			}
 			/* psi commutes with w and tau, so it maps the table of P to one
 			 * of psi(P), keeping the points affine. */
 			for (int f = 0; f < 2; f++) {
-				for (int i = 0; i < 6; i++) {
+				for (int i = 0; i < 2 * s; i++) {
 					ep2_psi(t[1][f][i], t[0][f][i]);
 				}
 			}
-			ep2_tw_naf(r, t, naf, len, 2);
+			if (reg) {
+				ep2_tw_reg(r, t, naf, c, len[0], 2);
+			} else {
+				ep2_tw_naf(r, t, naf, len, 2);
+			}
 			result = RLC_OK;
 		}
 	}
@@ -279,8 +298,20 @@ void ep2_mul_twnaf(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 
 	if (!ep_curve_is_endom() || ep2_curve_opt_a() != RLC_ZERO ||
-			ep2_mul_twnaf_imp(r, p, k) != RLC_OK) {
+			ep2_mul_tw_imp(r, p, k, 0) != RLC_OK) {
 		ep2_mul_lwnaf(r, p, k);
+	}
+}
+
+void ep2_mul_twreg(ep2_t r, const ep2_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
+	if (!ep_curve_is_endom() || ep2_curve_opt_a() != RLC_ZERO ||
+			ep2_mul_tw_imp(r, p, k, 1) != RLC_OK) {
+		ep2_mul_lwreg(r, p, k);
 	}
 }
 

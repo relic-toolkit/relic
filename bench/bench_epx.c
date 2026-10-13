@@ -577,6 +577,12 @@ static void arith2(void) {
 		BENCH_ADD(ep2_mul_twnaf(q, p, k));
 	} BENCH_END;
 
+	BENCH_RUN("ep2_mul_twreg") {
+		bn_rand_mod(k, n);
+		ep2_rand(p);
+		BENCH_ADD(ep2_mul_twreg(q, p, k));
+	} BENCH_END;
+
 	BENCH_RUN("ep2_map_basic") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);

@@ -1195,6 +1195,30 @@ static int tau2(void) {
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("regular tau-adic point multiplication is correct") {
+			bn_zero(k);
+			ep2_mul_twreg(r, p, k);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_rand(p);
+			bn_set_dig(k, 1);
+			ep2_mul_twreg(r, p, k);
+			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
+			ep2_mul_twreg(r, p, n);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep2_mul_lwreg(q, p, k);
+			ep2_mul_twreg(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep2_mul_twreg(r, p, k);
+			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_sub_dig(k, n, 1);
+			ep2_mul_twreg(r, p, k);
+			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
