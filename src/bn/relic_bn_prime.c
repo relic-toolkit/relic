@@ -558,19 +558,30 @@ void bn_gen_prime_basic(bn_t a, size_t bits) {
 }
 
 void bn_gen_prime_safep(bn_t a, size_t bits) {
+	/* The smallest safe prime, 5, has three bits. */
+	if (bits < 3) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	while (1) {
 		do {
 			bn_rand(a, RLC_POS, bits);
 		} while (bn_bits(a) != bits);
-		/* Check if (a - 1)/2 is prime. */
-		bn_sub_dig(a, a, 1);
+		/* Make a = 3 mod 4, so that (a - 1)/2 is odd and a keeps its length
+		 * when rebuilt below. */
+		bn_set_bit(a, 0, 1);
+		bn_set_bit(a, 1, 1);
+		/* Trial divide both a and (a - 1)/2 before any expensive test. */
+		if (!bn_is_prime_basic(a)) {
+			continue;
+		}
 		bn_rsh(a, a, 1);
-		if (bn_is_prime(a)) {
+		if (bn_is_prime_basic(a) && bn_is_prime(a)) {
 			/* Restore a. */
 			bn_lsh(a, a, 1);
 			bn_add_dig(a, a, 1);
 			if (bn_is_prime(a)) {
-				/* Should be prime now. */
 				return;
 			}
 		}
@@ -588,11 +599,12 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 		bn_new_all(r, s, t);
 
 		do {
-			do {
-				/* Generate two large primes r and s. */
-				bn_rand(s, RLC_POS, bits / 2 - RLC_DIG / 2);
-				bn_rand(t, RLC_POS, bits / 2 - RLC_DIG / 2);
-			} while (!bn_is_prime(s) || !bn_is_prime(t));
+			/* Generate two large primes s and t, each on its own, since
+			 * retrying both until both are prime squares the number of
+			 * candidates. The basic method avoids recursing through
+			 * bn_gen_prime() when it selects this function. */
+			bn_gen_prime_basic(s, bits / 2 - RLC_DIG / 2);
+			bn_gen_prime_basic(t, bits / 2 - RLC_DIG / 2);
 			found = 1;
 			bn_rand(a, RLC_POS, bits / 2 - bn_bits(t) - 1);
 			i = a->dp[0];
