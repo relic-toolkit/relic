@@ -38,7 +38,15 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#ifdef FP_QNRES
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+#ifdef FP2_ASM
 
 void fp2_muln_c0(dv_t c, const fp2_t a, const fp2_t b);
 void fp2_muln_c1(dv_t c, const fp2_t a, const fp2_t b);
@@ -119,7 +127,7 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 
 #endif
 
-#if !defined(FP_QNRES) || FP_PRIME >= 383
+#if !defined(FP2_ASM) || FP_PRIME >= 383
 
 void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dv2_t t;

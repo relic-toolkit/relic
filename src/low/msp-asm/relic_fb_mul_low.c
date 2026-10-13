@@ -49,6 +49,7 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	}
 	if (digit == 1) {
 		dv_copy(c, a, RLC_FB_DIGS);
+		c[RLC_FB_DIGS] = 0;
 		return;
 	}
 

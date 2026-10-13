@@ -40,19 +40,70 @@
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
+ *
+ * Computes (a mod 2^768 + q x p) / 2^768 + floor(a / 2^768) for a < pR, which
+ * is below 2p. The first term stays below 2^768 at each step, so no carry
+ * leaves the 13-word accumulator.
  */
 cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	leaq 	p0(%rip), %rbx
+	subq	$FRAME, %rsp
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+	movq	%rdi, CPTR
+	movq	$0, ZERO
+	movq	$-1, ONES
+	xorq	%rdi, %rdi
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rbx
+	movq	72(%rsi), %rbp
+	movq	80(%rsi), %rax
+	movq	88(%rsi), %rcx
+	MULRDC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, , %rdi, p0(%rip)
+	MULRDC	%r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, , %rdi, p0(%rip)
+	MULRDC	%r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, , %rdi, p0(%rip)
+	MULRDC	%r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, , %rdi, p0(%rip)
+	MULRDC	%r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, %r11, , %rdi, p0(%rip)
+	MULRDC	%r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, %r11, %r12, , %rdi, p0(%rip)
+	MULRDC	%r14, %r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, %r11, %r12, %r13, , %rdi, p0(%rip)
+	MULRDC	%r15, %rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, , %rdi, p0(%rip)
+	MULRDC	%rbx, %rbp, %rax, %rcx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, , %rdi, p0(%rip)
+	MULRDC	%rbp, %rax, %rcx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, , %rdi, p0(%rip)
+	MULRDC	%rax, %rcx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, , %rdi, p0(%rip)
+	MULRDC	%rcx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, , %rdi, p0(%rip)
 
+	addq	96(%rsi), %r8
+	adcq	104(%rsi), %r9
+	adcq	112(%rsi), %r10
+	adcq	120(%rsi), %r11
+	adcq	128(%rsi), %r12
+	adcq	136(%rsi), %r13
+	adcq	144(%rsi), %r14
+	adcq	152(%rsi), %r15
+	adcq	160(%rsi), %rbx
+	adcq	168(%rsi), %rbp
+	adcq	176(%rsi), %rax
+	adcq	184(%rsi), %rcx
+#if FP_PRIME == 768
+	movq	$0, %rdi
+	adcq	$0, %rdi
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %rdi
+#else
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx
+#endif
+
+	addq	$FRAME, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

@@ -50,20 +50,22 @@ void fp_rdcs_p1_low(dig_t *c, const dig_t *a, const dig_t *m);
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 	/* Only some primes have a reduction in assembly. */
 	switch (fp_param_get()) {
+#if FP_PRIME == 160 || FP_PRIME == 256
 #if FP_PRIME == 160
 		case SECG_160D:
-#elif FP_PRIME == 256
+#else
 		case SECG_256:
 #endif
 			fp_rdcs_k1_low(c, a, m);
 			break;
 #if FP_PRIME == 160
 		case SECG_160:
-#elif FP_PRIME == 256
+#else
 		case NIST_256:
 #endif
 			fp_rdcs_p1_low(c, a, m);
 			break;
+#endif
 		default:
 			fp_rdc_quick(c, (dig_t *)a);
 			break;

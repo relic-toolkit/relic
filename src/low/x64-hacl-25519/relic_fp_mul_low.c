@@ -36,6 +36,10 @@
 #include "relic_bn_low.h"
 #include "relic_util.h"
 
+#if FP_PRIME != 255 || FP_RDC == MONTY
+#error "This backend only implements the Curve25519 prime without Montgomery form"
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/

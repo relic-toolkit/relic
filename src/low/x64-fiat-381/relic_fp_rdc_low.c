@@ -41,7 +41,9 @@
 #include "bls12_381_q_64.c"
 
 /*
- * The function fiat_bls12_381_q_lazyred multiplies two field elements in the Montgomery domain.
+ * The function fiat_bls12_381_q_lazyred reduces a double-precision value in the
+ * Montgomery domain. It was adapted by hand from generated code, so the bounds
+ * below are not verified.
  * Postconditions:
  *   0 ≤ eval arg1 < m
  *
@@ -50,7 +52,7 @@
  * Output Bounds:
  *   out1: None
  */
-void fiat_bls12_381_q_lazyred(uint64_t out1[6], uint64_t arg1[12]) {
+static void fiat_bls12_381_q_lazyred(uint64_t out1[6], uint64_t arg1[12]) {
   uint64_t x1;
   uint64_t x2;
   uint64_t x3;

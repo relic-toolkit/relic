@@ -37,7 +37,15 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#ifdef FP_QNRES
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && ALLOC == AUTO
+#define FP2_ASM
+#endif
+
+#ifdef FP2_ASM
 
 void fp2_sqrn_c0(fp_t c, const fp2_t a);
 void fp2_sqrn_c1(fp_t c, const fp2_t a);

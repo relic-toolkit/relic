@@ -79,6 +79,11 @@ fp_rdcn_low:
     mov r14,r15
     mov r11,r14
 
+/* The sparse reductions hardcode the words of the BN-158 and BN-254 primes. */
+#if FP_RDC == MONTY && FP_PRIME != 158 && FP_PRIME != 254
+#error "Montgomery reduction in assembly only supports BN-158 and BN-254"
+#endif
+
 #if FP_PRIME <= 160 && FP_PRIME > (160-16)
 
 #ifdef MSP430X2
@@ -187,21 +192,21 @@ dont_subtract:
     ret
 
 
+/* Special-form reductions exist only for some 160-bit and 256-bit primes. */
+#if FP_PRIME == 160
+
 .global fp_rdcs_k1_low
 .global fp_rdcs_p1_low
-
-#if FP_PRIME == 160
 
 #include "relic_fp_rdc_low_160k1.s"
 #include "relic_fp_rdc_low_160p1.s"
 
 #elif FP_PRIME == 256
 
+.global fp_rdcs_k1_low
+.global fp_rdcs_p1_low
+
 #include "relic_fp_rdc_low_256k1.s"
 #include "relic_fp_rdc_low_256p1.s"
-
-#else
-
-#error Unsupported field size
 
 #endif

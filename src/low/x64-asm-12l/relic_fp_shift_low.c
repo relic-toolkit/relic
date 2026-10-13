@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,27 +24,25 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field modular reduction functions.
+ * Implementation of the low-level prime field shifting functions.
  *
- * @ingroup fpx
+ * @ingroup bn
  */
 
-#include "relic_core.h"
+#include <gmp.h>
+
+#include "relic_fp.h"
 #include "relic_fp_low.h"
-#include "relic_fpx_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_rdcn_low(fp3_t c, dv3_t a) {
-#if FP_RDC == MONTY
-	fp_rdcn_low(c[0], a[0]);
-	fp_rdcn_low(c[1], a[1]);
-	fp_rdcn_low(c[2], a[2]);
-#else
-	fp_rdc(c[0], a[0]);
-	fp_rdc(c[1], a[1]);
-	fp_rdc(c[2], a[2]);
-#endif
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
+}
+
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	/* GMP returns the bits shifted out in the top of the digit. */
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
 }

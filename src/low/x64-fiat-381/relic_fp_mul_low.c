@@ -36,6 +36,10 @@
 #include "relic_bn_low.h"
 #include "relic_util.h"
 
+#if FP_PRIME != 381 || FP_RDC != MONTY
+#error "This backend only implements the BLS12-381 prime in Montgomery form"
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/

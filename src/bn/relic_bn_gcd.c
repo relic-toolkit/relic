@@ -650,6 +650,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, g;
+	bn_st *x, *y;
 	size_t shift = 0;
 
 	if (bn_is_zero(a)) {
@@ -666,25 +667,26 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	RLC_TRY {
 		bn_new_all(u, v, g);
 
-		if (a->used >= b->used) {
-			bn_abs(u, a);
-			bn_abs(v, b);
-		} else {
-			/* swap the buffers so that u holds U and v holds V */
-			bn_abs(u, b);
-			bn_abs(v, a);
-		}
-
-		/* mpn_gcd writes at most vn limbs to its result. */
-		bn_grow(g, v->used);
-
+		bn_abs(u, a);
+		bn_abs(v, b);
 		while (bn_is_even(u) && bn_is_even(v)) {
 			bn_hlv(u, u);
 			bn_hlv(v, v);
 			shift++;
 		}
 
-		g->used = bn_gcdn_low(g->dp, u->dp, u->used, v->dp, v->used);
+		/* Halving may change the sizes, so pick the larger operand only now. */
+		x = u;
+		y = v;
+		if (u->used < v->used) {
+			x = v;
+			y = u;
+		}
+
+		/* mpn_gcd writes at most vn limbs to its result. */
+		bn_grow(g, y->used);
+
+		g->used = bn_gcdn_low(g->dp, x->dp, x->used, y->dp, y->used);
 		g->sign = RLC_POS;
 		bn_trim(g);
 		bn_lsh(g, g, shift);

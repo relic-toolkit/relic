@@ -29,7 +29,14 @@
  * @ingroup bn
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
+
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
 .text
 
@@ -291,9 +298,32 @@ cdecl(fp_mul1_low):
 	pop	%rbx
 	ret
 
+/*
+ * Registers: z in r8-r15, rax, rbx, rbp; T0 = rsi, T1 = rdi; b in rcx.
+ * Stack: 0(%rsp) = c, 8(%rsp) = a.
+ */
 cdecl(fp_muln_low):
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$16, %rsp
+	movq	%rdi, 0(%rsp)
+	movq	%rsi, 8(%rsp)
+	movq	%rdx, %rcx
+
+	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
+	FP_MULM_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
+
+	addq	$16, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_mulm_low):
@@ -301,19 +331,17 @@ cdecl(fp_mulm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	subq 	$160, %rsp
+	subq	$16, %rsp
+	movq	%rdi, 0(%rsp)
+	movq	%rsi, 8(%rsp)
+	movq	%rdx, %rcx
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
+	FP_MULM_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
-
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$160, %rsp
-
+	addq	$16, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

@@ -379,9 +379,7 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		u->used = sm;
 		u->sign = RLC_POS;
 
-		if (bn_sign(a) == RLC_NEG && !bn_is_even(b)) {
-			bn_sub(c, m, u);
-		}
+		/* The base was reduced to [0, m), so its sign is already accounted. */
 		if (bn_sign(b) == RLC_NEG) {
 			bn_mod_inv(c, u, m);
 		} else {

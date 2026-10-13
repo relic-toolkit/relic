@@ -40,9 +40,9 @@
 
 #include "bls12_381_q_64.c"
 
-uint64_t one[] = { 0x760900000002FFFD, 0xEBF4000BC40C0002, 0x5F48985753C758BA,
+static const uint64_t one[] = { 0x760900000002FFFD, 0xEBF4000BC40C0002, 0x5F48985753C758BA,
                    0x77CE585370525745, 0x5C071A97A256EC6D, 0x15F65EC3FA80E493 };
-uint64_t pre[] = { 0x58B20FBD4742924F, 0x60DC92E7F4C2F437, 0x3F4FAC6A70C73C60,
+static const uint64_t pre[] = { 0x58B20FBD4742924F, 0x60DC92E7F4C2F437, 0x3F4FAC6A70C73C60,
                    0xED47D0696C7BF023, 0x2A13C3E0FD09A8CB, 0x1397424C770094FF };
 
 /*============================================================================*/
@@ -50,12 +50,8 @@ uint64_t pre[] = { 0x58B20FBD4742924F, 0x60DC92E7F4C2F437, 0x3F4FAC6A70C73C60,
 /*============================================================================*/
 
 void fp_invm_low(dig_t *c, const dig_t *a) {
-	/* Compute number of iteratios based on modulus size. */
-#if FP_PRIME < 46
-	int i, iterations = (49 * 381 + 80)/17;
-#else
+	/* Number of iterations for a 381-bit modulus. */
 	int i, iterations = (49 * 381 + 57)/17;
-#endif
 
 	dig_t out1, out2[6], out3[6], out4[6], out5[6];
 	dig_t f[6] = { 0 }, g[6], h[6], v[6] = { 0 }, r[6], d = 1;

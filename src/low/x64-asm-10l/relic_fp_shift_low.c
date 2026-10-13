@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,42 +24,25 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of the low-level prime field shifting functions.
  *
- * @ingroup fp
+ * @ingroup bn
  */
 
-#include "relic_dv_low.h"
+#include <gmp.h>
 
-#include "macro.s"
+#include "relic_fp.h"
+#include "relic_fp_low.h"
 
-.text
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
 
-.global cdecl(fp2_rdcn_low)
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
+}
 
-/*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
- */
-cdecl(fp2_rdcn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
-
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*RLC_DV_DIGS), %rsi
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	/* GMP returns the bits shifted out in the top of the digit. */
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
+}
