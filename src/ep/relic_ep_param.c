@@ -39,18 +39,12 @@
 /*
  * A note on the MAP_U values below.
  *
- * These values were generated using the methods recommended in
- * draft-irtf-cfrg-hash-to-curve-06, Appendix E. In particular,
- * for any curve with j-invariant 0 or 1728 (i.e., a = 0 or b = 0),
- * the MAP_U value is the output of the find_z_svdw function.
- * For all other curves, the MAP_U value was calculated using the
- * find_z_sswu function.
- *
- * Note that for the BLS12-381 curve (B12_P381), which uses an
- * isogeny map, the MAP_U value is from the
- * find_z_sswu function for the isogenous curve. Similarly, when
- * specifying isogeny maps for other curves one should specify
- * the MAP_U value for the isogenous curve.
+ * These are the Z values that RFC 9380 fixes for the SSWU suites of the
+ * NIST curves (Sections 8.2 to 8.4) and of BLS12-381 G1 (Section 8.8.1).
+ * For BLS12-381, which uses an isogeny map, the value is the one for the
+ * isogenous curve, and the same holds when specifying isogeny maps for other
+ * curves. Curves without a MAP_U value use the smallest positive non-square
+ * that suits the map, which may differ from the RFC Z for the curve.
  */
 
 #if FP_PRIME == 160
@@ -204,6 +198,7 @@
 #define NIST_P256_Y		"4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5"
 #define NIST_P256_R		"FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551"
 #define NIST_P256_H		"1"
+#define NIST_P256_MAPU	"-A"
 /** @} */
 #endif
 
@@ -288,6 +283,7 @@
 #define NIST_P384_Y		"3617DE4A96262C6F5D9E98BF9292DC29F8F41DBD289A147CE9DA3113B5F0B8C00A60B1CE1D7E819D7A431D7C90EA0E5F"
 #define NIST_P384_R		"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973"
 #define NIST_P384_H		"1"
+#define NIST_P384_MAPU	"-C"
 /** @} */
 #endif
 
@@ -316,6 +312,7 @@
 #define NIST_P521_Y		"11839296A789A3BC0045C8A5FB42C7D1BD998F54449579B446817AFBD17273E662C97EE72995EF42640C550B9013FAD0761353C7086A272C24088BE94769FD16650"
 #define NIST_P521_R		"1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409"
 #define NIST_P521_H		"1"
+#define NIST_P521_MAPU	"-4"
 /** @} */
 #endif
 
@@ -825,6 +822,14 @@
     ep_param_set_ctmap(CURVE##_ISO_A, CURVE##_ISO_B, CURVE##_ISO_XN,		\
 			CURVE##_ISO_XD, CURVE##_ISO_YN, CURVE##_ISO_YD, CURVE##_MAPU)	\
 
+/**
+ * Assigns the non-square used by the SSWU map, as fixed by RFC 9380.
+ *
+ * @param[in] CURVE		- the curve parameters to assign.
+ */
+#define EP_ASSIGNZ(CURVE)													\
+	fp_read_str(core_get()->ep_map_u, CURVE##_MAPU, strlen(CURVE##_MAPU), 16)\
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -922,6 +927,7 @@ void ep_param_set(int param) {
 		bn_new(h);
 
 		core_get()->ep_id = 0;
+		fp_zero(core_get()->ep_map_u);
 		fp_zero(beta);
 		bn_zero(lamb);
 
@@ -1011,6 +1017,7 @@ void ep_param_set(int param) {
 #if FP_PRIME == 256
 			case NIST_P256:
 				EP_ASSIGN(NIST_P256, NIST_256);
+				EP_ASSIGNZ(NIST_P256);
 				plain = 1;
 				break;
 			case BSI_P256:
@@ -1121,6 +1128,7 @@ void ep_param_set(int param) {
 #if FP_PRIME == 384
 			case NIST_P384:
 				EP_ASSIGN(NIST_P384, NIST_384);
+				EP_ASSIGNZ(NIST_P384);
 				plain = 1;
 				break;
 #endif
@@ -1179,6 +1187,7 @@ void ep_param_set(int param) {
 #if FP_PRIME == 521
 			case NIST_P521:
 				EP_ASSIGN(NIST_P521, NIST_521);
+				EP_ASSIGNZ(NIST_P521);
 				plain = 1;
 				break;
 #endif

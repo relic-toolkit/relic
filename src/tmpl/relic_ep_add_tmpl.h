@@ -333,8 +333,9 @@
 				F##_mul(t4, t4, t5);										\
 				F##_add(t5, t1, t2);										\
 				F##_sub(t4, t4, t5);										\
-				F##_add(r->x, p->x, p->z);									\
+				/* Read q before r overwrites it, as r may alias q. */		\
 				F##_add(r->y, q->x, q->z);									\
+				F##_add(r->x, p->x, p->z);									\
 				F##_mul(r->x, r->x, r->y);									\
 				F##_add(r->y, t0, t2);										\
 				F##_sub(r->y, r->x, r->y);									\

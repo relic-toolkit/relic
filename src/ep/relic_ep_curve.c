@@ -116,19 +116,31 @@ static void ep_curve_set_map(void) {
 			} else {
 				fp_copy(c2, ctx->ep_a);
 				fp_copy(c3, ctx->ep_b);
-				/* Generate a non-square u to define the map. */
-				fp_set_dig(ctx->ep_map_u, 0);
-				do {
-					fp_add_dig(ctx->ep_map_u, ctx->ep_map_u, 1);
-					/* Check that g(b/ua) = u^3 + a * u + b is square*/
+				/* Keep the non-square u set with the parameters, as RFC 9380
+				 * fixes it for each suite, if it suits the curve. Otherwise,
+				 * search for the smallest one to define the map. */
+				int search = fp_is_zero(ctx->ep_map_u);
+				while (1) {
+					if (search) {
+						fp_add_dig(ctx->ep_map_u, ctx->ep_map_u, 1);
+					}
+					/* Check that g(x) = x^3 + a * x + b is a square for
+					 * x = b / (u * a), as needed by the exceptional case. */
 					fp_mul(c1, ctx->ep_a, ctx->ep_map_u);
 					fp_inv(c1, c1);
 					fp_mul(c1, c1, ctx->ep_b);
 					fp_sqr(c0, c1);
 					fp_add(c0, c0, ctx->ep_a);
-					fp_mul(c0, c0, ctx->ep_map_u);
+					fp_mul(c0, c0, c1);
 					fp_add(c0, c0, ctx->ep_b);
-				} while (fp_is_sqr(ctx->ep_map_u) || !fp_is_sqr(c0));
+					if (!fp_is_sqr(ctx->ep_map_u) && fp_is_sqr(c0)) {
+						break;
+					}
+					if (!search) {
+						fp_zero(ctx->ep_map_u);
+						search = 1;
+					}
+				}
 			}
 			/* constant 1: -b / a */
 			fp_neg(c0, c2);     /* c0 = -a */

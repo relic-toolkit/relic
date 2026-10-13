@@ -246,29 +246,29 @@ void ep_psi(ep_t r, const ep_t p) {
 
 void ep_pck(ep_t r, const ep_t p) {
 	int b;
-	bn_t halfQ, yValue;
+	bn_t hq, y;
 
-	bn_null(halfQ);
-	bn_null(yValue);
+	bn_null(hq);
+	bn_null(y);
 
 	RLC_TRY {
-		bn_new(halfQ);
-		bn_new(yValue);
+		bn_new(hq);
+		bn_new(y);
 
 		fp_copy(r->x, p->x);
 
 		if (ep_curve_is_pairf()) {
-			halfQ->used = RLC_FP_DIGS;
-			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-			bn_hlv(halfQ, halfQ);
+			hq->used = RLC_FP_DIGS;
+			dv_copy(hq->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_hlv(hq, hq);
 
-			fp_prime_back(yValue, p->y);
+			fp_prime_back(y, p->y);
 
-			b = bn_cmp(yValue, halfQ) == RLC_GT;
+			b = bn_cmp(y, hq) == RLC_GT;
 		} else {
-			/* Take the parity of the canonical representative. */
-			fp_norm(r->y, p->y);
-			b = fp_get_bit(r->y, 0);
+			/* Take the parity of y itself, not of its representation. */
+			fp_prime_back(y, p->y);
+			b = bn_get_bit(y, 0);
 		}
 
 		fp_zero(r->y);
@@ -280,8 +280,8 @@ void ep_pck(ep_t r, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(yValue);
-		bn_free(halfQ);
+		bn_free(y);
+		bn_free(hq);
 	}
 }
 
@@ -325,8 +325,8 @@ int ep_upk(ep_t r, const ep_t p) {
 			} else {
 				/* Verify if least significant bit of the result matches the
 				 * compressed y-coordinate. */
-				fp_norm(t, t);
-				if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
+				fp_prime_back(yValue, t);
+				if (bn_get_bit(yValue, 0) != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
 				}
 			}
