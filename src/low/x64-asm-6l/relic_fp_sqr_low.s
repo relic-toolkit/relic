@@ -24,44 +24,62 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level prime field squaring functions.
  *
- * @&version $Id$
  * @ingroup fp
  */
 
-#include <gmp.h>
-
-#include "relic_fp.h"
 #include "relic_fp_low.h"
-#include "relic_core.h"
+#include "macro.s"
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+.text
+.global cdecl(fp_sqrn_low)
+.global cdecl(fp_sqrm_low)
 
-int fp_smbm_low(const dig_t *a) {
-	mpz_t n, p;
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
-	int res;
+/*
+ * Function: fp_sqrn_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2
+ */
+cdecl(fp_sqrn_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	push	%rdi
 
-	mpz_init(n);
-	mpz_init(p);
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rdi, %rsi, %rax, %rcx, p0(%rip), 0
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
+	popq	%rbp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
 
-	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, u);
-	mpz_import(p, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, fp_prime_get());
+/*
+ * Function: fp_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p
+ */
+cdecl(fp_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	push	%rdi
 
-	res = mpz_jacobi(n, p);
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rdi, %rsi, %rax, %rcx, p0(%rip), 1
 
-	mpz_clear(n);
-	mpz_clear(p);
-	return res;
-}
+	popq	%rbp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret

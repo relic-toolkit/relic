@@ -24,10 +24,9 @@
 /**
  * @file
  *
- * Implementation of low-level prime field squaring functions.
+ * Implementation of the low-level prime field shifting functions.
  *
- * @version $Id: relic_fp_sqr_low.c 677 2011-03-05 22:19:43Z dfaranha $
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
@@ -39,10 +38,11 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	fp_muln_low(c, a, a);
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
 }
 
-void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	fp_mulm_low(c, a, a);
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
+	/* GMP returns the bits shifted out in the top of the digit. */
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
 }

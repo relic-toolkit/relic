@@ -26,7 +26,6 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 

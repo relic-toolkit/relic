@@ -26,7 +26,6 @@
  *
  * Implementation of low-level prime field modular reduction.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
@@ -36,74 +35,75 @@
 
 .text
 
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
  */
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r15
-	push 	%rbx
-	push	%rbp
+	push	%rbx
 
-	movq	0(%rsi),%r8
-	movq	8(%rsi),%r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	// rcx holds the carry into the next word loaded, and CF and OF are
+	// clear before each MULADD.
+	xorq	%rcx, %rcx
 	xorq	%rax, %rax
 
 	movq	$U0, %rdx
-	mulx	%r8, %rdx, %rcx
+	mulx	%r8, %rdx, %r15
 	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r15, %rbx, p0(%rip)
-	movq	48(%rsi),%r8
+	movq	48(%rsi), %r8
+	adcx	%rcx, %r8
 	adox	%rax, %r8
-	movq	$U0, %rdx
-	mulx	%r9, %rdx, %rcx
-    MULADD	%r9, %r10, %r11, %r12, %r13, %r8, %r15, %rbx, p0(%rip)
-	movq	56(%rsi),%r9
-	adox	%rax, %r9
-	movq	$U0, %rdx
-	mulx	%r10, %rdx, %rcx
-    MULADD	%r10, %r11, %r12, %r13, %r8, %r9, %r15, %rbx, p0(%rip)
-	movq	64(%rsi),%r10
-	adox	%rax, %r10
-	movq	$U0, %rdx
-	mulx	%r11, %rdx, %rcx
-    MULADD	%r11, %r12, %r13, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
-	movq	72(%rsi),%r11
-	adox	%rax, %r11
-	movq	$U0, %rdx
-	mulx	%r12, %rdx, %rcx
-    MULADD	%r12, %r13, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
-	
-	// Final correction
-	movq	%r13, %r12
-	movq	%r8, %r15
-	movq	%r9, %rbx
-	movq	%r10, %rcx
-	movq	%r11, %rdx
-	subq	p0(%rip), %r12
-	sbbq	p1(%rip), %r15
-	sbbq	p2(%rip), %rbx
-	sbbq	p3(%rip), %rcx
-	sbbq	p4(%rip), %rdx
-	cmovc	%r13, %r12
-	cmovc	%r8, %r15
-	cmovc	%r9, %rbx
-	cmovc	%r10, %rcx
-	cmovc	%r11, %rdx
-    movq	%r12, 0(%rdi)
-	movq	%r15, 8(%rdi)
-	movq	%rbx, 16(%rdi)
-	movq	%rcx, 24(%rdi)
-	movq	%rdx, 32(%rdi)
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
 
-	pop		%rbp
+	movq	$U0, %rdx
+	mulx	%r9, %rdx, %r15
+	MULADD	%r9, %r10, %r11, %r12, %r13, %r8, %r15, %rbx, p0(%rip)
+	movq	56(%rsi), %r9
+	adcx	%rcx, %r9
+	adox	%rax, %r9
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
+	movq	$U0, %rdx
+	mulx	%r10, %rdx, %r15
+	MULADD	%r10, %r11, %r12, %r13, %r8, %r9, %r15, %rbx, p0(%rip)
+	movq	64(%rsi), %r10
+	adcx	%rcx, %r10
+	adox	%rax, %r10
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
+	movq	$U0, %rdx
+	mulx	%r11, %rdx, %r15
+	MULADD	%r11, %r12, %r13, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
+	movq	72(%rsi), %r11
+	adcx	%rcx, %r11
+	adox	%rax, %r11
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
+	movq	$U0, %rdx
+	mulx	%r12, %rdx, %r15
+	MULADD	%r12, %r13, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
+
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r15, %rbx
+
 	pop		%rbx
 	pop		%r15
 	pop		%r13

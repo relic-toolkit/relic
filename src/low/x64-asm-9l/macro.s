@@ -28,9 +28,9 @@
  *
  * Implementation of low-level prime field multiplication.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
+
 #if FP_PRIME == 575
 #define P0	0xF1E5CEF00AD97EFB
 #define P1	0x86CBB9BA813C985D
@@ -59,12 +59,19 @@
 #define BAR	0xE756F2FC1E32E048
 #define BARS	56
 #define BARJ	8
+#else
+#error "x64-asm-9l supports FP_PRIME = 569 or 575 only."
 #endif
 
 #if defined(__APPLE__)
-#define cdecl(S) _PREFIX(,S)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
 #else
 #define cdecl(S) S
+#endif
+
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
 #endif
 
 .text
@@ -408,6 +415,7 @@
 	movq	\Z0, 0(%rdi)
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T0
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
@@ -426,6 +434,7 @@
 	movq	\Z1, 8(%rdi)
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, \T0
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
@@ -444,6 +453,7 @@
 	movq	\Z2, 16(%rdi)
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, \T0
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
@@ -462,6 +472,7 @@
 	movq	\Z3, 24(%rdi)
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, \T0
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
@@ -480,6 +491,7 @@
 	movq	\Z4, 32(%rdi)
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, \T0
 	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
@@ -498,6 +510,7 @@
 	movq	\Z5, 40(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z5, %rdx, \T0
 	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
@@ -515,6 +528,7 @@
 	movq	\Z6, 48(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z6, %rdx, \T0
 	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
@@ -532,6 +546,7 @@
 	movq	\Z7, 56(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z7, %rdx, \T0
 	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
@@ -549,6 +564,7 @@
 	movq	\Z8, 64(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z8, %rdx, \T0
 	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
