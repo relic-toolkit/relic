@@ -4654,6 +4654,12 @@ static int exponentiation12(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp12_exp(c, a, d);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			/* Higher powers agree with repeated Frobenius. */
+			for (int j = 2; j < 12; j++) {
+				fp12_frb(b, b, 1);
+				fp12_frb(c, a, j);
+				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

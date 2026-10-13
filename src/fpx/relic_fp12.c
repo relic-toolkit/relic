@@ -366,9 +366,13 @@ TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
 
 void fp12_frb(fp12_t c, const fp12_t a, int i) {
-	/* Cost of five multiplication in Fp^2 per Frobenius. */
+	ctx_t *ctx = core_get();
+	int e;
+
 	fp12_copy(c, a);
-	for (; i % 12 > 0; i--) {
+	i = i % 12;
+	if (i % 2 == 1) {
+		/* Cost of five multiplications in Fp^2 for an odd power. */
 		fp6_frb(c[0], c[0], 1);
 		fp2_frb(c[1][0], c[1][0], 1);
 		fp2_frb(c[1][1], c[1][1], 1);
@@ -376,5 +380,17 @@ void fp12_frb(fp12_t c, const fp12_t a, int i) {
 		fp2_mul_frb(c[1][0], c[1][0], 1, 1);
 		fp2_mul_frb(c[1][1], c[1][1], 1, 3);
 		fp2_mul_frb(c[1][2], c[1][2], 1, 5);
+	}
+	/* The power p^(2m) maps the coefficient of w^j to its product by z^(mj),
+	 * for the sixth root of unity z in Fp, with z^3 = -1. */
+	for (int j = 1; j < 6 && i > 1; j++) {
+		e = ((i / 2) * j) % 6;
+		if (e % 3 != 0) {
+			fp2_mul_fp(c[j % 2][j / 2], c[j % 2][j / 2],
+					ctx->fp2_p0[e % 3 - 1]);
+		}
+		if (e >= 3) {
+			fp2_neg(c[j % 2][j / 2], c[j % 2][j / 2]);
+		}
 	}
 }
