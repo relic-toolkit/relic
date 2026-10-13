@@ -125,6 +125,12 @@ extern "C" {
 #define RLC_HUGE		5
 
 /**
+ * Optimization identifier for the case where a coefficient is a power of 2
+ * larger than 2.
+ */
+#define RLC_POW2		6
+
+/**
  * Maximum number of terms to describe a sparse object.
  */
 #define RLC_TERMS		16
