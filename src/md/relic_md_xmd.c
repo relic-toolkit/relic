@@ -34,8 +34,7 @@
 #include "relic_conf.h"
 #include "relic_core.h"
 #include "relic_md.h"
-#include "sha.h"
-#include "blake2.h"
+#include "relic_md_hash.h"
 
 /*============================================================================*/
 /* Private definitions														*/
@@ -52,26 +51,6 @@
 			return;															\
 		}																	\
 	} while (0)
-
-/**
- * BLAKE2s-160 under the names expected by make_md_xmd.
- */
-#define B2S160_Message_Block_Size	BLAKE2S_BLOCKBYTES
-#define B2S160HashSize				RLC_MD_LEN_B2S160
-#define B2S160Context				blake2s_state
-#define B2S160Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S160)
-#define B2S160Input					blake2s_update
-#define B2S160Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S160)
-
-/**
- * BLAKE2s-256 under the names expected by make_md_xmd.
- */
-#define B2S256_Message_Block_Size	BLAKE2S_BLOCKBYTES
-#define B2S256HashSize				RLC_MD_LEN_B2S256
-#define B2S256Context				blake2s_state
-#define B2S256Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S256)
-#define B2S256Input					blake2s_update
-#define B2S256Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S256)
 
 /**
  * Construct an extensible-output function based on HASH, which must be

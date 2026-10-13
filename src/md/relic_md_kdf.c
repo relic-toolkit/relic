@@ -35,6 +35,7 @@
 #include "relic_core.h"
 #include "relic_util.h"
 #include "relic_md.h"
+#include "relic_md_hash.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -43,11 +44,11 @@
 static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 		size_t in_len, dig_t value) {
 	uint32_t i, d;
-	uint8_t *buffer = NULL, hash[RLC_MD_LEN];
-	size_t out_len = 0;
+	uint8_t c[sizeof(uint32_t)], hash[RLC_MD_LEN];
+	size_t n, out_len = 0;
+	MD_CTX ctx;
 
-	if ((key_len / RLC_MD_LEN >= UINT32_MAX - value) ||
-		(in_len + sizeof(uint32_t) < in_len)) {
+	if (key_len / RLC_MD_LEN >= UINT32_MAX - value) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -56,29 +57,24 @@ static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 		return;
 	}
 
-	buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-	if (buffer == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	/* d = ceil(kLen/hLen). */
 	d = RLC_CEIL(key_len, RLC_MD_LEN);
-	memcpy(buffer, in, in_len);
 	for (i = value; i < d + value; i++) {
-		/* c = integer_to_string(c, 4). */
-		util_write_uint32(buffer + in_len, i);
-		/* t = t || hash(z || c). */
-		if (out_len + RLC_MD_LEN <= key_len) {
-			md_map(key + out_len, buffer, in_len + sizeof(uint32_t));
-            out_len += RLC_MD_LEN;
-        } else {
-			md_map(hash, buffer, in_len + sizeof(uint32_t));
-            memcpy(key + out_len, hash, key_len - out_len);
-        }
+		/* t = t || hash(z || c), with c = integer_to_string(i, 4). */
+		util_write_uint32(c, i);
+		if (MD_RESET(&ctx) != 0 || md_input(&ctx, in, in_len) != 0 ||
+				MD_INPUT(&ctx, c, sizeof(c)) != 0 ||
+				MD_RESULT(&ctx, hash) != 0) {
+			RLC_THROW(ERR_NO_VALID);
+			break;
+		}
+		n = RLC_MIN(RLC_MD_LEN, key_len - out_len);
+		memcpy(key + out_len, hash, n);
+		out_len += n;
 	}
 
-	RLC_FREE(buffer);
+	util_zero(hash, sizeof(hash));
+	util_zero(&ctx, sizeof(ctx));
 }
 
 /*============================================================================*/
