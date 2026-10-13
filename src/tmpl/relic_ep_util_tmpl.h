@@ -667,7 +667,8 @@
 		memset(bin, 0, len);												\
 																			\
 		if (C##_is_infty(a)) {												\
-			if (len < 1) {													\
+			/* Infinity is encoded in one byte, as read_bin expects. */		\
+			if (len != 1) {													\
 				RLC_THROW(ERR_NO_BUFFER);									\
 			}																\
 			return;															\

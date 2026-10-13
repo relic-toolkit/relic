@@ -471,6 +471,9 @@ void ep3_curve_set(const fp3_t a, const fp3_t b, const ep3_t g, const bn_t r, co
 	fp3_copy(ctx->ep3_a, a);
 	fp3_copy(ctx->ep3_b, b);
 
+	ep3_detect_opt(&(ctx->ep3_opt_a), ctx->ep3_a);
+	ep3_detect_opt(&(ctx->ep3_opt_b), ctx->ep3_b);
+
 	ep3_norm(ctx->ep3_g, g);
 	bn_copy(&(ctx->ep3_r), r);
 	bn_copy(&(ctx->ep3_h), h);

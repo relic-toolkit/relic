@@ -511,7 +511,8 @@ static int test_##C##_multiplication(void) {								\
 																			\
 		TEST_ONCE("generator has the right order") {						\
 			TEST_ASSERT(C##_on_curve(p), end);								\
-			C##_mul(r, p, n);												\
+			/* The basic method does not reduce the scalar modulo n. */		\
+			C##_mul_basic(r, p, n);											\
 			TEST_ASSERT(C##_is_infty(r) == 1, end);							\
 		} TEST_END;															\
 																			\
@@ -1055,7 +1056,7 @@ static int test_##C##_hashing(void) {										\
 			rand_bytes(msg, sizeof(msg));									\
 			C##_map(a, msg, sizeof(msg));									\
 			TEST_ASSERT(C##_on_curve(a) == 1, end);							\
-			C##_mul(a, a, n);												\
+			C##_mul_basic(a, a, n);											\
 			TEST_ASSERT(C##_is_infty(a) == 1, end);							\
 		}																	\
 		TEST_END;															\
@@ -1093,12 +1094,15 @@ static int test_##C##_frobenius(void) {										\
 																			\
 		TEST_CASE("frobenius and point multiplication are consistent") {	\
 			C##_rand(a);													\
-			C##_frb(b, a, 1);												\
-			d->used = RLC_FP_DIGS;											\
-			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);					\
-			bn_mod(d, d, n);												\
-			C##_mul_basic(c, a, d);											\
-			TEST_ASSERT(C##_cmp(c, b) == RLC_EQ, end);						\
+			/* The j-th power of Frobenius acts as multiplication by p^j. */ \
+			bn_set_dig(d, 1);												\
+			for (int j = 0; j < 4; j++) {									\
+				C##_frb(b, a, j);											\
+				C##_mul_basic(c, a, d);										\
+				TEST_ASSERT(C##_cmp(c, b) == RLC_EQ, end);					\
+				bn_mul(d, d, &(core_get()->prime));							\
+				bn_mod(d, d, n);											\
+			}																\
 		} TEST_END;															\
 																			\
 		TEST_CASE("endomorphism and point multiplication are consistent") {	\
@@ -1156,7 +1160,7 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_basic(a, msg, sizeof(msg));
 			TEST_ASSERT(ep2_is_infty(a) == 0, end);
-			ep2_mul(a, a, n);
+			ep2_mul_basic(a, a, n);
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
@@ -1165,7 +1169,7 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_sswum(a, msg, sizeof(msg));
 			TEST_ASSERT(ep2_is_infty(a) == 0, end);
-			ep2_mul(a, a, n);
+			ep2_mul_basic(a, a, n);
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
@@ -1175,7 +1179,7 @@ static int hashing2(void) {
 						rand_bytes(msg, sizeof(msg));
 						ep2_map_swift(a, msg, sizeof(msg));
 						TEST_ASSERT(ep2_is_infty(a) == 0, end);
-						ep2_mul(a, a, n);
+						ep2_mul_basic(a, a, n);
 						TEST_ASSERT(ep2_is_infty(a) == 1, end);
 					}
 					TEST_END;

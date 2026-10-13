@@ -605,6 +605,9 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, co
 	fp4_copy(ctx->ep4_a, a);
 	fp4_copy(ctx->ep4_b, b);
 
+	ep4_detect_opt(&(ctx->ep4_opt_a), ctx->ep4_a);
+	ep4_detect_opt(&(ctx->ep4_opt_b), ctx->ep4_b);
+
 	ep4_norm(ctx->ep4_g, g);
 	bn_copy(&(ctx->ep4_r), r);
 	bn_copy(&(ctx->ep4_h), h);
