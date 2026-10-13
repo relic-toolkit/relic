@@ -761,6 +761,174 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 #endif
 
+#if RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48
+
+/**
+ * Number of tau-adic expansions in the tau-adic method, k/6 for embedding
+ * degree k.
+ */
+#define RLC_GT_TW		(RLC_GT_EMBED / 6)
+
+/**
+ * Exponentiates an element from G_T using the tau-adic method. The Frobenius
+ * pi acts on G_T with pi^(k/3) as a cube root of unity w and pi^(k/6) as
+ * 1 + w. The decomposition b = b_0 + b_1 * psi + ... + b_(2H-1) * psi^(2H-1)
+ * along psi = pi * mu, for H = k/6 and mu = w - 2 on KSS18 curves or 1
+ * otherwise, regroups as the sum of the coefficients
+ * b_i * mu^i + b_(i+H) * mu^(i+H) * (1 + w) in Z[w] times pi^i for i < H, and
+ * each coefficient is recoded as a tau-adic NAF in base tau = 1 - w. As
+ * tau^2 = -3w, Horner's rule takes a cyclotomic cube every two digits. The
+ * table of each pi^i(a) holds a, a^2, a * tau(a) and their images under tau,
+ * for tau(x) = x / w(x), and the images of the entries under w are Frobenius
+ * maps computed when needed.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to exponentiate.
+ * @param[in] b				- the exponent.
+ */
+static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
+	const int h = RLC_GT_TW, k = RLC_GT_EMBED;
+	int8_t naf[RLC_GT_TW][RLC_FP_BITS + 1];
+	size_t l, len[RLC_GT_TW];
+	int d, f, j, v, first = 1, mu[2 * RLC_GT_TW][2];
+	bn_t n, x, y, _b[2 * RLC_GT_TW], r[2];
+	gt_t q, t[6 * RLC_GT_TW];
+
+	bn_null_all(n, x, y);
+	bn_null(r[0]);
+	bn_null(r[1]);
+	gt_null(q);
+	for (int i = 0; i < 2 * h; i++) {
+		bn_null(_b[i]);
+	}
+	for (int i = 0; i < 6 * h; i++) {
+		gt_null(t[i]);
+	}
+
+	RLC_TRY {
+		bn_new_all(n, x, y);
+		bn_new(r[0]);
+		bn_new(r[1]);
+		gt_new(q);
+		for (int i = 0; i < 2 * h; i++) {
+			bn_new(_b[i]);
+		}
+		for (int i = 0; i < 6 * h; i++) {
+			gt_new(t[i]);
+		}
+
+		/* The coefficients mu^i * (1 + w)^(i / H) in Z[w], with
+		 * (a0 + a1 * w)(c0 + c1 * w) = (a0c0 - a1c1) + (a0c1 + a1c0 - a1c1) * w,
+		 * as w^2 = -1 - w. */
+		mu[0][0] = 1;
+		mu[0][1] = 0;
+		for (int i = 1; i < 2 * h; i++) {
+			if (ep_curve_is_pairf() == EP_K18) {
+				mu[i][0] = -2 * mu[i - 1][0] - mu[i - 1][1];
+				mu[i][1] = mu[i - 1][0] - 3 * mu[i - 1][1];
+			} else {
+				mu[i][0] = mu[i - 1][0];
+				mu[i][1] = mu[i - 1][1];
+			}
+		}
+		for (int i = h; i < 2 * h; i++) {
+			v = mu[i][0];
+			mu[i][0] = v - mu[i][1];
+			mu[i][1] = v;
+		}
+
+		gt_get_ord(n);
+		ep_curve_frbase(x);
+		bn_mod(_b[0], b, n);
+		if (bn_sign(_b[0]) == RLC_NEG) {
+			bn_add(_b[0], _b[0], n);
+		}
+		bn_rec_frb(_b, 2 * h, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
+		l = 0;
+		for (int i = 0; i < h; i++) {
+			bn_zero(r[0]);
+			bn_zero(r[1]);
+			for (int o = i; o < 2 * h; o += h) {
+				for (int m = 0; m < 2; m++) {
+					v = mu[o][m];
+					bn_mul_dig(y, _b[o], (v < 0 ? -v : v));
+					if (v < 0) {
+						bn_neg(y, y);
+					}
+					bn_add(r[m], r[m], y);
+				}
+			}
+			len[i] = RLC_FP_BITS + 1;
+			bn_rec_etnaf(naf[i], &len[i], r[0], r[1]);
+			l = RLC_MAX(l, len[i]);
+		}
+
+		/* Table of a, a^2, a * tau(a), tau(a), tau(a)^2 = tau(a^2) and
+		 * tau(a * tau(a)), then its images under pi, which commutes with
+		 * w and tau. */
+		gt_copy(t[0], a);
+		gt_sqr(t[1], a);
+		gt_frb(q, a, k / 3);
+		gt_inv(q, q);
+		gt_mul(t[3], a, q);
+		gt_mul(t[2], a, t[3]);
+		gt_sqr(t[4], t[3]);
+		gt_frb(q, t[2], k / 3);
+		gt_inv(q, q);
+		gt_mul(t[5], t[2], q);
+		for (int i = 6; i < 6 * h; i++) {
+			gt_frb(t[i], t[i - 6], 1);
+		}
+
+		/* Horner's rule in base 3: digit d at position i is multiplied by
+		 * tau^i = (-w)^m * 3^m * tau^(i - 2m) for m = i / 2, and the unit
+		 * (-w)^m only changes the unit of the digit. */
+		gt_set_unity(c);
+		for (int m = ((int)l - 1) / 2; m >= 0 && l > 0; m--) {
+			if (!first) {
+				RLC_CAT(RLC_GT_LOWER, cub_cyc)(c, c);
+			}
+			for (int i = 2 * m; i < RLC_MIN(2 * m + 2, (int)l); i++) {
+				for (int e = 0; e < h; e++) {
+					if (i >= (int)len[e] || naf[e][i] == 0) {
+						continue;
+					}
+					d = naf[e][i] - 1;
+					f = (d % 3 + m) % 3;
+					j = 6 * e + d / 6 + 3 * (i - 2 * m);
+					gt_frb(q, t[j], f * k / 3);
+					if (((d % 6) / 3) ^ (m & 1)) {
+						gt_inv(q, q);
+					}
+					if (first) {
+						gt_copy(c, q);
+						first = 0;
+					} else {
+						gt_mul(c, c, q);
+					}
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, x, y);
+		bn_free(r[0]);
+		bn_free(r[1]);
+		gt_free(q);
+		for (int i = 0; i < 2 * h; i++) {
+			bn_free(_b[i]);
+		}
+		for (int i = 0; i < 6 * h; i++) {
+			gt_free(t[i]);
+		}
+	}
+}
+
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -908,6 +1076,30 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 #else
 	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
 #endif
+}
+
+void gt_exp_twnaf(gt_t c, const gt_t a, const bn_t b) {
+#if RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48
+	switch (ep_curve_is_pairf()) {
+		case EP_BN:
+		case EP_B12:
+		case EP_K18:
+		case EP_B24:
+		case EP_B48:
+			/* The method pays off only when the power of Frobenius acting
+			 * as w is direct, which fails in Fp^18 when the non-residue
+			 * defining Fp^9 is not the generator of Fp^3. */
+			if (ep_curve_embed() == RLC_GT_EMBED &&
+					(RLC_GT_EMBED != 18 || fp3_field_get_cnr() == 0)) {
+				gt_exp_tw_imp(c, a, b);
+				return;
+			}
+			break;
+		default:
+			break;
+	}
+#endif
+	gt_exp(c, a, b);
 }
 
 void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {

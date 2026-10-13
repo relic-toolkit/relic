@@ -1518,6 +1518,32 @@ int exponentiation(void) {
 			gt_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("tau-adic exponentiation is correct") {
+			gt_rand(a);
+			bn_zero(d);
+			gt_exp_twnaf(b, a, d);
+			TEST_ASSERT(gt_is_unity(b), end);
+			bn_set_dig(d, 1);
+			gt_exp_twnaf(b, a, d);
+			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			bn_sub_dig(d, n, 1);
+			gt_exp(b, a, d);
+			gt_exp_twnaf(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			gt_exp_twnaf(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_neg(d, d);
+			gt_exp(b, a, d);
+			gt_exp_twnaf(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			gt_exp_twnaf(a, a, d);
+			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

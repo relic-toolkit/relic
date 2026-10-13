@@ -3646,6 +3646,7 @@
 #undef gt_rand
 #undef gt_exp
 #undef gt_exp_sec
+#undef gt_exp_twnaf
 #undef gt_exp_dig
 #undef gt_exp_sim
 #undef gt_exp_gen
@@ -3655,6 +3656,7 @@
 #define gt_rand 	RLC_PREFIX(gt_rand)
 #define gt_exp 	RLC_PREFIX(gt_exp)
 #define gt_exp_sec 	RLC_PREFIX(gt_exp_sec)
+#define gt_exp_twnaf 	RLC_PREFIX(gt_exp_twnaf)
 #define gt_exp_dig 	RLC_PREFIX(gt_exp_dig)
 #define gt_exp_sim 	RLC_PREFIX(gt_exp_sim)
 #define gt_exp_gen 	RLC_PREFIX(gt_exp_gen)

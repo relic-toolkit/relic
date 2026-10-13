@@ -1072,6 +1072,18 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b);
 void gt_exp_sec(gt_t c, const gt_t a, const bn_t b);
 
 /**
+ * Exponentiates an element from G_T using the tau-adic method with cyclotomic
+ * cubing, on BN, BLS12, KSS18, BLS24 and BLS48 curves, and gt_exp()
+ * elsewhere or when the Frobenius map acting as a cube root of unity is not
+ * direct. Computes c = a^b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to exponentiate.
+ * @param[in] b				- the integer exponent.
+ */
+void gt_exp_twnaf(gt_t c, const gt_t a, const bn_t b);
+
+/**
  * Exponentiates an element from G_T by a small integer. Computes c = a^b.
  *
  * @param[out] c			- the result.
