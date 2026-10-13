@@ -116,7 +116,7 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 					fp_sub(c[0], a[0], t[0]);
 					break;
 				}
-				/* Otherwise, fall back to next one. */
+				/* Fall through - otherwise use the next one. */
 			case 7:
 				/* If p = 7 mod 8, we choose (2^k + i) as QNR/CNR. */
 				fp2_mul_art(t, a);
@@ -177,7 +177,7 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 					fp_subc_low(c[0], a[0], t[0]);
 					break;
 				}
-				/* Otherwise, fall back to next one. */
+				/* Fall through - otherwise use the next one. */
 			case 7:
 				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR.   */
 				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);

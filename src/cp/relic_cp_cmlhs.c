@@ -103,16 +103,15 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 }
 
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
-		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk,
-		int bls) {
+		const bn_t msg, const char *data, int label, const bn_t x[],
+		const g1_t h, const uint8_t prf[], size_t plen, const bn_t d,
+		const bn_t sk, int bls) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
 	size_t len, dlen = strlen(data);
 	uint8_t *buf = NULL;
 	int result = RLC_OK;
-	(void)label;
 
 	bn_null(k);
 	bn_null(m);
@@ -142,7 +141,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g1_mul_gen(r, m);
 
 		/* Compute A = g1^(x + r) * \prod H_j^(y * m_j). */
-		bn_add(k, x, k);
+		bn_add(k, x[label], k);
 		bn_mod(k, k, n);
 		g1_mul_gen(a, k);
 		bn_mul(k, d, msg);
@@ -322,10 +321,9 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	return result;
 }
 
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+void cp_cmlhs_off(gt_t vk, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
-	(void)h;
 
 	gt_null(v);
 

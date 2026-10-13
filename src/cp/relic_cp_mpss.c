@@ -122,28 +122,28 @@ int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
 }
 
 int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
-		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2],
-		const pt_t pc_tri[2]) {
+		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2]) {
 	int result = 0;
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
 	g2_t z[2], w[2];
 	gt_t alpha[2], beta[2];
-	(void)pc_tri;
 
 	bn_null(n);
+	for (int i = 0; i < 2; i++) {
+		bn_null(d[i]);
+		bn_null(r[i]);
+		g1_null(p[i]);
+		g1_null(q[i]);
+		g2_null(z[i]);
+		g2_null(w[i]);
+		gt_null(alpha[i]);
+		gt_null(beta[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
-			bn_null(d[i]);
-			bn_null(r[i]);
-			g1_null(p[i]);
-			g1_null(q[i]);
-			g2_null(z[i]);
-			g2_null(w[i]);
-			gt_null(alpha[i]);
-			gt_null(beta[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			g1_new(p[i]);
@@ -190,10 +190,11 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
 		} else {
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
+			result = gt_is_unity(e);
 		}
 	}
 	RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		bn_free(n);
@@ -258,52 +259,67 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], size_t l) {
 }
 
 int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
-		const bn_t s[][2], const mt_t mul_tri[2], const mt_t sm_tri[2],
-		size_t l) {
+		const bn_t s[][2], const mt_t mul_tri[][2], size_t l) {
 	int result = RLC_OK;
-	bn_t n, d[2], e[2], t[2];
-	(void)mul_tri;
-	(void)sm_tri;
+	bn_t n, t[2], *d = RLC_ALLOCA(bn_t, 2 * l), *e = RLC_ALLOCA(bn_t, 2 * l);
+
+	if (d == NULL || e == NULL) {
+		RLC_FREE(d);
+		RLC_FREE(e);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(n);
+	for (int i = 0; i < 2; i++) {
+		bn_null(t[i]);
+	}
+	for (size_t i = 0; i < 2 * l; i++) {
+		bn_null(d[i]);
+		bn_null(e[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
-			bn_null(d[i]);
-			bn_null(e[i]);
-			bn_null(t[i]);
+			bn_new(t[i]);
+			bn_zero(t[i]);
+		}
+		for (size_t i = 0; i < 2 * l; i++) {
 			bn_new(d[i]);
 			bn_new(e[i]);
-			bn_new(t[i]);
 		}
-		/* Compute d = (y_im_i + x) in MPC. */
+		/* Compute d = (\sum y_i * m_i + x) in MPC, one triple per product. */
 		g1_get_ord(n);
-		bn_zero(t[0]);
-		for (int i = 0; i < l; i++) {
-			bn_add(d[0], s[i][0], s[i][1]);
-			bn_add(d[1], m[i][0], m[i][1]);
-			bn_mul(t[1], d[0], d[1]);
-			bn_mod(t[1], t[1], n);
-			bn_add(t[0], t[0], t[1]);
+		for (size_t i = 0; i < l; i++) {
+			mpc_mt_lcl(d[2 * i], e[2 * i], m[i][0], s[i][0], n, mul_tri[i][0]);
+			mpc_mt_lcl(d[2 * i + 1], e[2 * i + 1], m[i][1], s[i][1], n,
+				mul_tri[i][1]);
+		}
+		/* The products are independent, so one round opens all of them. */
+		for (size_t i = 0; i < l; i++) {
+			mpc_mt_bct(&d[2 * i], &e[2 * i], n);
+		}
+		for (size_t i = 0; i < l; i++) {
+			mpc_mt_mul(d[2 * i], d[2 * i], e[2 * i], n, mul_tri[i][0], 0);
+			mpc_mt_mul(d[2 * i + 1], d[2 * i + 1], e[2 * i + 1], n,
+				mul_tri[i][1], 1);
+			bn_add(t[0], t[0], d[2 * i]);
 			bn_mod(t[0], t[0], n);
+			bn_add(t[1], t[1], d[2 * i + 1]);
+			bn_mod(t[1], t[1], n);
 		}
-		bn_rand_mod(t[1], n);
-		bn_sub(t[0], t[0], t[1]);
-		if (bn_sign(t[0]) == RLC_NEG) {
-			bn_add(t[0], t[0], n);
-		}
-		bn_add(d[0], t[0], r[0]);
-		bn_mod(d[0], d[0], n);
-		bn_add(d[1], t[1], r[1]);
-		bn_mod(d[1], d[1], n);
+		bn_add(t[0], t[0], r[0]);
+		bn_mod(t[0], t[0], n);
+		bn_add(t[1], t[1], r[1]);
+		bn_mod(t[1], t[1], n);
 		/* Compute signature in MPC. */
 		g1_rand(b[0]);
 		g1_rand(b[1]);
 		g1_add(a, b[0], b[1]);
 		g1_norm(a, a);
-		g1_mul(b[0], a, d[0]);
-		g1_mul(b[1], a, d[1]);
+		g1_mul(b[0], a, t[0]);
+		g1_mul(b[1], a, t[1]);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -311,44 +327,61 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
 	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
-			bn_free(d[i]);
-			bn_free(e[i]);
 			bn_free(t[i]);
 		}
+		for (size_t i = 0; i < 2 * l; i++) {
+			bn_free(d[i]);
+			bn_free(e[i]);
+		}
+		RLC_FREE(d);
+		RLC_FREE(e);
 	}
 	return result;
 }
 
 int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		const g2_t h, const g2_t x, const g2_t y[][2], const bn_t v[][2],
-		const mt_t sm_tri[2], const pt_t pc_tri[2], size_t l) {
+		const mt_t mul_tri[][2], const mt_t sm_tri[2], size_t l) {
 	int result = 0;
 	bn_t n, _t, t[2], d[2], r[2], *_m = RLC_ALLOCA(bn_t, 2 * l);
+	bn_t *_d = RLC_ALLOCA(bn_t, 2 * l), *_e = RLC_ALLOCA(bn_t, 2 * l);
 	g1_t p[2], q[2];
 	g2_t w[2], z[2], *_y = RLC_ALLOCA(g2_t, 2 * l);
 	gt_t alpha[2], beta[2];
-	(void)pc_tri;
+
+	if (_m == NULL || _y == NULL || _d == NULL || _e == NULL) {
+		RLC_FREE(_m);
+		RLC_FREE(_y);
+		RLC_FREE(_d);
+		RLC_FREE(_e);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
 
 	bn_null(n);
 	bn_null(_t);
+	for (int i = 0; i < 2; i++) {
+		bn_null(d[i]);
+		bn_null(r[i]);
+		bn_null(t[i]);
+		g1_null(p[i]);
+		g1_null(q[i]);
+		g2_null(w[i]);
+		g2_null(z[i]);
+		gt_null(alpha[i]);
+		gt_null(beta[i]);
+		for (int j = 0; j < l; j++) {
+			g2_null(_y[l * i + j]);
+			bn_null(_m[l * i + j]);
+			bn_null(_d[l * i + j]);
+			bn_null(_e[l * i + j]);
+		}
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_t);
-		if (_m == NULL || _y == NULL) {
-			RLC_FREE(_m);
-			RLC_FREE(_y);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < 2; i++) {
-			bn_null(d[i]);
-			bn_null(r[i]);
-			bn_null(t[i]);
-			g1_null(p[i]);
-			g1_null(q[i]);
-			g2_null(w[i]);
-			gt_null(alpha[i]);
-			gt_null(beta[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			bn_new(t[i]);
@@ -359,10 +392,10 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
 			for (int j = 0; j < l; j++) {
-				g2_null(_y[l * i + j]);
 				g2_new(_y[l * i + j]);
-				bn_null(_m[l * i + j]);
 				bn_new(_m[l * i + j]);
+				bn_new(_d[l * i + j]);
+				bn_new(_e[l * i + j]);
 			}
 		}
 		g1_get_ord(n);
@@ -378,20 +411,28 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 				g2_mul_sim_lot(z[i], &_y[l * i], &_m[l * i], l);
 			}
 		} else {
-			/* Compute Z = X + [m] * [y_i] * G. */
-			bn_zero(t[0]);
+			/* Compute Z = X + [m] * [y_i] * G, with [m] * [y_i] in MPC and
+			 * one round opening all the independent products. */
 			for (int i = 0; i < l; i++) {
-				bn_add(d[0], v[i][0], v[i][1]);
-				bn_add(d[1], m[i][0], m[i][1]);
-				bn_mul(t[1], d[0], d[1]);
-				bn_mod(t[1], t[1], n);
-				bn_add(t[0], t[0], t[1]);
-				bn_mod(t[0], t[0], n);
+				mpc_mt_lcl(_d[2 * i], _e[2 * i], m[i][0], v[i][0], n,
+					mul_tri[i][0]);
+				mpc_mt_lcl(_d[2 * i + 1], _e[2 * i + 1], m[i][1], v[i][1], n,
+					mul_tri[i][1]);
 			}
-			bn_rand_mod(t[1], n);
-			bn_sub(t[0], t[0], t[1]);
-			if (bn_sign(t[0]) == RLC_NEG) {
-				bn_add(t[0], t[0], n);
+			for (int i = 0; i < l; i++) {
+				mpc_mt_bct(&_d[2 * i], &_e[2 * i], n);
+			}
+			bn_zero(t[0]);
+			bn_zero(t[1]);
+			for (int i = 0; i < l; i++) {
+				mpc_mt_mul(_d[2 * i], _d[2 * i], _e[2 * i], n, mul_tri[i][0],
+					0);
+				mpc_mt_mul(_d[2 * i + 1], _d[2 * i + 1], _e[2 * i + 1], n,
+					mul_tri[i][1], 1);
+				bn_add(t[0], t[0], _d[2 * i]);
+				bn_mod(t[0], t[0], n);
+				bn_add(t[1], t[1], _d[2 * i + 1]);
+				bn_mod(t[1], t[1], n);
 			}
 			g2_mul(z[0], h, t[0]);
 			g2_mul(z[1], h, t[1]);
@@ -428,10 +469,11 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		} else {
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
+			result = gt_is_unity(e);
 		}
 	}
 	RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		bn_free(n);
@@ -449,10 +491,14 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			for (int j = 0; j < l; j++) {
 				g2_free(_y[l * i + j]);
 				bn_free(_m[l * i + j]);
+				bn_free(_d[l * i + j]);
+				bn_free(_e[l * i + j]);
 			}
 		}
 		RLC_FREE(_y);
 		RLC_FREE(_m);
+		RLC_FREE(_d);
+		RLC_FREE(_e);
 	}
 	return result;
 }

@@ -253,11 +253,10 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 }
 
 int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const ec_t pk, const ec_t pp) {
+		const uint8_t *msg, size_t len, const ec_t pk) {
 	bn_t n, r;
 	ec_t w[2];
 	int i, result = RLC_OK;
-	(void)pp;
 
 	bn_null(n);
 	bn_null(r);
@@ -309,14 +308,11 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 	return result;
 }
 
-int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
-		const ec_t pp) {
+int cp_etrs_uni(bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk) {
 	int i, result = RLC_ERR;
 	bn_t l, n, u, v;
 	ec_t t, w[2];
-	(void)thres;
-	(void)pp;
 
 	int d = max + *size;
 	bn_t *_v = RLC_ALLOCA(bn_t, d);

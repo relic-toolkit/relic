@@ -940,7 +940,7 @@ static int ers(void) {
 			TEST_ASSERT(cp_ers_ver(td, ring, 1, m, 0, pp) == 0, end);
 			size = 1;
 			for (int j = 1; j < 4; j++) {
-				TEST_ASSERT(cp_ers_ext(td, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_ers_ext(td, ring, &size, m, 5, pk[j]) == RLC_OK, end);
 				TEST_ASSERT(cp_ers_ver(td, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_ers_ver(td, ring, size, m, 0, pp) == 0, end);
 			}
@@ -994,7 +994,7 @@ static int smlers(void) {
 			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 0, pp) == 0, end);
 			size = 1;
 			for (int j = 1; j < 4; j++) {
-				TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[j]) == RLC_OK, end);
 				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 0, pp) == 0, end);
 				TEST_ASSERT(ec_cmp(ring[0]->tau, ring[j]->tau) == RLC_EQ, end);
@@ -1052,7 +1052,7 @@ static int etrs(void) {
 			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 0, pp) == 0, end);
 			size = 1;
 			for (int j = 1; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
 				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, m, 5, pp) == 0, end);
 				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 0, pp) == 0, end);
@@ -1060,12 +1060,12 @@ static int etrs(void) {
 
 			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			size = 1;
-			TEST_ASSERT(cp_etrs_uni(1, td, y, 4, ring, &size, m, 5, sk[1], pk[1], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_uni(td, y, 4, ring, &size, m, 5, sk[1], pk[1]) == RLC_OK, end);
 			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, m, 5, pp) == 0, end);
 			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 5, pp) == 1, end);
 			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 0, pp) == 0, end);
 			for (int j = 2; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
 				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 0, end);
 				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 0, pp) == 0, end);
@@ -1290,7 +1290,7 @@ static int pdpub(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, e, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
 			pc_map(e, p, q);
@@ -1481,7 +1481,7 @@ static int pdbat(void) {
 
 		TEST_CASE("faster delegated batch pairing is correct") {
 			TEST_ASSERT(cp_mvbat_gen(ls, u2, s, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_mvbat_ask(b, qs, s, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_mvbat_ask(b, qs, s, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
@@ -1492,13 +1492,13 @@ static int pdbat(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
@@ -2053,7 +2053,7 @@ static int mpss(void) {
 	g1_t g, s[2];
 	g2_t h, x[2], y[2], _y[5][2];
 	gt_t e[2], f[2];
-	mt_t tri[3][2];
+	mt_t tri[3][2], btri[5][2];
 	pt_t t[2];
 
 	bn_null(n);
@@ -2077,6 +2077,9 @@ static int mpss(void) {
 			mt_null(tri[0][i]);
 			mt_null(tri[1][i]);
 			mt_null(tri[2][i]);
+			for (int j = 0; j < 5; j++) {
+				mt_null(btri[j][i]);
+			}
 			pt_null(t[i]);
 			bn_new(m[i]);
 			bn_rand_mod(m[i], n);
@@ -2090,6 +2093,9 @@ static int mpss(void) {
 			mt_new(tri[0][i]);
 			mt_new(tri[1][i]);
 			mt_new(tri[2][i]);
+			for (int j = 0; j < 5; j++) {
+				mt_new(btri[j][i]);
+			}
 			pt_new(t[i]);
 			for (j = 0; j < 5; j++) {
 				bn_null(ms[j][i]);
@@ -2120,7 +2126,8 @@ static int mpss(void) {
 			/* Compute signature in MPC. */
 			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0]) == RLC_OK, end);
 			/* Verify signature in MPC. */
-			cp_mpss_ver(e[0], g, s, m, h, x[0], y[0], tri[2], t);
+			TEST_ASSERT(cp_mpss_ver(e[0], g, s, m, h, x[0], y[0], tri[2]) == 1,
+				end);
 			TEST_ASSERT(gt_is_unity(e[0]) == 1, end);
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
@@ -2148,17 +2155,29 @@ static int mpss(void) {
 			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_mpsb_bct(x, _y, 5) == RLC_OK, end);
 			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5) == RLC_OK, end);
-			/* Verify signature in MPC. */
-			cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, NULL, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e[1]) == 1, end);
+			for (int j = 0; j < 5; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, btri, 5) == RLC_OK, end);
+			/* Verify signature in MPC. The output e[1] is also an element of
+			 * the triple, so recompute that element after each call. */
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, NULL, NULL,
+				tri[2], 5) == 1, end);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
-			cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e[1]) == 1, end);
+			for (int j = 0; j < 5; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, btri,
+				tri[2], 5) == 1, end);
+			gt_exp_gen(e[0], tri[2][0]->b);
+			gt_exp_gen(e[1], tri[2][1]->b);
 			bn_sub_dig(ms[0][0], ms[0][0], 1);
-			cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e[1]) == 0, end);
+			for (int j = 0; j < 5; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, btri,
+				tri[2], 5) == 0, end);
 		}
 		TEST_END;
 	}
@@ -2183,6 +2202,9 @@ static int mpss(void) {
 		mt_free(tri[0][i]);
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
+		for (int j = 0; j < 5; j++) {
+			mt_free(btri[j][i]);
+		}
 		pt_free(t[i]);
 		for (j = 0; j < 5; j++) {
 			bn_free(ms[j][i]);
@@ -2336,7 +2358,7 @@ static int lhs(void) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
 					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
-						s[j][l], msg[j][l], data, label[l], x[j][l], h, k[j], K,
+						s[j][l], msg[j][l], data, label[l], x[j], h, k[j], K,
 						d[j], sk[j], b);
 				}
 			}
@@ -2366,7 +2388,7 @@ static int lhs(void) {
 			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
 				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b), end);
 
-			cp_cmlhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
+			cp_cmlhs_off(vk, label, (const gt_t **)hs, (const dig_t **)f,
 				flen, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
 				y, pk, S, b) == 1, end);

@@ -264,20 +264,22 @@ void mpc_mt_mul(bn_t r, const bn_t d, const bn_t e, const bn_t n,
  * @param[out] y			- the evaluation points.
  * @param[in] key 			- the secret to share.
  * @param[in] order			- the order of the finite field.
- * @param[in] k				- the threshold.
- * @param[in] n				- the number of parties.
+ * @param[in] k				- the threshold, at least 2.
+ * @param[in] n				- the number of parties, with k <= n < order.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t key, const bn_t order,
         size_t k, size_t n);
 
 /**
- * Recovers a secret key using a k shares (x, y) of over a given finite field.
+ * Recovers a secret key using k shares (x, y) over a given finite field.
  *
- * @param[in] key 			- the recovered secret.
- * @param[in] x				- the indexes of the parties contributing shares.
+ * @param[out] key 			- the recovered secret.
+ * @param[in] x				- the distinct indexes of the contributing parties.
  * @param[in] y				- the evaluation points.
  * @param[in] order			- the order of the finite field.
- * @param[in] k				- the threshold.
+ * @param[in] k				- the threshold, at least 2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
         size_t k);
@@ -298,7 +300,6 @@ void g1_mul_lcl(bn_t d, g1_t q, const bn_t x, const g1_t p, const mt_t tri);
  *
  * @param[out] d 				- the first public value (masked scalar).
  * @param[out] q 				- the second public value (masked point).
- * @param[in] n 				- the order.
 */
 void g1_mul_bct(bn_t d[2], g1_t q[2]);
 
@@ -329,7 +330,6 @@ void g2_mul_lcl(bn_t d, g2_t q, const bn_t x, const g2_t p, const mt_t tri);
  *
  * @param[out] d 				- the first public value (masked scalar).
  * @param[out] q 				- the second public value (masked point).
- * @param[in] n 				- the order.
 */
 void g2_mul_bct(bn_t d[2], g2_t q[2]);
 
@@ -345,27 +345,26 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]);
 void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party);
 
 /**
- * Performs the local work for a MPC scalar multiplication in G2.
+ * Performs the local work for a MPC exponentiation in G_T.
  *
  * @param[out] d 				- the share of the masked scalar.
- * @param[out] q 				- the share of the masked point to multiply.
- * @param[in] x 				- the scalar.
- * @param[in] p 				- the point to multiply.
+ * @param[out] q 				- the share of the masked element.
+ * @param[in] x 				- the exponent.
+ * @param[in] p 				- the element to exponentiate.
  * @param[in] tri 				- the multiplication triple.
 */
 void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri);
 
 /**
- * Opens the public values in an MPC scalar multiplication in G2.
+ * Opens the public values in an MPC exponentiation in G_T.
  *
- * @param[out] d 				- the first public value (masked scalar).
- * @param[out] q 				- the second public value (masked point).
- * @param[in] n 				- the order.
+ * @param[out] d 				- the first public value (masked exponent).
+ * @param[out] q 				- the second public value (masked element).
 */
 void gt_exp_bct(bn_t d[2], gt_t q[2]);
 
 /**
- * Finishes an MPC scalar multiplication in G2 by computing the result.
+ * Finishes an MPC exponentiation in G_T by computing the result.
  *
  * @param[out] r 				- the share of the result.
  * @param[in] d 				- the first public value.

@@ -197,11 +197,14 @@ void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party) {
 
 void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri) {
 	bn_t n;
+	gt_t t;
 
 	bn_null(n);
+	gt_null(t);
 
 	RLC_TRY {
 		bn_new(n);
+		gt_new(t);
 
 		/* Compute public values for transmission. */
 
@@ -213,16 +216,14 @@ void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri) {
 		}
 		bn_mod(d, d, n);
 
-		/* [Q] = [P] - [B] = [b]G. */
-		/* Copy first to avoid overwriting P. */
-		gt_copy(q, p);
-		gt_inv(*tri->bt, *tri->bt);
-		gt_mul(q, q, *tri->bt);
-		gt_inv(*tri->bt, *tri->bt);
+		/* [Q] = [P] - [B] = [b]G, without writing to the triple. */
+		gt_inv(t, *tri->bt);
+		gt_mul(q, p, t);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		gt_free(t);
 	}
 }
 
@@ -327,12 +328,14 @@ void pc_map_mpc(gt_t r, const g1_t d1, const g2_t d2, const pt_t triple,
 	g2_t _q[2];
 
 	gt_null(t);
+	for (int i = 0; i < 2; i++) {
+		g1_null(_p[i]);
+		g2_null(_q[i]);
+	}
 
 	RLC_TRY {
 		gt_new(t);
 		for (int i = 0; i < 2; i++) {
-			g1_null(_p[i]);
-			g2_null(_q[i]);
 			g1_new(_p[i]);
 			g2_new(_q[i]);
 		}
@@ -355,8 +358,6 @@ void pc_map_mpc(gt_t r, const g1_t d1, const g2_t d2, const pt_t triple,
 	} RLC_FINALLY {
 		gt_free(t);
 		for (int i = 0; i < 2; i++) {
-			g1_free(_p[i]);
-			g2_free(_q[i]);
 			g1_free(_p[i]);
 			g2_free(_q[i]);
 		}

@@ -130,11 +130,10 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 }
 
 int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
-		size_t len, const ec_t pk, const ec_t pp) {
+		size_t len, const ec_t pk) {
 	bn_t n, r;
 	ec_t g[2], y[2];
 	int result = RLC_OK;
-	(void)pp;
 
 	bn_null(n);
 	bn_null(r);

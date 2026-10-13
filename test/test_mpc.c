@@ -173,6 +173,24 @@ static int shamir(void) {
 				}
 			}
 		} TEST_END;
+
+		TEST_CASE("shamir secret sharing rejects invalid parameters") {
+			int ret = RLC_OK;
+			bn_rand_mod(s, q);
+			/* The order must exceed the number of parties. */
+			bn_set_dig(t, 3);
+			TEST_ASSERT(mpc_sss_gen(x, y, s, t, 2, 5) == RLC_ERR, end);
+			/* Indexes that coincide modulo the order are rejected. */
+			TEST_ASSERT(mpc_sss_gen(x, y, s, q, 3, 5) == RLC_OK, end);
+			bn_copy(x[1], x[0]);
+			bn_copy(y[1], y[0]);
+			RLC_TRY {
+				ret = mpc_sss_key(t, x, y, q, 3);
+			} RLC_CATCH_ANY {
+				ret = RLC_ERR;
+			}
+			TEST_ASSERT(ret == RLC_ERR, end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
