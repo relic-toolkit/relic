@@ -129,7 +129,7 @@ int util_cmp_sec(const void *a, const void *b, size_t size) {
 	const uint8_t *_a = (const uint8_t *)a;
 	const uint8_t *_b = (const uint8_t *)b;
 	uint8_t result = 0;
-	int i;
+	size_t i;
 
 	for (i = 0; i < size; i++) {
 		result |= _a[i] ^ _b[i];

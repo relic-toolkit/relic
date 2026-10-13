@@ -41,7 +41,7 @@ int fb_cmp_dig(const fb_t a, dig_t b) {
 	/* The low digit must match and all the others must be zero. */
 	dig_t r = a[0] ^ b;
 
-	for (int i = 1; i < RLC_FB_DIGS; i++) {
+	for (size_t i = 1; i < RLC_FB_DIGS; i++) {
 		r |= a[i];
 	}
 

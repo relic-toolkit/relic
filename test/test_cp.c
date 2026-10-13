@@ -2539,8 +2539,8 @@ static int psi(void) {
 				bn_rand_mod(y[j], n);
 			}
 			TEST_ASSERT(cp_rsapsi_ask(q, r, p, g, n, x, M) == RLC_OK, end);
-			for (int k = 0; k <= N; k++) {
-				for (int j = 0; j < k; j++) {
+			for (size_t k = 0; k <= N; k++) {
+				for (size_t j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_rsapsi_ans(v, w, q, g, n, y, N) == RLC_OK, end);
@@ -2560,8 +2560,8 @@ static int psi(void) {
 				bn_rand_mod(y[j], crt->n);
 			}
 			TEST_ASSERT(cp_shipsi_ask(q, r, p, g, crt->n, x, M) == RLC_OK, end);
-			for (int k = 0; k <= N; k++) {
-				for (int j = 0; j < k; j++) {
+			for (size_t k = 0; k <= N; k++) {
+				for (size_t j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK,
@@ -2583,8 +2583,8 @@ static int psi(void) {
 				}
 				TEST_ASSERT(cp_pbpsi_gen(q, ss, s, M) == RLC_OK, end);
 				TEST_ASSERT(cp_pbpsi_ask(d, r, x, s, M) == RLC_OK, end);
-				for (int k = 0; k <= N; k++) {
-					for (int j = 0; j < k; j++) {
+				for (size_t k = 0; k <= N; k++) {
+					for (size_t j = 0; j < k; j++) {
 						bn_copy(y[j], x[j]);
 					}
 					TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);

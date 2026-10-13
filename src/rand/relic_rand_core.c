@@ -191,7 +191,7 @@ void rand_init(void) {
 int rand_check(uint8_t *buf, size_t size) {
 	int count = 0;
 
-	for (int i = 1; i < size; i++) {
+	for (size_t i = 1; i < size; i++) {
 		if (buf[i] == buf[i - 1]) {
 			count++;
 		} else {

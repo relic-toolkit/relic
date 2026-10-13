@@ -37,7 +37,7 @@
 /*============================================================================*/
 
 void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	int i, j;
+	size_t i, j;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
 

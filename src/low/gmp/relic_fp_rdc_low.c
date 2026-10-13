@@ -65,7 +65,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 			RLC_RIP(bi, di, j);
 			/* Add or subtract q * 2^j as t = q * 2^bi at digit di. */
 			t[k] = bn_lshb_low(t, q, k, bi);
-			ti = RLC_MIN(k + 1, 2 * RLC_FP_DIGS - di);
+			ti = RLC_MIN(k + 1, (int)(2 * RLC_FP_DIGS) - di);
 			if (sform[i] < 0) {
 				mpn_add(r + di, r + di, 2 * RLC_FP_DIGS - di, t, ti);
 			} else {
@@ -85,7 +85,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	dig_t r, u = *(fp_prime_get_rdc());
 	const dig_t *m = fp_prime_get();
 
-	for (int i = 0; i < RLC_FP_DIGS; i++, a++) {
+	for (size_t i = 0; i < RLC_FP_DIGS; i++, a++) {
 		r = (dig_t)(*a * u);
 #if FP_PRIME == 3072
 		*a = mpn_add_1(a, a, 2 * RLC_FP_DIGS, r);

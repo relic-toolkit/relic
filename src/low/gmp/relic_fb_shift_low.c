@@ -70,7 +70,8 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 }
 
 dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size) {
-	int i, j;
+	size_t i;
+	int j;
 	dig_t b1, b2;
 
 	j = RLC_DIG - bits;

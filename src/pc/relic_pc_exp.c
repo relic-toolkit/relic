@@ -247,7 +247,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 				}
 				gt_copy(_t[0], q);
 				for (size_t i = 1; i < f; i++) {
-					for (size_t j = 0; j < (1 << (w - 2)); j++) {
+					for (size_t j = 0; j < ((size_t)1 << (w - 2)); j++) {
 						gt_psi(_t[i * RLC_GT_TABLE + j],
 								_t[(i - 1) * RLC_GT_TABLE + j]);
 						if (_s[i] != _s[i - 1]) {
@@ -336,12 +336,12 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_new(_b[i]);
 			gt_new(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_new(t[i * s + j]);
 			}
 		}
@@ -411,12 +411,12 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_free(_b[i]);
 			gt_free(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_free(t[i * s + j]);
 			}
 		}
@@ -472,12 +472,12 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_new(_b[i]);
 			gt_new(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_new(t[i * s + j]);
 			}
 		}
@@ -524,7 +524,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 				}
 			
 				for (size_t m = 0; m < s; m++) {
-					gt_copy_sec(q[1], t[i * s + m], m == col);
+					gt_copy_sec(q[1], t[i * s + m], m == (size_t)col);
 				}
 				gt_inv(q[2], q[1]);
 				gt_copy_sec(q[1], q[2], sac[i * f * RLC_FP_BITS + j]);
@@ -544,12 +544,12 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < f; i++) {
+		for (size_t i = 0; i < f; i++) {
 			bn_free(_b[i]);
 			gt_free(q[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
-			for (int j = 0; j < s; j++) {
+			for (size_t j = 0; j < s; j++) {
 				gt_free(t[i * s + j]);
 			}
 		}
@@ -684,7 +684,7 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 				n0 = ((n0 ^ c0) - c0) >> 1;
 
 				for (size_t m = 0; m < RLC_GT_TABLE; m++) {
-					gt_copy_sec(w, t[i * RLC_GT_TABLE + m], m == n0);
+					gt_copy_sec(w, t[i * RLC_GT_TABLE + m], m == (size_t)n0);
 				}
 
 				gt_inv(q, w);

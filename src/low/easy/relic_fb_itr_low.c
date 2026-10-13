@@ -39,7 +39,8 @@
 /*============================================================================*/
 
 void fb_itrn_low(dig_t *c, const dig_t *a, dig_t *t) {
-	int i, j;
+	int i;
+	size_t j;
 	dig_t u, *p;
 	const dig_t *tmp;
 	rlc_align dig_t v[RLC_FB_DIGS];

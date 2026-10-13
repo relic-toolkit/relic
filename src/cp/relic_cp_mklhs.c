@@ -145,7 +145,8 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 	g1_t d, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
 	gt_t c, e;
-	int imax = 0, lmax = 0, fmax = 0, ver1 = 0, ver2 = 0;
+	size_t imax = 0, lmax = 0, fmax = 0;
+	int ver1 = 0, ver2 = 0;
 	for (size_t i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
 		imax = RLC_MAX(imax, strlen(id[i]));
@@ -184,7 +185,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 			bn_add(t, t, mu[j]);
 			bn_mod(t, t, n);
 		}
-		for (int j = 0; j < fmax; j++) {
+		for (size_t j = 0; j < fmax; j++) {
 			g1_null(h[j]);
 			g1_new(h[j]);
 		}
@@ -230,7 +231,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		for (size_t j = 0; j < slen; j++) {
 			g1_free(g[j]);
 		}
-		for (int j = 0; j < fmax; j++) {
+		for (size_t j = 0; j < fmax; j++) {
 			g1_free(h[j]);
 		}
 		RLC_FREE(g);
@@ -242,7 +243,8 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 
 int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
-	int imax = 0, lmax = 0, fmax = 0, result = RLC_OK;
+	size_t imax = 0, lmax = 0, fmax = 0;
+	int result = RLC_OK;
 	for (size_t i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
 		imax = RLC_MAX(imax, strlen(id[i]));
@@ -259,7 +261,7 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		for (int j = 0; j < fmax; j++) {
+		for (size_t j = 0; j < fmax; j++) {
 			g1_null(_h[j]);
 			g1_new(_h[j]);
 		}
@@ -279,7 +281,7 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		for (int j = 0; j < fmax; j++) {
+		for (size_t j = 0; j < fmax; j++) {
 			g1_free(_h[j]);
 		}
 		RLC_FREE(_h);
@@ -295,7 +297,8 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 	g1_t d, g1, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
 	gt_t c, e;
-	int ver1 = 0, ver2 = 0, imax = 0;
+	int ver1 = 0, ver2 = 0;
+	size_t imax = 0;
 	for (size_t i = 0; i < slen; i++) {
 		imax = RLC_MAX(imax, strlen(id[i]));
 	}
