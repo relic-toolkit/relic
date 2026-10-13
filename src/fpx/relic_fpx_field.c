@@ -123,6 +123,13 @@ void fp2_field_init(void) {
 		fp_copy(ctx->fp2_p1[4][0], t1[0]);
 		fp_copy(ctx->fp2_p1[4][1], t1[1]);
 
+		/* Compute the norm z of QNR^(p - 1)/6, a sixth root of unity in Fp
+		 * that gives the constants of the even powers of Frobenius, and z^2. */
+		fp2_frb(t1, t0, 1);
+		fp2_mul(t1, t1, t0);
+		fp_copy(ctx->fp2_p0[0], t1[0]);
+		fp_sqr(ctx->fp2_p0[1], t1[0]);
+
 		/* Compute QNR^(p - (p mod 4))/4. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);

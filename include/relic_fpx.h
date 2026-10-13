@@ -981,6 +981,19 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
+ * Cubes a dodecic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dodecic extension field element to cube.
+ */
+#if FPX_RDC == BASIC
+#define fp12_cub_cyc(C, A)		fp12_cub_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp12_cub_cyc(C, A)		fp12_cub_cyc_lazyr(C, A)
+#endif
+
+/**
  * Squares a dodecic extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
  *
@@ -1211,6 +1224,19 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
+ * Cubes a octdecic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the octdecic extension field element to cube.
+ */
+#if FPX_RDC == BASIC
+#define fp18_cub_cyc(C, A)		fp18_cub_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp18_cub_cyc(C, A)		fp18_cub_cyc_lazyr(C, A)
+#endif
+
+/**
  * Squares an octdecic extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
  *
@@ -1436,6 +1462,19 @@ typedef dv18_t dv54_t[3];
 #define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_basic(C, A)
 #elif FPX_RDC == LAZYR
 #define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Cubes a octaeicosic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the octaeicosic extension field element to cube.
+ */
+#if FPX_RDC == BASIC
+#define fp48_cub_cyc(C, A)		fp48_cub_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp48_cub_cyc(C, A)		fp48_cub_cyc_lazyr(C, A)
 #endif
 
 /**
@@ -3895,6 +3934,24 @@ void fp12_sqr_pck_basic(fp12_t c, const fp12_t a);
 void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a);
 
 /**
+ * Computes the cube of a cyclotomic dodecic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp12_cub_cyc_basic(fp12_t c, const fp12_t a);
+
+/**
+ * Computes the cube of a cyclotomic dodecic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp12_cub_cyc_lazyr(fp12_t c, const fp12_t a);
+
+/**
  * Tests if a dodecic extension field element belongs to the cyclotomic
  * subgroup.
  *
@@ -4707,6 +4764,24 @@ void fp18_sqr_pck_basic(fp18_t c, const fp18_t a);
 void fp18_sqr_pck_lazyr(fp18_t c, const fp18_t a);
 
 /**
+ * Computes the cube of a cyclotomic octdecic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp18_cub_cyc_basic(fp18_t c, const fp18_t a);
+
+/**
+ * Computes the cube of a cyclotomic octdecic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp18_cub_cyc_lazyr(fp18_t c, const fp18_t a);
+
+/**
  * Tests if an octdecic extension field element belongs to the cyclotomic
  * subgroup.
  *
@@ -5508,6 +5583,24 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a);
  * @param[in] a				- the cyclotomic extension element to square.
  */
 void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a);
+
+/**
+ * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp48_cub_cyc_basic(fp48_t c, const fp48_t a);
+
+/**
+ * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp48_cub_cyc_lazyr(fp48_t c, const fp48_t a);
 
 /**
  * Tests if a 48-extension field element belongs to the cyclotomic
