@@ -2370,11 +2370,14 @@ static int small_primes(void) {
 static int inversion(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d[2];
+	crt_t crt;
 
 	bn_null_all(a, b, c, d[0], d[1]);
+	crt_null(crt);
 
 	RLC_TRY {
 		bn_new_all(a, b, c, d[0], d[1]);
+		crt_new(crt);
 
 		bn_gen_prime(a, RLC_BN_BITS);
 
@@ -2397,6 +2400,25 @@ static int inversion(void) {
 			TEST_ASSERT(bn_cmp_dig(b, 1) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
+
+		do {
+			bn_gen_prime(crt->p, RLC_BN_BITS / 2);
+			bn_gen_prime(crt->q, RLC_BN_BITS / 2);
+		} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
+		bn_mul(crt->n, crt->p, crt->q);
+		bn_mod_inv(crt->qi, crt->q, crt->p);
+
+		TEST_CASE("modular inversion with the crt is correct") {
+			do {
+				bn_rand_mod(b, crt->n);
+				bn_gcd(c, b, crt->n);
+			} while (bn_cmp_dig(c, 1) != RLC_EQ);
+			bn_mod_inv_crt(c, b, crt);
+			bn_mod_inv(d[0], b, crt->n);
+			TEST_ASSERT(bn_cmp(c, d[0]) == RLC_EQ, end);
+			bn_mod_inv_crt(b, b, crt);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2404,6 +2426,7 @@ static int inversion(void) {
 	code = RLC_OK;
   end:
 	bn_free_all(a, b, c, d[0], d[1]);
+	crt_free(crt);
 	return code;
 }
 

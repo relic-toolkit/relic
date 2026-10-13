@@ -742,7 +742,7 @@ typedef etrs_st *etrs_t;
 
 /**
  * Encrypts using the RSA cryptosystem. The optional last argument chooses the
- * padding among oaep (the default) and pkcs1. Computes O = Enc_K(I).
+ * padding among oaep (the default), oaepp and pkcs1. Computes O = Enc_K(I).
  *
  * @param[out] O			- the output buffer.
  * @param[in, out] L		- the buffer capacity and number of bytes written.
@@ -757,7 +757,7 @@ typedef etrs_st *etrs_t;
 
 /**
  * Decrypts using the RSA cryptosystem. The optional last argument chooses the
- * padding among oaep (the default) and pkcs1. Computes O = Dec_K(I).
+ * padding among oaep (the default), oaepp and pkcs1. Computes O = Dec_K(I).
  *
  * @param[out] O			- the output buffer.
  * @param[in, out] L		- the buffer capacity and number of bytes written.
@@ -832,6 +832,21 @@ int cp_rsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rsa_t pub);
 
 /**
+ * Encrypts using the RSA cryptosystem with OAEP+ padding (Shoup, CRYPTO 2001),
+ * instantiated with the chosen hash function and MGF1. There is no standard
+ * encoding, so ciphertexts only interoperate with this library.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] pub			- the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_rsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub);
+
+/**
  * Encrypts using the RSA cryptosystem with PKCS#1 v1.5 padding.
  *
  * @param[out] out			- the output buffer.
@@ -857,6 +872,19 @@ int cp_rsa_enc_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv);
+
+/**
+ * Decrypts using the RSA cryptosystem with OAEP+ padding, as cp_rsa_dec_oaep().
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] prv			- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_rsa_dec_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rsa_t prv);
 
 /**

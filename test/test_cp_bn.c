@@ -150,6 +150,12 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv, pkcs1) == RLC_OK,
 				end);
 			TEST_ASSERT(ol == il && memcmp(in, out, ol) == 0, end);
+			ol = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub, oaepp) == RLC_OK,
+				end);
+			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv, oaepp) == RLC_OK,
+				end);
+			TEST_ASSERT(ol == il && memcmp(in, out, ol) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("rsa signature/verification is correct") {
@@ -232,6 +238,14 @@ static int rsa(void) {
 			result = cp_rsa_dec(res, &rl, out, ol, prv, pkcs1);
 			TEST_ASSERT(result != RLC_OK || rl != il ||
 					memcmp(res, in, il) != 0, end);
+			/* OAEP+ checks the integrity of the whole encoding. */
+			ol = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub, oaepp) == RLC_OK,
+				end);
+			out[ol / 2] ^= 1;
+			rl = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_rsa_dec(res, &rl, out, ol, prv, oaepp) == RLC_ERR,
+				end);
 		} TEST_END;
 
 		TEST_CASE("rsa private operations detect faults") {
@@ -274,6 +288,12 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub, pkcs1) == RLC_OK,
 				end);
 			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv, pkcs1) == RLC_OK,
+				end);
+			TEST_ASSERT(ol == il && memcmp(in, out, ol) == 0, end);
+			ol = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub, oaepp) == RLC_OK,
+				end);
+			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv, oaepp) == RLC_OK,
 				end);
 			TEST_ASSERT(ol == il && memcmp(in, out, ol) == 0, end);
 		} TEST_END;

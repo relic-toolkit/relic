@@ -118,3 +118,33 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 		RLC_FREE(t);
 	}
 }
+
+void bn_mod_inv_crt(bn_t c, const bn_t a, const crt_t crt) {
+	bn_t t, u;
+
+	bn_null(t);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+
+		bn_mod(t, a, crt->p);
+		bn_mod_inv(t, t, crt->p);
+		bn_mod(u, a, crt->q);
+		bn_mod_inv(u, u, crt->q);
+		/* c = u + q * ((t - u) * qInv mod p) by Garner's formula. */
+		bn_sub(t, t, u);
+		bn_mul(t, t, crt->qi);
+		bn_mod(t, t, crt->p);
+		bn_mul(t, t, crt->q);
+		bn_add(c, t, u);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
+	}
+}

@@ -41,7 +41,7 @@
 #define RSA_PKCS1_LEN		(11)
 
 /**
- * Length of the minimum padding of OAEP encryption in bytes.
+ * Length of the minimum padding of OAEP and OAEP+ encryption in bytes.
  */
 #define RSA_OAEP_LEN		(2 * RLC_MD_LEN + 2)
 
@@ -88,7 +88,7 @@ static int rsa_exp_prv(bn_t c, const bn_t a, const rsa_t prv) {
 			result = RLC_ERR;
 		} else {
 			/* c = s / r mod n. */
-			bn_mod_inv(r, r, prv->crt->n);
+			bn_mod_inv_crt(r, r, prv->crt);
 			bn_mul(s, s, r);
 			bn_mod(c, s, prv->crt->n);
 		}
@@ -135,6 +135,24 @@ static const uint8_t sh512_id[] = {
 };
 
 /**
+ * ASN.1 identifier of the hash function BLAKE2s-160, with the object identifier
+ * 1.3.6.1.4.1.1722.12.2.2.5 from RFC 7693 and NULL parameters.
+ */
+static const uint8_t b2s160_id[] = {
+	0x30, 0x27, 0x30, 0x0f, 0x06, 0x0b, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x8d,
+	0x3a, 0x0c, 0x02, 0x02, 0x05, 0x05, 0x00, 0x04, 0x14
+};
+
+/**
+ * ASN.1 identifier of the hash function BLAKE2s-256, with the object identifier
+ * 1.3.6.1.4.1.1722.12.2.2.8 from RFC 7693 and NULL parameters.
+ */
+static const uint8_t b2s256_id[] = {
+	0x30, 0x33, 0x30, 0x0f, 0x06, 0x0b, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x8d,
+	0x3a, 0x0c, 0x02, 0x02, 0x08, 0x05, 0x00, 0x04, 0x20
+};
+
+/**
  * Returns the ASN.1 DigestInfo prefix of the chosen hash function, as in the
  * PKCS#1 v1.5 signature encoding.
  *
@@ -155,6 +173,12 @@ static const uint8_t *hash_id(size_t *len) {
 		case SH512:
 			*len = sizeof(sh512_id);
 			return sh512_id;
+		case B2S160:
+			*len = sizeof(b2s160_id);
+			return b2s160_id;
+		case B2S256:
+			*len = sizeof(b2s256_id);
+			return b2s256_id;
 		default:
 			*len = 0;
 			return NULL;
@@ -364,6 +388,127 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	}
 	*m_len = db_len - idx - 1;
 	memcpy(m, db + idx + 1, *m_len);
+	return RLC_OK;
+}
+
+/**
+ * Encodes a message for encryption with OAEP+ (Shoup, CRYPTO 2001):
+ * EM = 00 | s | t, with s = (G(r) XOR X) | H'(r | X), t = H(s) XOR r and
+ * X = PS | 01 | M, for a random r of RLC_MD_LEN bytes. The three functions are
+ * instantiated with the chosen hash function and MGF1, separated by a prefix:
+ * G(r) = MGF(00 | r), H'(r | X) = Hash(01 | r | X) and H(s) = MGF(02 | s).
+ *
+ * @param[out] em			- the encoded message.
+ * @param[in] k				- the length of the encoded message in bytes.
+ * @param[in] m				- the message.
+ * @param[in] m_len			- the message length in bytes, at most
+ * 							  k - 2 * RLC_MD_LEN - 2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1;
+	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN];
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k);
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	/* X = PS | 01 | M. */
+	em[0] = 0x00;
+	memset(s, 0, x_len - m_len - 1);
+	s[x_len - m_len - 1] = 0x01;
+	memcpy(s + x_len - m_len, m, m_len);
+	rand_bytes(r, RLC_MD_LEN);
+
+	/* s = (G(r) XOR X) | H'(r | X). */
+	buf[0] = 0x01;
+	memcpy(buf + 1, r, RLC_MD_LEN);
+	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
+	md_map(s + x_len, buf, 1 + RLC_MD_LEN + x_len);
+	buf[0] = 0x00;
+	md_mgf(buf + 1 + RLC_MD_LEN, x_len, buf, 1 + RLC_MD_LEN);
+	for (size_t i = 0; i < x_len; i++) {
+		s[i] ^= buf[1 + RLC_MD_LEN + i];
+	}
+
+	/* t = H(s) XOR r. */
+	buf[0] = 0x02;
+	memcpy(buf + 1, s, s_len);
+	md_mgf(t, RLC_MD_LEN, buf, 1 + s_len);
+	for (size_t i = 0; i < RLC_MD_LEN; i++) {
+		t[i] ^= r[i];
+	}
+
+	RLC_FREE(buf);
+	return RLC_OK;
+}
+
+/**
+ * Decodes a message encoded with OAEP+, in constant time up to the result. The
+ * encoded message is unmasked in place.
+ *
+ * @param[out] m			- the message.
+ * @param[in,out] m_len		- the buffer capacity and the message length.
+ * @param[in,out] em		- the encoded message.
+ * @param[in] k				- the length of the encoded message in bytes.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1, idx = 0;
+	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN], h[RLC_MD_LEN];
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k), diff = 0;
+	uint32_t good, found = 0, bad = 0, one, zero, sel;
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	/* r = H(s) XOR t. */
+	buf[0] = 0x02;
+	memcpy(buf + 1, s, s_len);
+	md_mgf(r, RLC_MD_LEN, buf, 1 + s_len);
+	for (size_t i = 0; i < RLC_MD_LEN; i++) {
+		r[i] ^= t[i];
+	}
+
+	/* X = G(r) XOR s, stored over s. */
+	buf[0] = 0x00;
+	memcpy(buf + 1, r, RLC_MD_LEN);
+	md_mgf(buf + 1 + RLC_MD_LEN, x_len, buf, 1 + RLC_MD_LEN);
+	for (size_t i = 0; i < x_len; i++) {
+		s[i] ^= buf[1 + RLC_MD_LEN + i];
+	}
+
+	/* Check the tag H'(r | X). */
+	buf[0] = 0x01;
+	memcpy(buf + 1, r, RLC_MD_LEN);
+	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
+	md_map(h, buf, 1 + RLC_MD_LEN + x_len);
+	RLC_FREE(buf);
+	for (size_t i = 0; i < RLC_MD_LEN; i++) {
+		diff |= h[i] ^ s[x_len + i];
+	}
+	good = RSA_IS_ZERO(em[0]) & RSA_IS_ZERO(diff);
+
+	/* Find the 01 separator, rejecting any other nonzero byte before it. */
+	for (size_t i = 0; i < x_len; i++) {
+		one = RSA_IS_ZERO(s[i] ^ 0x01);
+		zero = RSA_IS_ZERO(s[i]);
+		sel = one & (found ^ 1);
+		idx = RLC_SEL(idx, i, (size_t)sel);
+		bad |= (found ^ 1) & (zero ^ 1) & (one ^ 1);
+		found |= one;
+	}
+	good &= found & (bad ^ 1);
+
+	if (!good || x_len - idx - 1 > *m_len) {
+		return RLC_ERR;
+	}
+	*m_len = x_len - idx - 1;
+	memcpy(m, s + idx + 1, *m_len);
 	return RLC_OK;
 }
 
@@ -805,6 +950,11 @@ int cp_rsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 	return rsa_enc(out, out_len, in, in_len, pub, RSA_OAEP_LEN, oaep_enc);
 }
 
+int cp_rsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub) {
+	return rsa_enc(out, out_len, in, in_len, pub, RSA_OAEP_LEN, oaepp_enc);
+}
+
 int cp_rsa_enc_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rsa_t pub) {
 	return rsa_enc(out, out_len, in, in_len, pub, RSA_PKCS1_LEN, pkcs1_enc);
@@ -813,6 +963,11 @@ int cp_rsa_enc_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
 int cp_rsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rsa_t prv) {
 	return rsa_dec(out, out_len, in, in_len, prv, RSA_OAEP_LEN, oaep_dec);
+}
+
+int cp_rsa_dec_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv) {
+	return rsa_dec(out, out_len, in, in_len, prv, RSA_OAEP_LEN, oaepp_dec);
 }
 
 int cp_rsa_dec_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,

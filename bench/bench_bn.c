@@ -973,6 +973,12 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_mod_inv_crt") {
+		bn_rand_mod(c, crt->n);
+		BENCH_ADD(bn_mod_inv_crt(c, c, crt));
+	}
+	BENCH_END;
+
 	/* It should be the case that a is prime here. */
 	BENCH_RUN("bn_mod_inv_sim (2)") {
 		bn_rand_mod(d[0], a);

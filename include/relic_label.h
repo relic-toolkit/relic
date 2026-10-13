@@ -257,6 +257,7 @@
 #undef bn_div_rem_dig
 #undef bn_mod_inv
 #undef bn_mod_inv_sim
+#undef bn_mod_inv_crt
 #undef bn_mod_2b
 #undef bn_mod_dig
 #undef bn_mod_basic
@@ -388,6 +389,7 @@
 #define bn_div_rem_dig 	RLC_PREFIX(bn_div_rem_dig)
 #define bn_mod_inv 	RLC_PREFIX(bn_mod_inv)
 #define bn_mod_inv_sim 	RLC_PREFIX(bn_mod_inv_sim)
+#define bn_mod_inv_crt 	RLC_PREFIX(bn_mod_inv_crt)
 #define bn_mod_2b 	RLC_PREFIX(bn_mod_2b)
 #define bn_mod_dig 	RLC_PREFIX(bn_mod_dig)
 #define bn_mod_basic 	RLC_PREFIX(bn_mod_basic)
@@ -3660,8 +3662,10 @@
 
 #undef cp_rsa_gen
 #undef cp_rsa_enc_oaep
+#undef cp_rsa_enc_oaepp
 #undef cp_rsa_enc_pkcs1
 #undef cp_rsa_dec_oaep
+#undef cp_rsa_dec_oaepp
 #undef cp_rsa_dec_pkcs1
 #undef cp_rsa_sig_pss
 #undef cp_rsa_sig_pkcs1
@@ -3835,8 +3839,10 @@
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
 #define cp_rsa_enc_oaep 	RLC_PREFIX(cp_rsa_enc_oaep)
+#define cp_rsa_enc_oaepp 	RLC_PREFIX(cp_rsa_enc_oaepp)
 #define cp_rsa_enc_pkcs1 	RLC_PREFIX(cp_rsa_enc_pkcs1)
 #define cp_rsa_dec_oaep 	RLC_PREFIX(cp_rsa_dec_oaep)
+#define cp_rsa_dec_oaepp 	RLC_PREFIX(cp_rsa_dec_oaepp)
 #define cp_rsa_dec_pkcs1 	RLC_PREFIX(cp_rsa_dec_pkcs1)
 #define cp_rsa_sig_pss 	RLC_PREFIX(cp_rsa_sig_pss)
 #define cp_rsa_sig_pkcs1 	RLC_PREFIX(cp_rsa_sig_pkcs1)
