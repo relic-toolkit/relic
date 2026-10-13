@@ -166,8 +166,8 @@ typedef struct _sts_t {
 				_this.error = ADDR; 									\
 			}															\
 	} 																	\
-	for (int _z = 0; _z < 2; _z++) 										\
-		if (_z == 1 && core_get()->caught) 								\
+	for (int _z = 0, _ctx_c = core_get()->caught; _z < 2; _z++)			\
+		if (_z == 1 && _ctx_c)											\
 
 /**
  * Implements the THROW clause of the error-handling routines.
@@ -191,19 +191,20 @@ typedef struct _sts_t {
 		ctx_t *_ctx = core_get();										\
 		_ctx->code = RLC_ERR;											\
 		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
+			/* Remember the original code, so that rethrows keep it. */	\
+			if (E != ERR_CAUGHT) {										\
+				_ctx->number = E;										\
+			}															\
 			if (_ctx->last == NULL) {									\
 				_ctx->last = &(_ctx->error);							\
 				_ctx->error.error = &(_ctx->number);					\
 				_ctx->error.block = 0;									\
-				_ctx->number = E;										\
 				RLC_ERR_PRINT(E);										\
 			} else {													\
 				for (; ; longjmp(_ctx->last->addr, 1)) {				\
 					RLC_ERR_PRINT(E);									\
 					if (_ctx->last->error) {							\
-						if (E != ERR_CAUGHT) {							\
-							*(_ctx->last->error) = E;					\
-						}												\
+						*(_ctx->last->error) = _ctx->number;			\
 					}													\
 				}														\
 			}															\

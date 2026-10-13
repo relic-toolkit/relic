@@ -153,7 +153,12 @@ int core_init(void) {
 		return RLC_ERR;
 	}
 
+#ifndef CHECK
+	/* Without error checking, failures are only recorded in the code. */
+	return core_ctx->code;
+#else
 	return RLC_OK;
+#endif
 }
 
 int core_clean(void) {

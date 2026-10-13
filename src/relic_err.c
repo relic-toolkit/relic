@@ -91,6 +91,12 @@ void err_full_msg(const char *function, const char *file, int line,
 
 void err_get_msg(err_t *e, char **msg) {
 	ctx_t *ctx = core_get();
+	if (ctx->last == NULL || ctx->last->error == NULL) {
+		/* No error was thrown outside of a try-catch block. */
+		*e = 0;
+		*msg = NULL;
+		return;
+	}
 	*e = *(ctx->last->error);
 	*msg = ctx->reason[*e];
 	ctx->last = NULL;
@@ -112,5 +118,12 @@ int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;
 	ctx->code = RLC_OK;
+#ifdef CHECK
+	/* Forget an error thrown outside of a try-catch block, so that the next
+	 * one is reported. */
+	if (ctx->last == &(ctx->error)) {
+		ctx->last = NULL;
+	}
+#endif
 	return r;
 }

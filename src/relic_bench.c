@@ -120,11 +120,11 @@ void bench_after(void) {
 	result = (ctx->after - ctx->before);
 #elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
 	clock_gettime(CLOCK, &(ctx->after));
-	result = ((long)ctx->after.tv_sec - (long)ctx->before.tv_sec) * 1000000000;
+	result = ((long long)ctx->after.tv_sec - ctx->before.tv_sec) * 1000000000;
 	result += (ctx->after.tv_nsec - ctx->before.tv_nsec);
 #elif TIMER == ANSI
 	ctx->after = clock();
-	result = (ctx->after - ctx->before) * 1000000 / CLOCKS_PER_SEC;
+	result = (long long)(ctx->after - ctx->before) * 1000000 / CLOCKS_PER_SEC;
 #elif TIMER == CYCLE || TIMER == PERF
 	ctx->after = arch_cycles();
   	result = (ctx->after - ctx->before);
@@ -172,9 +172,9 @@ ull_t bench_total(void) {
 void bench_clean(void) {
 #if TIMER == PERF
 	ctx_t *ctx = core_get();
-	if (ctx != NULL) {
+	if (ctx != NULL && ctx->perf_fd != -1) {
 		close(ctx->perf_fd);
-		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE)),
+		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE));
 		ctx->perf_fd = -1;
 		ctx->perf_buf = NULL;
 	}

@@ -314,6 +314,8 @@ static int has_tzcnt_hard()
                     return sizeof(x) << 3;
                 }
 
+                /* Isolate the lowest set bit, whose index is 31 - clz. */
+                x &= 0U - x;
                 __asm__ __volatile__ (
                 #if defined(ARCH_32BIT)
                     "clz %[out], %[in]" : [out]"=r"(r) : [in]"r"(x)

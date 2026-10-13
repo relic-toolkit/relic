@@ -150,13 +150,11 @@ int main(void) {
 					code = RLC_ERR;
 				}
 			}
-			if (result[i] != RLC_OK) {
-				code = RLC_ERR;
-			}
 		}
 
+		/* The results are only available after the threads finish. */
 		for (int i = 0; i < CORES; i++) {
-			if (pthread_join(thread[i], NULL)) {
+			if (pthread_join(thread[i], NULL) || result[i] != RLC_OK) {
 				code = RLC_ERR;
 			}
 		}

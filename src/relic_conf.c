@@ -84,19 +84,21 @@ void conf_print(void) {
 
 #if BENCH > 1
 	util_print("** Benchmarking options:\n");
-	util_print("   Number of times: %d\n", BENCH * BENCH);
+	util_print("   Number of times: %d\n", (int)(BENCH * BENCH));
 	util_print("\n");
 #endif
 
 #ifdef WITH_BN
 	util_print("** Multiple precision module options:\n");
-	util_print("   Precision: %d bits, %d words\n", RLC_BN_BITS, RLC_BN_DIGS);
+	util_print("   Precision: %d bits, %d words\n", (int)RLC_BN_BITS,
+			(int)RLC_BN_DIGS);
 	util_print("   Arithmetic method: " BN_METHD "\n\n");
 #endif
 
 #ifdef WITH_FP
 	util_print("** Prime field module options:\n");
-	util_print("   Prime size: %d bits, %d words\n", RLC_FP_BITS, RLC_FP_DIGS);
+	util_print("   Prime size: %d bits, %d words\n", (int)RLC_FP_BITS,
+			(int)RLC_FP_DIGS);
 	util_print("   Arithmetic method: " FP_METHD "\n\n");
 #endif
 
@@ -117,7 +119,8 @@ void conf_print(void) {
 
 #ifdef WITH_FB
 	util_print("** Binary field module options:\n");
-	util_print("   Polynomial size: %d bits, %d words\n", RLC_FB_BITS, RLC_FB_DIGS);
+	util_print("   Polynomial size: %d bits, %d words\n", (int)RLC_FB_BITS,
+			(int)RLC_FB_DIGS);
 	util_print("   Arithmetic method: " FB_METHD "\n\n");
 #endif
 

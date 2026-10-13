@@ -56,7 +56,7 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_ONCE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
 
 /**
  * Tests a sequence of commands to see if they respect some property.
@@ -64,7 +64,7 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_CASE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
 	for (int i = 0; i < TESTS; i++)											\
 
 /**
