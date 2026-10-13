@@ -1681,9 +1681,11 @@ int fp2_size_bin(const fp2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len);
+int fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a quadratic extension field element to a byte vector in big-endian
@@ -2129,9 +2131,11 @@ int fp3_size_bin(const fp3_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
+int fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a cubic extension field element to a byte vector in big-endian
@@ -2469,9 +2473,11 @@ int fp4_size_bin(const fp4_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
+int fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a quartic extension field element to a byte vector in big-endian
@@ -2796,9 +2802,11 @@ int fp6_size_bin(const fp6_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
+int fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a sextic extension field element to a byte vector in big-endian
@@ -3041,9 +3049,11 @@ int fp8_size_bin(const fp8_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len);
+int fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an octic extension field element to a byte vector in big-endian
@@ -3440,9 +3450,11 @@ int fp9_size_bin(const fp9_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
+int fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a nonic extension field element to a byte vector in big-endian
@@ -3744,9 +3756,11 @@ int fp12_size_bin(const fp12_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp12_read_bin(fp12_t a, const uint8_t *bin, size_t len);
+int fp12_read_bin(fp12_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a dodecic extension field element to a byte vector in big-endian
@@ -4188,9 +4202,11 @@ int fp16_size_bin(const fp16_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
+int fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an sextadecic extension field element to a byte vector in big-endian
@@ -4574,9 +4590,11 @@ int fp18_size_bin(const fp18_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len);
+int fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a octdecic extension field element to a byte vector in big-endian
@@ -5013,9 +5031,11 @@ int fp24_size_bin(const fp24_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp24_read_bin(fp24_t a, const uint8_t *bin, size_t len);
+int fp24_read_bin(fp24_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 24-degree extension field element to a byte vector in big-endian
@@ -5405,9 +5425,11 @@ int fp48_size_bin(const fp48_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp48_read_bin(fp48_t a, const uint8_t *bin, size_t len);
+int fp48_read_bin(fp48_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 48-extension field element to a byte vector in big-endian
@@ -5835,9 +5857,11 @@ int fp54_size_bin(const fp54_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp54_read_bin(fp54_t a, const uint8_t *bin, size_t len);
+int fp54_read_bin(fp54_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 54-extension field element to a byte vector in big-endian

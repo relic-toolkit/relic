@@ -214,16 +214,19 @@
 		return (K) * RLC_FP_BYTES;											\
 	}																		\
 																			\
-	void X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {			\
+	int X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {				\
 		const size_t s = ((K) / (N)) * RLC_FP_BYTES;						\
 																			\
 		if (len != (N) * s) {												\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
 		for (int i = 0; i < (N); i++) {										\
-			S##_read_bin(a[i], bin + i * s, s);								\
+			if (S##_read_bin(a[i], bin + i * s, s) != RLC_OK) {				\
+				return RLC_ERR;												\
+			}																\
 		}																	\
+		return RLC_OK;														\
 	}																		\
 																			\
 	void X##_write_bin(uint8_t *bin, size_t len, const X##_t a, int pack) {	\
@@ -272,23 +275,25 @@
 		return (K) * RLC_FP_BYTES;											\
 	}																		\
 																			\
-	void X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {			\
+	int X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {				\
 		const size_t h = ((K) / 2) * RLC_FP_BYTES;							\
 		S##_t t;															\
-		int s;																\
+		int s, result = RLC_ERR;											\
 																			\
 		if (len != h + 1 && len != 2 * h) {									\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
 		if (len == 2 * h) {													\
-			S##_read_bin(a[0], bin, h);										\
-			S##_read_bin(a[1], bin + h, h);									\
-			return;															\
+			if (S##_read_bin(a[0], bin, h) != RLC_OK ||						\
+					S##_read_bin(a[1], bin + h, h) != RLC_OK) {				\
+				return RLC_ERR;												\
+			}																\
+			return RLC_OK;													\
 		}																	\
 		if (bin[h] > 1) {													\
 			RLC_THROW(ERR_NO_VALID);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
 																			\
 		S##_null(t);														\
@@ -298,22 +303,27 @@
 																			\
 			/* Unitary elements have a_0^2 - a_1^2 * v^2 = 1, thus recover	\
 			 * a_0 = sqrt(1 + a_1^2 * v^2) and fix its sign. */				\
-			S##_read_bin(a[1], bin, h);										\
-			S##_sqr(t, a[1]);												\
-			S##_mul_art(t, t);												\
-			fp_add_dig(((fp_t *)t)[0], ((fp_t *)t)[0], 1);					\
-			if (!S##_srt(a[0], t)) {										\
-				RLC_THROW(ERR_NO_VALID);									\
-			}																\
-			TMPL_FPX_SIGN(s, a[0], (K) / 2);								\
-		if (s != bin[h]) {													\
-				S##_neg(a[0], a[0]);										\
+			if (S##_read_bin(a[1], bin, h) == RLC_OK) {						\
+				S##_sqr(t, a[1]);											\
+				S##_mul_art(t, t);											\
+				fp_add_dig(((fp_t *)t)[0], ((fp_t *)t)[0], 1);				\
+				if (!S##_srt(a[0], t)) {									\
+					RLC_THROW(ERR_NO_VALID);								\
+				} else {													\
+					TMPL_FPX_SIGN(s, a[0], (K) / 2);						\
+					if (s != bin[h]) {										\
+						S##_neg(a[0], a[0]);								\
+					}														\
+					result = RLC_OK;										\
+				}															\
 			}																\
 		} RLC_CATCH_ANY {													\
+			result = RLC_ERR;												\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			S##_free(t);													\
 		}																	\
+		return result;														\
 	}																		\
 																			\
 	void X##_write_bin(uint8_t *bin, size_t len, const X##_t a, int pack) {	\
@@ -356,28 +366,41 @@
 		return (K) * RLC_FP_BYTES;											\
 	}																		\
 																			\
-	void X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {			\
+	int X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {				\
 		const size_t z = ((K) / 6) * RLC_FP_BYTES;							\
 		const size_t s = ((K) / 2) * RLC_FP_BYTES;							\
+		int result = RLC_ERR;												\
 																			\
 		if (len != 4 * z && len != 2 * s) {									\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
-		if (len == 4 * z) {													\
-			/* Compressed elements keep four of the six coefficients. */	\
-			Z##_zero(a[0][0]);												\
-			Z##_zero(a[1][1]);												\
-			Z##_read_bin(a[0][1], bin + 0 * z, z);							\
-			Z##_read_bin(a[0][2], bin + 1 * z, z);							\
-			Z##_read_bin(a[1][0], bin + 2 * z, z);							\
-			Z##_read_bin(a[1][2], bin + 3 * z, z);							\
-			X##_back_cyc(a, a);												\
-		} else {															\
-			for (int i = 0; i < 2; i++) {									\
-				S##_read_bin(a[i], bin + i * s, s);							\
+		RLC_TRY {															\
+			if (len == 4 * z) {												\
+				/* Compressed elements keep four of the six coefficients. */\
+				Z##_zero(a[0][0]);											\
+				Z##_zero(a[1][1]);											\
+				if (Z##_read_bin(a[0][1], bin + 0 * z, z) == RLC_OK &&		\
+						Z##_read_bin(a[0][2], bin + 1 * z, z) == RLC_OK &&	\
+						Z##_read_bin(a[1][0], bin + 2 * z, z) == RLC_OK &&	\
+						Z##_read_bin(a[1][2], bin + 3 * z, z) == RLC_OK) {	\
+					X##_back_cyc(a, a);										\
+					/* Check that the decompressed element is cyclotomic. */\
+					if (!X##_test_cyc(a)) {									\
+						RLC_THROW(ERR_NO_VALID);							\
+					} else {												\
+						result = RLC_OK;									\
+					}														\
+				}															\
+			} else if (S##_read_bin(a[0], bin, s) == RLC_OK &&				\
+					S##_read_bin(a[1], bin + s, s) == RLC_OK) {				\
+				result = RLC_OK;											\
 			}																\
+		} RLC_CATCH_ANY {													\
+			result = RLC_ERR;												\
+			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
+		return result;														\
 	}																		\
 																			\
 	void X##_write_bin(uint8_t *bin, size_t len, const X##_t a, int pack) {	\
@@ -422,28 +445,42 @@
 		return (K) * RLC_FP_BYTES;											\
 	}																		\
 																			\
-	void X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {			\
+	int X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {				\
 		const size_t z = ((K) / 6) * RLC_FP_BYTES;							\
 		const size_t s = ((K) / 3) * RLC_FP_BYTES;							\
+		int result = RLC_ERR;												\
 																			\
 		if (len != 4 * z && len != 3 * s) {									\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
-		if (len == 4 * z) {													\
-			/* Compressed elements keep four of the six coefficients. */	\
-			Z##_zero(a[0][0]);												\
-			Z##_zero(a[0][1]);												\
-			Z##_read_bin(a[1][0], bin + 0 * z, z);							\
-			Z##_read_bin(a[1][1], bin + 1 * z, z);							\
-			Z##_read_bin(a[2][0], bin + 2 * z, z);							\
-			Z##_read_bin(a[2][1], bin + 3 * z, z);							\
-			X##_back_cyc(a, a);												\
-		} else {															\
-			for (int i = 0; i < 3; i++) {									\
-				S##_read_bin(a[i], bin + i * s, s);							\
+		RLC_TRY {															\
+			if (len == 4 * z) {												\
+				/* Compressed elements keep four of the six coefficients. */\
+				Z##_zero(a[0][0]);											\
+				Z##_zero(a[0][1]);											\
+				if (Z##_read_bin(a[1][0], bin + 0 * z, z) == RLC_OK &&		\
+						Z##_read_bin(a[1][1], bin + 1 * z, z) == RLC_OK &&	\
+						Z##_read_bin(a[2][0], bin + 2 * z, z) == RLC_OK &&	\
+						Z##_read_bin(a[2][1], bin + 3 * z, z) == RLC_OK) {	\
+					X##_back_cyc(a, a);										\
+					/* Check that the decompressed element is cyclotomic. */\
+					if (!X##_test_cyc(a)) {									\
+						RLC_THROW(ERR_NO_VALID);							\
+					} else {												\
+						result = RLC_OK;									\
+					}														\
+				}															\
+			} else if (S##_read_bin(a[0], bin, s) == RLC_OK &&				\
+					S##_read_bin(a[1], bin + s, s) == RLC_OK &&				\
+					S##_read_bin(a[2], bin + 2 * s, s) == RLC_OK) {			\
+				result = RLC_OK;											\
 			}																\
+		} RLC_CATCH_ANY {													\
+			result = RLC_ERR;												\
+			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
+		return result;														\
 	}																		\
 																			\
 	void X##_write_bin(uint8_t *bin, size_t len, const X##_t a, int pack) {	\

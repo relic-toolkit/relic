@@ -67,7 +67,7 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	eb_t a, b, c;
 	uint8_t bin[2 * RLC_FB_BYTES + 1];
 
@@ -155,19 +155,19 @@ static int util(void) {
 				eb_set_infty(a);
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				eb_dbl(a, a);
 				l = eb_size_bin(a, j);
 				eb_norm(a, a);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 			}
 		}
@@ -180,11 +180,12 @@ static int util(void) {
 				eb_write_bin(bin, l, a, j);
 				bin[0] = 5;
 				err_get_code();
+				r = RLC_ERR;
 				RLC_TRY {
-					eb_read_bin(b, bin, l);
+					r = eb_read_bin(b, bin, l);
 				} RLC_CATCH_ANY {
 				}
-				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;

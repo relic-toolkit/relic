@@ -63,7 +63,7 @@ static int memory(void) {
 
 static int util(void) {
 	uint_t bits;
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	fb_t a, b;
 	char str[RLC_FB_BITS + 1];
 	uint8_t bin[RLC_FB_BYTES];
@@ -134,17 +134,18 @@ static int util(void) {
 				TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 			}
 			fb_write_bin(bin, sizeof(bin), a);
-			fb_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fb_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 			/* Bits beyond the degree of the field are rejected. */
 			if (RLC_FB_BITS % 8 != 0) {
 				bin[0] |= 0x80;
 				err_get_code();
+				r = RLC_ERR;
 				RLC_TRY {
-					fb_read_bin(b, bin, sizeof(bin));
+					r = fb_read_bin(b, bin, sizeof(bin));
 				} RLC_CATCH_ANY {
 				}
-				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;

@@ -568,10 +568,11 @@ size_t eb_size_bin(const eb_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void eb_read_bin(eb_t a, const uint8_t *bin, size_t len);
+int eb_read_bin(eb_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a binary field element to a byte vector in big-endian format with

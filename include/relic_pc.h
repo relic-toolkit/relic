@@ -540,36 +540,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #endif
 
 /**
- * Reads a G_1 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g1_read_bin(P, B, L) 	RLC_CAT(RLC_G1_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_2 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g2_read_bin(P, B, L) 	RLC_CAT(RLC_G2_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_T element from a byte vector in big-endian format.
- *
- * @param[out] A			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define gt_read_bin(A, B, L) 	RLC_CAT(RLC_GT_LOWER, read_bin)(A, B, L)
-
-/**
  * Writes an optionally compressed G_1 element to a byte vector in big-endian
  * format.
  *
@@ -1127,5 +1097,44 @@ int g2_is_valid(const g2_t a);
  * @param[in] a             - the element to check.
  */
 int gt_is_valid(const gt_t a);
+
+/**
+ * Reads a G_1 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_2 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_T element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len);
 
 #endif /* !RLC_PC_H */

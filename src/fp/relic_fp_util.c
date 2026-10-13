@@ -258,14 +258,15 @@ void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix) {
 	}
 }
 
-void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
+int fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
+	int result = RLC_ERR;
 	bn_t t;
 
 	bn_null(t);
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	RLC_TRY {
@@ -285,14 +286,17 @@ void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
 					fp_prime_conv(a, t);
 				}
 			}
+			result = RLC_OK;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(t);
 	}
+	return result;
 }
 
 void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {

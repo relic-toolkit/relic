@@ -110,7 +110,7 @@ static int memory(void) {
 }
 
 int util(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	ed_t a, b, c;
 	uint8_t bin[2 * RLC_FP_BYTES + 1];
 
@@ -204,19 +204,19 @@ int util(void) {
 				ed_set_infty(a);
 				l = ed_size_bin(a, j);
 				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 				ed_rand(a);
 				l = ed_size_bin(a, j);
 				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 				ed_rand(a);
 				ed_dbl(a, a);
 				l = ed_size_bin(a, j);
 				ed_norm(a, a);
 				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 			}
 		}
@@ -232,11 +232,12 @@ int util(void) {
 				fp_write_bin(bin + 1, RLC_FP_BYTES, a->y);
 				l = (j == 0 ? RLC_FP_BYTES + 1 : 2 * RLC_FP_BYTES + 1);
 				err_get_code();
+				r = RLC_ERR;
 				RLC_TRY {
-					ed_read_bin(b, bin, l);
+					r = ed_read_bin(b, bin, l);
 				} RLC_CATCH_ANY {
 				}
-				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -248,11 +249,12 @@ int util(void) {
 				ed_write_bin(bin, l, a, j);
 				bin[0] = 5;
 				err_get_code();
+				r = RLC_ERR;
 				RLC_TRY {
-					ed_read_bin(b, bin, l);
+					r = ed_read_bin(b, bin, l);
 				} RLC_CATCH_ANY {
 				}
-				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -1212,7 +1214,8 @@ static int hashing(void) {
 		/* test vectors */
 		for (int j = 0; j < ed_map_ntst; ++j) {
 			ed_map(a, (const uint8_t *)ed_map_input[j], strlen(ed_map_input[j]));
-			ed_read_bin(b, ed_map_output[j], 2 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(ed_read_bin(b, ed_map_output[j],
+				2 * RLC_FP_BYTES + 1) == RLC_OK, end);
 			TEST_ASSERT(ed_on_curve(a), end);
 			TEST_ASSERT(ed_on_curve(b), end);
 			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);

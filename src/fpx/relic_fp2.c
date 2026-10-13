@@ -54,21 +54,33 @@ int fp2_size_bin(const fp2_t a, int pack) {
 	}
 }
 
-void fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len) {
+int fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len) {
 	if (len != RLC_FP_BYTES + 1 && len != 2 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 	if (len == RLC_FP_BYTES + 1) {
-		fp_read_bin(a[0], bin, RLC_FP_BYTES);
+		/* The last byte is the sign of a unitary element. */
+		if (bin[RLC_FP_BYTES] > 1) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
+		if (fp_read_bin(a[0], bin, RLC_FP_BYTES) != RLC_OK) {
+			return RLC_ERR;
+		}
 		fp_zero(a[1]);
 		fp_set_bit(a[1], 0, bin[RLC_FP_BYTES]);
-		fp2_upk(a, a);
+		if (!fp2_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
+		return RLC_OK;
 	}
-	if (len == 2 * RLC_FP_BYTES) {
-		fp_read_bin(a[0], bin, RLC_FP_BYTES);
-		fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES);
+	if (fp_read_bin(a[0], bin, RLC_FP_BYTES) != RLC_OK ||
+			fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {

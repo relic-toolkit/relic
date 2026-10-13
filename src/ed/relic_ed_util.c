@@ -215,25 +215,27 @@ size_t ed_size_bin(const ed_t a, int pack) {
 	return size;
 }
 
-void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
+int ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ed_set_infty(a);
-			return;
+			return RLC_OK;
 		} else {
 			RLC_THROW(ERR_NO_BUFFER);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	a->coord = BASIC;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->y, bin + 1, RLC_FP_BYTES);
+	if (fp_read_bin(a->y, bin + 1, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
+	}
 	if (len == RLC_FP_BYTES + 1) {
 		switch (bin[0]) {
 			case 2:
@@ -245,30 +247,33 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				return;
+				return RLC_ERR;
 		}
 		if (!ed_upk(a, a)) {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 		/* A set sign bit has no meaning for x = 0, so it is not canonical. */
 		if (bin[0] == 3 && fp_is_zero(a->x)) {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
+			if (fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES)
+					!= RLC_OK) {
+				return RLC_ERR;
+			}
 		} else {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 		/* The identity is only encoded as a single zero byte. */
 		if (fp_is_zero(a->x) && fp_cmp_dig(a->y, 1) == RLC_EQ) {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 	}
 #if ED_ADD == EXTND
@@ -280,7 +285,9 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 
 	if (!ed_on_curve(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack) {

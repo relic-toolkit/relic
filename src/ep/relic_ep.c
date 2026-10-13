@@ -125,25 +125,27 @@ size_t ep_size_bin(const ep_t a, int pack) {
 	return size;
 }
 
-void ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
+int ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep_set_infty(a);
-			return;
+			return RLC_OK;
 		} else {
 			RLC_THROW(ERR_NO_BUFFER);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	a->coord = BASIC;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->x, bin + 1, RLC_FP_BYTES);
+	if (fp_read_bin(a->x, bin + 1, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
+	}
 	if (len == RLC_FP_BYTES + 1) {
 		switch(bin[0]) {
 			case 2:
@@ -155,24 +157,31 @@ void ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return RLC_ERR;
 		}
-		ep_upk(a, a);
+		if (!ep_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
 	}
 
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
+			if (fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES)
+					!= RLC_OK) {
+				return RLC_ERR;
+			}
 		} else {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (!ep_on_curve(a)) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack) {

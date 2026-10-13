@@ -1256,10 +1256,11 @@ size_t ep2_size_bin(const ep2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
+int ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quadratic extension to a byte
@@ -1845,10 +1846,11 @@ size_t ep3_size_bin(const ep3_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
+int ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a cubic extension to a byte
@@ -2413,10 +2415,11 @@ size_t ep4_size_bin(const ep4_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
+int ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quartic extension to a byte
@@ -2981,10 +2984,11 @@ size_t ep8_size_bin(const ep8_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
+int ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over an octic extension to a byte
@@ -3542,10 +3546,11 @@ size_t ep9_size_bin(const ep9_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep9_read_bin(ep9_t a, const uint8_t *bin, size_t len);
+int ep9_read_bin(ep9_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a nonic extension to a byte

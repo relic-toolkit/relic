@@ -610,27 +610,29 @@
 		return (pack ? 1 + l : 1 + 2 * l);									\
 	}																		\
 																			\
-	void C##_read_bin(C##_t a, const uint8_t *bin, size_t len) {			\
+	int C##_read_bin(C##_t a, const uint8_t *bin, size_t len) {			\
 		const size_t l = (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
 																			\
 		if (len == 1) {														\
 			if (bin[0] == 0) {												\
 				C##_set_infty(a);											\
-				return;														\
+				return RLC_OK;												\
 			} else {														\
 				RLC_THROW(ERR_NO_BUFFER);									\
-				return;														\
+				return RLC_ERR;												\
 			}																\
 		}																	\
 																			\
 		if (len != l + 1 && len != 2 * l + 1) {								\
 			RLC_THROW(ERR_NO_BUFFER);										\
-			return;															\
+			return RLC_ERR;													\
 		}																	\
 																			\
 		a->coord = BASIC;													\
 		F##_set_dig(a->z, 1);												\
-		F##_read_bin(a->x, bin + 1, l);										\
+		if (F##_read_bin(a->x, bin + 1, l) != RLC_OK) {						\
+			return RLC_ERR;													\
+		}																	\
 		if (len == l + 1) {													\
 			switch (bin[0]) {												\
 				case 2:														\
@@ -642,20 +644,27 @@
 					break;													\
 				default:													\
 					RLC_THROW(ERR_NO_VALID);								\
-					return;													\
+					return RLC_ERR;											\
 			}																\
-			C##_upk(a, a);													\
+			if (!C##_upk(a, a)) {											\
+				RLC_THROW(ERR_NO_VALID);									\
+				return RLC_ERR;												\
+			}																\
 		} else {															\
 			if (bin[0] != 4) {												\
 				RLC_THROW(ERR_NO_VALID);									\
-				return;														\
+				return RLC_ERR;												\
 			}																\
-			F##_read_bin(a->y, bin + l + 1, l);								\
+			if (F##_read_bin(a->y, bin + l + 1, l) != RLC_OK) {				\
+				return RLC_ERR;												\
+			}																\
 		}																	\
 																			\
 		if (!C##_on_curve(a)) {												\
 			RLC_THROW(ERR_NO_VALID);										\
+			return RLC_ERR;													\
 		}																	\
+		return RLC_OK;														\
 	}																		\
 																			\
 	void C##_write_bin(uint8_t *bin, size_t len, const C##_t a, int pack) {	\

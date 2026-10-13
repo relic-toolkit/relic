@@ -732,10 +732,11 @@ size_t ed_size_bin(const ed_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ed_read_bin(ed_t a, const uint8_t *bin, size_t len);
+int ed_read_bin(ed_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an Edwards elliptic curve point to a byte vector in big-endian format

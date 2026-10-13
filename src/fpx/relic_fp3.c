@@ -47,14 +47,17 @@ int fp3_size_bin(const fp3_t a, int pack) {
 	return 3 * RLC_FP_BYTES;
 }
 
-void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len) {
+int fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len) {
 	if (len != 3 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
-	fp_read_bin(a[0], bin, RLC_FP_BYTES);
-	fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES);
-	fp_read_bin(a[2], bin + 2 * RLC_FP_BYTES, RLC_FP_BYTES);
+	for (int i = 0; i < 3; i++) {
+		if (fp_read_bin(a[i], bin + i * RLC_FP_BYTES, RLC_FP_BYTES) != RLC_OK) {
+			return RLC_ERR;
+		}
+	}
+	return RLC_OK;
 }
 
 void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack) {

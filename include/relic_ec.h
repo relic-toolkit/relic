@@ -279,6 +279,9 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[out] A				- the result.
  * @param[in] B					- the byte vector.
  * @param[in] L					- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID			- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER			- if the buffer capacity is invalid.
  */
 #define ec_read_bin(A, B, L)	RLC_CAT(RLC_EC_LOWER, read_bin)(A, B, L)
 

@@ -831,9 +831,11 @@ void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
-void fp_read_bin(fp_t a, const uint8_t *bin, size_t len);
+int fp_read_bin(fp_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime field element to a byte vector in big-endian format.

@@ -3568,18 +3568,22 @@
 #undef g1_mul
 #undef g1_mul_gen
 #undef g1_is_valid
+#undef g1_read_bin
 
 #define g1_mul 	RLC_PREFIX(g1_mul)
 #define g1_mul_gen 	RLC_PREFIX(g1_mul_gen)
 #define g1_is_valid 	RLC_PREFIX(g1_is_valid)
+#define g1_read_bin 	RLC_PREFIX(g1_read_bin)
 
 #undef g2_mul
 #undef g2_mul_gen
 #undef g2_is_valid
+#undef g2_read_bin
 
 #define g2_mul 	RLC_PREFIX(g2_mul)
 #define g2_mul_gen 	RLC_PREFIX(g2_mul_gen)
 #define g2_is_valid 	RLC_PREFIX(g2_is_valid)
+#define g2_read_bin 	RLC_PREFIX(g2_read_bin)
 
 #undef gt_rand
 #undef gt_exp
@@ -3589,6 +3593,7 @@
 #undef gt_exp_gen
 #undef gt_get_gen
 #undef gt_is_valid
+#undef gt_read_bin
 
 #define gt_rand 	RLC_PREFIX(gt_rand)
 #define gt_exp 	RLC_PREFIX(gt_exp)
@@ -3598,6 +3603,7 @@
 #define gt_exp_gen 	RLC_PREFIX(gt_exp_gen)
 #define gt_get_gen 	RLC_PREFIX(gt_get_gen)
 #define gt_is_valid 	RLC_PREFIX(gt_is_valid)
+#define gt_read_bin 	RLC_PREFIX(gt_read_bin)
 
 #undef mpc_mt_gen
 #undef mpc_mt_lcl

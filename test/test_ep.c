@@ -67,7 +67,7 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	ep_t a, b, c, t[3];
 	uint8_t bin[2 * RLC_FP_BYTES + 1];
 
@@ -191,7 +191,7 @@ static int util(void) {
 				TEST_ASSERT(ep_size_bin(a, 1) == sizeof(g), end);
 				ep_write_bin(bin, sizeof(g), a, 1);
 				TEST_ASSERT(memcmp(bin, g, sizeof(g)) == 0, end);
-				ep_read_bin(b, g, sizeof(g));
+				TEST_ASSERT(ep_read_bin(b, g, sizeof(g)) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 			} TEST_END;
 		}
@@ -202,20 +202,65 @@ static int util(void) {
 				ep_set_infty(a);
 				l = ep_size_bin(a, j);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 				ep_rand(a);
 				l = ep_size_bin(a, j);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 				ep_rand(a);
 				ep_dbl(a, a);
 				l = ep_size_bin(a, j);
 				ep_norm(a, a);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid point fails") {
+			for (int j = 0; j < 5; j++) {
+				ep_rand(a);
+				l = ep_size_bin(a, 0);
+				ep_write_bin(bin, l, a, 0);
+				switch (j) {
+					case 0:
+						/* An invalid tag. */
+						bin[0] = 5;
+						break;
+					case 1:
+						/* A point off the curve. */
+						bin[l - 1] ^= 1;
+						break;
+					case 2:
+						/* A coordinate that is not reduced modulo p. */
+						memset(bin + 1, 0xFF, RLC_FP_BYTES);
+						break;
+					case 3:
+						/* A compressed x-coordinate with no point. */
+						do {
+							fp_rand(a->x);
+							ep_rhs(c->x, a->x);
+						} while (fp_is_sqr(c->x));
+						bin[0] = 2;
+						fp_write_bin(bin + 1, RLC_FP_BYTES, a->x);
+						l = RLC_FP_BYTES + 1;
+						break;
+					default:
+						/* A single byte other than the point at infinity. */
+						bin[0] = 1;
+						l = 1;
+						break;
+				}
+				err_get_code();
+				r = RLC_ERR;
+				RLC_TRY {
+					r = ep_read_bin(b, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;

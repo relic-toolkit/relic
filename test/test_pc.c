@@ -61,7 +61,7 @@ static int memory1(void) {
 }
 
 int util1(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	g1_t a, b, c;
 	uint8_t bin[2 * RLC_PC_BYTES + 1];
 
@@ -141,20 +141,50 @@ int util1(void) {
 				g1_set_infty(a);
 				l = g1_size_bin(a, j);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 				g1_rand(a);
 				l = g1_size_bin(a, j);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 				g1_rand(a);
 				g1_dbl(a, a);
 				l = g1_size_bin(a, j);
 				g1_norm(a, a);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading a point outside the subgroup fails") {
+			/* Decode random x-coordinates until one is on the curve but
+			 * outside the subgroup, which never happens for cofactor 1. */
+			r = RLC_ERR;
+			for (int k = 0; k < 16 && (r != RLC_OK || g1_is_valid(a)); k++) {
+				g1_rand(a);
+				l = g1_size_bin(a, 1);
+				rand_bytes(bin, l);
+				bin[0] = 2;
+				for (int j = 1; j < l; j += RLC_PC_BYTES) {
+					bin[j] = 0;
+				}
+				r = RLC_ERR;
+				RLC_TRY {
+					r = RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				err_get_code();
+			}
+			if (r == RLC_OK && !g1_is_valid(a)) {
+				r = RLC_ERR;
+				RLC_TRY {
+					r = g1_read_bin(b, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -653,7 +683,7 @@ static int memory2(void) {
 }
 
 int util2(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	g2_t a, b, c;
 	uint8_t bin[18 * RLC_PC_BYTES + 1];
 
@@ -732,20 +762,50 @@ int util2(void) {
 				g2_set_infty(a);
 				l = g2_size_bin(a, j);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 				g2_rand(a);
 				l = g2_size_bin(a, j);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 				g2_rand(a);
 				g2_dbl(a, a);
 				l = g2_size_bin(a, j);
 				g2_norm(a, a);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading a point outside the subgroup fails") {
+			/* Decode random x-coordinates until one is on the curve but
+			 * outside the subgroup, which never happens for cofactor 1. */
+			r = RLC_ERR;
+			for (int k = 0; k < 16 && (r != RLC_OK || g2_is_valid(a)); k++) {
+				g2_rand(a);
+				l = g2_size_bin(a, 1);
+				rand_bytes(bin, l);
+				bin[0] = 2;
+				for (int j = 1; j < l; j += RLC_PC_BYTES) {
+					bin[j] = 0;
+				}
+				r = RLC_ERR;
+				RLC_TRY {
+					r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				err_get_code();
+			}
+			if (r == RLC_OK && !g2_is_valid(a)) {
+				r = RLC_ERR;
+				RLC_TRY {
+					r = g2_read_bin(b, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -1244,8 +1304,9 @@ static int memory(void) {
 }
 
 int util(void) {
-	int code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	gt_t a, b, c;
+	uint8_t bin[54 * RLC_PC_BYTES];
 
 	gt_null(a);
 	gt_null(b);
@@ -1298,6 +1359,37 @@ int util(void) {
 		TEST_CASE("assignment to unity and unity test are consistent") {
 			gt_set_unity(a);
 			TEST_ASSERT(gt_is_unity(a), end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading and writing an element are consistent") {
+			for (int j = 0; j < 2; j++) {
+				gt_set_unity(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				TEST_ASSERT(gt_read_bin(b, bin, l) == RLC_OK, end);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+				gt_rand(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				TEST_ASSERT(gt_read_bin(b, bin, l) == RLC_OK, end);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading an element outside the subgroup fails") {
+			/* Small elements of the base field are not in G_T. */
+			RLC_CAT(RLC_GT_LOWER, set_dig)(a, 2);
+			l = gt_size_bin(a, 0);
+			gt_write_bin(bin, l, a, 0);
+			err_get_code();
+			r = RLC_ERR;
+			RLC_TRY {
+				r = gt_read_bin(b, bin, l);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 	}
