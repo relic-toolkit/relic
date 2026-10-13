@@ -329,7 +329,9 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 		 * below 2, hence a unit, when len > (l + 1.29) / log2(27). */
 		l = 0;
 		for (int i = 0; i < 2; i++) {
-			const bn_st *v = (i == 0 ? ep_curve_get_v1() : ep_curve_get_v2());
+			/* Not const, since bn_t is a pointer with dynamic allocation. */
+			bn_st *v = (bn_st *)(i == 0 ? ep_curve_get_v1() :
+					ep_curve_get_v2());
 			bn_sqr(k0, &v[1]);
 			bn_mul(k1, &v[1], &v[2]);
 			bn_sub(k0, k0, k1);
