@@ -656,6 +656,68 @@ static int kdf(void) {
 	return code;
 }
 
+static int xof(void) {
+	int code = RLC_ERR;
+	uint8_t in[32], out1[100], out2[100], buf[256], dst[256];
+	size_t parts[] = { 1, 31, 33, 35 }, off;
+	xof_t ctx1, ctx2;
+	double v;
+
+	TEST_CASE("extendable output does not depend on how it is read") {
+		rand_bytes(in, sizeof(in));
+		md_xof_init(&ctx1, in, sizeof(in));
+		md_xof_init(&ctx2, in, sizeof(in));
+		md_xof_bytes(out1, sizeof(out1), &ctx1);
+		off = 0;
+		for (int j = 0; j < 4; j++) {
+			md_xof_bytes(out2 + off, parts[j], &ctx2);
+			off += parts[j];
+		}
+		TEST_ASSERT(off == sizeof(out2), end);
+		TEST_ASSERT(memcmp(out1, out2, sizeof(out1)) == 0, end);
+	} TEST_END;
+
+	TEST_CASE("extendable output gives doubles and integers in range") {
+		rand_bytes(in, sizeof(in));
+		md_xof_init(&ctx1, in, sizeof(in));
+		for (int j = 0; j < 16; j++) {
+			v = md_xof_double(&ctx1);
+			TEST_ASSERT(v >= 0.0 && v < 1.0, end);
+			TEST_ASSERT(md_xof_int(&ctx1, j + 1) < (size_t)j + 1, end);
+		}
+	} TEST_END;
+
+	TEST_ONCE("expand message rejects too long outputs and tags") {
+		memset(dst, 0x55, sizeof(dst));
+		memset(buf, 0xAA, sizeof(buf));
+		memset(out1, 0xAA, sizeof(out1));
+		RLC_TRY {
+			md_xmd(buf, 255 * RLC_MD_LEN + 1, in, sizeof(in), in, 1);
+		} RLC_CATCH_ANY {
+		}
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		RLC_TRY {
+			md_xmd(buf, SIZE_MAX, in, sizeof(in), in, 1);
+		} RLC_CATCH_ANY {
+		}
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		RLC_TRY {
+			md_xmd(buf, sizeof(buf), in, sizeof(in), dst, 256);
+		} RLC_CATCH_ANY {
+		}
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		TEST_ASSERT(memcmp(buf, out1, sizeof(out1)) == 0, end);
+		/* The largest valid lengths are accepted. */
+		md_xmd(buf, sizeof(buf), in, sizeof(in), dst, 255);
+		TEST_ASSERT(err_get_code() == RLC_OK, end);
+	} TEST_END;
+
+	code = RLC_OK;
+
+  end:
+	return code;
+}
+
 static int hmac(void) {
 	int code = RLC_ERR;
 	uint8_t mac[RLC_MD_LEN], key[131];
@@ -901,6 +963,11 @@ int main(void) {
 	}
 
 	if (kdf() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (xof() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

@@ -58,14 +58,12 @@ void md_hmac(uint8_t *mac, const uint8_t *in, size_t in_len, const uint8_t *key,
 
 	if (key_len > BLOCK_SIZE) {
 		md_map(_key, key, key_len);
-		key = _key;
 		key_len = RLC_MD_LEN;
-	}
-	if (key_len <= BLOCK_SIZE) {
+	} else {
 		memcpy(_key, key, key_len);
-		memset(_key + key_len, 0, BLOCK_SIZE - key_len);
-		key = _key;
 	}
+	memset(_key + key_len, 0, BLOCK_SIZE - key_len);
+	key = _key;
 	for (int i = 0; i < BLOCK_SIZE; i++) {
 		opad[i] = 0x5C ^ key[i];
 		ipad[i] = 0x36 ^ key[i];

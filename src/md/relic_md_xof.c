@@ -114,16 +114,15 @@ void md_xof_bytes(uint8_t *out, size_t out_len, xof_t *ctx) {
 }
 
 double md_xof_double(xof_t *ctx) {
-	uint8_t buf[sizeof(double)];
-	size_t i;
-	double v = 0.0, s = 1.0;
+	uint8_t buf[8];
+	uint64_t x = 0;
 
 	md_xof_bytes(buf, sizeof(buf), ctx);
-	for (i = 0; i < sizeof(buf); i++) {
-		s /= 256.0;
-		v += s * (double)buf[i];
+	for (size_t i = 0; i < sizeof(buf); i++) {
+		x = (x << 8) | buf[i];
 	}
-	return v;
+	/* Keep the 53 bits of a double mantissa, so that the result is below 1. */
+	return (double)(x >> 11) / 9007199254740992.0;
 }
 
 size_t md_xof_int(xof_t *ctx, size_t n) {
