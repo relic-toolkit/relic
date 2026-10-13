@@ -43,6 +43,8 @@ void ed_neg_basic(ed_t r, const ed_t p) {
 
 	fp_copy(r->y, p->y);
 	fp_neg(r->x, p->x);
+	fp_copy(r->z, p->z);
+	fp_neg(r->t, p->t);
 
 	r->coord = BASIC;
 }

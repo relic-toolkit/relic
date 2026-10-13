@@ -157,6 +157,18 @@ int util(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("negation into another point is a valid point") {
+			ed_rand(a);
+			ed_rand(c);
+			ed_neg(c, a);
+			TEST_ASSERT(ed_on_curve(c), end);
+			ed_add(b, a, c);
+			TEST_ASSERT(ed_is_infty(b), end);
+			ed_dbl(b, c);
+			TEST_ASSERT(ed_on_curve(b), end);
+		}
+		TEST_END;
+
 		TEST_CASE("assignment to random and comparison are consistent") {
 			ed_rand(a);
 			ed_set_infty(c);
@@ -206,6 +218,25 @@ int util(void) {
 				ed_write_bin(bin, l, a, j);
 				ed_read_bin(b, bin, l);
 				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_ONCE("reading a non-canonical encoding fails") {
+			/* The identity (0, 1) with the sign bit set, or in long form. */
+			ed_set_infty(a);
+			ed_norm(a, a);
+			for (int j = 0; j < 2; j++) {
+				memset(bin, 0, sizeof(bin));
+				bin[0] = (j == 0 ? 3 : 4);
+				fp_write_bin(bin + 1, RLC_FP_BYTES, a->y);
+				l = (j == 0 ? RLC_FP_BYTES + 1 : 2 * RLC_FP_BYTES + 1);
+				err_get_code();
+				RLC_TRY {
+					ed_read_bin(b, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -608,7 +639,8 @@ static int multiplication(void) {
 
 		TEST_ONCE("generator has the right order") {
 			TEST_ASSERT(ed_on_curve(p), end);
-			ed_mul(r, p, n);
+			/* The basic method does not reduce the scalar modulo n. */
+			ed_mul_basic(r, p, n);
 			TEST_ASSERT(ed_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -1174,7 +1206,7 @@ static int hashing(void) {
 			TEST_ASSERT(ed_on_curve(a), end);
 			ed_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
 			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
-			ed_mul(a, a, n);
+			ed_mul_basic(a, a, n);
 			TEST_ASSERT(ed_is_infty(a) == 1, end);
 		}
 		/* test vectors */

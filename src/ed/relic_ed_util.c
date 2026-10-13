@@ -247,13 +247,26 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 				RLC_THROW(ERR_NO_VALID);
 				return;
 		}
-		ed_upk(a, a);
+		if (!ed_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
+		/* A set sign bit has no meaning for x = 0, so it is not canonical. */
+		if (bin[0] == 3 && fp_is_zero(a->x)) {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
 	}
 
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
 			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
+		/* The identity is only encoded as a single zero byte. */
+		if (fp_is_zero(a->x) && fp_cmp_dig(a->y, 1) == RLC_EQ) {
 			RLC_THROW(ERR_NO_VALID);
 			return;
 		}
@@ -278,7 +291,8 @@ void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack) {
 	memset(bin, 0, len);
 
 	if (ed_is_infty(a)) {
-		if (len < 1) {
+		/* Infinity is encoded in one byte, as read_bin expects. */
+		if (len != 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
