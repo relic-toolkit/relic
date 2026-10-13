@@ -50,15 +50,19 @@ void fp_zero(fp_t a) {
 
 int fp_is_zero(const fp_t a) {
 	const dig_t *p = fp_prime_get();
-	dig_t t = 0, u = 0;
+	dig_t t = 0, u = 0, v = 0, c = 0;
 
+	/* Lazily reduced values may also represent zero as p or 2p. */
 	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
 		t |= a[i];
 		u |= a[i] ^ p[i];
+		v |= a[i] ^ ((p[i] << 1) | c);
+		c = p[i] >> (RLC_DIG - 1);
 	}
 
-	/* Both tests are evaluated, so that neither zero is told apart by time. */
-	return (!t) | (!u);
+	/* All tests are evaluated, so that no zero is told apart by time. When 2p
+	 * does not fit the digits (c is set), a cannot be equal to it. */
+	return (!t) | (!u) | ((!v) & (!c));
 }
 
 int fp_is_even(const fp_t a) {
