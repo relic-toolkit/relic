@@ -26,7 +26,6 @@
  *
  * Implementation of low-level prime field squaring functions.
  *
- * @version $Id: relic_fp_sqr_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup fp
  */
 

@@ -35,72 +35,110 @@
 
 .text
 
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
  */
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
 
-	movq	0(%rsi),%r8
-	movq	8(%rsi),%r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
-	movq	48(%rsi),%r14
-	movq	56(%rsi),%r15
-	movq	64(%rsi),%rbx
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rbx
+	// rcx holds the carry into the next word loaded, and CF and OF are
+	// clear before each MULADD.
+	xorq	%rcx, %rcx
 	xorq	%rax, %rax
 
 	movq	$U0, %rdx
-	mulx	%r8, %rdx, %rcx
+	mulx	%r8, %rdx, %rbp
 	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip)
-	movq	72(%rsi),%r8
+	movq	72(%rsi), %r8
+	adcx	%rcx, %r8
 	adox	%rax, %r8
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r9, %rdx, %rcx
-    MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %r8, %rbp, %rax, p0(%rip)
-	movq	80(%rsi),%r9
+	mulx	%r9, %rdx, %rbp
+	MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %r8, %rbp, %rax, p0(%rip)
+	movq	80(%rsi), %r9
+	adcx	%rcx, %r9
 	adox	%rax, %r9
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r10, %rdx, %rcx
-    MULADD	%r10, %r11, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %rbp, %rax, p0(%rip)
-	movq	88(%rsi),%r10
+	mulx	%r10, %rdx, %rbp
+	MULADD	%r10, %r11, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %rbp, %rax, p0(%rip)
+	movq	88(%rsi), %r10
+	adcx	%rcx, %r10
 	adox	%rax, %r10
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r11, %rdx, %rcx
-    MULADD	%r11, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %rbp, %rax, p0(%rip)
-	movq	96(%rsi),%r11
+	mulx	%r11, %rdx, %rbp
+	MULADD	%r11, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %rbp, %rax, p0(%rip)
+	movq	96(%rsi), %r11
+	adcx	%rcx, %r11
 	adox	%rax, %r11
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r12, %rdx, %rcx
-    MULADD	%r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %rbp, %rax, p0(%rip)
-	movq	104(%rsi),%r12
+	mulx	%r12, %rdx, %rbp
+	MULADD	%r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %rbp, %rax, p0(%rip)
+	movq	104(%rsi), %r12
+	adcx	%rcx, %r12
 	adox	%rax, %r12
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r13, %rdx, %rcx
-    MULADD	%r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %r12, %rbp, %rax, p0(%rip)
-	movq	112(%rsi),%r13
+	mulx	%r13, %rdx, %rbp
+	MULADD	%r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %r12, %rbp, %rax, p0(%rip)
+	movq	112(%rsi), %r13
+	adcx	%rcx, %r13
 	adox	%rax, %r13
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r14, %rdx, %rcx
-    MULADD	%r14, %r15, %rbx, %r8, %r9, %r10, %r11, %r12, %r13, %rbp, %rax, p0(%rip)
-	movq	120(%rsi),%r14
+	mulx	%r14, %rdx, %rbp
+	MULADD	%r14, %r15, %rbx, %r8, %r9, %r10, %r11, %r12, %r13, %rbp, %rax, p0(%rip)
+	movq	120(%rsi), %r14
+	adcx	%rcx, %r14
 	adox	%rax, %r14
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r15, %rdx, %rcx
-    MULADD	%r15, %rbx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbp, %rax, p0(%rip)
+	mulx	%r15, %rdx, %rbp
+	MULADD	%r15, %rbx, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbp, %rax, p0(%rip)
 
 	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax
-	
+
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level extension field squaring functions.
  *
  * @ingroup fpx
  */
@@ -39,12 +39,19 @@
  */
 
 .text
-.global fp2_sqrn_c0
-.global fp2_sqrn_c1
-.global fp2_sqrm_c0
-.global fp2_sqrm_c1
+.global cdecl(fp2_sqrn_c0)
+.global cdecl(fp2_sqrn_c1)
+.global cdecl(fp2_sqrm_c0)
+.global cdecl(fp2_sqrm_c1)
 
-fp2_sqrn_c0:
+#if OPSYS != WINDOWS
+.hidden cdecl(fp2_sqrn_c0)
+.hidden cdecl(fp2_sqrn_c1)
+.hidden cdecl(fp2_sqrm_c0)
+.hidden cdecl(fp2_sqrm_c1)
+#endif
+
+cdecl(fp2_sqrn_c0):
 	push	%r12
 	push	%r13 
 	push	%r14  
@@ -98,7 +105,7 @@ fp2_sqrn_c0:
 	popq	%r12
 	ret
 
-fp2_sqrn_c1:
+cdecl(fp2_sqrn_c1):
 	push	%r12
 	push	%r13 
 	push	%r14  
@@ -132,7 +139,7 @@ fp2_sqrn_c1:
 	popq	%r12
 	ret
 
-fp2_sqrm_c0:
+cdecl(fp2_sqrm_c0):
 	push	%r12
 	push	%r13 
 	push	%r14  
@@ -188,7 +195,7 @@ fp2_sqrm_c0:
 	popq	%r12
 	ret
 
-fp2_sqrm_c1:
+cdecl(fp2_sqrm_c1):
 	push	%r12
 	push	%r13 
 	push	%r14  

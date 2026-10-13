@@ -28,7 +28,6 @@
  *
  * Implementation of low-level prime field multiplication.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
@@ -45,33 +44,20 @@
 #define BAR	0xBFFFF700001AFFFE
 #define BARS	6
 #define BARJ	7
-#elif FP_PRIME == 510
-#define P0	0xDD5F62C1A3044101
-#define P1	0x393DDECB1D3C5517
-#define P2	0x8E97A75A70B54410
-#define P3	0xBA09F4BACE3AC558
-#define P4	0x13BA8856149CDCB6
-#define P5	0xB32E21F17F8B0A67
-#define P6	0x5A1673FA252B4DAA
-#define P7	0X31BEC371AB26D0A6
-#define U0	0x766D29254B8340FF
-#define BAR	0xA4ADE6F58CE7791A
-#define BARS	61
+#elif FP_PRIME == 508
+#define P0	0xCD1CCCF628BC1B1D
+#define P1	0x6B5CC3A8F69C137A
+#define P2	0x0B1B3D5304D0957E
+#define P3	0x3D3F6EB93785360E
+#define P4	0x91E008FC121F0707
+#define P5	0xA5524C027B6231A4
+#define P6	0xF420B8A16E4727D4
+#define P7	0x0C33B72B87E5A44D
+#define U0	0x71AA8793EFE880CB
+#define BAR	0xA7D7558A6ADB59D0
+#define BARS	59
 #define BARJ	7
-#elif FP_PRIME == 511
-#define P0	0x84DD401C8E4AB001
-#define P1	0x98707BD8B8D7F1F5
-#define P2	0x9BF81D9D036E1774
-#define P3	0xF876F2BD37381003
-#define P4	0x441981CA1F41B974
-#define P5	0x82C290A0001383DF
-#define P6	0x0000031F8F000000
-#define P7	0x4000000000156000
-#define U0	0xDF085042554AAFFF
-#define BAR	0xFFFFFFFFFFAA8000
-#define BARS	62
-#define BARJ	7
-#else /* B24_P509 */
+#elif FP_PRIME == 509
 #define P0	0xA13D118DB8BFD2AB
 #define P1	0xEE63BD076E8D9300
 #define P2	0xCFCB5C6071BAD3D2
@@ -84,6 +70,46 @@
 #define BAR	0xBFFFF1000823DF55
 #define BARS	60
 #define BARJ	7
+#elif FP_PRIME == 510
+#define P0	0xDD5F62C1A3044101
+#define P1	0x393DDECB1D3C5517
+#define P2	0x8E97A75A70B54410
+#define P3	0xBA09F4BACE3AC558
+#define P4	0x13BA8856149CDCB6
+#define P5	0xB32E21F17F8B0A67
+#define P6	0x5A1673FA252B4DAA
+#define P7	0x31BEC371AB26D0A6
+#define U0	0x766D29254B8340FF
+#define BAR	0xA4ADE6F58CE7791A
+#define BARS	61
+#define BARJ	7
+#elif FP_PRIME == 511
+/* CTIDH-511, the prime selected by fp_param_set_any(). */
+#define P0	0x1B81B90533C6C87B
+#define P1	0xC2721BF457ACA835
+#define P2	0x516730CC1F0B4F25
+#define P3	0xA7AAC6C567F35507
+#define P4	0x5AFBFCC69322C9CD
+#define P5	0xB42D083AEDC88C42
+#define P6	0xFC8AB0D15E3E4C4A
+#define P7	0x65B48E8F740F89BF
+#define U0	0x66C1301F632E294D
+#define BAR	0xA117C7275007EB1F
+#define BARS	62
+#define BARJ	7
+#else
+#error "x64-asm-8l supports FP_PRIME = 455, 508, 509, 510 or 511 only."
+#endif
+
+#if defined(__APPLE__)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
+#else
+#define cdecl(S) S
+#endif
+
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
 #endif
 
 .text
@@ -395,6 +421,7 @@
 	movq	\Z0, 0(%rdi)
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T0
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P
@@ -413,6 +440,7 @@
 	movq	\Z1, 8(%rdi)
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, \T0
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \T0, \T1, \P
@@ -431,6 +459,7 @@
 	movq	\Z2, 16(%rdi)
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, \T0
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \T0, \T1, \P
@@ -449,6 +478,7 @@
 	movq	\Z3, 24(%rdi)
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, \T0
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \T0, \T1, \P
@@ -467,6 +497,7 @@
 	movq	\Z4, 32(%rdi)
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, \T0
 	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
@@ -485,6 +516,7 @@
 	movq	\Z5, 40(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z5, %rdx, \T0
 	MULADD	\Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
@@ -502,6 +534,7 @@
 	movq	\Z6, 48(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z6, %rdx, \T0
 	MULADD	\Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
@@ -519,6 +552,7 @@
 	movq	\Z7, 56(%rdi)
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	xorq	%rax, %rax
 	movq	$U0, %rdx
 	mulx	\Z7, %rdx, \T0
 	MULADD	\Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P

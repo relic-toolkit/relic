@@ -26,10 +26,10 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
- * @ingroup bn
+ * @ingroup fp
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 /*
@@ -39,16 +39,16 @@
  */
 
 .text
-.global fp_mul1_low
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_mul1_low)
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
 /*
  * Function: fp_mul1_low
  * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
  * Output: c = a * digit mod p, in constant time
  */
-fp_mul1_low:
+cdecl(fp_mul1_low):
 	push	%rbx
 	subq	$160, %rsp
 
@@ -276,7 +276,7 @@ fp_mul1_low:
 	pop	%rbx
 	ret
 
-fp_muln_low:
+cdecl(fp_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -318,7 +318,7 @@ fp_muln_low:
     popq	%r12
     ret
 
-fp_mulm_low:
+cdecl(fp_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14

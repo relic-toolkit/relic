@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level extension field multiplication functions.
  *
  * @ingroup fpx
  */
@@ -33,10 +33,17 @@
 #include "macro.s"
 
 .text
-.global fp2_muln_c0
-.global fp2_muln_c1
-.global fp2_mulm_c0
-.global fp2_mulm_c1
+.global cdecl(fp2_muln_c0)
+.global cdecl(fp2_muln_c1)
+.global cdecl(fp2_mulm_c0)
+.global cdecl(fp2_mulm_c1)
+
+#if OPSYS != WINDOWS
+.hidden cdecl(fp2_muln_c0)
+.hidden cdecl(fp2_muln_c1)
+.hidden cdecl(fp2_mulm_c0)
+.hidden cdecl(fp2_mulm_c1)
+#endif
 
 /*
  * Techniques and code heavily inspired from "Efficient Algorithms for Large
@@ -44,7 +51,7 @@
  * Longa at TCHES'23.
  */
 
-fp2_muln_c0:
+cdecl(fp2_muln_c0):
 	push	%r12
 	push	%r13 
 	push	%r14    
@@ -62,7 +69,7 @@ fp2_muln_c0:
 	popq	%r12
     ret
 
-fp2_mulm_c0:
+cdecl(fp2_mulm_c0):
     push	%r12
     push	%r13 
     push	%r14  
@@ -80,7 +87,7 @@ fp2_mulm_c0:
 	popq	%r12
     ret
 
-fp2_muln_c1:
+cdecl(fp2_muln_c1):
     push	%r12
     push	%r13 
     push	%r14  
@@ -99,7 +106,7 @@ fp2_muln_c1:
 	popq	%r12
     ret
 
-fp2_mulm_c1:
+cdecl(fp2_mulm_c1):
     push	%r12
     push	%r13 
     push	%r14  
