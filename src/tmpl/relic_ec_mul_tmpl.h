@@ -647,12 +647,14 @@
 		size_t l;															\
 																			\
 		bn_null_all(n, m);													\
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
+			C##_null(t[i]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(n, m);												\
 			/* Prepare the precomputation table. */							\
 			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
-				C##_null(t[i]);												\
 				C##_new(t[i]);												\
 			}																\
 																			\
@@ -710,13 +712,15 @@
 																			\
 		bn_null_all(m, o);													\
 		C##_null_all(u, v);													\
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {						\
+			C##_null(t[i]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(m, o);												\
 			C##_new_all(u, v);												\
 			/* Prepare the precomputation table. */							\
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
-				C##_null(t[i]);												\
 				C##_new(t[i]);												\
 			}																\
 			/* Compute the precomputation table. */							\
@@ -855,11 +859,14 @@
 		C##_t t1[1 << (RLC_WIDTH - 2)];										\
 		size_t l, l0, l1;													\
 																			\
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {						\
+			C##_null(t0[i]);												\
+			C##_null(t1[i]);												\
+		}																	\
+																			\
 		RLC_TRY {															\
 			/* Compute the precomputation tables. */						\
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
-				C##_null(t0[i]);											\
-				C##_null(t1[i]);											\
 				C##_new(t0[i]);												\
 				C##_new(t1[i]);												\
 			}																\
@@ -1018,18 +1025,24 @@
 		C##_t *_p = RLC_ALLOCA(C##_t, n);									\
 		size_t l, *_l = RLC_ALLOCA(size_t, n);								\
 																			\
-		RLC_TRY {															\
-			l = 0;															\
-			for (i = 0; i < n; i++) {										\
-				l = RLC_MAX(l, bn_bits(k[i]) + 1);							\
-			}																\
-			naf = RLC_ALLOCA(int8_t, n * l);								\
-			if (naf == NULL || _p == NULL || _l == NULL) {					\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
+		l = 0;																\
+		for (i = 0; i < n; i++) {											\
+			l = RLC_MAX(l, bn_bits(k[i]) + 1);								\
+		}																	\
+		naf = RLC_ALLOCA(int8_t, n * l);									\
+		if (naf == NULL || _p == NULL || _l == NULL) {						\
+			RLC_FREE(naf);													\
+			RLC_FREE(_p);													\
+			RLC_FREE(_l);													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		for (i = 0; i < n; i++) {											\
+			C##_null(_p[i]);												\
+		}																	\
 																			\
+		RLC_TRY {															\
 			for (i = 0; i < n; i++) {										\
-				C##_null(_p[i]);											\
 				C##_new(_p[i]);												\
 			}																\
 																			\

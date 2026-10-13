@@ -46,18 +46,22 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 	bn_null(n);
 	bn_null(u);
+	for (int i = 0; i < 6; i++) {
+		bn_null(_k[i]);
+		ep3_null(q[i]);
+	}
+	for (int i = 0; i < (1 << 5); i++) {
+		ep3_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
 		for (int i = 0; i < 6; i++) {
-			bn_null(_k[i]);
-			ep3_null(q[i]);
 			bn_new(_k[i]);
 			ep3_new(q[i]);
 		}
 		for (int i = 0; i < (1 << 5); i++) {
-			ep3_null(t[i]);
 			ep3_new(t[i]);
 		}
 

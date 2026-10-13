@@ -826,10 +826,12 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
+	for (size_t i = 0; i < m; i++) {
+		bn_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (size_t i = 0; i < m; i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 
@@ -874,10 +876,13 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	size_t l;
 	bn_t u[4], v[4];
 
+	for (i = 0; i < 4; i++) {
+		bn_null(u[i]);
+		bn_null(v[i]);
+	}
+
 	RLC_TRY {
 		for (i = 0; i < 4; i++) {
-			bn_null(u[i]);
-			bn_null(v[i]);
 			bn_new(u[i]);
 			bn_new(v[i]);
 		}

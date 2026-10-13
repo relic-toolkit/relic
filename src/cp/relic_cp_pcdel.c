@@ -103,10 +103,13 @@ int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
 	g2_t qs[3];
 	int result = RLC_OK;
 
+	for (size_t i = 0; i < 3; i++) {
+		g1_null(ps[i]);
+		g2_null(qs[i]);
+	}
+
 	RLC_TRY {
 		for (size_t i = 0; i < 3; i++) {
-			g1_null(ps[i]);
-			g2_null(qs[i]);
 			g1_new(ps[i]);
 			g2_new(qs[i]);
 		}

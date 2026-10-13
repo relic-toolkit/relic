@@ -90,18 +90,26 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	g2_t *_q = (g2_t *)RLC_ALLOCA(g2_t, m + 1);
 	int result = RLC_OK;
 
+	if (_p == NULL || _q == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	for (size_t i = 0; i <= m; i++) {
+		g1_null(_p[i]);
+		g2_null(_q[i]);
+	}
+
 	RLC_TRY {
-		for (size_t i = 0; i < m; i++) {	
-			g1_null(_p[i]);
-			g2_null(_q[i]);
+		for (size_t i = 0; i < m; i++) {
 			g1_new(_p[i]);
 			g2_new(_q[i]);
 			g1_copy(_p[i], z[i]);
 			g2_copy(_q[i], q[i]);
 		}
-		g1_null(_p[m]);
 		g1_new(_p[m]);
-		g2_null(_q[m]);
 		g2_new(_q[m]);
 		g1_neg(_p[m], u);
 		g2_copy(_q[m], i);
@@ -112,12 +120,10 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
-		for (size_t i = 0; i <= m; i++) {	
+		for (size_t i = 0; i <= m; i++) {
 			g1_free(_p[i]);
 			g2_free(_q[i]);
 		}
-		g1_free(_p[m]);
-		g2_free(_q[m]);
 		RLC_FREE(_p);
 		RLC_FREE(_q);
 	}
@@ -387,11 +393,13 @@ int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 	int result = RLC_OK;
 
 	gt_null(g);
+	for (size_t i = 0; i < 2; i++) {
+		g1_null(ps[i]);
+		g2_null(qs[i]);
+	}
 
 	RLC_TRY {
 		for (size_t i = 0; i < 2; i++) {
-			g1_null(ps[i]);
-			g2_null(qs[i]);
 			g1_new(ps[i]);
 			g2_new(qs[i]);
 		}

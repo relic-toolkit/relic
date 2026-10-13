@@ -168,22 +168,24 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	gt_t e;
 	int result = 0;
 
+	if (p == NULL || r == NULL) {
+		RLC_FREE(p);
+		RLC_FREE(r);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	gt_null(e);
+	for (size_t i = 0; i < size + 1; i++) {
+		g1_null(p[i]);
+		g2_null(r[i]);
+	}
 
 	RLC_TRY {
-		if (p == NULL || r == NULL) {
-			RLC_FREE(p);
-			RLC_FREE(r);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		g1_null(p[0]);
-		g2_null(r[0]);
 		g1_new(p[0]);
 		g2_new(r[0]);
 		for (size_t i = 0; i < size; i++) {
-			g1_null(p[i + 1]);
 			g1_new(p[i + 1]);
-			g2_null(r[i + 1]);
 			g2_new(r[i + 1]);
 			g1_map(p[i + 1], m[i], l[i]);
 			g2_copy(r[i + 1], q[i]);

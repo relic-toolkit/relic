@@ -157,12 +157,26 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 	g1_t *h = RLC_ALLOCA(g1_t, fmax);
 	uint8_t *str = RLC_ALLOCA(uint8_t, imax + RLC_MAX(strlen(data), lmax));
 
+	if (g == NULL || h == NULL || str == NULL) {
+		RLC_FREE(g);
+		RLC_FREE(h);
+		RLC_FREE(str);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(t);
 	bn_null(n);
 	g1_null(d);
 	g2_null(g2);
 	gt_null(c);
 	gt_null(e);
+	for (size_t j = 0; j < slen; j++) {
+		g1_null(g[j]);
+	}
+	for (size_t j = 0; j < fmax; j++) {
+		g1_null(h[j]);
+	}
 
 	RLC_TRY {
 		bn_new(t);
@@ -171,22 +185,15 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
-		if (g == NULL || h == NULL || str == NULL) {
-			RLC_FREE(g);
-			RLC_FREE(h);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		bn_zero(t);
 		pc_get_ord(n);
 		for (size_t j = 0; j < slen; j++) {
-			g1_null(g[j]);
 			g1_new(g[j]);
 			bn_add(t, t, mu[j]);
 			bn_mod(t, t, n);
 		}
 		for (size_t j = 0; j < fmax; j++) {
-			g1_null(h[j]);
 			g1_new(h[j]);
 		}
 
@@ -255,14 +262,19 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 	g1_t *_h = RLC_ALLOCA(g1_t, fmax);
 	uint8_t *str = RLC_ALLOCA(uint8_t, imax + lmax);
 
-	RLC_TRY {
-		if (_h == NULL || str == NULL) {
-			RLC_FREE(_h);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
+	if (_h == NULL || str == NULL) {
+		RLC_FREE(_h);
+		RLC_FREE(str);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
+	for (size_t j = 0; j < fmax; j++) {
+		g1_null(_h[j]);
+	}
+
+	RLC_TRY {
 		for (size_t j = 0; j < fmax; j++) {
-			g1_null(_h[j]);
 			g1_new(_h[j]);
 		}
 
@@ -304,6 +316,13 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 	}
 	uint8_t *str = RLC_ALLOCA(uint8_t, strlen(data) + imax);
 
+	if (g == NULL || str == NULL) {
+		RLC_FREE(g);
+		RLC_FREE(str);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(t);
 	bn_null(n);
 	g1_null(d);
@@ -311,6 +330,9 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 	g2_null(g2);
 	gt_null(c);
 	gt_null(e);
+	for (size_t j = 0; j < slen; j++) {
+		g1_null(g[j]);
+	}
 
 	RLC_TRY {
 		bn_new(t);
@@ -320,15 +342,10 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
-		if (g == NULL || str == NULL) {
-			RLC_FREE(g);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		bn_zero(t);
 		pc_get_ord(n);
 		for (size_t j = 0; j < slen; j++) {
-			g1_null(g[j]);
 			g1_new(g[j]);
 			bn_add(t, t, mu[j]);
 			bn_mod(t, t, n);

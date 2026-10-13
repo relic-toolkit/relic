@@ -257,7 +257,7 @@
 																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null_all(t1, t2, t3, t4, t5);									\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5);							\

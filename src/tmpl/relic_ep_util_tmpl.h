@@ -308,12 +308,17 @@
 		int i;																\
 		F##_t* a = RLC_ALLOCA(F##_t, n);									\
 																			\
+		if (a == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+																			\
+		for (i = 0; i < n; i++) {											\
+			F##_null(a[i]);													\
+		}																	\
+																			\
 		RLC_TRY {															\
-			if (a == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			for (i = 0; i < n; i++) {										\
-				F##_null(a[i]);												\
 				F##_new(a[i]);												\
 				if (C##_is_infty(t[i])) {									\
 					F##_set_dig(a[i], 1);									\

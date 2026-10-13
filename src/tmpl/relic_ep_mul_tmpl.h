@@ -90,15 +90,19 @@
 																			\
 		bn_null_all(n, u);													\
 		C##_null(q);														\
+		for (size_t i = 0; i < S; i++) {									\
+			bn_null(_k[i]);													\
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {			\
+				C##_null(t[i][j]);											\
+			}																\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(n, u);												\
 			C##_new(q);														\
 			for (size_t i = 0; i < S; i++) {								\
-				bn_null(_k[i]);												\
 				bn_new(_k[i]);												\
 				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {		\
-					C##_null(t[i][j]);										\
 					C##_new(t[i][j]);										\
 				}															\
 			}																\
@@ -197,18 +201,24 @@
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
 																			\
 		bn_null_all(n, u);													\
+		for (int i = 0; i < S; i++) {										\
+			bn_null(_k[i]);													\
+			C##_null(q[i]);													\
+		}																	\
+		for (int i = 0; i < T; i++) {										\
+			for (int j = 0; j < (1 << (S / T - 1)); j++) {					\
+				C##_null(t[i][j]);											\
+			}																\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(n, u);												\
 			for (int i = 0; i < S; i++) {									\
-				bn_null(_k[i]);												\
-				C##_null(q[i]);												\
 				bn_new(_k[i]);												\
 				C##_new(q[i]);												\
 			}																\
 			for (int i = 0; i < T; i++) {									\
 				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
-					C##_null(t[i][j]);										\
 					C##_new(t[i][j]);										\
 				}															\
 			}																\
@@ -342,19 +352,23 @@
 																			\
 		bn_null_all(n, u);													\
 		C##_null(v);														\
+		for (int i = 0; i < S; i++) {										\
+			bn_null(_k[i]);													\
+			bn_null(_m[i]);													\
+		}																	\
+		for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {					\
+			C##_null(_p[i]);												\
+			C##_null(_q[i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(n, u);												\
 			C##_new(v);														\
 			for (int i = 0; i < S; i++) {									\
-				bn_null(_k[i]);												\
 				bn_new(_k[i]);												\
-				bn_null(_m[i]);												\
 				bn_new(_m[i]);												\
 			}																\
 			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
-				C##_null(_p[i]);											\
-				C##_null(_q[i]);											\
 				C##_new(_p[i]);												\
 				C##_new(_q[i]);												\
 			}																\
@@ -493,6 +507,7 @@
 		size_t l, _l[S];													\
 																			\
 		if (n == 0) {														\
+			RLC_FREE(naf);													\
 			C##_set_infty(r);												\
 			return;															\
 		}																	\
@@ -502,16 +517,25 @@
 		if (n <= 10) {														\
 			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
 																			\
-			RLC_TRY {														\
-				if (naf == NULL || _p == NULL) {							\
-					RLC_THROW(ERR_NO_MEMORY);								\
+			if (naf == NULL || _p == NULL) {								\
+				RLC_FREE(naf);												\
+				RLC_FREE(_p);												\
+				RLC_THROW(ERR_NO_MEMORY);									\
+				return;														\
+			}																\
+																			\
+			for (j = 0; j < S; j++) {										\
+				bn_null(_k[j]);												\
+				for (i = 0; i < n; i++) {									\
+					C##_null(_p[S*i + j]);									\
 				}															\
+			}																\
+																			\
+			RLC_TRY {														\
 				bn_new_all(q, x);											\
 				for (j = 0; j < S; j++) {									\
-					bn_null(_k[j]);											\
 					bn_new(_k[j]);											\
 					for (i = 0; i < n; i++) {								\
-						C##_null(_p[S*i + j]);								\
 						C##_new(_p[S*i + j]);								\
 					}														\
 				}															\
@@ -573,25 +597,36 @@
 			C##_t s, t, u, v, *_p = RLC_ALLOCA(C##_t, c);					\
 			C##_t *_q = RLC_ALLOCA(C##_t, S * n);							\
 																			\
+			if (naf == NULL || _p == NULL || _q == NULL) {					\
+				RLC_FREE(naf);												\
+				RLC_FREE(_p);												\
+				RLC_FREE(_q);												\
+				RLC_THROW(ERR_NO_MEMORY);									\
+				return;														\
+			}																\
+																			\
 			C##_null_all(s, t, u, v);										\
+			for (i = 0; i < S; i++) {										\
+				bn_null(_k[i]);												\
+			}																\
+			for (j = 0; j < c; j++) {										\
+				C##_null(_p[j]);											\
+			}																\
+			for (i = 0; i < S * n; i++) {									\
+				C##_null(_q[i]);											\
+			}																\
 																			\
 			RLC_TRY {														\
-				if (naf == NULL || _p == NULL || _q == NULL) {				\
-					RLC_THROW(ERR_NO_MEMORY);								\
-				}															\
 				bn_new_all(q, x);											\
 				C##_new_all(s, t, u, v);									\
 				for (i = 0; i < S; i++) {									\
-					bn_null(_k[i]);											\
 					bn_new(_k[i]);											\
 				}															\
 				for (j = 0; j < c; j++) {									\
-					C##_null(_p[j]);										\
 					C##_new(_p[j]);											\
 					C##_set_infty(_p[j]);									\
 				}															\
 				for (i = 0; i < S * n; i++) {								\
-					C##_null(_q[i]);										\
 					C##_new(_q[i]);											\
 				}															\
 																			\

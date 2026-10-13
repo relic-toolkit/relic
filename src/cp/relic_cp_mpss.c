@@ -82,12 +82,14 @@ int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
 	bn_t n, d[2], e[2];
 
 	bn_null(n);
+	for (int i = 0; i < 2; i++) {
+		bn_null(d[i]);
+		bn_null(e[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
-			bn_null(d[i]);
-			bn_null(e[i]);
 			bn_new(d[i]);
 			bn_new(e[i]);
 		}

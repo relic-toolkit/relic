@@ -115,10 +115,12 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
+	for (int i = 0; i < n; i++) {
+		fb_null(a[i]);
+	}
 
 	RLC_TRY {
 		for (int i = 0; i < n; i++) {
-			fb_null(a[i]);
 			fb_new(a[i]);
 			if (eb_is_infty(t[i])) {
 				fb_set_dig(a[i], 1);

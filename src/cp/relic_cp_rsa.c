@@ -123,8 +123,9 @@ static int pad_basic(bn_t m, size_t *p_len, size_t m_len, size_t k_len, int op) 
 	int result = RLC_ERR;
 	bn_t t;
 
+	bn_null(t);
+
 	RLC_TRY {
-		bn_null(t);
 		bn_new(t);
 
 		switch (op) {

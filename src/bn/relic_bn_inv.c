@@ -78,10 +78,12 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	}
 
 	bn_null(u);
+	for (i = 0; i < (int)n; i++) {
+		bn_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (i = 0; i < (int)n; i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 		bn_new(u);
