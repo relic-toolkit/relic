@@ -66,6 +66,16 @@
  */
 #define RLC_RAND_SEED	    64
 
+/**
+ * Maximum size of the PRNG seed, which is copied to the stack when seeding.
+ */
+#define RLC_RAND_MAX		1024
+
+/**
+ * Path to the character device that supplies entropy.
+ */
+#define RLC_RAND_PATH		"/dev/urandom"
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -86,7 +96,7 @@ void rand_clean(void);
  * Sets the initial state of the pseudo-random number generator.
  *
  * @param[in] buf			- the buffer that represents the initial state.
- * @param[in] size			- the number of bytes.
+ * @param[in] size			- the number of bytes, at most RLC_RAND_MAX.
  * @throw ERR_NO_VALID		- if the entropy length is too small or too large.
  */
 void rand_seed(uint8_t *buf, size_t size);

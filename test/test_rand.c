@@ -367,20 +367,23 @@ static int test(void) {
 #elif RAND == UDEV
 
 static int test(void) {
+	int code = RLC_ERR;
 	uint8_t out[20], digit;
 
 	TEST_ONCE("reading from /dev/urandom is correct") {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
 	}
 	TEST_END;
+
+	code = RLC_OK;
   end:
-	return RLC_OK;
+	return code;
 }
 
 #elif RAND == RDRND
@@ -432,6 +435,7 @@ static void test_bytes(uint8_t *buf, size_t size, void *args) {
 }
 
 static int test(void) {
+	int code = RLC_ERR;
 	uint8_t out[20], digit;
 	int fd = open("/dev/urandom", O_RDONLY);
 
@@ -439,21 +443,25 @@ static int test(void) {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
+		digit = 0;
+		memset(out, 0, sizeof(out));
 		rand_seed(&test_bytes, (void *)&fd);
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
 	}
 	TEST_END;
+
+	code = RLC_OK;
   end:
-  	close(fd);
-	return RLC_OK;
+	close(fd);
+	return code;
 }
 
 #endif
@@ -471,8 +479,23 @@ int main(void) {
 		return 1;
 	}
 
+	TEST_ONCE("using the generator without a seed is an error") {
+		uint8_t out[16];
+		err_get_code();
+		rand_clean();
+		rand_bytes(out, sizeof(out));
+		TEST_ASSERT(err_get_code() == RLC_ERR, fail);
+		rand_init();
+		rand_bytes(out, sizeof(out));
+		TEST_ASSERT(err_get_code() == RLC_OK, fail);
+	} TEST_END;
+
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();
 	return 0;
+
+  fail:
+	core_clean();
+	return 1;
 }
