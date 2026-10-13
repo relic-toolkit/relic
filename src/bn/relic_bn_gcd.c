@@ -250,26 +250,28 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t t, u, v, x_1, y_1, q, r;
+	bn_t t, u, v, x_1, y_1, q, r, _d, _e;
+	int sgn_a, sgn_b;
 
 	if (gcd_ext_zero(c, d, e, a, b)) {
 		return;
 	}
+	/* The outputs may alias the inputs, so read the signs first. */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
-	bn_null_all(t, u, v, x_1, y_1, q, r);
+	bn_null_all(t, u, v, x_1, y_1, q, r, _d, _e);
 
 	RLC_TRY {
-		bn_new_all(t, u, v, x_1, y_1, q, r);
+		bn_new_all(t, u, v, x_1, y_1, q, r, _d, _e);
 
 		bn_abs(u, a);
 		bn_abs(v, b);
 
 		bn_zero(x_1);
 		bn_set_dig(y_1, 1);
-		bn_set_dig(d, 1);
-		if (e != NULL) {
-			bn_zero(e);
-		}
+		bn_set_dig(_d, 1);
+		bn_zero(_e);
 
 		while (!bn_is_zero(v)) {
 			bn_div_rem(q, r, u, v);
@@ -278,30 +280,32 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_copy(v, r);
 
 			bn_mul(t, q, x_1);
-			bn_sub(r, d, t);
-			bn_copy(d, x_1);
+			bn_sub(r, _d, t);
+			bn_copy(_d, x_1);
 			bn_copy(x_1, r);
 
-			if (e != NULL) {
-				bn_mul(t, q, y_1);
-				bn_sub(r, e, t);
-				bn_copy(e, y_1);
-				bn_copy(y_1, r);
-			}
+			bn_mul(t, q, y_1);
+			bn_sub(r, _e, t);
+			bn_copy(_e, y_1);
+			bn_copy(y_1, r);
 		}
-		if (bn_sign(a) == RLC_NEG) {
-			bn_neg(d, d);
+		if (sgn_a == RLC_NEG) {
+			bn_neg(_d, _d);
 		}
-		if (e != NULL && bn_sign(b) == RLC_NEG) {
-			bn_neg(e, e);
+		if (sgn_b == RLC_NEG) {
+			bn_neg(_e, _e);
 		}
 		bn_copy(c, u);
+		bn_copy(d, _d);
+		if (e != NULL) {
+			bn_copy(e, _e);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(t, u, v, x_1, y_1, q, r);
+		bn_free_all(t, u, v, x_1, y_1, q, r, _d, _e);
 	}
 }
 
@@ -367,22 +371,25 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t x, y, u, v, t0, t1, t4;
+	bn_t x, y, u, v, t0, t1, t4, g, p, q, w;
 	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
-	int swap;
+	int swap, sgn_a, sgn_b;
 
 	if (gcd_ext_zero(c, d, e, a, b)) {
 		return;
 	}
+	/* The outputs may alias the inputs, so read the signs first. */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
-	bn_null_all(x, y, u, v, t0, t1, t4);
+	bn_null_all(x, y, u, v, t0, t1, t4, g, p, q, w);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
 	RLC_TRY {
-		bn_new_all(x, y, u, v, t0, t1, t4);
+		bn_new_all(x, y, u, v, t0, t1, t4, g, p, q, w);
 
 		if (bn_cmp_abs(a, b) != RLC_LT) {
 			bn_abs(x, a);
@@ -393,9 +400,13 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_abs(y, a);
 			swap = 1;
 		}
+		/* Keep X >= Y in p and q for the cofactors at the end. */
+		bn_copy(p, x);
+		bn_copy(q, y);
 
+		/* The cofactors of Y in the current pair (x, y) are t4 and w. */
 		bn_zero(t4);
-		bn_set_dig(d, 1);
+		bn_set_dig(w, 1);
 
 		while (y->used > 1) {
 			lehme_lead(u, v, x, y, RLC_DIG);
@@ -408,10 +419,10 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				bn_div_rem(t1, t0, x, y);
 				bn_copy(x, y);
 				bn_copy(y, t0);
-				bn_mul(t1, t1, d);
+				bn_mul(t1, t1, w);
 				bn_sub(t1, t4, t1);
-				bn_copy(t4, d);
-				bn_copy(d, t1);
+				bn_copy(t4, w);
+				bn_copy(w, t1);
 			} else {
 				lehme_lead(u, v, x, y, 2 * RLC_DIG);
 				lehme_mat(u, v, _a, _b, _c, _d, t0, t1);
@@ -421,55 +432,41 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
 				lehme_mat(x, y, _a, _b, _c, _d, t0, t1);
 
-				lehme_mat(t4, d, _a, _b, _c, _d, t0, t1);
+				lehme_mat(t4, w, _a, _b, _c, _d, t0, t1);
 			}
 		}
-		bn_gcd_ext_dig(c, u, v, x, y->dp[0]);
-		if (!swap) {
-			bn_mul(t0, t4, u);
-			bn_mul(t1, d, v);
-			bn_add(t4, t0, t1);
-			bn_mul(x, b, t4);
-			bn_sub(x, c, x);
-			bn_div(d, x, a);
-			if (bn_sign(b) == RLC_NEG) {
-				bn_neg(d, d);
-				if (bn_sign(a) == RLC_NEG) {
-					bn_sub_dig(d, d, 1);
-				}
-			}
-			if (e != NULL) {
-				bn_copy(e, t4);
-				if (bn_sign(b) == RLC_NEG) {
-					bn_neg(e, e);
-				}
-			}
-		} else {
-			bn_mul(t0, t4, u);
-			bn_mul(t1, d, v);
-			bn_add(d, t0, t1);
-			bn_mul(x, a, d);
-			bn_sub(x, c, x);
-			bn_div(t4, x, b);
-			if (bn_sign(a) == RLC_NEG) {
-				bn_neg(d, d);
-			}
-			if (e != NULL) {
-				bn_copy(e, t4);
-				if (bn_sign(a) == RLC_NEG) {
-					bn_neg(e, e);
-					if (bn_sign(b) == RLC_NEG) {
-						bn_sub_dig(e, e, 1);
-					}
-				}
-			}
+		/* Now g = u * x + v * y, so the cofactor of Y is t = u * t4 + v * w
+		 * and the one of X follows from g = s * X + t * Y. */
+		bn_gcd_ext_dig(g, u, v, x, y->dp[0]);
+		bn_mul(t0, t4, u);
+		bn_mul(t1, w, v);
+		bn_add(t1, t0, t1);
+		bn_mul(t0, q, t1);
+		bn_sub(t0, g, t0);
+		bn_div(t0, t0, p);
+		/* Here t0 is the cofactor of X and t1 the one of Y. */
+		if (swap) {
+			bn_copy(t4, t0);
+			bn_copy(t0, t1);
+			bn_copy(t1, t4);
+		}
+		if (sgn_a == RLC_NEG) {
+			bn_neg(t0, t0);
+		}
+		if (sgn_b == RLC_NEG) {
+			bn_neg(t1, t1);
+		}
+		bn_copy(c, g);
+		bn_copy(d, t0);
+		if (e != NULL) {
+			bn_copy(e, t1);
 		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(x, y, u, v, t0, t1, t4);
+		bn_free_all(x, y, u, v, t0, t1, t4, g, p, q, w);
 	}
 }
 
@@ -528,17 +525,20 @@ void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t x, y, t, u, v, _a, _b, _e;
-	int shift;
+	bn_t x, y, t, u, v, _a, _b, _c, _d, _e;
+	int shift, sgn_a, sgn_b;
 
 	if (gcd_ext_zero(c, d, e, a, b)) {
 		return;
 	}
+	/* The outputs may alias the inputs, so read the signs first. */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
-	bn_null_all(x, y, t, u, v, _a, _b, _e);
+	bn_null_all(x, y, t, u, v, _a, _b, _c, _d, _e);
 
 	RLC_TRY {
-		bn_new_all(x, y, t, u, v, _a, _b, _e);
+		bn_new_all(x, y, t, u, v, _a, _b, _c, _d, _e);
 
 		bn_abs(x, a);
 		bn_abs(y, b);
@@ -555,13 +555,13 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_copy(v, y);
 
 		/*
-		 * Binary extended GCD (HAC Algorithm 14.61): _a, _b, d, _e are the
+		 * Binary extended GCD (HAC Algorithm 14.61): _a, _b, _d, _e are the
 		 * textbook cofactors A, B, C, D, tracking u = A*x + B*y and
 		 * v = C*x + D*y as u and v are reduced to their GCD below.
 		 */
 		bn_set_dig(_a, 1);
 		bn_zero(_b);
-		bn_zero(d);
+		bn_zero(_d);
 		bn_set_dig(_e, 1);
 
 		while (bn_is_even(u)) {
@@ -579,70 +579,83 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		while (bn_cmp(u, v) != RLC_EQ) {
 			if (bn_is_even(v)) {
 				bn_hlv(v, v);
-				if ((d->dp[0] & 0x01) == 0 && (_e->dp[0] & 0x01) == 0) {
-					bn_hlv(d, d);
+				if ((_d->dp[0] & 0x01) == 0 && (_e->dp[0] & 0x01) == 0) {
+					bn_hlv(_d, _d);
 					bn_hlv(_e, _e);
 				} else {
-					bn_add(d, d, y);
-					bn_hlv(d, d);
+					bn_add(_d, _d, y);
+					bn_hlv(_d, _d);
 					bn_sub(_e, _e, x);
 					bn_hlv(_e, _e);
 				}
 			} else {
 				if (bn_cmp(v, u) == RLC_LT) {
-					bn_copy(c, u);
+					bn_copy(_c, u);
 					bn_copy(u, v);
-					bn_copy(v, c);
-					bn_copy(c, d);
-					bn_copy(d, _a);
-					bn_copy(_a, c);
-					bn_copy(c, _e);
+					bn_copy(v, _c);
+					bn_copy(_c, _d);
+					bn_copy(_d, _a);
+					bn_copy(_a, _c);
+					bn_copy(_c, _e);
 					bn_copy(_e, _b);
-					bn_copy(_b, c);
+					bn_copy(_b, _c);
 				} else {
 					bn_sub(v, v, u);
-					bn_sub(d, d, _a);
+					bn_sub(_d, _d, _a);
 					bn_sub(_e, _e, _b);
 				}
 			}
 		}
 		/* The loop above ends with u = v = gcd(x, y); restore the shift. */
-		bn_lsh(c, u, shift);
+		bn_lsh(_c, u, shift);
 		/* Reduce the oversized cofactors using the coprime pair (x/g, y/g). */
 		bn_div(x, x, u);
 		bn_div(y, y, u);
 		bn_hlv(_a, x);
 		bn_hlv(_b, y);
-		while (bn_cmp_abs(d, _b) == RLC_GT || bn_cmp_abs(_e, _a) == RLC_GT) {
-			bn_div(t, d, _b);
-			if (bn_bits(t) > 1) {
-				bn_hlv(t, t);
-			}
-			bn_mul(v, x, t);
-			bn_mul(u, y, t);
-			if (bn_sign(d) != bn_sign(u)) {
-				bn_add(d, d, u);
-				bn_sub(_e, _e, v);
-			} else {
-				bn_sub(d, d, u);
-				bn_add(_e, _e, v);
+		if (bn_cmp_dig(y, 1) == RLC_EQ) {
+			/* The second operand divides the first one. */
+			bn_zero(_d);
+			bn_set_dig(_e, 1);
+		} else if (bn_cmp_dig(x, 1) == RLC_EQ) {
+			/* The first operand divides the second one. */
+			bn_set_dig(_d, 1);
+			bn_zero(_e);
+		} else {
+			while (bn_cmp_abs(_d, _b) == RLC_GT ||
+					bn_cmp_abs(_e, _a) == RLC_GT) {
+				bn_div(t, _d, _b);
+				if (bn_bits(t) > 1) {
+					bn_hlv(t, t);
+				}
+				bn_mul(v, x, t);
+				bn_mul(u, y, t);
+				if (bn_sign(_d) != bn_sign(u)) {
+					bn_add(_d, _d, u);
+					bn_sub(_e, _e, v);
+				} else {
+					bn_sub(_d, _d, u);
+					bn_add(_e, _e, v);
+				}
 			}
 		}
-		if (bn_sign(a) == RLC_NEG) {
-			bn_neg(d, d);
+		if (sgn_a == RLC_NEG) {
+			bn_neg(_d, _d);
 		}
+		if (sgn_b == RLC_NEG) {
+			bn_neg(_e, _e);
+		}
+		bn_copy(c, _c);
+		bn_copy(d, _d);
 		if (e != NULL) {
 			bn_copy(e, _e);
-			if (bn_sign(b) == RLC_NEG) {
-				bn_neg(e, e);
-			}
 		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(x, y, t, u, v, _a, _b, _e);
+		bn_free_all(x, y, t, u, v, _a, _b, _c, _d, _e);
 	}
 }
 
@@ -1058,8 +1071,9 @@ void bn_gcd_dig(bn_t c, const bn_t a, dig_t b) {
 }
 
 void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
-	bn_t u, v, x1, y1, q, r;
+	bn_t u, v, x1, y1, q, r, _d, _e;
 	dig_t _v, _q, _t, _u;
+	int sgn_a;
 
 	if (d == NULL && e == NULL) {
 		bn_gcd_dig(c, a, b);
@@ -1068,54 +1082,59 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 
 	if (bn_is_zero(a)) {
 		bn_set_dig(c, b);
-		bn_zero(d);
+		if (d != NULL) {
+			bn_zero(d);
+		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
 		}
 		return;
 	}
 
+	/* The outputs may alias the input, so read its sign first. */
+	sgn_a = bn_sign(a);
+
 	if (b == 0) {
 		bn_abs(c, a);
-		bn_set_dig(d, 1);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (sgn_a == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
 		if (e != NULL) {
 			bn_zero(e);
 		}
 		return;
 	}
 
-	bn_null_all(u, v, x1, y1, q, r);
+	bn_null_all(u, v, x1, y1, q, r, _d, _e);
 
 	RLC_TRY {
-		bn_new_all(u, v, x1, y1, q, r);
+		bn_new_all(u, v, x1, y1, q, r, _d, _e);
 
 		bn_abs(u, a);
 		bn_set_dig(v, b);
 
 		bn_zero(x1);
 		bn_set_dig(y1, 1);
-		bn_set_dig(d, 1);
-
-		if (e != NULL) {
-			bn_zero(e);
-		}
+		bn_set_dig(_d, 1);
+		bn_zero(_e);
 
 		bn_div_rem(q, r, u, v);
 
 		bn_copy(u, v);
 		bn_copy(v, r);
 
-		bn_mul(c, q, x1);
-		bn_sub(r, d, c);
-		bn_copy(d, x1);
+		bn_mul(r, q, x1);
+		bn_sub(r, _d, r);
+		bn_copy(_d, x1);
 		bn_copy(x1, r);
 
-		if (e != NULL) {
-			bn_mul(c, q, y1);
-			bn_sub(r, e, c);
-			bn_copy(e, y1);
-			bn_copy(y1, r);
-		}
+		bn_mul(r, q, y1);
+		bn_sub(r, _e, r);
+		bn_copy(_e, y1);
+		bn_copy(y1, r);
 
 		_v = v->dp[0];
 		_u = u->dp[0];
@@ -1126,24 +1145,31 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 			_u = _v;
 			_v = _t;
 
-			bn_mul_dig(c, x1, _q);
-			bn_sub(r, d, c);
-			bn_copy(d, x1);
+			bn_mul_dig(r, x1, _q);
+			bn_sub(r, _d, r);
+			bn_copy(_d, x1);
 			bn_copy(x1, r);
 
-			if (e != NULL) {
-				bn_mul_dig(c, y1, _q);
-				bn_sub(r, e, c);
-				bn_copy(e, y1);
-				bn_copy(y1, r);
-			}
+			bn_mul_dig(r, y1, _q);
+			bn_sub(r, _e, r);
+			bn_copy(_e, y1);
+			bn_copy(y1, r);
+		}
+		if (sgn_a == RLC_NEG) {
+			bn_neg(_d, _d);
 		}
 		bn_set_dig(c, _u);
+		if (d != NULL) {
+			bn_copy(d, _d);
+		}
+		if (e != NULL) {
+			bn_copy(e, _e);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(u, v, x1, y1, q, r);
+		bn_free_all(u, v, x1, y1, q, r, _d, _e);
 	}
 }

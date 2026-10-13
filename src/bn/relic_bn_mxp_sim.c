@@ -79,7 +79,7 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n) {
-    bn_t *t = NULL, u;
+    bn_t *t = NULL, r, u;
 	size_t l;
 	dig_t parities;
 
@@ -89,6 +89,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 	}
 
 	if (n == 0) {
+		bn_set_dig(c, 1);
 		return;
 	}
 
@@ -97,7 +98,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		return;
 	}
 
-	bn_null(u);
+	bn_null_all(r, u);
 	t = RLC_ALLOCA(bn_t, 1 << n);
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -109,7 +110,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 			bn_null(t[i]);
 			bn_new(t[i]);
 		}
-		bn_new(u);
+		bn_new_all(r, u);
 		bn_mod_pre(u, m);
 
         // Precompute all 2^n combinations
@@ -120,10 +121,14 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
         for (size_t i = 0; i < n; i++) {
             if (!bn_is_zero(b[i])) { // Otherwise will never need P[i]
 				const uint_t star = 1 << i;
+				/* A negative exponent is a power of the inverse. */
+				if (bn_sign(b[i]) == RLC_NEG) {
+					bn_mod_inv(t[star], a[i], m);
+				} else {
+					bn_mod_basic(t[star], a[i], m);
+				}
 #if BN_MOD == MONTY
-				bn_mod_monty_conv(t[star], a[i], m);
-#else
-				bn_copy(t[star], a[i]);
+				bn_mod_monty_conv(t[star], t[star], m);
 #endif
                 for(size_t j = star + 1; j < (star << 1); j++) {
                     bn_mul(t[j], t[star], t[j - star]);
@@ -137,11 +142,12 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 			l = RLC_MAX(l, bn_bits(b[j]));
 	    }
 
-		bn_copy(c, t[0]);
+		/* Accumulate in r, since c may alias m. */
+		bn_copy(r, t[0]);
 		for (int i = l - 1; i >= 0; i--) {
 			// One Squaring
-		    bn_sqr(c, c);
-			bn_mod(c, c, m, u);
+		    bn_sqr(r, r);
+			bn_mod(r, r, m, u);
 			// Select odd exponents
 		    parities = bn_get_bit(b[0], i);
 		    for(size_t j = 1; j < n; j++) {
@@ -149,13 +155,14 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 			}
 			// One multiplication by the odd exponents
 		    if (parities) {
-		        bn_mul(c, c, t[parities]);
-		        bn_mod(c, c, m, u);
+		        bn_mul(r, r, t[parities]);
+		        bn_mod(r, r, m, u);
 		    }
 		}
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, c, m);
+		bn_mod_monty_back(r, r, m);
 #endif
+		bn_copy(c, r);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -164,13 +171,13 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 			bn_free(t[i]);
 		}
 		RLC_FREE(t);
-		bn_free(u);
+		bn_free_all(r, u);
     }
 }
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
 	uint_t i, j;
-    bn_t _a[XP_WIDTH], _b[XP_WIDTH], t;
+    bn_t _a[XP_WIDTH], _b[XP_WIDTH], r, t;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -179,8 +186,8 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 
 	RLC_TRY {
         // Will use blocks of size XP_WIDTH
-        bn_null(t);
-		bn_new(t);
+        bn_null_all(r, t);
+		bn_new_all(r, t);
         for(int j = 0; j < XP_WIDTH; j++) {
             bn_null(_a[j]);
             bn_null(_b[j]);
@@ -190,7 +197,8 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 
         // Largest multiple of XP_WIDTH lower than n
         const size_t endblockingloop = ((n / XP_WIDTH) * XP_WIDTH);
-        bn_set_dig(c, 1);
+        /* Accumulate in r, since c may alias m. */
+        bn_set_dig(r, 1);
         // Exponentiate by blocks of size RLC_WIDTH
 		for(i = 0; i < endblockingloop;) {
             for(j = 0; j < 8; j++, i++) {
@@ -198,8 +206,8 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
                 bn_copy(_b[j], b[i]);
             }
             bn_mxp_sim_few(t, _a, _b, m, XP_WIDTH);
-            bn_mul(c, c, t);
-            bn_mod(c, c, m);
+            bn_mul(r, r, t);
+            bn_mod(r, r, m);
         }
 
         // Remaining (n - endblockingloop) exponentiations
@@ -215,9 +223,10 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
                 }
                 bn_mxp_sim_few(t, _a, _b, m, j);
             }
-            bn_mul(c, c, t);
-            bn_mod(c, c, m);
+            bn_mul(r, r, t);
+            bn_mod(r, r, m);
         }
+        bn_copy(c, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -225,6 +234,6 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
             bn_free(_a[j]);
 			bn_free(_b[j]);
         }
-        bn_free(t);
+        bn_free_all(r, t);
     }
 }

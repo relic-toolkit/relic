@@ -1376,6 +1376,40 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("modular exponentiation reduces the base") {
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_set_dig(b, 1);
+			bn_mxp(c, a, b, p);
+			bn_mod(a, a, p);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_mxp_dig(c, a, 1, p);
+			bn_mod(a, a, p);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("modular exponentiation by a digit is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_set_dig(b, 251);
+			bn_mxp(t[0], a, b, p);
+			/* The result may alias the modulus. */
+			bn_copy(c, p);
+			bn_mxp_dig(c, a, 251, c);
+			TEST_ASSERT(bn_cmp(t[0], c) == RLC_EQ, end);
+			/* An even modulus is also supported. */
+			bn_add_dig(t[1], p, 1);
+			bn_mxp_dig(c, a, 5, t[1]);
+			bn_mod(t[2], a, t[1]);
+			bn_copy(t[3], t[2]);
+			for (int k = 1; k < 5; k++) {
+				bn_mul(t[3], t[3], t[2]);
+				bn_mod(t[3], t[3], t[1]);
+			}
+			TEST_ASSERT(bn_cmp(t[3], c) == RLC_EQ, end);
+		}
+		TEST_END;
+
 		TEST_CASE("modular exponentiation with zero power is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_zero(b);
@@ -1465,6 +1499,27 @@ static int exponentiation(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
         }
         TEST_END;
+
+		TEST_CASE("simultaneous modular exponentiation handles edge cases") {
+			/* No exponents give one. */
+			bn_mxp_sim_few(c, t, u, p, 0);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_rand_mod(t[0], p);
+			bn_rand_mod(t[1], p);
+			bn_rand_mod(u[0], p);
+			bn_rand_mod(u[1], p);
+			/* A negative exponent is a power of the inverse. */
+			bn_neg(u[0], u[0]);
+			bn_mxp(a, t[0], u[0], p);
+			bn_mxp(b, t[1], u[1], p);
+			bn_mul(a, a, b);
+			bn_mod(a, a, p);
+			/* The result may alias the modulus. */
+			bn_copy(c, p);
+			bn_mxp_sim_few(c, t, u, c, 2);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
 
 		TEST_CASE("simultaneous many modular exponentiation is correct") {
             bn_mxp_sim_lot(a, t, u, p, 16);
@@ -1891,6 +1946,68 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
+#if !defined(STRIP)
+		TEST_CASE("extended greatest common divisor handles edge cases") {
+			void (*ext[])(bn_t, bn_t, bn_t, const bn_t, const bn_t) = {
+				bn_gcd_ext_basic, bn_gcd_ext_binar, bn_gcd_ext_lehme
+			};
+			for (int k = 0; k < 3; k++) {
+				for (int s = 0; s < 20; s++) {
+					bn_rand(b, (s & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 4);
+					switch (s / 4) {
+						case 0:
+							bn_rand(a, RLC_POS, RLC_BN_BITS / 4);
+							break;
+						case 1:
+							/* The second operand divides the first. */
+							bn_mul_dig(a, b, 3);
+							break;
+						case 2:
+							bn_copy(a, b);
+							break;
+						case 3:
+							bn_neg(a, b);
+							break;
+						default:
+							/* The first operand divides the second. */
+							bn_mul_dig(a, b, 2);
+							bn_copy(f, a);
+							bn_copy(a, b);
+							bn_neg(b, f);
+							break;
+					}
+					if (s & 2) {
+						bn_neg(a, a);
+					}
+					bn_gcd(l, a, b);
+					ext[k](c, d, e, a, b);
+					bn_mul(f, a, d);
+					bn_mul(g, b, e);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(c, l) == RLC_EQ, end);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					/* The outputs may alias the inputs. */
+					bn_copy(h, a);
+					ext[k](c, h, e, h, b);
+					bn_mul(f, a, h);
+					bn_mul(g, b, e);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					bn_copy(h, b);
+					ext[k](c, d, h, a, h);
+					bn_mul(f, a, d);
+					bn_mul(g, b, h);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					bn_copy(h, a);
+					ext[k](h, d, e, h, b);
+					TEST_ASSERT(bn_cmp(h, l) == RLC_EQ, end);
+				}
+			}
+		}
+		TEST_END;
+#endif
+
 		TEST_CASE("midway extended greatest common divisor is correct") {
 			for (int k = 0; k < 3; k++) {
 				bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -2065,6 +2182,26 @@ static int symbol(void) {
 			}
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("symbols reject invalid moduli") {
+			bn_set_dig(a, 1);
+			bn_set_dig(b, 2);
+			err_get_code();
+			RLC_TRY {
+				bn_smb_leg(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			bn_set_dig(b, 7);
+			bn_neg(b, b);
+			err_get_code();
+			RLC_TRY {
+				bn_smb_jac(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		}
+		TEST_END;
 
 		TEST_CASE("jacobi symbol is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -2299,6 +2436,16 @@ static int digit(void) {
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* A negative operand gets a negated cofactor. */
+			bn_neg(a, a);
+			bn_gcd_ext_dig(c, d, e, a, g);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* The first cofactor can be omitted. */
+			bn_gcd_ext_dig(d, NULL, e, a, g);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
