@@ -532,7 +532,7 @@ static void arith(void) {
 		bn_set_2b(b, RLC_BN_BITS);
 		bn_rand(c, RLC_POS, RLC_DIG);
 		bn_sub(b, b, c);
-		bn_mod_pre(d, b);
+		bn_mod_pre(d[0], b);
 #else
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -970,6 +970,12 @@ static void arith(void) {
 	BENCH_RUN("bn_mod_inv") {
 		bn_rand_mod(b, a);
 		BENCH_ADD(bn_mod_inv(c, b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_mod_inv_crt") {
+		bn_rand_mod(c, crt->n);
+		BENCH_ADD(bn_mod_inv_crt(c, c, crt));
 	}
 	BENCH_END;
 

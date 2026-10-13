@@ -266,7 +266,9 @@ void ep_pck(ep_t r, const ep_t p) {
 
 			b = bn_cmp(yValue, halfQ) == RLC_GT;
 		} else {
-			b = fp_get_bit(p->y, 0);
+			/* Take the parity of the canonical representative. */
+			fp_norm(r->y, p->y);
+			b = fp_get_bit(r->y, 0);
 		}
 
 		fp_zero(r->y);
@@ -323,6 +325,7 @@ int ep_upk(ep_t r, const ep_t p) {
 			} else {
 				/* Verify if least significant bit of the result matches the
 				 * compressed y-coordinate. */
+				fp_norm(t, t);
 				if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
 				}
@@ -334,6 +337,7 @@ int ep_upk(ep_t r, const ep_t p) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

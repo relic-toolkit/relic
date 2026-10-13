@@ -56,6 +56,7 @@ dig_t fb_trc_basic(const fb_t a) {
 		r = u[0] & 1;
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

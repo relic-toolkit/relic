@@ -126,12 +126,12 @@ void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
 		bn_grow(c, a->used);
 
 		if (bn_sign(a) == RLC_NEG) {
-			uint_t i;
-			for (i = 0; i < bits; i++) {
-				if (bn_get_bit(a, i)) {
-					down = 1;
-					break;
-				}
+			/* Round towards minus infinity if any discarded bit is set. */
+			for (uint_t i = 0; i < digits && i < a->used; i++) {
+				down |= (a->dp[i] != 0);
+			}
+			if (digits < a->used && bits > 0) {
+				down |= ((a->dp[digits] & RLC_MASK(bits)) != 0);
 			}
 		}
 

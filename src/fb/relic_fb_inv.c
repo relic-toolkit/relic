@@ -460,10 +460,12 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	}
 
 	fb_null(u);
+	for (i = 0; i < n; i++) {
+		fb_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (i = 0; i < n; i++) {
-			fb_null(t[i]);
 			fb_new(t[i]);
 		}
 		fb_new(u);

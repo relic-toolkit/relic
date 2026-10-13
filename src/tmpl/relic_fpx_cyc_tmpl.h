@@ -57,11 +57,13 @@
 		}																	\
 																			\
 		F##_null_all(r, s);													\
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
+			F##_null(t[i]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(r, s);												\
 			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
-				F##_null(t[i]);												\
 				F##_new(t[i]);												\
 			}																\
 																			\
@@ -125,11 +127,13 @@
 			w = RLC_WIDTH;													\
 																			\
 			F##_null_all(r, s);												\
+			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
+				F##_null(t[i]);												\
+			}																\
 																			\
 			RLC_TRY {														\
 				F##_new_all(r, s);											\
 				for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {			\
-					F##_null(t[i]);											\
 					F##_new(t[i]);											\
 				}															\
 																			\
@@ -208,14 +212,18 @@
 			return;															\
 		}																	\
 																			\
+		if (u == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+																			\
 		F##_null(t);														\
+		for (i = 0; i < w; i++) {											\
+			F##_null(u[i]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
-			if (u == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			for (i = 0; i < w; i++) {										\
-				F##_null(u[i]);												\
 				F##_new(u[i]);												\
 			}																\
 			F##_new(t);														\
@@ -302,12 +310,14 @@
 		}																	\
 																			\
 		F##_null_all(r, s);													\
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
+			F##_null(t0[i]);												\
+			F##_null(t1[i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(r, s);												\
-			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {				\
-				F##_null(t0[i]);											\
-				F##_null(t1[i]);											\
+			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
 				F##_new(t0[i]);												\
 				F##_new(t1[i]);												\
 			}																\
@@ -683,14 +693,18 @@
 			return;															\
 		}																	\
 																			\
+		if (t == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		for (int i = 0; i < n; i++) {										\
+			Z##_null(t0[i]);												\
+			Z##_null(t1[i]);												\
+			Z##_null(t2[i]);												\
+		}																	\
+																			\
 		RLC_TRY {															\
-			if (t == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			for (int i = 0; i < n; i++) {									\
-				Z##_null(t0[i]);											\
-				Z##_null(t1[i]);											\
-				Z##_null(t2[i]);											\
 				Z##_new(t0[i]);												\
 				Z##_new(t1[i]);												\
 				Z##_new(t2[i]);												\
@@ -855,14 +869,18 @@
 			return;															\
 		}																	\
 																			\
+		if (t == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		for (int i = 0; i < n; i++) {										\
+			Z##_null(t0[i]);												\
+			Z##_null(t1[i]);												\
+			Z##_null(t2[i]);												\
+		}																	\
+																			\
 		RLC_TRY {															\
-			if (t == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			for (int i = 0; i < n; i++) {									\
-				Z##_null(t0[i]);											\
-				Z##_null(t1[i]);											\
-				Z##_null(t2[i]);											\
 				Z##_new(t0[i]);												\
 				Z##_new(t1[i]);												\
 				Z##_new(t2[i]);												\

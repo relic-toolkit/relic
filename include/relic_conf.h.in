@@ -39,14 +39,10 @@
 
 /** Debugging support. */
 #cmakedefine DEBUG
-/** Profiling support. */
-#cmakedefine PROFL
 /** Error handling support. */
 #cmakedefine CHECK
 /** Verbose error messages. */
 #cmakedefine VERBS
-/** Build with overhead estimation. */
-#cmakedefine OVERH
 /** Build documentation. */
 #cmakedefine DOCUM
 /** Remove unused code and tables of unselected algorithms. */
@@ -567,17 +563,6 @@
 /** Choice of hash function. */
 #define MD_METHD "@MD_METHD@"
 
-/** Chosen RSA method. */
-#cmakedefine CP_CRT
-/** RSA without padding. */
-#define BASIC    1
-/** RSA PKCS#1 v1.5 padding. */
-#define PKCS1    2
-/** RSA PKCS#1 v2.1 padding. */
-#define PKCS2    3
-/** Chosen RSA padding method. */
-#define CP_RSAPD @CP_RSAPD@
-
 /** Automatic memory allocation. */
 #define AUTO     1
 /** Dynamic memory allocation. */
@@ -631,14 +616,12 @@
 /** Chosen multithreading API. */
 #cmakedefine MULTI    @MULTI@
 
-/** Per-process high-resolution timer. */
+/** Monotonic high-resolution timer. */
 #define HREAL    1
 /** Per-process high-resolution timer. */
 #define HPROC    2
 /** Per-thread high-resolution timer. */
 #define HTHRD    3
-/** POSIX-compatible timer. */
-#define POSIX    4
 /** ANSI-compatible timer. */
 #define ANSI     5
 /** Cycle-counting timer. */

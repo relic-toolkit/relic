@@ -706,7 +706,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the element to square.
  */
-#if FP_PRIME < 1536
+#if FP_PRIME <= 1536
 #define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr_cyc)(C, A)
 #else
 #define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr)(C, A)

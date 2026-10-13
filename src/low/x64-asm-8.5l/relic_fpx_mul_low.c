@@ -78,34 +78,14 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	fp_subc_low(c[1], t2, t0);
 }
 
-/* The assembly helpers take a = (a_0, a_1) and b = (b_0, b_1) packed as two
- * consecutive 9-limb vectors. */
-void fp2_mulm_c0(dig_t *c, const dig_t *a, const dig_t *b);
-void fp2_mulm_c1(dig_t *c, const dig_t *a, const dig_t *b);
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation without padding between coordinates guarantees.
+ */
+#if ALLOC != AUTO || ALIGN >= 16
 
 void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	rlc_align dig_t ta[2 * RLC_FP_DIGS], tb[2 * RLC_FP_DIGS];
 	rlc_align dv2_t u;
-
-	if (fp_prime_get_qnr() == -5) {
-		/* The assembly helpers interleave the reduction with u^2 = -5. */
-#if ALLOC == AUTO
-		if (sizeof(fp_t) == RLC_FP_DIGS * sizeof(dig_t)) {
-			fp2_mulm_c0(ta, a[0], b[0]);
-			fp2_mulm_c1(c[1], a[0], b[0]);
-			fp_copy(c[0], ta);
-			return;
-		}
-#endif
-		/* Pack the operands if their coordinates are not consecutive. */
-		dv_copy(ta, a[0], RLC_FP_DIGS);
-		dv_copy(ta + RLC_FP_DIGS, a[1], RLC_FP_DIGS);
-		dv_copy(tb, b[0], RLC_FP_DIGS);
-		dv_copy(tb + RLC_FP_DIGS, b[1], RLC_FP_DIGS);
-		fp2_mulm_c0(c[0], ta, tb);
-		fp2_mulm_c1(c[1], ta, tb);
-		return;
-	}
 
 	dv2_null(u);
 
@@ -119,3 +99,5 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 		dv2_free(u);
 	}
 }
+
+#endif

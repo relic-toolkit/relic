@@ -75,7 +75,7 @@
  * @param[in] CURVE		- the curve parameters to assign.
  * @param[in] FIELD		- the finite field identifier.
  */
-#define ASSIGN_ED(CURVE, FIELD)												\
+#define ED_ASSIGN(CURVE, FIELD)												\
 	fp_param_set(FIELD);													\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(core_get()->ed_a, str, strlen(str), 16);					\
@@ -111,15 +111,15 @@ void ed_param_set(int param) {
 		switch (param) {
 #if FP_PRIME == 255
 			case CURVE_ED25519:
-				ASSIGN_ED(CURVE_ED25519, PRIME_25519);
+				ED_ASSIGN(CURVE_ED25519, PRIME_25519);
 				break;
 #elif FP_PRIME == 448
 			case CURVE_ED448:
-				ASSIGN_ED(CURVE_ED448, PRIME_448);
+				ED_ASSIGN(CURVE_ED448, PRIME_448);
 				break;
 #elif FP_PRIME == 521
 			case CURVE_ED521:
-				ASSIGN_ED(CURVE_ED521, NIST_521);
+				ED_ASSIGN(CURVE_ED521, NIST_521);
 				break;
 #endif
 			default:

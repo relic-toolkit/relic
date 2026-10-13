@@ -32,15 +32,6 @@
 #include "relic.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Statistical security determining collision probability.
- */
-#define STAT_SEC	(40)
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -86,7 +77,7 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
 	for (i = 0; i < m; i++) {
 		bn_write_bin(bin, len, x[i]);
 		md_map(h, bin, len);
-		bn_read_bin(p[i], h, 2 * STAT_SEC / 8);
+		bn_read_bin(p[i], h, 2 * CP_STAT_SEC / 8);
 		if (bn_is_even(p[i])) {
 			bn_add_dig(p[i], p[i], 1);
 		}
@@ -123,7 +114,7 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 		for (j = 0; j < n; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
 			md_map(h, bin, len);
-			bn_read_bin(p, h, 2 * STAT_SEC / 8);
+			bn_read_bin(p, h, 2 * CP_STAT_SEC / 8);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
@@ -131,13 +122,6 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 				bn_add_dig(p, p, 2);
 			} while (!bn_is_prime(p));
 
-#if !defined(CP_CRT)
-			bn_mul(q, crt->dp, crt->dq);
-			bn_mod_inv(p, p, q);
-			bn_mul(p, p, u);
-			bn_mod(p, p, q);
-			bn_mxp(t[j], d, p, crt->n);
-#else
 			bn_mod_inv(q, p, crt->dq);
 			bn_mul(q, q, u);
 			bn_mod(q, q, crt->dq);
@@ -147,17 +131,12 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 			bn_mod(p, p, crt->dp);
 
 			bn_mxp_crt(t[j], d, p, q, crt, 0);
-#endif /* CP_CRT */
 		}
 
-#if !defined(CP_CRT)
-		bn_mxp(u, g, u, crt->n);
-#else
 		bn_mod(p, u, crt->dp);
 		bn_mod(q, u, crt->dq);
 
 		bn_mxp_crt(u, g, p, q, crt, 0);
-#endif
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

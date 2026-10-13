@@ -189,6 +189,7 @@
 																			\
 			r = (F##_cmp(t->x, t->y) == RLC_EQ) || C##_is_infty(p);			\
 		} RLC_CATCH_ANY {													\
+			r = 0;															\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			C##_free(t);													\
@@ -307,12 +308,17 @@
 		int i;																\
 		F##_t* a = RLC_ALLOCA(F##_t, n);									\
 																			\
+		if (a == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+																			\
+		for (i = 0; i < n; i++) {											\
+			F##_null(a[i]);													\
+		}																	\
+																			\
 		RLC_TRY {															\
-			if (a == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			for (i = 0; i < n; i++) {										\
-				F##_null(a[i]);												\
 				F##_new(a[i]);												\
 				if (C##_is_infty(t[i])) {									\
 					F##_set_dig(a[i], 1);									\
@@ -413,6 +419,7 @@
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
+			result = RLC_NE;												\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
@@ -575,6 +582,7 @@
 				r->coord = BASIC;											\
 			}																\
 		} RLC_CATCH_ANY {													\
+			result = 0;														\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			F##_free(t);													\

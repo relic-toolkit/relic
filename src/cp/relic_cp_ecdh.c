@@ -89,6 +89,7 @@ int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 		md_kdf(key, key_len, _x, l);
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

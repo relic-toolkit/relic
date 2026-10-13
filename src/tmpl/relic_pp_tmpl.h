@@ -928,12 +928,14 @@
 		}																	\
 																			\
 		fp##K##_null(l);													\
+		for (j = 0; j < m; j++) {											\
+			ep_null(_p[j]);													\
+			C##_null(_q[j]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			fp##K##_new(l);													\
 			for (j = 0; j < m; j++) {										\
-				ep_null(_p[j]);												\
-				C##_null(_q[j]);											\
 				ep_new(_p[j]);												\
 				C##_new(_q[j]);												\
 				C##_copy(t[j], q[j]);										\

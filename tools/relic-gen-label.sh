@@ -108,7 +108,6 @@ echo "#undef dv_t"
 echo "#define dv_t			RLC_PREFIX(dv_t)"
 echo
 REDEF dv
-REDEF_LOW dv
 
 echo "#undef bn_st"
 echo "#undef bn_t"

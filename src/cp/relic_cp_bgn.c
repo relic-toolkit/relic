@@ -299,6 +299,9 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 	bn_null(s);
 	g1_null(g);
 	g2_null(h);
+	for (i = 0; i < 4; i++) {
+		gt_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -307,7 +310,6 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		g1_new(g);
 		g2_new(h);
 		for (i = 0; i < 4; i++) {
-			gt_null(t[i]);
 			gt_new(t[i]);
 		}
 

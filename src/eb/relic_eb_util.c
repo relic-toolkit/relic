@@ -181,6 +181,7 @@ int eb_on_curve(const eb_t p) {
 		r = (fb_cmp(lhs, t->x) == RLC_EQ) || eb_is_infty(p);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

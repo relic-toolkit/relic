@@ -492,10 +492,6 @@ typedef struct _ctx_t {
 	ben_t after;
 	/** Stores the sum of timings for the current benchmark. */
 	ull_t total;
-#ifdef OVERH
-	/** Benchmarking overhead to be measured and subtracted from benchmarks. */
-	ull_t over;
-#endif
 #endif
 
 #if RAND != CALL

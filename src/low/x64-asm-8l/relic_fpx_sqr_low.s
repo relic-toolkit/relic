@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2025 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field squaring functions.
+ * Implementation of the low-level quadratic extension field squaring.
  *
  * @ingroup fpx
  */
@@ -39,274 +39,104 @@
  */
 
 .text
-.global cdecl(fp2_sqrn_c0)
-.global cdecl(fp2_sqrn_c1)
-.global cdecl(fp2_sqrm_c0)
-.global cdecl(fp2_sqrm_c1)
 
-#if OPSYS != WINDOWS
-.hidden cdecl(fp2_sqrn_c0)
-.hidden cdecl(fp2_sqrn_c1)
-.hidden cdecl(fp2_sqrm_c0)
-.hidden cdecl(fp2_sqrm_c1)
+#ifdef FP2_ASM
+
+.global cdecl(fp2_sqrn_low)
+.global cdecl(fp2_sqrm_low)
+
+/*
+ * Function: fp2_sqrn_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2, with c[1] at RLC_DV_STRIDE bytes from c[0]
+ */
+cdecl(fp2_sqrn_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$208, %rsp
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 192(%rsp)
+
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0, 0(%rsp)
+
+	addq	$208, %rsp
+	popq	%rbp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
+#ifdef FP2_SQR_RDC
+
+/*
+ * Function: fp2_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p, coefficient-wise
+ */
+cdecl(fp2_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$208, %rsp
+
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1, 0(%rsp)
+
+	addq	$208, %rsp
+	popq	%rbp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
+#else
+
+/*
+ * Function: fp2_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p, coefficient-wise, by reducing the product of
+ * fp2_sqrn_low separately
+ */
+cdecl(fp2_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$472, %rsp
+	movq	%rdi, 208(%rsp)
+	leaq	344(%rsp), %rax
+	movq	%rax, 192(%rsp)
+	leaq	216(%rsp), %rdi
+
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0, 0(%rsp)
+
+	movq	208(%rsp), %rdi
+	FP_RDCN_LOW	216(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip)
+	movq	208(%rsp), %rdi
+	addq	$64, %rdi
+	FP_RDCN_LOW	344(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip)
+
+	addq	$472, %rsp
+	popq	%rbp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
 #endif
 
-cdecl(fp2_sqrn_c0):
-	push	%r12
-	push	%r13 
-	push	%r14  
-	push	%r15  
-	push	%rbx
-	push	%rbp
-	subq	$128, %rsp
-
-	// rsp[0..5] <- z = a0 + a1
-	movq	0(%rsi), %r8
-	addq	64(%rsi),%r8
-	movq	8(%rsi), %r9
-	adcq	72(%rsi),%r9
-	movq	16(%rsi),%r10
-	adcq	80(%rsi),%r10
-	movq	24(%rsi),%r11
-	adcq	88(%rsi),%r11
-	movq	32(%rsi),%r12
-	adcq	96(%rsi),%r12
-	movq	40(%rsi),%r13
-	adcq	104(%rsi),%r13
-	movq	48(%rsi),%r14
-	adcq	112(%rsi),%r14
-	movq	56(%rsi),%r15
-	adcq	120(%rsi),%r15
-
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10,16(%rsp)
-	movq	%r11,24(%rsp)
-	movq	%r12,32(%rsp)
-	movq	%r13,40(%rsp)
-	movq	%r14,48(%rsp)
-	movq	%r15,56(%rsp)
-
-	// rsp[6..11] <- a0 - a1 + p
-	movq	0(%rsi), %r8
-	subq	64(%rsi),%r8
-	movq	8(%rsi), %r10
-	sbbq	72(%rsi),%r10
-	movq	16(%rsi),%r12
-	sbbq	80(%rsi),%r12
-	movq	24(%rsi),%r13
-	sbbq	88(%rsi),%r13
-	movq	32(%rsi),%r14
-	sbbq	96(%rsi),%r14
-	movq	40(%rsi),%r15
-	sbbq	104(%rsi),%r15
-	movq	48(%rsi),%rbx
-	sbbq	112(%rsi),%rbx
-	movq	56(%rsi),%rbp
-	sbbq	120(%rsi),%rbp
-
-	addq	p0(%rip),%r8
-	adcq	p1(%rip),%r10
-	adcq	p2(%rip),%r12
-	adcq	p3(%rip),%r13
-	adcq	p4(%rip),%r14
-	adcq	p5(%rip),%r15
-	adcq	p6(%rip),%rbx
-	adcq	p7(%rip),%rbp
-	movq	%r8, 64(%rsp)
-	movq	%r10, 72(%rsp)
-	movq	%r12,80(%rsp)
-	movq	%r13,88(%rsp)
-	movq	%r14,96(%rsp)
-	movq	%r15,104(%rsp)
-	movq	%rbx,112(%rsp)
-	movq	%rbp,120(%rsp)
-
-	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
-	FP_MULM_LOW	0(%rsp), 64(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0
-
-	addq	$128, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
-
-cdecl(fp2_sqrn_c1):
-	push	%r12
-	push	%r13 
-	push	%r14  
-	push	%r15  
-	push	%rbx
-	push	%rbp
-	subq	$64, %rsp
-
-	// rsp[0..5] <- z = 2 x a0
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
-	movq	48(%rsi),%r14
-	movq	56(%rsi),%r15
-	addq	%r8, %r8
-	adcq	%r9, %r9
-	adcq	%r10,%r10
-	adcq	%r11,%r11
-	adcq	%r12,%r12
-	adcq	%r13,%r13
-	adcq	%r14,%r14
-	adcq	%r15,%r15
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10,16(%rsp)
-	movq	%r11,24(%rsp)
-	movq	%r12,32(%rsp)
-	movq	%r13,40(%rsp)
-	movq	%r14,48(%rsp)
-	movq	%r15,56(%rsp)
-	
-	MULM	0(%rsp), 64(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
-	FP_MULM_LOW	0(%rsp), 64(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0
-
-	addq	$64, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
-
-cdecl(fp2_sqrm_c0):
-	push	%r12
-	push	%r13 
-	push	%r14  
-	push	%r15  
-	push	%rbx
-	push	%rbp
-	subq	$128, %rsp
-
-	// rsp[0..5] <- z = a0 + a1
-	movq	0(%rsi), %r8
-	addq	64(%rsi),%r8
-	movq	8(%rsi), %r9
-	adcq	72(%rsi),%r9
-	movq	16(%rsi),%r10
-	adcq	80(%rsi),%r10
-	movq	24(%rsi),%r11
-	adcq	88(%rsi),%r11
-	movq	32(%rsi),%r12
-	adcq	96(%rsi),%r12
-	movq	40(%rsi),%r13
-	adcq	104(%rsi),%r13
-	movq	48(%rsi),%r14
-	adcq	112(%rsi),%r14
-	movq	56(%rsi),%r15
-	adcq	120(%rsi),%r15
-
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10,16(%rsp)
-	movq	%r11,24(%rsp)
-	movq	%r12,32(%rsp)
-	movq	%r13,40(%rsp)
-	movq	%r14,48(%rsp)
-	movq	%r15,56(%rsp)
-
-	// rsp[6..11] <- a0 - a1 + p
-	movq	0(%rsi), %r8
-	subq	64(%rsi),%r8
-	movq	8(%rsi), %r10
-	sbbq	72(%rsi),%r10
-	movq	16(%rsi),%r12
-	sbbq	80(%rsi),%r12
-	movq	24(%rsi),%r13
-	sbbq	88(%rsi),%r13
-	movq	32(%rsi),%r14
-	sbbq	96(%rsi),%r14
-	movq	40(%rsi),%r15
-	sbbq	104(%rsi),%r15
-	movq	48(%rsi),%rbx
-	sbbq	112(%rsi),%rbx
-	movq	56(%rsi),%rbp
-	sbbq	120(%rsi),%rbp
-
-	addq	p0(%rip),%r8
-	adcq	p1(%rip),%r10
-	adcq	p2(%rip),%r12
-	adcq	p3(%rip),%r13
-	adcq	p4(%rip),%r14
-	adcq	p5(%rip),%r15
-	adcq	p6(%rip),%rbx
-	adcq	p7(%rip),%rbp
-	movq	%r8, 64(%rsp)
-	movq	%r10,72(%rsp)
-	movq	%r12,80(%rsp)
-	movq	%r13,88(%rsp)
-	movq	%r14,96(%rsp)
-	movq	%r15,104(%rsp)
-	movq	%rbx,112(%rsp)
-	movq	%rbp,120(%rsp)
-
-	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
-	FP_MULM_LOW	0(%rsp), 64(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1
-
-	addq	$128, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
-
-cdecl(fp2_sqrm_c1):
-	push	%r12
-	push	%r13 
-	push	%r14  
-	push	%r15  
-	push	%rbx
-	push	%rbp
-	subq	$64, %rsp
-
-	// rsp[0..5] <- z = 2 x a0
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
-	movq	48(%rsi),%r14
-	movq	56(%rsi),%r15
-	addq	%r8, %r8
-	adcq	%r9, %r9
-	adcq	%r10,%r10
-	adcq	%r11,%r11
-	adcq	%r12,%r12
-	adcq	%r13,%r13
-	adcq	%r14,%r14
-	adcq	%r15,%r15
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10,16(%rsp)
-	movq	%r11,24(%rsp)
-	movq	%r12,32(%rsp)
-	movq	%r13,40(%rsp)
-	movq	%r14,48(%rsp)
-	movq	%r15,56(%rsp)
-	
-	MULM	0(%rsp), 64(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
-	FP_MULM_LOW	0(%rsp), 64(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1
-
-	addq	$64, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
+#endif /* FP2_ASM */

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level quadratic extension field squaring.
  *
  * @ingroup fpx
  */
@@ -39,84 +39,31 @@
  */
 
 .text
-.global cdecl(fp2_sqrn_c0)
-.global cdecl(fp2_sqrn_c1)
-.global cdecl(fp2_sqrm_c0)
-.global cdecl(fp2_sqrm_c1)
 
-#if OPSYS != WINDOWS
-.hidden cdecl(fp2_sqrn_c0)
-.hidden cdecl(fp2_sqrn_c1)
-.hidden cdecl(fp2_sqrm_c0)
-.hidden cdecl(fp2_sqrm_c1)
-#endif
+#ifdef FP2_ASM
 
-cdecl(fp2_sqrn_c0):
+.global cdecl(fp2_sqrn_low)
+.global cdecl(fp2_sqrm_low)
+
+/*
+ * Function: fp2_sqrn_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2, with c[1] at RLC_DV_STRIDE bytes from c[0]
+ */
+cdecl(fp2_sqrn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$112, %rsp
+	subq	$184, %rsp
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 168(%rsp)
 
-	// rsp[0..6] <- z = a0 + a1
-	movq	0(%rsi), %r8
-	addq	56(%rsi), %r8
-	movq	8(%rsi), %r9
-	adcq	64(%rsi), %r9
-	movq	16(%rsi), %r10
-	adcq	72(%rsi), %r10
-	movq	24(%rsi), %r11
-	adcq	80(%rsi), %r11
-	movq	32(%rsi), %r12
-	adcq	88(%rsi), %r12
-	movq	40(%rsi), %r13
-	adcq	96(%rsi), %r13
-	movq	48(%rsi), %r14
-	adcq	104(%rsi), %r14
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0, 0(%rsp)
 
-	// rsp[7..13] <- a0 - a1 + p
-	movq	0(%rsi), %r8
-	subq	56(%rsi), %r8
-	movq	8(%rsi), %r10
-	sbbq	64(%rsi), %r10
-	movq	16(%rsi), %r12
-	sbbq	72(%rsi), %r12
-	movq	24(%rsi), %r13
-	sbbq	80(%rsi), %r13
-	movq	32(%rsi), %r14
-	sbbq	88(%rsi), %r14
-	movq	40(%rsi), %r15
-	sbbq	96(%rsi), %r15
-	movq	48(%rsi), %rbx
-	sbbq	104(%rsi), %rbx
-	addq	p0(%rip), %r8
-	adcq	p1(%rip), %r10
-	adcq	p2(%rip), %r12
-	adcq	p3(%rip), %r13
-	adcq	p4(%rip), %r14
-	adcq	p5(%rip), %r15
-	adcq	p6(%rip), %rbx
-	movq	%r8, 56(%rsp)
-	movq	%r10, 64(%rsp)
-	movq	%r12, 72(%rsp)
-	movq	%r13, 80(%rsp)
-	movq	%r14, 88(%rsp)
-	movq	%r15, 96(%rsp)
-	movq	%rbx, 104(%rsp)
-
-	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP_MULM_LOW	0(%rsp), 56(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
-
-	addq	$112, %rsp
+	addq	$184, %rsp
 	popq	%rbp
 	popq	%rbx
 	popq	%r15
@@ -125,42 +72,23 @@ cdecl(fp2_sqrn_c0):
 	popq	%r12
 	ret
 
-cdecl(fp2_sqrn_c1):
+/*
+ * Function: fp2_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p, coefficient-wise
+ */
+cdecl(fp2_sqrm_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$56, %rsp
+	subq	$184, %rsp
 
-	// rsp[0..6] <- z = 2 x a0
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi), %r10
-	movq	24(%rsi), %r11
-	movq	32(%rsi), %r12
-	movq	40(%rsi), %r13
-	movq	48(%rsi), %r14
-	addq	%r8, %r8
-	adcq	%r9, %r9
-	adcq	%r10, %r10
-	adcq	%r11, %r11
-	adcq	%r12, %r12
-	adcq	%r13, %r13
-	adcq	%r14, %r14
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1, 0(%rsp)
 
-	MULM	0(%rsp), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP_MULM_LOW	0(%rsp), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
-
-	addq	$56, %rsp
+	addq	$184, %rsp
 	popq	%rbp
 	popq	%rbx
 	popq	%r15
@@ -169,120 +97,4 @@ cdecl(fp2_sqrn_c1):
 	popq	%r12
 	ret
 
-cdecl(fp2_sqrm_c0):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	subq	$112, %rsp
-
-	// rsp[0..6] <- z = a0 + a1
-	movq	0(%rsi), %r8
-	addq	56(%rsi), %r8
-	movq	8(%rsi), %r9
-	adcq	64(%rsi), %r9
-	movq	16(%rsi), %r10
-	adcq	72(%rsi), %r10
-	movq	24(%rsi), %r11
-	adcq	80(%rsi), %r11
-	movq	32(%rsi), %r12
-	adcq	88(%rsi), %r12
-	movq	40(%rsi), %r13
-	adcq	96(%rsi), %r13
-	movq	48(%rsi), %r14
-	adcq	104(%rsi), %r14
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
-
-	// rsp[7..13] <- a0 - a1 + p
-	movq	0(%rsi), %r8
-	subq	56(%rsi), %r8
-	movq	8(%rsi), %r10
-	sbbq	64(%rsi), %r10
-	movq	16(%rsi), %r12
-	sbbq	72(%rsi), %r12
-	movq	24(%rsi), %r13
-	sbbq	80(%rsi), %r13
-	movq	32(%rsi), %r14
-	sbbq	88(%rsi), %r14
-	movq	40(%rsi), %r15
-	sbbq	96(%rsi), %r15
-	movq	48(%rsi), %rbx
-	sbbq	104(%rsi), %rbx
-	addq	p0(%rip), %r8
-	adcq	p1(%rip), %r10
-	adcq	p2(%rip), %r12
-	adcq	p3(%rip), %r13
-	adcq	p4(%rip), %r14
-	adcq	p5(%rip), %r15
-	adcq	p6(%rip), %rbx
-	movq	%r8, 56(%rsp)
-	movq	%r10, 64(%rsp)
-	movq	%r12, 72(%rsp)
-	movq	%r13, 80(%rsp)
-	movq	%r14, 88(%rsp)
-	movq	%r15, 96(%rsp)
-	movq	%rbx, 104(%rsp)
-
-	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP_MULM_LOW	0(%rsp), 56(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
-
-	addq	$112, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
-
-cdecl(fp2_sqrm_c1):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	subq	$56, %rsp
-
-	// rsp[0..6] <- z = 2 x a0
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi), %r10
-	movq	24(%rsi), %r11
-	movq	32(%rsi), %r12
-	movq	40(%rsi), %r13
-	movq	48(%rsi), %r14
-	addq	%r8, %r8
-	adcq	%r9, %r9
-	adcq	%r10, %r10
-	adcq	%r11, %r11
-	adcq	%r12, %r12
-	adcq	%r13, %r13
-	adcq	%r14, %r14
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
-
-	MULM	0(%rsp), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP_MULM_LOW	0(%rsp), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
-
-	addq	$56, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
+#endif /* FP2_ASM */

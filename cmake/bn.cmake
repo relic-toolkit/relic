@@ -1,6 +1,6 @@
 message(STATUS "Multiple precision arithmetic configuration (BN module):\n")
 
-message("   ** Options for the multiple precision module (default = 1024,0):\n")
+message("   ** Options for the multiple precision module (default = 2048,0):\n")
 
 message("      BN_PRECI=n        The base precision in bits. Let w be n in words.")
 message("      BN_KARAT=n        The number of Karatsuba steps.\n")
@@ -20,7 +20,7 @@ message("      Modular reduction:")
 message("      BN_METHD=BASIC    Division-based modular reduction.")
 message("      BN_METHD=BARRT    Barrett modular reduction.")
 message("      BN_METHD=MONTY    Montgomery modular reduction.")
-message("      BN_METHD=RADIX    Diminished radix modular reduction.\n")
+message("      BN_METHD=PMERS    Pseudo-Mersenne modular reduction.\n")
 
 message("      Modular exponentiation:")
 message("      BN_METHD=BASIC    Binary modular exponentiation.")

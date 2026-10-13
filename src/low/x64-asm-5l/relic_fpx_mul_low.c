@@ -51,27 +51,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_muln_c0(dv_t c, const fp2_t a, const fp2_t b);
-void fp2_muln_c1(dv_t c, const fp2_t a, const fp2_t b);
-
-void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS];
-
-	fp2_muln_c0(t0, a, b);
-	fp2_muln_c1(t1, a, b);
-	dv_copy(c[0], t0, 2 * RLC_FP_DIGS);
-	dv_copy(c[1], t1, 2 * RLC_FP_DIGS);
-}
-
-void fp2_mulm_c0(dv_t c, const fp2_t a, const fp2_t b);
-void fp2_mulm_c1(dv_t c, const fp2_t a, const fp2_t b);
-
-void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	rlc_align dig_t t0[RLC_FP_DIGS];
-
-	fp2_mulm_c0(t0, a, b);
-	fp2_mulm_c1(c[1], a, b);
-	fp_copy(c[0], t0);
-}
+/* The assembly finds c[1] of a dv2_t at RLC_DV_STRIDE bytes from c[0]. */
+typedef char rlc_dv_stride_check[sizeof(dv_t) == RLC_DV_STRIDE ? 1 : -1];
 
 #endif

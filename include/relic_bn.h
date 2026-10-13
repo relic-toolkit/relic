@@ -1086,6 +1086,18 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
+ * Computes the modular inverse of a multiple precision integer modulo n = pq
+ * from its inverses modulo p and q, which is cheaper than inverting modulo n.
+ * Computes c such that a*c mod n = 1.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to invert.
+ * @param[in] crt			- the modulus and its factors, with qi = q^(-1) mod p.
+ * @throw ERR_NO_VALID		- if the operands are not co-prime.
+ */
+void bn_mod_inv_crt(bn_t c, const bn_t a, const crt_t crt);
+
+/**
  * Reduces a multiple precision integer modulo a power of 2. Computes
  * c = a mod 2^b.
  *
@@ -1229,9 +1241,11 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the constant-time Montgomery powering ladder method. An even modulus is
- * handed to bn_mxp_basic, which is not constant time, as the ladder needs a
- * reduction that takes an odd one.
+ * the Montgomery powering ladder method. With the gmp-sec backend and
+ * Montgomery reduction, it runs in constant time in the exponent, revealing
+ * only its number of digits; other backends have variable-time low-level
+ * arithmetic. An even modulus is handed to bn_mxp_basic, which is not constant
+ * time, as the ladder needs a reduction that takes an odd one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1289,13 +1303,16 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 		const bn_t m);
 
 /**
- * Exponentiates simultaneously up to 8 integers modulo a positive integer
- * using generalized Shamir's trick. Computes c = \prod a_i^{b_i} mod m.
+ * Exponentiates simultaneously up to RLC_BASES integers (8 by default) modulo
+ * a positive integer using generalized Shamir's trick. Computes
+ * c = \prod a_i^{b_i} mod m.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the elements to exponentiate.
  * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
+ * @param[in] n				- the number of elements, at most RLC_BASES.
+ * @throw ERR_NO_VALID		- if there are more than RLC_BASES elements.
  */
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n);

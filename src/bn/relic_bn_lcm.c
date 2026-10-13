@@ -40,6 +40,11 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null_all(u, v);
 
+	if (bn_is_zero(a) || bn_is_zero(b)) {
+		bn_zero(c);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new_all(u, v);
 

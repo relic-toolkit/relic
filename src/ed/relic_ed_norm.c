@@ -80,12 +80,17 @@ void ed_norm(ed_t r, const ed_t p) {
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
+	if (a == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (int i = 0; i < n; i++) {
+		fp_null(a[i]);
+	}
+
 	RLC_TRY {
-		if (a == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < n; i++) {
-			fp_null(a[i]);
 			fp_new(a[i]);
 			if (ed_is_infty(t[i])) {
 				fp_set_dig(a[i], 1);

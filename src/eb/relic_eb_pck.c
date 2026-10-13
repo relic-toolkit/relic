@@ -85,6 +85,7 @@ int eb_upk(eb_t r, const eb_t p) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

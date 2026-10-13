@@ -177,6 +177,7 @@ size_t fb_size_str(const fb_t a, uint_t radix) {
 		digits = bn_size_str(t, radix);
 	}
 	RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
