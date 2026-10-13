@@ -145,19 +145,13 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 /*============================================================================*/
 
 void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
-	dv_t t;
+	if ((b >> (RLC_DIG - 1)) == 0) {
+		fp_mul1_low(c, a, b);
+	} else {
+		dig_t t[RLC_FP_DIGS];
 
-	dv_null(t);
-
-	RLC_TRY {
-		dv_new(t);
 		fp_prime_conv_dig(t, b);
 		fp_mul(c, a, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv_free(t);
 	}
 }
 

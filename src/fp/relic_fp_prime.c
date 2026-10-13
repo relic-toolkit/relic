@@ -69,6 +69,10 @@ static void fp_prime_set(const bn_t p) {
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
 
+		bn_set_2b(t, bn_bits(&(ctx->prime)) + RLC_DIG - 1);
+		bn_div(t, t, &(ctx->prime));
+		ctx->rdc1 = t->dp[0];
+
 		/* compute R mod p */
 		bn_set_2b(t, ctx->prime.used * RLC_DIG);
 		bn_mod(t, t, &(ctx->prime));
@@ -253,6 +257,10 @@ const dig_t *fp_prime_get(void) {
 
 const dig_t *fp_prime_get_rdc(void) {
 	return &(core_get()->u);
+}
+
+const dig_t *fp_prime_get_rdc1(void) {
+	return &(core_get()->rdc1);
 }
 
 void fp_prime_get_par(bn_t x) {
@@ -713,34 +721,24 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 }
 
 void fp_prime_conv_dig(fp_t c, dig_t a) {
-	dv_t t;
+#if FP_RDC == MONTY
 	ctx_t *ctx = core_get();
 
-	dv_null(t);
-
-	RLC_TRY {
-		dv_new(t);
-
-#if FP_RDC == MONTY
-		if (a != 1) {
-			dv_zero(t, 2 * RLC_FP_DIGS + 1);
-			t[RLC_FP_DIGS] = fp_mul1_low(t, ctx->conv, a);
-			fp_rdc(c, t);
-		} else {
-			fp_copy(c, ctx->one);
+	/* Compute a * R mod p from R mod p. */
+	if ((a >> (RLC_DIG - 1)) == 0) {
+		fp_mul1_low(c, ctx->one, a);
+	} else {
+		/* Halve digits too large for a single reduction. */
+		fp_mul1_low(c, ctx->one, a >> 1);
+		fp_dbl(c, c);
+		if (a & 1) {
+			fp_add(c, c, ctx->one);
 		}
+	}
 #else
-		(void)ctx;
-		fp_zero(c);
-		c[0] = a;
+	fp_zero(c);
+	c[0] = a;
 #endif
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv_free(t);
-	}
 }
 
 void fp_prime_back(bn_t c, const fp_t a) {

@@ -248,6 +248,8 @@ typedef struct _ctx_t {
 	dig_t ad2;
 	/** Value derived from the prime used for modular reduction. */
 	dig_t u;
+	/** Value floor(2^(|p| + RLC_DIG - 1) / p) for multiplying by a digit. */
+	dig_t rdc1;
 	/** Sparse representation of prime modulus. */
 	int sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
