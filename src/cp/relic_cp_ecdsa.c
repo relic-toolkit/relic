@@ -187,6 +187,7 @@ int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

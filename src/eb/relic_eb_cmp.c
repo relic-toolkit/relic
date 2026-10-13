@@ -79,6 +79,7 @@ int eb_cmp(const eb_t p, const eb_t q) {
             result = RLC_EQ;
         }
     } RLC_CATCH_ANY {
+        result = RLC_NE;
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
         eb_free(r);

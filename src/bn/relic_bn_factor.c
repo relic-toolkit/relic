@@ -96,6 +96,7 @@ int bn_is_factor(bn_t c, const bn_t a) {
 			result = 0;
 		}
 	} RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(t);

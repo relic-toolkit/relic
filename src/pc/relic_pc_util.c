@@ -232,6 +232,7 @@ int g1_is_valid(const g1_t a) {
 			}
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -419,6 +420,7 @@ int g2_is_valid(const g2_t a) {
 				break;
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -633,6 +635,7 @@ int gt_is_valid(const gt_t a) {
 				break;
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);

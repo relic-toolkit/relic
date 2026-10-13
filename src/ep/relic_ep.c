@@ -337,6 +337,7 @@ int ep_upk(ep_t r, const ep_t p) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

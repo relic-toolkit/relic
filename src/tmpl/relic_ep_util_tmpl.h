@@ -189,6 +189,7 @@
 																			\
 			r = (F##_cmp(t->x, t->y) == RLC_EQ) || C##_is_infty(p);			\
 		} RLC_CATCH_ANY {													\
+			r = 0;															\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			C##_free(t);													\
@@ -413,6 +414,7 @@
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
+			result = RLC_NE;												\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
@@ -575,6 +577,7 @@
 				r->coord = BASIC;											\
 			}																\
 		} RLC_CATCH_ANY {													\
+			result = 0;														\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			F##_free(t);													\

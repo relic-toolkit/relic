@@ -154,6 +154,7 @@ int cp_bbs_ver(g1_t s, const uint8_t *msg, size_t len, int hash, const g2_t q,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

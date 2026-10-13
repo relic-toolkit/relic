@@ -169,6 +169,7 @@ int ed_on_curve(const ed_t p) {
 		r |= ed_is_infty(p);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

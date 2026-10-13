@@ -82,6 +82,7 @@ int ed_cmp(const ed_t p, const ed_t q) {
             result = RLC_NE;
         }
     } RLC_CATCH_ANY {
+        result = RLC_NE;
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
         ed_free(r);

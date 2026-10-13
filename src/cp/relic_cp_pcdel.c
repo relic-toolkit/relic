@@ -223,7 +223,7 @@ int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e) {
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		gt_free(t);
@@ -293,6 +293,7 @@ int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
 		g2_copy(w2[0], v2[0]);
 		g2_copy(w2[1], v2[1]);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -334,7 +335,7 @@ int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		gt_free(t);
@@ -423,6 +424,7 @@ int cp_lvpub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
 		pc_map_sim(g[1], _p, _q, 2);
 		pc_map(g[0], p, q);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		g1_free(_p[0]);
@@ -456,7 +458,7 @@ int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e) {
 			gt_copy(r, g[0]);
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		gt_free(t);
@@ -526,6 +528,7 @@ int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const bn_t c, const g1_t p,
 		g2_copy(w2[0], v2[0]);
 		g2_copy(w2[1], v2[1]);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -558,6 +561,7 @@ int cp_lvprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]) {
 		pc_map(g[1], v1[1], w2[1]);
 		pc_map(g[2], v1[2], w2[3]);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		g1_free(_p[0]);
@@ -590,7 +594,7 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		gt_free(t);
