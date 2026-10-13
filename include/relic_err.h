@@ -87,8 +87,9 @@ enum errors {
 #if defined(VERBS) || ARCH == AVR
 #define RLC_FILE	RLC_STR(__FILE__)
 #else
-#define RLC_FILE															\
-	((strrchr(RLC_STR(__FILE__), '/') ? : RLC_STR(__FILE__) - 1) + 1)
+#define RLC_FILE														\
+	(strrchr(RLC_STR(__FILE__), '/') ?									\
+		strrchr(RLC_STR(__FILE__), '/') + 1 : RLC_STR(__FILE__))
 #endif
 
 /*============================================================================*/
@@ -187,7 +188,7 @@ typedef struct _sts_t {
  * @param[in] E		- the exception being caught.
  */
 #define RLC_ERR_THROW(E)												\
-	{																	\
+	do {																\
 		ctx_t *_ctx = core_get();										\
 		_ctx->code = RLC_ERR;											\
 		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
@@ -209,7 +210,7 @@ typedef struct _sts_t {
 				}														\
 			}															\
 		}																\
-	}																	\
+	} while (0)															\
 
 #ifdef CHECK
 /**
@@ -269,9 +270,9 @@ typedef struct _sts_t {
  * Stub for the THROW clause.
  */
 #ifdef QUIET
-#define RLC_THROW(E)			core_get()->code = RLC_ERR;
+#define RLC_THROW(E)			do { core_get()->code = RLC_ERR; } while (0)
 #else
-#define RLC_THROW(E)			err_throw(RLC_FILE, __LINE__);
+#define RLC_THROW(E)			do { err_throw(RLC_FILE, __LINE__); } while (0)
 
 #endif
 #endif

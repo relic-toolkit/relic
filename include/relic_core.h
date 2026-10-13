@@ -505,6 +505,10 @@ typedef struct _ctx_t {
 	int seeded;
 	/** Counter to keep track of number of calls since last seeding. */
 	uint64_t counter;
+#ifdef RLC_RAND_FORK
+	/** Identifier of the process that seeded the PRNG. */
+	long pid;
+#endif
 
 #if TIMER == PERF
 	/** File descriptor for perf system call. */
@@ -528,7 +532,8 @@ typedef struct _ctx_t {
 /*============================================================================*/
 
 /**
- * Initializes the library.
+ * Initializes the library. Calling it again without calling core_clean() first
+ * leaks the state allocated by the previous call when ALLOC = DYNAMIC.
  *
  * @return RLC_OK if no error occurs, RLC_ERR otherwise.
  */

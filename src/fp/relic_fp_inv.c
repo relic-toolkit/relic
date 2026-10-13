@@ -619,7 +619,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 		fp_mul(c, v, t);
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free(t);

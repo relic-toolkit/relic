@@ -260,6 +260,9 @@ static int ecies(void) {
 			}
 			TEST_END;
 		}
+#else
+		/* The second key pair is only used by the test vectors. */
+		(void)q_b;
 #endif
 	}
 	RLC_CATCH_ANY {

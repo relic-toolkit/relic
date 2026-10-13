@@ -162,7 +162,7 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 #endif /* ED_ADD */
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(h);
@@ -278,7 +278,7 @@ static void ed_map_ell2_3mod4(ed_t p, const fp_t u) {
 #endif
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(h);

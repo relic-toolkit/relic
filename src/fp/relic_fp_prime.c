@@ -610,15 +610,15 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 void fp_prime_set_pmers(const int *f, size_t len) {
 	bn_t p, t;
 
+	if (len == 0 || len >= RLC_TERMS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_null_all(p, t);
 
 	RLC_TRY {
 		bn_new_all(p, t);
-
-		if (len >= RLC_TERMS) {
-			RLC_THROW(ERR_NO_VALID);
-			return;
-		}
 
 		bn_set_2b(p, f[len - 1]);
 		for (int i = len - 2; i > 0; i--) {

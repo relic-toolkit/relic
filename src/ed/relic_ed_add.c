@@ -161,7 +161,7 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 
 		r->coord = PROJC;
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp_free_all(t0, t1, t2, t3, t4, t5, t6, t7);
 	}
@@ -245,7 +245,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 
 		r->coord = EXTND;
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp_free_all(t0, t1, t2, t3, t4);
 	}

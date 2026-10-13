@@ -318,7 +318,7 @@ typedef struct {
 	uint8_t root[RLC_XOF_LEN];
 	/** the most recently derived output block. */
 	uint8_t block[RLC_XOF_LEN];
-	/** number of unread bytes left in the current block. */
+	/** number of bytes already read from the current block. */
 	size_t pos;
 	/** index of the next block to derive from the root. */
 	uint32_t ctr;

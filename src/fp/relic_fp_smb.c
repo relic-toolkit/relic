@@ -328,7 +328,7 @@ int fp_smb_binar(const fp_t a) {
 		k = porninstep(m, g, f, k, iterations % s);
 
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		dv_free_all(f, g, t, t0, t1);
 	}
@@ -425,7 +425,7 @@ int fp_smb_divst(const fp_t a) {
 		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
 		r = 0;
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free_all(f, g, t);

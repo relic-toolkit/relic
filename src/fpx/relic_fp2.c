@@ -82,7 +82,6 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 		if (pack && fp2_test_cyc(a)) {
 			if (len < RLC_FP_BYTES + 1) {
 				RLC_THROW(ERR_NO_BUFFER);
-				return;
 			} else {
 				fp2_pck(t, a);
 				fp_write_bin(bin, RLC_FP_BYTES, t[0]);
@@ -91,7 +90,6 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 		} else {
 			if (len < 2 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
-				return;
 			} else {
 				fp_write_bin(bin, RLC_FP_BYTES, a[0]);
 				fp_write_bin(bin + RLC_FP_BYTES, RLC_FP_BYTES, a[1]);

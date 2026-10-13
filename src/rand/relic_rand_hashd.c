@@ -38,6 +38,10 @@
 #include "relic_md.h"
 #include "relic_err.h"
 
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -165,6 +169,16 @@ void rand_bytes(uint8_t *buf, size_t size) {
 		RLC_THROW(ERR_NO_RAND);
 		return;
 	}
+#ifdef RLC_RAND_FORK
+	/* A forked process instantiates its own generator from fresh entropy. */
+	if (ctx->pid != (long)getpid()) {
+		rand_init();
+		if (!ctx->seeded || ctx->pid != (long)getpid()) {
+			RLC_THROW(ERR_NO_RAND);
+			return;
+		}
+	}
+#endif
 	if (sizeof(int) > 2 && size > (1 << 16)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -193,7 +207,7 @@ void rand_seed(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 	size_t len = (RLC_RAND_SIZE - 1) / 2;
 
-	if (size <= 0) {
+	if (size < RLC_RAND_MIN) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}

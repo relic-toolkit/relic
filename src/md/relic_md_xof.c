@@ -29,6 +29,7 @@
  * @ingroup md
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "relic_conf.h"
@@ -84,14 +85,13 @@ void md_xof_init(xof_t *ctx, const uint8_t *in, size_t in_len) {
 	p.depth = 1;
 	store16(&p.xof_length, RLC_XOF_UNKNOWN);
 
+	ctx->ctr = 0;
+	ctx->pos = RLC_XOF_LEN;
 	if (blake2s_init_param(&s, &p) < 0 ||
 			blake2s_update(&s, in, in_len) < 0 ||
 			blake2s_final(&s, ctx->root, RLC_XOF_LEN) < 0) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
 	}
-	ctx->ctr = 0;
-	ctx->pos = RLC_XOF_LEN;
 }
 
 void md_xof_bytes(uint8_t *out, size_t out_len, xof_t *ctx) {
@@ -127,22 +127,32 @@ double md_xof_double(xof_t *ctx) {
 
 size_t md_xof_int(xof_t *ctx, size_t n) {
 	uint8_t buf[sizeof(size_t)];
-	size_t v = 0, i;
+	size_t v, r;
 
 	if (n <= 1) {
 		return 0;
 	}
-	md_xof_bytes(buf, sizeof(buf), ctx);
-	for (i = 0; i < sizeof(buf); i++) {
-		v = (v << 8) | buf[i];
-	}
+	/* Reject the top 2^w mod n values, so that v mod n is uniform. */
+	r = (SIZE_MAX % n + 1) % n;
+	do {
+		md_xof_bytes(buf, sizeof(buf), ctx);
+		v = 0;
+		for (size_t i = 0; i < sizeof(buf); i++) {
+			v = (v << 8) | buf[i];
+		}
+	} while (r != 0 && v > SIZE_MAX - r);
 	return v % n;
 }
 
 void md_xof_bits(bn_t r, size_t bits, xof_t *ctx) {
 	size_t i, n = (bits + 7) / 8;
-	uint8_t *b = RLC_ALLOCA(uint8_t, n);
+	uint8_t *b;
 
+	if (bits == 0) {
+		bn_zero(r);
+		return;
+	}
+	b = RLC_ALLOCA(uint8_t, n);
 	if (b == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;

@@ -62,6 +62,10 @@
 
 #endif
 
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -112,15 +116,14 @@ void rand_init(void) {
 
 #if OPSYS == FREEBSD || OPSYS == NETBSD
 	/* This is better than using a fixed value. */
-	srandomdev();
-	for (int i = 0; i < RLC_RAND_SEED; i++) {
-		buf[i] = (uint8_t)random();
-	}
+	arc4random_buf(buf, RLC_RAND_SEED);
 #else
-	/* This is horribly insecure, serves only for benchmarking. */
-	srand(1);
+	/* This is horribly insecure, serves only for benchmarking. A local
+	 * generator leaves the state of rand() to the application. */
+	uint32_t s = 1;
 	for (int i = 0; i < RLC_RAND_SEED; i++) {
-		buf[i] = (uint8_t)rand();
+		s = s * 1103515245 + 12345;
+		buf[i] = (uint8_t)(s >> 16);
 	}
 #endif
 
@@ -175,6 +178,11 @@ void rand_init(void) {
 	core_get()->seeded = 0;
 	rand_seed(buf, RLC_RAND_SEED);
 	util_zero(buf, RLC_RAND_SEED);
+#ifdef RLC_RAND_FORK
+	if (core_get()->seeded) {
+		core_get()->pid = (long)getpid();
+	}
+#endif
 #else
 	rand_seed(NULL, NULL);
 #endif

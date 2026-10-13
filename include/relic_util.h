@@ -76,7 +76,7 @@
  * @param[in] A			- the dividend.
  * @param[in] B			- the divisor.
  */
-#define RLC_CEIL(A, B)			(((A) - 1) / (B) + 1)
+#define RLC_CEIL(A, B)			((A) / (B) + ((A) % (B) != 0))
 
 /**
  * Returns a bit mask to isolate the lowest part of a digit.
@@ -111,21 +111,21 @@
  *
  * @param[in] D			- the digit.
  */
-#define RLC_LOW(D)				(D & RLC_LMASK)
+#define RLC_LOW(D)				((D) & RLC_LMASK)
 
 /**
  * Returns the highest half of a digit.
  *
  * @param[in] D			- the digit.
  */
-#define RLC_HIGH(D)				(D >> (RLC_DIG >> 1))
+#define RLC_HIGH(D)				((D) >> (RLC_DIG >> 1))
 
 /**
  * Returns the sign bit of a digit.
  *
  * @param[in] D			- the digit.
  */
-#define RLC_SIGN(D)				(((dig_t)D) >> (RLC_DIG - 1))
+#define RLC_SIGN(D)				(((dig_t)(D)) >> (RLC_DIG - 1))
 
 /**
  * Selects between two values based on the value of a given flag.
