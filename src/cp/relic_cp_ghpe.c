@@ -102,12 +102,12 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 
 		/* t = n^(s + 1). */
 		bn_copy(t, pub);
-		for (int i = 0; i < s; i++) {
+		for (size_t i = 0; i < s; i++) {
 			bn_mul(t, t, pub);
 		}
 
 		bn_mxp(c, g, m, t);
-		for (int i = 0; i < s; i++) {
+		for (size_t i = 0; i < s; i++) {
 			bn_mxp(r, r, pub, t);
 		}
 
@@ -155,7 +155,7 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 
 		/* t = n^(s + 1). */
 		bn_sqr(t, pub);
-		for (int i = 1; i < s; i++) {
+		for (size_t i = 1; i < s; i++) {
 			bn_mul(t, t, pub);
 		}
 
@@ -164,7 +164,7 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 
 		bn_zero(i);
 		bn_copy(t, pub);
-		for (int j = 1; j <= s; j++) {
+		for (size_t j = 1; j <= s; j++) {
 			/* u = t1 = L(c mod n^(j+1)). */
 			bn_mul(r, t, pub);
 			bn_mod(u, m, r);
@@ -174,7 +174,7 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 			bn_copy(v, i);
 			bn_copy(l, pub);
 			fk = 1;
-			for (int k = 2; k <= j; k++) {
+			for (size_t k = 2; k <= j; k++) {
 				bn_sub_dig(i, i, 1);
 				/* Accumulate fk = f!. */
 				fk = fk * k;

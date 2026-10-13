@@ -99,12 +99,12 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
 
-		for (int i = 0; i < size; i++) {
+		for (size_t i = 0; i < size; i++) {
 			ec_add(t, t, s[i]->sig->h);
 		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
-			for (int i = 0; i < size; i++) {
+			for (size_t i = 0; i < size; i++) {
 				ec_copy(y[0], s[i]->sig->h);
 				ec_copy(y[1], s[i]->sig->pk);
 				flag &= cp_sokor_ver(s[i]->sig->c, s[i]->sig->r, msg, len, y,
@@ -142,7 +142,7 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 	ec_null(y[0]);
 	ec_null(y[1]);
 
-	for (int i = 0; i < *size; i++) {
+	for (size_t i = 0; i < *size; i++) {
 		if (ec_cmp(pk, p[i]->sig->pk) == RLC_EQ) {
 			return RLC_ERR;
 		}

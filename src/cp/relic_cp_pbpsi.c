@@ -36,7 +36,8 @@
 /*============================================================================*/
 
 int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m) {
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 	bn_t q;
 
 	bn_null(q);
@@ -63,7 +64,8 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m) {
 }
 
 int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m) {
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1);
 
 	bn_null(q);
@@ -121,7 +123,8 @@ int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m) {
 
 int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 		const bn_t *y, size_t n) {
-	int j, result = RLC_OK;
+	int result = RLC_OK;
+	size_t j;
 	bn_t q, tj;
 	g1_t g1;
 	g2_t g2;
@@ -169,7 +172,8 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 
 int cp_pbpsi_int(bn_t *z, size_t *len, const g2_t *d, const bn_t *x,
 		size_t m, const gt_t *t, const g1_t *u, size_t n) {
-	int j, k, result = RLC_OK;
+	int result = RLC_OK;
+	size_t j, k;
 	gt_t e;
 
 	gt_null(e);

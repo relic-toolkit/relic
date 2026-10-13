@@ -51,6 +51,8 @@ typedef struct {
 	bn_t a;
 	/* The share of the second operand. */
 	bn_t b;
+	/* The caller-owned group element for b ([b]G in G_1 or G_2, g^b in G_T),
+	 * needed by the MPC scalar multiplication and exponentiation. */
 	union {
 		g1_t *b1;
 		g2_t *b2;
@@ -58,6 +60,8 @@ typedef struct {
 	};
 	/* The share of the multiplication. */
 	bn_t c;
+	/* The caller-owned group element for c, as above. One triple serves one
+	 * group at a time, and mt_new() sets both pointers to NULL. */
 	union {
 		g1_t *c1;
 		g2_t *c2;
@@ -128,12 +132,16 @@ typedef pt_st *pt_t;
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
 	bn_new((A)->c);															\
+	(A)->b1 = NULL;															\
+	(A)->c1 = NULL;															\
 
 #elif ALLOC == AUTO
 #define mt_new(A)															\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
 	bn_new((A)->c);															\
+	(A)->b1 = NULL;															\
+	(A)->c1 = NULL;															\
 
 #endif
 
@@ -291,7 +299,7 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
  * @param[out] q 				- the share of the masked point to multiply.
  * @param[in] x 				- the scalar.
  * @param[in] p 				- the point to multiply.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with b1 set.
 */
 void g1_mul_lcl(bn_t d, g1_t q, const bn_t x, const g1_t p, const mt_t tri);
 
@@ -309,7 +317,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]);
  * @param[out] r 				- the share of the result.
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with b1 and c1 set.
  * @param[in] party				- the party performing the computation.
  */
 void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party);
@@ -321,7 +329,7 @@ void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party);
  * @param[out] q 				- the share of the masked point to multiply.
  * @param[in] x 				- the scalar.
  * @param[in] p 				- the point to multiply.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with b2 set.
 */
 void g2_mul_lcl(bn_t d, g2_t q, const bn_t x, const g2_t p, const mt_t tri);
 
@@ -339,7 +347,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]);
  * @param[out] r 				- the share of the result.
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with b2 and c2 set.
  * @param[in] party				- the party performing the computation.
  */
 void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party);
@@ -351,7 +359,7 @@ void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party);
  * @param[out] q 				- the share of the masked element.
  * @param[in] x 				- the exponent.
  * @param[in] p 				- the element to exponentiate.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with bt set.
 */
 void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri);
 
@@ -369,7 +377,7 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]);
  * @param[out] r 				- the share of the result.
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
- * @param[in] tri 				- the multiplication triple.
+ * @param[in] tri 				- the multiplication triple, with bt and ct set.
  * @param[in] party				- the party performing the computation.
  */
 void gt_exp_mpc(gt_t r, const bn_t d, const gt_t q, const mt_t tri, int party);

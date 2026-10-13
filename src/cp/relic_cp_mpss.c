@@ -231,7 +231,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2],
 		g2_mul(x[0], h, r[0]);
 		g2_mul(x[1], h, r[1]);
 
-		for (int i = 0; i < l; i++) {
+		for (size_t i = 0; i < l; i++) {
 			bn_rand_mod(s[i][0], n);
 			bn_rand_mod(s[i][1], n);
 			g2_mul(y[i][0], h, s[i][0]);
@@ -250,7 +250,7 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], size_t l) {
 	g2_add(x[0], x[0], x[1]);
 	g2_norm(x[0], x[0]);
 	g2_copy(x[1], x[0]);
-	for (int i = 0; i < l; i++) {
+	for (size_t i = 0; i < l; i++) {
 		g2_add(y[i][0], y[i][0], y[i][1]);
 		g2_norm(y[i][0], y[i][0]);
 		g2_copy(y[i][1], y[i][0]);
@@ -370,7 +370,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		g2_null(z[i]);
 		gt_null(alpha[i]);
 		gt_null(beta[i]);
-		for (int j = 0; j < l; j++) {
+		for (size_t j = 0; j < l; j++) {
 			g2_null(_y[l * i + j]);
 			bn_null(_m[l * i + j]);
 			bn_null(_d[l * i + j]);
@@ -391,7 +391,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			g2_new(z[i]);
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
-			for (int j = 0; j < l; j++) {
+			for (size_t j = 0; j < l; j++) {
 				g2_new(_y[l * i + j]);
 				bn_new(_m[l * i + j]);
 				bn_new(_d[l * i + j]);
@@ -401,7 +401,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		g1_get_ord(n);
 		if (v == NULL) {
 			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < l; j++) {
+				for (size_t j = 0; j < l; j++) {
 					bn_copy(_m[l * i + j], m[j][i]);
 					g2_copy(_y[l * i + j], y[j][i]);
 				}
@@ -413,18 +413,18 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		} else {
 			/* Compute Z = X + [m] * [y_i] * G, with [m] * [y_i] in MPC and
 			 * one round opening all the independent products. */
-			for (int i = 0; i < l; i++) {
+			for (size_t i = 0; i < l; i++) {
 				mpc_mt_lcl(_d[2 * i], _e[2 * i], m[i][0], v[i][0], n,
 					mul_tri[i][0]);
 				mpc_mt_lcl(_d[2 * i + 1], _e[2 * i + 1], m[i][1], v[i][1], n,
 					mul_tri[i][1]);
 			}
-			for (int i = 0; i < l; i++) {
+			for (size_t i = 0; i < l; i++) {
 				mpc_mt_bct(&_d[2 * i], &_e[2 * i], n);
 			}
 			bn_zero(t[0]);
 			bn_zero(t[1]);
-			for (int i = 0; i < l; i++) {
+			for (size_t i = 0; i < l; i++) {
 				mpc_mt_mul(_d[2 * i], _d[2 * i], _e[2 * i], n, mul_tri[i][0],
 					0);
 				mpc_mt_mul(_d[2 * i + 1], _d[2 * i + 1], _e[2 * i + 1], n,
@@ -488,7 +488,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			g2_free(z[i]);
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
-			for (int j = 0; j < l; j++) {
+			for (size_t j = 0; j < l; j++) {
 				g2_free(_y[l * i + j]);
 				bn_free(_m[l * i + j]);
 				bn_free(_d[l * i + j]);

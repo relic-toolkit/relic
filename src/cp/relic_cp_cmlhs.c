@@ -70,7 +70,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		g2_mul_gen(y, d);
 
 		/* Generate elements for n tags. */
-		for (int i = 0; i < len; i++) {
+		for (size_t i = 0; i < len; i++) {
 			bn_rand_mod(x[i], n);
 			gt_exp(hs[i], gt, x[i]);
 		}
@@ -251,7 +251,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		for (int i = 0; i < slen; i++) {
+		for (size_t i = 0; i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
@@ -280,8 +280,8 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		pc_map(v, r, g2);
 		gt_mul(u, u, v);
 
-		for (int i = 0; i < slen; i++) {
-			for (int j = 0; j < flen[i]; j++) {
+		for (size_t i = 0; i < slen; i++) {
+			for (size_t j = 0; j < flen[i]; j++) {
 				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
 				gt_mul(u, u, v);
 			}
@@ -292,7 +292,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 
 		pc_map(e, g1, s);
 		g1_set_infty(g1);
-		for (int i = 0; i < slen; i++) {
+		for (size_t i = 0; i < slen; i++) {
 			g1_add(g1, g1, c[i]);
 		}
 		g1_norm(g1, g1);
@@ -331,8 +331,8 @@ void cp_cmlhs_off(gt_t vk, const int label[], const gt_t *hs[],
 		gt_new(v);
 
 		gt_set_unity(vk);
-		for (int i = 0; i < slen; i++) {
-			for (int j = 0; j < flen[i]; j++) {
+		for (size_t i = 0; i < slen; i++) {
+			for (size_t j = 0; j < flen[i]; j++) {
 				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
 				gt_mul(vk, vk, v);
 			}
@@ -376,7 +376,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		for (int i = 0; i < slen; i++) {
+		for (size_t i = 0; i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
@@ -411,7 +411,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 
 		pc_map(e, g1, s);
 		g1_set_infty(g1);
-		for (int i = 0; i < slen; i++) {
+		for (size_t i = 0; i < slen; i++) {
 			g1_add(g1, g1, c[i]);
 		}
 		g1_norm(g1, g1);

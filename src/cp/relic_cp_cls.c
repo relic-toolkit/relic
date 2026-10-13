@@ -327,7 +327,8 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 
 int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l) {
 	bn_t n;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(n);
 
@@ -357,7 +358,8 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 		const size_t ls[], const bn_t t, const bn_t u, const bn_t v[],
 		size_t l) {
 	bn_t m, n;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(m);
 	bn_null(n);
@@ -413,7 +415,8 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 	g2_t q[2];
 	gt_t e;
 	bn_t m, n;
-	int i, result = 1;
+	int result = 1;
+	size_t i;
 
 	g1_null(p[0]);
 	g1_null(p[1]);

@@ -38,6 +38,12 @@
 /*============================================================================*/
 
 void g1_mul_lcl(bn_t d, g1_t q, const bn_t x, const g1_t p, const mt_t tri) {
+	if (tri->b1 == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_t n;
 
 	bn_null(n);
@@ -90,6 +96,12 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 }
 
 void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party) {
+	if (tri->b1 == NULL || tri->c1 == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	g1_t t;
 
 	g1_null(t);
@@ -117,6 +129,12 @@ void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party) {
 }
 
 void g2_mul_lcl(bn_t d, g2_t q, const bn_t x, const g2_t p, const mt_t tri) {
+	if (tri->b2 == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_t n;
 
 	bn_null(n);
@@ -169,6 +187,12 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 }
 
 void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party) {
+	if (tri->b2 == NULL || tri->c2 == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	g2_t t;
 
 	g2_null(t);
@@ -196,6 +220,12 @@ void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party) {
 }
 
 void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri) {
+	if (tri->bt == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_t n;
 	gt_t t;
 
@@ -249,6 +279,12 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]) {
 }
 
 void gt_exp_mpc(gt_t r, const bn_t d, const gt_t q, const mt_t tri, int party) {
+	if (tri->bt == NULL || tri->ct == NULL) {
+		/* The group elements of the triple must be set by the caller. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	gt_t t;
 
 	gt_null(t);

@@ -66,7 +66,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 		ec_new(w[1]);
 
 		ec_curve_get_ord(n);
-		for (int i = 0; i < max; i++) {
+		for (size_t i = 0; i < max; i++) {
 			bn_null(v[i]);
 			bn_null(_v[i]);
 			bn_new(v[i]);
@@ -77,11 +77,11 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 		bn_rand_mod(p->y, n);
 
 		bn_set_dig(l, 1);
-		for (int j = 0; j < max; j++) {
+		for (size_t j = 0; j < max; j++) {
 			bn_copy(_v[j], y[j]);
 		}
 		bn_mod_inv_sim(_v, _v, n, max);
-		for (int j = 0; j < max; j++) {
+		for (size_t j = 0; j < max; j++) {
 			bn_sub(u, y[j], p->y);
 			bn_mul(u, u, _v[j]);
 			bn_mod(u, u, n);
@@ -92,10 +92,10 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 
 		bn_zero(z);
 		bn_mod_inv_sim(v, y, n, max);
-		for (int i = 0; i < max; i++) {
+		for (size_t i = 0; i < max; i++) {
 			bn_mul(u, v[i], p->y);
 			bn_mod(v[i], u, n);
-			for (int j = 0; j < max; j++) {
+			for (size_t j = 0; j < max; j++) {
 				bn_set_dig(_v[j], 1);
 				if (j != i) {
 					bn_sub(_v[j], y[j], y[i]);
@@ -103,7 +103,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 				}
 			}
 			bn_mod_inv_sim(_v, _v, n, max);
-			for (int j = 0; j < max; j++) {
+			for (size_t j = 0; j < max; j++) {
 				if (j != i) {
 					bn_sub(u, y[j], p->y);
 					bn_mul(u, u, _v[j]);
@@ -134,7 +134,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 		bn_free(z);
 		ec_free(w[0]);
 		ec_free(w[1]);
-		for (int i = 0; i < max; i++) {
+		for (size_t i = 0; i < max; i++) {
 			bn_free(v[i]);
 			bn_free(_v[i]);
 		}
@@ -147,11 +147,12 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
 		const ec_t pp) {
-	int i, flag = 0, result = 0;
+	int flag = 0, result = 0;
+	size_t i;
 	bn_t l, n, u;
 	ec_t w[2];
 
-	int d = max + size - thres;
+	size_t d = max + size - thres;
 	bn_t *v = RLC_ALLOCA(bn_t, d);
 	bn_t *_v = RLC_ALLOCA(bn_t, d);
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
@@ -201,7 +202,7 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		flag = 1;
 		ec_set_infty(w[0]);
 		for (i = 0; i < d; i++) {
-			for (int j = 0; j < d; j++) {
+			for (size_t j = 0; j < d; j++) {
 				bn_set_dig(_v[j], 1);
 				if (j != i) {
 					bn_sub(_v[j], _y[j], _y[i]);
@@ -210,7 +211,7 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 			}
 			bn_mod_inv_sim(_v, _v, n, d);
 			bn_set_dig(v[i], 1);
-			for (int j = 0; j < d; j++) {
+			for (size_t j = 0; j < d; j++) {
 				if (j != i) {
 					bn_mul(u, _y[j], _v[j]);
 					bn_mod(u, u, n);
@@ -222,7 +223,7 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		ec_mul_sim_lot(w[0], _t, v, d);
 		flag &= ec_cmp(w[0], pp) != RLC_EQ;
 
-		for (int i = 0; i < size; i++) {
+		for (size_t i = 0; i < size; i++) {
 			ec_copy(w[0], s[i]->h);
 			ec_copy(w[1], s[i]->pk);
 			flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, w, NULL);
@@ -238,7 +239,7 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		bn_free(u);
 		ec_free(w[0]);
 		ec_free(w[1]);
-		for (int i = 0; i < d; i++) {
+		for (size_t i = 0; i < d; i++) {
 			bn_free(v[i]);
 			bn_free(_v[i]);
 			bn_free(_y[i]);
@@ -256,14 +257,15 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		const uint8_t *msg, size_t len, const ec_t pk) {
 	bn_t n, r;
 	ec_t w[2];
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(n);
 	bn_null(r);
 	ec_null(w[0]);
 	ec_null(w[1]);
 
-	for (int i = 0; i < *size; i++) {
+	for (size_t i = 0; i < *size; i++) {
 		if (ec_cmp(pk, p[i]->pk) == RLC_EQ) {
 			return RLC_ERR;
 		}
