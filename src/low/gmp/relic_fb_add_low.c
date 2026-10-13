@@ -40,7 +40,7 @@
 /*============================================================================*/
 
 void fb_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 
 	(*c) = (*a) ^ digit;
 	c++;

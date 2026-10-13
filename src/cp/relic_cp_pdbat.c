@@ -187,11 +187,9 @@ int cp_mvbat_gen(bn_t *l, g2_t r, g2_t *rs, size_t m) {
 	return result;
 }
 
-int cp_mvbat_ask(bn_t *b, g2_t *qs, const g2_t *rs, const g1_t *p,
-		const g2_t *q, size_t m) {
+int cp_mvbat_ask(bn_t *b, g2_t *qs, const g2_t *rs, const g2_t *q, size_t m) {
 	bn_t n;
 	int result = RLC_OK;
-	(void)p;
 
 	bn_null(n);
 
@@ -297,12 +295,11 @@ int cp_amore_gen(bn_t s, gt_t e) {
 }
 
 int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
-		const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m) {
+		const bn_t s, const g1_t *p, const g2_t *q, size_t m) {
 	bn_t n, t, z;
 	g1_t w;
 	int result = RLC_OK;
 	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
-	(void)e;
 
 	bn_null(n);
 	bn_null(t);

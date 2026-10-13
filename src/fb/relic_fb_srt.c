@@ -46,7 +46,7 @@ void fb_srt_basic(fb_t c, const fb_t a) {
 		fb_copy(c, a);
 	}
 
-	for (int i = 1; i < RLC_FB_BITS; i++) {
+	for (size_t i = 1; i < RLC_FB_BITS; i++) {
 		fb_sqr(c, c);
 	}
 }

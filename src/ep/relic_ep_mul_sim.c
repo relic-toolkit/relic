@@ -447,7 +447,7 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 
 	max = util_bits_dig(k[0]);
 	for (int i = 1; i < n; i++) {
-		max = RLC_MAX(max, util_bits_dig(k[i]));
+		max = RLC_MAX(max, (int)util_bits_dig(k[i]));
 	}
 
 	RLC_TRY {

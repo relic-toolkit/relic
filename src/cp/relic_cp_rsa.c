@@ -451,7 +451,7 @@ static int pad_pkcs2(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 				rand_bytes(h1, RLC_MD_LEN);
 				md_mgf(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
 				bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
-				for (int i = 0; i < t->used; i++) {
+				for (size_t i = 0; i < t->used; i++) {
 					m->dp[i] ^= t->dp[i];
 				}
 				bn_write_bin(mask, k_len - RLC_MD_LEN - 1, m);
@@ -480,7 +480,7 @@ static int pad_pkcs2(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 					}
 					md_mgf(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
 					bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
-					for (int i = 0; i < t->used; i++) {
+					for (size_t i = 0; i < t->used; i++) {
 						m->dp[i] ^= t->dp[i];
 					}
 					m_len -= RLC_MD_LEN;
@@ -524,7 +524,7 @@ static int pad_pkcs2(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 				bn_add(m, t, m);
 				bn_lsh(m, m, 8);
 				bn_add_dig(m, m, RSA_PSS);
-				for (int i = m_len - 1; i < 8 * k_len; i++) {
+				for (size_t i = m_len - 1; i < 8 * k_len; i++) {
 					bn_set_bit(m, i, 0);
 				}
 				result = RLC_OK;
@@ -535,7 +535,7 @@ static int pad_pkcs2(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 				pad = (uint8_t)t->dp[0];
 				if (pad == RSA_PSS) {
 					int r = 1;
-					for (int i = m_len; i < 8 * k_len; i++) {
+					for (size_t i = m_len; i < 8 * k_len; i++) {
 						if (bn_get_bit(m, i) != 0) {
 							r = 0;
 						}
@@ -547,11 +547,11 @@ static int pad_pkcs2(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 					bn_write_bin(h1, RLC_MD_LEN, t);
 					md_mgf(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
 					bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
-					for (int i = 0; i < t->used; i++) {
+					for (size_t i = 0; i < t->used; i++) {
 						m->dp[i] ^= t->dp[i];
 					}
 					m->dp[0] ^= 0x01;
-					for (int i = m_len - 1; i < 8 * k_len; i++) {
+					for (size_t i = m_len - 1; i < 8 * k_len; i++) {
 						bn_set_bit(m, i - ((RLC_MD_LEN + 1) * 8), 0);
 					}
 					if (r == 1 && bn_is_zero(m)) {

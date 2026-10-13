@@ -137,7 +137,8 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 
 int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l) {
 	bn_t n;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(n);
 
@@ -165,7 +166,8 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l) {
 int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
 		size_t l) {
 	bn_t m, n, t;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(m);
 	bn_null(n);

@@ -87,7 +87,7 @@ void fb_zero(fb_t a) {
 }
 
 int fb_is_zero(const fb_t a) {
-	int i;
+	size_t i;
 	dig_t t = 0;
 
 	for (i = 0; i < RLC_FB_DIGS; i++) {
@@ -225,7 +225,7 @@ void fb_write_str(char *str, size_t len, const fb_t a, uint_t radix) {
 	fb_null(t);
 
 	l = fb_size_str(a, radix);
-	if (len < l) {
+	if (len < (size_t)l) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}

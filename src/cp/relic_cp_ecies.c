@@ -62,7 +62,8 @@ int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const ec_t q) {
 	bn_t k, n, x;
 	ec_t p;
-	int l, result = RLC_OK, size = RLC_CEIL(RLC_MAX(128, ec_param_level()), 8);
+	size_t l;
+	int result = RLC_OK, size = RLC_CEIL(RLC_MAX(128, ec_param_level()), 8);
 	uint8_t _x[RLC_FC_BYTES + 1], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
 

@@ -556,13 +556,13 @@ static void ers(void) {
 	} BENCH_END;
 
 	size = 1;
-	BENCH_FEW("cp_ers_ext", cp_ers_ext(td, ring, &size, m, 5, pk[size], pp), 1);
+	BENCH_FEW("cp_ers_ext", cp_ers_ext(td, ring, &size, m, 5, pk[size]), 1);
 
 	size = 1;
 	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
 	for (int j = 1; j < MAX_KEYS && size < BENCH; j = j << 1) {
 		for (int k = 0; k < j && size < BENCH; k++) {
-			cp_ers_ext(td, ring, &size, m, 5, pk[size], pp);
+			cp_ers_ext(td, ring, &size, m, 5, pk[size]);
 		}
 		cp_ers_ver(td, ring, size, m, 5, pp);
 		util_print("(%2d exts) ", j);
@@ -611,13 +611,13 @@ static void smlers(void) {
 	} BENCH_END;
 
 	size = 1;
-	BENCH_FEW("cp_smlers_ext", cp_smlers_ext(td, ring, &size, m, 5, pk[size], pp), 1);
+	BENCH_FEW("cp_smlers_ext", cp_smlers_ext(td, ring, &size, m, 5, pk[size]), 1);
 
 	size = 1;
 	cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
 	for (int j = 1; j < MAX_KEYS && size < BENCH; j = j << 1) {
 		for (int k = 0; k < j && size < BENCH; k++) {
-			cp_smlers_ext(td, ring, &size, m, 5, pk[size], pp);
+			cp_smlers_ext(td, ring, &size, m, 5, pk[size]);
 		}
 		cp_smlers_ver(td, ring, size, m, 5, pp);
 		util_print("(%2d exts) ", j);
@@ -666,17 +666,17 @@ static void etrs(void) {
 	BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td, y, MIN_KEYS, ring, 1, m, 5, pp), 1);
 
 	size = 1;
-	BENCH_FEW("cp_etrs_ext", (size = 1, cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size], pp)), 1);
+	BENCH_FEW("cp_etrs_ext", (size = 1, cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size])), 1);
 
 	size = 1;
 	cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp);
-	BENCH_FEW("cp_etrs_uni", cp_etrs_uni(1, td, y, MIN_KEYS, ring, &size, m, 5, sk[size], pk[size], pp), 1);
+	BENCH_FEW("cp_etrs_uni", cp_etrs_uni(td, y, MIN_KEYS, ring, &size, m, 5, sk[size], pk[size]), 1);
 
 	size = 1;
 	cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp);
 	for (int j = 1; j < MIN_KEYS && size < MIN_KEYS; j = j << 1) {
 		for (int k = 0; k < j && size < MIN_KEYS; k++) {
-			cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size], pp);
+			cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size]);
 		}
 		cp_etrs_ver(1, td+size-1, y+size-1, MIN_KEYS-size+1, ring, size, m, 5, pp);
 		util_print("(%2d exts) ", j);
@@ -896,7 +896,7 @@ static void pdpub(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_amore_ask (1)") {
-		BENCH_ADD(cp_amore_ask(&r1, &w1, v1, v2, w2, u1, u2, r1, e, &p, &q, 1));
+		BENCH_ADD(cp_amore_ask(&r1, &w1, v1, v2, w2, u1, u2, r1, &p, &q, 1));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amore_ans (1)") {
@@ -969,7 +969,6 @@ static void pdprv(void) {
 		g2_null(s[i]);
 		g2_null(qs[i]);
 		gt_null(ts[i]);
-		gt_null(g[i]);
 		bn_new(b[i]);
 		bn_new(ls[i]);
 		g1_new(p[i]);
@@ -980,12 +979,13 @@ static void pdprv(void) {
 		g2_new(s[i]);
 		g2_new(qs[i]);
 		gt_new(ts[i]);
-		gt_new(g[i]);
 	}
 	gt_null(ts[AGGS]);
-	gt_null(g[AGGS]);
 	gt_new(ts[AGGS]);
-	gt_new(g[AGGS]);
+	for (size_t i = 0; i < RLC_MAX(4, AGGS + 1); i++) {
+		gt_null(g[i]);
+		gt_new(g[i]);
+	}
 
 	BENCH_RUN("cp_pdprv_gen") {
 		BENCH_ADD(cp_pdprv_gen(r1, r2, u1, u2, v2, e));
@@ -1052,7 +1052,7 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_mvbat_ask (AGGS)") {
-		BENCH_ADD(cp_mvbat_ask(b, qs, s, p, q, AGGS));
+		BENCH_ADD(cp_mvbat_ask(b, qs, s, q, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_mvbat_ans (AGGS)") {
@@ -1064,7 +1064,7 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_amore_ask (AGGS)") {
-		BENCH_ADD(cp_amore_ask(ls, rs, v1[0], v2[0], w2[0], u1[0], u2[0], r1, e[0], p, q, AGGS));
+		BENCH_ADD(cp_amore_ask(ls, rs, v1[0], v2[0], w2[0], u1[0], u2[0], r1, p, q, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amore_ans (AGGS)") {
@@ -1099,10 +1099,11 @@ static void pdprv(void) {
 		g2_free(s[i]);
 		g2_free(qs[i]);
 		gt_free(ts[i]);
-		gt_free(g[i]);
 	}
 	gt_free(ts[AGGS]);
-	gt_free(g[AGGS]);
+	for (size_t i = 0; i < RLC_MAX(4, AGGS + 1); i++) {
+		gt_free(g[i]);
+	}
 }
 
 static void sokaka(void) {
@@ -1351,6 +1352,7 @@ static void bbs(void) {
 	g1_free(s);
 	bn_free(d);
 	g2_free(p);
+	gt_free(z);
 }
 
 static int cls(void) {
@@ -1515,6 +1517,7 @@ static void pss(void) {
 		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, ys, 10));
 	} BENCH_END;
 
+	bn_free(n);
 	bn_free(u);
 	bn_free(v);
 	g1_free(a);
@@ -1525,7 +1528,7 @@ static void pss(void) {
 	for (int i = 0; i < 10; i++) {
 		bn_free(ms[i]);
 		bn_free(vs[i]);
-		g1_free(ys[i]);
+		g2_free(ys[i]);
 	}
 }
 
@@ -1536,7 +1539,7 @@ static void mpss(void) {
 	g1_t g, s[2];
 	g2_t h, x[2], y[2], ys[10][2];
 	gt_t r[2];
-	mt_t tri[3][2];
+	mt_t tri[3][2], btri[10][2];
 	pt_t t[2];
 
 	bn_null(n);
@@ -1557,6 +1560,9 @@ static void mpss(void) {
 		mt_null(tri[0][i]);
 		mt_null(tri[1][i]);
 		mt_null(tri[2][i]);
+		for (int j = 0; j < 10; j++) {
+			mt_null(btri[j][i]);
+		}
 		pt_null(t[i]);
 		bn_new(m[i]);
 		bn_new(u[i]);
@@ -1568,6 +1574,9 @@ static void mpss(void) {
 		mt_new(tri[0][i]);
 		mt_new(tri[1][i]);
 		mt_new(tri[2][i]);
+		for (int j = 0; j < 10; j++) {
+			mt_new(btri[j][i]);
+		}
 		pt_new(t[i]);
 
 		g1_get_ord(n);
@@ -1613,7 +1622,7 @@ static void mpss(void) {
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpss_ver") {
-		BENCH_ADD(cp_mpss_ver(r[0], g, s, m, h, x[0], y[0], tri[2], t));
+		BENCH_ADD(cp_mpss_ver(r[0], g, s, m, h, x[0], y[0], tri[2]));
 	} BENCH_DIV(2);
 
 	g1_get_ord(n);
@@ -1621,6 +1630,9 @@ static void mpss(void) {
 	mpc_mt_gen(tri[0], n);
 	mpc_mt_gen(tri[1], n);
 	mpc_mt_gen(tri[2], n);
+	for (int j = 0; j < 10; j++) {
+		mpc_mt_gen(btri[j], n);
+	}
 
 	BENCH_RUN("cp_mpsb_gen (10)") {
 		BENCH_ADD(cp_mpsb_gen(u, vs, h, x, ys, 10));
@@ -1631,15 +1643,15 @@ static void mpss(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_mpsb_sig (10)") {
-		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, vs, tri[0], tri[1], 10));
+		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, vs, btri, 10));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver (10)") {
-		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, NULL, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, NULL, NULL, tri[2], 10));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver (10,sk)") {
-		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, vs, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, vs, btri, tri[2], 10));
 	} BENCH_DIV(2);
 
 	bn_free(n);
@@ -1652,10 +1664,14 @@ static void mpss(void) {
 		g1_free(s[i]);
 		g2_free(x[i]);
 		g2_free(y[i]);
+		gt_free(r[i]);
 		gt_null(r[i]);
 		mt_free(tri[0][i]);
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
+		for (int j = 0; j < 10; j++) {
+			mt_free(btri[j][i]);
+		}
 		pt_free(t[i]);
 		for (int j = 0; j < 10; j++) {
 			bn_free(ms[j][i]);
@@ -1714,6 +1730,7 @@ static void zss(void) {
 	bn_free(d);
 	g1_free(p);
 	g2_free(s);
+	gt_free(z);
 }
 
 /* Size of the dataset for benchmarking. */
@@ -1819,7 +1836,7 @@ static void lhs(void) {
 				label[l] = l;
 				bn_mod(msg[l], msg[l], n);
 				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 0);
+					msg[l], data, label[l], x[j], h, k[j], K, d[j], sk[j], 0);
 			}
 		},
 	S * L);
@@ -1858,7 +1875,7 @@ static void lhs(void) {
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_off") {
-		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+		BENCH_ADD(cp_cmlhs_off(vk, label, (const gt_t **)hs,
 			(const dig_t **)f, flen, S));
 	} BENCH_DIV(S);
 
@@ -1880,7 +1897,7 @@ static void lhs(void) {
 				label[l] = l;
 				bn_mod(msg[l], msg[l], n);
 				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 1);
+					msg[l], data, label[l], x[j], h, k[j], K, d[j], sk[j], 1);
 			}
 		},
 	S * L);
@@ -1919,7 +1936,7 @@ static void lhs(void) {
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_off") {
-		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+		BENCH_ADD(cp_cmlhs_off(vk, label, (const gt_t **)hs,
 			(const dig_t **)f, flen, S));
 	} BENCH_DIV(S);
 
@@ -1933,18 +1950,19 @@ static void lhs(void) {
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_ver") {
 			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-				hs, f, flen, y, pk, t));
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, t, 1));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_off") {
-			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
+			BENCH_ADD(cp_cmlhs_off(vk, label, (const gt_t **)hs,
+				(const dig_t **)f, flen, t));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_onv") {
 			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
-				pk, t));
+				pk, t, 1));
 		} BENCH_END;
 	}
 
@@ -1955,18 +1973,19 @@ static void lhs(void) {
 		}
 		BENCH_RUN("cp_cmlhs_ver") {
 			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-				hs,	f, flen, y, pk, S));
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 1));
 		} BENCH_END;
 
 		util_print("(%2d lbs) ", t);
 		BENCH_RUN("cp_cmlhs_off") {
-			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
+			BENCH_ADD(cp_cmlhs_off(vk, label, (const gt_t **)hs,
+				(const dig_t **)f, flen, t));
 		} BENCH_END;
 
 		util_print("(%2d lbs) ", t);
 		BENCH_RUN("cp_cmlhs_onv") {
 			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
-				pk, t));
+				pk, t, 1));
 		} BENCH_END;
 	}
 #endif  /* BENCH_LHS */
@@ -2037,12 +2056,14 @@ static void lhs(void) {
 	for (int t = 1; t <= S; t++) {
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_mklhs_ver") {
-			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, t));
+			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
+				(const dig_t **)f, flen, pk, t));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_mklhs_off") {
-			BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, t));
+			BENCH_ADD(cp_mklhs_off(cs, ft, id, (const char **)ls,
+				(const dig_t **)f, flen, t));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
@@ -2057,12 +2078,14 @@ static void lhs(void) {
 			flen[u] = t;
 		}
 		BENCH_RUN("cp_mklhs_ver") {
-			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S));
+			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
+				(const dig_t **)f, flen, pk, S));
 		} BENCH_END;
 
 		util_print("(%2d lbs) ", t);
 		BENCH_RUN("cp_mklhs_off") {
-			BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, S));
+			BENCH_ADD(cp_mklhs_off(cs, ft, id, (const char **)ls,
+				(const dig_t **)f, flen, S));
 		} BENCH_END;
 
 		util_print("(%2d lbs) ", t);
@@ -2204,10 +2227,13 @@ static void psi(void) {
 		BENCH_ADD(cp_pbpsi_int(z, &len, d, x, M, t, u, N));
 	} BENCH_END;
 
-    bn_free(q);
+	bn_free(g);
+	bn_free(n);
+	bn_free(q);
 	bn_free(r);
 	g1_free(ss);
 	for (int i = 0; i < M; i++) {
+		bn_free(p[i]);
 		bn_free(x[i]);
 		bn_free(z[i]);
 		g2_free(d[i]);
@@ -2216,10 +2242,13 @@ static void psi(void) {
 	g2_free(d[M]);
 	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
+		bn_free(v[i]);
+		bn_free(w[i]);
 		bn_free(y[i]);
 		g1_free(u[i]);
 		gt_free(t[i]);
 	}
+	crt_free(crt);
 }
 
 #endif /* WITH_PC */

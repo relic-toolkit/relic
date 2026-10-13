@@ -44,7 +44,7 @@
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 	dig_t _c, r0, r1, carry = 0;
-	for (int i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
+	for (size_t i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		/* Multiply the digit *a by d and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
 		RLC_MUL_DIG(r1, r0, *a, digit);
@@ -109,7 +109,7 @@ void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i, j;
+	size_t i, j;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
 

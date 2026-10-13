@@ -62,11 +62,11 @@ static void find_trace(void) {
 		fb_new_all(t0, t1);
 
 		counter = 0;
-		for (int i = 0; i < RLC_FB_BITS; i++) {
+		for (size_t i = 0; i < RLC_FB_BITS; i++) {
 			fb_zero(t0);
 			fb_set_bit(t0, i, 1);
 			fb_copy(t1, t0);
-			for (int j = 1; j < RLC_FB_BITS; j++) {
+			for (size_t j = 1; j < RLC_FB_BITS; j++) {
 				fb_sqr(t1, t1);
 				fb_add(t0, t0, t1);
 			}
@@ -107,7 +107,8 @@ static void find_trace(void) {
  * @throw ERR_NO_MEMORY if there is no available memory.
  */
 static void find_solve(void) {
-	int i, j, k, l;
+	size_t i, k;
+	int j, l;
 	fb_t t0;
 	ctx_t *ctx = core_get();
 
@@ -152,7 +153,7 @@ static void find_srz(void) {
 
 	fb_set_dig(ctx->fb_srz, 2);
 
-	for (int i = 1; i < RLC_FB_BITS; i++) {
+	for (size_t i = 1; i < RLC_FB_BITS; i++) {
 		fb_sqr(ctx->fb_srz, ctx->fb_srz);
 	}
 
@@ -272,7 +273,7 @@ static void find_chain(void) {
 	}
 
 #if FB_INV == ITOHT || FB_INV == LOWER || !defined(STRIP)
-	if (ctx->chain_len >= RLC_FB_CHAIN) {
+	if (ctx->chain_len >= (int)RLC_FB_CHAIN) {
 		/* The tables have one row per element of the chain. */
 		RLC_THROW(ERR_NO_VALID);
 		return;

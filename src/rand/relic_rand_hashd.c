@@ -68,7 +68,7 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 	util_write_uint32(buf + 1, 8 * out_len);
 	memcpy(buf + 1 + sizeof(uint32_t), in, in_len);
 
-	for (int i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 		/* h = Hash(counter || bits_to_return || input_string) */
 		md_map(hash, buf, 1 + sizeof(uint32_t) + in_len);
 		/* temp = temp || h */

@@ -280,18 +280,10 @@ int g2_is_valid(const g2_t a) {
 			case EP_B12:
 			case EP_B24:
 			case EP_B48:
-				if (core_get()->ep_id == B12_P383) {
-					/* Since p mod n = r, we can check instead that
-					* psi^4(P) + P == \psi^2(P). */
-					g2_frb(u, a, 4);
-					g2_add(u, u, a);
-					g2_frb(v, a, 2);
-				} else {
 				/* Check \psi(P) == [z]P. */
-					fp_prime_get_par(n);
-					g2_mul_any(u, a, n);
-					g2_frb(v, a, 1);
-				}
+				fp_prime_get_par(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, a, 1);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
@@ -620,12 +612,24 @@ int gt_is_valid(const gt_t a) {
 				r &= fp18_test_cyc((void *)a);
 				break;
 			default:
-				/* Common case. */
+				/* Common case. The exponentiation and the inversion assume
+				 * that a is in the cyclotomic subgroup, so test it too. */
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);
 				gt_exp(u, a, n);
 				gt_inv(u, u);
 				r = (gt_cmp(u, a) == RLC_EQ);
+				switch (ep_curve_embed()) {
+					case 2:
+						r &= fp2_test_cyc((void *)a);
+						break;
+					case 8:
+						r &= fp8_test_cyc((void *)a);
+						break;
+					case 54:
+						r &= fp54_test_cyc((void *)a);
+						break;
+				}
 				break;
 		}
 	} RLC_CATCH_ANY {

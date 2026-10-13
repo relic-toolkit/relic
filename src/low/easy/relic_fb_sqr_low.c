@@ -55,7 +55,7 @@ void fb_sqrn_low(dig_t *c, const dig_t *a) {
 
 	tmp = c;
 #if RLC_DIG == 8
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmp++) {
 		x = a[i];
 		y = x & 0x0F;
 		z = x >> 4;
@@ -67,7 +67,7 @@ void fb_sqrn_low(dig_t *c, const dig_t *a) {
 		*tmp = z;
 	}
 #elif RLC_DIG == 16
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmp++) {
 		x = a[i];
 		y = x & 0x00FF;
 		z = x >> 8;
@@ -81,7 +81,7 @@ void fb_sqrn_low(dig_t *c, const dig_t *a) {
 		*tmp = z;
 	}
 #elif RLC_DIG == 32
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmp++) {
 		x = a[i];
 		y = x & 0x0000FFFF;
 		z = x >> 16;
@@ -97,7 +97,7 @@ void fb_sqrn_low(dig_t *c, const dig_t *a) {
 		*tmp = z;
 	}
 #elif RLC_DIG == 64
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmp++) {
 		x = a[i];
 		y = x & 0x00000000FFFFFFFF;
 		z = x >> 32;
@@ -122,28 +122,28 @@ void fb_sqrl_low(dig_t *c, const dig_t *a) {
 
 	tmpt = c;
 #if RLC_DIG == 8
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
 		d = a[i];
 		*tmpt = table[RLC_LOW(d)];
 		tmpt++;
 		*tmpt = table[RLC_HIGH(d)];
 	}
 #elif RLC_DIG == 16
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
 		d = a[i];
 		*tmpt = (table[d & 0xF]) | (table[(d >> 4) & 0xF] << 8);
 		tmpt++;
 		*tmpt = (table[(d >> 8) & 0xF] << 00) | (table[(d >> 12) & 0xF] << 8);
 	}
 #elif RLC_DIG == 32
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
 		d = a[i];
 		*tmpt = (table[d & 0xF]) | (table[(d >> 4) & 0xF] << 8) | (table[(d >> 8) & 0xF] << 16) | (table[(d >> 12) & 0xF] << 24);
 		tmpt++;
 		*tmpt = (table[(d >> 16) & 0xF] << 00) | (table[(d >> 20) & 0xF] << 8) | (table[(d >> 24) & 0xF] << 16) | (table[(d >> 28) & 0xF] << 24);
 	}
 #elif RLC_DIG == 64
-	for (int i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
+	for (size_t i = 0; i < RLC_FB_DIGS; i++, tmpt++) {
 		d = a[i];
 		*tmpt = (table[d & 0xF] << 00) | (table[(d >> 4) & 0xF] << 8) |
 				(table[(d >> 8) & 0xF] << 16) | (table[(d >> 12) & 0xF] << 24) |

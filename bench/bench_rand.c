@@ -66,7 +66,7 @@ static void rng(void) {
 		BENCH_ADD(rand_seed(&test_bytes, (void *)&fd));
 	} BENCH_END;
 
-	for (int k = 1; k <= sizeof(buffer); k *= 2) {
+	for (size_t k = 1; k <= sizeof(buffer); k *= 2) {
 		BENCH_RUN("rand_bytes (from 1 to 256)") {
 			BENCH_ADD(rand_bytes(buffer, k));
 		} BENCH_END;
@@ -85,7 +85,7 @@ static void rng(void) {
 		BENCH_ADD(rand_seed(buffer, 20));
 	} BENCH_END;
 
-	for (int k = 1; k <= sizeof(buffer); k *= 2) {
+	for (size_t k = 1; k <= sizeof(buffer); k *= 2) {
 		BENCH_RUN("rand_bytes (from 1 to 256)") {
 			BENCH_ADD(rand_bytes(buffer, k));
 		} BENCH_END;

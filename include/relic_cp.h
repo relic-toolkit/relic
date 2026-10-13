@@ -1472,13 +1472,11 @@ int cp_mvbat_gen(bn_t *l, g2_t r, g2_t *rs, size_t m);
  * @param[out] b			- the random challenges.
  * @param[out] qs			- the group elements computed by the client.
  * @param[out] rs			- the precomputed points in G_2.
- * @param[in] p				- the first arguments of the pairing.
  * @param[in] q				- the second argument of the pairing.
  * @param[in] m				- the number of pairings delegated in the batch.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mvbat_ask(bn_t *b, g2_t *qs, const g2_t *rs, const g1_t *p,
-		const g2_t *q, size_t m);
+int cp_mvbat_ask(bn_t *b, g2_t *qs, const g2_t *rs, const g2_t *q, size_t m);
 
 /**
  * Executes the server-side response for the MV batch pairing delegation
@@ -1532,14 +1530,13 @@ int cp_amore_gen(bn_t s, gt_t e);
  * @param[out] u			- the mask in G_1 for the pairing delegation.
  * @param[out] v			- the mask in G_2 for the pairing delegation.
  * @param[in] s				- the secret key for the pairing delegation.
- * @param[in] e				- the precomputed value from the setup.
  * @param[in] p				- the first argument inputs for the pairings.
  * @param[in] q				- the second argument inputs for the pairings.
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
-	const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m);
+		const bn_t s, const g1_t *p, const g2_t *q, size_t m);
 
 /**
  * Executes the server-side response for the AMORE batch pairing delegation
@@ -2057,12 +2054,10 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]);
  * @param[in] x				- the second part of the public key.
  * @param[in] y				- the third part of the public key.
  * @param[in] sm_tri		- the triple for the scalar multiplication.
- * @param[in] pc_tri		- the triple for the pairing computation.
  * @return a boolean value indicating the verification result.
  */
 int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
-		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2],
-		const pt_t pc_tri[2]);
+		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2]);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
@@ -2129,14 +2124,12 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2],
  * @param[in] m				- the messages to sign.
  * @param[in] r				- the first part of the private key.
  * @param[in] s				- the second parts of the private key.
- * @param[in] mul_tri		- the triple for the multiplication.
- * @param[in] sm_tri		- the triple for the scalar multiplication.
+ * @param[in] mul_tri		- the multiplication triples, one pair per message.
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
-		const bn_t s[][2], const mt_t mul_tri[2], const mt_t sm_tri[2],
-		size_t l);
+		const bn_t s[][2], const mt_t mul_tri[][2], size_t l);
 
 /**
  * Opens public values in the MPSS protocols, in this case public keys.
@@ -2160,14 +2153,14 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], size_t l);
  * @param[in] x				- the second part of the public key.
  * @param[in] y				- the third parts of the public key.
  * @param[in] sm_tri		- the triple for the scalar multiplication.
- * @param[in] pc_tri		- the triple for the pairing computation.
  * @param[in] v				- the private keys, can be NULL.
+ * @param[in] mul_tri		- the multiplication triples, NULL if v is NULL.
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
 int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		const g2_t h, const g2_t x, const g2_t y[][2], const bn_t v[][2],
-		const mt_t sm_tri[2], const pt_t pc_tri[2], size_t l);
+		const mt_t mul_tri[][2], const mt_t sm_tri[2], size_t l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
@@ -2419,11 +2412,10 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parameters.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
-		const ec_t pk, const ec_t pp);
+		const ec_t pk);
 
 /**
  * Signs a message using the same-message linkable extendable ring signature
@@ -2464,11 +2456,10 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parameters.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
-		size_t len, const ec_t pk, const ec_t pp);
+		size_t len, const ec_t pk);
 
 /**
  * Signs a message using the extendable threshold ring signature scheme.
@@ -2516,15 +2507,13 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parameters.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const ec_t pk, const ec_t pp);
+		const uint8_t *msg, size_t len, const ec_t pk);
 /**
  * Joins an extendable threshold ring signature with a new signature.
  *
- * @param[in] thres			- the specified threshold.
  * @param[in] td			- the signature trapdoors.
  * @param[in] y				- the signature randomness.
  * @param[in] max			- the maximum number of extensions.
@@ -2534,12 +2523,10 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
  * @param[in] len			- the message length.
  * @param[in] sk			- the signer's private key.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parameters.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
-		const ec_t pp);
+int cp_etrs_uni(bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk);
 
 /**
  * Compute a Pedersen commitment for randomness r and message x.
@@ -2621,19 +2608,20 @@ int cp_cmlhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
  * @param[out] s			- the fourth component of the signature.
  * @param[in] msg			- the message vector to sign (one component).
  * @param[in] data			- the dataset identifier.
- * @param[in] label			- the integer label.
- * @param[in] x				- the exponent value for the label.
+ * @param[in] label			- the integer label of the message.
+ * @param[in] x				- the exponents of the labels, from cp_cmlhs_gen().
  * @param[in] h				- the random value (message has one component).
  * @param[in] prf			- the key for the pseudo-random function (PRF).
  * @param[in] plen			- the PRF key length.
- * @param[in] sk			- the private key for the signature scheme.
  * @param[in] d				- the secret exponent.
+ * @param[in] sk			- the private key for the signature scheme.
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
-		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t *prf, size_t plen, const bn_t sk, const bn_t d, int bls);
+		const bn_t msg, const char *data, int label, const bn_t x[],
+		const g1_t h, const uint8_t *prf, size_t plen, const bn_t d,
+		const bn_t sk, int bls);
 
 /**
  * Applies a function over a set of CMLHS signatures from the same user.
@@ -2695,17 +2683,14 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
  * Perform the offline verification of a CMLHS signature over a set of messages.
  *
  * @param[out] vk			- the verification key.
- * @param[in] h				- the random element (message has one component).
  * @param[in] label			- the integer labels.
  * @param[in] hs			- the hash values, one per label.
  * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
- * @param[in] y				- the public elements of the users.
- * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
+void cp_cmlhs_off(gt_t vk, const int *label, const gt_t *hs[],
 		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**

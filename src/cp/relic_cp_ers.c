@@ -122,12 +122,12 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		ec_curve_get_ord(n);
 		ec_mul_gen(t, td);
 
-		for (int i = 0; i < size; i++) {
+		for (size_t i = 0; i < size; i++) {
 			ec_add(t, t, s[i]->h);
 		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
-			for (int i = 0; i < size; i++) {
+			for (size_t i = 0; i < size; i++) {
 				ec_copy(y[0], s[i]->h);
 				ec_copy(y[1], s[i]->pk);
 				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, NULL);
@@ -148,18 +148,17 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 }
 
 int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
-		const ec_t pk, const ec_t pp) {
+		const ec_t pk) {
 	bn_t n, r;
 	ec_t y[2];
 	int result = RLC_OK;
-	(void)pp;
 
 	bn_null(n);
 	bn_null(r);
 	ec_null(y[0]);
 	ec_null(y[1]);
 
-	for (int i = 0; i < *size; i++) {
+	for (size_t i = 0; i < *size; i++) {
 		if (ec_cmp(pk, p[i]->pk) == RLC_EQ) {
 			return RLC_ERR;
 		}

@@ -380,7 +380,8 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 
 void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_t r, s, t, u, v;
-	int i, k, d, r0, d0;
+	size_t i, k;
+	int d, r0, d0;
 
 	fb_null_all(r, s, t, u, v);
 

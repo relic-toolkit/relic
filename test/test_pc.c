@@ -1548,6 +1548,12 @@ static int validity(void) {
 			TEST_ASSERT(!gt_is_valid(a), end);
 			gt_rand(a);
 			TEST_ASSERT(gt_is_valid(a), end);
+			/* Small elements of the base field are not in G_T. */
+			RLC_CAT(RLC_GT_LOWER, set_dig)(a, 2);
+			TEST_ASSERT(!gt_is_valid(a), end);
+			gt_set_unity(a);
+			RLC_CAT(RLC_GT_LOWER, neg)(a, a);
+			TEST_ASSERT(!gt_is_valid(a), end);
 		}
 		TEST_END;
 	}
