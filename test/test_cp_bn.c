@@ -74,6 +74,30 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_sig(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK, end);
 			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
 		} TEST_END;
+
+		/* A modulus of 8k + 1 bits has encoded messages one byte shorter. */
+		result = cp_rsa_gen(pub, prv, RLC_BN_BITS - 7);
+
+		TEST_CASE("rsa key generation has the requested length") {
+			TEST_ASSERT(result == RLC_OK, end);
+			TEST_ASSERT(bn_bits(pub->crt->n) == RLC_BN_BITS - 7, end);
+			TEST_ASSERT(bn_cmp(pub->crt->n, prv->crt->n) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(pub->e, prv->e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("rsa is correct with a modulus of 8k + 1 bits") {
+			TEST_ASSERT(result == RLC_OK, end);
+			il = 10;
+			ol = RLC_BN_BITS / 8 + 1;
+			rand_bytes(in, il);
+			TEST_ASSERT(cp_rsa_sig(out, &ol, in, il, 0, prv) == RLC_OK, end);
+			TEST_ASSERT(cp_rsa_ver(out, ol, in, il, 0, pub) == 1, end);
+			ol = RLC_BN_BITS / 8 + 1;
+			rand_bytes(in, il);
+			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv) == RLC_OK, end);
+			TEST_ASSERT(memcmp(in, out, ol) == 0, end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
