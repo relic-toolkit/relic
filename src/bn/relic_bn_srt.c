@@ -43,6 +43,7 @@ void bn_srt(bn_t c, const bn_t a) {
 
 	if (bn_sign(a) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	bits = bn_bits(a);

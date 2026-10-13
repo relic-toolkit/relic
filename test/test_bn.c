@@ -1009,6 +1009,25 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
+		TEST_CASE("division into the divisor is correct") {
+			for (int k = 0; k < 4; k++) {
+				bn_rand(a, (k & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS);
+				bn_rand(b, (k & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				/* The quotient overwrites the divisor. */
+				bn_div_rem(c, d, a, b);
+				bn_copy(e, b);
+				bn_div_rem(e, b, a, e);
+				TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+				TEST_ASSERT(bn_cmp(d, b) == RLC_EQ, end);
+				bn_rand(b, (k & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				bn_div_rem_rup(c, d, a, b);
+				bn_copy(e, b);
+				bn_div_rem_rup(e, b, a, e);
+				TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+				TEST_ASSERT(bn_cmp(d, b) == RLC_EQ, end);
+			}
+		} TEST_END;
+
 		TEST_CASE("rounded up division is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1176,6 +1195,16 @@ static int reduction(void) {
 				bn_mod_barrt(e, a, b, c);
 				bn_sub(e, b, e);
 				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				/* Negative values below the modulus are also reduced. */
+				bn_rand(a, RLC_NEG, bn_bits(b) - 1);
+				bn_mod_barrt(e, a, b, c);
+				bn_add(d, a, b);
+				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				/* Negative multiples of the modulus reduce to zero. */
+				bn_mul_dig(a, b, 3);
+				bn_neg(a, a);
+				bn_mod_barrt(e, a, b, c);
+				TEST_ASSERT(bn_is_zero(e), end);
 			}
 		}
 		TEST_END;
@@ -1186,6 +1215,14 @@ static int reduction(void) {
 				RLC_BN_BITS / 2, RLC_BN_BITS - 1, RLC_BN_BITS + RLC_DIG };
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			for (int k = 0; k < (int)(sizeof(exps) / sizeof(exps[0])); k++) {
+				bn_mod_2b(c, a, exps[k]);
+				bn_set_2b(d, exps[k]);
+				bn_mod(d, a, d);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
+			/* The result is nonnegative for a negative input. */
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - RLC_DIG);
+			for (int k = 1; k < 7; k++) {
 				bn_mod_2b(c, a, exps[k]);
 				bn_set_2b(d, exps[k]);
 				bn_mod(d, a, d);
@@ -1224,6 +1261,14 @@ static int reduction(void) {
 			bn_mod_monty_basic(d, c, b, e);
 			bn_add(a, a, b);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			/* Inputs that are negative or above m * R are reduced first. */
+			for (int k = 0; k < 2; k++) {
+				bn_rand(a, k ? RLC_POS : RLC_NEG, 2 * b->used * RLC_DIG);
+				bn_mod_monty_basic(c, a, b, e);
+				bn_mod(a, a, b);
+				bn_mod_monty_basic(d, a, b, e);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 
@@ -1243,6 +1288,14 @@ static int reduction(void) {
 			bn_mod_monty_comba(d, c, b, e);
 			bn_add(a, a, b);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			/* Inputs that are negative or above m * R are reduced first. */
+			for (int k = 0; k < 2; k++) {
+				bn_rand(a, k ? RLC_POS : RLC_NEG, 2 * b->used * RLC_DIG);
+				bn_mod_monty_comba(c, a, b, e);
+				bn_mod(a, a, b);
+				bn_mod_monty_comba(d, a, b, e);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 #endif
@@ -1265,6 +1318,11 @@ static int reduction(void) {
 			bn_mod(c, a, b);
 			bn_mod_pmers(d, a, b, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* Negative multiples of the modulus reduce to zero. */
+			bn_mul_dig(a, b, 2);
+			bn_neg(a, a);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_is_zero(d), end);
 		}
 		TEST_END;
 #endif
@@ -1483,6 +1541,19 @@ static int square_root(void) {
 				bn_sqr(c, b);
 				TEST_ASSERT(bn_cmp(c, a) != RLC_GT, end);
 			}
+		}
+		TEST_END;
+
+		TEST_ONCE("square root of a negative number fails") {
+			bn_set_dig(a, 4);
+			bn_neg(a, a);
+			bn_set_dig(b, 7);
+			err_get_code();
+			RLC_TRY {
+				bn_srt(b, a);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -1894,6 +1965,10 @@ static int lcm(void) {
 			bn_mod(a, c, a);
 			bn_mod(b, c, b);
 			TEST_ASSERT(bn_is_zero(a) && bn_is_zero(b), end);
+			/* The multiple of zero is zero. */
+			bn_zero(a);
+			bn_lcm(c, a, a);
+			TEST_ASSERT(bn_is_zero(c), end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2467,6 +2542,14 @@ static int inversion(void) {
 			bn_mod(c, c, a);
 			TEST_ASSERT(bn_cmp_dig(b, 1) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			/* The modulus must be positive. */
+			bn_neg(c, a);
+			err_get_code();
+			RLC_TRY {
+				bn_mod_inv(b, b, c);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
