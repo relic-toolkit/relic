@@ -284,31 +284,27 @@ static void ep_mul_twnaf_imp(ep_t r, const ep_t p, const bn_t k) {
 	int8_t naf[1][RLC_FP_BITS + 1];
 	size_t len[1] = { RLC_FP_BITS + 1 };
 	bn_t k0, k1;
-	ep_t t[1][2][12];
+	ep_t t[6];
 
 	bn_null_all(k0, k1);
 
 	RLC_TRY {
 		bn_new_all(k0, k1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 12; j++) {
-				ep_null(t[0][i][j]);
-				ep_new(t[0][i][j]);
-			}
+		for (int i = 0; i < 6; i++) {
+			ep_null(t[i]);
+			ep_new(t[i]);
 		}
 
 		ep_tw_glv(k0, k1, k);
 		bn_rec_etnaf(naf[0], &len[0], k0, k1);
-		ep_tw_tab(t[0], p, 3, ep_curve_get_beta());
-		ep_tw_naf(r, t, naf, len, 1);
+		ep_tw_tab(t, p, 3, ep_curve_get_beta());
+		ep_tw_naf(r, t, naf, len, 1, ep_curve_get_beta());
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free_all(k0, k1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 12; j++) {
-				ep_free(t[0][i][j]);
-			}
+		for (int i = 0; i < 6; i++) {
+			ep_free(t[i]);
 		}
 	}
 }
@@ -317,17 +313,15 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 	int8_t c[1], reg[1][RLC_FP_BITS + 1];
 	size_t l, len;
 	bn_t k0, k1;
-	ep_t t[1][2][12];
+	ep_t t[12];
 
 	bn_null_all(k0, k1);
 
 	RLC_TRY {
 		bn_new_all(k0, k1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 12; j++) {
-				ep_null(t[0][i][j]);
-				ep_new(t[0][i][j]);
-			}
+		for (int i = 0; i < 12; i++) {
+			ep_null(t[i]);
+			ep_new(t[i]);
 		}
 
 		/* The GLV decomposition rounds each coordinate of k in the basis
@@ -358,16 +352,14 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 		ep_tw_glv(k0, k1, k);
 		bn_rec_retnaf(reg[0], &c[0], len, k0, k1);
-		ep_tw_tab(t[0], p, 6, ep_curve_get_beta());
-		ep_tw_reg(r, t, reg, c, len, 1);
+		ep_tw_tab(t, p, 6, ep_curve_get_beta());
+		ep_tw_reg(r, t, reg, c, len, 1, ep_curve_get_beta());
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free_all(k0, k1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 12; j++) {
-				ep_free(t[0][i][j]);
-			}
+		for (int i = 0; i < 12; i++) {
+			ep_free(t[i]);
 		}
 	}
 }

@@ -327,10 +327,12 @@
  * The map tau(P) = P - w(P) applies the 3-isogeny (X : Y : Z) ->
  * (X(Y^2 + 3bZ^2) : Y(Y^2 - 9bZ^2) : Z(Y^2 - bZ^2)) from y^2 = x^3 + b to
  * y^2 = x^3 - 27b and the isomorphism back that multiplies X by c1 = 1 - beta
- * and Z by c3 = (1 - beta)^3. The formula is complete. In the table, entry
- * i < s is the i-th base digit times P, entry s + i is its image under tau,
- * and row 1 applies w to them, as w^2(x, y) = (-x - w(x), y) is cheap to
- * recover. The entries are in affine coordinates.
+ * and Z by c3 = (1 - beta)^3. The formula is complete. In the table of 2s
+ * entries, entry i < s is the i-th base digit times P and entry s + i is its
+ * image under tau, in affine coordinates. The images under w are computed when
+ * needed, as w(x, y) = (beta * x, y) and w^2(x, y) = (-x - beta * x, y). The
+ * NAF reads the k-th table at entries 6k to 6k + 5 and the regular method at
+ * entries 12k to 12k + 11.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -370,7 +372,7 @@
 		}																	\
 	}																		\
 																			\
-	static void C##_tw_tab(C##_t t[2][12], const C##_t p, int s,			\
+	static void C##_tw_tab(C##_t *t, const C##_t p, int s,					\
 			const F##_t beta) {												\
 		F##_t c1, c3;														\
 		C##_t u;															\
@@ -390,28 +392,21 @@
 			/* Compute P, 2P, P + tau(P) and, for six bases, P - 2tau(P),	\
 			 * 2P + tau(P) and P + 2tau(P), keeping tau(P) and tau(2P) as	\
 			 * the first images. */											\
-			C##_norm(t[0][0], p);											\
-			C##_dbl_projc(t[0][1], t[0][0]);								\
-			C##_tw_tau(t[0][s], t[0][0], c1, c3);							\
-			C##_add_projc(t[0][2], t[0][0], t[0][s]);						\
-			C##_tw_tau(t[0][s + 1], t[0][1], c1, c3);						\
+			C##_norm(t[0], p);												\
+			C##_dbl_projc(t[1], t[0]);										\
+			C##_tw_tau(t[s], t[0], c1, c3);									\
+			C##_add_projc(t[2], t[0], t[s]);								\
+			C##_tw_tau(t[s + 1], t[1], c1, c3);								\
 			if (s == 6) {													\
-				C##_add_projc(t[0][4], t[0][1], t[0][s]);					\
-				C##_add_projc(t[0][5], t[0][0], t[0][s + 1]);				\
-				C##_neg(u, t[0][s + 1]);									\
-				C##_add_projc(t[0][3], t[0][0], u);							\
+				C##_add_projc(t[4], t[1], t[s]);							\
+				C##_add_projc(t[5], t[0], t[s + 1]);						\
+				C##_neg(u, t[s + 1]);										\
+				C##_add_projc(t[3], t[0], u);								\
 			}																\
 			for (int i = 2; i < s; i++) {									\
-				C##_tw_tau(t[0][s + i], t[0][i], c1, c3);					\
+				C##_tw_tau(t[s + i], t[i], c1, c3);							\
 			}																\
-			C##_norm_sim(t[0] + 1, (const C##_t *)t[0] + 1, 2 * s - 1);		\
-																			\
-			for (int i = 0; i < 2 * s; i++) {								\
-				F##_mul(t[1][i]->x, t[0][i]->x, beta);						\
-				F##_copy(t[1][i]->y, t[0][i]->y);							\
-				F##_set_dig(t[1][i]->z, 1);									\
-				t[1][i]->coord = BASIC;										\
-			}																\
+			C##_norm_sim(t + 1, (const C##_t *)t + 1, 2 * s - 1);			\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -421,8 +416,9 @@
 	}
 
 #define TMPL_EP_MUL_TW_NAF(C, F)											\
-	static void C##_tw_naf(C##_t r, C##_t t[][2][12],						\
-			int8_t naf[][RLC_FP_BITS + 1], const size_t *len, int e) {		\
+	static void C##_tw_naf(C##_t r, C##_t *t,								\
+			int8_t naf[][RLC_FP_BITS + 1], const size_t *len, int e,		\
+			const F##_t beta) {												\
 		int d, f, j;														\
 		size_t l = 0;														\
 		C##_t q;															\
@@ -451,10 +447,14 @@
 						d = naf[k][i] - 1;									\
 						f = (d % 3 + m) % 3;								\
 						j = d / 6 + 3 * (i - 2 * m);						\
-						/* w^2(x, y) = (-x - w(x), y). */					\
-						C##_copy(q, t[k][f & 1][j]);						\
+						/* w(x, y) = (beta * x, y) and						\
+						 * w^2(x, y) = (-x - beta * x, y). */				\
+						C##_copy(q, t[6 * k + j]);							\
+						if (f != 0) {										\
+							TMPL_EP_MUL_TW_BETA_##F(q->x, q->x, beta);		\
+						}													\
 						if (f == 2) {										\
-							F##_add(q->x, q->x, t[k][1][j]->x);				\
+							F##_add(q->x, q->x, t[6 * k + j]->x);			\
 							F##_neg(q->x, q->x);							\
 						}													\
 						if (((d % 6) / 3) ^ (m & 1)) {						\
@@ -474,9 +474,9 @@
 	}
 
 #define TMPL_EP_MUL_TW_REG(C, F)											\
-	static void C##_tw_reg(C##_t r, C##_t t[][2][12],						\
+	static void C##_tw_reg(C##_t r, C##_t *t,								\
 			int8_t reg[][RLC_FP_BITS + 1], const int8_t *c, int len,		\
-			int e) {														\
+			int e, const F##_t beta) {										\
 		int d, f, top = 3 * len;											\
 		dig_t s;															\
 		C##_t q, u;															\
@@ -504,14 +504,15 @@
 						f = (d % 3 + m) % 3;								\
 						s = ((d % 6) / 3) ^ (m & 1);						\
 						d = d / 6;											\
-						/* Select x, w(x) and y in the entries of the right	\
-						 * parity, then w^f(x) as w^2(x) = -x - w(x). */	\
+						/* Select x and y in the entries of the right		\
+						 * parity, then w^f(x) as w(x) = beta * x and		\
+						 * w^2(x) = -x - w(x). */							\
 						for (int j = 0; j < 6; j++) {						\
 							int o = j + 6 * (i - 2 * m);					\
-							F##_copy_sec(u->x, t[k][0][o]->x, j == d);		\
-							F##_copy_sec(q->x, t[k][1][o]->x, j == d);		\
-							F##_copy_sec(u->y, t[k][0][o]->y, j == d);		\
+							F##_copy_sec(u->x, t[12 * k + o]->x, j == d);	\
+							F##_copy_sec(u->y, t[12 * k + o]->y, j == d);	\
 						}													\
+						TMPL_EP_MUL_TW_BETA_##F(q->x, u->x, beta);			\
 						F##_add(q->y, u->x, q->x);							\
 						F##_neg(q->y, q->y);								\
 						F##_copy_sec(u->x, q->x, f == 1);					\
@@ -528,7 +529,7 @@
 			}																\
 			/* Undo the increments of the recodings. */						\
 			for (int k = 0; k < e; k++) {									\
-				C##_neg(u, t[k][0][0]);										\
+				C##_neg(u, t[12 * k]);										\
 				C##_add_projc(q, r, u);										\
 				F##_copy_sec(r->x, q->x, c[k]);								\
 				F##_copy_sec(r->y, q->y, c[k]);								\
@@ -551,6 +552,17 @@
 #define TMPL_EP_MUL_TW_FP_fp4(X)		(X)[0][0]
 #define TMPL_EP_MUL_TW_FP_fp8(X)		(X)[0][0][0]
 #define TMPL_EP_MUL_TW_FP_fp9(X)		(X)[0][0]
+
+/**
+ * Multiplies an element of the field by beta, which lies in the base prime
+ * field, coordinate by coordinate.
+ */
+#define TMPL_EP_MUL_TW_BETA_fp(C, A, B)		fp_mul(C, A, B)
+#define TMPL_EP_MUL_TW_BETA_fp2(C, A, B)	fp2_mul_fp(C, A, (B)[0])
+#define TMPL_EP_MUL_TW_BETA_fp3(C, A, B)	fp3_mul_fp(C, A, (B)[0])
+#define TMPL_EP_MUL_TW_BETA_fp4(C, A, B)	fp4_mul_fp(C, A, (B)[0][0])
+#define TMPL_EP_MUL_TW_BETA_fp8(C, A, B)	fp8_mul_fp(C, A, (B)[0][0][0])
+#define TMPL_EP_MUL_TW_BETA_fp9(C, A, B)	fp9_mul_fp(C, A, (B)[0][0])
 
 /**
  * Defines templates for the tau-adic NAF and regular methods on a curve over
@@ -577,7 +589,12 @@
 		dig_t d, d0, d1;													\
 		bn_t n, x, _k[S], a, b, m0, m1;										\
 		F##_t beta;															\
-		C##_t q, t[H][2][12];												\
+		C##_t q, *t = RLC_ALLOCA(C##_t, 2 * s * H);							\
+																			\
+		if (t == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return RLC_ERR;													\
+		}																	\
 																			\
 		bn_null_all(n, x, a, b, m0, m1);									\
 		F##_null(beta);														\
@@ -591,13 +608,9 @@
 				bn_null(_k[i]);												\
 				bn_new(_k[i]);												\
 			}																\
-			for (int i = 0; i < H; i++) {									\
-				for (int f = 0; f < 2; f++) {								\
-					for (j = 0; j < 12; j++) {								\
-						C##_null(t[i][f][j]);								\
-						C##_new(t[i][f][j]);								\
-					}														\
-				}															\
+			for (int i = 0; i < 2 * s * H; i++) {							\
+				C##_null(t[i]);												\
+				C##_new(t[i]);												\
 			}																\
 																			\
 			/* psi acts as x, or as 6x^2 on BN curves, and w acts on G2 as	\
@@ -641,7 +654,7 @@
 			if (e == 1 || (e > 1 && !reg)) {								\
 				F##_zero(beta);												\
 				fp_copy(TMPL_EP_MUL_TW_FP_##F(beta), ep_curve_get_beta());	\
-				C##_tw_tab(t[0], p, s, beta);								\
+				C##_tw_tab(t, p, s, beta);									\
 																			\
 				/* The Frobenius decomposition gives subscalars below 2^3|x|\
 				 * on BN curves; otherwise, base-|x| digits below |x|, but	\
@@ -689,26 +702,25 @@
 				 * one of psi(P), and the images under w follow from beta.	\
 				 * When psi leaves affine coordinates, building the table of\
 				 * psi(P) is cheaper. */									\
-				C##_psi(q, t[0][0][0]);										\
+				C##_psi(q, t[0]);											\
 				aff = (q->coord == BASIC);									\
 				for (int i = 1; i < H; i++) {								\
 					if (aff) {												\
 						for (int m = 0; m < 2 * s; m++) {					\
-							C##_psi(t[i][0][m], t[i - 1][0][m]);			\
-							C##_copy(t[i][1][m], t[i][0][m]);				\
-							F##_mul(t[i][1][m]->x, t[i][1][m]->x, beta);	\
+							C##_psi(t[2 * s * i + m],						\
+									t[2 * s * (i - 1) + m]);				\
 						}													\
 					} else {												\
 						if (i > 1) {										\
-							C##_psi(q, t[i - 1][0][0]);						\
+							C##_psi(q, t[2 * s * (i - 1)]);					\
 						}													\
-						C##_tw_tab(t[i], q, s, beta);						\
+						C##_tw_tab(t + 2 * s * i, q, s, beta);				\
 					}														\
 				}															\
 				if (reg) {													\
-					C##_tw_reg(r, t, naf, c, len[0], H);					\
+					C##_tw_reg(r, t, naf, c, len[0], H, beta);				\
 				} else {													\
-					C##_tw_naf(r, t, naf, len, H);							\
+					C##_tw_naf(r, t, naf, len, H, beta);					\
 				}															\
 				result = RLC_OK;											\
 			}																\
@@ -723,13 +735,10 @@
 			for (int i = 0; i < S; i++) {									\
 				bn_free(_k[i]);												\
 			}																\
-			for (int i = 0; i < H; i++) {									\
-				for (int f = 0; f < 2; f++) {								\
-					for (j = 0; j < 12; j++) {								\
-						C##_free(t[i][f][j]);								\
-					}														\
-				}															\
+			for (int i = 0; i < 2 * s * H; i++) {							\
+				C##_free(t[i]);												\
 			}																\
+			RLC_FREE(t);													\
 		}																	\
 		return result;														\
 	}																		\
