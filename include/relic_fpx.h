@@ -1918,6 +1918,14 @@ void fp2_inv(fp2_t c, const fp2_t a);
 void fp2_inv_cyc(fp2_t c, const fp2_t a);
 
 /**
+ * Computes the square of a cyclotomic quadratic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp2_sqr_cyc(fp2_t c, const fp2_t a);
+
+/**
  * Inverts multiple quadratic extension field elements simultaneously.
  *
  * @param[out] c			- the result.

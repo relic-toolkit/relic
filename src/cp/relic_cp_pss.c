@@ -123,6 +123,7 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -245,6 +246,7 @@ int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

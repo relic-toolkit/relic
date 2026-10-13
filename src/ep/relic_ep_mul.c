@@ -48,6 +48,9 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	bn_null(k0);
 	bn_null(k1);
 	ep_null(q);
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		ep_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -56,7 +59,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_new(k1);
 		ep_new(q);
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 
@@ -141,6 +143,9 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	ep_null(q);
 	ep_null(u);
 	ep_null(w);
+	for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		ep_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -151,7 +156,6 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_new(w);
 
 		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 

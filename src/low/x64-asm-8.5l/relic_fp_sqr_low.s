@@ -24,24 +24,62 @@
 /**
  * @file
  *
- * Implementation of low-level prime field squaring functions.
+ * Implementation of the low-level prime field squaring functions.
  *
  * @ingroup fp
  */
 
-#include <gmp.h>
-
-#include "relic_fp.h"
 #include "relic_fp_low.h"
+#include "macro.s"
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+.text
+.global cdecl(fp_sqrn_low)
+.global cdecl(fp_sqrm_low)
 
-void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	fp_muln_low(c, a, a);
-}
+/*
+ * Function: fp_sqrn_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2
+ */
+cdecl(fp_sqrn_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
 
-void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	fp_mulm_low(c, a, a);
-}
+	FP_SQR_LOW	0(%rsi), 0(%rdi), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rbp, p0(%rip), 0
+
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
+	ret
+
+/*
+ * Function: fp_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p
+ */
+cdecl(fp_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$144, %rsp
+
+	FP_SQR_LOW	0(%rsi), 0(%rsp), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rbp, p0(%rip), 1
+
+	addq	$144, %rsp
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
+	ret

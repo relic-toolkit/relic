@@ -77,6 +77,12 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	/* c = c0 + c1 * u. */
 }
 
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation without padding between coordinates guarantees.
+ */
+#if ALLOC != AUTO || ALIGN >= 16
+
 void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 	rlc_align dig_t t0[RLC_FP_DIGS], t1[RLC_FP_DIGS], t2[RLC_FP_DIGS];
 	rlc_align dv2_t t;
@@ -112,3 +118,5 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 		dv2_free(t);
 	}
 }
+
+#endif

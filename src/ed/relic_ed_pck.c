@@ -80,6 +80,7 @@ int ed_upk(ed_t r, const ed_t p) {
 		r->coord = BASIC;
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

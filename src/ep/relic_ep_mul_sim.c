@@ -245,15 +245,19 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_THROW(ERR_NO_MEMORY);
 			return;
 		}
+		for (j = 0; j < 2; j++) {
+			bn_null(_k[j]);
+		}
+		for (i = 0; i < 2 * n; i++) {
+			ep_null(_p[i]);
+		}
 
 		RLC_TRY {
 			bn_new(q);
 			for (j = 0; j < 2; j++) {
-				bn_null(_k[j]);
 				bn_new(_k[j]);
 			}
 			for (i = 0; i < 2 * n; i++) {
-				ep_null(_p[i]);
 				ep_new(_p[i]);
 			}
 
@@ -324,6 +328,15 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_THROW(ERR_NO_MEMORY);
 			return;
 		}
+		for (i = 0; i < 2; i++) {
+			bn_null(_k[i]);
+		}
+		for (j = 0; j < c; j++) {
+			ep_null(_p[j]);
+		}
+		for (i = 0; i < 2 * n; i++) {
+			ep_null(_q[i]);
+		}
 
 		RLC_TRY {
 			bn_new(q);
@@ -332,16 +345,13 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			ep_new(u);
 			ep_new(v);
 			for (i = 0; i < 2; i++) {
-				bn_null(_k[i]);
 				bn_new(_k[i]);
 			}
 			for (j = 0; j < c; j++) {
-				ep_null(_p[j]);
 				ep_new(_p[j]);
 				ep_set_infty(_p[j]);
 			}
 			for (i = 0; i < 2 * n; i++) {
-				ep_null(_q[i]);
 				ep_new(_q[i]);
 			}
 

@@ -154,11 +154,6 @@ typedef struct timespec ben_t;
 #include <time.h>
 typedef clock_t ben_t;
 
-#elif TIMER == POSIX
-
-#include <sys/time.h>
-typedef struct timeval ben_t;
-
 #else /* TIMER == CYCLE || TIMER == PERF */
 
 typedef ull_t ben_t;
@@ -178,11 +173,6 @@ void bench_init(void);
  * Finalizes the benchmarking module.
  */
 void bench_clean(void);
-
-/**
- * Measures and prints benchmarking overhead.
- */
-void bench_overhead(void);
 
 /**
  * Resets the benchmark data.

@@ -51,10 +51,12 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
+	for (i = 0; i <= n; i++) {
+		bn_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (i = 0; i <= n; i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 

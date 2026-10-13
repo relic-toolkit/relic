@@ -90,18 +90,26 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	g2_t *_q = (g2_t *)RLC_ALLOCA(g2_t, m + 1);
 	int result = RLC_OK;
 
+	if (_p == NULL || _q == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	for (size_t i = 0; i <= m; i++) {
+		g1_null(_p[i]);
+		g2_null(_q[i]);
+	}
+
 	RLC_TRY {
-		for (size_t i = 0; i < m; i++) {	
-			g1_null(_p[i]);
-			g2_null(_q[i]);
+		for (size_t i = 0; i < m; i++) {
 			g1_new(_p[i]);
 			g2_new(_q[i]);
 			g1_copy(_p[i], z[i]);
 			g2_copy(_q[i], q[i]);
 		}
-		g1_null(_p[m]);
 		g1_new(_p[m]);
-		g2_null(_q[m]);
 		g2_new(_q[m]);
 		g1_neg(_p[m], u);
 		g2_copy(_q[m], i);
@@ -112,12 +120,10 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
-		for (size_t i = 0; i <= m; i++) {	
+		for (size_t i = 0; i <= m; i++) {
 			g1_free(_p[i]);
 			g2_free(_q[i]);
 		}
-		g1_free(_p[m]);
-		g2_free(_q[m]);
 		RLC_FREE(_p);
 		RLC_FREE(_q);
 	}
@@ -154,7 +160,7 @@ int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *b, const gt_t e,
 			}
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	} RLC_FINALLY {
 		gt_free(t);
 		gt_free(u);
@@ -263,7 +269,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 			}
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	} RLC_FINALLY {
 		g1_free(u);
 		gt_free(v);
@@ -303,6 +309,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 
 	bn_null(n);
 	bn_null(t);
+	bn_null(z);
 	g1_null(w);
 
 	RLC_TRY {
@@ -351,17 +358,20 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 				}
 				g1_mul(c[i], p[i], r[i]);
 				g1_add(c[i], c[i], w);
-				result &= (g1_is_infty(p[i]) == 0);
-				result &= (g2_is_infty(q[i]) == 0);
-				result &= (g1_is_infty(c[i]) == 0);
+				if (g1_is_infty(p[i]) || g2_is_infty(q[i]) ||
+						g1_is_infty(c[i])) {
+					result = RLC_ERR;
+				}
 			}
 			g1_norm_sim(c, c, m);
+			if (g1_is_infty(x) || g2_is_infty(y)) {
+				result = RLC_ERR;
+			}
 		}
 		g2_norm(d, d);
-
-		result &= (g1_is_infty(x) == 0);
-		result &= (g2_is_infty(y) == 0);
-		result &= (g2_is_infty(d) == 0);
+		if (g2_is_infty(d)) {
+			result = RLC_ERR;
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -383,11 +393,13 @@ int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 	int result = RLC_OK;
 
 	gt_null(g);
+	for (size_t i = 0; i < 2; i++) {
+		g1_null(ps[i]);
+		g2_null(qs[i]);
+	}
 
 	RLC_TRY {
 		for (size_t i = 0; i < 2; i++) {
-			g1_null(ps[i]);
-			g2_null(qs[i]);
 			g1_new(ps[i]);
 			g2_new(qs[i]);
 		}
@@ -452,7 +464,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *r, const gt_t e, size_t m) {
 			}
 		}
 	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		gt_free(t);

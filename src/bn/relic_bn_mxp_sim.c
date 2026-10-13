@@ -107,10 +107,12 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
+	for (size_t i = 0; i < ((size_t)1 << n); i++) {
+		bn_null(t[i]);
+	}
 
     RLC_TRY {
 		for (size_t i = 0; i < ((size_t)1 << n); i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 		bn_new_all(r, u);
@@ -187,13 +189,16 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 		return;
 	}
 
+	bn_null_all(r, t);
+	for (j = 0; j < RLC_BASES; j++) {
+		bn_null(_a[j]);
+		bn_null(_b[j]);
+	}
+
 	RLC_TRY {
         // Will use blocks of size RLC_BASES
-        bn_null_all(r, t);
 		bn_new_all(r, t);
         for(int j = 0; j < RLC_BASES; j++) {
-            bn_null(_a[j]);
-            bn_null(_b[j]);
 			bn_new(_a[j]);
 			bn_new(_b[j]);
         }

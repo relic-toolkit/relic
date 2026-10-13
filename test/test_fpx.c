@@ -557,6 +557,16 @@ static int inversion2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("cyclotomic squaring is correct") {
+			fp2_rand(a);
+			fp2_conv_cyc(a, a);
+			fp2_sqr(b, a);
+			fp2_sqr_cyc(c, a);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
+			fp2_sqr_cyc(a, a);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("simultaneous inversion is correct") {
 			do {
 				fp2_rand(a);

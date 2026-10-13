@@ -68,6 +68,7 @@ int bn_smb_leg(const bn_t a, const bn_t b) {
 		}
 	}
 	RLC_CATCH_ANY {
+		res = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

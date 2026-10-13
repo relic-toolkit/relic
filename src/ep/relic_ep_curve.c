@@ -42,7 +42,7 @@
  * @param[out] d		- the coefficient if it fits in a digit, or NULL.
  * @param[in] a			- the curve coefficient.
  */
-static void detect_opt(int *opt, dig_t *d, fp_t a) {
+static void ep_detect_opt(int *opt, dig_t *d, fp_t a) {
 	fp_t t;
 	bn_t u;
 
@@ -215,8 +215,8 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
 
-	detect_opt(&(ctx->ep_opt_a), NULL, ctx->ep_a);
-	detect_opt(&(ctx->ep_opt_b), &(ctx->ep_b_dig), ctx->ep_b);
+	ep_detect_opt(&(ctx->ep_opt_a), NULL, ctx->ep_a);
+	ep_detect_opt(&(ctx->ep_opt_b), &(ctx->ep_b_dig), ctx->ep_b);
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map();

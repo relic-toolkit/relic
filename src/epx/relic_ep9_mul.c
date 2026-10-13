@@ -69,17 +69,21 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 	bn_null(x);
 	bn_null(y);
 	ep9_null(t);
+	for (int i = 0; i < 8; i++) {
+		ep9_null(v[i]);
+	}
+	for (int i = 0; i < 10; i++) {
+		ep9_null(s[i]);
+	}
 
 	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
 		ep9_new(t);
 		for (int i = 0; i < 8; i++) {
-			ep9_null(v[i]);
 			ep9_new(v[i]);
 		}
 		for (int i = 0; i < 10; i++) {
-			ep9_null(s[i]);
 			ep9_new(s[i]);
 		}
 

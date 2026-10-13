@@ -56,6 +56,10 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 	bn_null(z);
 	ec_null(w[0]);
 	ec_null(w[1]);
+	for (size_t i = 0; i < max; i++) {
+		bn_null(v[i]);
+		bn_null(_v[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -67,8 +71,6 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 
 		ec_curve_get_ord(n);
 		for (size_t i = 0; i < max; i++) {
-			bn_null(v[i]);
-			bn_null(_v[i]);
 			bn_new(v[i]);
 			bn_new(_v[i]);
 			bn_rand_mod(y[i], n);
@@ -172,6 +174,12 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	bn_null(u);
 	ec_null(w[0]);
 	ec_null(w[1]);
+	for (i = 0; i < d; i++) {
+		bn_null(v[i]);
+		bn_null(_v[i]);
+		bn_null(_y[i]);
+		ec_null(_t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(l);
@@ -180,8 +188,6 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		ec_new(w[0]);
 		ec_new(w[1]);
 		for (i = 0; i < d; i++) {
-			bn_null(v[i]);
-			bn_null(_v[i]);
 			bn_new(v[i]);
 			bn_new(_v[i]);
 			bn_new(_y[i]);
@@ -231,6 +237,7 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		result = flag;
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -336,6 +343,11 @@ int cp_etrs_uni(bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 	ec_null(t);
 	ec_null(w[0]);
 	ec_null(w[1]);
+	for (i = 0; i < d; i++) {
+		bn_null(_v[i]);
+		bn_null(_y[i]);
+		ec_null(_t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(l);

@@ -42,57 +42,5 @@
  * Inputs: rdi = c, rsi = a
  */
 cdecl(fp_rdcn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi), %r10
-	movq	24(%rsi), %r11
-	movq	32(%rsi), %r12
-	// rcx holds the carry into the next word loaded, and CF and OF are
-	// clear before each MULADD.
-	xorq	%rcx, %rcx
-	xorq	%rax, %rax
-
-	movq	$U0, %rdx
-	mulx	%r8, %rdx, %r13
-	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip)
-	movq	40(%rsi), %r8
-	adcx	%rcx, %r8
-	adox	%rax, %r8
-	movq	$0, %rcx
-	adcx	%rax, %rcx
-	adox	%rax, %rcx
-
-	movq	$U0, %rdx
-	mulx	%r9, %rdx, %r13
-	MULADD	%r9, %r10, %r11, %r12, %r8, %r13, %r14, p0(%rip)
-	movq	48(%rsi), %r9
-	adcx	%rcx, %r9
-	adox	%rax, %r9
-	movq	$0, %rcx
-	adcx	%rax, %rcx
-	adox	%rax, %rcx
-
-	movq	$U0, %rdx
-	mulx	%r10, %rdx, %r13
-	MULADD	%r10, %r11, %r12, %r8, %r9, %r13, %r14, p0(%rip)
-	movq	56(%rsi), %r10
-	adcx	%rcx, %r10
-	adox	%rax, %r10
-	movq	$0, %rcx
-	adcx	%rax, %rcx
-	adox	%rax, %rcx
-
-	movq	$U0, %rdx
-	mulx	%r11, %rdx, %r13
-	MULADD	%r11, %r12, %r8, %r9, %r10, %r13, %r14, p0(%rip)
-
-	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14
-
-	pop		%r14
-	pop		%r13
-	pop		%r12
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %rax, %rcx, %rdx, %rsi, p0(%rip)
 	ret

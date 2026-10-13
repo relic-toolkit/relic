@@ -54,7 +54,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 	dv_t a1, b1, a0b0, a1b1, t;
 	dig_t carry;
 
-	dv_null_all(a1, b1, a0b0, a1b1);
+	dv_null_all(a1, b1, a0b0, a1b1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */

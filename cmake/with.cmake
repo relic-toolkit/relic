@@ -93,12 +93,6 @@ if(TEMP GREATER -1)
 	set(WITH_PP 1)
 endif(TEMP GREATER -1)
 
-# Check if support for pairings over binary curves is required.
-list(FIND WITH "PB" TEMP)
-if(TEMP GREATER -1)
-	set(WITH_PB 1)
-endif(TEMP GREATER -1)
-
 # Check if elliptic curve cryptography support is required.
 list(FIND WITH "PC" TEMP)
 if(TEMP GREATER -1)

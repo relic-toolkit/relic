@@ -116,6 +116,7 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level quadratic extension field multiplication.
  *
  * @ingroup fpx
  */
@@ -32,45 +32,43 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-.text
-.global cdecl(fp2_muln_c0)
-.global cdecl(fp2_muln_c1)
-.global cdecl(fp2_mulm_c0)
-.global cdecl(fp2_mulm_c1)
-
-#if OPSYS != WINDOWS
-.hidden cdecl(fp2_muln_c0)
-.hidden cdecl(fp2_muln_c1)
-.hidden cdecl(fp2_mulm_c0)
-.hidden cdecl(fp2_mulm_c1)
-#endif
-
 /*
  * Techniques and code heavily inspired from "Efficient Algorithms for Large
  * Prime Characteristic Fields and Their Application toBilinear Pairings" by
  * Longa at TCHES'23.
  *
  * Registers: z in r8-r15, rax, rbx, rbp; T0 = rsi, T1 = rdi; b in rcx.
- * Stack: 0(%rsp) = c, 8(%rsp) = a.
+ * Stack: 0(%rsp) = c, 8(%rsp) = a, 16(%rsp) = c1.
  */
 
-cdecl(fp2_muln_c0):
+.text
+
+#ifdef FP2_ASM
+
+.global cdecl(fp2_muln_low)
+
+/*
+ * Function: fp2_muln_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b, with c[1] at RLC_DV_STRIDE bytes from c[0]
+ */
+cdecl(fp2_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$16, %rsp
+	subq	$104, %rsp
 	movq	%rdi, 0(%rsp)
 	movq	%rsi, 8(%rsp)
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 16(%rsp)
 	movq	%rdx, %rcx
 
-	// z = a_00 x b_0
-	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP2_MUL0_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
+	FP2_MUL_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
 
-	addq	$16, %rsp
+	addq	$104, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -79,23 +77,30 @@ cdecl(fp2_muln_c0):
 	pop		%r12
 	ret
 
-cdecl(fp2_mulm_c0):
+.global cdecl(fp2_mulm_low)
+
+#ifdef FP2_MUL_RDC
+
+/*
+ * Function: fp2_mulm_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b/R mod p, coefficient-wise
+ */
+cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$16, %rsp
+	subq	$104, %rsp
 	movq	%rdi, 0(%rsp)
 	movq	%rsi, 8(%rsp)
 	movq	%rdx, %rcx
 
-	// z = a_00 x b_0
-	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP2_MUL0_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
+	FP2_MUL_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
 
-	addq	$16, %rsp
+	addq	$104, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -104,23 +109,39 @@ cdecl(fp2_mulm_c0):
 	pop		%r12
 	ret
 
-cdecl(fp2_muln_c1):
+#else
+
+/*
+ * Function: fp2_mulm_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b/R mod p, coefficient-wise, by reducing the product of
+ * fp2_muln_low separately
+ */
+cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$16, %rsp
-	movq	%rdi, 0(%rsp)
+	subq	$432, %rsp
+	movq	%rdi, 424(%rsp)
+	leaq	104(%rsp), %rax
+	movq	%rax, 0(%rsp)
 	movq	%rsi, 8(%rsp)
+	leaq	264(%rsp), %rax
+	movq	%rax, 16(%rsp)
 	movq	%rdx, %rcx
 
-	// z = a_00 x b_1
-	MULM	8(%rsp), 80(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP2_MUL1_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
+	FP2_MUL_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
 
-	addq	$16, %rsp
+	movq	424(%rsp), %rdi
+	FP_RDCN_LOW	104(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rcx, %rbp, p0(%rip)
+	movq	424(%rsp), %rdi
+	addq	$80, %rdi
+	FP_RDCN_LOW	264(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rcx, %rbp, p0(%rip)
+
+	addq	$432, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -129,27 +150,6 @@ cdecl(fp2_muln_c1):
 	pop		%r12
 	ret
 
-cdecl(fp2_mulm_c1):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	subq	$16, %rsp
-	movq	%rdi, 0(%rsp)
-	movq	%rsi, 8(%rsp)
-	movq	%rdx, %rcx
+#endif
 
-	// z = a_00 x b_1
-	MULM	8(%rsp), 80(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP2_MUL1_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
-
-	addq	$16, %rsp
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+#endif /* FP2_ASM */

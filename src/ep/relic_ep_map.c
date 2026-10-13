@@ -210,6 +210,9 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_null(d[0]);
 	fp_null(d[1]);
 	fp_null(d[2]);
+	for (size_t i = 0; i < 8; i++) {
+		fp_null(h[i]);
+	}
 
 	RLC_TRY {
 		bn_new(k);
@@ -225,7 +228,6 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		fp_new(d[1]);
 		fp_new(d[2]);
 		for (size_t i = 0; i < 8; i++) {
-			fp_null(h[i]);
 			fp_new(h[i]);
 		}
 

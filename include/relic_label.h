@@ -83,7 +83,6 @@
 
 #undef bench_init
 #undef bench_clean
-#undef bench_overhead
 #undef bench_reset
 #undef bench_before
 #undef bench_after
@@ -93,7 +92,6 @@
 
 #define bench_init 	RLC_PREFIX(bench_init)
 #define bench_clean 	RLC_PREFIX(bench_clean)
-#define bench_overhead 	RLC_PREFIX(bench_overhead)
 #define bench_reset 	RLC_PREFIX(bench_reset)
 #define bench_before 	RLC_PREFIX(bench_before)
 #define bench_after 	RLC_PREFIX(bench_after)
@@ -259,6 +257,7 @@
 #undef bn_div_rem_dig
 #undef bn_mod_inv
 #undef bn_mod_inv_sim
+#undef bn_mod_inv_crt
 #undef bn_mod_2b
 #undef bn_mod_dig
 #undef bn_mod_basic
@@ -390,6 +389,7 @@
 #define bn_div_rem_dig 	RLC_PREFIX(bn_div_rem_dig)
 #define bn_mod_inv 	RLC_PREFIX(bn_mod_inv)
 #define bn_mod_inv_sim 	RLC_PREFIX(bn_mod_inv_sim)
+#define bn_mod_inv_crt 	RLC_PREFIX(bn_mod_inv_crt)
 #define bn_mod_2b 	RLC_PREFIX(bn_mod_2b)
 #define bn_mod_dig 	RLC_PREFIX(bn_mod_dig)
 #define bn_mod_basic 	RLC_PREFIX(bn_mod_basic)
@@ -2208,6 +2208,7 @@
 #undef fp2_sqr_integ
 #undef fp2_inv
 #undef fp2_inv_cyc
+#undef fp2_sqr_cyc
 #undef fp2_inv_sim
 #undef fp2_test_cyc
 #undef fp2_conv_cyc
@@ -2258,6 +2259,7 @@
 #define fp2_sqr_integ 	RLC_PREFIX(fp2_sqr_integ)
 #define fp2_inv 	RLC_PREFIX(fp2_inv)
 #define fp2_inv_cyc 	RLC_PREFIX(fp2_inv_cyc)
+#define fp2_sqr_cyc 	RLC_PREFIX(fp2_sqr_cyc)
 #define fp2_inv_sim 	RLC_PREFIX(fp2_inv_sim)
 #define fp2_test_cyc 	RLC_PREFIX(fp2_test_cyc)
 #define fp2_conv_cyc 	RLC_PREFIX(fp2_conv_cyc)
@@ -3659,10 +3661,16 @@
 #define sokaka_t	RLC_PREFIX(sokaka_t)
 
 #undef cp_rsa_gen
-#undef cp_rsa_enc
-#undef cp_rsa_dec
-#undef cp_rsa_sig
-#undef cp_rsa_ver
+#undef cp_rsa_enc_oaep
+#undef cp_rsa_enc_oaepp
+#undef cp_rsa_enc_pkcs1
+#undef cp_rsa_dec_oaep
+#undef cp_rsa_dec_oaepp
+#undef cp_rsa_dec_pkcs1
+#undef cp_rsa_sig_pss
+#undef cp_rsa_sig_pkcs1
+#undef cp_rsa_ver_pss
+#undef cp_rsa_ver_pkcs1
 #undef cp_rabin_gen
 #undef cp_rabin_enc
 #undef cp_rabin_dec
@@ -3830,10 +3838,16 @@
 #undef cp_pbpsi_int
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
-#define cp_rsa_enc 	RLC_PREFIX(cp_rsa_enc)
-#define cp_rsa_dec 	RLC_PREFIX(cp_rsa_dec)
-#define cp_rsa_sig 	RLC_PREFIX(cp_rsa_sig)
-#define cp_rsa_ver 	RLC_PREFIX(cp_rsa_ver)
+#define cp_rsa_enc_oaep 	RLC_PREFIX(cp_rsa_enc_oaep)
+#define cp_rsa_enc_oaepp 	RLC_PREFIX(cp_rsa_enc_oaepp)
+#define cp_rsa_enc_pkcs1 	RLC_PREFIX(cp_rsa_enc_pkcs1)
+#define cp_rsa_dec_oaep 	RLC_PREFIX(cp_rsa_dec_oaep)
+#define cp_rsa_dec_oaepp 	RLC_PREFIX(cp_rsa_dec_oaepp)
+#define cp_rsa_dec_pkcs1 	RLC_PREFIX(cp_rsa_dec_pkcs1)
+#define cp_rsa_sig_pss 	RLC_PREFIX(cp_rsa_sig_pss)
+#define cp_rsa_sig_pkcs1 	RLC_PREFIX(cp_rsa_sig_pkcs1)
+#define cp_rsa_ver_pss 	RLC_PREFIX(cp_rsa_ver_pss)
+#define cp_rsa_ver_pkcs1 	RLC_PREFIX(cp_rsa_ver_pkcs1)
 #define cp_rabin_gen 	RLC_PREFIX(cp_rabin_gen)
 #define cp_rabin_enc 	RLC_PREFIX(cp_rabin_enc)
 #define cp_rabin_dec 	RLC_PREFIX(cp_rabin_dec)

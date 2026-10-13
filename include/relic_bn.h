@@ -1086,6 +1086,18 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
+ * Computes the modular inverse of a multiple precision integer modulo n = pq
+ * from its inverses modulo p and q, which is cheaper than inverting modulo n.
+ * Computes c such that a*c mod n = 1.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to invert.
+ * @param[in] crt			- the modulus and its factors, with qi = q^(-1) mod p.
+ * @throw ERR_NO_VALID		- if the operands are not co-prime.
+ */
+void bn_mod_inv_crt(bn_t c, const bn_t a, const crt_t crt);
+
+/**
  * Reduces a multiple precision integer modulo a power of 2. Computes
  * c = a mod 2^b.
  *

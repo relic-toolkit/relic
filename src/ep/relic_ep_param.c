@@ -788,7 +788,7 @@
  * @param[in] CURVE		- the curve parameters to assign.
  * @param[in] FIELD		- the finite field identifier.
  */
-#define ASSIGN(CURVE, FIELD)												\
+#define EP_ASSIGN(CURVE, FIELD)												\
 	fp_param_set(FIELD);													\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(a, str, strlen(str), 16);									\
@@ -809,8 +809,8 @@
  * @param[in] CURVE		- the curve parameters to assign.
  * @param[in] FIELD		- the finite field identifier.
  */
-#define ASSIGNK(CURVE, FIELD)												\
-	ASSIGN(CURVE, FIELD);													\
+#define EP_ASSIGNK(CURVE, FIELD)											\
+	EP_ASSIGN(CURVE, FIELD);												\
 	RLC_GET(str, CURVE##_BETA, sizeof(CURVE##_BETA));						\
 	fp_read_str(beta, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));						\
@@ -821,7 +821,7 @@
  *
  * @param[in] CURVE		- the curve parameters to assign.
  */
-#define ASSIGNM(CURVE)														\
+#define EP_ASSIGNM(CURVE)													\
     ep_param_set_ctmap(CURVE##_ISO_A, CURVE##_ISO_B, CURVE##_ISO_XN,		\
 			CURVE##_ISO_XD, CURVE##_ISO_YN, CURVE##_ISO_YD, CURVE##_MAPU)	\
 
@@ -928,7 +928,7 @@ void ep_param_set(int param) {
 		switch (param) {
 #if FP_PRIME == 158
 			case BN_P158:
-				ASSIGN(BN_P158, BN_158);
+				EP_ASSIGN(BN_P158, BN_158);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
@@ -936,55 +936,55 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 160
 			case SECG_P160:
-				ASSIGN(SECG_P160, SECG_160);
+				EP_ASSIGN(SECG_P160, SECG_160);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 160
 			case SECG_K160:
-				ASSIGN(SECG_K160, SECG_160D);
+				EP_ASSIGN(SECG_K160, SECG_160D);
 				endom = 1;
 				break;
 #endif
 #if FP_PRIME == 192
 			case NIST_P192:
-				ASSIGN(NIST_P192, NIST_192);
+				EP_ASSIGN(NIST_P192, NIST_192);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 192
 			case SECG_K192:
-				ASSIGN(SECG_K192, SECG_192);
+				EP_ASSIGN(SECG_K192, SECG_192);
 				endom = 1;
 				break;
 #endif
 #if FP_PRIME == 221
 			case CURVE_22103:
-				ASSIGN(CURVE_22103, PRIME_22103);
+				EP_ASSIGN(CURVE_22103, PRIME_22103);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 224
 			case NIST_P224:
-				ASSIGN(NIST_P224, NIST_224);
+				EP_ASSIGN(NIST_P224, NIST_224);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 224
 			case SECG_K224:
-				ASSIGN(SECG_K224, SECG_224);
+				EP_ASSIGN(SECG_K224, SECG_224);
 				endom = 1;
 				break;
 #endif
 #if FP_PRIME == 226
 			case CURVE_4417:
-				ASSIGN(CURVE_4417, PRIME_22605);
+				EP_ASSIGN(CURVE_4417, PRIME_22605);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 254
 			case BN_P254:
-				ASSIGN(BN_P254, BN_254);
+				EP_ASSIGN(BN_P254, BN_254);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
@@ -992,49 +992,49 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 251
 			case CURVE_1174:
-				ASSIGN(CURVE_1174, PRIME_25109);
+				EP_ASSIGN(CURVE_1174, PRIME_25109);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 255
 			case CURVE_25519:
-				ASSIGN(CURVE_25519, PRIME_25519);
+				EP_ASSIGN(CURVE_25519, PRIME_25519);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 255
 			case TWEEDLEDUM:
-				ASSIGN(TWEEDLEDUM, PRIME_H2ADC);
+				EP_ASSIGN(TWEEDLEDUM, PRIME_H2ADC);
 				endom = 1;
 				break;
 #endif
 #if FP_PRIME == 256
 			case NIST_P256:
-				ASSIGN(NIST_P256, NIST_256);
+				EP_ASSIGN(NIST_P256, NIST_256);
 				plain = 1;
 				break;
 			case BSI_P256:
-				ASSIGN(BSI_P256, BSI_256);
+				EP_ASSIGN(BSI_P256, BSI_256);
 				plain = 1;
 				break;
 			case SM2_P256:
-				ASSIGN(SM2_P256, SM2_256);
+				EP_ASSIGN(SM2_P256, SM2_256);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 256
 			case SECG_K256:
-				ASSIGN(SECG_K256, SECG_256);
+				EP_ASSIGN(SECG_K256, SECG_256);
 				endom = 1;
 				break;
 			case SM9_P256:
-				ASSIGN(SM9_P256, SM9_256);
+				EP_ASSIGN(SM9_P256, SM9_256);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_MTYPE;
 				break;
 			case BN_P256:
-				ASSIGN(BN_P256, BN_256);
+				EP_ASSIGN(BN_P256, BN_256);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
@@ -1042,7 +1042,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 315
 			case B24_P315:
-				ASSIGN(B24_P315, B24_315);
+				EP_ASSIGN(B24_P315, B24_315);
 				endom = 1;
 				pairf = EP_B24;
 				twist = RLC_EP_DTYPE;
@@ -1050,7 +1050,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 317
 			case B24_P317:
-				ASSIGN(B24_P317, B24_317);
+				EP_ASSIGN(B24_P317, B24_317);
 				endom = 1;
 				pairf = EP_B24;
 				twist = RLC_EP_MTYPE;
@@ -1058,7 +1058,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 330
 			case K16_P330:
-				ASSIGN(K16_P330, K16_330);
+				EP_ASSIGN(K16_P330, K16_330);
 				endom = 1;
 				pairf = EP_K16;
 				twist = RLC_EP_MTYPE;
@@ -1066,7 +1066,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 354
 			case K18_P354:
-				ASSIGN(K18_P354, K18_354);
+				EP_ASSIGN(K18_P354, K18_354);
 				endom = 1;
 				pairf = EP_K18;
 				twist = RLC_EP_DTYPE;
@@ -1074,7 +1074,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 377
 			case B12_P377:
-				ASSIGN(B12_P377, B12_377);
+				EP_ASSIGN(B12_P377, B12_377);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_DTYPE;
@@ -1082,9 +1082,9 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 381
 			case B12_P381:
-				ASSIGN(B12_P381, B12_381);
+				EP_ASSIGN(B12_P381, B12_381);
 				endom = 1;
-				ASSIGNM(B12_P381);
+				EP_ASSIGNM(B12_P381);
 				ctmap = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_MTYPE;
@@ -1092,13 +1092,13 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 382
 			case CURVE_67254:
-				ASSIGN(CURVE_67254, PRIME_382105);
+				EP_ASSIGN(CURVE_67254, PRIME_382105);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 382
 			case BN_P382:
-				ASSIGN(BN_P382, BN_382);
+				EP_ASSIGN(BN_P382, BN_382);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
@@ -1106,13 +1106,13 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 383
 			case CURVE_383187:
-				ASSIGN(CURVE_383187, PRIME_383187);
+				EP_ASSIGN(CURVE_383187, PRIME_383187);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 383
 			case B12_P383:
-				ASSIGN(B12_P383, B12_383);
+				EP_ASSIGN(B12_P383, B12_383);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_MTYPE;
@@ -1120,19 +1120,19 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 384
 			case NIST_P384:
-				ASSIGN(NIST_P384, NIST_384);
+				EP_ASSIGN(NIST_P384, NIST_384);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 446
 			case BN_P446:
-				ASSIGN(BN_P446, BN_446);
+				EP_ASSIGN(BN_P446, BN_446);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
 				break;
 			case B12_P446:
-				ASSIGN(B12_P446, B12_446);
+				EP_ASSIGN(B12_P446, B12_446);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_MTYPE;
@@ -1140,7 +1140,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 455
 			case B12_P455:
-				ASSIGN(B12_P455, B12_455);
+				EP_ASSIGN(B12_P455, B12_455);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_DTYPE;
@@ -1148,7 +1148,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 508
 			case K18_P508:
-				ASSIGN(K18_P508, K18_508);
+				EP_ASSIGN(K18_P508, K18_508);
 				endom = 1;
 				pairf = EP_K18;
 				twist = RLC_EP_DTYPE;
@@ -1156,7 +1156,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 509
 			case B24_P509:
-				ASSIGN(B24_P509, B24_509);
+				EP_ASSIGN(B24_P509, B24_509);
 				endom = 1;
 				pairf = EP_B24;
 				twist = RLC_EP_DTYPE;
@@ -1164,7 +1164,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 510
 			case AFG16_P510:
-				ASSIGN(AFG16_P510, AFG16_510);
+				EP_ASSIGN(AFG16_P510, AFG16_510);
 				endom = 1;
 				pairf = EP_AFG16;
 				twist = RLC_EP_DTYPE;
@@ -1172,19 +1172,19 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 511
 			case CURVE_511187:
-				ASSIGN(CURVE_511187, PRIME_511187);
+				EP_ASSIGN(CURVE_511187, PRIME_511187);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 521
 			case NIST_P521:
-				ASSIGN(NIST_P521, NIST_521);
+				EP_ASSIGN(NIST_P521, NIST_521);
 				plain = 1;
 				break;
 #endif
 #if FP_PRIME == 544
 			case GMT8_P544:
-				ASSIGNK(GMT8_P544, GMT8_544);
+				EP_ASSIGNK(GMT8_P544, GMT8_544);
 				endom = 1;
 				pairf = EP_GMT8;
 				twist = RLC_EP_MTYPE;
@@ -1192,7 +1192,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 569
 			case SG54_P569:
-				ASSIGNK(SG54_P569, SG54_569);
+				EP_ASSIGNK(SG54_P569, SG54_569);
 				endom = 1;
 				pairf = EP_SG54;
 				twist = RLC_EP_MTYPE;
@@ -1200,7 +1200,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 575
 			case B48_P575:
-				ASSIGN(B48_P575, B48_575);
+				EP_ASSIGN(B48_P575, B48_575);
 				endom = 1;
 				pairf = EP_B48;
 				twist = RLC_EP_MTYPE;
@@ -1208,25 +1208,25 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 638
 			case BN_P638:
-				ASSIGN(BN_P638, BN_638);
+				EP_ASSIGN(BN_P638, BN_638);
 				endom = 1;
 				pairf = EP_BN;
 				twist = RLC_EP_DTYPE;
 				break;
 			case B12_P638:
-				ASSIGN(B12_P638, B12_638);
+				EP_ASSIGN(B12_P638, B12_638);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_MTYPE;
 				break;
 			case K18_P638:
-				ASSIGN(K18_P638, K18_638);
+				EP_ASSIGN(K18_P638, K18_638);
 				endom = 1;
 				pairf = EP_K18;
 				twist = RLC_EP_MTYPE;
 				break;
 			case SG18_P638:
-				ASSIGN(SG18_P638, SG18_638);
+				EP_ASSIGN(SG18_P638, SG18_638);
 				endom = 1;
 				pairf = EP_SG18;
 				twist = RLC_EP_MTYPE;
@@ -1234,7 +1234,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 765
 			case FM16_P765:
-				ASSIGN(FM16_P765, FM16_765);
+				EP_ASSIGN(FM16_P765, FM16_765);
 				endom = 1;
 				pairf = EP_FM16;
 				twist = RLC_EP_MTYPE;
@@ -1242,13 +1242,13 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 766
 			case K16_P766:
-				ASSIGN(K16_P766, K16_766);
+				EP_ASSIGN(K16_P766, K16_766);
 				endom = 1;
 				pairf = EP_K16;
 				twist = RLC_EP_MTYPE;
 				break;
 			case AFG16_P766:
-				ASSIGN(AFG16_P766, AFG16_766);
+				EP_ASSIGN(AFG16_P766, AFG16_766);
 				endom = 1;
 				pairf = EP_AFG16;
 				twist = RLC_EP_MTYPE;
@@ -1256,7 +1256,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 768
 			case FM18_P768:
-				ASSIGN(FM18_P768, FM18_768);
+				EP_ASSIGN(FM18_P768, FM18_768);
 				endom = 1;
 				pairf = EP_FM18;
 				twist = RLC_EP_MTYPE;
@@ -1264,7 +1264,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 1150
 			case B12_P1150:
-				ASSIGN(B12_P1150, B12_1150);
+				EP_ASSIGN(B12_P1150, B12_1150);
 				endom = 1;
 				pairf = EP_B12;
 				twist = RLC_EP_MTYPE;
@@ -1272,14 +1272,14 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 1536
 			case SS_P1536:
-				ASSIGN(SS_P1536, SS_1536);
+				EP_ASSIGN(SS_P1536, SS_1536);
 				super = 1;
 				pairf = EP_SS2;
 				break;
 #endif
 #if FP_PRIME == 3072
 			case K1_P3072:
-				ASSIGN(K1_P3072, K1_3072);
+				EP_ASSIGN(K1_P3072, K1_3072);
 				plain = 1;
 				pairf = EP_K1;
 				break;

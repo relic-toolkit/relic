@@ -307,7 +307,7 @@ cdecl(fp_muln_low):
 	movq	%rdx, %rcx
 
 	MULM	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi
-	FP_MULM_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0
+	FP_MUL_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0
 
 	addq	$72, %rsp
 	popq	%rbp
@@ -349,7 +349,7 @@ cdecl(fp_mulm_low):
 	movq	%rdx, %rcx
 
 	MULM	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbp, %rbx, %rsi
-	FP_MULM_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbp, %rbx, %rsi, %rax, p0(%rip), 1
+	FP_MUL_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbp, %rbx, %rsi, %rax, p0(%rip), 1
 
 	addq	$72, %rsp
 	popq	%rbp

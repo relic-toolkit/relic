@@ -94,6 +94,7 @@ int fp9_is_sqr(const fp9_t a) {
 		fp9_norm(n, a);
 		r = fp_is_sqr(n);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp_free(n);

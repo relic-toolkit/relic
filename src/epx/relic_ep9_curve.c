@@ -67,7 +67,7 @@
  *
  * @param[in] CURVE		- the curve parameters to assign.
  */
-#define ASSIGN(CURVE)														\
+#define EP9_ASSIGN(CURVE)													\
 	RLC_GET(str, CURVE##_X00, sizeof(CURVE##_X00));							\
 	fp_read_str(g->x[0][0], str, strlen(str), 16);							\
 	RLC_GET(str, CURVE##_X01, sizeof(CURVE##_X01));							\
@@ -108,7 +108,7 @@
 /**
  * Detects an optimization based on the curve coefficients.
  */
-static void detect_opt(int *opt, fp9_t a) {
+static void ep9_detect_opt(int *opt, fp9_t a) {
 	fp9_t t;
 	fp9_null(t);
 
@@ -305,7 +305,7 @@ void ep9_curve_set_twist(int type) {
 		switch (ep_param_get()) {
 #if FP_PRIME == 569
 			case SG54_P569:
-				ASSIGN(SG54_P569);
+				EP9_ASSIGN(SG54_P569);
 				break;
 #endif
 			default:
@@ -329,8 +329,8 @@ void ep9_curve_set_twist(int type) {
 		fp_copy(ctx->ep9_b[0][0], ep_curve_get_b());
 		fp9_mul(ctx->ep9_b, ctx->ep9_b, t);
 
-		detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
-		detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
+		ep9_detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
+		ep9_detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
 
 		ep_curve_get_ord(&(ctx->ep9_r));
 
@@ -384,8 +384,8 @@ void ep9_curve_set(const fp9_t a, const fp9_t b, const ep9_t g,
 	fp9_copy(ctx->ep9_a, a);
 	fp9_copy(ctx->ep9_b, b);
 
-	detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
-	detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
+	ep9_detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
+	ep9_detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
 
 	ep9_norm(ctx->ep9_g, g);
 	bn_copy(&(ctx->ep9_r), r);

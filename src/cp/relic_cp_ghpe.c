@@ -68,6 +68,7 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, size_t bits) {
 		bn_add_dig(q, q, 1);
 		bn_mul(pub, p, q);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(p);

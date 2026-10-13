@@ -149,6 +149,7 @@ int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

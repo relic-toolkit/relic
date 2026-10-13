@@ -96,6 +96,35 @@ static void rsa(void) {
 		BENCH_ADD(cp_rsa_ver(out, out_len, h, RLC_MD_LEN, 1, pub));
 	} BENCH_END;
 
+	BENCH_RUN("cp_rsa_enc (pkcs1)") {
+		out_len = RLC_BN_BITS / 8 + 1;
+		new_len = out_len;
+		rand_bytes(in, sizeof(in));
+		BENCH_ADD(cp_rsa_enc(out, &out_len, in, sizeof(in), pub, pkcs1));
+		cp_rsa_dec(new, &new_len, out, out_len, prv, pkcs1);
+	} BENCH_END;
+
+	BENCH_RUN("cp_rsa_dec (pkcs1)") {
+		out_len = RLC_BN_BITS / 8 + 1;
+		new_len = out_len;
+		rand_bytes(in, sizeof(in));
+		cp_rsa_enc(out, &out_len, in, sizeof(in), pub, pkcs1);
+		BENCH_ADD(cp_rsa_dec(new, &new_len, out, out_len, prv, pkcs1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_rsa_sig (pkcs1)") {
+		out_len = RLC_BN_BITS / 8 + 1;
+		rand_bytes(in, sizeof(in));
+		BENCH_ADD(cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv, pkcs1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_rsa_ver (pkcs1)") {
+		out_len = RLC_BN_BITS / 8 + 1;
+		rand_bytes(in, sizeof(in));
+		cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv, pkcs1);
+		BENCH_ADD(cp_rsa_ver(out, out_len, in, sizeof(in), 0, pub, pkcs1));
+	} BENCH_END;
+
 	rsa_free(pub);
 	rsa_free(prv);
 }

@@ -124,7 +124,7 @@ int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y) {
 		}
 	}
 	RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		bn_free(n);
@@ -252,7 +252,7 @@ int cp_pokor_ver(const bn_t c[2], const bn_t r[2], const ec_t y[2]) {
 		}
 	}
 	RLC_CATCH_ANY {
-		result = RLC_ERR;
+		result = 0;
 	}
 	RLC_FINALLY {
 		bn_free(n);
