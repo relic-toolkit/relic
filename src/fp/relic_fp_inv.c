@@ -155,10 +155,11 @@ static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	/* Choose md and me to clear the low s bits of the sums. */
 	md = (u & sd) + (v & se);
 	me = (q & sd) + (r & se);
-	cd = (dig_t)u * d[0] + (dig_t)v * e[0];
-	ce = (dig_t)q * d[0] + (dig_t)r * e[0];
-	md -= (md - cd * rdc) & RLC_MASK(s);
-	me -= (me - ce * rdc) & RLC_MASK(s);
+	/* The products are taken in dbl_t, since dig_t may be promoted to int. */
+	cd = (dig_t)((dbl_t)(dig_t)u * d[0]) + (dig_t)((dbl_t)(dig_t)v * e[0]);
+	ce = (dig_t)((dbl_t)(dig_t)q * d[0]) + (dig_t)((dbl_t)(dig_t)r * e[0]);
+	md -= (md - (dig_t)((dbl_t)cd * rdc)) & RLC_MASK(s);
+	me -= (me - (dig_t)((dbl_t)ce * rdc)) & RLC_MASK(s);
 
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
