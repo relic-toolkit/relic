@@ -29,10 +29,13 @@
  * @ingroup bn
  */
 
-.text
-.global bn_srsh_low
+#include "relic_bn_low.h"
+#include "macro.s"
 
-bn_srsh_low:
+.text
+.global cdecl(bn_srsh_low)
+
+cdecl(bn_srsh_low):
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10

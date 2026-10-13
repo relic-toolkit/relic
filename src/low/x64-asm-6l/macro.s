@@ -94,6 +94,18 @@
 #define BARS	62
 #endif
 
+
+#if defined(__APPLE__)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
+#else
+#define cdecl(S) S
+#endif
+
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
+#endif
+
 .text
 
 .macro ADD1 i j

@@ -33,15 +33,19 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-.data
+#if defined(__APPLE__)
+.section __TEXT,__const
+#else
+.section .rodata
+#endif
 
+.p2align 3
 p0: .quad P0
 p1: .quad P1
 p2: .quad P2
 p3: .quad P3
 p4: .quad P4
 p5: .quad P5
-u0: .quad U0
 
 .global p0
 .global p1
@@ -49,7 +53,6 @@ u0: .quad U0
 .global p3
 .global p4
 .global p5
-.global u0
 
 #if OPSYS != WINDOWS
 
@@ -64,23 +67,23 @@ u0: .quad U0
 
 .text
 
-.global fp_add1_low
-.global fp_addn_low
-.global fp_addm_low
-.global fp_addd_low
-.global fp_addc_low
-.global fp_sub1_low
-.global fp_subn_low
-.global fp_subm_low
-.global fp_subd_low
-.global fp_subc_low
-.global fp_negm_low
-.global fp_dbln_low
-.global fp_dblm_low
-.global fp_hlvm_low
-.global fp_hlvd_low
+.global cdecl(fp_add1_low)
+.global cdecl(fp_addn_low)
+.global cdecl(fp_addm_low)
+.global cdecl(fp_addd_low)
+.global cdecl(fp_addc_low)
+.global cdecl(fp_sub1_low)
+.global cdecl(fp_subn_low)
+.global cdecl(fp_subm_low)
+.global cdecl(fp_subd_low)
+.global cdecl(fp_subc_low)
+.global cdecl(fp_negm_low)
+.global cdecl(fp_dbln_low)
+.global cdecl(fp_dblm_low)
+.global cdecl(fp_hlvm_low)
+.global cdecl(fp_hlvd_low)
 
-fp_add1_low:
+cdecl(fp_add1_low):
 	xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	addq	%rdx   , %r10
@@ -91,7 +94,7 @@ fp_add1_low:
 
 	ret
 
-fp_addn_low:
+cdecl(fp_addn_low):
 	xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
@@ -103,7 +106,7 @@ fp_addn_low:
 
 	ret
 
-fp_addm_low:
+cdecl(fp_addm_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -156,7 +159,7 @@ fp_addm_low:
 	pop		%rbx
 	ret
 
-fp_addd_low:
+cdecl(fp_addd_low):
 	xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
@@ -167,7 +170,7 @@ fp_addd_low:
 	adcq	$0, %rax
 	ret
 
-fp_addc_low:
+cdecl(fp_addc_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -227,7 +230,7 @@ fp_addc_low:
 	pop	%rbx
 	ret
 
-fp_sub1_low:
+cdecl(fp_sub1_low):
 	xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	subq	%rdx   , %r10
@@ -238,7 +241,7 @@ fp_sub1_low:
 
 	ret
 
-fp_subn_low:
+cdecl(fp_subn_low):
 	xorq	%rax   , %rax
 	movq	0(%rsi), %r11
 	subq	0(%rdx), %r11
@@ -250,7 +253,7 @@ fp_subn_low:
 
 	ret
 
-fp_subm_low:
+cdecl(fp_subm_low):
     push	%rbx
     push	%rbp
     push	%r12
@@ -303,7 +306,7 @@ fp_subm_low:
     pop		%rbx
     ret
 
-fp_subd_low:
+cdecl(fp_subd_low):
 	xorq	%rax, %rax
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -314,7 +317,7 @@ fp_subd_low:
 	adcq	$0, %rax
 	ret
 
-fp_subc_low:
+cdecl(fp_subc_low):
 	xorq    %rax,%rax
 	xorq    %rcx,%rcx
 
@@ -345,7 +348,7 @@ fp_subc_low:
 
 	ret
 
-fp_negm_low:
+cdecl(fp_negm_low):
 	xorq	%r9, %r9
 	xorq	%r10, %r10
 	xorq	%r11, %r11
@@ -379,7 +382,7 @@ fp_negm_low:
 	movq 	%rcx    , 40(%rdi)
 	ret
 
-fp_dbln_low:
+cdecl(fp_dbln_low):
 	xorq	%rax, %rax
 	movq	0(%rsi), %r8
 	addq	%r8    , %r8
@@ -390,7 +393,7 @@ fp_dbln_low:
 	adcq	$0, %rax
 	ret
 
-fp_dblm_low:
+cdecl(fp_dblm_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -448,7 +451,7 @@ fp_dblm_low:
 	pop	%rbx
 	ret
 
-fp_hlvm_low:
+cdecl(fp_hlvm_low):
 	push	%r12
 	push	%r13
 
@@ -503,7 +506,7 @@ fp_hlvm_low:
 	pop		%r12
 	ret
 
-fp_hlvd_low:
+cdecl(fp_hlvd_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
