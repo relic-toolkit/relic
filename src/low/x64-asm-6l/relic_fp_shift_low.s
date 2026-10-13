@@ -44,6 +44,8 @@ fp_rsh1_low:
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
 	movq	40(%rsi), %rcx
+	movq	%r8, %rdx
+	andq	$1, %rdx
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
@@ -56,6 +58,7 @@ fp_rsh1_low:
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
 	movq	%rcx,40(%rdi)
+	movq	%rdx, %rax
 	ret
 
 fp_lsh1_low:
@@ -65,6 +68,8 @@ fp_lsh1_low:
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
 	movq	40(%rsi), %rcx
+	movq	%rcx, %rdx
+	shrq	$63, %rdx
 	shld	$1, %rax, %rcx
 	shld	$1, %r11, %rax
 	shld	$1, %r10, %r11
@@ -77,5 +82,5 @@ fp_lsh1_low:
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
 	movq	%rcx,40(%rdi)
-	xorq	%rax, %rax
+	movq	%rdx, %rax
 	ret

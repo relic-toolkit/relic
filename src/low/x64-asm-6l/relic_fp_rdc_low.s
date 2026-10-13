@@ -48,44 +48,72 @@ fp_rdcn_low:
 	push	%r15
 	push 	%rbx
 
-	movq	0(%rsi),%r8
-	movq	8(%rsi),%r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
-	movq	48(%rsi),%r14
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	// rcx holds the carry into the next word loaded, and CF and OF are
+	// clear before each MULADD.
+	xorq	%rcx, %rcx
 	xorq	%rax, %rax
 
 	movq	$U0, %rdx
-	mulx	%r8, %rdx, %rcx
+	mulx	%r8, %rdx, %r15
 	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
-	movq	56(%rsi),%r8
+	movq	56(%rsi), %r8
+	adcx	%rcx, %r8
 	adox	%rax, %r8
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r9, %rdx, %rcx
-    MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r8, %r15, %rbx, p0(%rip)
-	movq	64(%rsi),%r9
+	mulx	%r9, %rdx, %r15
+	MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r8, %r15, %rbx, p0(%rip)
+	movq	64(%rsi), %r9
+	adcx	%rcx, %r9
 	adox	%rax, %r9
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r10, %rdx, %rcx
-    MULADD	%r10, %r11, %r12, %r13, %r14, %r8, %r9, %r15, %rbx, p0(%rip)
-	movq	72(%rsi),%r10
+	mulx	%r10, %rdx, %r15
+	MULADD	%r10, %r11, %r12, %r13, %r14, %r8, %r9, %r15, %rbx, p0(%rip)
+	movq	72(%rsi), %r10
+	adcx	%rcx, %r10
 	adox	%rax, %r10
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r11, %rdx, %rcx
-    MULADD	%r11, %r12, %r13, %r14, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
-	movq	80(%rsi),%r11
+	mulx	%r11, %rdx, %r15
+	MULADD	%r11, %r12, %r13, %r14, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
+	movq	80(%rsi), %r11
+	adcx	%rcx, %r11
 	adox	%rax, %r11
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r12, %rdx, %rcx
-    MULADD	%r12, %r13, %r14, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
-	movq	88(%rsi),%r12
+	mulx	%r12, %rdx, %r15
+	MULADD	%r12, %r13, %r14, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
+	movq	88(%rsi), %r12
+	adcx	%rcx, %r12
 	adox	%rax, %r12
+	movq	$0, %rcx
+	adcx	%rax, %rcx
+	adox	%rax, %rcx
+
 	movq	$U0, %rdx
-	mulx	%r13, %rdx, %rcx
-    MULADD	%r13, %r14, %r8, %r9, %r10, %r11, %r12, %r15, %rbx, p0(%rip)
-	
+	mulx	%r13, %rdx, %r15
+	MULADD	%r13, %r14, %r8, %r9, %r10, %r11, %r12, %r15, %rbx, p0(%rip)
+
 	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
 
 	pop		%rbx
