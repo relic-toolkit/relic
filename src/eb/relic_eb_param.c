@@ -227,7 +227,7 @@
  * @param[in] CURVE		- the curve parameters to assign.
  * @param[in] FIELD		- the finite field identifier.
  */
-#define ASSIGN(CURVE, FIELD)												\
+#define EB_ASSIGN(CURVE, FIELD)												\
 	fb_param_set(FIELD);													\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fb_read_str(a, str, strlen(str), 16);									\
@@ -271,67 +271,67 @@ void eb_param_set(int param) {
 		switch (param) {
 #if FB_POLYN == 163
 			case NIST_B163:
-				ASSIGN(NIST_B163, NIST_163);
+				EB_ASSIGN(NIST_B163, NIST_163);
 				break;
 #endif
 #if FB_POLYN == 163
 			case NIST_K163:
-				ASSIGN(NIST_K163, NIST_163);
+				EB_ASSIGN(NIST_K163, NIST_163);
 				break;
 #endif
 #if FB_POLYN == 233
 			case NIST_B233:
-				ASSIGN(NIST_B233, NIST_233);
+				EB_ASSIGN(NIST_B233, NIST_233);
 				break;
 #endif
 #if FB_POLYN == 233
 			case NIST_K233:
-				ASSIGN(NIST_K233, NIST_233);
+				EB_ASSIGN(NIST_K233, NIST_233);
 				break;
 #endif
 #if FB_POLYN == 239
 			case SECG_K239:
-				ASSIGN(SECG_K239, SECG_239);
+				EB_ASSIGN(SECG_K239, SECG_239);
 				break;
 #endif
 #if FB_POLYN == 251
 			case EBACS_B251:
-				ASSIGN(EBACS_B251, PENTA_251);
+				EB_ASSIGN(EBACS_B251, PENTA_251);
 				break;
 #endif
 #if FB_POLYN == 257
 			case HALVE_B257:
-				ASSIGN(HALVE_B257, TRINO_257);
+				EB_ASSIGN(HALVE_B257, TRINO_257);
 				break;
 #endif
 #if FB_POLYN == 283
 			case NIST_B283:
-				ASSIGN(NIST_B283, NIST_283);
+				EB_ASSIGN(NIST_B283, NIST_283);
 				break;
 #endif
 #if FB_POLYN == 283
 			case NIST_K283:
-				ASSIGN(NIST_K283, NIST_283);
+				EB_ASSIGN(NIST_K283, NIST_283);
 				break;
 #endif
 #if FB_POLYN == 409
 			case NIST_B409:
-				ASSIGN(NIST_B409, NIST_409);
+				EB_ASSIGN(NIST_B409, NIST_409);
 				break;
 #endif
 #if FB_POLYN == 409
 			case NIST_K409:
-				ASSIGN(NIST_K409, NIST_409);
+				EB_ASSIGN(NIST_K409, NIST_409);
 				break;
 #endif
 #if FB_POLYN == 571
 			case NIST_B571:
-				ASSIGN(NIST_B571, NIST_571);
+				EB_ASSIGN(NIST_B571, NIST_571);
 				break;
 #endif
 #if FB_POLYN == 571
 			case NIST_K571:
-				ASSIGN(NIST_K571, NIST_571);
+				EB_ASSIGN(NIST_K571, NIST_571);
 				break;
 #endif
 			default:

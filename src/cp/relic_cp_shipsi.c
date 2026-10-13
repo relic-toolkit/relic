@@ -32,15 +32,6 @@
 #include "relic.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Statistical security determining collision probability.
- */
-#define STAT_SEC	(40)
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -86,7 +77,7 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
 	for (i = 0; i < m; i++) {
 		bn_write_bin(bin, len, x[i]);
 		md_map(h, bin, len);
-		bn_read_bin(p[i], h, 2 * STAT_SEC / 8);
+		bn_read_bin(p[i], h, 2 * CP_STAT_SEC / 8);
 		if (bn_is_even(p[i])) {
 			bn_add_dig(p[i], p[i], 1);
 		}
@@ -123,7 +114,7 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 		for (j = 0; j < n; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
 			md_map(h, bin, len);
-			bn_read_bin(p, h, 2 * STAT_SEC / 8);
+			bn_read_bin(p, h, 2 * CP_STAT_SEC / 8);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}

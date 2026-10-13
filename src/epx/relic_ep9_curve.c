@@ -67,7 +67,7 @@
  *
  * @param[in] CURVE		- the curve parameters to assign.
  */
-#define ASSIGN(CURVE)														\
+#define EP9_ASSIGN(CURVE)													\
 	RLC_GET(str, CURVE##_X00, sizeof(CURVE##_X00));							\
 	fp_read_str(g->x[0][0], str, strlen(str), 16);							\
 	RLC_GET(str, CURVE##_X01, sizeof(CURVE##_X01));							\
@@ -305,7 +305,7 @@ void ep9_curve_set_twist(int type) {
 		switch (ep_param_get()) {
 #if FP_PRIME == 569
 			case SG54_P569:
-				ASSIGN(SG54_P569);
+				EP9_ASSIGN(SG54_P569);
 				break;
 #endif
 			default:
