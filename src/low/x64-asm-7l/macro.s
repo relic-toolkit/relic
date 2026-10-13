@@ -42,6 +42,9 @@
 #define P5 0x200fc34965aad640
 #define P6 0x3cdee0fb28c5e535
 #define U0 0xcd63fd900035fffd
+#define BAR	0x86949D39F3509105
+#define BARS	61
+#define BARJ	6
 #else
 #define P0	0x0000132000000067
 #define P1	0x0057C00000015C00
@@ -51,6 +54,9 @@
 #define P5	0x002400000002D000
 #define P6	0x2400000000000000
 #define U0	0x6BD6C9022CBCE4A9
+#define BAR	0xE38E38E38E38E38E
+#define BARS	61
+#define BARJ	6
 #endif
 
 .text

@@ -42,6 +42,9 @@
 #define P7 0x9299f1c803ddd5d7
 #define P8 0x00000000bb9dfd54
 #define U0 0x9935f6572883d30f
+#define BAR	0xAEA74ECCD65CD043
+#define BARS	31
+#define BARJ	8
 
 #define _P0 0x85E1441100000000
 #define _P1 0xC6F4B6B645A58C10

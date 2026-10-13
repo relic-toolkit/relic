@@ -68,6 +68,8 @@ static void detect_opt(int *opt, dig_t *d, fp_t a) {
 			*opt = RLC_ONE;
 		} else if (fp_cmp_dig(a, 2) == RLC_EQ) {
 			*opt = RLC_TWO;
+		} else if (bn_bits(u) <= RLC_DIG && (u->dp[0] & (u->dp[0] - 1)) == 0) {
+			*opt = RLC_POW2;
 		} else if (bn_bits(u) <= RLC_DIG) {
 			*opt = RLC_TINY;
 		} else {
@@ -343,31 +345,15 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 		case RLC_TWO:
 			fp_dbl(c, a);
 			break;
-		case RLC_TINY:
-			if (ctx->ep_b_dig < 8) {
-				/* At most four doublings and additions for 3 <= b < 8,
-				 * copying a to a digit vector to avoid allocating when b
-				 * is not a power of two. */
-				dig_t t[RLC_FP_DIGS];
-
-				if (ctx->ep_b_dig & (ctx->ep_b_dig - 1)) {
-					dv_copy(t, a, RLC_FP_DIGS);
-				}
-				fp_dbl(c, a);
-				for (int i = util_bits_dig(ctx->ep_b_dig) - 2; i >= 0; i--) {
-					if ((ctx->ep_b_dig >> i) & 1) {
-						fp_add(c, c, t);
-					}
-					if (i > 0) {
-						fp_dbl(c, c);
-					}
-				}
-				break;
+		case RLC_POW2:
+			fp_dbl(c, a);
+			for (dig_t d = ctx->ep_b_dig >> 2; d != 0; d >>= 1) {
+				fp_dbl(c, c);
 			}
-#if FP_RDC != MONTY
+			break;
+		case RLC_TINY:
 			fp_mul_dig(c, a, ctx->ep_b_dig);
 			break;
-#endif
 		default:
 			fp_mul(c, a, ctx->ep_b);
 			break;

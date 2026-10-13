@@ -250,15 +250,14 @@ dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits);
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit);
 
 /**
- * Multiplies a digit vector by a digit and stores this result in another digit
- * vector. Computes c = a * digit.
+ * Multiplies a digit vector by a digit with modular reduction, in constant
+ * time. Computes c = (a * digit) mod p for digit < 2^(RLC_DIG - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to multiply.
  * @param[in] digit			- the digit to multiply.
- * @return the most significant digit.
  */
-dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit);
+void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit);
 
 /**
  * Multiplies two digit vectors of the same size. Computes c = a * b.

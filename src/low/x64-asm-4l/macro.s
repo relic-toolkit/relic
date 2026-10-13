@@ -38,6 +38,9 @@
 #define P2 $0xBA344D8000000008
 #define P3 $0x2523648240000001
 #define U0 $0x08435E50D79435E5
+#define BAR	$0xDC94C9081275E672
+#define BARS	61
+#define BARJ	3
 
 #elif FP_PRIME == 255
 
@@ -46,6 +49,9 @@
 #define P2 $0xFFFFFFFFFFFFFFFF
 #define P3 $0x7FFFFFFFFFFFFFFF
 #define U0 $0x86BCA1AF286BCA1B
+#define BAR	$0x8000000000000000
+#define BARS	62
+#define BARJ	3
 
 #endif
 
