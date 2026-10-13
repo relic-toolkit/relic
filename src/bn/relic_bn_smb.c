@@ -41,7 +41,8 @@ int bn_smb_leg(const bn_t a, const bn_t b) {
 
 	bn_null(t);
 
-	if (bn_sign(b) == RLC_NEG) {
+	/* The Legendre symbol is defined for odd primes. */
+	if (bn_sign(b) == RLC_NEG || bn_is_even(b)) {
 		RLC_THROW(ERR_NO_VALID);
 		return 0;
 	}
@@ -89,8 +90,8 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	/* Optimized Pornin's Algorithm by Aleksei Vambol from
 	 * https://github.com/privacy-scaling-explorations/halo2curves/pull/95 */
 
-	/* Argument b must be odd for Jacobi symbol. */
-	if (bn_is_even(b)) {
+	/* Argument b must be positive and odd for Jacobi symbol. */
+	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
 		return 0;
 	}

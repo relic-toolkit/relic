@@ -45,8 +45,12 @@ int bn_factor(bn_t c, const bn_t a) {
 	result = 1;
 
 	if (bn_is_even(a)) {
-		bn_set_dig(c, 2);
-		return 1;
+		/* A factor must be smaller than a, as in the odd case. */
+		if (bn_cmp_dig(a, 2) == RLC_GT) {
+			bn_set_dig(c, 2);
+			return 1;
+		}
+		return 0;
 	}
 
 	RLC_TRY {
@@ -86,6 +90,10 @@ int bn_is_factor(bn_t c, const bn_t a) {
 
 	bn_null(t);
 	result = 1;
+
+	if (bn_is_zero(c)) {
+		return 0;
+	}
 
 	RLC_TRY {
 		bn_new(t);

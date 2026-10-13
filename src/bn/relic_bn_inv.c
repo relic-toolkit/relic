@@ -41,6 +41,11 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null_all(t, u);
 
+	if (bn_sign(b) == RLC_NEG || bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new_all(t, u);
 

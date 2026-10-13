@@ -135,7 +135,7 @@ typedef __uint128_t dbl_t;
 #else
 #define RLC_MUL_DIG(H, L, A, B)												\
 	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
-	L = (A) * (B);															\
+	L = (dig_t)((dbl_t)(A) * (dbl_t)(B));									\
 
 #endif
 

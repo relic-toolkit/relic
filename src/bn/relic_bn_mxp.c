@@ -84,7 +84,8 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod_monty_conv(t, a, m);
 		}
 #else
-		bn_copy(t, a);
+		/* The reductions below expect an operand in [0, m). */
+		bn_mod_basic(t, a, m);
 #endif
 
 		bn_copy(r, t);
@@ -194,7 +195,8 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #if BN_MOD == MONTY
 		bn_mod_monty_conv(t, a, m);
 #else /* BN_MOD == BARRT || BN_MOD == RADIX */
-		bn_copy(t, a);
+		/* The reductions below expect an operand in [0, m). */
+		bn_mod_basic(t, a, m);
 #endif
 
 		bn_copy(tab[0], t);
@@ -293,8 +295,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		dv_zero(tab[0]->dp + tab[0]->used, sm - tab[0]->used);
 		dv_zero(tab[1]->dp + tab[1]->used, sm - tab[1]->used);
 
-		for (i = bn_bits(b) - 1; i >= 0; i--) {
-			j = bn_get_bit(b, i);
+		/* Run over all digits of b and read its bits without branching, so
+		 * that only the number of digits is revealed. Leading zeros leave
+		 * the ladder unchanged. */
+		for (i = RLC_DIG * b->used - 1; i >= 0; i--) {
+			j = (b->dp[i / RLC_DIG] >> (i % RLC_DIG)) & 1;
 			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
 			bn_muln_low(t->dp, tab[0]->dp, tab[1]->dp, sm);
 			bn_modn_low(tab[0]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
@@ -303,10 +308,17 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
 		}
 
+		/* Convert back by reducing tab[0] < R, which leaves a value of at
+		 * most m, then subtract m in constant time if it is not smaller. */
+		dv_copy(t->dp, tab[0]->dp, sm);
+		dv_zero(t->dp + sm, sm);
+		bn_modn_low(tab[1]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
+		j = bn_subn_low(tab[0]->dp, tab[1]->dp, m->dp, sm);
+		dv_copy_sec(tab[0]->dp, tab[1]->dp, sm, j);
 		tab[0]->used = sm;
 		tab[0]->sign = RLC_POS;
 		bn_trim(tab[0]);
-		bn_mod_monty_back(u, tab[0], m);
+		bn_copy(u, tab[0]);
 #else
 		bn_set_dig(tab[0], 1);
 		bn_mod(tab[1], a, m);
@@ -373,7 +385,8 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		sm = m->used;
 		bn_grow(u, sm);
-		bn_mod_pre(u, m);
+		/* The low level takes the Montgomery constant whatever BN_MOD is. */
+		bn_mod_pre_monty(u, m);
 		bn_mod(t, a, m);
 		dv_zero(t->dp + t->used, sm - t->used);
 
@@ -485,8 +498,8 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 }
 
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
-	int i, l;
-	bn_t t, u;
+	int i, l, even;
+	bn_t r, t, u;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -498,39 +511,59 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null_all(t, u);
+	bn_null_all(r, t, u);
+
+	/* As in bn_mxp_basic(), an even modulus is reduced by division. */
+	even = bn_is_even(m);
 
 	RLC_TRY {
-		bn_new_all(t, u);
+		bn_new_all(r, t, u);
 
-		bn_mod_pre(u, m);
+		if (!even) {
+			bn_mod_pre(u, m);
+		}
 
 		l = util_bits_dig(b);
 
 #if BN_MOD == MONTY
-		bn_mod_monty_conv(t, a, m);
+		if (even) {
+			bn_mod_basic(t, a, m);
+		} else {
+			bn_mod_monty_conv(t, a, m);
+		}
 #else
-		bn_copy(t, a);
+		bn_mod_basic(t, a, m);
 #endif
 
-		bn_copy(c, t);
+		bn_copy(r, t);
 		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(c, c);
-			bn_mod(c, c, m, u);
+			bn_sqr(r, r);
+			if (even) {
+				bn_mod_basic(r, r, m);
+			} else {
+				bn_mod(r, r, m, u);
+			}
 			if (b & ((dig_t)1 << i)) {
-				bn_mul(c, c, t);
-				bn_mod(c, c, m, u);
+				bn_mul(r, r, t);
+				if (even) {
+					bn_mod_basic(r, r, m);
+				} else {
+					bn_mod(r, r, m, u);
+				}
 			}
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, c, m);
+		if (!even) {
+			bn_mod_monty_back(r, r, m);
+		}
 #endif
-		/* Exponent is unsigned, so no need to invert if negative. */
+		/* Write c last, since it may alias m. The exponent is unsigned. */
+		bn_copy(c, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(t, u);
+		bn_free_all(r, t, u);
 	}
 }

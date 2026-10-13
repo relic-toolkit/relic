@@ -147,18 +147,19 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 				bn_copy(d, pr);
 			}
 		} else if (ceil) {
-			if (c != NULL) {
-				bn_add_dig(c, pq, 1);
-			}
+			/* The remainder reads b, which c may alias, so it comes first. */
 			if (d != NULL) {
 				bn_sub(d, pr, b);
 			}
-		} else {
 			if (c != NULL) {
-				bn_sub_dig(c, pq, 1);
+				bn_add_dig(c, pq, 1);
 			}
+		} else {
 			if (d != NULL) {
 				bn_add(d, pr, b);
+			}
+			if (c != NULL) {
+				bn_sub_dig(c, pq, 1);
 			}
 		}
 	}

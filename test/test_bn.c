@@ -215,6 +215,11 @@ static int util(void) {
 			TEST_ASSERT(bn_get_bit(a, bits) == 1, end);
 			bn_set_bit(a, bits, 0);
 			TEST_ASSERT(bn_get_bit(a, bits) == 0, end);
+			/* Digits between the old and the new top are cleared. */
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_set_dig(a, 1);
+			bn_set_bit(a, RLC_BN_BITS - 1, 1);
+			TEST_ASSERT(bn_ham(a) == 2 && bn_bits(a) == RLC_BN_BITS, end);
 			bits = (bits + 1) % RLC_BN_BITS;
 		}
 		TEST_END;
@@ -245,6 +250,17 @@ static int util(void) {
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_GT, end);
+		}
+		TEST_END;
+
+		TEST_CASE("generating a random integer modulo one fails") {
+			bn_set_dig(b, 1);
+			err_get_code();
+			RLC_TRY {
+				bn_rand_mod(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -342,6 +358,23 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bn_read_raw(b, raw, 0);
 			TEST_ASSERT(bn_is_zero(b), end);
+			/* Radix 36 is case insensitive. */
+			bits = bn_size_str(a, 36);
+			bn_write_str(str, bits, a, 36);
+			for (size_t j = 0; j < bits; j++) {
+				if (str[j] >= 'A' && str[j] <= 'Z') {
+					str[j] = (char)(str[j] - 'A' + 'a');
+				}
+			}
+			bn_read_str(b, str, bits, 36);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* Invalid digits are rejected. */
+			err_get_code();
+			RLC_TRY {
+				bn_read_str(b, "12x4", 4, 10);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
@@ -431,7 +464,24 @@ static int addition(void) {
 			bn_neg(d, a);
 			bn_add(e, a, d);
 			TEST_ASSERT(bn_is_zero(e), end);
+			/* Zero can't be negative. */
+			TEST_ASSERT(bn_sign(e) == RLC_POS, end);
+			bn_add(e, d, a);
+			TEST_ASSERT(bn_is_zero(e) && bn_sign(e) == RLC_POS, end);
 		} TEST_END;
+
+#if ALLOC == DYNAMIC
+		TEST_CASE("addition of a digit grows the result") {
+			/* The input is longer than a fresh result. */
+			bn_set_dig(d, 1);
+			bn_lsh(d, d, 3 * RLC_BN_BITS);
+			bn_sub_dig(a, d, 1);
+			bn_free(e);
+			bn_new(e);
+			bn_add_dig(e, a, 1);
+			TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -477,6 +527,10 @@ static int subtraction(void) {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_sub(c, a, a);
 			TEST_ASSERT(bn_is_zero(c), end);
+			/* Zero can't be negative. */
+			bn_neg(b, a);
+			bn_sub(c, b, b);
+			TEST_ASSERT(bn_is_zero(c) && bn_sign(c) == RLC_POS, end);
 		}
 		TEST_END;
 	}
@@ -773,6 +827,23 @@ static int shifting(void) {
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("shifting a negative number rounds down") {
+			/* Check that b * 2^k <= a < (b + 1) * 2^k for b = a >> k. */
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - RLC_DIG - 1);
+			for (uint_t k = 1; k <= 2 * RLC_DIG; k += RLC_DIG / 2) {
+				bn_rsh(b, a, k);
+				bn_lsh(c, b, k);
+				TEST_ASSERT(bn_cmp(c, a) != RLC_GT, end);
+				bn_add_dig(b, b, 1);
+				bn_lsh(c, b, k);
+				TEST_ASSERT(bn_cmp(c, a) == RLC_GT, end);
+			}
+			bn_set_dig(a, 1);
+			bn_neg(a, a);
+			bn_rsh(b, a, RLC_DIG);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("shifting by 2 bits is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 2);
 			bn_lsh(b, a, 2);
@@ -936,6 +1007,25 @@ static int division(void) {
 			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
 			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
+		} TEST_END;
+
+		TEST_CASE("division into the divisor is correct") {
+			for (int k = 0; k < 4; k++) {
+				bn_rand(a, (k & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS);
+				bn_rand(b, (k & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				/* The quotient overwrites the divisor. */
+				bn_div_rem(c, d, a, b);
+				bn_copy(e, b);
+				bn_div_rem(e, b, a, e);
+				TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+				TEST_ASSERT(bn_cmp(d, b) == RLC_EQ, end);
+				bn_rand(b, (k & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				bn_div_rem_rup(c, d, a, b);
+				bn_copy(e, b);
+				bn_div_rem_rup(e, b, a, e);
+				TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+				TEST_ASSERT(bn_cmp(d, b) == RLC_EQ, end);
+			}
 		} TEST_END;
 
 		TEST_CASE("rounded up division is correct") {
@@ -1105,6 +1195,16 @@ static int reduction(void) {
 				bn_mod_barrt(e, a, b, c);
 				bn_sub(e, b, e);
 				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				/* Negative values below the modulus are also reduced. */
+				bn_rand(a, RLC_NEG, bn_bits(b) - 1);
+				bn_mod_barrt(e, a, b, c);
+				bn_add(d, a, b);
+				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				/* Negative multiples of the modulus reduce to zero. */
+				bn_mul_dig(a, b, 3);
+				bn_neg(a, a);
+				bn_mod_barrt(e, a, b, c);
+				TEST_ASSERT(bn_is_zero(e), end);
 			}
 		}
 		TEST_END;
@@ -1115,6 +1215,14 @@ static int reduction(void) {
 				RLC_BN_BITS / 2, RLC_BN_BITS - 1, RLC_BN_BITS + RLC_DIG };
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			for (int k = 0; k < (int)(sizeof(exps) / sizeof(exps[0])); k++) {
+				bn_mod_2b(c, a, exps[k]);
+				bn_set_2b(d, exps[k]);
+				bn_mod(d, a, d);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
+			/* The result is nonnegative for a negative input. */
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - RLC_DIG);
+			for (int k = 1; k < 7; k++) {
 				bn_mod_2b(c, a, exps[k]);
 				bn_set_2b(d, exps[k]);
 				bn_mod(d, a, d);
@@ -1153,6 +1261,14 @@ static int reduction(void) {
 			bn_mod_monty_basic(d, c, b, e);
 			bn_add(a, a, b);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			/* Inputs that are negative or above m * R are reduced first. */
+			for (int k = 0; k < 2; k++) {
+				bn_rand(a, k ? RLC_POS : RLC_NEG, 2 * b->used * RLC_DIG);
+				bn_mod_monty_basic(c, a, b, e);
+				bn_mod(a, a, b);
+				bn_mod_monty_basic(d, a, b, e);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 
@@ -1172,6 +1288,14 @@ static int reduction(void) {
 			bn_mod_monty_comba(d, c, b, e);
 			bn_add(a, a, b);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			/* Inputs that are negative or above m * R are reduced first. */
+			for (int k = 0; k < 2; k++) {
+				bn_rand(a, k ? RLC_POS : RLC_NEG, 2 * b->used * RLC_DIG);
+				bn_mod_monty_comba(c, a, b, e);
+				bn_mod(a, a, b);
+				bn_mod_monty_comba(d, a, b, e);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 #endif
@@ -1194,6 +1318,11 @@ static int reduction(void) {
 			bn_mod(c, a, b);
 			bn_mod_pmers(d, a, b, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* Negative multiples of the modulus reduce to zero. */
+			bn_mul_dig(a, b, 2);
+			bn_neg(a, a);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_is_zero(d), end);
 		}
 		TEST_END;
 #endif
@@ -1244,6 +1373,40 @@ static int exponentiation(void) {
 			bn_mod(a, a, p);
 			bn_mxp(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("modular exponentiation reduces the base") {
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_set_dig(b, 1);
+			bn_mxp(c, a, b, p);
+			bn_mod(a, a, p);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_mxp_dig(c, a, 1, p);
+			bn_mod(a, a, p);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("modular exponentiation by a digit is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_set_dig(b, 251);
+			bn_mxp(t[0], a, b, p);
+			/* The result may alias the modulus. */
+			bn_copy(c, p);
+			bn_mxp_dig(c, a, 251, c);
+			TEST_ASSERT(bn_cmp(t[0], c) == RLC_EQ, end);
+			/* An even modulus is also supported. */
+			bn_add_dig(t[1], p, 1);
+			bn_mxp_dig(c, a, 5, t[1]);
+			bn_mod(t[2], a, t[1]);
+			bn_copy(t[3], t[2]);
+			for (int k = 1; k < 5; k++) {
+				bn_mul(t[3], t[3], t[2]);
+				bn_mod(t[3], t[3], t[1]);
+			}
+			TEST_ASSERT(bn_cmp(t[3], c) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1337,6 +1500,27 @@ static int exponentiation(void) {
         }
         TEST_END;
 
+		TEST_CASE("simultaneous modular exponentiation handles edge cases") {
+			/* No exponents give one. */
+			bn_mxp_sim_few(c, t, u, p, 0);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_rand_mod(t[0], p);
+			bn_rand_mod(t[1], p);
+			bn_rand_mod(u[0], p);
+			bn_rand_mod(u[1], p);
+			/* A negative exponent is a power of the inverse. */
+			bn_neg(u[0], u[0]);
+			bn_mxp(a, t[0], u[0], p);
+			bn_mxp(b, t[1], u[1], p);
+			bn_mul(a, a, b);
+			bn_mod(a, a, p);
+			/* The result may alias the modulus. */
+			bn_copy(c, p);
+			bn_mxp_sim_few(c, t, u, c, 2);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
+
 		TEST_CASE("simultaneous many modular exponentiation is correct") {
             bn_mxp_sim_lot(a, t, u, p, 16);
             bn_mxp(b, t[0], u[0], p);
@@ -1412,6 +1596,19 @@ static int square_root(void) {
 				bn_sqr(c, b);
 				TEST_ASSERT(bn_cmp(c, a) != RLC_GT, end);
 			}
+		}
+		TEST_END;
+
+		TEST_ONCE("square root of a negative number fails") {
+			bn_set_dig(a, 4);
+			bn_neg(a, a);
+			bn_set_dig(b, 7);
+			err_get_code();
+			RLC_TRY {
+				bn_srt(b, a);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -1749,6 +1946,68 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
+#if !defined(STRIP)
+		TEST_CASE("extended greatest common divisor handles edge cases") {
+			void (*ext[])(bn_t, bn_t, bn_t, const bn_t, const bn_t) = {
+				bn_gcd_ext_basic, bn_gcd_ext_binar, bn_gcd_ext_lehme
+			};
+			for (int k = 0; k < 3; k++) {
+				for (int s = 0; s < 20; s++) {
+					bn_rand(b, (s & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 4);
+					switch (s / 4) {
+						case 0:
+							bn_rand(a, RLC_POS, RLC_BN_BITS / 4);
+							break;
+						case 1:
+							/* The second operand divides the first. */
+							bn_mul_dig(a, b, 3);
+							break;
+						case 2:
+							bn_copy(a, b);
+							break;
+						case 3:
+							bn_neg(a, b);
+							break;
+						default:
+							/* The first operand divides the second. */
+							bn_mul_dig(a, b, 2);
+							bn_copy(f, a);
+							bn_copy(a, b);
+							bn_neg(b, f);
+							break;
+					}
+					if (s & 2) {
+						bn_neg(a, a);
+					}
+					bn_gcd(l, a, b);
+					ext[k](c, d, e, a, b);
+					bn_mul(f, a, d);
+					bn_mul(g, b, e);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(c, l) == RLC_EQ, end);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					/* The outputs may alias the inputs. */
+					bn_copy(h, a);
+					ext[k](c, h, e, h, b);
+					bn_mul(f, a, h);
+					bn_mul(g, b, e);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					bn_copy(h, b);
+					ext[k](c, d, h, a, h);
+					bn_mul(f, a, d);
+					bn_mul(g, b, h);
+					bn_add(f, f, g);
+					TEST_ASSERT(bn_cmp(f, l) == RLC_EQ, end);
+					bn_copy(h, a);
+					ext[k](h, d, e, h, b);
+					TEST_ASSERT(bn_cmp(h, l) == RLC_EQ, end);
+				}
+			}
+		}
+		TEST_END;
+#endif
+
 		TEST_CASE("midway extended greatest common divisor is correct") {
 			for (int k = 0; k < 3; k++) {
 				bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1823,6 +2082,10 @@ static int lcm(void) {
 			bn_mod(a, c, a);
 			bn_mod(b, c, b);
 			TEST_ASSERT(bn_is_zero(a) && bn_is_zero(b), end);
+			/* The multiple of zero is zero. */
+			bn_zero(a);
+			bn_lcm(c, a, a);
+			TEST_ASSERT(bn_is_zero(c), end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1919,6 +2182,26 @@ static int symbol(void) {
 			}
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("symbols reject invalid moduli") {
+			bn_set_dig(a, 1);
+			bn_set_dig(b, 2);
+			err_get_code();
+			RLC_TRY {
+				bn_smb_leg(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			bn_set_dig(b, 7);
+			bn_neg(b, b);
+			err_get_code();
+			RLC_TRY {
+				bn_smb_jac(a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		}
+		TEST_END;
 
 		TEST_CASE("jacobi symbol is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -2154,6 +2437,16 @@ static int digit(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* A negative operand gets a negated cofactor. */
+			bn_neg(a, a);
+			bn_gcd_ext_dig(c, d, e, a, g);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* The first cofactor can be omitted. */
+			bn_gcd_ext_dig(d, NULL, e, a, g);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2217,6 +2510,7 @@ static int prime(void) {
 			/* Safe primes are rare, so keep the search size moderate. */
 			bn_gen_prime_safep(p, RLC_BN_BITS / 4);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
 			bn_sub_dig(p, p, 1);
 			bn_hlv(p, p);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
@@ -2224,7 +2518,26 @@ static int prime(void) {
 
 		TEST_ONCE("strong prime generation is consistent") {
 			/* Strong primes need several prime searches, so keep them smaller. */
-			bn_gen_prime_stron(p, RLC_BN_BITS / 4);
+			bn_gen_prime_stron(p, RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG));
+			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			TEST_ASSERT(bn_bits(p) == RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG), end);
+		} TEST_END;
+
+		TEST_ONCE("prime generation with a close prime factor terminates") {
+			for (int k = 1; k <= 2; k++) {
+				bn_gen_prime_factor(q, p, 30, 30 + k);
+				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
+				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
+				bn_sub_dig(p, p, 1);
+				bn_mod(p, p, q);
+				TEST_ASSERT(bn_is_zero(p), end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("hashing to prime near the end of the counter is consistent") {
+			rand_bytes(msg, sizeof(msg));
+			TEST_ASSERT(bn_map_prime(p, NULL, msg, sizeof(msg), RLC_BN_BITS / 4,
+				0xFFFFFFF0, NULL, 0) == RLC_OK, end);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 		bn_gen_prime(p, RLC_BN_BITS);
@@ -2399,6 +2712,14 @@ static int inversion(void) {
 			bn_mod(c, c, a);
 			TEST_ASSERT(bn_cmp_dig(b, 1) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			/* The modulus must be positive. */
+			bn_neg(c, a);
+			err_get_code();
+			RLC_TRY {
+				bn_mod_inv(b, b, c);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 
 		do {
@@ -2448,6 +2769,11 @@ static int factor(void) {
 			} else {
 				TEST_ASSERT(bn_is_factor(p, n) == 1, end);
 			}
+			/* Zero divides nothing, and two has no proper factor. */
+			bn_zero(q);
+			TEST_ASSERT(bn_is_factor(q, n) == 0, end);
+			bn_set_dig(n, 2);
+			TEST_ASSERT(bn_factor(q, n) == 0, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2498,6 +2824,10 @@ static int interpolation(void) {
 			bn_rand_mod(x, b);
 			bn_evl(y, c, x, b, n + 1);
 			TEST_ASSERT(!bn_is_zero(y), end);
+			/* With a single root, the constant term is also reduced. */
+			bn_zero(a[0]);
+			bn_lag(c, a, b, 1);
+			TEST_ASSERT(bn_is_zero(c[0]) && bn_cmp_dig(c[1], 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2546,6 +2876,15 @@ static int recoding(void) {
 				}
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
+			/* Integers shorter than a window take one window, as does zero. */
+			bn_set_dig(a, 1);
+			l = 1;
+			bn_rec_win(d, &l, a, 4);
+			TEST_ASSERT(l == 1 && d[0] == 1, end);
+			bn_zero(a);
+			l = 1;
+			bn_rec_win(d, &l, a, 4);
+			TEST_ASSERT(l == 1 && d[0] == 0, end);
 		} TEST_END;
 
 		TEST_CASE("sliding window recoding is correct") {
@@ -2594,7 +2933,7 @@ static int recoding(void) {
 					int8_t tnaf[RLC_FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					bn_rand_mod(a, v1[2]);
-					l = RLC_FB_BITS + 1;
+					l = sizeof(tnaf);
 					bn_rec_tnaf_mod(v1[0], v1[1], a, u, RLC_FB_BITS);
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
 					bn_rec_tnaf(tnaf, &l, a, u, RLC_FB_BITS, w);
@@ -2656,7 +2995,7 @@ static int recoding(void) {
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					do {
 						bn_rand_mod(a, v1[2]);
-						l = RLC_FB_BITS + 1;
+						l = sizeof(tnaf);
 						bn_rec_tnaf_mod(v1[0], v1[1], a, u, RLC_FB_BITS);
 					} while (bn_is_even(v1[0]) || bn_is_even(v1[1]));
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
@@ -2734,6 +3073,15 @@ static int recoding(void) {
 				}
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
+			/* Integers that do not fit the digits are rejected. */
+			bn_set_2b(a, RLC_BN_BITS / 2 + 2 * RLC_DIG);
+			l = RLC_BN_BITS + 1;
+			err_get_code();
+			RLC_TRY {
+				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
 		TEST_CASE("jsf recoding is correct") {
@@ -2758,6 +3106,16 @@ static int recoding(void) {
 				}
 			}
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* The capacity depends on the longer of the two integers. */
+			bn_set_dig(a, 1);
+			bn_rand(b, RLC_POS, RLC_DIG);
+			l = 3;
+			err_get_code();
+			RLC_TRY {
+				bn_rec_jsf(e, &l, a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
 		TEST_CASE("frobenius recoding is correct") {

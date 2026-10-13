@@ -128,7 +128,27 @@ void bn_grow(bn_t a, size_t digits) {
         }
 		/* At least add RLC_BN_SIZE more digits. */
 		digits += pad;
+#if ALIGN == 1
 		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
+#else
+		/* The realloc() function does not keep the alignment of the memory
+		 * allocated in bn_make(), so allocate, copy and free instead. */
+#if OPSYS == WINDOWS
+		t = _aligned_malloc(digits * sizeof(dig_t), ALIGN);
+#else
+		if (posix_memalign((void **)&t, ALIGN, digits * sizeof(dig_t)) != 0) {
+			t = NULL;
+		}
+#endif
+		if (t != NULL && a->dp != NULL) {
+			dv_copy(t, a->dp, a->alloc);
+#if OPSYS == WINDOWS
+			_aligned_free(a->dp);
+#else
+			free(a->dp);
+#endif
+		}
+#endif
 		if (t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 			return;

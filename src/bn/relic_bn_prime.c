@@ -558,19 +558,30 @@ void bn_gen_prime_basic(bn_t a, size_t bits) {
 }
 
 void bn_gen_prime_safep(bn_t a, size_t bits) {
+	/* The smallest safe prime, 5, has three bits. */
+	if (bits < 3) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	while (1) {
 		do {
 			bn_rand(a, RLC_POS, bits);
 		} while (bn_bits(a) != bits);
-		/* Check if (a - 1)/2 is prime. */
-		bn_sub_dig(a, a, 1);
+		/* Make a = 3 mod 4, so that (a - 1)/2 is odd and a keeps its length
+		 * when rebuilt below. */
+		bn_set_bit(a, 0, 1);
+		bn_set_bit(a, 1, 1);
+		/* Trial divide both a and (a - 1)/2 before any expensive test. */
+		if (!bn_is_prime_basic(a)) {
+			continue;
+		}
 		bn_rsh(a, a, 1);
-		if (bn_is_prime(a)) {
+		if (bn_is_prime_basic(a) && bn_is_prime(a)) {
 			/* Restore a. */
 			bn_lsh(a, a, 1);
 			bn_add_dig(a, a, 1);
 			if (bn_is_prime(a)) {
-				/* Should be prime now. */
 				return;
 			}
 		}
@@ -582,17 +593,24 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 	int found, k;
 	bn_t r, s, t;
 
+	/* The auxiliary primes need a few bits more than half a digit. */
+	if (bits < RLC_DIG + 6) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_null_all(r, s, t);
 
 	RLC_TRY {
 		bn_new_all(r, s, t);
 
 		do {
-			do {
-				/* Generate two large primes r and s. */
-				bn_rand(s, RLC_POS, bits / 2 - RLC_DIG / 2);
-				bn_rand(t, RLC_POS, bits / 2 - RLC_DIG / 2);
-			} while (!bn_is_prime(s) || !bn_is_prime(t));
+			/* Generate two large primes s and t, each on its own, since
+			 * retrying both until both are prime squares the number of
+			 * candidates. The basic method avoids recursing through
+			 * bn_gen_prime() when it selects this function. */
+			bn_gen_prime_basic(s, bits / 2 - RLC_DIG / 2);
+			bn_gen_prime_basic(t, bits / 2 - RLC_DIG / 2);
 			found = 1;
 			bn_rand(a, RLC_POS, bits / 2 - bn_bits(t) - 1);
 			i = a->dp[0];
@@ -634,7 +652,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 					break;
 				}
 			} while (!bn_is_prime(a));
-		} while (found == 0 && bn_bits(a) != bits);
+		} while (found == 0 || bn_bits(a) != bits);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -645,33 +663,49 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 }
 
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
-	bn_t t, u;
-	int result = RLC_OK;
+	bn_t lo, hi, u;
+	int found = 0, result = RLC_OK;
 
 	if (!(bbits > abits)) {
 		return RLC_ERR;
 	}
 
-	bn_null_all(t, u);
+	bn_null_all(lo, hi, u);
 
 	RLC_TRY {
-		bn_new_all(t, u);
+		bn_new_all(lo, hi, u);
 
-		bn_gen_prime(a, abits);
-		bn_set_dig(t, 1);
-		bn_lsh(t, t, bbits - bn_bits(a) - 1);
-		do {
-			bn_rand(u, RLC_POS, bbits - bn_bits(a) - 1);
-			bn_add(u, u, t);
-			bn_mul(b, a, u);
-			bn_add_dig(b, b, 1);
-		} while ((bn_bits(b) != bbits) || (!bn_is_prime(b)));
+		while (!found) {
+			bn_gen_prime(a, abits);
+			/* b = a * u + 1 has bbits bits for u in [lo, hi]. */
+			bn_set_2b(lo, bbits - 1);
+			bn_div_rem_rup(lo, NULL, lo, a);
+			bn_set_2b(hi, bbits);
+			bn_sub_dig(hi, hi, 2);
+			bn_div(hi, hi, a);
+			bn_sub(hi, hi, lo);
+			bn_add_dig(hi, hi, 1);
+			/* Few values of u may all fail for this a, so draw a new one. */
+			for (size_t i = 0; i < 4 * bbits && !found; i++) {
+				/* Extra bits make the reduction close to uniform. */
+				bn_rand(u, RLC_POS, bn_bits(hi) + RLC_DIG);
+				bn_mod(u, u, hi);
+				bn_add(u, u, lo);
+				/* An odd prime a needs an even u for b to be odd. */
+				if (!bn_is_even(u)) {
+					bn_add_dig(u, u, 1);
+				}
+				bn_mul(b, a, u);
+				bn_add_dig(b, b, 1);
+				found = (bn_bits(b) == bbits && bn_is_prime(b));
+			}
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free_all(t, u);
+		bn_free_all(lo, hi, u);
 	}
 
 	return result;
@@ -693,7 +727,7 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 	uint8_t seed[RLC_MD_LEN + sizeof(uint32_t)], *out;
 	const uint8_t *tag = dst;
 	size_t i, tl = dst_len, nb = (bits + 7) / 8;
-	uint32_t k = 0;
+	uint32_t k = 0, n;
 	int result = RLC_OK;
 
 	/* Callers with no tag of their own get the one of the library. */
@@ -727,7 +761,9 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		 * carry on from the next counter. Starting over instead would rerun the
 		 * whole search on every rejection.
 		 */
-		for (k = from; k < from + BN_MAP_TRIES; k++) {
+		/* Count the attempts apart, since from + BN_MAP_TRIES may wrap. */
+		for (n = 0; n < BN_MAP_TRIES; n++) {
+			k = from + n;
 			/* The counter is written in a fixed byte order, so that the
 			 * prime does not depend on the endianness of the platform. */
 			util_write_uint32(seed + RLC_MD_LEN, k);
@@ -749,7 +785,7 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 				break;
 			}
 		}
-		if (k >= from + BN_MAP_TRIES) {
+		if (n == BN_MAP_TRIES) {
 			result = RLC_ERR;
 		}
 	}
