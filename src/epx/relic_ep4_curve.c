@@ -317,6 +317,8 @@ void ep4_curve_init(void) {
 	ep4_new(ctx->ep4_g);
 	fp4_new(ctx->ep4_a);
 	fp4_new(ctx->ep4_b);
+	fp4_new(ctx->ep4_frb[0]);
+	fp4_new(ctx->ep4_frb[1]);
 #endif
 
 #ifdef EP_PRECO
@@ -347,6 +349,8 @@ void ep4_curve_clean(void) {
 		ep4_free(ctx->ep4_g);
 		fp4_free(ctx->ep4_a);
 		fp4_free(ctx->ep4_b);
+		fp4_free(ctx->ep4_frb[0]);
+		fp4_free(ctx->ep4_frb[1]);
 	}
 }
 
@@ -567,6 +571,11 @@ void ep4_curve_set_twist(int type) {
 				fp_copy(ctx->fp4_p1[1], a[1][1]);
 			}
 		}
+
+		/* Precompute the constants that multiply the Frobenius coordinates. */
+		fp4_set_dig(a, 1);
+		fp4_mul_frb(ctx->ep4_frb[0], a, 1, 2);
+		fp4_mul_frb(ctx->ep4_frb[1], a, 1, 3);
 
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
