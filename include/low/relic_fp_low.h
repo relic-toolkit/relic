@@ -36,6 +36,29 @@
 /* Constant definitions                                                       */
 /*============================================================================*/
 
+#include "relic_conf.h"
+
+/*
+ * Size in bytes of a temporary double-precision vector, written with integer
+ * arithmetic only so that assembly can use it as an offset.
+ */
+#if defined(WITH_FB) && FB_POLYN > FP_PRIME
+#define RLC_DV_STRIDE_D	((2 * FB_POLYN - 1) / WSIZE + 2)
+#else
+#define RLC_DV_STRIDE_D	((2 * FP_PRIME - 1) / WSIZE + 2)
+#endif
+#define RLC_DV_STRIDE_B	(2 * ((BN_PRECI - 1) / WSIZE + 1) + 2)
+#if RLC_DV_STRIDE_D > RLC_DV_STRIDE_B
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_D * (WSIZE / 8))
+#else
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_B * (WSIZE / 8))
+#endif
+#if ALIGN > 1 && (RLC_DV_STRIDE_N % ALIGN) > 0
+#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N + ((ALIGN - RLC_DV_STRIDE_N % ALIGN) / (WSIZE / 8)) * (WSIZE / 8))
+#else
+#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N)
+#endif
+
 #ifdef ASM
 
 #include "relic_conf.h"
