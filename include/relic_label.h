@@ -3659,10 +3659,14 @@
 #define sokaka_t	RLC_PREFIX(sokaka_t)
 
 #undef cp_rsa_gen
-#undef cp_rsa_enc
-#undef cp_rsa_dec
-#undef cp_rsa_sig
-#undef cp_rsa_ver
+#undef cp_rsa_enc_oaep
+#undef cp_rsa_enc_pkcs1
+#undef cp_rsa_dec_oaep
+#undef cp_rsa_dec_pkcs1
+#undef cp_rsa_sig_pss
+#undef cp_rsa_sig_pkcs1
+#undef cp_rsa_ver_pss
+#undef cp_rsa_ver_pkcs1
 #undef cp_rabin_gen
 #undef cp_rabin_enc
 #undef cp_rabin_dec
@@ -3830,10 +3834,14 @@
 #undef cp_pbpsi_int
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
-#define cp_rsa_enc 	RLC_PREFIX(cp_rsa_enc)
-#define cp_rsa_dec 	RLC_PREFIX(cp_rsa_dec)
-#define cp_rsa_sig 	RLC_PREFIX(cp_rsa_sig)
-#define cp_rsa_ver 	RLC_PREFIX(cp_rsa_ver)
+#define cp_rsa_enc_oaep 	RLC_PREFIX(cp_rsa_enc_oaep)
+#define cp_rsa_enc_pkcs1 	RLC_PREFIX(cp_rsa_enc_pkcs1)
+#define cp_rsa_dec_oaep 	RLC_PREFIX(cp_rsa_dec_oaep)
+#define cp_rsa_dec_pkcs1 	RLC_PREFIX(cp_rsa_dec_pkcs1)
+#define cp_rsa_sig_pss 	RLC_PREFIX(cp_rsa_sig_pss)
+#define cp_rsa_sig_pkcs1 	RLC_PREFIX(cp_rsa_sig_pkcs1)
+#define cp_rsa_ver_pss 	RLC_PREFIX(cp_rsa_ver_pss)
+#define cp_rsa_ver_pkcs1 	RLC_PREFIX(cp_rsa_ver_pkcs1)
 #define cp_rabin_gen 	RLC_PREFIX(cp_rabin_gen)
 #define cp_rabin_enc 	RLC_PREFIX(cp_rabin_enc)
 #define cp_rabin_dec 	RLC_PREFIX(cp_rabin_dec)

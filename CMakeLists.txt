@@ -142,7 +142,6 @@ include(cmake/ed.cmake)
 include(cmake/ec.cmake)
 include(cmake/pp.cmake)
 include(cmake/md.cmake)
-include(cmake/cp.cmake)
 include(cmake/rand.cmake)
 include(cmake/with.cmake)
 

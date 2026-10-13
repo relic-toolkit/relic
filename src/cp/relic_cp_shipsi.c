@@ -122,13 +122,6 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 				bn_add_dig(p, p, 2);
 			} while (!bn_is_prime(p));
 
-#if !defined(CP_CRT)
-			bn_mul(q, crt->dp, crt->dq);
-			bn_mod_inv(p, p, q);
-			bn_mul(p, p, u);
-			bn_mod(p, p, q);
-			bn_mxp(t[j], d, p, crt->n);
-#else
 			bn_mod_inv(q, p, crt->dq);
 			bn_mul(q, q, u);
 			bn_mod(q, q, crt->dq);
@@ -138,17 +131,12 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 			bn_mod(p, p, crt->dp);
 
 			bn_mxp_crt(t[j], d, p, q, crt, 0);
-#endif /* CP_CRT */
 		}
 
-#if !defined(CP_CRT)
-		bn_mxp(u, g, u, crt->n);
-#else
 		bn_mod(p, u, crt->dp);
 		bn_mod(q, u, crt->dq);
 
 		bn_mxp_crt(u, g, p, q, crt, 0);
-#endif
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

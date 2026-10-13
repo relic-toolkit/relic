@@ -203,23 +203,7 @@ int cp_shpe_dec(bn_t m, const bn_t c, const shpe_t prv) {
 		bn_new(t);
 		bn_new(u);
 
-#if !defined(CP_CRT)
-		bn_sub_dig(t, prv->crt->p, 1);
-		bn_sub_dig(u, prv->crt->q, 1);
-		bn_mul(t, t, u);
-
-		/* Compute (c^l mod n^2) * u mod n. */
-		bn_sqr(u, prv->crt->n);
-		bn_mxp(m, c, prv->a, u);
-
-		bn_sub_dig(m, m, 1);
-		bn_div(m, m, prv->crt->n);
-		bn_mod_inv(u, t, prv->crt->n);
-		bn_mul(m, m, u);
-		bn_mod(m, m, prv->crt->n);
-#else
 		bn_mxp_crt(m, c, prv->a, prv->a, prv->crt, 1);
-#endif /* CP_CRT */
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

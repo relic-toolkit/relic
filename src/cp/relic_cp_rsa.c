@@ -36,15 +36,14 @@
 /*============================================================================*/
 
 /**
- * Length of the minimum padding of the chosen scheme in bytes.
+ * Length of the minimum padding of PKCS#1 v1.5 encryption in bytes.
  */
-#if CP_RSAPD == PKCS1
-#define RSA_PAD_LEN		(11)
-#elif CP_RSAPD == PKCS2
-#define RSA_PAD_LEN		(2 * RLC_MD_LEN + 2)
-#else
-#define RSA_PAD_LEN		(2)
-#endif
+#define RSA_PKCS1_LEN		(11)
+
+/**
+ * Length of the minimum padding of OAEP encryption in bytes.
+ */
+#define RSA_OAEP_LEN		(2 * RLC_MD_LEN + 2)
 
 /**
  * Returns 1 if a byte is zero and 0 otherwise, in constant time.
@@ -81,11 +80,7 @@ static int rsa_exp_prv(bn_t c, const bn_t a, const rsa_t prv) {
 		bn_mod(t, t, prv->crt->n);
 
 		/* s = t^d mod n. */
-#if !defined(CP_CRT)
-		bn_mxp(s, t, prv->d, prv->crt->n);
-#else
 		bn_mxp_crt(s, t, prv->crt->dp, prv->crt->dq, prv->crt, 0);
-#endif
 
 		/* A fault in either half of the CRT would reveal a factor of n. */
 		bn_mxp(u, s, prv->e, prv->crt->n);
@@ -106,75 +101,6 @@ static int rsa_exp_prv(bn_t c, const bn_t a, const rsa_t prv) {
 	}
 	return result;
 }
-
-#if CP_RSAPD == BASIC
-
-/**
- * Encodes a message as EM = 00 | ... | 00 | FF | M.
- *
- * @param[out] em			- the encoded message.
- * @param[in] k				- the length of the encoded message in bytes.
- * @param[in] m				- the message.
- * @param[in] m_len			- the message length in bytes, at most k - 2.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-static int pad_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
-	memset(em, 0, k - m_len - 1);
-	em[k - m_len - 1] = 0xFF;
-	memcpy(em + k - m_len, m, m_len);
-	return RLC_OK;
-}
-
-/**
- * Decodes a message encoded as EM = 00 | ... | 00 | FF | M, in constant time
- * up to the result.
- *
- * @param[out] m			- the message.
- * @param[in,out] m_len		- the buffer capacity and the message length.
- * @param[in] em			- the encoded message.
- * @param[in] k				- the length of the encoded message in bytes.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-static int pad_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
-	uint32_t good, found = 0, nz, sel, b = 0;
-	size_t idx = 0;
-
-	good = RSA_IS_ZERO(em[0]);
-	for (size_t i = 1; i < k; i++) {
-		nz = RSA_IS_ZERO(em[i]) ^ 1;
-		sel = nz & (found ^ 1);
-		idx = RLC_SEL(idx, i, (size_t)sel);
-		b = RLC_SEL(b, em[i], sel);
-		found |= nz;
-	}
-	good &= found & RSA_IS_ZERO(b ^ 0xFF);
-
-	if (!good || k - idx - 1 > *m_len) {
-		return RLC_ERR;
-	}
-	*m_len = k - idx - 1;
-	memcpy(m, em + idx + 1, *m_len);
-	return RLC_OK;
-}
-
-/**
- * Encodes a digest for signing as EM = 00 | ... | 00 | FF | H.
- *
- * @param[out] em			- the encoded message.
- * @param[in] em_bits		- the length of the encoded message in bits.
- * @param[in] h				- the digest.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-static int pad_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
-	if (RLC_CEIL(em_bits, 8) < RLC_MD_LEN + RSA_PAD_LEN) {
-		return RLC_ERR;
-	}
-	return pad_enc(em, RLC_CEIL(em_bits, 8), h, RLC_MD_LEN);
-}
-
-#endif
-
-#if CP_RSAPD == PKCS1
 
 /**
  * ASN.1 identifier of the hash function SHA-224.
@@ -245,7 +171,7 @@ static const uint8_t *hash_id(size_t *len) {
  * @param[in] m_len			- the message length in bytes, at most k - 11.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t ps_len = k - m_len - 3;
 
 	em[0] = 0x00;
@@ -271,7 +197,7 @@ static int pad_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
  * @param[in] k				- the length of the encoded message in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+static int pkcs1_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	uint32_t good, found = 0, zero, sel;
 	size_t idx = 0;
 
@@ -302,11 +228,11 @@ static int pad_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
  * @param[in] h				- the digest.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
+static int pkcs1_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	size_t k = RLC_CEIL(em_bits, 8), id_len, ps_len;
 	const uint8_t *id = hash_id(&id_len);
 
-	if (id == NULL || id_len + RLC_MD_LEN + RSA_PAD_LEN > k) {
+	if (id == NULL || id_len + RLC_MD_LEN + RSA_PKCS1_LEN > k) {
 		return RLC_ERR;
 	}
 	ps_len = k - id_len - RLC_MD_LEN - 3;
@@ -319,19 +245,16 @@ static int pad_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	return RLC_OK;
 }
 
-#endif
-
-#if CP_RSAPD == BASIC || CP_RSAPD == PKCS1
-
 /**
- * Verifies an encoded signature by encoding the digest again and comparing.
+ * Verifies a signature encoded with EMSA-PKCS1-v1_5 by encoding the digest
+ * again and comparing.
  *
  * @param[in] em			- the encoded message.
  * @param[in] em_bits		- the length of the encoded message in bits.
  * @param[in] h				- the digest.
  * @return 1 if the encoding is valid, 0 otherwise.
  */
-static int pad_ver(const uint8_t *em, size_t em_bits, const uint8_t *h) {
+static int pkcs1_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	size_t k = RLC_CEIL(em_bits, 8);
 	uint8_t *t = RLC_ALLOCA(uint8_t, k);
 	int result = 0;
@@ -340,16 +263,12 @@ static int pad_ver(const uint8_t *em, size_t em_bits, const uint8_t *h) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return 0;
 	}
-	if (pad_sig(t, em_bits, h) == RLC_OK) {
+	if (pkcs1_sig(t, em_bits, h) == RLC_OK) {
 		result = (util_cmp_sec(t, em, k) == RLC_EQ);
 	}
 	RLC_FREE(t);
 	return result;
 }
-
-#endif
-
-#if CP_RSAPD == PKCS2
 
 /**
  * Encodes a message for encryption with EME-OAEP and an empty label:
@@ -362,7 +281,7 @@ static int pad_ver(const uint8_t *em, size_t em_bits, const uint8_t *h) {
  * 							  k - 2 * RLC_MD_LEN - 2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t db_len = k - RLC_MD_LEN - 1;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -402,7 +321,7 @@ static int pad_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
  * @param[in] k				- the length of the encoded message in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	size_t db_len = k - RLC_MD_LEN - 1, idx = 0;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN, h[RLC_MD_LEN], diff = 0;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -458,7 +377,7 @@ static int pad_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
  * @param[in] h				- the digest.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pad_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
+static int pss_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	size_t em_len = RLC_CEIL(em_bits, 8), db_len;
 	uint8_t *db = em, *hh, *mask, buf[8 + 2 * RLC_MD_LEN];
 	uint8_t *salt = buf + 8 + RLC_MD_LEN;
@@ -502,7 +421,7 @@ static int pad_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
  * @param[in] h				- the digest.
  * @return 1 if the encoding is valid, 0 otherwise.
  */
-static int pad_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
+static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	size_t em_len = RLC_CEIL(em_bits, 8), db_len;
 	uint8_t *db = em, *hh, *mask, buf[8 + 2 * RLC_MD_LEN];
 	uint8_t top = 0xFF >> (8 * em_len - em_bits), h2[RLC_MD_LEN];
@@ -546,7 +465,266 @@ static int pad_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	return result;
 }
 
-#endif
+/**
+ * Encrypts with the RSA cryptosystem and the given padding.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] pub			- the public key.
+ * @param[in] pad_len		- the minimum length of the padding in bytes.
+ * @param[in] pad			- the encoding function.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub, size_t pad_len,
+		int (*pad)(uint8_t *, size_t, const uint8_t *, size_t)) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
+
+	if (pub == NULL) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(pub->crt->n);
+	if (in_len + pad_len > k || *out_len < k) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		if (pad(em, k, in, in_len) == RLC_OK) {
+			bn_read_bin(m, em, k);
+			bn_mxp(m, m, pub->e, pub->crt->n);
+			bn_write_bin(out, k, m);
+			*out_len = k;
+		} else {
+			result = RLC_ERR;
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
+
+/**
+ * Decrypts with the RSA cryptosystem and the given padding.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] prv			- the private key.
+ * @param[in] pad_len		- the minimum length of the padding in bytes.
+ * @param[in] pad			- the decoding function.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv, size_t pad_len,
+		int (*pad)(uint8_t *, size_t *, uint8_t *, size_t)) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
+
+	if (prv == NULL) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(prv->crt->n);
+	if (in_len != k || k < pad_len) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		bn_read_bin(m, in, in_len);
+		if (bn_cmp(m, prv->crt->n) != RLC_LT ||
+				rsa_exp_prv(m, m, prv) != RLC_OK) {
+			result = RLC_ERR;
+		} else {
+			bn_write_bin(em, k, m);
+			result = pad(out, out_len, em, k);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
+
+/**
+ * Signs with the RSA signature algorithm and the given padding.
+ *
+ * @param[out] sig			- the signature.
+ * @param[in, out] sig_len	- the buffer capacity and number of bytes written.
+ * @param[in] msg			- the message to sign.
+ * @param[in] msg_len		- the number of bytes to sign.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] prv			- the private key.
+ * @param[in] pss			- the flag to indicate the PSS encoding length.
+ * @param[in] pad			- the encoding function.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv, int pss,
+		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
+	bn_t m;
+	size_t k, em_bits;
+	uint8_t h[RLC_MD_LEN], *em;
+	int result = RLC_OK;
+
+	if (prv == NULL || (hash && msg_len != RLC_MD_LEN)) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(prv->crt->n);
+	/* PSS encodes messages with the bit length of the modulus minus one. */
+	em_bits = (pss ? bn_bits(prv->crt->n) - 1 : 8 * k);
+	if (*sig_len < k) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		if (hash) {
+			memcpy(h, msg, RLC_MD_LEN);
+		} else {
+			md_map(h, msg, msg_len);
+		}
+
+		if (pad(em, em_bits, h) == RLC_OK) {
+			bn_read_bin(m, em, RLC_CEIL(em_bits, 8));
+			if (rsa_exp_prv(m, m, prv) == RLC_OK) {
+				bn_write_bin(sig, k, m);
+				*sig_len = k;
+			} else {
+				result = RLC_ERR;
+			}
+		} else {
+			result = RLC_ERR;
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
+
+/**
+ * Verifies an RSA signature with the given padding.
+ *
+ * @param[in] sig			- the signature to verify.
+ * @param[in] sig_len		- the signature length in bytes.
+ * @param[in] msg			- the signed message.
+ * @param[in] msg_len		- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] pub			- the public key.
+ * @param[in] pss			- the flag to indicate the PSS encoding length.
+ * @param[in] pad			- the verification function.
+ * @return a boolean value indicating if the signature is valid.
+ */
+static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t pub, int pss,
+		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
+	bn_t m;
+	size_t k, em_bits;
+	uint8_t h[RLC_MD_LEN], *em;
+	int result = 0;
+
+	if (pub == NULL || (hash && msg_len != RLC_MD_LEN)) {
+		return 0;
+	}
+
+	k = bn_size_bin(pub->crt->n);
+	/* PSS encodes messages with the bit length of the modulus minus one. */
+	em_bits = (pss ? bn_bits(pub->crt->n) - 1 : 8 * k);
+	if (sig_len != k) {
+		return 0;
+	}
+
+	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		if (hash) {
+			memcpy(h, msg, RLC_MD_LEN);
+		} else {
+			md_map(h, msg, msg_len);
+		}
+
+		bn_read_bin(m, sig, sig_len);
+		if (bn_cmp(m, pub->crt->n) == RLC_LT) {
+			bn_mxp(m, m, pub->e, pub->crt->n);
+			if (bn_bits(m) <= em_bits) {
+				bn_write_bin(em, RLC_CEIL(em_bits, 8), m);
+				result = pad(em, em_bits, h);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -602,7 +780,6 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 		}
 		bn_copy(prv->crt->n, pub->crt->n);
 
-#if defined(CP_CRT)
 		/* dP = d mod (p - 1). */
 		bn_sub_dig(t, prv->crt->p, 1);
 		bn_mod(prv->crt->dp, prv->d, t);
@@ -611,7 +788,6 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 		bn_mod(prv->crt->dq, prv->d, t);
 		/* qInv = q^(-1) mod p. */
 		bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
-#endif /* CP_CRT */
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -624,217 +800,42 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 	return result;
 }
 
-int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
-		const rsa_t pub) {
-	bn_t m;
-	size_t k;
-	uint8_t *em;
-	int result = RLC_OK;
-
-	if (pub == NULL) {
-		return RLC_ERR;
-	}
-
-	k = bn_size_bin(pub->crt->n);
-	if (in_len + RSA_PAD_LEN > k || *out_len < k) {
-		return RLC_ERR;
-	}
-
-	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(m);
-
-		if (pad_enc(em, k, in, in_len) == RLC_OK) {
-			bn_read_bin(m, em, k);
-			bn_mxp(m, m, pub->e, pub->crt->n);
-			bn_write_bin(out, k, m);
-			*out_len = k;
-		} else {
-			result = RLC_ERR;
-		}
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
-
-	return result;
+int cp_rsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub) {
+	return rsa_enc(out, out_len, in, in_len, pub, RSA_OAEP_LEN, oaep_enc);
 }
 
-int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
-		const rsa_t prv) {
-	bn_t m;
-	size_t k;
-	uint8_t *em;
-	int result = RLC_OK;
-
-	if (prv == NULL) {
-		return RLC_ERR;
-	}
-
-	k = bn_size_bin(prv->crt->n);
-	if (in_len != k || k < RSA_PAD_LEN) {
-		return RLC_ERR;
-	}
-
-	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(m);
-
-		bn_read_bin(m, in, in_len);
-		if (bn_cmp(m, prv->crt->n) != RLC_LT ||
-				rsa_exp_prv(m, m, prv) != RLC_OK) {
-			result = RLC_ERR;
-		} else {
-			bn_write_bin(em, k, m);
-			result = pad_dec(out, out_len, em, k);
-		}
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
-
-	return result;
+int cp_rsa_enc_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub) {
+	return rsa_enc(out, out_len, in, in_len, pub, RSA_PKCS1_LEN, pkcs1_enc);
 }
 
-int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+int cp_rsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv) {
+	return rsa_dec(out, out_len, in, in_len, prv, RSA_OAEP_LEN, oaep_dec);
+}
+
+int cp_rsa_dec_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv) {
+	return rsa_dec(out, out_len, in, in_len, prv, RSA_PKCS1_LEN, pkcs1_dec);
+}
+
+int cp_rsa_sig_pss(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t prv) {
-	bn_t m;
-	size_t k, em_bits;
-	uint8_t h[RLC_MD_LEN], *em;
-	int result = RLC_OK;
-
-	if (prv == NULL || (hash && msg_len != RLC_MD_LEN)) {
-		return RLC_ERR;
-	}
-
-	k = bn_size_bin(prv->crt->n);
-#if CP_RSAPD == PKCS2
-	/* The encoded message has the bit length of the modulus minus one. */
-	em_bits = bn_bits(prv->crt->n) - 1;
-#else
-	em_bits = 8 * k;
-#endif
-	if (k < RSA_PAD_LEN || *sig_len < k) {
-		return RLC_ERR;
-	}
-
-	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(m);
-
-		if (hash) {
-			memcpy(h, msg, RLC_MD_LEN);
-		} else {
-			md_map(h, msg, msg_len);
-		}
-
-		if (pad_sig(em, em_bits, h) == RLC_OK) {
-			bn_read_bin(m, em, RLC_CEIL(em_bits, 8));
-			if (rsa_exp_prv(m, m, prv) == RLC_OK) {
-				bn_write_bin(sig, k, m);
-				*sig_len = k;
-			} else {
-				result = RLC_ERR;
-			}
-		} else {
-			result = RLC_ERR;
-		}
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
-
-	return result;
+	return rsa_sig(sig, sig_len, msg, msg_len, hash, prv, 1, pss_sig);
 }
 
-int cp_rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+int cp_rsa_sig_pkcs1(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv) {
+	return rsa_sig(sig, sig_len, msg, msg_len, hash, prv, 0, pkcs1_sig);
+}
+
+int cp_rsa_ver_pss(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub) {
-	bn_t m;
-	size_t k, em_bits;
-	uint8_t h[RLC_MD_LEN], *em;
-	int result = 0;
+	return rsa_ver(sig, sig_len, msg, msg_len, hash, pub, 1, pss_ver);
+}
 
-	if (pub == NULL || (hash && msg_len != RLC_MD_LEN)) {
-		return 0;
-	}
-
-	k = bn_size_bin(pub->crt->n);
-#if CP_RSAPD == PKCS2
-	/* The encoded message has the bit length of the modulus minus one. */
-	em_bits = bn_bits(pub->crt->n) - 1;
-#else
-	em_bits = 8 * k;
-#endif
-	if (sig_len != k || k < RSA_PAD_LEN) {
-		return 0;
-	}
-
-	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
-
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(m);
-
-		if (hash) {
-			memcpy(h, msg, RLC_MD_LEN);
-		} else {
-			md_map(h, msg, msg_len);
-		}
-
-		bn_read_bin(m, sig, sig_len);
-		if (bn_cmp(m, pub->crt->n) == RLC_LT) {
-			bn_mxp(m, m, pub->e, pub->crt->n);
-			if (bn_bits(m) <= em_bits) {
-				bn_write_bin(em, RLC_CEIL(em_bits, 8), m);
-				result = pad_ver(em, em_bits, h);
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
-
-	return result;
+int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t pub) {
+	return rsa_ver(sig, sig_len, msg, msg_len, hash, pub, 0, pkcs1_ver);
 }

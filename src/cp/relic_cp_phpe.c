@@ -47,7 +47,6 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 	/* Compute n = pq. */
 	bn_mul(prv->n, prv->p, prv->q);
 
-#ifdef CP_CRT
 	/* Fix g = n + 1. */
 
 	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p.
@@ -68,7 +67,6 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 
 	/* qInv = q^(-1) mod p. */
 	bn_mod_inv(prv->qi, prv->q, prv->p);
-#endif
 
 	bn_copy(pub, prv->n);
 	return result;
@@ -158,20 +156,7 @@ int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv) {
 		bn_sub_dig(t, prv->p, 1);
 		bn_sub_dig(u, prv->q, 1);
 
-#if !defined(CP_CRT)
-		bn_mul(t, t, u);
-		/* Compute (c^l mod n^2) * u mod n. */
-		bn_sqr(u, prv->n);
-		bn_mxp(m, c, t, u);
-
-		bn_sub_dig(m, m, 1);
-		bn_div(m, m, prv->n);
-		bn_mod_inv(u, t, prv->n);
-		bn_mul(m, m, u);
-		bn_mod(m, m, prv->n);
-#else
 		bn_mxp_crt(m, c, t, u, prv, 1);
-#endif /* CP_CRT */
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

@@ -559,17 +559,6 @@
 /** Choice of hash function. */
 #define MD_METHD "@MD_METHD@"
 
-/** Chosen RSA method. */
-#cmakedefine CP_CRT
-/** RSA without padding. */
-#define BASIC    1
-/** RSA PKCS#1 v1.5 padding. */
-#define PKCS1    2
-/** RSA PKCS#1 v2.1 padding. */
-#define PKCS2    3
-/** Chosen RSA padding method. */
-#define CP_RSAPD @CP_RSAPD@
-
 /** Automatic memory allocation. */
 #define AUTO     1
 /** Dynamic memory allocation. */

@@ -734,13 +734,81 @@ typedef etrs_st *etrs_t;
 #define etrs_free(A)		/* empty */
 #endif
 
+/**
+ * Selects the RSA function for a padding given as an optional last argument,
+ * or the default one if it is missing.
+ */
+#define _RSA_PAD(_1, _2, N, ...)	N
+
+/**
+ * Encrypts using the RSA cryptosystem. The optional last argument chooses the
+ * padding among oaep (the default) and pkcs1. Computes O = Enc_K(I).
+ *
+ * @param[out] O			- the output buffer.
+ * @param[in, out] L		- the buffer capacity and number of bytes written.
+ * @param[in] I				- the input buffer.
+ * @param[in] N				- the number of bytes to encrypt.
+ * @param[in] ...			- the public key and, optionally, the padding.
+ */
+#define cp_rsa_enc(O, L, I, N, ...)											\
+	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_enc, cp_rsa_enc_oaep, _error))	\
+		(O, L, I, N, __VA_ARGS__)
+#define _cp_rsa_enc(O, L, I, N, K, P)	cp_rsa_enc_ ## P(O, L, I, N, K)
+
+/**
+ * Decrypts using the RSA cryptosystem. The optional last argument chooses the
+ * padding among oaep (the default) and pkcs1. Computes O = Dec_K(I).
+ *
+ * @param[out] O			- the output buffer.
+ * @param[in, out] L		- the buffer capacity and number of bytes written.
+ * @param[in] I				- the input buffer.
+ * @param[in] N				- the number of bytes to decrypt.
+ * @param[in] ...			- the private key and, optionally, the padding.
+ */
+#define cp_rsa_dec(O, L, I, N, ...)											\
+	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_dec, cp_rsa_dec_oaep, _error))	\
+		(O, L, I, N, __VA_ARGS__)
+#define _cp_rsa_dec(O, L, I, N, K, P)	cp_rsa_dec_ ## P(O, L, I, N, K)
+
+/**
+ * Signs using the RSA signature algorithm. The optional last argument chooses
+ * the padding among pss (the default) and pkcs1.
+ *
+ * @param[out] S			- the signature.
+ * @param[in, out] L		- the buffer capacity and number of bytes written.
+ * @param[in] M				- the message to sign.
+ * @param[in] N				- the number of bytes to sign.
+ * @param[in] H				- the flag to indicate the message format.
+ * @param[in] ...			- the private key and, optionally, the padding.
+ */
+#define cp_rsa_sig(S, L, M, N, H, ...)										\
+	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_sig, cp_rsa_sig_pss, _error))	\
+		(S, L, M, N, H, __VA_ARGS__)
+#define _cp_rsa_sig(S, L, M, N, H, K, P)	cp_rsa_sig_ ## P(S, L, M, N, H, K)
+
+/**
+ * Verifies an RSA signature. The optional last argument chooses the padding
+ * among pss (the default) and pkcs1.
+ *
+ * @param[in] S				- the signature to verify.
+ * @param[in] L				- the signature length in bytes.
+ * @param[in] M				- the signed message.
+ * @param[in] N				- the message length in bytes.
+ * @param[in] H				- the flag to indicate the message format.
+ * @param[in] ...			- the public key and, optionally, the padding.
+ */
+#define cp_rsa_ver(S, L, M, N, H, ...)										\
+	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_ver, cp_rsa_ver_pss, _error))	\
+		(S, L, M, N, H, __VA_ARGS__)
+#define _cp_rsa_ver(S, L, M, N, H, K, P)	cp_rsa_ver_ ## P(S, L, M, N, H, K)
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
 
 /**
  * Generates a key pair for the RSA cryptosystem. Generates additional values
- * for the CRT optimization if CP_CRT is on.
+ * for the CRT optimization.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
@@ -750,7 +818,8 @@ typedef etrs_st *etrs_t;
 int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits);
 
 /**
- * Encrypts using the RSA cryptosystem.
+ * Encrypts using the RSA cryptosystem with OAEP padding (PKCS#1 v2.2), with
+ * the chosen hash function and an empty label.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -759,13 +828,26 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
-		const rsa_t pub);
+int cp_rsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub);
 
 /**
- * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
- * CP_CRT is on. The private key must include the public exponent, which is used
- * to blind the computation and check the result against faults.
+ * Encrypts using the RSA cryptosystem with PKCS#1 v1.5 padding.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] pub			- the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_rsa_enc_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t pub);
+
+/**
+ * Decrypts using the RSA cryptosystem with OAEP padding. Uses the CRT
+ * optimization. The private key must include the public exponent, which is
+ * used to blind the computation and check the result against faults.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -774,30 +856,61 @@ int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
-		const rsa_t prv);
+int cp_rsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv);
 
 /**
- * Signs using the RSA signature algorithm with the chosen padding. The flag
- * must be non-zero if the message being signed is already a hash value of
- * RLC_MD_LEN bytes. Uses the CRT optimization if CP_CRT is on. The private key
- * must include the public exponent, which is used to blind the computation and
- * check the result against faults.
+ * Decrypts using the RSA cryptosystem with PKCS#1 v1.5 padding, as
+ * cp_rsa_dec_oaep(). Errors must not be revealed to an attacker, since they
+ * tell whether the padding was valid.
  *
- * @param[out] sig			- the signature
- * @param[out] sig_len		- the number of bytes written in the signature.
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] prv			- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_rsa_dec_pkcs1(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rsa_t prv);
+
+/**
+ * Signs using the RSA signature algorithm with PSS padding (PKCS#1 v2.2), with
+ * the chosen hash function and a salt of the same length. The flag must be
+ * non-zero if the message being signed is already a hash value of RLC_MD_LEN
+ * bytes. Uses the CRT optimization. The private key must include the public
+ * exponent, which is used to blind the computation and check the result
+ * against faults.
+ *
+ * @param[out] sig			- the signature.
+ * @param[in, out] sig_len	- the buffer capacity and number of bytes written.
  * @param[in] msg			- the message to sign.
  * @param[in] msg_len		- the number of bytes to sign.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+int cp_rsa_sig_pss(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t prv);
 
 /**
- * Verifies an RSA signature. The flag must be non-zero if the message being
- * signed is already a hash value of RLC_MD_LEN bytes.
+ * Signs using the RSA signature algorithm with PKCS#1 v1.5 padding, as
+ * cp_rsa_sig_pss().
+ *
+ * @param[out] sig			- the signature.
+ * @param[in, out] sig_len	- the buffer capacity and number of bytes written.
+ * @param[in] msg			- the message to sign.
+ * @param[in] msg_len		- the number of bytes to sign.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] prv			- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_rsa_sig_pkcs1(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv);
+
+/**
+ * Verifies an RSA signature with PSS padding. The flag must be non-zero if the
+ * message being signed is already a hash value of RLC_MD_LEN bytes.
  *
  * @param[in] sig			- the signature to verify.
  * @param[in] sig_len		- the signature length in bytes.
@@ -807,7 +920,21 @@ int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
  * @param[in] pub			- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+int cp_rsa_ver_pss(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t pub);
+
+/**
+ * Verifies an RSA signature with PKCS#1 v1.5 padding, as cp_rsa_ver_pss().
+ *
+ * @param[in] sig			- the signature to verify.
+ * @param[in] sig_len		- the signature length in bytes.
+ * @param[in] msg			- the signed message.
+ * @param[in] msg_len		- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] pub			- the public key.
+ * @return a boolean value indicating if the signature is valid.
+ */
+int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub);
 
 /**
