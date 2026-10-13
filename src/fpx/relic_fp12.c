@@ -363,6 +363,9 @@ TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
 
 TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 
+TMPL_FPX_CUB_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_muln_low,
+		fp2_sqrn_low);
+
 TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
 
 void fp12_frb(fp12_t c, const fp12_t a, int i) {

@@ -257,6 +257,9 @@ TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
 
 TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 
+TMPL_FPX_CUB_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_muln_low,
+		fp3_sqrn_low);
+
 TMPL_FPX_CYC(fp18, fp9, fp3, fp3_mul_nor, QC);
 
 void fp18_frb(fp18_t c, const fp18_t a, int i) {
