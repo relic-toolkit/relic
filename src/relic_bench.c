@@ -233,7 +233,7 @@ void bench_print(void) {
 #else
 	util_print("%lld nanosec", ctx->total);
 #endif
-	if (ctx->total < 0) {
+	if ((long long)ctx->total < 0) {
 		util_print(" (overflow or bad overhead estimation)\n");
 	} else {
 		util_print("\n");

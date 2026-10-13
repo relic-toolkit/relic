@@ -77,7 +77,7 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]) {
 }
 
 int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
-		const bn_t s[2], const mt_t mul_tri[2], const mt_t sm_tri[2]) {
+		const bn_t s[2], const mt_t mul_tri[2]) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2];
 
@@ -129,6 +129,7 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
 	g1_t p[2], q[2];
 	g2_t z[2], w[2];
 	gt_t alpha[2], beta[2];
+	(void)pc_tri;
 
 	bn_null(n);
 
@@ -261,6 +262,8 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
 		size_t l) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2], t[2];
+	(void)mul_tri;
+	(void)sm_tri;
 
 	bn_null(n);
 
@@ -324,6 +327,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 	g1_t p[2], q[2];
 	g2_t w[2], z[2], *_y = RLC_ALLOCA(g2_t, 2 * l);
 	gt_t alpha[2], beta[2];
+	(void)pc_tri;
 
 	bn_null(n);
 	bn_null(_t);

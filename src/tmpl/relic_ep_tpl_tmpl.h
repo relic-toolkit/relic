@@ -93,9 +93,9 @@
 				F##_mul(t0, t0, t2);										\
 				F##_sub(r->y, t0, p->y);									\
 				F##_copy(r->x, t1);											\
+				F##_copy(r->z, p->z);										\
+				r->coord = BASIC;											\
 			}																\
-			F##_copy(r->z, p->z);											\
-			r->coord = BASIC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -111,11 +111,8 @@
  */
 #define TMPL_EP_TPL_PROJC(C, F)												\
 	void C##_tpl_projc(C##_t r, const C##_t p) {							\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4;											\
 		C##_t q;															\
 																			\

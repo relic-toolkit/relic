@@ -61,6 +61,31 @@ int fp3_is_sqr(const fp3_t a) {
 	return r;
 }
 
+int fp3_is_cub(const fp3_t a) {
+	fp3_t t, u;
+	int r;
+
+	fp3_null_all(t, u);
+
+	RLC_TRY {
+		fp3_new_all(t, u);
+
+		/* Since p = 1 mod 3, a is a cube iff its norm is a cube in Fp. */
+		fp3_frb(u, a, 1);
+		fp3_mul(t, u, a);
+		fp3_frb(u, u, 1);
+		fp3_mul(t, t, u);
+		r = fp_is_cub(t[0]);
+	} RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp3_free_all(t, u);
+	}
+
+	return r;
+}
+
 int fp3_srt(fp3_t c, const fp3_t a) {
 	int f = 0, r = 0;
 	fp_t root;

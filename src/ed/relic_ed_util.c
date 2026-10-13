@@ -244,7 +244,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return;
 		}
 		ed_upk(a, a);
 	}

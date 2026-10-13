@@ -57,8 +57,8 @@ static void pairing1(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
-		ep_new(p[0]);
-		ep_new(q[0]);
+		ep_new(p[j]);
+		ep_new(q[j]);
 	}
 
 	ep_curve_get_ord(n);
@@ -184,8 +184,8 @@ static void pairing2(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
-		ep_new(p[0]);
-		ep_new(q[0]);
+		ep_new(p[j]);
+		ep_new(q[j]);
 	}
 
 	ep_curve_get_ord(n);
@@ -391,23 +391,41 @@ static void pairing8(void) {
 	}
 	BENCH_END;
 
-		BENCH_RUN("pp_dbl_k8_projc_basic") {
-			ep2_rand(p[0]);
-			ep_rand(q[0]);
-			BENCH_ADD(pp_dbl_k8_projc_basic(e, p[0], p[0], q[0]));
-		}
-		BENCH_END;
-
-		BENCH_RUN("pp_dbl_k8_projc_lazyr") {
-			ep2_rand(p[0]);
-			ep_rand(q[0]);
-			BENCH_ADD(pp_dbl_k8_projc_lazyr(e, p[0], p[0], q[0]));
-		}
-		BENCH_END;
-
 	BENCH_RUN("pp_exp_k8") {
 		fp8_rand(e);
 		BENCH_ADD(pp_exp_k8(e, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_tatep_k8") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_tatep_k8(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_tatep_k8 (2)") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		ep2_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k8(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_weilp_k8") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_weilp_k8(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_weilp_k8 (2)") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		ep2_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k8(e, q, p, 2));
 	}
 	BENCH_END;
 
@@ -709,20 +727,6 @@ static void pairing16(void) {
 		ep4_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k16_projc(e, p[0], p[0], q[0]));
-	}
-	BENCH_END;
-
-	BENCH_RUN("pp_dbl_k16_projc_basic") {
-		ep4_rand(p[0]);
-		ep_rand(q[0]);
-		BENCH_ADD(pp_dbl_k16_projc_basic(e, p[0], p[0], q[0]));
-	}
-	BENCH_END;
-
-	BENCH_RUN("pp_dbl_k16_projc_lazyr") {
-		ep4_rand(p[0]);
-		ep_rand(q[0]);
-		BENCH_ADD(pp_dbl_k16_projc_lazyr(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 
@@ -1051,6 +1055,24 @@ static void pairing24(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_add_k24_projc_basic") {
+		ep4_rand(p[0]);
+		ep4_dbl(r, p[0]);
+		ep4_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k24_projc_basic(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_add_k24_projc_lazyr") {
+		ep4_rand(p[0]);
+		ep4_dbl(r, p[0]);
+		ep4_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k24_projc_lazyr(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
 	BENCH_RUN("pp_dbl_k24") {
 		ep4_rand(p[0]);
 		ep_rand(q[0]);
@@ -1069,6 +1091,20 @@ static void pairing24(void) {
 		ep4_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k24_projc(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k24_projc_basic") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k24_projc_basic(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k24_projc_lazyr") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k24_projc_lazyr(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 
@@ -1091,6 +1127,54 @@ static void pairing24(void) {
 		ep4_rand(p[1]);
 		ep_rand(q[1]);
 		BENCH_ADD(pp_map_sim_k24(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_tatep_k24") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_tatep_k24(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_tatep_k24 (2)") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		ep4_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k24(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_weilp_k24") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_weilp_k24(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_weilp_k24 (2)") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		ep4_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k24(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_oatep_k24") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_oatep_k24(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_oatep_k24 (2)") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		ep4_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_oatep_k24(e, q, p, 2));
 	}
 	BENCH_END;
 
@@ -1160,6 +1244,24 @@ static void pairing48(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_add_k48_projc_basic") {
+		ep8_rand(p[0]);
+		ep8_dbl(r, p[0]);
+		ep8_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k48_projc_basic(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_add_k48_projc_lazyr") {
+		ep8_rand(p[0]);
+		ep8_dbl(r, p[0]);
+		ep8_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k48_projc_lazyr(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
 	BENCH_RUN("pp_dbl_k48") {
 		ep8_rand(p[0]);
 		ep_rand(q[0]);
@@ -1178,6 +1280,20 @@ static void pairing48(void) {
 		ep8_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k48_projc(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k48_projc_basic") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k48_projc_basic(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k48_projc_lazyr") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k48_projc_lazyr(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 
@@ -1200,6 +1316,54 @@ static void pairing48(void) {
 		ep8_rand(p[1]);
 		ep_rand(q[1]);
 		BENCH_ADD(pp_map_sim_k48(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_tatep_k48") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_tatep_k48(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_tatep_k48 (2)") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		ep8_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k48(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_weilp_k48") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_weilp_k48(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_weilp_k48 (2)") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		ep8_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k48(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_oatep_k48") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_oatep_k48(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_oatep_k48 (2)") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		ep8_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_oatep_k48(e, q, p, 2));
 	}
 	BENCH_END;
 
@@ -1269,6 +1433,24 @@ static void pairing54(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_add_k54_projc_basic") {
+		ep9_rand(p[0]);
+		ep9_dbl(r, p[0]);
+		ep9_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k54_projc_basic(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_add_k54_projc_lazyr") {
+		ep9_rand(p[0]);
+		ep9_dbl(r, p[0]);
+		ep9_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k54_projc_lazyr(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
 	BENCH_RUN("pp_dbl_k54") {
 		ep9_rand(p[0]);
 		ep_rand(q[0]);
@@ -1287,6 +1469,20 @@ static void pairing54(void) {
 		ep9_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k54_projc(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k54_projc_basic") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k54_projc_basic(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_dbl_k54_projc_lazyr") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k54_projc_lazyr(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 
@@ -1309,6 +1505,54 @@ static void pairing54(void) {
 		ep9_rand(p[1]);
 		ep_rand(q[1]);
 		BENCH_ADD(pp_map_sim_k54(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_tatep_k54") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_tatep_k54(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_tatep_k54 (2)") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		ep9_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k54(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_weilp_k54") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_weilp_k54(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_weilp_k54 (2)") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		ep9_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k54(e, q, p, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_oatep_k54") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_oatep_k54(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_oatep_k54 (2)") {
+		ep9_rand(p[0]);
+		ep_rand(q[0]);
+		ep9_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_oatep_k54(e, q, p, 2));
 	}
 	BENCH_END;
 

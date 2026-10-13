@@ -131,7 +131,7 @@ enum {
 	BN_P158,
 	/** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
 	BN_P254,
-	/** Barreto-Naehrig curve with negative x. */
+	/** Barreto-Naehrig curve with negative x (found by Pereira et al.). */
 	BN_P256,
 	/** Barreto-Naehrig curve standardized in China. */
 	SM9_P256,

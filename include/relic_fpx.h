@@ -1836,6 +1836,15 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j);
 void fp2_mul_dig(fp2_t c, const fp2_t a, dig_t b);
 
 /**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp2_mul_fp(fp2_t c, const fp2_t a, const fp_t b);
+
+/**
  * Computes the square of a quadratic extension field element using basic
  * arithmetic.
  *
@@ -2257,6 +2266,15 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j);
 void fp3_mul_dig(fp3_t c, const fp3_t a, dig_t b);
 
 /**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp3_mul_fp(fp3_t c, const fp3_t a, const fp_t b);
+
+/**
  * Computes the square of a cubic extension field element using basic
  * arithmetic.
  *
@@ -2316,6 +2334,14 @@ void fp3_frb(fp3_t c, const fp3_t a, int i);
  * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp3_is_sqr(const fp3_t a);
+
+/**
+ * Tests if a cubic extension field element is a cubic residue.
+ *
+ * @param[in] a				- the cubic extension field element to test.
+ * @return 1 if the argument is a cube, and 0 otherwise.
+ */
+int fp3_is_cub(const fp3_t a);
 
 /**
  * Extracts the square root of a cubic extension field element. Computes
@@ -2549,6 +2575,15 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j);
  * @param[in] b				- the digit to multiply.
  */
 void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b);
+
+/**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp4_mul_fp(fp4_t c, const fp4_t a, const fp_t b);
 
 /**
  * Multiples a dense quartic extension field element by a sparse element.
@@ -3114,6 +3149,15 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j);
 void fp8_mul_dig(fp8_t c, const fp8_t a, dig_t b);
 
 /**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp8_mul_fp(fp8_t c, const fp8_t a, const fp_t b);
+
+/**
  * Multiples a dense octic extension field element by a sparse element.
  *
  * @param[out] c			- the result.
@@ -3454,6 +3498,15 @@ void fp9_dbl(fp9_t c, const fp9_t a);
  * @param[in] b				- the digit to multiply.
  */
 void fp9_mul_dig(fp9_t c, const fp9_t a, dig_t b);
+
+/**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp9_mul_fp(fp9_t c, const fp9_t a, const fp_t b);
 
 /**
  * Multiples two nonic extension field elements without performing modular

@@ -189,8 +189,6 @@
 #define dv_lshd 	RLC_PREFIX(dv_lshd)
 #define dv_rshd 	RLC_PREFIX(dv_rshd)
 
-
-
 #undef bn_st
 #undef bn_t
 #define bn_st     	RLC_PREFIX(bn_st)
@@ -2219,6 +2217,7 @@
 #undef fp2_mul_nor_integ
 #undef fp2_mul_frb
 #undef fp2_mul_dig
+#undef fp2_mul_fp
 #undef fp2_sqr_basic
 #undef fp2_sqr_integ
 #undef fp2_inv
@@ -2268,6 +2267,7 @@
 #define fp2_mul_nor_integ 	RLC_PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	RLC_PREFIX(fp2_mul_frb)
 #define fp2_mul_dig 	RLC_PREFIX(fp2_mul_dig)
+#define fp2_mul_fp 	RLC_PREFIX(fp2_mul_fp)
 #define fp2_sqr_basic 	RLC_PREFIX(fp2_sqr_basic)
 #define fp2_sqr_integ 	RLC_PREFIX(fp2_sqr_integ)
 #define fp2_inv 	RLC_PREFIX(fp2_inv)
@@ -2352,6 +2352,7 @@
 #undef fp3_mul_nor
 #undef fp3_mul_frb
 #undef fp3_mul_dig
+#undef fp3_mul_fp
 #undef fp3_sqr_basic
 #undef fp3_sqr_integ
 #undef fp3_inv
@@ -2359,6 +2360,7 @@
 #undef fp3_exp
 #undef fp3_frb
 #undef fp3_is_sqr
+#undef fp3_is_cub
 #undef fp3_srt
 
 #define fp3_field_init 	RLC_PREFIX(fp3_field_init)
@@ -2390,6 +2392,7 @@
 #define fp3_mul_nor 	RLC_PREFIX(fp3_mul_nor)
 #define fp3_mul_frb 	RLC_PREFIX(fp3_mul_frb)
 #define fp3_mul_dig 	RLC_PREFIX(fp3_mul_dig)
+#define fp3_mul_fp 	RLC_PREFIX(fp3_mul_fp)
 #define fp3_sqr_basic 	RLC_PREFIX(fp3_sqr_basic)
 #define fp3_sqr_integ 	RLC_PREFIX(fp3_sqr_integ)
 #define fp3_inv 	RLC_PREFIX(fp3_inv)
@@ -2397,6 +2400,7 @@
 #define fp3_exp 	RLC_PREFIX(fp3_exp)
 #define fp3_frb 	RLC_PREFIX(fp3_frb)
 #define fp3_is_sqr 	RLC_PREFIX(fp3_is_sqr)
+#define fp3_is_cub 	RLC_PREFIX(fp3_is_cub)
 #define fp3_srt 	RLC_PREFIX(fp3_srt)
 
 #undef fp3_addn_low
@@ -2460,6 +2464,7 @@
 #undef fp4_mul_art
 #undef fp4_mul_frb
 #undef fp4_mul_dig
+#undef fp4_mul_fp
 #undef fp4_mul_dxs
 #undef fp4_sqr_unr
 #undef fp4_sqr_basic
@@ -2497,6 +2502,7 @@
 #define fp4_mul_art 	RLC_PREFIX(fp4_mul_art)
 #define fp4_mul_frb 	RLC_PREFIX(fp4_mul_frb)
 #define fp4_mul_dig 	RLC_PREFIX(fp4_mul_dig)
+#define fp4_mul_fp 	RLC_PREFIX(fp4_mul_fp)
 #define fp4_mul_dxs 	RLC_PREFIX(fp4_mul_dxs)
 #define fp4_sqr_unr 	RLC_PREFIX(fp4_sqr_unr)
 #define fp4_sqr_basic 	RLC_PREFIX(fp4_sqr_basic)
@@ -2590,6 +2596,7 @@
 #undef fp8_mul_art
 #undef fp8_mul_frb
 #undef fp8_mul_dig
+#undef fp8_mul_fp
 #undef fp8_mul_dxs
 #undef fp8_sqr_unr
 #undef fp8_sqr_basic
@@ -2635,6 +2642,7 @@
 #define fp8_mul_art 	RLC_PREFIX(fp8_mul_art)
 #define fp8_mul_frb 	RLC_PREFIX(fp8_mul_frb)
 #define fp8_mul_dig 	RLC_PREFIX(fp8_mul_dig)
+#define fp8_mul_fp 	RLC_PREFIX(fp8_mul_fp)
 #define fp8_mul_dxs 	RLC_PREFIX(fp8_mul_dxs)
 #define fp8_sqr_unr 	RLC_PREFIX(fp8_sqr_unr)
 #define fp8_sqr_basic 	RLC_PREFIX(fp8_sqr_basic)
@@ -2674,6 +2682,7 @@
 #undef fp9_neg
 #undef fp9_dbl
 #undef fp9_mul_dig
+#undef fp9_mul_fp
 #undef fp9_mul_unr
 #undef fp9_mul_basic
 #undef fp9_mul_lazyr
@@ -2708,6 +2717,7 @@
 #define fp9_neg 	RLC_PREFIX(fp9_neg)
 #define fp9_dbl 	RLC_PREFIX(fp9_dbl)
 #define fp9_mul_dig 	RLC_PREFIX(fp9_mul_dig)
+#define fp9_mul_fp 	RLC_PREFIX(fp9_mul_fp)
 #define fp9_mul_unr 	RLC_PREFIX(fp9_mul_unr)
 #define fp9_mul_basic 	RLC_PREFIX(fp9_mul_basic)
 #define fp9_mul_lazyr 	RLC_PREFIX(fp9_mul_lazyr)
@@ -3277,8 +3287,6 @@
 #define fb2_slv 	RLC_PREFIX(fb2_slv)
 #define fb2_inv 	RLC_PREFIX(fb2_inv)
 
-
-
 #undef pp_map_init
 #undef pp_map_clean
 #undef pp_add_k1_basic
@@ -3289,6 +3297,7 @@
 #undef pp_add_k8_basic
 #undef pp_add_k8_projc_basic
 #undef pp_add_k8_projc_lazyr
+#undef pp_add_lit_k8
 #undef pp_add_k12_basic
 #undef pp_add_k12_projc_basic
 #undef pp_add_k12_projc_lazyr
@@ -3302,34 +3311,45 @@
 #undef pp_add_k18_projc_lazyr
 #undef pp_add_lit_k18
 #undef pp_add_k24_basic
-#undef pp_add_k24_projc
+#undef pp_add_k24_projc_basic
+#undef pp_add_k24_projc_lazyr
+#undef pp_add_lit_k24
 #undef pp_add_k48_basic
-#undef pp_add_k48_projc
+#undef pp_add_k48_projc_basic
+#undef pp_add_k48_projc_lazyr
+#undef pp_add_lit_k48
 #undef pp_add_k54_basic
-#undef pp_add_k54_projc
+#undef pp_add_k54_projc_basic
+#undef pp_add_k54_projc_lazyr
+#undef pp_add_lit_k54
 #undef pp_dbl_k1_basic
 #undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
 #undef pp_dbl_k8_basic
-#undef pp_dbl_k8_projc_basic
-#undef pp_dbl_k8_projc_lazyr
+#undef pp_dbl_k8_projc
+#undef pp_dbl_lit_k8
 #undef pp_dbl_k12_basic
 #undef pp_dbl_k12_projc_basic
 #undef pp_dbl_k12_projc_lazyr
 #undef pp_dbl_k16_basic
-#undef pp_dbl_k16_projc_basic
-#undef pp_dbl_k16_projc_lazyr
+#undef pp_dbl_k16_projc
 #undef pp_dbl_k18_basic
 #undef pp_dbl_k18_projc_basic
 #undef pp_dbl_k18_projc_lazyr
 #undef pp_dbl_k24_basic
-#undef pp_dbl_k24_projc
+#undef pp_dbl_k24_projc_basic
+#undef pp_dbl_k24_projc_lazyr
+#undef pp_dbl_lit_k24
 #undef pp_dbl_k48_basic
-#undef pp_dbl_k48_projc
+#undef pp_dbl_k48_projc_basic
+#undef pp_dbl_k48_projc_lazyr
+#undef pp_dbl_lit_k48
 #undef pp_dbl_k54_basic
-#undef pp_dbl_k54_projc
+#undef pp_dbl_k54_projc_basic
+#undef pp_dbl_k54_projc_lazyr
+#undef pp_dbl_lit_k54
 #undef pp_dbl_lit_k12
 #undef pp_dbl_lit_k16
 #undef pp_dbl_lit_k18
@@ -3359,6 +3379,10 @@
 #undef pp_map_sim_weilp_k1
 #undef pp_map_weilp_k2
 #undef pp_map_sim_weilp_k2
+#undef pp_map_tatep_k8
+#undef pp_map_sim_tatep_k8
+#undef pp_map_weilp_k8
+#undef pp_map_sim_weilp_k8
 #undef pp_map_oatep_k8
 #undef pp_map_sim_oatep_k8
 #undef pp_map_tatep_k12
@@ -3379,12 +3403,24 @@
 #undef pp_map_sim_weilp_k18
 #undef pp_map_oatep_k18
 #undef pp_map_sim_oatep_k18
-#undef pp_map_k24
-#undef pp_map_sim_k24
-#undef pp_map_k48
-#undef pp_map_sim_k48
-#undef pp_map_k54
-#undef pp_map_sim_k54
+#undef pp_map_tatep_k24
+#undef pp_map_sim_tatep_k24
+#undef pp_map_weilp_k24
+#undef pp_map_sim_weilp_k24
+#undef pp_map_oatep_k24
+#undef pp_map_sim_oatep_k24
+#undef pp_map_tatep_k48
+#undef pp_map_sim_tatep_k48
+#undef pp_map_weilp_k48
+#undef pp_map_sim_weilp_k48
+#undef pp_map_oatep_k48
+#undef pp_map_sim_oatep_k48
+#undef pp_map_tatep_k54
+#undef pp_map_sim_tatep_k54
+#undef pp_map_weilp_k54
+#undef pp_map_sim_weilp_k54
+#undef pp_map_oatep_k54
+#undef pp_map_sim_oatep_k54
 
 #define pp_map_init 	RLC_PREFIX(pp_map_init)
 #define pp_map_clean 	RLC_PREFIX(pp_map_clean)
@@ -3396,6 +3432,7 @@
 #define pp_add_k8_basic 	RLC_PREFIX(pp_add_k8_basic)
 #define pp_add_k8_projc_basic 	RLC_PREFIX(pp_add_k8_projc_basic)
 #define pp_add_k8_projc_lazyr 	RLC_PREFIX(pp_add_k8_projc_lazyr)
+#define pp_add_lit_k8 	RLC_PREFIX(pp_add_lit_k8)
 #define pp_add_k12_basic 	RLC_PREFIX(pp_add_k12_basic)
 #define pp_add_k12_projc_basic 	RLC_PREFIX(pp_add_k12_projc_basic)
 #define pp_add_k12_projc_lazyr 	RLC_PREFIX(pp_add_k12_projc_lazyr)
@@ -3409,34 +3446,45 @@
 #define pp_add_k18_projc_lazyr 	RLC_PREFIX(pp_add_k18_projc_lazyr)
 #define pp_add_lit_k18 	RLC_PREFIX(pp_add_lit_k18)
 #define pp_add_k24_basic 	RLC_PREFIX(pp_add_k24_basic)
-#define pp_add_k24_projc 	RLC_PREFIX(pp_add_k24_projc)
+#define pp_add_k24_projc_basic 	RLC_PREFIX(pp_add_k24_projc_basic)
+#define pp_add_k24_projc_lazyr 	RLC_PREFIX(pp_add_k24_projc_lazyr)
+#define pp_add_lit_k24 	RLC_PREFIX(pp_add_lit_k24)
 #define pp_add_k48_basic 	RLC_PREFIX(pp_add_k48_basic)
-#define pp_add_k48_projc 	RLC_PREFIX(pp_add_k48_projc)
+#define pp_add_k48_projc_basic 	RLC_PREFIX(pp_add_k48_projc_basic)
+#define pp_add_k48_projc_lazyr 	RLC_PREFIX(pp_add_k48_projc_lazyr)
+#define pp_add_lit_k48 	RLC_PREFIX(pp_add_lit_k48)
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
-#define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
+#define pp_add_k54_projc_basic 	RLC_PREFIX(pp_add_k54_projc_basic)
+#define pp_add_k54_projc_lazyr 	RLC_PREFIX(pp_add_k54_projc_lazyr)
+#define pp_add_lit_k54 	RLC_PREFIX(pp_add_lit_k54)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
 #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
 #define pp_dbl_k8_basic 	RLC_PREFIX(pp_dbl_k8_basic)
-#define pp_dbl_k8_projc_basic 	RLC_PREFIX(pp_dbl_k8_projc_basic)
-#define pp_dbl_k8_projc_lazyr 	RLC_PREFIX(pp_dbl_k8_projc_lazyr)
+#define pp_dbl_k8_projc 	RLC_PREFIX(pp_dbl_k8_projc)
+#define pp_dbl_lit_k8 	RLC_PREFIX(pp_dbl_lit_k8)
 #define pp_dbl_k12_basic 	RLC_PREFIX(pp_dbl_k12_basic)
 #define pp_dbl_k12_projc_basic 	RLC_PREFIX(pp_dbl_k12_projc_basic)
 #define pp_dbl_k12_projc_lazyr 	RLC_PREFIX(pp_dbl_k12_projc_lazyr)
 #define pp_dbl_k16_basic 	RLC_PREFIX(pp_dbl_k16_basic)
-#define pp_dbl_k16_projc_basic 	RLC_PREFIX(pp_dbl_k16_projc_basic)
-#define pp_dbl_k16_projc_lazyr 	RLC_PREFIX(pp_dbl_k16_projc_lazyr)
+#define pp_dbl_k16_projc 	RLC_PREFIX(pp_dbl_k16_projc)
 #define pp_dbl_k18_basic 	RLC_PREFIX(pp_dbl_k18_basic)
 #define pp_dbl_k18_projc_basic 	RLC_PREFIX(pp_dbl_k18_projc_basic)
 #define pp_dbl_k18_projc_lazyr 	RLC_PREFIX(pp_dbl_k18_projc_lazyr)
 #define pp_dbl_k24_basic 	RLC_PREFIX(pp_dbl_k24_basic)
-#define pp_dbl_k24_projc 	RLC_PREFIX(pp_dbl_k24_projc)
+#define pp_dbl_k24_projc_basic 	RLC_PREFIX(pp_dbl_k24_projc_basic)
+#define pp_dbl_k24_projc_lazyr 	RLC_PREFIX(pp_dbl_k24_projc_lazyr)
+#define pp_dbl_lit_k24 	RLC_PREFIX(pp_dbl_lit_k24)
 #define pp_dbl_k48_basic 	RLC_PREFIX(pp_dbl_k48_basic)
-#define pp_dbl_k48_projc 	RLC_PREFIX(pp_dbl_k48_projc)
+#define pp_dbl_k48_projc_basic 	RLC_PREFIX(pp_dbl_k48_projc_basic)
+#define pp_dbl_k48_projc_lazyr 	RLC_PREFIX(pp_dbl_k48_projc_lazyr)
+#define pp_dbl_lit_k48 	RLC_PREFIX(pp_dbl_lit_k48)
 #define pp_dbl_k54_basic 	RLC_PREFIX(pp_dbl_k54_basic)
-#define pp_dbl_k54_projc 	RLC_PREFIX(pp_dbl_k54_projc)
+#define pp_dbl_k54_projc_basic 	RLC_PREFIX(pp_dbl_k54_projc_basic)
+#define pp_dbl_k54_projc_lazyr 	RLC_PREFIX(pp_dbl_k54_projc_lazyr)
+#define pp_dbl_lit_k54 	RLC_PREFIX(pp_dbl_lit_k54)
 #define pp_dbl_lit_k12 	RLC_PREFIX(pp_dbl_lit_k12)
 #define pp_dbl_lit_k16 	RLC_PREFIX(pp_dbl_lit_k16)
 #define pp_dbl_lit_k18 	RLC_PREFIX(pp_dbl_lit_k18)
@@ -3466,6 +3514,10 @@
 #define pp_map_sim_weilp_k1 	RLC_PREFIX(pp_map_sim_weilp_k1)
 #define pp_map_weilp_k2 	RLC_PREFIX(pp_map_weilp_k2)
 #define pp_map_sim_weilp_k2 	RLC_PREFIX(pp_map_sim_weilp_k2)
+#define pp_map_tatep_k8 	RLC_PREFIX(pp_map_tatep_k8)
+#define pp_map_sim_tatep_k8 	RLC_PREFIX(pp_map_sim_tatep_k8)
+#define pp_map_weilp_k8 	RLC_PREFIX(pp_map_weilp_k8)
+#define pp_map_sim_weilp_k8 	RLC_PREFIX(pp_map_sim_weilp_k8)
 #define pp_map_oatep_k8 	RLC_PREFIX(pp_map_oatep_k8)
 #define pp_map_sim_oatep_k8 	RLC_PREFIX(pp_map_sim_oatep_k8)
 #define pp_map_tatep_k12 	RLC_PREFIX(pp_map_tatep_k12)
@@ -3486,12 +3538,24 @@
 #define pp_map_sim_weilp_k18 	RLC_PREFIX(pp_map_sim_weilp_k18)
 #define pp_map_oatep_k18 	RLC_PREFIX(pp_map_oatep_k18)
 #define pp_map_sim_oatep_k18 	RLC_PREFIX(pp_map_sim_oatep_k18)
-#define pp_map_k24 	RLC_PREFIX(pp_map_k24)
-#define pp_map_sim_k24 	RLC_PREFIX(pp_map_sim_k24)
-#define pp_map_k48 	RLC_PREFIX(pp_map_k48)
-#define pp_map_sim_k48 	RLC_PREFIX(pp_map_sim_k48)
-#define pp_map_k54 	RLC_PREFIX(pp_map_k54)
-#define pp_map_sim_k54 	RLC_PREFIX(pp_map_sim_k54)
+#define pp_map_tatep_k24 	RLC_PREFIX(pp_map_tatep_k24)
+#define pp_map_sim_tatep_k24 	RLC_PREFIX(pp_map_sim_tatep_k24)
+#define pp_map_weilp_k24 	RLC_PREFIX(pp_map_weilp_k24)
+#define pp_map_sim_weilp_k24 	RLC_PREFIX(pp_map_sim_weilp_k24)
+#define pp_map_oatep_k24 	RLC_PREFIX(pp_map_oatep_k24)
+#define pp_map_sim_oatep_k24 	RLC_PREFIX(pp_map_sim_oatep_k24)
+#define pp_map_tatep_k48 	RLC_PREFIX(pp_map_tatep_k48)
+#define pp_map_sim_tatep_k48 	RLC_PREFIX(pp_map_sim_tatep_k48)
+#define pp_map_weilp_k48 	RLC_PREFIX(pp_map_weilp_k48)
+#define pp_map_sim_weilp_k48 	RLC_PREFIX(pp_map_sim_weilp_k48)
+#define pp_map_oatep_k48 	RLC_PREFIX(pp_map_oatep_k48)
+#define pp_map_sim_oatep_k48 	RLC_PREFIX(pp_map_sim_oatep_k48)
+#define pp_map_tatep_k54 	RLC_PREFIX(pp_map_tatep_k54)
+#define pp_map_sim_tatep_k54 	RLC_PREFIX(pp_map_sim_tatep_k54)
+#define pp_map_weilp_k54 	RLC_PREFIX(pp_map_weilp_k54)
+#define pp_map_sim_weilp_k54 	RLC_PREFIX(pp_map_sim_weilp_k54)
+#define pp_map_oatep_k54 	RLC_PREFIX(pp_map_oatep_k54)
+#define pp_map_sim_oatep_k54 	RLC_PREFIX(pp_map_sim_oatep_k54)
 
 #undef pc_core_init
 #undef pc_core_calc

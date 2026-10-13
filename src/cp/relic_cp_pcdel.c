@@ -179,7 +179,7 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 }
 
 int cp_pdpub_ask(g1_t v1, g2_t w2, const g1_t p, const g2_t q, const bn_t c,
-		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2) {
+		const bn_t r, const g1_t u1, const g2_t u2) {
 	int result = RLC_OK;
 
 	/* Compute V1 = [r](P - U1). */
@@ -269,8 +269,7 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 }
 
 int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
-		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
-		const g2_t v2[4]) {
+		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t v2[4]) {
 	int result = RLC_OK;
 	bn_t n;
 
@@ -373,7 +372,7 @@ int cp_lvpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 }
 
 int cp_lvpub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
-		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2) {
+		const bn_t r, const g1_t u1, const g2_t u2) {
 	bn_t n;
 	int result = RLC_OK;
 
@@ -503,8 +502,7 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 }
 
 int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const bn_t c, const g1_t p,
-		const g2_t q, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
-		const g2_t v2[4]) {
+		const g2_t q, const bn_t r[3], const g1_t u1[2], const g2_t v2[4]) {
 	int result = RLC_OK;
 	bn_t n;
 

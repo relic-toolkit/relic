@@ -290,24 +290,44 @@ int ep_curve_opt_b(void) {
 
 void ep_curve_mul_a(fp_t c, const fp_t a) {
 	ctx_t *ctx = core_get();
-	switch (ctx->ep_opt_a) {
-		case RLC_ZERO:
-			fp_zero(c);
-			break;
-		case RLC_ONE:
-			fp_copy(c, a);
-			break;
-		case RLC_TWO:
-			fp_dbl(c, a);
-			break;
+	fp_t t;
+
+	fp_null(t);
+
+	RLC_TRY {
+		fp_new(t);
+
+		switch (ctx->ep_opt_a) {
+			case RLC_ZERO:
+				fp_zero(c);
+				break;
+			case RLC_ONE:
+				fp_copy(c, a);
+				break;
+			case RLC_TWO:
+				fp_dbl(c, a);
+				break;
+			case RLC_MIN3:
+				/* c = -3a, using t because c may alias a. */
+				fp_dbl(t, a);
+				fp_add(c, t, a);
+				fp_neg(c, c);
+				break;
 #if FP_RDC != MONTY
-		case RLC_TINY:
-			fp_mul_dig(c, a, ctx->ep_a[0]);
-			break;
+			case RLC_TINY:
+				fp_mul_dig(c, a, ctx->ep_a[0]);
+				break;
 #endif
-		default:
-			fp_mul(c, a, ctx->ep_a);
-			break;
+			default:
+				fp_mul(c, a, ctx->ep_a);
+				break;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free(t);
 	}
 }
 

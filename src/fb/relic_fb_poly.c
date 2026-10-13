@@ -424,6 +424,7 @@ const fb_st *fb_poly_tab_sqr(int i) {
 	/* If ITOHT inversion is used and tables are precomputed, return them. */
 	return (const fb_st *)core_get()->fb_tab_sqr[i];
 #else
+	(void)i;
 	return NULL;
 #endif
 }

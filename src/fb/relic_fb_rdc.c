@@ -87,7 +87,7 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(r);
+		dv_free(r);
 	}
 }
 

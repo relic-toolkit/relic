@@ -44,22 +44,12 @@ void ep8_mul_cof(ep8_t r, const ep8_t p) {
 	bn_t z;
 	ep8_t t0, t1, t2, t3, t4, t5, t6, t7;
 
-	ep8_null(t0);
-	ep8_null(t1);
-	ep8_null(t2);
-	ep8_null(t3);
-	ep8_null(t4);
-	ep8_null(t5);
-	ep8_null(t6);
-	ep8_null(t7);
+	ep8_null_all(t0, t1, t2, t3, t4, t5, t6, t7);
 	bn_null(z);
 
 	RLC_TRY {
 		bn_new(z);
-		ep8_new(t0);
-		ep8_new(t1);
-		ep8_new(t2);
-		ep8_new(t3);
+		ep8_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 		fp_prime_get_par(z);
 
@@ -111,14 +101,7 @@ void ep8_mul_cof(ep8_t r, const ep8_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		ep8_free(t0);
-		ep8_free(t1);
-		ep8_free(t2);
-		ep8_free(t3);
-		ep8_free(t4);
-		ep8_free(t5);
-		ep8_free(t6);
-		ep8_free(t7);
+		ep8_free_all(t0, t1, t2, t3, t4, t5, t6, t7);
 		bn_free(z);
 	}
 }

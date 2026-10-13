@@ -896,7 +896,7 @@ int ep_param_get(void) {
 }
 
 void ep_param_set(int param) {
-	int plain = 0, endom = 0, super = 0, pairf = 0, ctmap = 0;
+	int plain = 0, endom = 0, super = 0, pairf = 0, ctmap = 0, twist = 0;
 	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta;
 	ep_t g;
@@ -931,6 +931,7 @@ void ep_param_set(int param) {
 				ASSIGN(BN_P158, BN_158);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 160
@@ -986,6 +987,7 @@ void ep_param_set(int param) {
 				ASSIGN(BN_P254, BN_254);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 251
@@ -1029,11 +1031,13 @@ void ep_param_set(int param) {
 				ASSIGN(SM9_P256, SM9_256);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_MTYPE;
 				break;
 			case BN_P256:
 				ASSIGN(BN_P256, BN_256);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 315
@@ -1041,6 +1045,7 @@ void ep_param_set(int param) {
 				ASSIGN(B24_P315, B24_315);
 				endom = 1;
 				pairf = EP_B24;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 317
@@ -1048,6 +1053,7 @@ void ep_param_set(int param) {
 				ASSIGN(B24_P317, B24_317);
 				endom = 1;
 				pairf = EP_B24;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 330
@@ -1055,6 +1061,7 @@ void ep_param_set(int param) {
 				ASSIGN(K16_P330, K16_330);
 				endom = 1;
 				pairf = EP_K16;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 354
@@ -1062,6 +1069,7 @@ void ep_param_set(int param) {
 				ASSIGN(K18_P354, K18_354);
 				endom = 1;
 				pairf = EP_K18;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 377
@@ -1069,6 +1077,7 @@ void ep_param_set(int param) {
 				ASSIGN(B12_P377, B12_377);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 381
@@ -1078,6 +1087,7 @@ void ep_param_set(int param) {
 				ASSIGNM(B12_P381);
 				ctmap = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 382
@@ -1091,6 +1101,7 @@ void ep_param_set(int param) {
 				ASSIGN(BN_P382, BN_382);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 383
@@ -1104,6 +1115,7 @@ void ep_param_set(int param) {
 				ASSIGN(B12_P383, B12_383);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 384
@@ -1117,11 +1129,13 @@ void ep_param_set(int param) {
 				ASSIGN(BN_P446, BN_446);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 			case B12_P446:
 				ASSIGN(B12_P446, B12_446);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 455
@@ -1129,6 +1143,7 @@ void ep_param_set(int param) {
 				ASSIGN(B12_P455, B12_455);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 508
@@ -1136,6 +1151,7 @@ void ep_param_set(int param) {
 				ASSIGN(K18_P508, K18_508);
 				endom = 1;
 				pairf = EP_K18;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 509
@@ -1143,6 +1159,7 @@ void ep_param_set(int param) {
 				ASSIGN(B24_P509, B24_509);
 				endom = 1;
 				pairf = EP_B24;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 510
@@ -1150,6 +1167,7 @@ void ep_param_set(int param) {
 				ASSIGN(AFG16_P510, AFG16_510);
 				endom = 1;
 				pairf = EP_AFG16;
+				twist = RLC_EP_DTYPE;
 				break;
 #endif
 #if FP_PRIME == 511
@@ -1169,6 +1187,7 @@ void ep_param_set(int param) {
 				ASSIGNK(GMT8_P544, GMT8_544);
 				endom = 1;
 				pairf = EP_GMT8;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 569
@@ -1176,6 +1195,7 @@ void ep_param_set(int param) {
 				ASSIGNK(SG54_P569, SG54_569);
 				endom = 1;
 				pairf = EP_SG54;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 575
@@ -1183,6 +1203,7 @@ void ep_param_set(int param) {
 				ASSIGN(B48_P575, B48_575);
 				endom = 1;
 				pairf = EP_B48;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 638
@@ -1190,21 +1211,25 @@ void ep_param_set(int param) {
 				ASSIGN(BN_P638, BN_638);
 				endom = 1;
 				pairf = EP_BN;
+				twist = RLC_EP_DTYPE;
 				break;
 			case B12_P638:
 				ASSIGN(B12_P638, B12_638);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_MTYPE;
 				break;
 			case K18_P638:
 				ASSIGN(K18_P638, K18_638);
 				endom = 1;
 				pairf = EP_K18;
+				twist = RLC_EP_MTYPE;
 				break;
 			case SG18_P638:
 				ASSIGN(SG18_P638, SG18_638);
 				endom = 1;
 				pairf = EP_SG18;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 765
@@ -1212,6 +1237,7 @@ void ep_param_set(int param) {
 				ASSIGN(FM16_P765, FM16_765);
 				endom = 1;
 				pairf = EP_FM16;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 766
@@ -1219,11 +1245,13 @@ void ep_param_set(int param) {
 				ASSIGN(K16_P766, K16_766);
 				endom = 1;
 				pairf = EP_K16;
+				twist = RLC_EP_MTYPE;
 				break;
 			case AFG16_P766:
 				ASSIGN(AFG16_P766, AFG16_766);
 				endom = 1;
 				pairf = EP_AFG16;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 768
@@ -1231,6 +1259,7 @@ void ep_param_set(int param) {
 				ASSIGN(FM18_P768, FM18_768);
 				endom = 1;
 				pairf = EP_FM18;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 1150
@@ -1238,6 +1267,7 @@ void ep_param_set(int param) {
 				ASSIGN(B12_P1150, B12_1150);
 				endom = 1;
 				pairf = EP_B12;
+				twist = RLC_EP_MTYPE;
 				break;
 #endif
 #if FP_PRIME == 1536
@@ -1368,6 +1398,7 @@ void ep_param_set(int param) {
 		(void)plain;
 		(void)super;
 		(void)pairf;
+		(void)twist;
 		(void)beta;
 		(void)ctmap;
 
@@ -1388,6 +1419,41 @@ void ep_param_set(int param) {
 		if (super) {
 			ep_curve_set_super(a, b, g, r, h, ctmap);
 		}
+
+#ifdef WITH_PP
+		/* Set up the twist that holds G_2 for pairing-friendly curves. */
+		switch (pairf) {
+			case EP_BN:
+			case EP_B12:
+			case EP_GMT8:
+				ep2_curve_set_twist(twist);
+				break;
+			case EP_K18:
+			case EP_SG18:
+			case EP_FM18:
+				ep3_curve_set_twist(twist);
+				break;
+			case EP_K16:
+			case EP_AFG16:
+			case EP_FM16:
+			case EP_B24:
+				ep4_curve_set_twist(twist);
+				break;
+			case EP_B48:
+				ep8_curve_set_twist(twist);
+				break;
+			case EP_SG54:
+				ep9_curve_set_twist(twist);
+				break;
+#if defined(WITH_PC)
+			case EP_K1:
+			case EP_SS2:
+				/* There is no twist, but compute the pairing generator. */
+				pc_core_calc();
+				break;
+#endif
+		}
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -1530,155 +1596,72 @@ int ep_param_set_any_super(void) {
 }
 
 int ep_param_set_any_pairf(void) {
-	int type = 0, extension = 0, r = RLC_OK;
+	int r = RLC_OK;
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 254
 	ep_param_set(BN_P254);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 315
 	ep_param_set(B24_P315);
-	type = RLC_EP_DTYPE;
-	extension = 4;
 #elif FP_PRIME == 317
 	ep_param_set(B24_P317);
-	type = RLC_EP_MTYPE;
-	extension = 4;
 #elif FP_PRIME == 330
 	ep_param_set(K16_P330);
-	type = RLC_EP_MTYPE;
-	extension = 4;
 #elif FP_PRIME == 354
 	ep_param_set(K18_P354);
-	type = RLC_EP_DTYPE;
-	extension = 3;
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 383
 	ep_param_set(B12_P383);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
 	ep_param_set(B12_P446);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #else
 	ep_param_set(BN_P446);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 508
 	ep_param_set(K18_P508);
-	type = RLC_EP_DTYPE;
-	extension = 3;
 #elif FP_PRIME == 509
 	ep_param_set(B24_P509);
-	type = RLC_EP_DTYPE;
-	extension = 4;
 #elif FP_PRIME == 510
 	ep_param_set(AFG16_P510);
-	type = RLC_EP_DTYPE;
-	extension = 4;
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #elif FP_PRIME == 569
 	ep_param_set(SG54_P569);
-	type = RLC_EP_MTYPE;
-	extension = 9;
 #elif FP_PRIME == 575
 	ep_param_set(B48_P575);
-	type = RLC_EP_MTYPE;
-	extension = 8;
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #else
 	//ep_param_set(BN_P638);
-	//type = RLC_EP_DTYPE;
-	//extension = 2;
 	ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
-	type = RLC_EP_MTYPE;
-	extension = 3;
 #endif
 #elif FP_PRIME == 765
 	ep_param_set(FM16_P765);
-	type = RLC_EP_MTYPE;
-	extension = 4;
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
 	ep_param_set(AFG16_P766);
-	type = RLC_EP_MTYPE;
-	extension = 4;
 #elif FP_PRIME == 768
 	ep_param_set(FM18_P768);
-	type = RLC_EP_MTYPE;
-	extension = 3;
 #elif FP_PRIME == 1150
 	ep_param_set(B12_P1150);
-	type = RLC_EP_MTYPE;
-	extension = 2;
 #elif FP_PRIME == 1536
 	ep_param_set(SS_P1536);
-	extension = 1;
 #elif FP_PRIME == 3072
 	ep_param_set(K1_P3072);
-	extension = 1;
 #else
 	r = RLC_ERR;
-#endif
-#ifdef WITH_PP
-	if (r == RLC_OK) {
-		switch (extension) {
-			case 1:
-				pc_core_calc();
-				break;
-			case 2:
-				ep2_curve_set_twist(type);
-				break;
-			case 3:
-				ep3_curve_set_twist(type);
-				break;
-			case 4:
-				ep4_curve_set_twist(type);
-				break;
-			case 8:
-				ep8_curve_set_twist(type);
-				break;
-			case 9:
-				ep9_curve_set_twist(type);
-				break;
-		}
-	}
-#else
-	(void)type;
-	(void)extension;
 #endif
 	return r;
 }

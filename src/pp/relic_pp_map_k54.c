@@ -24,12 +24,14 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 54.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 54.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
@@ -37,84 +39,45 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+TMPL_PP_MIL(54, ep9);
+
+TMPL_PP_MIL_LIT(54, ep9);
+
 /**
- * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter represented in sparse form.
+ * Multiplies the result of the Miller loop over the parameter by the final
+ * lines of the optimal ate pairing, so that it becomes
+ * f_{a,Q}^3 * l_{T,T} * l_{T,2T} * l_{Frob^10(Q),Frob(Q)}, all evaluated at P.
  *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting points.
+ * @param[in,out] r			- the result.
+ * @param[in] t				- the points aQ produced by the loop.
  * @param[in] q				- the vector of affine points in G_2.
  * @param[in] p				- the vector of affine points in G_1.
  * @param[in] m				- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
  */
-static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
-		int m, const bn_t a) {
+static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, int m) {
 	fp54_t l;
-	ep_t *_p = NULL;
 	ep9_t s, u;
-	size_t len = bn_bits(a) + 1;
-	int i, j;
-	int8_t naf[RLC_FP_BITS + 1];
-
-	if (m == 0) {
-		return;
-	}
-
-	/* Allocate after the early return, so that it does not leak. */
-	_p = RLC_ALLOCA(ep_t, m);
-	if (_p == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
+	ep_t _p;
+	int j;
 
 	fp54_null(l);
-	ep9_null(s);
-	ep9_null(u);
+	ep9_null_all(s, u);
+	ep_null(_p);
 
 	RLC_TRY {
 		fp54_new(l);
-		ep9_new(s);
-		ep9_new(u);
-		for (j = 0; j < m; j++) {
-			ep_null(_p[j]);
-			ep_new(_p[j]);
-			ep9_copy(t[j], q[j]);
-#if EP_ADD == BASIC
-			ep_neg(_p[j], p[j]);
-#else
-			fp_add(_p[j]->x, p[j]->x, p[j]->x);
-			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
-			fp_neg(_p[j]->y, p[j]->y);
-#endif
-		}
+		ep9_new_all(s, u);
+		ep_new(_p);
 
-		fp54_zero(l);
-		bn_rec_naf(naf, &len, a, 2);
-		for (i = len - 2; i >= 0; i--) {
-			fp54_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_k54(l, t[j], t[j], _p[j]);
-				fp54_mul_dxs(r, r, l);
-				if (naf[i] > 0) {
-					pp_add_k54(l, t[j], q[j], p[j]);
-					fp54_mul_dxs(r, r, l);
-				}
-				if (naf[i] < 0) {
-					ep9_neg(u, q[j]);
-					pp_add_k54(l, t[j], u, p[j]);
-					fp54_mul_dxs(r, r, l);
-				}
-			}
-		}
 		/* Compute f^3. */
 		fp54_sqr(l, r);
 		fp54_mul(r, r, l);
 
 		for (j = 0; j < m; j++) {
 			/* Multiply by the lines through T and 2T. */
+			TMPL_PP_MIL_P_54(_p, p[j])
 			fp54_zero(l);
-			pp_dbl_k54(l, s, t[j], _p[j]);
+			pp_dbl_k54(l, s, t[j], _p);
 			fp54_mul_dxs(r, r, l);
 			pp_norm_k54(s, s);
 			pp_add_k54(l, t[j], s, p[j]);
@@ -132,12 +95,8 @@ static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
 	}
 	RLC_FINALLY {
 		fp54_free(l);
-		ep9_free(s);
-		ep9_free(u);
-		for (j = 0; j < m; j++) {
-			ep_free(_p[j]);
-		}
-		RLC_FREE(_p);
+		ep9_free_all(s, u);
+		ep_free(_p);
 	}
 }
 
@@ -145,109 +104,32 @@ static void pp_mil_k54(fp54_t r, ep9_t *t, const ep9_t *q, const ep_t *p,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k54(fp54_t r, const ep_t p, const ep9_t q) {
-	ep_t _p[1];
-	ep9_t t[1], _q[1];
-	bn_t a;
+TMPL_PP_ADD_BASIC(54, ep9, fp9);
 
-	ep_null(_p[0]);
-	ep9_null(_q[0]);
-	ep9_null(t[0]);
-	bn_null(a);
+TMPL_PP_ADD_PROJC(54, ep9, fp9);
 
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep9_new(_q[0]);
-		ep9_new(t[0]);
-		bn_new(a);
+TMPL_PP_ADD_LAZYR(54, ep9, fp9, dv9);
 
-		fp_prime_get_par(a);
-		fp54_set_dig(r, 1);
+TMPL_PP_ADD_LIT(54, ep9, fp9);
 
-		ep_norm(_p[0], p);
-		ep9_norm(_q[0], q);
+TMPL_PP_DBL_BASIC(54, ep9, fp9);
 
-		if (!ep_is_infty(_p[0]) && !ep9_is_infty(_q[0])) {
-			switch (ep_curve_is_pairf()) {
-				case EP_SG54:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k54(r, t, (const ep9_t *)_q, (const ep_t *)_p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp54_inv_cyc(r, r);
-					}
-					pp_exp_k54(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep9_free(_q[0]);
-		ep9_free(t[0]);
-		bn_free(a);
-	}
-}
+TMPL_PP_DBL_PROJC(54, ep9, fp9);
 
-void pp_map_sim_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep9_t *t = RLC_ALLOCA(ep9_t, m), *_q = RLC_ALLOCA(ep9_t, m);
-	bn_t a;
-	int i, j;
+TMPL_PP_DBL_LAZYR(54, ep9, fp9, dv9);
 
-	RLC_TRY {
-		bn_null(a);
-		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep9_null(_q[i]);
-			ep9_null(t[i]);
-			ep_new(_p[i]);
-			ep9_new(_q[i]);
-			ep9_new(t[i]);
-		}
+TMPL_PP_DBL_LIT(54, ep9, fp9);
 
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep9_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep9_norm(_q[j++], q[i]);
-			}
-		}
+TMPL_PP_NORM(54, ep9, fp9);
 
-		fp_prime_get_par(a);
-		fp54_set_dig(r, 1);
+TMPL_PP_MAP_TATEP(54, ep9);
 
-		if (j > 0) {
-			switch (ep_curve_is_pairf()) {
-				case EP_SG54:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k54(r, t, (const ep9_t *)_q, (const ep_t *)_p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp54_inv_cyc(r, r);
-					}
-					pp_exp_k54(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep9_free(_q[i]);
-			ep9_free(t[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-	}
-}
+TMPL_PP_MAP_SIM_TATEP(54, ep9);
+
+TMPL_PP_MAP_WEILP(54, ep9);
+
+TMPL_PP_MAP_SIM_WEILP(54, ep9);
+
+TMPL_PP_MAP_OATEP(54, ep9, EP_SG54);
+
+TMPL_PP_MAP_SIM_OATEP(54, ep9, EP_SG54);

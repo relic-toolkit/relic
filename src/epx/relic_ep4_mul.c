@@ -356,6 +356,8 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 	bn_null(k);
 
 	RLC_TRY {
+		bn_new(k);
+
 		switch (ep_curve_is_pairf()) {
 			case EP_K16:
 				ep4_mul_cof_k16(r, p);

@@ -1270,7 +1270,7 @@ static int pdpub(void) {
 			TEST_ASSERT(cp_pdpub_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
@@ -1281,7 +1281,7 @@ static int pdpub(void) {
 			TEST_ASSERT(cp_lvpub_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_lvpub_ask(v1, w2, r1, p, q, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_lvpub_ask(v1, w2, r1, p, q, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
@@ -1372,7 +1372,7 @@ static int pdprv(void) {
 			TEST_ASSERT(cp_pdprv_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ans(g, v1, w2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
@@ -1383,7 +1383,7 @@ static int pdprv(void) {
 			TEST_ASSERT(cp_lvprv_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_lvprv_ask(v1, w2, r1, p, q, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_lvprv_ask(v1, w2, r1, p, q, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvprv_ans(g, v1, w2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
@@ -2118,7 +2118,7 @@ static int mpss(void) {
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0]) == RLC_OK, end);
 			/* Verify signature in MPC. */
 			cp_mpss_ver(e[0], g, s, m, h, x[0], y[0], tri[2], t);
 			TEST_ASSERT(gt_is_unity(e[0]) == 1, end);

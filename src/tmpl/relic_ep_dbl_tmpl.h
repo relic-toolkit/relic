@@ -115,11 +115,8 @@
  */
 #define TMPL_EP_DBL_PROJC(C, F)												\
 	void C##_dbl_projc(C##_t r, const C##_t p) {							\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5);								\

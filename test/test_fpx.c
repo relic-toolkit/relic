@@ -898,6 +898,15 @@ static int digit2(void) {
 			fp2_mul_dig(d, a, g);
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp2_rand(a);
+			fp2_zero(b);
+			fp_rand(b[0]);
+			fp2_mul(c, a, b);
+			fp2_mul_fp(d, a, b[0]);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1475,10 +1484,13 @@ static int exponentiation3(void) {
 static int square_root3(void) {
 	int code = RLC_ERR;
 	fp3_t a, b, c;
+	bn_t e, g;
 
 	fp3_null_all(a, b, c);
+	bn_null_all(e, g);
 
 	RLC_TRY {
+		bn_new_all(e, g);
 		fp3_new_all(a, b, c);
 
 		TEST_CASE("quadratic residuosity test is correct") {
@@ -1491,6 +1503,25 @@ static int square_root3(void) {
 				fp3_rand(a);
 			} while(fp3_srt(b, a) == 1);
 			TEST_ASSERT(fp3_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("cubic residuosity test is correct") {
+			fp3_zero(a);
+			TEST_ASSERT(fp3_is_cub(a) == 1, end);
+			fp3_rand(a);
+			fp3_sqr(b, a);
+			fp3_mul(b, b, a);
+			TEST_ASSERT(fp3_is_cub(b) == 1, end);
+			/* Compare with the definition: a is a cube iff a^((p^3-1)/3) = 1. */
+			bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+			bn_sqr(g, e);
+			bn_mul(g, g, e);
+			bn_sub_dig(g, g, 1);
+			bn_div_dig(g, g, 3);
+			fp3_rand(a);
+			fp3_exp(b, a, g);
+			TEST_ASSERT(fp3_is_cub(a) == (fp3_cmp_dig(b, 1) == RLC_EQ), end);
 		}
 		TEST_END;
 
@@ -1518,6 +1549,7 @@ static int square_root3(void) {
 	}
 	code = RLC_OK;
   end:
+	bn_free_all(e, g);
 	fp3_free_all(a, b, c);
 	return code;
 }
@@ -1559,6 +1591,15 @@ static int digit3(void) {
 			fp3_set_dig(b, g);
 			fp3_mul(c, a, b);
 			fp3_mul_dig(d, a, g);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp3_rand(a);
+			fp3_zero(b);
+			fp_rand(b[0]);
+			fp3_mul(c, a, b);
+			fp3_mul_fp(d, a, b[0]);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -2169,6 +2210,15 @@ static int digit4(void) {
 			fp4_set_dig(b, g);
 			fp4_mul(c, a, b);
 			fp4_mul_dig(d, a, g);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp4_rand(a);
+			fp4_zero(b);
+			fp_rand(b[0][0]);
+			fp4_mul(c, a, b);
+			fp4_mul_fp(d, a, b[0][0]);
 			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3038,6 +3088,15 @@ static int multiplication8(void) {
 			fp8_mul_dig(d, a, g);
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp8_rand(a);
+			fp8_zero(b);
+			fp_rand(b[0][0][0]);
+			fp8_mul(c, a, b);
+			fp8_mul_fp(d, a, b[0][0][0]);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3636,6 +3695,15 @@ static int multiplication9(void) {
 			fp9_mul(d, a, b);
 			fp9_mul(e, b, a);
 			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a prime field element is consistent") {
+			fp9_rand(a);
+			fp9_zero(b);
+			fp_rand(b[0][0]);
+			fp9_mul(c, a, b);
+			fp9_mul_fp(d, a, b[0][0]);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("multiplication is associative") {

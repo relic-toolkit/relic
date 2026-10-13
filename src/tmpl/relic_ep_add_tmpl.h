@@ -260,16 +260,8 @@
 	}																		\
 																			\
 	void C##_add_projc(C##_t r, const C##_t p, const C##_t q) {				\
-		if (C##_is_infty(p)) {												\
-			C##_copy(r, q);													\
-			return;															\
-		}																	\
-																			\
-		if (C##_is_infty(q)) {												\
-			C##_copy(r, p);													\
-			return;															\
-		}																	\
-																			\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
 		if (q->coord == BASIC) {											\

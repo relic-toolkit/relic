@@ -93,12 +93,16 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
         return RLC_ERR;
     }
 
+    if (a == NULL || b == NULL) {
+        RLC_FREE(a);
+        RLC_FREE(b);
+        RLC_THROW(ERR_NO_MEMORY);
+        return RLC_ERR;
+    }
+
     bn_null(t);
 
     RLC_TRY {
-        if (a == NULL || b == NULL) {
-            RLC_THROW(ERR_NO_MEMORY);
-        }
 
         bn_new(t);
         for (int i = 0; i < k; i++) {

@@ -239,10 +239,14 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 	if (n <= 10) {
 		ep_t *_p = RLC_ALLOCA(ep_t, 2 * n);
 
+		if (naf == NULL || _p == NULL) {
+			RLC_FREE(naf);
+			RLC_FREE(_p);
+			RLC_THROW(ERR_NO_MEMORY);
+			return;
+		}
+
 		RLC_TRY {
-			if (naf == NULL || _p == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
-			}
 			bn_new(q);
 			for (j = 0; j < 2; j++) {
 				bn_null(_k[j]);
@@ -313,10 +317,15 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 		ep_null(u);
 		ep_null(v);
 
+		if (naf == NULL || _p == NULL || _q == NULL) {
+			RLC_FREE(naf);
+			RLC_FREE(_p);
+			RLC_FREE(_q);
+			RLC_THROW(ERR_NO_MEMORY);
+			return;
+		}
+
 		RLC_TRY {
-			if (naf == NULL || _p == NULL || _q == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
-			}
 			bn_new(q);
 			ep_new(s);
 			ep_new(t);

@@ -172,6 +172,22 @@ static int util(void) {
 			}
 		}
 		TEST_END;
+
+		TEST_CASE("reading a point with an invalid tag fails") {
+			for (int j = 0; j < 2; j++) {
+				eb_rand(a);
+				l = eb_size_bin(a, j);
+				eb_write_bin(bin, l, a, j);
+				bin[0] = 5;
+				err_get_code();
+				RLC_TRY {
+					eb_read_bin(b, bin, l);
+				} RLC_CATCH_ANY {
+				}
+				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			}
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

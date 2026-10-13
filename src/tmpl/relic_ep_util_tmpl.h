@@ -72,6 +72,33 @@
 #endif
 
 /**
+ * Copies a point in constant time if a bit is set. Points with automatic
+ * allocation are copied at once; with dynamic allocation, the coordinates of
+ * points over extension fields are pointers, so they are copied one by one.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[out] R		- the result.
+ * @param[in] P			- the point to copy.
+ * @param[in] B			- the condition bit.
+ */
+#if ALLOC == AUTO
+
+#define TMPL_EP_COPY_SEC(C, F, R, P, B)										\
+	dv_copy_sec((dig_t *)R, (const dig_t *)P,								\
+		sizeof(C##_st) / sizeof(dig_t), B)
+
+#else
+
+#define TMPL_EP_COPY_SEC(C, F, R, P, B)										\
+	F##_copy_sec(R->x, P->x, B);											\
+	F##_copy_sec(R->y, P->y, B);											\
+	F##_copy_sec(R->z, P->z, B);											\
+	R->coord = RLC_SEL(R->coord, P->coord, B)
+
+#endif
+
+/**
  * Defines a template for basic utilities: testing for and setting the
  * point at infinity, copying, copying and swapping in constant time,
  * sampling, blinding, validating, tabulating multiples and printing points.
@@ -85,10 +112,12 @@
 	}																		\
 																			\
 	void C##_set_infty(C##_t p) {											\
+		/* The point (0 : 1 : 0) in homogeneous projective coordinates,		\
+		 * where the complete formulas need no special case for it. */		\
 		F##_zero(p->x);														\
-		F##_zero(p->y);														\
+		F##_set_dig(p->y, 1);												\
 		F##_zero(p->z);														\
-		p->coord = BASIC;													\
+		p->coord = PROJC;													\
 	}																		\
 																			\
 	void C##_copy(C##_t r, const C##_t p) {									\
@@ -99,9 +128,7 @@
 	}																		\
 																			\
 	void C##_copy_sec(C##_t r, const C##_t p, dig_t bit) {					\
-		/* Copy all coordinates and the coordinate system at once. */		\
-		dv_copy_sec((dig_t *)r, (const dig_t *)p,							\
-			sizeof(C##_st) / sizeof(dig_t), bit);							\
+		TMPL_EP_COPY_SEC(C, F, r, p, bit);									\
 	}																		\
 																			\
 	void C##_swap_sec(C##_t p, C##_t q, dig_t bit) {						\
@@ -307,7 +334,9 @@
 			}																\
 																			\
 			for (i = 0; i < n; i++) {										\
-				C##_norm_imp(r[i], r[i], 1);								\
+				if (!C##_is_infty(r[i])) {									\
+					C##_norm_imp(r[i], r[i], 1);							\
+				}															\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\

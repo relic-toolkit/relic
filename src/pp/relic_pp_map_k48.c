@@ -24,229 +24,55 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 48.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 48.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
 /*============================================================================*/
-/* Private definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-/**
- * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter represented in sparse form.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] q				- the vector of first arguments in affine coordinates.
- * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_k48(fp48_t r, ep8_t *t, ep8_t *q, ep_t *p, int m, bn_t a) {
-	fp48_t l;
-	ep_t *_p = NULL;
-	ep8_t *_q = NULL;
-	size_t len = bn_bits(a) + 1;
-	int i, j;
-	int8_t s[RLC_FP_BITS + 1];
+TMPL_PP_MIL(48, ep8);
 
-	if (m == 0) {
-		return;
-	}
-
-	/* Allocate after the early return, so that it does not leak. */
-	_p = RLC_ALLOCA(ep_t, m);
-	_q = RLC_ALLOCA(ep8_t, m);
-	if (_p == NULL || _q == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	fp48_null(l);
-
-	RLC_TRY {
-		fp48_new(l);
-		for (j = 0; j < m; j++) {
-			ep_null(_p[j]);
-			ep8_null(_q[j]);
-			ep_new(_p[j]);
-			ep8_new(_q[j]);
-			ep8_copy(t[j], q[j]);
-			ep8_neg(_q[j], q[j]);
-#if EP_ADD == BASIC
-			ep_neg(_p[j], p[j]);
-#else
-			fp_add(_p[j]->x, p[j]->x, p[j]->x);
-			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
-			fp_neg(_p[j]->y, p[j]->y);
-#endif
-		}
-
-		fp48_zero(l);
-		bn_rec_naf(s, &len, a, 2);
-		pp_dbl_k48(r, t[0], t[0], _p[0]);
-		for (j = 1; j < m; j++) {
-			pp_dbl_k48(l, t[j], t[j], _p[j]);
-			fp48_mul_dxs(r, r, l);
-		}
-		if (s[len - 2] > 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k48(l, t[j], q[j], p[j]);
-				fp48_mul_dxs(r, r, l);
-			}
-		}
-		if (s[len - 2] < 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k48(l, t[j], _q[j], p[j]);
-				fp48_mul_dxs(r, r, l);
-			}
-		}
-
-		for (i = len - 3; i >= 0; i--) {
-			fp48_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_k48(l, t[j], t[j], _p[j]);
-				fp48_mul_dxs(r, r, l);
-				if (s[i] > 0) {
-					pp_add_k48(l, t[j], q[j], p[j]);
-					fp48_mul_dxs(r, r, l);
-				}
-				if (s[i] < 0) {
-					pp_add_k48(l, t[j], _q[j], p[j]);
-					fp48_mul_dxs(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp48_free(l);
-		for (j = 0; j < m; j++) {
-			ep_free(_p[j]);
-			ep8_free(_q[j]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-	}
-}
+TMPL_PP_MIL_LIT(48, ep8);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k48(fp48_t r, const ep_t p, const ep8_t q) {
-	ep_t _p[1];
-	ep8_t t[1], _q[1];
-	bn_t a;
+TMPL_PP_ADD_BASIC(48, ep8, fp8);
 
-	ep_null(_p[0]);
-	ep8_null(_q[0]);
-	ep8_null(t[0]);
-	bn_null(a);
+TMPL_PP_ADD_PROJC(48, ep8, fp8);
 
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep8_new(_q[0]);
-		ep8_new(t[0]);
-		bn_new(a);
+TMPL_PP_ADD_LAZYR(48, ep8, fp8, dv8);
 
-		fp_prime_get_par(a);
-		fp48_set_dig(r, 1);
+TMPL_PP_ADD_LIT(48, ep8, fp8);
 
-		ep_norm(_p[0], p);
-		ep8_norm(_q[0], q);
+TMPL_PP_DBL_BASIC(48, ep8, fp8);
 
-		if (!ep_is_infty(_p[0]) && !ep8_is_infty(_q[0])) {
-			switch (ep_curve_is_pairf()) {
-				case EP_B48:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k48(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp48_inv_cyc(r, r);
-					}
-					pp_exp_k48(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep8_free(_q[0]);
-		ep8_free(t[0]);
-		bn_free(a);
-	}
-}
+TMPL_PP_DBL_PROJC(48, ep8, fp8);
 
-void pp_map_sim_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep8_t *t = RLC_ALLOCA(ep8_t, m), *_q = RLC_ALLOCA(ep8_t, m);
-	bn_t a;
-	int i, j;
+TMPL_PP_DBL_LAZYR(48, ep8, fp8, dv8);
 
-	RLC_TRY {
-		bn_null(a);
-		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep8_null(_q[i]);
-			ep8_null(t[i]);
-			ep_new(_p[i]);
-			ep8_new(_q[i]);
-			ep8_new(t[i]);
-		}
+TMPL_PP_DBL_LIT(48, ep8, fp8);
 
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep8_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep8_norm(_q[j++], q[i]);
-			}
-		}
+TMPL_PP_NORM(48, ep8, fp8);
 
-		fp_prime_get_par(a);
-		fp48_set_dig(r, 1);
+TMPL_PP_MAP_TATEP(48, ep8);
 
-		if (j > 0) {
-			switch (ep_curve_is_pairf()) {
-				case EP_B48:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k48(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp48_inv_cyc(r, r);
-					}
-					pp_exp_k48(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep8_free(_q[i]);
-			ep8_free(t[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-	}
-}
+TMPL_PP_MAP_SIM_TATEP(48, ep8);
+
+TMPL_PP_MAP_WEILP(48, ep8);
+
+TMPL_PP_MAP_SIM_WEILP(48, ep8);
+
+TMPL_PP_MAP_OATEP(48, ep8, EP_B48);
+
+TMPL_PP_MAP_SIM_OATEP(48, ep8, EP_B48);

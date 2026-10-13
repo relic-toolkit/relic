@@ -1161,11 +1161,10 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
- * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_pdpub_ask(g1_t v1, g2_t w2, const g1_t p, const g2_t q, const bn_t c,
-		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
+		const bn_t r, const g1_t u1, const g2_t u2);
 
 /**
  * Executes the server-side response for the DCKKS pairing delegation protocol.
@@ -1217,13 +1216,11 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
- * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
-		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
-		const g2_t v2[4]);
+		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t v2[4]);
 
 /**
  * Executes the server-side response for the DCKKS pairing delegation protocol.
@@ -1275,11 +1272,10 @@ int cp_lvpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
- * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_lvpub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
-		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
+		const bn_t r, const g1_t u1, const g2_t u2);
 
 /**
  * Executes the server-side response for the LOVE pairing delegation protocol.
@@ -1332,13 +1328,11 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
- * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const bn_t c, const g1_t p,
-		const g2_t q, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
-		const g2_t v2[4]);
+		const g2_t q, const bn_t r[3], const g1_t u1[2], const g2_t v2[4]);
 
 /**
  * Executes the server-side response for the LOVE pairing delegation protocol.
@@ -2037,11 +2031,10 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
  * @param[in] r				- the first part of the private key.
  * @param[in] s				- the second part of the private key.
  * @param[in] mul_tri		- the triple for the multiplication.
- * @param[in] sm_tri		- the triple for the scalar multiplication.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
-		const bn_t s[2], const mt_t mul_tri[2], const mt_t sm_tri[2]);
+		const bn_t s[2], const mt_t mul_tri[2]);
 
 /**
  * Opens public values in the MPSS protocols, in this case public keys.

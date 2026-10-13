@@ -37,13 +37,11 @@
 /*============================================================================*/
 
 int fp2_field_get_qnr() {
-	/* Override some of the results when cubic non-residue is also needed. */
-#if FP_PRIME == 1150
-	return 32;
-#elif FP_PRIME == 158 || FP_PRIME == 256
+#if FP_PRIME == 256
+	/* The search below finds 2 + u, but keep 4 + u = c^2 + d^3 * u for
+	 * c = 2, d = 1, as in "A family of implementation-friendly BN elliptic
+	 * curves" by Pereira, Simplicio, Naehrig and Barreto. */
 	return 4;
-#elif FP_PRIME == 446 && !defined(FP_QNRES)
-	return 16;
 #else
 	return core_get()->qnr2;
 #endif
@@ -78,18 +76,23 @@ void fp2_field_init(void) {
 #ifdef FP_QNRES
 		ctx->qnr2 = 1;
 #else
-		/* First start with u as quadratic non-residue. */
-		ctx->qnr2 = 0;
-		fp_zero(t0[0]);
-		fp_set_dig(t0[1], 1);
-		/* If it does not work, attempt (u + 1), otherwise double. */
-		/* We cannot used QR test here due to Frobenius constants below. */
-		if (fp2_srt(t1, t0)) {
+		if (fp_prime_get_mod8() % 4 == 1) {
+			/* If p = 1 mod 4, fp2_mul_nor() always uses u, a non-square. */
+			ctx->qnr2 = 0;
+		} else {
+			/* Otherwise, try (u + 1) and double the constant, as supported by
+			 * fp2_mul_nor(). The non-residue must be a non-square, and also a
+			 * non-cube if p = 1 mod 3 so that it defines cubic extensions. */
 			ctx->qnr2 = 1;
 			fp_set_dig(t0[0], ctx->qnr2);
-			while (fp2_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
-				/* Pick a power of 2 for efficiency. */
+			fp_set_dig(t0[1], 1);
+			while (fp2_is_sqr(t0) ||
+					(fp_prime_get_mod18() % 3 == 1 && fp2_is_cub(t0))) {
 				ctx->qnr2 *= 2;
+				if (util_bits_dig(ctx->qnr2) >= RLC_DIG - 1) {
+					RLC_THROW(ERR_NO_VALID);
+					break;
+				}
 				fp_set_dig(t0[0], ctx->qnr2);
 			}
 		}
@@ -179,24 +182,6 @@ void fp3_field_init(void) {
 		bn_new(e);
 		fp3_new_all(t0, t1);
 
-		/* Start by trying a trivial quadratic non-residue. */
-		ctx->cnr3 = 0;
-		fp_zero(t0[0]);
-		fp_set_dig(t0[1], 1);
-		fp_zero(t0[2]);
-		/* If it does not work, attempt (u + 1), otherwise double. */
-		/* This code will fail if p \neq 1 mod 8 because square root in Fp^3
-		 * relies on Frobenius. Must implement explicit test for those cases. */
-		if (fp3_srt(t1, t0)) {
-			ctx->cnr3 = 1;
-			fp_set_dig(t0[0], ctx->cnr3);
-			while (fp3_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
-				/* Pick a power of 2 for efficiency. */
-				ctx->cnr3 *= 2;
-				fp_set_dig(t0[0], ctx->cnr3);
-			}
-		}
-
 		/* Compute t0 = u^((p - (p mod 3))/3). */
 		if (fp_prime_get_cnr() < 0) {
 			fp_set_dig(ctx->fp3_p0[0], -fp_prime_get_cnr());
@@ -208,6 +193,23 @@ void fp3_field_init(void) {
 		bn_div_dig(e, e, 3);
 		fp_exp(ctx->fp3_p0[0], ctx->fp3_p0[0], e);
 		fp_sqr(ctx->fp3_p0[1], ctx->fp3_p0[0]);
+
+		/* The non-residue (u + c) must be neither a square nor a cube in Fp^3,
+		 * so that it defines both the cubic extension Fp^9 and the quadratic
+		 * extension Fp^18 above it. The tests only need the Frobenius constant
+		 * computed above. Start with u, then attempt (u + 1) and double. */
+		ctx->cnr3 = 0;
+		fp_zero(t0[0]);
+		fp_set_dig(t0[1], 1);
+		fp_zero(t0[2]);
+		while (fp3_is_sqr(t0) || fp3_is_cub(t0)) {
+			ctx->cnr3 = (ctx->cnr3 == 0 ? 1 : 2 * ctx->cnr3);
+			if (util_bits_dig(ctx->cnr3) >= RLC_DIG - 1) {
+				RLC_THROW(ERR_NO_VALID);
+				break;
+			}
+			fp_set_dig(t0[0], ctx->cnr3);
+		}
 
 		/* Compute t0 = u^((p - (p mod 6))/6). */
 		fp3_set_dig(t1, 1);

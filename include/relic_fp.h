@@ -116,7 +116,7 @@ enum {
 	BN_158,
 	/** 254-bit prime provided in Nogami et al. for BN curves. */
 	BN_254,
-	/** 256-bit prime provided in Barreto et al. for BN curves. */
+	/** 256-bit prime provided in Pereira et al. for BN curves. */
 	BN_256,
 	/** 256-bit prime provided for BN curve standardized in China. */
 	SM9_256,

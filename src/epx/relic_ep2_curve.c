@@ -76,6 +76,11 @@
 #endif
 
 #if FP_PRIME == 256
+/*
+ * Twist from "A family of implementation-friendly BN elliptic curves" by
+ * Pereira, Simplicio, Naehrig and Barreto: b = c^4 + d^6 = 17 for c = 2 and
+ * d = 1, xi = c^2 + d^3 * u = 4 + u and b' = b / xi = 4 - u.
+ */
 /** @{ */
 #define BN_P256_A0		"0"
 #define BN_P256_A1		"0"
