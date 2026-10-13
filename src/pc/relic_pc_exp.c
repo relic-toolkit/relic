@@ -132,6 +132,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 	size_t l, m = (c == NULL ? 1 : 2), w = RLC_WIDTH;
 	int8_t *naf  = RLC_ALLOCA(int8_t, m * f * (RLC_FP_BITS + 1));
 	int8_t n0, *s = RLC_ALLOCA(int8_t, m * f);
+	int one = 1;
 	gt_t q, *t = RLC_ALLOCA(gt_t, m * f * RLC_GT_TABLE);
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, m * f);
 	size_t *_l = RLC_ALLOCA(size_t, m * f);
@@ -259,18 +260,32 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 			}
 		}
 
+		/* The accumulator is copied, not squared or multiplied, while it is
+		 * still the identity. */
 		gt_set_unity(e);
 		for (int j = l - 1; j >= 0; j--) {
-			gt_sqr(e, e);
+			if (!one) {
+				gt_sqr(e, e);
+			}
 
 			for (size_t i = 0; i < m * f; i++) {
 				n0 = naf[i * (RLC_FP_BITS + 1) + j];
 				if (n0 > 0) {
-					gt_mul(e, e, t[i * RLC_GT_TABLE + n0 / 2]);
+					if (one) {
+						gt_copy(e, t[i * RLC_GT_TABLE + n0 / 2]);
+					} else {
+						gt_mul(e, e, t[i * RLC_GT_TABLE + n0 / 2]);
+					}
+					one = 0;
 				}
 				if (n0 < 0) {
-					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
-					gt_mul(e, e, q);
+					if (one) {
+						gt_inv(e, t[i * RLC_GT_TABLE - n0 / 2]);
+					} else {
+						gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
+						gt_mul(e, e, q);
+					}
+					one = 0;
 				}
 			}
 		}
@@ -379,22 +394,30 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 					bn_bits(n), ep_curve_is_pairf() == EP_BN);
 		}
 
-		gt_set_unity(c);
+		/* The first digit initializes the accumulator. */
 		for (int j = l - 1; j >= 0; j--) {
-			gt_sqr(c, c);
+			if (j < (int)l - 1) {
+				gt_sqr(c, c);
+			}
 			for (size_t i = 0; i < d; i++) {
 				col = 0;
 				for (int k = f / d - 1; k > 0; k--) {
 					col <<= 1;
 					col += sac[i * f * RLC_FP_BITS + k * l + j];
 				}
-			
-				if (sac[i * f * RLC_FP_BITS + j]) {
+
+				if (j == (int)l - 1 && i == 0) {
+					if (sac[i * f * RLC_FP_BITS + j]) {
+						gt_inv(c, t[i * s + col]);
+					} else {
+						gt_copy(c, t[i * s + col]);
+					}
+				} else if (sac[i * f * RLC_FP_BITS + j]) {
 					gt_inv(q[1], t[i * s + col]);
 					gt_mul(c, c, q[1]);
 				} else {
 					gt_mul(c, c, t[i * s + col]);
-				}	
+				}
 			}
 		}
 
@@ -513,22 +536,29 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 					bn_bits(n), ep_curve_is_pairf() == EP_BN);
 		}
 
-		gt_set_unity(c);
+		/* The first digit initializes the accumulator, which depends only
+		 * on the loop counters. */
 		for (int j = l - 1; j >= 0; j--) {
-			gt_sqr(c, c);
+			if (j < (int)l - 1) {
+				gt_sqr(c, c);
+			}
 			for (size_t i = 0; i < d; i++) {
 				col = 0;
 				for (int k = f / d - 1; k > 0; k--) {
 					col <<= 1;
 					col += sac[i * f * RLC_FP_BITS + k * l + j];
 				}
-			
+
 				for (size_t m = 0; m < s; m++) {
 					gt_copy_sec(q[1], t[i * s + m], m == (size_t)col);
 				}
 				gt_inv(q[2], q[1]);
 				gt_copy_sec(q[1], q[2], sac[i * f * RLC_FP_BITS + j]);
-				gt_mul(c, c, q[1]);
+				if (j == (int)l - 1 && i == 0) {
+					gt_copy(c, q[1]);
+				} else {
+					gt_mul(c, c, q[1]);
+				}
 			}
 		}
 
@@ -672,9 +702,10 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			gt_copy(t[i * RLC_GT_TABLE], q);
 		}
 
-		gt_set_unity(c);
+		/* The first digit initializes the accumulator, which depends only
+		 * on the loop counters. */
 		for (int j = l - 1; j >= 0; j--) {
-			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
+			for (size_t i = 0; j < (int)l - 1 && i < RLC_WIDTH - 1; i++) {
 				gt_sqr(c, c);
 			}
 
@@ -689,7 +720,11 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 				gt_inv(q, w);
 				gt_copy_sec(q, w, c0 == 0);
-				gt_mul(c, c, q);
+				if (j == (int)l - 1 && i == 0) {
+					gt_copy(c, q);
+				} else {
+					gt_mul(c, c, q);
+				}
 
 			}
 		}
