@@ -84,38 +84,10 @@ static void fp_prime_set(const bn_t p) {
 		bn_lsh(t, t, RLC_DIG_LOG);
 		fp_exp(ctx->conv, r, t);
 
-		int d = (45907 * FP_PRIME + 26313) / 19929;
-
-#if WSIZE == 8
-		bn_set_dig(t, d >> 8);
-		bn_lsh(t, t, 8);
-		bn_add_dig(t, t, d & 0xFF);
-#else
-		bn_set_dig(t, d);
-#endif
-		dv_copy(ctx->inv, fp_prime_get(), RLC_FP_DIGS);
-		fp_add_dig(ctx->inv, ctx->inv, 1);
-		fp_hlv(ctx->inv, ctx->inv);
-		fp_exp(ctx->inv, ctx->inv, t);
-
 #if FP_RDC == MONTY
-		/* Convert to Montgomery form by multiplying by R^2. */
-		fp_mul(ctx->inv, ctx->inv, ctx->conv);
-		fp_mul(ctx->inv, ctx->inv, ctx->conv);
-#ifdef RLC_FP_ROOM
-		for (int i = 1, j = 0; i < d / (RLC_DIG - 2); i++) {
-			j = i % RLC_FP_DIGS;
-			if (j == 0) {
-				fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
-			}
-		}
-#else
-		for (int i = 0; i < d / (RLC_DIG - 2) - 1; i++) {
-			fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
-		}
+		/* Compute R^3 mod p for the inversion by jump division steps. */
+		fp_mul(ctx->inv, ctx->conv, ctx->conv);
 #endif
-
-#endif /* FP_RDC == MONTY */
 
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;

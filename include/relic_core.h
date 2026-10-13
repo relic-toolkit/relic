@@ -234,7 +234,7 @@ typedef struct _ctx_t {
 	fp_st conv;
 	/** Value of constant one in Montgomery form. */
 	fp_st one;
-	/** Value of constant for divstep-based inversion. */
+	/** Value of R^3 mod p for inversion by jump division steps. */
 	fp_st inv;
 	/** Square root of unity for square root extraction. */
 	fp_st srt;
