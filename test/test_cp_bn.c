@@ -306,7 +306,8 @@ static int rsa(void) {
 				bn_read_str(*k[j], rsa_kat[j], strlen(rsa_kat[j]), 16);
 			}
 			bn_copy(prv->crt->n, pub->crt->n);
-			bn_set_dig(pub->e, 65537);
+			bn_set_2b(pub->e, 16);
+			bn_add_dig(pub->e, pub->e, 1);
 			bn_copy(prv->e, pub->e);
 			ol = bn_size_bin(pub->crt->n);
 			/* OAEP. */
