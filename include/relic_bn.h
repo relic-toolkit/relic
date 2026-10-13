@@ -1229,9 +1229,11 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the constant-time Montgomery powering ladder method. An even modulus is
- * handed to bn_mxp_basic, which is not constant time, as the ladder needs a
- * reduction that takes an odd one.
+ * the Montgomery powering ladder method. With the gmp-sec backend and
+ * Montgomery reduction, it runs in constant time in the exponent, revealing
+ * only its number of digits; other backends have variable-time low-level
+ * arithmetic. An even modulus is handed to bn_mxp_basic, which is not constant
+ * time, as the ladder needs a reduction that takes an odd one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.

@@ -293,8 +293,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		dv_zero(tab[0]->dp + tab[0]->used, sm - tab[0]->used);
 		dv_zero(tab[1]->dp + tab[1]->used, sm - tab[1]->used);
 
-		for (i = bn_bits(b) - 1; i >= 0; i--) {
-			j = bn_get_bit(b, i);
+		/* Run over all digits of b and read its bits without branching, so
+		 * that only the number of digits is revealed. Leading zeros leave
+		 * the ladder unchanged. */
+		for (i = RLC_DIG * b->used - 1; i >= 0; i--) {
+			j = (b->dp[i / RLC_DIG] >> (i % RLC_DIG)) & 1;
 			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
 			bn_muln_low(t->dp, tab[0]->dp, tab[1]->dp, sm);
 			bn_modn_low(tab[0]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
@@ -303,10 +306,17 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
 		}
 
+		/* Convert back by reducing tab[0] < R, which leaves a value of at
+		 * most m, then subtract m in constant time if it is not smaller. */
+		dv_copy(t->dp, tab[0]->dp, sm);
+		dv_zero(t->dp + sm, sm);
+		bn_modn_low(tab[1]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
+		j = bn_subn_low(tab[0]->dp, tab[1]->dp, m->dp, sm);
+		dv_copy_sec(tab[0]->dp, tab[1]->dp, sm, j);
 		tab[0]->used = sm;
 		tab[0]->sign = RLC_POS;
 		bn_trim(tab[0]);
-		bn_mod_monty_back(u, tab[0], m);
+		bn_copy(u, tab[0]);
 #else
 		bn_set_dig(tab[0], 1);
 		bn_mod(tab[1], a, m);
