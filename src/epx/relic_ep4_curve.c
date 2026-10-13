@@ -268,7 +268,7 @@
 /**
  * Detects an optimization based on the curve coefficients.
  */
-static void detect_opt(int *opt, fp4_t a) {
+static void ep4_detect_opt(int *opt, fp4_t a) {
 	fp4_t t;
 	fp4_null(t);
 
@@ -538,8 +538,8 @@ void ep4_curve_set_twist(int type) {
 		fp4_copy(ctx->ep4_a, a);
 		fp4_copy(ctx->ep4_b, b);
 
-		detect_opt(&(ctx->ep4_opt_a), ctx->ep4_a);
-		detect_opt(&(ctx->ep4_opt_b), ctx->ep4_b);
+		ep4_detect_opt(&(ctx->ep4_opt_a), ctx->ep4_a);
+		ep4_detect_opt(&(ctx->ep4_opt_b), ctx->ep4_b);
 
 		bn_copy(&(ctx->ep4_r), r);
 		bn_copy(&(ctx->ep4_h), h);

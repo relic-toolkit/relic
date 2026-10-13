@@ -173,7 +173,7 @@
 /**
  * Detects an optimization based on the curve coefficients.
  */
-static void detect_opt(int *opt, fp3_t a) {
+static void ep3_detect_opt(int *opt, fp3_t a) {
 	fp3_t t;
 	fp3_null(t);
 
@@ -418,8 +418,8 @@ void ep3_curve_set_twist(int type) {
 		fp3_copy(ctx->ep3_a, a);
 		fp3_copy(ctx->ep3_b, b);
 
-		detect_opt(&(ctx->ep3_opt_a), ctx->ep3_a);
-		detect_opt(&(ctx->ep3_opt_b), ctx->ep3_b);
+		ep3_detect_opt(&(ctx->ep3_opt_a), ctx->ep3_a);
+		ep3_detect_opt(&(ctx->ep3_opt_b), ctx->ep3_b);
 
 		bn_copy(&(ctx->ep3_r), r);
 		bn_copy(&(ctx->ep3_h), h);

@@ -43,7 +43,7 @@
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-static void pp_exp_kss(fp18_t c, fp18_t a) {
+static void pp_exp_kss18(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3, t4, t5;
 	const int *b;
 	bn_t x;
@@ -372,7 +372,7 @@ static void pp_exp_fm(fp18_t c, fp18_t a) {
 void pp_exp_k18(fp18_t c, fp18_t a) {
 	switch (ep_curve_is_pairf()) {
 		case EP_K18:
-			pp_exp_kss(c, a);
+			pp_exp_kss18(c, a);
 			break;
 		case EP_SG18:
 			pp_exp_sg(c, a);

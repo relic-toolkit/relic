@@ -108,7 +108,7 @@
 /**
  * Detects an optimization based on the curve coefficients.
  */
-static void detect_opt(int *opt, fp9_t a) {
+static void ep9_detect_opt(int *opt, fp9_t a) {
 	fp9_t t;
 	fp9_null(t);
 
@@ -329,8 +329,8 @@ void ep9_curve_set_twist(int type) {
 		fp_copy(ctx->ep9_b[0][0], ep_curve_get_b());
 		fp9_mul(ctx->ep9_b, ctx->ep9_b, t);
 
-		detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
-		detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
+		ep9_detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
+		ep9_detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
 
 		ep_curve_get_ord(&(ctx->ep9_r));
 
@@ -384,8 +384,8 @@ void ep9_curve_set(const fp9_t a, const fp9_t b, const ep9_t g,
 	fp9_copy(ctx->ep9_a, a);
 	fp9_copy(ctx->ep9_b, b);
 
-	detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
-	detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
+	ep9_detect_opt(&(ctx->ep9_opt_a), ctx->ep9_a);
+	ep9_detect_opt(&(ctx->ep9_opt_b), ctx->ep9_b);
 
 	ep9_norm(ctx->ep9_g, g);
 	bn_copy(&(ctx->ep9_r), r);

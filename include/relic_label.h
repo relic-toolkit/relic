@@ -83,7 +83,6 @@
 
 #undef bench_init
 #undef bench_clean
-#undef bench_overhead
 #undef bench_reset
 #undef bench_before
 #undef bench_after
@@ -93,7 +92,6 @@
 
 #define bench_init 	RLC_PREFIX(bench_init)
 #define bench_clean 	RLC_PREFIX(bench_clean)
-#define bench_overhead 	RLC_PREFIX(bench_overhead)
 #define bench_reset 	RLC_PREFIX(bench_reset)
 #define bench_before 	RLC_PREFIX(bench_before)
 #define bench_after 	RLC_PREFIX(bench_after)

@@ -514,7 +514,7 @@ static void ep2_curve_set_map(void) {
 /**
  * Detects an optimization based on the curve coefficients.
  */
-static void detect_opt(int *opt, fp2_t a) {
+static void ep2_detect_opt(int *opt, fp2_t a) {
 	fp2_t t;
 	fp2_null(t);
 
@@ -856,8 +856,8 @@ void ep2_curve_set_twist(int type) {
 		fp2_copy(ctx->ep2_a, a);
 		fp2_copy(ctx->ep2_b, b);
 
-		detect_opt(&(ctx->ep2_opt_a), ctx->ep2_a);
-		detect_opt(&(ctx->ep2_opt_b), ctx->ep2_b);
+		ep2_detect_opt(&(ctx->ep2_opt_a), ctx->ep2_a);
+		ep2_detect_opt(&(ctx->ep2_opt_b), ctx->ep2_b);
 
 		fp2_copy(ctx->ep2_map_u, u);
 		bn_copy(&(ctx->ep2_r), r);
