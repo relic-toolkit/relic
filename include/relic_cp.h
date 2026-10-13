@@ -764,7 +764,8 @@ int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 
 /**
  * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
- * CP_CRT is on.
+ * CP_CRT is on. The private key must include the public exponent, which is used
+ * to blind the computation and check the result against faults.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -777,9 +778,11 @@ int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		const rsa_t prv);
 
 /**
- * Signs using the basic RSA signature algorithm. The flag must be non-zero if
- * the message being signed is already a hash value. Uses the CRT optimization
- * if CP_CRT is on.
+ * Signs using the RSA signature algorithm with the chosen padding. The flag
+ * must be non-zero if the message being signed is already a hash value of
+ * RLC_MD_LEN bytes. Uses the CRT optimization if CP_CRT is on. The private key
+ * must include the public exponent, which is used to blind the computation and
+ * check the result against faults.
  *
  * @param[out] sig			- the signature
  * @param[out] sig_len		- the number of bytes written in the signature.
@@ -794,7 +797,7 @@ int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 
 /**
  * Verifies an RSA signature. The flag must be non-zero if the message being
- * signed is already a hash value.
+ * signed is already a hash value of RLC_MD_LEN bytes.
  *
  * @param[in] sig			- the signature to verify.
  * @param[in] sig_len		- the signature length in bytes.
@@ -804,8 +807,8 @@ int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
  * @param[in] pub			- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
-		int hash, const rsa_t pub);
+int cp_rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t pub);
 
 /**
  * Generates a key pair for the Rabin cryptosystem.
