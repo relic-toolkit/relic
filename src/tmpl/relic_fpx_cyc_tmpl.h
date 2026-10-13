@@ -1023,8 +1023,28 @@
 	}
 
 /**
+ * Accesses the coefficients of a = A + B * w + C * w^2 over the quadratic
+ * extension of Z by z = w^3, for A = A0 + A1 * z, B = B0 + B1 * z and
+ * C = C0 + C1 * z, in a quadratic-over-cubic (QC) or a cubic-over-quadratic
+ * (CQ) tower.
+ */
+#define TMPL_QC_A0(A)		A[0][0]
+#define TMPL_QC_A1(A)		A[1][1]
+#define TMPL_QC_B0(A)		A[1][0]
+#define TMPL_QC_B1(A)		A[0][2]
+#define TMPL_QC_C0(A)		A[0][1]
+#define TMPL_QC_C1(A)		A[1][2]
+#define TMPL_CQ_A0(A)		A[0][0]
+#define TMPL_CQ_A1(A)		A[0][1]
+#define TMPL_CQ_B0(A)		A[1][0]
+#define TMPL_CQ_B1(A)		A[1][1]
+#define TMPL_CQ_C0(A)		A[2][0]
+#define TMPL_CQ_C1(A)		A[2][1]
+
+/**
  * Defines a template for cyclotomic cubing in an extension field built as
- * quadratic over cubic. Seeing a as A + B * w + C * w^2 over the quadratic
+ * quadratic over cubic or as cubic over quadratic, where the conjugation
+ * a^(p^(k/2)) maps w to -w. Seeing a as A + B * w + C * w^2 over the quadratic
  * extension of Z by z = w^3, the relation a^(p^(k/2) + 1) = 1 gives
  * A * conj(A) = 1 - z * (B * conj(C) - conj(B) * C),
  * conj(A) * B - A * conj(B) = -z * N(C) and A * conj(C) + conj(A) * C = N(B),
@@ -1035,8 +1055,9 @@
  * @param[in] X			- the extension field prefix.
  * @param[in] Z			- the prefix of the subfield holding the coefficients.
  * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ * @param[in] T			- the shape of the tower (QC or CQ).
  */
-#define TMPL_FPX_CUB_CYC_QC(X, Z, NOR)										\
+#define TMPL_FPX_CUB_CYC(X, Z, NOR, T)										\
 	void X##_cub_cyc_basic(X##_t c, const X##_t a) {						\
 		Z##_t t0, t1, t2, t3, t4, t5, t6, t7;								\
 																			\
@@ -1045,13 +1066,12 @@
 		RLC_TRY {															\
 			Z##_new_all(t0, t1, t2, t3, t4, t5, t6, t7);					\
 																			\
-			/* Now a is seen as A + B * w + C * w^2, for A = a00 + a11 * z,	\
-			 * B = a10 + a02 * z and C = a01 + a12 * z, with z = w^3. */	\
+			/* Now a is seen as A + B * w + C * w^2, with z = w^3. */		\
 																			\
 			/* (t0, t1) = A^2. */											\
-			Z##_sqr(t2, a[0][0]);											\
-			Z##_sqr(t3, a[1][1]);											\
-			Z##_add(t1, a[0][0], a[1][1]);									\
+			Z##_sqr(t2, TMPL_##T##_A0(a));									\
+			Z##_sqr(t3, TMPL_##T##_A1(a));									\
+			Z##_add(t1, TMPL_##T##_A0(a), TMPL_##T##_A1(a));				\
 			Z##_sqr(t1, t1);												\
 			Z##_sub(t1, t1, t2);											\
 			Z##_sub(t1, t1, t3);											\
@@ -1061,19 +1081,19 @@
 			/* (t2, t3) = 3A^2 - 2conj(A), (t0, t1) = A^2 - conj(A). */		\
 			Z##_dbl(t2, t0);												\
 			Z##_add(t2, t2, t0);											\
-			Z##_dbl(t4, a[0][0]);											\
+			Z##_dbl(t4, TMPL_##T##_A0(a));									\
 			Z##_sub(t2, t2, t4);											\
 			Z##_dbl(t3, t1);												\
 			Z##_add(t3, t3, t1);											\
-			Z##_dbl(t4, a[1][1]);											\
+			Z##_dbl(t4, TMPL_##T##_A1(a));									\
 			Z##_add(t3, t3, t4);											\
-			Z##_sub(t0, t0, a[0][0]);										\
-			Z##_add(t1, t1, a[1][1]);										\
+			Z##_sub(t0, t0, TMPL_##T##_A0(a));								\
+			Z##_add(t1, t1, TMPL_##T##_A1(a));								\
 																			\
 			/* A' = 9 * A * (A^2 - conj(A)) + 1, the last use of A. */		\
-			Z##_mul(t4, a[0][0], t0);										\
-			Z##_mul(t5, a[1][1], t1);										\
-			Z##_add(t6, a[0][0], a[1][1]);									\
+			Z##_mul(t4, TMPL_##T##_A0(a), t0);								\
+			Z##_mul(t5, TMPL_##T##_A1(a), t1);								\
+			Z##_add(t6, TMPL_##T##_A0(a), TMPL_##T##_A1(a));				\
 			Z##_add(t7, t0, t1);											\
 			Z##_mul(t6, t6, t7);											\
 			Z##_sub(t6, t6, t4);											\
@@ -1085,26 +1105,26 @@
 			Z##_dbl(t0, t0);												\
 			Z##_add(t4, t4, t0);											\
 			Z##_set_dig(t0, 1);												\
-			Z##_add(c[0][0], t4, t0);										\
+			Z##_add(TMPL_##T##_A0(c), t4, t0);								\
 			Z##_dbl(t0, t6);												\
 			Z##_dbl(t0, t0);												\
 			Z##_dbl(t0, t0);												\
-			Z##_add(c[1][1], t6, t0);										\
+			Z##_add(TMPL_##T##_A1(c), t6, t0);								\
 																			\
 			/* t0 = N(B) and t1 = N(C), the norms down to Z. */				\
-			Z##_sqr(t0, a[1][0]);											\
-			Z##_sqr(t1, a[0][2]);											\
+			Z##_sqr(t0, TMPL_##T##_B0(a));									\
+			Z##_sqr(t1, TMPL_##T##_B1(a));									\
 			NOR(t5, t1);													\
 			Z##_sub(t0, t0, t5);											\
-			Z##_sqr(t1, a[0][1]);											\
-			Z##_sqr(t5, a[1][2]);											\
+			Z##_sqr(t1, TMPL_##T##_C0(a));									\
+			Z##_sqr(t5, TMPL_##T##_C1(a));									\
 			NOR(t7, t5);													\
 			Z##_sub(t1, t1, t7);											\
 																			\
 			/* B' = 3 * (B * (3A^2 - 2conj(A)) - z * N(C)). */				\
-			Z##_mul(t4, a[1][0], t2);										\
-			Z##_mul(t5, a[0][2], t3);										\
-			Z##_add(t6, a[1][0], a[0][2]);									\
+			Z##_mul(t4, TMPL_##T##_B0(a), t2);								\
+			Z##_mul(t5, TMPL_##T##_B1(a), t3);								\
+			Z##_add(t6, TMPL_##T##_B0(a), TMPL_##T##_B1(a));				\
 			Z##_add(t7, t2, t3);											\
 			Z##_mul(t6, t6, t7);											\
 			Z##_sub(t6, t6, t4);											\
@@ -1113,14 +1133,14 @@
 			Z##_add(t4, t4, t7);											\
 			Z##_sub(t6, t6, t1);											\
 			Z##_dbl(t7, t4);												\
-			Z##_add(c[1][0], t7, t4);										\
+			Z##_add(TMPL_##T##_B0(c), t7, t4);								\
 			Z##_dbl(t7, t6);												\
-			Z##_add(c[0][2], t7, t6);										\
+			Z##_add(TMPL_##T##_B1(c), t7, t6);								\
 																			\
 			/* C' = 3 * (C * (3A^2 - 2conj(A)) + N(B)). */					\
-			Z##_mul(t4, a[0][1], t2);										\
-			Z##_mul(t5, a[1][2], t3);										\
-			Z##_add(t6, a[0][1], a[1][2]);									\
+			Z##_mul(t4, TMPL_##T##_C0(a), t2);								\
+			Z##_mul(t5, TMPL_##T##_C1(a), t3);								\
+			Z##_add(t6, TMPL_##T##_C0(a), TMPL_##T##_C1(a));				\
 			Z##_add(t7, t2, t3);											\
 			Z##_mul(t6, t6, t7);											\
 			Z##_sub(t6, t6, t4);											\
@@ -1129,9 +1149,9 @@
 			Z##_add(t4, t4, t7);											\
 			Z##_add(t4, t4, t0);											\
 			Z##_dbl(t7, t4);												\
-			Z##_add(c[0][1], t7, t4);										\
+			Z##_add(TMPL_##T##_C0(c), t7, t4);								\
 			Z##_dbl(t7, t6);												\
-			Z##_add(c[1][2], t7, t6);										\
+			Z##_add(TMPL_##T##_C1(c), t7, t6);								\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -1141,8 +1161,8 @@
 
 /**
  * Defines a template for cyclotomic cubing with lazy reduction in an
- * extension field built as quadratic over cubic, with the formula of the basic
- * version. The products over the quadratic extension use Karatsuba without
+ * extension field built as quadratic over cubic or as cubic over quadratic,
+ * with the formula of the basic version. The products over the quadratic extension use Karatsuba without
  * reduction, and the norms are folded into the coefficients they update.
  *
  * @param[in] X			- the extension field prefix.
@@ -1154,8 +1174,9 @@
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] MULU		- the multiplication in the subfield without reduction.
  * @param[in] SQRU		- the squaring in the subfield without reduction.
+ * @param[in] T			- the shape of the tower (QC or CQ).
  */
-#define TMPL_FPX_CUB_CYC_LAZYR_QC(X, Z, D, B, BD, N, Q, MULU, SQRU)			\
+#define TMPL_FPX_CUB_CYC_LAZYR(X, Z, D, B, BD, N, Q, MULU, SQRU, T)			\
 	void X##_cub_cyc_lazyr(X##_t c, const X##_t a) {						\
 		Z##_t t0, t1, t2, t3, t4, t5;										\
 		D##_t u0, u1, u2, u3, u4, u5, u6, u7;								\
@@ -1167,19 +1188,17 @@
 			Z##_new_all(t0, t1, t2, t3, t4, t5);							\
 			D##_new_all(u0, u1, u2, u3, u4, u5, u6, u7);					\
 																			\
-			/* Now a is seen as A + B * w + C * w^2, for A = a00 + a11 * z,	\
-			 * B = a10 + a02 * z and C = a01 + a12 * z, with z = w^3. The	\
-			 * squares for the norms of B and C come first, so that c can	\
-			 * alias a. */													\
-			SQRU(u4, a[1][0]);												\
-			SQRU(u5, a[0][2]);												\
-			SQRU(u6, a[0][1]);												\
-			SQRU(u7, a[1][2]);												\
+			/* Now a is seen as A + B * w + C * w^2, with z = w^3. The squares\
+			 * for the norms of B and C come first, so that c can alias a. */\
+			SQRU(u4, TMPL_##T##_B0(a));										\
+			SQRU(u5, TMPL_##T##_B1(a));										\
+			SQRU(u6, TMPL_##T##_C0(a));										\
+			SQRU(u7, TMPL_##T##_C1(a));										\
 																			\
 			/* (t0, t1) = A^2. */											\
-			SQRU(u0, a[0][0]);												\
-			SQRU(u1, a[1][1]);												\
-			Z##_add(t1, a[0][0], a[1][1]);									\
+			SQRU(u0, TMPL_##T##_A0(a));										\
+			SQRU(u1, TMPL_##T##_A1(a));										\
+			Z##_add(t1, TMPL_##T##_A0(a), TMPL_##T##_A1(a));				\
 			SQRU(u2, t1);													\
 			TMPL_DV_NADD(B, BD, N, Q, u3, u0, u1);							\
 			TMPL_DV_RDCN(B, BD, N, t0, u3);									\
@@ -1190,19 +1209,19 @@
 			/* (t2, t3) = 3A^2 - 2conj(A), (t0, t1) = A^2 - conj(A). */		\
 			Z##_dbl(t2, t0);												\
 			Z##_add(t2, t2, t0);											\
-			Z##_dbl(t4, a[0][0]);											\
+			Z##_dbl(t4, TMPL_##T##_A0(a));									\
 			Z##_sub(t2, t2, t4);											\
 			Z##_dbl(t3, t1);												\
 			Z##_add(t3, t3, t1);											\
-			Z##_dbl(t4, a[1][1]);											\
+			Z##_dbl(t4, TMPL_##T##_A1(a));									\
 			Z##_add(t3, t3, t4);											\
-			Z##_sub(t0, t0, a[0][0]);										\
-			Z##_add(t1, t1, a[1][1]);										\
+			Z##_sub(t0, t0, TMPL_##T##_A0(a));								\
+			Z##_add(t1, t1, TMPL_##T##_A1(a));								\
 																			\
 			/* A' = 9 * A * (A^2 - conj(A)) + 1, the last use of A. */		\
-			MULU(u0, a[0][0], t0);											\
-			MULU(u1, a[1][1], t1);											\
-			Z##_add(t4, a[0][0], a[1][1]);									\
+			MULU(u0, TMPL_##T##_A0(a), t0);									\
+			MULU(u1, TMPL_##T##_A1(a), t1);									\
+			Z##_add(t4, TMPL_##T##_A0(a), TMPL_##T##_A1(a));				\
 			Z##_add(t5, t0, t1);											\
 			MULU(u2, t4, t5);												\
 			TMPL_DV_SUBC(B, BD, N, u2, u2, u0);								\
@@ -1215,17 +1234,17 @@
 			Z##_dbl(t0, t0);												\
 			Z##_add(t4, t4, t0);											\
 			Z##_set_dig(t0, 1);												\
-			Z##_add(c[0][0], t4, t0);										\
+			Z##_add(TMPL_##T##_A0(c), t4, t0);								\
 			Z##_dbl(t0, t5);												\
 			Z##_dbl(t0, t0);												\
 			Z##_dbl(t0, t0);												\
-			Z##_add(c[1][1], t5, t0);										\
+			Z##_add(TMPL_##T##_A1(c), t5, t0);								\
 																			\
 			/* B' = 3 * (B * (3A^2 - 2conj(A)) - z * N(C)), where			\
 			 * N(C) = C_0^2 - v * C_1^2 for the generator v of Z. */		\
-			MULU(u0, a[1][0], t2);											\
-			MULU(u1, a[0][2], t3);											\
-			Z##_add(t4, a[1][0], a[0][2]);									\
+			MULU(u0, TMPL_##T##_B0(a), t2);									\
+			MULU(u1, TMPL_##T##_B1(a), t3);									\
+			Z##_add(t4, TMPL_##T##_B0(a), TMPL_##T##_B1(a));				\
 			Z##_add(t5, t2, t3);											\
 			MULU(u2, t4, t5);												\
 			TMPL_DV_SUBC(B, BD, N, u2, u2, u0);								\
@@ -1236,14 +1255,14 @@
 			TMPL_DV_NADD(B, BD, N, Q, u3, u0, u1);							\
 			TMPL_DV_RDCN(B, BD, N, t4, u3);									\
 			Z##_dbl(t0, t4);												\
-			Z##_add(c[1][0], t0, t4);										\
+			Z##_add(TMPL_##T##_B0(c), t0, t4);								\
 			Z##_dbl(t0, t5);												\
-			Z##_add(c[0][2], t0, t5);										\
+			Z##_add(TMPL_##T##_B1(c), t0, t5);								\
 																			\
 			/* C' = 3 * (C * (3A^2 - 2conj(A)) + N(B)). */					\
-			MULU(u0, a[0][1], t2);											\
-			MULU(u1, a[1][2], t3);											\
-			Z##_add(t4, a[0][1], a[1][2]);									\
+			MULU(u0, TMPL_##T##_C0(a), t2);									\
+			MULU(u1, TMPL_##T##_C1(a), t3);									\
+			Z##_add(t4, TMPL_##T##_C0(a), TMPL_##T##_C1(a));				\
 			Z##_add(t5, t2, t3);											\
 			MULU(u2, t4, t5);												\
 			TMPL_DV_SUBC(B, BD, N, u2, u2, u0);								\
@@ -1254,9 +1273,9 @@
 			TMPL_DV_NADD(B, BD, N, Q, u3, u0, u1);							\
 			TMPL_DV_RDCN(B, BD, N, t4, u3);									\
 			Z##_dbl(t0, t4);												\
-			Z##_add(c[0][1], t0, t4);										\
+			Z##_add(TMPL_##T##_C0(c), t0, t4);								\
 			Z##_dbl(t0, t5);												\
-			Z##_add(c[1][2], t0, t5);										\
+			Z##_add(TMPL_##T##_C1(c), t0, t5);								\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -1276,7 +1295,12 @@
 #define TMPL_FPX_INV_CQ				TMPL_FPX_INV_CUBIC
 #define TMPL_FPX_PCK_MAX_QC			TMPL_FPX_PCK_MAX
 #define TMPL_FPX_PCK_MAX_CQ(X, H)	/* No quadratic torus in this tower. */
-#define TMPL_FPX_CUB_CYC_CQ(X, Z, NOR)	/* Only quadratic over cubic. */
+#define TMPL_FPX_CUB_CYC_QC(X, Z, NOR)	TMPL_FPX_CUB_CYC(X, Z, NOR, QC)
+#define TMPL_FPX_CUB_CYC_CQ(X, Z, NOR)	TMPL_FPX_CUB_CYC(X, Z, NOR, CQ)
+#define TMPL_FPX_CUB_CYC_LAZYR_QC(X, Z, D, B, BD, N, Q, MULU, SQRU)			\
+	TMPL_FPX_CUB_CYC_LAZYR(X, Z, D, B, BD, N, Q, MULU, SQRU, QC)
+#define TMPL_FPX_CUB_CYC_LAZYR_CQ(X, Z, D, B, BD, N, Q, MULU, SQRU)			\
+	TMPL_FPX_CUB_CYC_LAZYR(X, Z, D, B, BD, N, Q, MULU, SQRU, CQ)
 
 /**
  * Defines a template for inversion and the arithmetic in the cyclotomic

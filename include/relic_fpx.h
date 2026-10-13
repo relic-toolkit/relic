@@ -1351,6 +1351,19 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
+ * Cubes a 24-degree extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 24-degree extension field element to cube.
+ */
+#if FPX_RDC == BASIC
+#define fp24_cub_cyc(C, A)		fp24_cub_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp24_cub_cyc(C, A)		fp24_cub_cyc_lazyr(C, A)
+#endif
+
+/**
  * Squares a 24-degree extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
  *
@@ -5198,6 +5211,24 @@ void fp24_sqr_pck_basic(fp24_t c, const fp24_t a);
  * @param[in] a				- the cyclotomic extension element to square.
  */
 void fp24_sqr_pck_lazyr(fp24_t c, const fp24_t a);
+
+/**
+ * Computes the cube of a cyclotomic 24-degree extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp24_cub_cyc_basic(fp24_t c, const fp24_t a);
+
+/**
+ * Computes the cube of a cyclotomic 24-degree extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp24_cub_cyc_lazyr(fp24_t c, const fp24_t a);
 
 /**
  * Tests if a 24-extension field element belongs to the cyclotomic

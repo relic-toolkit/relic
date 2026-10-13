@@ -3091,6 +3091,8 @@
 #undef fp24_sqr_cyc_lazyr
 #undef fp24_sqr_pck_basic
 #undef fp24_sqr_pck_lazyr
+#undef fp24_cub_cyc_basic
+#undef fp24_cub_cyc_lazyr
 #undef fp24_test_cyc
 #undef fp24_conv_cyc
 #undef fp24_back_cyc
@@ -3135,6 +3137,8 @@
 #define fp24_sqr_cyc_lazyr 	RLC_PREFIX(fp24_sqr_cyc_lazyr)
 #define fp24_sqr_pck_basic 	RLC_PREFIX(fp24_sqr_pck_basic)
 #define fp24_sqr_pck_lazyr 	RLC_PREFIX(fp24_sqr_pck_lazyr)
+#define fp24_cub_cyc_basic 	RLC_PREFIX(fp24_cub_cyc_basic)
+#define fp24_cub_cyc_lazyr 	RLC_PREFIX(fp24_cub_cyc_lazyr)
 #define fp24_test_cyc 	RLC_PREFIX(fp24_test_cyc)
 #define fp24_conv_cyc 	RLC_PREFIX(fp24_conv_cyc)
 #define fp24_back_cyc 	RLC_PREFIX(fp24_back_cyc)

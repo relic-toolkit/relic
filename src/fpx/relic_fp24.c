@@ -132,6 +132,9 @@ TMPL_SQR_PCK_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr, fp4_mul_art);
 
 TMPL_SQR_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
+TMPL_FPX_CUB_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_mul_unr,
+		fp4_sqr_unr);
+
 TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ);
 
 void fp24_frb(fp24_t c, const fp24_t a, int i) {
