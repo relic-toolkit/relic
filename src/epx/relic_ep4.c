@@ -34,6 +34,7 @@
 #include "relic_ep_util_tmpl.h"
 #include "relic_ep_add_tmpl.h"
 #include "relic_ep_dbl_tmpl.h"
+#include "relic_ep_tpl_tmpl.h"
 #include "relic_ep_map_tmpl.h"
 #include "relic_md.h"
 
@@ -42,6 +43,12 @@
 /*============================================================================*/
 
 TMPL_EP_ARITH(ep4, fp4);
+
+TMPL_EP_TPL_BASIC(ep4, fp4);
+
+TMPL_EP_TPL_PROJC(ep4, fp4);
+
+TMPL_EP_TPL_JACOB(ep4, fp4);
 
 TMPL_EP_RHS(ep4, fp4);
 

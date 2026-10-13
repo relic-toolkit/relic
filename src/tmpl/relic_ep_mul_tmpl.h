@@ -522,6 +522,198 @@
 	}
 
 /**
+ * Gives the base prime field coordinate of an element of an extension field.
+ */
+#define TMPL_EP_MUL_TW_FP_fp2(X)		(X)[0]
+#define TMPL_EP_MUL_TW_FP_fp3(X)		(X)[0]
+#define TMPL_EP_MUL_TW_FP_fp4(X)		(X)[0][0]
+#define TMPL_EP_MUL_TW_FP_fp8(X)		(X)[0][0][0]
+#define TMPL_EP_MUL_TW_FP_fp9(X)		(X)[0][0]
+
+/**
+ * Defines templates for the tau-adic NAF and regular methods on a curve over
+ * an extension field with a GLS endomorphism psi, when psi^H acts on the
+ * points as a unit u of Z[w]. The decomposition k = k_0 + ... + k_(S-1) psi^(S-1)
+ * regroups as the sum of (k_i + k_(i + H) * u) * psi^i for i < H, and the H
+ * expansions are interleaved on tables of psi^i(P). Curves where the
+ * decomposition has another dimension than 2H, or where psi^H does not act as
+ * a unit, use the w-NAF and regular methods.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[in] S			- the dimension of the GLS decomposition.
+ * @param[in] H			- the power of psi acting as a unit.
+ */
+#define TMPL_EP_MUL_TW_GLS(C, F, S, H)										\
+	static int C##_mul_tw_imp(C##_t r, const C##_t p, const bn_t k,			\
+			int reg) {														\
+		/* The units (-1)^(j / 3) * w^(j % 3) as u0 + u1 * w. */			\
+		const int u0[6] = { 1, 0, -1, -1, 0, 1 };							\
+		const int u1[6] = { 0, 1, -1, 0, -1, 1 };							\
+		const int s = (reg ? 6 : 3);										\
+		int8_t c[H], naf[H][RLC_FP_BITS + 1];								\
+		size_t l, len[H];													\
+		int j, result = RLC_ERR;											\
+		bn_t n, x, _k[S], a, b;												\
+		F##_t beta;															\
+		C##_t q, t[H][2][12];												\
+																			\
+		bn_null_all(n, x, a, b);											\
+		F##_null(beta);														\
+		C##_null(q);														\
+																			\
+		RLC_TRY {															\
+			bn_new_all(n, x, a, b);											\
+			F##_new(beta);													\
+			C##_new(q);														\
+			for (int i = 0; i < S; i++) {									\
+				bn_null(_k[i]);												\
+				bn_new(_k[i]);												\
+			}																\
+			for (int i = 0; i < H; i++) {									\
+				for (int f = 0; f < 2; f++) {								\
+					for (j = 0; j < 12; j++) {								\
+						C##_null(t[i][f][j]);								\
+						C##_new(t[i][f][j]);								\
+					}														\
+				}															\
+			}																\
+																			\
+			F##_zero(beta);													\
+			fp_copy(TMPL_EP_MUL_TW_FP_##F(beta), ep_curve_get_beta());		\
+			C##_tw_tab(t[0], p, s, beta);									\
+																			\
+			/* Find the unit (-1)^s * w^e with psi^H(P) = (beta^e * x,		\
+			 * (-1)^s * y), using w^2(x) = -x - w(x). */					\
+			C##_psi(q, t[0][0][0]);											\
+			for (j = 1; j < H; j++) {										\
+				C##_psi(q, q);												\
+			}																\
+			if (F##_cmp(q->x, t[0][0][0]->x) == RLC_EQ) {					\
+				j = 0;														\
+			} else if (F##_cmp(q->x, t[0][1][0]->x) == RLC_EQ) {			\
+				j = 1;														\
+			} else {														\
+				F##_add(q->x, q->x, t[0][0][0]->x);							\
+				F##_add(q->x, q->x, t[0][1][0]->x);							\
+				j = (F##_is_zero(q->x) ? 2 : -1);							\
+			}																\
+			if (j >= 0 && F##_cmp(q->y, t[0][0][0]->y) != RLC_EQ) {			\
+				F##_neg(q->y, q->y);										\
+				j = (F##_cmp(q->y, t[0][0][0]->y) == RLC_EQ ? j + 3 : -1);	\
+			}																\
+																			\
+			if (j >= 0) {													\
+				C##_curve_get_ord(n);										\
+				ep_curve_frbase(x);											\
+				/* The Frobenius decomposition gives subscalars below 2^3|x|\
+				 * on BN curves; otherwise, base-|x| digits below |x|, but	\
+				 * for the last one below n / |x|^(S - 1). The coefficients	\
+				 * regrouped along psi^H are below 2^l in absolute value, so\
+				 * the regular expansions need more than					\
+				 * 2 * (l + 0.06) / log2(27) digits. */						\
+				if (ep_curve_is_pairf() == EP_BN) {							\
+					l = bn_bits(x) + 4;										\
+				} else {													\
+					bn_abs(a, x);											\
+					bn_copy(b, n);											\
+					for (int i = 1; i < S; i++) {							\
+						bn_div(b, b, a);									\
+					}														\
+					l = RLC_MAX(bn_bits(b), bn_bits(x)) + 1;				\
+				}															\
+				bn_mod(_k[0], k, n);										\
+				bn_rec_frb(_k, S, _k[0], x, n,								\
+						ep_curve_is_pairf() == EP_BN);						\
+				for (int i = 0; i < H; i++) {								\
+					/* (k_i + k_(i + H) * u) = a + b * w. */				\
+					bn_copy(a, _k[i]);										\
+					bn_zero(b);												\
+					if (i + H < S) {										\
+						if (u0[j] > 0) {									\
+							bn_add(a, a, _k[i + H]);						\
+						} else if (u0[j] < 0) {								\
+							bn_sub(a, a, _k[i + H]);						\
+						}													\
+						if (u1[j] > 0) {									\
+							bn_copy(b, _k[i + H]);							\
+						} else if (u1[j] < 0) {								\
+							bn_neg(b, _k[i + H]);							\
+						}													\
+					}														\
+					if (reg) {												\
+						len[i] = (20000 * l + 1200) / 47549 + 1;			\
+						bn_rec_retnaf(naf[i], &c[i], len[i], a, b);			\
+					} else {												\
+						len[i] = RLC_FP_BITS + 1;							\
+						bn_rec_etnaf(naf[i], &len[i], a, b);				\
+					}														\
+				}															\
+				/* psi commutes with w and tau, so it maps the table of P to\
+				 * one of psi(P), and the images under w follow from beta. */\
+				for (int i = 1; i < H; i++) {								\
+					for (int m = 0; m < 2 * s; m++) {						\
+						C##_psi(t[i][0][m], t[i - 1][0][m]);				\
+						C##_copy(t[i][1][m], t[i][0][m]);					\
+						F##_mul(t[i][1][m]->x, t[i][1][m]->x, beta);		\
+					}														\
+				}															\
+				if (reg) {													\
+					C##_tw_reg(r, t, naf, c, len[0], H);					\
+				} else {													\
+					C##_tw_naf(r, t, naf, len, H);							\
+				}															\
+				result = RLC_OK;											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free_all(n, x, a, b);										\
+			F##_free(beta);													\
+			C##_free(q);													\
+			for (int i = 0; i < S; i++) {									\
+				bn_free(_k[i]);												\
+			}																\
+			for (int i = 0; i < H; i++) {									\
+				for (int f = 0; f < 2; f++) {								\
+					for (j = 0; j < 12; j++) {								\
+						C##_free(t[i][f][j]);								\
+					}														\
+				}															\
+			}																\
+		}																	\
+		return result;														\
+	}																		\
+																			\
+	void C##_mul_twnaf(C##_t r, const C##_t p, const bn_t k) {				\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (S != 2 * H || !ep_curve_is_endom() ||							\
+				C##_curve_opt_a() != RLC_ZERO ||							\
+				C##_mul_tw_imp(r, p, k, 0) != RLC_OK) {						\
+			C##_mul_lwnaf(r, p, k);											\
+		}																	\
+	}																		\
+																			\
+	void C##_mul_twreg(C##_t r, const C##_t p, const bn_t k) {				\
+		if (bn_is_zero(k) || C##_is_infty(p)) {								\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		if (S != 2 * H || !ep_curve_is_endom() ||							\
+				C##_curve_opt_a() != RLC_ZERO ||							\
+				C##_mul_tw_imp(r, p, k, 1) != RLC_OK) {						\
+			C##_mul_lwreg(r, p, k);											\
+		}																	\
+	}
+
+/**
  * Builds the table for the i-th subscalar of a simultaneous GLS
  * multiplication, applying the endomorphism to the previous table.
  *

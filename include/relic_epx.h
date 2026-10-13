@@ -708,6 +708,20 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Triples a point in an elliptic curve over a cubic extension. Computes R = 3P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to triple.
+ */
+#if EP_ADD == BASIC
+#define ep3_tpl(R, P)			ep3_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep3_tpl(R, P)			ep3_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep3_tpl(R, P)			ep3_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a point in an elliptic curve over a cubic extension field.
  * Computes R = [k]P.
  *
@@ -719,10 +733,14 @@ typedef iso2_st *iso2_t;
 #define ep3_mul(R, P, K)		ep3_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep3_mul(R, P, K)		ep3_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF || EP_MUL == TWNAF
+#elif EP_MUL == LWNAF
 #define ep3_mul(R, P, K)		ep3_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG || EP_MUL == TWREG
+#elif EP_MUL == LWREG
 #define ep3_mul(R, P, K)		ep3_mul_lwreg(R, P, K)
+#elif EP_MUL == TWNAF
+#define ep3_mul(R, P, K)		ep3_mul_twnaf(R, P, K)
+#elif EP_MUL == TWREG
+#define ep3_mul(R, P, K)		ep3_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -798,6 +816,20 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Triples a point in an elliptic curve over a quartic extension. Computes R = 3P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to triple.
+ */
+#if EP_ADD == BASIC
+#define ep4_tpl(R, P)			ep4_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep4_tpl(R, P)			ep4_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep4_tpl(R, P)			ep4_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a point in an elliptic curve over a quartic extension field.
  * Computes R = [k]P.
  *
@@ -809,10 +841,14 @@ typedef iso2_st *iso2_t;
 #define ep4_mul(R, P, K)		ep4_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF || EP_MUL == TWNAF
+#elif EP_MUL == LWNAF
 #define ep4_mul(R, P, K)		ep4_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG || EP_MUL == TWREG
+#elif EP_MUL == LWREG
 #define ep4_mul(R, P, K)		ep4_mul_lwreg(R, P, K)
+#elif EP_MUL == TWNAF
+#define ep4_mul(R, P, K)		ep4_mul_twnaf(R, P, K)
+#elif EP_MUL == TWREG
+#define ep4_mul(R, P, K)		ep4_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -888,6 +924,20 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Triples a point in an elliptic curve over an octic extension. Computes R = 3P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to triple.
+ */
+#if EP_ADD == BASIC
+#define ep8_tpl(R, P)			ep8_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep8_tpl(R, P)			ep8_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep8_tpl(R, P)			ep8_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a point in an elliptic curve over an octic extension field.
  * Computes R = [k]P.
  *
@@ -899,10 +949,14 @@ typedef iso2_st *iso2_t;
 #define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF || EP_MUL == TWNAF
+#elif EP_MUL == LWNAF
 #define ep8_mul(R, P, K)		ep8_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG || EP_MUL == TWREG
+#elif EP_MUL == LWREG
 #define ep8_mul(R, P, K)		ep8_mul_lwreg(R, P, K)
+#elif EP_MUL == TWNAF
+#define ep8_mul(R, P, K)		ep8_mul_twnaf(R, P, K)
+#elif EP_MUL == TWREG
+#define ep8_mul(R, P, K)		ep8_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -978,6 +1032,20 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Triples a point in an elliptic curve over a nonic extension. Computes R = 3P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to triple.
+ */
+#if EP_ADD == BASIC
+#define ep9_tpl(R, P)			ep9_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep9_tpl(R, P)			ep9_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep9_tpl(R, P)			ep9_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a point in an elliptic curve over a nonic extension field.
  * Computes R = [k]P.
  *
@@ -989,10 +1057,14 @@ typedef iso2_st *iso2_t;
 #define ep9_mul(R, P, K)		ep9_mul_basic(R, P, K)
 #elif EP_MUL == MONTY
 #define ep9_mul(R, P, K)		ep9_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF || EP_MUL == TWNAF
+#elif EP_MUL == LWNAF
 #define ep9_mul(R, P, K)		ep9_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG || EP_MUL == TWREG
+#elif EP_MUL == LWREG
 #define ep9_mul(R, P, K)		ep9_mul_lwreg(R, P, K)
+#elif EP_MUL == TWNAF
+#define ep9_mul(R, P, K)		ep9_mul_twnaf(R, P, K)
+#elif EP_MUL == TWREG
+#define ep9_mul(R, P, K)		ep9_mul_twreg(R, P, K)
 #endif
 
 /**
@@ -2031,6 +2103,33 @@ void ep3_dbl_projc(ep3_t r, const ep3_t p);
 void ep3_dbl_jacob(ep3_t r, const ep3_t p);
 
 /**
+ * Triples a point represented in affine coordinates on an elliptic curve over
+ * a cubic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep3_tpl_basic(ep3_t r, const ep3_t p);
+
+/**
+ * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
+ * a cubic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep3_tpl_projc(ep3_t r, const ep3_t p);
+
+/**
+ * Triples a point represented in Jacobian coordinates on an elliptic curve over
+ * a cubic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep3_tpl_jacob(ep3_t r, const ep3_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
@@ -2066,6 +2165,30 @@ void ep3_mul_lwnaf(ep3_t r, const ep3_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep3_mul_lwreg(ep3_t r, const ep3_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a cubic extension by an integer
+ * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
+ * w of the endomorphism and the decomposition along psi. Curves where a power
+ * of psi does not act as a unit use the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep3_mul_twnaf(ep3_t r, const ep3_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a cubic extension by an integer
+ * using interleaved regular tau-adic expansions and complete formulas, in
+ * constant time and without exceptions. Curves where a power of psi does not
+ * act as a unit use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep3_mul_twreg(ep3_t r, const ep3_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.
@@ -2599,6 +2722,33 @@ void ep4_dbl_projc(ep4_t r, const ep4_t p);
 void ep4_dbl_jacob(ep4_t r, const ep4_t p);
 
 /**
+ * Triples a point represented in affine coordinates on an elliptic curve over
+ * a quartic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep4_tpl_basic(ep4_t r, const ep4_t p);
+
+/**
+ * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
+ * a quartic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep4_tpl_projc(ep4_t r, const ep4_t p);
+
+/**
+ * Triples a point represented in Jacobian coordinates on an elliptic curve over
+ * a quartic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep4_tpl_jacob(ep4_t r, const ep4_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
@@ -2634,6 +2784,30 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a quartic extension by an integer
+ * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
+ * w of the endomorphism and the decomposition along psi. Curves where a power
+ * of psi does not act as a unit use the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep4_mul_twnaf(ep4_t r, const ep4_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a quartic extension by an integer
+ * using interleaved regular tau-adic expansions and complete formulas, in
+ * constant time and without exceptions. Curves where a power of psi does not
+ * act as a unit use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep4_mul_twreg(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.
@@ -3167,6 +3341,33 @@ void ep8_dbl_projc(ep8_t r, const ep8_t p);
 void ep8_dbl_jacob(ep8_t r, const ep8_t p);
 
 /**
+ * Triples a point represented in affine coordinates on an elliptic curve over
+ * an octic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep8_tpl_basic(ep8_t r, const ep8_t p);
+
+/**
+ * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
+ * an octic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep8_tpl_projc(ep8_t r, const ep8_t p);
+
+/**
+ * Triples a point represented in Jacobian coordinates on an elliptic curve over
+ * an octic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep8_tpl_jacob(ep8_t r, const ep8_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
@@ -3202,6 +3403,30 @@ void ep8_mul_lwnaf(ep8_t r, const ep8_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over an octic extension by an integer
+ * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
+ * w of the endomorphism and the decomposition along psi. Curves where a power
+ * of psi does not act as a unit use the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_twnaf(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over an octic extension by an integer
+ * using interleaved regular tau-adic expansions and complete formulas, in
+ * constant time and without exceptions. Curves where a power of psi does not
+ * act as a unit use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_twreg(ep8_t r, const ep8_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.
@@ -3728,6 +3953,33 @@ void ep9_dbl_projc(ep9_t r, const ep9_t p);
 void ep9_dbl_jacob(ep9_t r, const ep9_t p);
 
 /**
+ * Triples a point represented in affine coordinates on an elliptic curve over
+ * a nonic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep9_tpl_basic(ep9_t r, const ep9_t p);
+
+/**
+ * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
+ * a nonic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep9_tpl_projc(ep9_t r, const ep9_t p);
+
+/**
+ * Triples a point represented in Jacobian coordinates on an elliptic curve over
+ * a nonic extension.
+ *
+ * @param[out] r				- the result.
+ * @param[in] p					- the point to triple.
+ */
+void ep9_tpl_jacob(ep9_t r, const ep9_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
@@ -3763,6 +4015,30 @@ void ep9_mul_lwnaf(ep9_t r, const ep9_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a nonic extension by an integer
+ * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
+ * w of the endomorphism and the decomposition along psi. Curves where a power
+ * of psi does not act as a unit use the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_twnaf(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a nonic extension by an integer
+ * using interleaved regular tau-adic expansions and complete formulas, in
+ * constant time and without exceptions. Curves where a power of psi does not
+ * act as a unit use the regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_twreg(ep9_t r, const ep9_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.

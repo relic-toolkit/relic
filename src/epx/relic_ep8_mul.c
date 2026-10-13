@@ -40,6 +40,14 @@
 
 TMPL_EPX_MUL(ep8, fp8, 16, 4, WNAF);
 
+TMPL_EP_MUL_TW_TAB(ep8, fp8);
+
+TMPL_EP_MUL_TW_NAF(ep8, fp8);
+
+TMPL_EP_MUL_TW_REG(ep8, fp8);
+
+TMPL_EP_MUL_TW_GLS(ep8, fp8, 16, 8);
+
 void ep8_mul_cof(ep8_t r, const ep8_t p) {
 	bn_t z;
 	ep8_t t0, t1, t2, t3, t4, t5, t6, t7;

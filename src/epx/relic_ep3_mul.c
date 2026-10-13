@@ -395,6 +395,14 @@ static void ep3_mul_cof_fm18(ep3_t r, const ep3_t p) {
 
 TMPL_EPX_MUL(ep3, fp3, 6, 1, OWN);
 
+TMPL_EP_MUL_TW_TAB(ep3, fp3);
+
+TMPL_EP_MUL_TW_NAF(ep3, fp3);
+
+TMPL_EP_MUL_TW_REG(ep3, fp3);
+
+TMPL_EP_MUL_TW_GLS(ep3, fp3, 6, 3);
+
 void ep3_mul_cof(ep3_t r, const ep3_t p) {
 	bn_t k;
 

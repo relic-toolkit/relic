@@ -1637,10 +1637,15 @@
 #undef ep3_dbl_slp_basic
 #undef ep3_dbl_projc
 #undef ep3_dbl_jacob
+#undef ep3_tpl_basic
+#undef ep3_tpl_projc
+#undef ep3_tpl_jacob
 #undef ep3_mul_basic
 #undef ep3_mul_monty
 #undef ep3_mul_lwnaf
 #undef ep3_mul_lwreg
+#undef ep3_mul_twnaf
+#undef ep3_mul_twreg
 #undef ep3_mul_gen
 #undef ep3_mul_dig
 #undef ep3_mul_cof
@@ -1702,10 +1707,15 @@
 #define ep3_dbl_slp_basic 	RLC_PREFIX(ep3_dbl_slp_basic)
 #define ep3_dbl_projc 	RLC_PREFIX(ep3_dbl_projc)
 #define ep3_dbl_jacob 	RLC_PREFIX(ep3_dbl_jacob)
+#define ep3_tpl_basic 	RLC_PREFIX(ep3_tpl_basic)
+#define ep3_tpl_projc 	RLC_PREFIX(ep3_tpl_projc)
+#define ep3_tpl_jacob 	RLC_PREFIX(ep3_tpl_jacob)
 #define ep3_mul_basic 	RLC_PREFIX(ep3_mul_basic)
 #define ep3_mul_monty 	RLC_PREFIX(ep3_mul_monty)
 #define ep3_mul_lwnaf 	RLC_PREFIX(ep3_mul_lwnaf)
 #define ep3_mul_lwreg 	RLC_PREFIX(ep3_mul_lwreg)
+#define ep3_mul_twnaf 	RLC_PREFIX(ep3_mul_twnaf)
+#define ep3_mul_twreg 	RLC_PREFIX(ep3_mul_twreg)
 #define ep3_mul_gen 	RLC_PREFIX(ep3_mul_gen)
 #define ep3_mul_dig 	RLC_PREFIX(ep3_mul_dig)
 #define ep3_mul_cof 	RLC_PREFIX(ep3_mul_cof)
@@ -1772,10 +1782,15 @@
 #undef ep4_dbl_slp_basic
 #undef ep4_dbl_projc
 #undef ep4_dbl_jacob
+#undef ep4_tpl_basic
+#undef ep4_tpl_projc
+#undef ep4_tpl_jacob
 #undef ep4_mul_basic
 #undef ep4_mul_monty
 #undef ep4_mul_lwnaf
 #undef ep4_mul_lwreg
+#undef ep4_mul_twnaf
+#undef ep4_mul_twreg
 #undef ep4_mul_gen
 #undef ep4_mul_dig
 #undef ep4_mul_cof
@@ -1837,10 +1852,15 @@
 #define ep4_dbl_slp_basic 	RLC_PREFIX(ep4_dbl_slp_basic)
 #define ep4_dbl_projc 	RLC_PREFIX(ep4_dbl_projc)
 #define ep4_dbl_jacob 	RLC_PREFIX(ep4_dbl_jacob)
+#define ep4_tpl_basic 	RLC_PREFIX(ep4_tpl_basic)
+#define ep4_tpl_projc 	RLC_PREFIX(ep4_tpl_projc)
+#define ep4_tpl_jacob 	RLC_PREFIX(ep4_tpl_jacob)
 #define ep4_mul_basic 	RLC_PREFIX(ep4_mul_basic)
 #define ep4_mul_monty 	RLC_PREFIX(ep4_mul_monty)
 #define ep4_mul_lwnaf 	RLC_PREFIX(ep4_mul_lwnaf)
 #define ep4_mul_lwreg 	RLC_PREFIX(ep4_mul_lwreg)
+#define ep4_mul_twnaf 	RLC_PREFIX(ep4_mul_twnaf)
+#define ep4_mul_twreg 	RLC_PREFIX(ep4_mul_twreg)
 #define ep4_mul_gen 	RLC_PREFIX(ep4_mul_gen)
 #define ep4_mul_dig 	RLC_PREFIX(ep4_mul_dig)
 #define ep4_mul_cof 	RLC_PREFIX(ep4_mul_cof)
@@ -1907,10 +1927,15 @@
 #undef ep8_dbl_slp_basic
 #undef ep8_dbl_projc
 #undef ep8_dbl_jacob
+#undef ep8_tpl_basic
+#undef ep8_tpl_projc
+#undef ep8_tpl_jacob
 #undef ep8_mul_basic
 #undef ep8_mul_monty
 #undef ep8_mul_lwnaf
 #undef ep8_mul_lwreg
+#undef ep8_mul_twnaf
+#undef ep8_mul_twreg
 #undef ep8_mul_gen
 #undef ep8_mul_dig
 #undef ep8_mul_cof
@@ -1972,10 +1997,15 @@
 #define ep8_dbl_slp_basic 	RLC_PREFIX(ep8_dbl_slp_basic)
 #define ep8_dbl_projc 	RLC_PREFIX(ep8_dbl_projc)
 #define ep8_dbl_jacob 	RLC_PREFIX(ep8_dbl_jacob)
+#define ep8_tpl_basic 	RLC_PREFIX(ep8_tpl_basic)
+#define ep8_tpl_projc 	RLC_PREFIX(ep8_tpl_projc)
+#define ep8_tpl_jacob 	RLC_PREFIX(ep8_tpl_jacob)
 #define ep8_mul_basic 	RLC_PREFIX(ep8_mul_basic)
 #define ep8_mul_monty 	RLC_PREFIX(ep8_mul_monty)
 #define ep8_mul_lwnaf 	RLC_PREFIX(ep8_mul_lwnaf)
 #define ep8_mul_lwreg 	RLC_PREFIX(ep8_mul_lwreg)
+#define ep8_mul_twnaf 	RLC_PREFIX(ep8_mul_twnaf)
+#define ep8_mul_twreg 	RLC_PREFIX(ep8_mul_twreg)
 #define ep8_mul_gen 	RLC_PREFIX(ep8_mul_gen)
 #define ep8_mul_dig 	RLC_PREFIX(ep8_mul_dig)
 #define ep8_mul_cof 	RLC_PREFIX(ep8_mul_cof)
@@ -2041,10 +2071,15 @@
 #undef ep9_dbl_slp_basic
 #undef ep9_dbl_projc
 #undef ep9_dbl_jacob
+#undef ep9_tpl_basic
+#undef ep9_tpl_projc
+#undef ep9_tpl_jacob
 #undef ep9_mul_basic
 #undef ep9_mul_monty
 #undef ep9_mul_lwnaf
 #undef ep9_mul_lwreg
+#undef ep9_mul_twnaf
+#undef ep9_mul_twreg
 #undef ep9_mul_gen
 #undef ep9_mul_dig
 #undef ep9_mul_cof
@@ -2105,10 +2140,15 @@
 #define ep9_dbl_slp_basic 	RLC_PREFIX(ep9_dbl_slp_basic)
 #define ep9_dbl_projc 	RLC_PREFIX(ep9_dbl_projc)
 #define ep9_dbl_jacob 	RLC_PREFIX(ep9_dbl_jacob)
+#define ep9_tpl_basic 	RLC_PREFIX(ep9_tpl_basic)
+#define ep9_tpl_projc 	RLC_PREFIX(ep9_tpl_projc)
+#define ep9_tpl_jacob 	RLC_PREFIX(ep9_tpl_jacob)
 #define ep9_mul_basic 	RLC_PREFIX(ep9_mul_basic)
 #define ep9_mul_monty 	RLC_PREFIX(ep9_mul_monty)
 #define ep9_mul_lwnaf 	RLC_PREFIX(ep9_mul_lwnaf)
 #define ep9_mul_lwreg 	RLC_PREFIX(ep9_mul_lwreg)
+#define ep9_mul_twnaf 	RLC_PREFIX(ep9_mul_twnaf)
+#define ep9_mul_twreg 	RLC_PREFIX(ep9_mul_twreg)
 #define ep9_mul_gen 	RLC_PREFIX(ep9_mul_gen)
 #define ep9_mul_dig 	RLC_PREFIX(ep9_mul_dig)
 #define ep9_mul_cof 	RLC_PREFIX(ep9_mul_cof)

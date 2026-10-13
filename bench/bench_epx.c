@@ -348,6 +348,25 @@ static void bench_##C##_arith(void) {										\
 		BENCH_ADD(C##_dbl_jacob(r, p));										\
 	} BENCH_END;															\
 																			\
+	BENCH_RUN(#C "_tpl") {													\
+		C##_rand(p);														\
+		BENCH_ADD(C##_tpl(r, p));											\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_tpl_projc") {											\
+		C##_rand(p);														\
+		C##_rand(q);														\
+		C##_add_projc(p, p, q);												\
+		BENCH_ADD(C##_tpl_projc(r, p));										\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_tpl_jacob") {											\
+		C##_rand(p);														\
+		C##_rand(q);														\
+		C##_add_jacob(p, p, q);												\
+		BENCH_ADD(C##_tpl_jacob(r, p));										\
+	} BENCH_END;															\
+																			\
 	BENCH_RUN(#C "_neg") {													\
 		C##_rand(p);														\
 		C##_rand(q);														\
@@ -382,6 +401,18 @@ static void bench_##C##_arith(void) {										\
 		bn_rand_mod(k, n);													\
 		C##_rand(p);														\
 		BENCH_ADD(C##_mul_lwreg(q, p, k));									\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_mul_twnaf") {											\
+		bn_rand_mod(k, n);													\
+		C##_rand(p);														\
+		BENCH_ADD(C##_mul_twnaf(q, p, k));									\
+	} BENCH_END;															\
+																			\
+	BENCH_RUN(#C "_mul_twreg") {											\
+		bn_rand_mod(k, n);													\
+		C##_rand(p);														\
+		BENCH_ADD(C##_mul_twreg(q, p, k));									\
 	} BENCH_END;															\
 																			\
 	BENCH_RUN(#C "_mul_gen") {												\
@@ -560,28 +591,6 @@ static void arith2(void) {
 	ep2_new_all(p, q);
 	bn_new_all(k, n);
 	ep2_curve_get_ord(n);
-
-	BENCH_RUN("ep2_tpl_projc") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_tpl_projc(q, p));
-	} BENCH_END;
-
-	BENCH_RUN("ep2_tpl_jacob") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_tpl_jacob(q, p));
-	} BENCH_END;
-
-	BENCH_RUN("ep2_mul_twnaf") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_twnaf(q, p, k));
-	} BENCH_END;
-
-	BENCH_RUN("ep2_mul_twreg") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_twreg(q, p, k));
-	} BENCH_END;
 
 	BENCH_RUN("ep2_map_basic") {
 		uint8_t msg[5];

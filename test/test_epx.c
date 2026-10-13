@@ -476,6 +476,33 @@ static int test_##C##_doubling(void) {										\
 			C##_dbl(c, a);													\
 			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
 		} TEST_END;															\
+																			\
+		TEST_CASE("point tripling is correct") {							\
+			C##_rand(a);													\
+			C##_dbl(b, a);													\
+			C##_add(b, b, a);												\
+			C##_norm(b, b);													\
+			C##_tpl(c, a);													\
+			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
+			C##_tpl_basic(c, a);											\
+			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
+			C##_tpl_projc(c, a);											\
+			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
+			C##_tpl_jacob(c, a);											\
+			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
+			C##_set_infty(a);												\
+			C##_tpl_projc(c, a);											\
+			TEST_ASSERT(C##_is_infty(c), end);								\
+		} TEST_END;															\
+																			\
+		TEST_CASE("point tripling in projective coordinates is correct") {	\
+			C##_rand(a);													\
+			C##_dbl_projc(a, a);											\
+			C##_tpl_projc(c, a);											\
+			C##_norm(a, a);													\
+			C##_tpl_projc(b, a);											\
+			TEST_ASSERT(C##_cmp(b, c) == RLC_EQ, end);						\
+		} TEST_END;															\
 	}																		\
 	RLC_CATCH_ANY {															\
 		RLC_ERROR(end);														\
@@ -651,6 +678,64 @@ static int test_##C##_multiplication(void) {								\
 			bn_add(k, k, n);												\
 			bn_rsh(n, n, RLC_DIG);											\
 			C##_mul_lwreg(r, p, k);											\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+		}																	\
+		TEST_END;															\
+																			\
+		TEST_CASE("tau-adic naf point multiplication is correct") {			\
+			bn_zero(k);														\
+			C##_mul_twnaf(r, p, k);											\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			bn_set_dig(k, 1);												\
+			C##_mul_twnaf(r, p, k);											\
+			TEST_ASSERT(C##_cmp(p, r) == RLC_EQ, end);						\
+			C##_rand(p);													\
+			C##_mul_twnaf(r, p, n);											\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			bn_rand_mod(k, n);												\
+			C##_mul(q, p, k);												\
+			C##_mul_twnaf(r, p, k);											\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_neg(k, k);													\
+			C##_mul_twnaf(r, p, k);											\
+			C##_neg(r, r);													\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_rand_mod(k, n);												\
+			C##_mul_twnaf(q, p, k);											\
+			/* Add a multiple of n beyond the bit length of the field. */	\
+			bn_lsh(n, n, RLC_DIG);											\
+			bn_add(k, k, n);												\
+			bn_rsh(n, n, RLC_DIG);											\
+			C##_mul_twnaf(r, p, k);											\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+		}																	\
+		TEST_END;															\
+																			\
+		TEST_CASE("regular tau-adic point multiplication is correct") {		\
+			bn_zero(k);														\
+			C##_mul_twreg(r, p, k);											\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			bn_set_dig(k, 1);												\
+			C##_mul_twreg(r, p, k);											\
+			TEST_ASSERT(C##_cmp(p, r) == RLC_EQ, end);						\
+			C##_rand(p);													\
+			C##_mul_twreg(r, p, n);											\
+			TEST_ASSERT(C##_is_infty(r), end);								\
+			bn_rand_mod(k, n);												\
+			C##_mul(q, p, k);												\
+			C##_mul_twreg(r, p, k);											\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_neg(k, k);													\
+			C##_mul_twreg(r, p, k);											\
+			C##_neg(r, r);													\
+			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
+			bn_rand_mod(k, n);												\
+			C##_mul_twreg(q, p, k);											\
+			/* Add a multiple of n beyond the bit length of the field. */	\
+			bn_lsh(n, n, RLC_DIG);											\
+			bn_add(k, k, n);												\
+			bn_rsh(n, n, RLC_DIG);											\
+			C##_mul_twreg(r, p, k);											\
 			TEST_ASSERT(C##_cmp(q, r) == RLC_EQ, end);						\
 		}																	\
 		TEST_END;															\
@@ -1137,99 +1222,6 @@ TMPL_TEST_EPX(ep8, fp8)
 
 TMPL_TEST_EPX(ep9, fp9)
 
-static int tau2(void) {
-	int code = RLC_ERR;
-	bn_t n, k;
-	ep2_t p, q, r;
-
-	bn_null_all(n, k);
-	ep2_null_all(p, q, r);
-
-	RLC_TRY {
-		bn_new_all(n, k);
-		ep2_new_all(p, q, r);
-		ep2_curve_get_ord(n);
-
-		TEST_CASE("point tripling is correct") {
-			ep2_rand(p);
-			ep2_dbl(q, p);
-			ep2_add(q, q, p);
-			ep2_norm(q, q);
-			ep2_tpl_basic(r, p);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			ep2_tpl_projc(r, p);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			ep2_tpl_jacob(r, p);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			/* p in projective coordinates. */
-			ep2_dbl_projc(p, p);
-			ep2_tpl_projc(r, p);
-			ep2_norm(p, p);
-			ep2_tpl(q, p);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			ep2_set_infty(p);
-			ep2_tpl_projc(r, p);
-			TEST_ASSERT(ep2_is_infty(r), end);
-		} TEST_END;
-
-		TEST_CASE("tau-adic naf point multiplication is correct") {
-			bn_zero(k);
-			ep2_mul_twnaf(r, p, k);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			ep2_rand(p);
-			bn_set_dig(k, 1);
-			ep2_mul_twnaf(r, p, k);
-			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
-			ep2_mul_twnaf(r, p, n);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep2_mul_lwnaf(q, p, k);
-			ep2_mul_twnaf(r, p, k);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep2_mul_twnaf(r, p, k);
-			ep2_neg(r, r);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_sub_dig(k, n, 1);
-			ep2_mul_twnaf(r, p, k);
-			ep2_neg(r, r);
-			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("regular tau-adic point multiplication is correct") {
-			bn_zero(k);
-			ep2_mul_twreg(r, p, k);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			ep2_rand(p);
-			bn_set_dig(k, 1);
-			ep2_mul_twreg(r, p, k);
-			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
-			ep2_mul_twreg(r, p, n);
-			TEST_ASSERT(ep2_is_infty(r), end);
-			bn_rand_mod(k, n);
-			ep2_mul_lwreg(q, p, k);
-			ep2_mul_twreg(r, p, k);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_neg(k, k);
-			ep2_mul_twreg(r, p, k);
-			ep2_neg(r, r);
-			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
-			bn_sub_dig(k, n, 1);
-			ep2_mul_twreg(r, p, k);
-			ep2_neg(r, r);
-			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
-		} TEST_END;
-	}
-	RLC_CATCH_ANY {
-		RLC_ERROR(end);
-	}
-	code = RLC_OK;
-  end:
-	bn_free_all(n, k);
-	ep2_free_all(p, q, r);
-	return code;
-}
-
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
@@ -1368,10 +1360,6 @@ int main(void) {
 			return 1;
 		}
 
-		if (tau2() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
 	}
 
 	if ((r1 = ep3_curve_is_twist())) {

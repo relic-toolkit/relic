@@ -152,6 +152,14 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 
 TMPL_EPX_MUL(ep9, fp9, 10, 2, WNAF);
 
+TMPL_EP_MUL_TW_TAB(ep9, fp9);
+
+TMPL_EP_MUL_TW_NAF(ep9, fp9);
+
+TMPL_EP_MUL_TW_REG(ep9, fp9);
+
+TMPL_EP_MUL_TW_GLS(ep9, fp9, 10, 9);
+
 void ep9_mul_cof(ep9_t r, const ep9_t p) {
 	switch (ep_curve_is_pairf()) {
 		case EP_SG54:
