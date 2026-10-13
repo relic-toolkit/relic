@@ -158,6 +158,15 @@ typedef __uint128_t dbl_t;
 
 #endif
 
+/**
+ * Multiplies two digits modulo 2^RLC_DIG. The product is taken in at least
+ * unsigned int, since narrow digits are promoted to int and could overflow.
+ *
+ * @param[in] A			- the first digit to multiply.
+ * @param[in] B			- the second digit to multiply.
+ */
+#define RLC_MUL_LOW(A, B)	((dig_t)((A) * 1U * (B)))
+
 /*
  * Represents the unsigned integer with maximum precision.
  */
