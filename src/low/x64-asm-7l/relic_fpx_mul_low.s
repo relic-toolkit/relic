@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level quadratic extension field multiplication.
  *
  * @ingroup fpx
  */
@@ -33,35 +33,31 @@
 #include "macro.s"
 
 .text
-.global cdecl(fp2_muln_c0)
-.global cdecl(fp2_muln_c1)
-.global cdecl(fp2_mulm_c0)
-.global cdecl(fp2_mulm_c1)
 
-#if OPSYS != WINDOWS
-.hidden cdecl(fp2_muln_c0)
-.hidden cdecl(fp2_muln_c1)
-.hidden cdecl(fp2_mulm_c0)
-.hidden cdecl(fp2_mulm_c1)
-#endif
+#ifdef FP2_ASM
+
+.global cdecl(fp2_muln_low)
 
 /*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
+ * Function: fp2_muln_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b, with c[1] at RLC_DV_STRIDE bytes from c[0]
  */
-
-cdecl(fp2_muln_c0):
+cdecl(fp2_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
+	subq	$80, %rsp
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 8(%rsp)
 	movq	%rdx, %rcx
-	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP2_MUL0_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
 
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0, 0(%rsp)
+
+	addq	$80, %rsp
 	popq	%rbp
 	popq	%rbx
 	popq	%r15
@@ -70,17 +66,28 @@ cdecl(fp2_muln_c0):
 	popq	%r12
 	ret
 
-cdecl(fp2_mulm_c0):
+.global cdecl(fp2_mulm_low)
+
+#ifdef FP2_MUL_RDC
+
+/*
+ * Function: fp2_mulm_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b/R mod p, coefficient-wise
+ */
+cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
+	subq	$80, %rsp
 	movq	%rdx, %rcx
-	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP2_MUL0_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
 
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1, 0(%rsp)
+
+	addq	$80, %rsp
 	popq	%rbp
 	popq	%rbx
 	popq	%r15
@@ -89,19 +96,37 @@ cdecl(fp2_mulm_c0):
 	popq	%r12
 	ret
 
-cdecl(fp2_muln_c1):
+#else
+
+/*
+ * Function: fp2_mulm_low
+ * Inputs: rdi = c, rsi = a, rdx = b
+ * Output: c = a * b/R mod p, coefficient-wise, by reducing the product of
+ * fp2_muln_low separately
+ */
+cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
+	subq	$312, %rsp
+	movq	%rdi, 80(%rsp)
 	movq	%rdx, %rcx
+	leaq	200(%rsp), %rax
+	movq	%rax, 8(%rsp)
+	leaq	88(%rsp), %rdi
 
-	// [r8:r15] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rcx), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0, 0(%rsp)
 
+	movq	80(%rsp), %rdi
+	FP_RDCN_LOW	88(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip)
+	movq	80(%rsp), %rdi
+	addq	$56, %rdi
+	FP_RDCN_LOW	200(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip)
+
+	addq	$312, %rsp
 	popq	%rbp
 	popq	%rbx
 	popq	%r15
@@ -110,23 +135,6 @@ cdecl(fp2_muln_c1):
 	popq	%r12
 	ret
 
-cdecl(fp2_mulm_c1):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	movq	%rdx, %rcx
+#endif
 
-	// [r8:r15] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rcx), 56(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
-
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
-	ret
+#endif /* FP2_ASM */

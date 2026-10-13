@@ -43,30 +43,3 @@
 
 /* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
 #include "../easy/relic_fpx_sqr_low.c"
-
-#ifdef FP2_ASM
-
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-void fp2_sqrn_c0(fp_t c, const fp2_t a);
-void fp2_sqrn_c1(fp_t c, const fp2_t a);
-
-void fp2_sqrn_low(dv2_t c, const fp2_t a) {
-	fp2_sqrn_c0(c[0], a);
-	fp2_sqrn_c1(c[1], a);
-}
-
-void fp2_sqrm_c0(fp_t c, const fp2_t a);
-void fp2_sqrm_c1(fp_t c, const fp2_t a);
-
-void fp2_sqrm_low(fp2_t c, const fp2_t a) {
-	rlc_align dig_t t[RLC_FP_DIGS];
-
-	fp2_sqrm_c0(t, a);
-	fp2_sqrm_c1(c[1], a);
-	fp_copy(c[0], t);
-}
-
-#endif

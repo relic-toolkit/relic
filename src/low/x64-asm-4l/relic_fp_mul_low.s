@@ -134,7 +134,7 @@ cdecl(fp_muln_low):
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0
 
 	popq	%r14
 	popq	%r13
@@ -149,7 +149,7 @@ cdecl(fp_mulm_low):
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1
 
 	popq	%r14
 	popq	%r13
