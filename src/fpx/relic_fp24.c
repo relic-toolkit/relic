@@ -138,9 +138,13 @@ TMPL_FPX_CUB_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_mul_unr,
 TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ);
 
 void fp24_frb(fp24_t c, const fp24_t a, int i) {
-	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
+	ctx_t *ctx = core_get();
+	int e;
+
 	fp24_copy(c, a);
-	for (; i % 24 > 0; i--) {
+	i = i % 24;
+	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
+	for (; i % 8 > 0; i--) {
 		fp8_frb(c[0], c[0], 1);
 		fp8_frb(c[1], c[1], 1);
 		fp8_frb(c[2], c[2], 1);
@@ -152,6 +156,17 @@ void fp24_frb(fp24_t c, const fp24_t a, int i) {
 			if ((fp_prime_get_mod8() % 4) == 3) {
 				fp4_mul_art(c[1][j], c[1][j]);
 			}
+		}
+	}
+	/* The power p^8 fixes Fp^8 and maps w to rho * w, for the cube root of
+	 * unity rho = z^2 in Fp, where z^3 = -1, so that rho^2 = -z. */
+	for (int j = 1; j < 3; j++) {
+		e = (j * (i / 8)) % 3;
+		if (e > 0) {
+			fp8_mul_fp(c[j], c[j], ctx->fp2_p0[2 - e]);
+		}
+		if (e == 2) {
+			fp8_neg(c[j], c[j]);
 		}
 	}
 }

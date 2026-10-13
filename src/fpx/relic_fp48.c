@@ -188,9 +188,13 @@ TMPL_FPX_CUB_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_mul_unr,
 TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC);
 
 void fp48_frb(fp48_t c, const fp48_t a, int i) {
-	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
+	ctx_t *ctx = core_get();
+	int e;
+
 	fp48_copy(c, a);
-	for (; i % 48 > 0; i--) {
+	i = i % 48;
+	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
+	for (; i % 16 > 0; i--) {
 		fp24_frb(c[0], c[0], 1);
 		fp24_frb(c[1], c[1], 1);
 		for (int j = 0; j < 3; j++) {
@@ -204,6 +208,20 @@ void fp48_frb(fp48_t c, const fp48_t a, int i) {
 			}
 			if ((fp_prime_get_mod8() % 4) == 3) {
 				fp8_mul_art(c[1][j], c[1][j]);
+			}
+		}
+	}
+	/* The power p^16 fixes Fp^8 and maps the coefficient of s^j w^l to its
+	 * product by rho^(j + 2l), for the cube root of unity rho = z^2 in Fp,
+	 * where z^3 = -1, so that rho^2 = -z. */
+	for (int j = 0; j < 2; j++) {
+		for (int l = 0; l < 3; l++) {
+			e = ((j + 2 * l) * (i / 16)) % 3;
+			if (e > 0) {
+				fp8_mul_fp(c[j][l], c[j][l], ctx->fp2_p0[2 - e]);
+			}
+			if (e == 2) {
+				fp8_neg(c[j][l], c[j][l]);
 			}
 		}
 	}

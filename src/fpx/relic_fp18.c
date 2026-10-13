@@ -263,9 +263,13 @@ TMPL_FPX_CUB_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_muln_low,
 TMPL_FPX_CYC(fp18, fp9, fp3, fp3_mul_nor, QC);
 
 void fp18_frb(fp18_t c, const fp18_t a, int i) {
-	/* Cost of five multiplication in Fp^3 per Frobenius. */
+	ctx_t *ctx = core_get();
+	int e, m = (fp3_field_get_cnr() == 0 ? 6 : 18);
+
 	fp18_copy(c, a);
-	for (; i % 18 > 0; i--) {
+	i = i % 18;
+	/* Cost of five multiplication in Fp^3 per Frobenius. */
+	for (; i % m > 0; i--) {
 		fp9_frb(c[0], c[0], 1);
 		fp3_frb(c[1][0], c[1][0], 1);
 		fp3_frb(c[1][1], c[1][1], 1);
@@ -273,6 +277,17 @@ void fp18_frb(fp18_t c, const fp18_t a, int i) {
 		fp3_mul_frb(c[1][0], c[1][0], 1, 1);
 		fp3_mul_frb(c[1][1], c[1][1], 1, 3);
 		fp3_mul_frb(c[1][2], c[1][2], 1, 5);
+	}
+	/* When the non-residue defining Fp^9 is the generator of Fp^3, the power
+	 * p^6 fixes Fp^3 and maps the coefficient of w^(j + 2l) to its product by
+	 * rho^(j + 2l), for the cube root of unity rho = cnr^((p - 1)/3) in Fp. */
+	for (int j = 0; j < 2; j++) {
+		for (int l = 0; l < 3; l++) {
+			e = ((j + 2 * l) * (i / 6)) % 3;
+			if (e > 0) {
+				fp3_mul_fp(c[j][l], c[j][l], ctx->fp3_p0[e - 1]);
+			}
+		}
 	}
 }
 
