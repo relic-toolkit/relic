@@ -69,6 +69,10 @@ if (WITH_MD)
 	ADD_MODULE(md)
 endif(WITH_MD)
 
+if (WITH_BC)
+	ADD_MODULE(bc)
+endif(WITH_BC)
+
 if (WITH_CP)
 	if (WITH_BN)
 		ADD_MODULE(cp_bn)

@@ -122,6 +122,10 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 	uint8_t _x[RLC_FC_BYTES + 1], h[RLC_MD_LEN], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
 
+	if (in_len < RLC_MD_LEN) {
+		return RLC_ERR;
+	}
+
 	bn_null(x);
 	ec_null(p);
 
