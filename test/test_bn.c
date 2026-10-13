@@ -2510,6 +2510,7 @@ static int prime(void) {
 			/* Safe primes are rare, so keep the search size moderate. */
 			bn_gen_prime_safep(p, RLC_BN_BITS / 4);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
 			bn_sub_dig(p, p, 1);
 			bn_hlv(p, p);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
@@ -2517,7 +2518,26 @@ static int prime(void) {
 
 		TEST_ONCE("strong prime generation is consistent") {
 			/* Strong primes need several prime searches, so keep them smaller. */
-			bn_gen_prime_stron(p, RLC_BN_BITS / 4);
+			bn_gen_prime_stron(p, RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG));
+			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			TEST_ASSERT(bn_bits(p) == RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG), end);
+		} TEST_END;
+
+		TEST_ONCE("prime generation with a close prime factor terminates") {
+			for (int k = 1; k <= 2; k++) {
+				bn_gen_prime_factor(q, p, 30, 30 + k);
+				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
+				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
+				bn_sub_dig(p, p, 1);
+				bn_mod(p, p, q);
+				TEST_ASSERT(bn_is_zero(p), end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("hashing to prime near the end of the counter is consistent") {
+			rand_bytes(msg, sizeof(msg));
+			TEST_ASSERT(bn_map_prime(p, NULL, msg, sizeof(msg), RLC_BN_BITS / 4,
+				0xFFFFFFF0, NULL, 0) == RLC_OK, end);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 		bn_gen_prime(p, RLC_BN_BITS);
@@ -2726,6 +2746,11 @@ static int factor(void) {
 			} else {
 				TEST_ASSERT(bn_is_factor(p, n) == 1, end);
 			}
+			/* Zero divides nothing, and two has no proper factor. */
+			bn_zero(q);
+			TEST_ASSERT(bn_is_factor(q, n) == 0, end);
+			bn_set_dig(n, 2);
+			TEST_ASSERT(bn_factor(q, n) == 0, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2776,6 +2801,10 @@ static int interpolation(void) {
 			bn_rand_mod(x, b);
 			bn_evl(y, c, x, b, n + 1);
 			TEST_ASSERT(!bn_is_zero(y), end);
+			/* With a single root, the constant term is also reduced. */
+			bn_zero(a[0]);
+			bn_lag(c, a, b, 1);
+			TEST_ASSERT(bn_is_zero(c[0]) && bn_cmp_dig(c[1], 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2824,6 +2853,15 @@ static int recoding(void) {
 				}
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
+			/* Integers shorter than a window take one window, as does zero. */
+			bn_set_dig(a, 1);
+			l = 1;
+			bn_rec_win(d, &l, a, 4);
+			TEST_ASSERT(l == 1 && d[0] == 1, end);
+			bn_zero(a);
+			l = 1;
+			bn_rec_win(d, &l, a, 4);
+			TEST_ASSERT(l == 1 && d[0] == 0, end);
 		} TEST_END;
 
 		TEST_CASE("sliding window recoding is correct") {
@@ -2872,7 +2910,7 @@ static int recoding(void) {
 					int8_t tnaf[RLC_FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					bn_rand_mod(a, v1[2]);
-					l = RLC_FB_BITS + 1;
+					l = sizeof(tnaf);
 					bn_rec_tnaf_mod(v1[0], v1[1], a, u, RLC_FB_BITS);
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
 					bn_rec_tnaf(tnaf, &l, a, u, RLC_FB_BITS, w);
@@ -2934,7 +2972,7 @@ static int recoding(void) {
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					do {
 						bn_rand_mod(a, v1[2]);
-						l = RLC_FB_BITS + 1;
+						l = sizeof(tnaf);
 						bn_rec_tnaf_mod(v1[0], v1[1], a, u, RLC_FB_BITS);
 					} while (bn_is_even(v1[0]) || bn_is_even(v1[1]));
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
@@ -3012,6 +3050,15 @@ static int recoding(void) {
 				}
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
+			/* Integers that do not fit the digits are rejected. */
+			bn_set_2b(a, RLC_BN_BITS / 2 + 2 * RLC_DIG);
+			l = RLC_BN_BITS + 1;
+			err_get_code();
+			RLC_TRY {
+				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
 		TEST_CASE("jsf recoding is correct") {
@@ -3036,6 +3083,16 @@ static int recoding(void) {
 				}
 			}
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* The capacity depends on the longer of the two integers. */
+			bn_set_dig(a, 1);
+			bn_rand(b, RLC_POS, RLC_DIG);
+			l = 3;
+			err_get_code();
+			RLC_TRY {
+				bn_rec_jsf(e, &l, a, b);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
 		TEST_CASE("frobenius recoding is correct") {
