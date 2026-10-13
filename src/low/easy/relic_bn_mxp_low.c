@@ -54,6 +54,7 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		/* the exponent is zero, so the result is one */
 		dv_zero(c, sm);
 		c[0] = 1;
+		RLC_FREE(t);
 		return;
 	}
 
@@ -64,8 +65,8 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 
 	/*
 	 * The base is brought into Montgomery form by multiplying it by R squared,
-	 * which the caller precomputed because deriving it needs a division and the
-	 * low level has none.
+	 * computed by doubling with subtractions since the low level has no
+	 * division.
 	 */
 	dv_zero(acc, sm);
 	dv_copy(acc, a, RLC_MIN(sa, sm));
@@ -134,5 +135,9 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 	dv_zero(pro, 2 * sm);
 	dv_copy(pro, acc, sm);
 	bn_modn_low(c, pro, 2 * sm, m, sm, u);
+	/* The reduction leaves a value up to m, so m itself must become zero. */
+	if (bn_cmpn_low(c, sm, m, sm) != RLC_LT) {
+		bn_subn_low(c, c, m, sm);
+	}
 	RLC_FREE(t);
 }

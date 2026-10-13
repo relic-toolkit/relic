@@ -39,9 +39,8 @@
 /*============================================================================*/
 
 #include "bls12_381_q2_64.c"
-#include "bls12_381_q2_bedrock.c"
 
-void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
+void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* Karatsuba algorithm. */
@@ -85,12 +84,11 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
 #endif
 }
 
-void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b) {
-	//fiat_bls12_381_q2_mulFp2(c[0], c[1], a[0], a[1], b[0], b[1]);
-	Fp2_mul(c[0], c[1], a[0], a[1], b[0], b[1]);
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
+	fiat_bls12_381_q2_mulFp2(c[0], c[1], a[0], a[1], b[0], b[1]);
 }
 
-void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
+void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
 	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
 
@@ -163,7 +161,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addc_low(c[2], t5, t1);
 }
 
-void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv3_t t;
 
 	dv3_null(t);

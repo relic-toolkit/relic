@@ -81,12 +81,13 @@ u0: .quad U0
 .global fp_hlvd_low
 
 fp_add1_low:
+	xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	addq	%rdx   , %r10
 	movq	%r10   , 0(%rdi)
 
 	ADD1 1 (RLC_FP_DIGS - 1)
-	xorq	%rax, %rax
+	adcq	$0, %rax
 
 	ret
 
@@ -156,12 +157,14 @@ fp_addm_low:
 	ret
 
 fp_addd_low:
+	xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
 	movq	%r11   , 0(%rdi)
 
 	ADDN 	1 (2 * RLC_FP_DIGS - 1)
 
+	adcq	$0, %rax
 	ret
 
 fp_addc_low:
@@ -225,12 +228,13 @@ fp_addc_low:
 	ret
 
 fp_sub1_low:
+	xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	subq	%rdx   , %r10
 	movq	%r10   , 0(%rdi)
 
 	SUB1 	1 (RLC_FP_DIGS - 1)
-	xorq	%rax, %rax
+	adcq	$0, %rax
 
 	ret
 
@@ -300,12 +304,14 @@ fp_subm_low:
     ret
 
 fp_subd_low:
+	xorq	%rax, %rax
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
 	SUBN 	1 (2 * RLC_FP_DIGS - 1)
 
+	adcq	$0, %rax
 	ret
 
 fp_subc_low:
@@ -374,13 +380,14 @@ fp_negm_low:
 	ret
 
 fp_dbln_low:
+	xorq	%rax, %rax
 	movq	0(%rsi), %r8
 	addq	%r8    , %r8
 	movq	%r8    , 0(%rdi)
 
 	DBLN 1 (RLC_FP_DIGS - 1)
 
-	xorq	%rax,%rax
+	adcq	$0, %rax
 	ret
 
 fp_dblm_low:

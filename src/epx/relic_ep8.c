@@ -48,13 +48,15 @@ TMPL_EP_RHS(ep8, fp8);
 TMPL_EP_BIN(ep8, fp8);
 
 void ep8_frb(ep8_t r, const ep8_t p, int i) {
+	ctx_t *ctx = core_get();
+
 	ep8_copy(r, p);
 	for (; i > 0; i--) {
 		fp8_frb(r->x, r->x, 1);
 		fp8_frb(r->y, r->y, 1);
 		fp8_frb(r->z, r->z, 1);
-		fp8_mul_frb(r->x, r->x, 1, 2);
-		fp8_mul_frb(r->y, r->y, 1, 3);
+		fp8_mul(r->x, r->x, ctx->ep8_frb[0]);
+		fp8_mul(r->y, r->y, ctx->ep8_frb[1]);
 	}
 }
 

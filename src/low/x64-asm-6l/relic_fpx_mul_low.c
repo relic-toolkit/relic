@@ -52,6 +52,12 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
     dv_copy(c[1], t1, 2 * RLC_FP_DIGS);
 }
 
+/*
+ * The real part is accumulated as a signed value of RLC_FP_DIGS digits, so
+ * results in (-p, 2p) must fit in (-2^383, 2^383), which needs 2p < 2^383.
+ */
+#if FP_PRIME < 383
+
 void fp2_mulm_c0(dv_t c, const fp2_t a, const fp2_t b);
 void fp2_mulm_c1(dv_t c, const fp2_t a, const fp2_t b);
 
@@ -62,6 +68,8 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
     fp2_mulm_c1(c[1], a, b);
     fp_copy(c[0], t0);
 }
+
+#endif
 
 #else
 
@@ -108,6 +116,10 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	fp_subc_low(c[1], t2, t0);
 #endif
 }
+
+#endif
+
+#if !defined(FP_QNRES) || FP_PRIME >= 383
 
 void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dv2_t t;
