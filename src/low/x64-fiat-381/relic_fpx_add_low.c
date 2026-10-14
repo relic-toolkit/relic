@@ -181,8 +181,10 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 					fp2_addc_low(t, t, t);
 					qnr = qnr >> 1;
 				}
+				/* Read a before writing c, as c may alias a. */
+				fp_addc_low(t[1], t[1], a[0]);
 				fp_subc_low(c[0], t[0], a[1]);
-				fp_addc_low(c[1], t[1], a[0]);
+				dv_copy(c[1], t[1], 2 * RLC_FP_DIGS);
 				break;
 		}
 #endif

@@ -170,7 +170,6 @@ void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 #else
 		fp_addc_low(t6, t0, t2);
 #endif
-		fp_addc_low(t6, t0, t2);
 		fp_subc_low(t5, t, t6);
 		fp_addc_low(t5, t5, t1);
 
@@ -239,14 +238,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 			case 1:
 			case 7:
 				if (cnr != 0) {
-					fp3_copy(u, a);
-					while (cnr > 1) {
-						fp3_dbl(u, u);
-						if (cnr & 1) {
-							fp3_add(u, u, a);
-						}
-						cnr = cnr >> 1;
-					}
+					fp3_mul_dig(u, a, cnr);
 					if (fp3_field_get_cnr() > 0) {
 						fp3_add(t, t, u);
 					} else {
