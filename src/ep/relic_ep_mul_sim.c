@@ -58,24 +58,15 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	ep_t tab1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1, l2, l3;
 
-	bn_null(n);
-	bn_null(k0);
-	bn_null(k1);
-	bn_null(m0);
-	bn_null(m1);
+	bn_null_all(n, k0, k1, m0, m1);
 	ep_null(v);
 
 	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-		ep_null(tab0[i]);
-		ep_null(tab1[i]);
+		ep_null_all(tab0[i], tab1[i]);
 	}
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(k0);
-		bn_new(k1);
-		bn_new(m0);
-		bn_new(m1);
+		bn_new_all(n, k0, k1, m0, m1);
 		ep_new(v);
 
 		ep_curve_get_ord(n);
@@ -93,8 +84,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		/* Compute the precomputation tables. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_new(tab0[i]);
-			ep_new(tab1[i]);
+			ep_new_all(tab0[i], tab1[i]);
 		}
 		ep_tab(tab0, p, RLC_WIDTH);
 		ep_tab(tab1, q, RLC_WIDTH);
@@ -202,17 +192,12 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(k0);
-		bn_free(k1);
-		bn_free(m0);
-		bn_free(m1);
+		bn_free_all(n, k0, k1, m0, m1);
 		ep_free(v);
 
 		/* Free the precomputation tables. */
 		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
-			ep_free(tab0[i]);
-			ep_free(tab1[i]);
+			ep_free_all(tab0[i], tab1[i]);
 		}
 	}
 }
@@ -302,9 +287,7 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 		} RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
-			bn_free(q);
-			bn_free(_k[0]);
-			bn_free(_k[1]);
+			bn_free_all(q, _k[0], _k[1]);
 			for (i = 0; i < 2 * n; i++) {
 				ep_free(_p[i]);
 			}
@@ -316,10 +299,7 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, c);
 		ep_t *_q = RLC_ALLOCA(ep_t, 2 * n);
 
-		ep_null(s);
-		ep_null(t);
-		ep_null(u);
-		ep_null(v);
+		ep_null_all(s, t, u, v);
 
 		if (naf == NULL || _p == NULL || _q == NULL) {
 			RLC_FREE(naf);
@@ -340,10 +320,7 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 
 		RLC_TRY {
 			bn_new(q);
-			ep_new(s);
-			ep_new(t);
-			ep_new(u);
-			ep_new(v);
+			ep_new_all(s, t, u, v);
 			for (i = 0; i < 2; i++) {
 				bn_new(_k[i]);
 			}
@@ -417,10 +394,7 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
 			bn_free(q);
-			ep_free(s);
-			ep_free(t);
-			ep_free(u);
-			ep_free(v);
+			ep_free_all(s, t, u, v);
 			for (i = 0; i < 2; i++) {
 				bn_free(_k[i]);
 			}
@@ -454,6 +428,11 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 	int max;
 
 	ep_null(t);
+
+	if (n <= 0) {
+		ep_set_infty(r);
+		return;
+	}
 
 	max = util_bits_dig(k[0]);
 	for (int i = 1; i < n; i++) {

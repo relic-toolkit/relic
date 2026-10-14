@@ -982,6 +982,11 @@
 																			\
 		C##_null(t);														\
 																			\
+		if (len == 0) {														\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		max = util_bits_dig(k[0]);											\
 		for (size_t i = 1; i < len; i++) {									\
 			max = RLC_MAX(max, (int)util_bits_dig(k[i]));					\

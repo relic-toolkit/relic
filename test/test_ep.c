@@ -535,15 +535,20 @@ static int subtraction(void) {
 static int doubling(void) {
 	int code = RLC_ERR;
 	ep_t a, b, c;
+	fp_t s0, s1;
 
 	ep_null(a);
 	ep_null(b);
 	ep_null(c);
+	fp_null(s0);
+	fp_null(s1);
 
 	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
+		fp_new(s0);
+		fp_new(s1);
 
 		TEST_CASE("point doubling is correct") {
 			ep_rand(a);
@@ -558,6 +563,12 @@ static int doubling(void) {
 			ep_dbl(b, a);
 			ep_dbl_basic(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+			/* Adding a point to itself gives the doubling and its slope. */
+			ep_norm(a, a);
+			ep_add_slp_basic(b, s0, a, a);
+			ep_dbl_slp_basic(c, s1, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(s0, s1) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -609,6 +620,8 @@ static int doubling(void) {
 	ep_free(a);
 	ep_free(b);
 	ep_free(c);
+	fp_free(s0);
+	fp_free(s1);
 	return code;
 }
 
@@ -1343,6 +1356,20 @@ static int simultaneous(void) {
 			bn_add(k[2], k[2], n);
 			ep_mul_sim_lot(p[SIM_LOT], p, k, SIM_LOT);
 			TEST_ASSERT(ep_cmp(p[SIM_LOT], r) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous multiplication by digits is correct") {
+			dig_t d[2];
+			rand_bytes((uint8_t *)d, sizeof(d));
+			ep_rand(p[0]);
+			ep_rand(p[1]);
+			ep_mul_sim_dig(r, p, d, 2);
+			ep_mul_dig(p[2], p[0], d[0]);
+			ep_mul_dig(p[3], p[1], d[1]);
+			ep_add(p[2], p[2], p[3]);
+			TEST_ASSERT(ep_cmp(r, p[2]) == RLC_EQ, end);
+			ep_mul_sim_dig(r, p, d, 0);
+			TEST_ASSERT(ep_is_infty(r), end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

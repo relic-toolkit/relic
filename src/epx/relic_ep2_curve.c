@@ -371,6 +371,7 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 		if (end == NULL) {
 			/* should not happen --- means there's no second coeff */
 			RLC_THROW(ERR_NO_VALID);
+			return 0;
 		}
 		unsigned len = end - str - offset;
 		fp_read_str(coeffs[degree][0], str + offset, len, 16);

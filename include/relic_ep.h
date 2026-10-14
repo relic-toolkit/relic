@@ -917,7 +917,7 @@ void ep_add_basic(ep_t r, const ep_t p, const ep_t q);
  * returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -963,7 +963,7 @@ void ep_dbl_basic(ep_t r, const ep_t p);
  * returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep_dbl_slp_basic(ep_t r, fp_t s, const ep_t p);

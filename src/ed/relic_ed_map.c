@@ -299,6 +299,11 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 	const int len_per_elm = (FP_PRIME + ed_param_level() + 7) / 8;
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
 
+	if (pseudo_random_bytes == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
 	bn_null(k);
 	fp_null(t);
 	ed_null(q);
