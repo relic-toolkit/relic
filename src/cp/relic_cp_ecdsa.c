@@ -106,7 +106,13 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 			bn_mod(s, s, n);
 			bn_add(s, s, e);
 			bn_mod(s, s, n);
+			/* Blind the secret, as inversion takes variable time. */
+			bn_rand_mod(x, n);
+			bn_mul(k, k, x);
+			bn_mod(k, k, n);
 			bn_mod_inv(k, k, n);
+			bn_mul(k, k, x);
+			bn_mod(k, k, n);
 			bn_mul(s, s, k);
 			bn_mod(s, s, n);
 		} while (bn_is_zero(s));

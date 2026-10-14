@@ -36,10 +36,11 @@
 /*============================================================================*/
 
 int cp_oprf_ask(ec_t b, bn_t x, const ec_t a) {
-	bn_t n;
+	bn_t n, r;
 	int result = RLC_OK;
 
 	bn_null(n);
+	bn_null(r);
 
 	if (ec_is_infty(a)) {
 		return RLC_ERR;
@@ -47,19 +48,27 @@ int cp_oprf_ask(ec_t b, bn_t x, const ec_t a) {
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(r);
 
 		ec_curve_get_ord(n);
 		do {
 			bn_rand_mod(x, n);
 		} while (bn_is_zero(x));
 		ec_mul(b, a, x);
+		/* Blind the secret, as inversion takes variable time. */
+		bn_rand_mod(r, n);
+		bn_mul(x, x, r);
+		bn_mod(x, x, n);
 		bn_mod_inv(x, x, n);
+		bn_mul(x, x, r);
+		bn_mod(x, x, n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(r);
 	}
 	return result;
 }

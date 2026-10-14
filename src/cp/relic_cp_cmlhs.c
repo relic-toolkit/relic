@@ -167,7 +167,13 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		bn_read_bin(k, mac, RLC_MD_LEN);
 		bn_mod(k, k, n);
 		g2_mul_gen(z, k);
+		/* Blind the secret, as inversion takes variable time. */
+		bn_rand_mod(m, n);
+		bn_mul(k, k, m);
+		bn_mod(k, k, n);
 		bn_mod_inv(k, k, n);
+		bn_mul(k, k, m);
+		bn_mod(k, k, n);
 		g1_mul(a, a, k);
 
 		/* Compute C = C * sum H_j^m_j. */

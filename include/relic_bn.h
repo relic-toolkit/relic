@@ -1080,7 +1080,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
  *
  * @param[out] c			- the results.
  * @param[in] a				- the elements to invert.
- * param[in] b				- the modulus.
+ * @param[in] b				- the modulus.
  * @param[in] n				- the number of elements.
  */
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);

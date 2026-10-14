@@ -296,9 +296,9 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_pdbat_ask(ls, b, rs, v2, u1, u2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
@@ -307,9 +307,9 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_mvbat_ask(b, qs, s, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
@@ -324,9 +324,9 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 	} RLC_CATCH_ANY {
