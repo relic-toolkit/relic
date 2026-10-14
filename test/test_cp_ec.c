@@ -885,9 +885,16 @@ static int pedersen(void) {
 		ec_curve_get_ord(n);
 
 		TEST_CASE("pedersen commitment is consistent") {
-			bn_rand_mod(r1, n);
+			do {
+				bn_rand_mod(r1, n);
+			} while (bn_is_zero(r1));
+			/* A zero message commits to the randomness alone. */
 			bn_zero(m);
-			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_ERR, end);
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			ec_mul(c2, h, r1);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+			bn_zero(r2);
+			TEST_ASSERT(cp_ped_com(c1, h, r2, m) == RLC_ERR, end);
 			do {
 				bn_rand_mod(m, n);
 			} while (bn_is_zero(m));

@@ -122,7 +122,9 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 	uint8_t _x[RLC_FC_BYTES + 1], h[RLC_MD_LEN], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
 
-	if (in_len < RLC_MD_LEN) {
+	/* The ephemeral key must be a valid point of prime order, or
+	 * invalid-curve and small-subgroup points could leak the private key. */
+	if (in_len < RLC_MD_LEN || !ec_is_valid(r)) {
 		return RLC_ERR;
 	}
 

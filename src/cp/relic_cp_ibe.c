@@ -82,7 +82,7 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 	g2_null(q);
 	gt_null(e);
 
-	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN) {
+	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN || !g1_is_valid(pub)) {
 		return RLC_ERR;
 	}
 
@@ -167,25 +167,27 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		g1_new(p);
 		gt_new(e);
 
-		g1_read_bin(p, in, l);
+		if (g1_read_bin(p, in, l) != RLC_OK || g1_is_infty(p)) {
+			result = RLC_ERR;
+		} else {
+			pc_map(e, p, prv);
 
-		pc_map(e, p, prv);
+			/* Allocate size for storing the output. */
+			l = gt_size_bin(e, 0);
+			buf = RLC_ALLOCA(uint8_t, l);
+			if (buf == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
+			gt_write_bin(buf, l, e, 0);
+			md_map(h, buf, l);
 
-		/* Allocate size for storing the output. */
-		l = gt_size_bin(e, 0);
-		buf = RLC_ALLOCA(uint8_t, l);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
+			in_len -= (2 * RLC_FP_BYTES + 1);
+			for (l = 0; l < RLC_MIN(in_len, RLC_MD_LEN); l++) {
+				out[l] = in[l + (2 * RLC_FP_BYTES + 1)] ^ h[l];
+			}
+
+			*out_len = in_len;
 		}
-		gt_write_bin(buf, l, e, 0);
-		md_map(h, buf, l);
-
-		in_len -= (2 * RLC_FP_BYTES + 1);
-		for (l = 0; l < RLC_MIN(in_len, RLC_MD_LEN); l++) {
-			out[l] = in[l + (2 * RLC_FP_BYTES + 1)] ^ h[l];
-		}
-
-		*out_len = in_len;
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

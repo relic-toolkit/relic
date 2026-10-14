@@ -717,6 +717,15 @@ void ed_print(const ed_t p);
 int ed_on_curve(const ed_t p);
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is valid, 0 otherwise.
+ */
+int ed_is_valid(const ed_t p);
+
+/**
  * Returns the number of bytes necessary to store an Edwards elliptic curve point
  * with optional point compression.
  *

@@ -2755,8 +2755,8 @@ int cp_etrs_uni(bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
  * 
  * @param[out] c			- the commitment.
  * @param[in] h				- the generator.
- * @param[in] r				- the randomness.
- * @param[in] x				- the message.
+ * @param[in] r				- the randomness, nonzero and reduced.
+ * @param[in] x				- the message, reduced.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);

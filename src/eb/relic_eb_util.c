@@ -191,6 +191,46 @@ int eb_on_curve(const eb_t p) {
 	return r;
 }
 
+int eb_is_valid(const eb_t p) {
+	bn_t h, n;
+	eb_t t;
+	int result = 0;
+
+	if (eb_is_infty(p) || !eb_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	eb_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		eb_new(t);
+
+		result = 1;
+		eb_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			eb_curve_get_ord(n);
+			eb_mul_basic(t, p, n);
+			result = eb_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		eb_free(t);
+	}
+	return result;
+}
+
 void eb_tab(eb_t *t, const eb_t p, int w) {
 	int u;
 

@@ -178,6 +178,46 @@ int ed_on_curve(const ed_t p) {
 	return r;
 }
 
+int ed_is_valid(const ed_t p) {
+	bn_t h, n;
+	ed_t t;
+	int result = 0;
+
+	if (ed_is_infty(p) || !ed_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	ed_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		ed_new(t);
+
+		result = 1;
+		ed_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			ed_curve_get_ord(n);
+			ed_mul_basic(t, p, n);
+			result = ed_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		ed_free(t);
+	}
+	return result;
+}
+
 void ed_tab(ed_t *t, const ed_t p, int w) {
 	if (w > 2) {
 		ed_dbl(t[0], p);

@@ -570,8 +570,8 @@ static int pss_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
 static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	size_t em_len = RLC_CEIL(em_bits, 8), db_len;
 	uint8_t *db = em, *hh, *mask, buf[8 + 2 * RLC_MD_LEN];
-	uint8_t top = 0xFF >> (8 * em_len - em_bits), h2[RLC_MD_LEN];
-	int result = 1;
+	uint8_t top = 0xFF >> (8 * em_len - em_bits), h2[RLC_MD_LEN], d = 0;
+	int result = 0;
 
 	if (em_len < 2 * RLC_MD_LEN + 2 || em[em_len - 1] != 0xBC ||
 			(db[0] & ~top) != 0) {
@@ -592,21 +592,18 @@ static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	RLC_FREE(mask);
 	db[0] &= top;
 
+	/* The padding must be zeros followed by a one. */
 	for (size_t i = 0; i < db_len - RLC_MD_LEN - 1; i++) {
-		if (db[i] != 0) {
-			result = 0;
-		}
+		d |= db[i];
 	}
-	if (db[db_len - RLC_MD_LEN - 1] != 0x01) {
-		result = 0;
-	}
+	d |= db[db_len - RLC_MD_LEN - 1] ^ 0x01;
 
 	memset(buf, 0, 8);
 	memcpy(buf + 8, h, RLC_MD_LEN);
 	memcpy(buf + 8 + RLC_MD_LEN, db + db_len - RLC_MD_LEN, RLC_MD_LEN);
 	md_map(h2, buf, sizeof(buf));
-	if (util_cmp_sec(h2, hh, RLC_MD_LEN) != RLC_EQ) {
-		result = 0;
+	if (d == 0 && util_cmp_sec(h2, hh, RLC_MD_LEN) == RLC_EQ) {
+		result = 1;
 	}
 	return result;
 }

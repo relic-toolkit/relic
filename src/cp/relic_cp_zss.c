@@ -121,6 +121,10 @@ int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
 	g1_null(g);
 	gt_null(e);
 
+	if (!g2_is_valid(s)) {
+		return result;
+	}
+
 	RLC_TRY {
 		bn_new(m);
 		bn_new(n);

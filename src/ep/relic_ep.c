@@ -350,3 +350,43 @@ int ep_upk(ep_t r, const ep_t p) {
 	}
 	return result;
 }
+
+int ep_is_valid(const ep_t p) {
+	bn_t h, n;
+	ep_t t;
+	int result = 0;
+
+	if (ep_is_infty(p) || !ep_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	ep_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		ep_new(t);
+
+		result = 1;
+		ep_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			ep_curve_get_ord(n);
+			ep_mul_basic(t, p, n);
+			result = ep_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		ep_free(t);
+	}
+	return result;
+}

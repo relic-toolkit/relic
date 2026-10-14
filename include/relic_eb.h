@@ -537,6 +537,15 @@ void eb_rhs(fb_t rhs, const fb_t p);
 int eb_on_curve(const eb_t p);
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is valid, 0 otherwise.
+ */
+int eb_is_valid(const eb_t p);
+
+/**
  * Builds a precomputation table for multiplying a random binary elliptic point.
  *
  * @param[out] t			- the precomputation table.

@@ -102,7 +102,7 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 	g2_t r[2];
 	gt_t e;
 	bn_t m, n;
-	int result = 1;
+	int result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
@@ -121,33 +121,29 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(b) || g1_is_infty(c)) {
-			result = 0;
-		}
+		if (g1_is_valid(a) && g1_is_valid(b) && g1_is_valid(c)) {
+			/* Check that e(a, Y) = e(b, g). */
+			g1_copy(p[0], a);
+			g1_copy(p[1], b);
+			g2_copy(r[0], y);
+			g2_get_gen(r[1]);
+			g2_neg(r[1], r[1]);
+			pc_map_sim(e, p, r, 2);
 
-		g1_copy(p[0], a);
-		g1_copy(p[1], b);
-		g2_copy(r[0], y);
-		g2_get_gen(r[1]);
-		g2_neg(r[1], r[1]);
+			if (gt_is_unity(e)) {
+				/* Check that e(a + [m]b, X) = e(c, g). */
+				pc_get_ord(n);
+				bn_read_bin(m, msg, len);
+				bn_mod(m, m, n);
+				g1_mul(p[0], b, m);
+				g1_add(p[0], p[0], a);
+				g1_norm(p[0], p[0]);
+				g1_copy(p[1], c);
+				g2_copy(r[0], x);
+				pc_map_sim(e, p, r, 2);
 
-		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-
-		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
-		g1_mul(p[0], b, m);
-		g1_add(p[0], p[0], a);
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(r[0], x);
-
-		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+				result = gt_is_unity(e);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -246,7 +242,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 	g2_t q[2];
 	gt_t e;
 	bn_t m, n;
-	int result = 1;
+	int ok, result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
@@ -265,51 +261,49 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(A)) {
-			result = 0;
-		}
-		if (g1_is_infty(b) || g1_is_infty(B) || g1_is_infty(c)) {
-			result = 0;
-		}
+		ok = g1_is_valid(a) && g1_is_valid(A) && g1_is_valid(b)
+				&& g1_is_valid(B) && g1_is_valid(c);
 
 		/* Check that e(a, Z) = e(A, g) or that e(a, Z)e(A, -g) = 1. */
-		g1_copy(p[0], a);
-		g1_copy(p[1], A);
-		g2_copy(q[0], z);
-		g2_get_gen(q[1]);
-		g2_neg(q[1], q[1]);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (ok) {
+			g1_copy(p[0], a);
+			g1_copy(p[1], A);
+			g2_copy(q[0], z);
+			g2_get_gen(q[1]);
+			g2_neg(q[1], q[1]);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
 
 		/* Check e(a, Y) = e(b, g) and e(A, Y) = e(B, g) using same trick. */
-		g1_copy(p[1], b);
-		g2_copy(q[0], y);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (ok) {
+			g1_copy(p[1], b);
+			g2_copy(q[0], y);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
-		g1_copy(p[0], A);
-		g1_copy(p[1], B);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (ok) {
+			g1_copy(p[0], A);
+			g1_copy(p[1], B);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
 
 		/* Check that e(a, X)e(mb, X)e(rB, X) = e(c, g). */
-		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
-		g1_mul_sim(p[0], b, m, B, r);
-		g1_add(p[0], p[0], a);
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(q[0], x);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (ok) {
+			pc_get_ord(n);
+			bn_read_bin(m, msg, len);
+			bn_mod(m, m, n);
+			g1_mul_sim(p[0], b, m, B, r);
+			g1_add(p[0], p[0], a);
+			g1_norm(p[0], p[0]);
+			g1_copy(p[1], c);
+			g2_copy(q[0], x);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
+
+		result = ok;
 	}
 	RLC_CATCH_ANY {
 		result = 0;
@@ -417,7 +411,7 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 	g2_t q[2];
 	gt_t e;
 	bn_t m, n;
-	int result = 1;
+	int ok, result = 0;
 	size_t i;
 
 	g1_null(p[0]);
@@ -437,63 +431,57 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(b) || g1_is_infty(c)) {
-			result = 0;
-		}
-		for (i = 1; i < l; i++) {
-			if (g1_is_infty(A[i - 1]) || g1_is_infty(B[i - 1])) {
-				result = 0;
-			}
+		ok = g1_is_valid(a) && g1_is_valid(b) && g1_is_valid(c);
+		for (i = 1; ok && i < l; i++) {
+			ok = g1_is_valid(A[i - 1]) && g1_is_valid(B[i - 1]);
 		}
 
 		/* Check that e(a, Z_i) = e(A_i, g) or that e(a, Z_i)e(A_i, -g) = 1. */
 		g1_copy(p[0], a);
 		g2_get_gen(q[1]);
 		g2_neg(q[1], q[1]);
-		for (i = 1; i < l; i++) {
+		for (i = 1; ok && i < l; i++) {
 			g1_copy(p[1], A[i - 1]);
 			g2_copy(q[0], z[i - 1]);
 			pc_map_sim(e, p, q, 2);
-			if (!gt_is_unity(e)) {
-				result = 0;
-			}
+			ok = gt_is_unity(e);
 		}
 
 		/* Check e(a, Y) = e(b, g) and e(A_i, Y) = e(B_i, g) using the trick. */
-		g1_copy(p[1], b);
-		g2_copy(q[0], y);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (ok) {
+			g1_copy(p[1], b);
+			g2_copy(q[0], y);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
-		for (i = 1; i < l; i++) {
+		for (i = 1; ok && i < l; i++) {
 			g1_copy(p[0], A[i - 1]);
 			g1_copy(p[1], B[i - 1]);
 			pc_map_sim(e, p, q, 2);
-			if (!gt_is_unity(e)) {
-				result = 0;
-			}
+			ok = gt_is_unity(e);
 		}
 
 		/* Check that e(a, X)e(m_0b, X)\prod e(m_iB, X) = e(c, g). */
-		pc_get_ord(n);
-		bn_read_bin(m, ms[0], ls[0]);
-		bn_mod(m, m, n);
-		g1_mul(p[0], b, m);
-		g1_add(p[0], p[0], a);
-		for (i = 1; i < l; i++) {
-			bn_read_bin(m, ms[i], ls[i]);
+		if (ok) {
+			pc_get_ord(n);
+			bn_read_bin(m, ms[0], ls[0]);
 			bn_mod(m, m, n);
-			g1_mul(p[1], B[i - 1], m);
-			g1_add(p[0], p[0], p[1]);
+			g1_mul(p[0], b, m);
+			g1_add(p[0], p[0], a);
+			for (i = 1; i < l; i++) {
+				bn_read_bin(m, ms[i], ls[i]);
+				bn_mod(m, m, n);
+				g1_mul(p[1], B[i - 1], m);
+				g1_add(p[0], p[0], p[1]);
+			}
+			g1_norm(p[0], p[0]);
+			g1_copy(p[1], c);
+			g2_copy(q[0], x);
+			pc_map_sim(e, p, q, 2);
+			ok = gt_is_unity(e);
 		}
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(q[0], x);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
+
+		result = ok;
 	}
 	RLC_CATCH_ANY {
 		result = 0;

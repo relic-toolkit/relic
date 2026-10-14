@@ -118,7 +118,7 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 		g2_norm(r[0], r[0]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e) && !g1_is_infty(a)) {
+		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
 			result = 1;
 		}
 	}
@@ -241,7 +241,7 @@ int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
 		g2_copy(q[1], g);
 		g2_neg(q[1], q[1]);
 		pc_map_sim(e, p, q, 2);
-		if (!g1_is_infty(a) && gt_is_unity(e)) {
+		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
 			result = 1;
 		}
 	}

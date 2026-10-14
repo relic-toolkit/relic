@@ -106,6 +106,12 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
 	int l, result = 0;
 
+	/* Points off the curve are not in the statement. */
+	if (!ec_on_curve(y)) {
+		RLC_FREE(m);
+		return 0;
+	}
+
 	bn_null(n);
 	bn_null(v);
 	ec_null(t);
@@ -266,6 +272,13 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	uint8_t h[RLC_MD_LEN];
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = 0;
+
+	/* Points off the curve are not in the statement. */
+	if (!ec_on_curve(y[0]) || !ec_on_curve(y[1])
+			|| !ec_on_curve(g[0]) || !ec_on_curve(g[1])) {
+		RLC_FREE(m);
+		return 0;
+	}
 
 	bn_null(n);
 	bn_null(v[0]);
@@ -447,6 +460,13 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	const size_t size = len + 9 * (RLC_FC_BYTES + 1);
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, size);
 	int result = 0;
+
+	/* Points off the curve are not in the statement. */
+	if (!ec_on_curve(h) || !ec_on_curve(y[0]) || !ec_on_curve(y[1])
+			|| !ec_on_curve(g[0]) || !ec_on_curve(g[1])) {
+		RLC_FREE(m);
+		return 0;
+	}
 
 	if (m == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);

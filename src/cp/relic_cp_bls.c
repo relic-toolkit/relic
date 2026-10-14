@@ -103,7 +103,8 @@ int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 		g2_neg(r[1], r[1]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e) && g2_is_valid(q)) {
+		/* Torsion added to the signature would not change the pairing. */
+		if (gt_is_unity(e) && g1_is_valid(s) && g2_is_valid(q)) {
 			result = 1;
 		}
 	}

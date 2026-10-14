@@ -265,6 +265,14 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_on_curve(P)			RLC_CAT(RLC_EC_LOWER, on_curve)(P)
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] P					- the point to test.
+ */
+#define ec_is_valid(P)			RLC_CAT(RLC_EC_LOWER, is_valid)(P)
+
+/**
  * Returns the number of bytes necessary to store an elliptic curve point with
  * optional point compression.
  *

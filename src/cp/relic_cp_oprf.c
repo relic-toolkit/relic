@@ -65,7 +65,8 @@ int cp_oprf_ask(ec_t b, bn_t x, const ec_t a) {
 }
 
 int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b) {
-	if (bn_is_zero(alpha) || ec_is_infty(b)) {
+	/* The blinded point must be valid, or invalid points could leak the key. */
+	if (bn_is_zero(alpha) || !ec_is_valid(b)) {
 		return RLC_ERR;
 	}
 
@@ -74,7 +75,8 @@ int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b) {
 }
 
 int cp_oprf_res(ec_t r, const bn_t x, const ec_t c) {
-	if (bn_is_zero(x) || ec_is_infty(c)) {
+	/* The answer must be valid, or the server could steer the result. */
+	if (bn_is_zero(x) || !ec_is_valid(c)) {
 		return RLC_ERR;
 	}
 

@@ -846,6 +846,15 @@ void ep_rhs(fp_t rhs, const fp_t x);
 int ep_on_curve(const ep_t p);
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is valid, 0 otherwise.
+ */
+int ep_is_valid(const ep_t p);
+
+/**
  * Builds a precomputation table for multiplying a random prime elliptic point.
  *
  * @param[out] t			- the precomputation table.

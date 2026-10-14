@@ -231,7 +231,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	/* Room for any point z[i] in uncompressed form, whatever s is. */
 	uint8_t *buf = RLC_ALLOCA(uint8_t,
 			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
-	int result = 1;
+	int ok, result = 0;
 
 	g1_null(g1);
 	g2_null(g2);
@@ -253,59 +253,62 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		for (size_t i = 0; i < slen; i++) {
+		ok = 1;
+		for (size_t i = 0; ok && i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
 			if (bls) {
-				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
 #if EC_CUR == PRIME
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
 				fp_set_dig(g1->z, 1);
-				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
 				/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
-				result = 0;
+				ok = 0;
 #endif
 			}
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
+		if (ok) {
+			pc_get_ord(n);
+			g1_get_gen(g1);
+			g2_get_gen(g2);
 
-		pc_map_sim(e, a, z, slen);
-		pc_map_sim(u, c, y, slen);
-		pc_map(v, r, g2);
-		gt_mul(u, u, v);
+			pc_map_sim(e, a, z, slen);
+			pc_map_sim(u, c, y, slen);
+			pc_map(v, r, g2);
+			gt_mul(u, u, v);
 
-		for (size_t i = 0; i < slen; i++) {
-			for (size_t j = 0; j < flen[i]; j++) {
-				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
-				gt_mul(u, u, v);
+			for (size_t i = 0; i < slen; i++) {
+				for (size_t j = 0; j < flen[i]; j++) {
+					gt_exp_dig(v, hs[i][label[j]], f[i][j]);
+					gt_mul(u, u, v);
+				}
 			}
-		}
-		if (gt_cmp(e, u) != RLC_EQ) {
-			result = 0;
+			ok = (gt_cmp(e, u) == RLC_EQ);
 		}
 
-		pc_map(e, g1, s);
-		g1_set_infty(g1);
-		for (size_t i = 0; i < slen; i++) {
-			g1_add(g1, g1, c[i]);
-		}
-		g1_norm(g1, g1);
-		pc_map(u, g1, g2);
-		gt_mul(e, e, u);
+		if (ok) {
+			pc_map(e, g1, s);
+			g1_set_infty(g1);
+			for (size_t i = 0; i < slen; i++) {
+				g1_add(g1, g1, c[i]);
+			}
+			g1_norm(g1, g1);
+			pc_map(u, g1, g2);
+			gt_mul(e, e, u);
 
-		g1_mul(g1, h, m);
-		pc_map(v, g1, g2);
-		if (gt_cmp(e, v) != RLC_EQ) {
-			result = 0;
+			g1_mul(g1, h, m);
+			pc_map(v, g1, g2);
+			ok = (gt_cmp(e, v) == RLC_EQ);
 		}
+
+		result = ok;
 	}
 	RLC_CATCH_ANY {
 		result = 0;
@@ -359,7 +362,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	/* Room for any point z[i] in uncompressed form, whatever s is. */
 	uint8_t *buf = RLC_ALLOCA(uint8_t,
 			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
-	int result = 1;
+	int ok, result = 0;
 
 	g1_null(g1);
 	g2_null(g2);
@@ -381,53 +384,55 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		for (size_t i = 0; i < slen; i++) {
+		ok = 1;
+		for (size_t i = 0; ok && i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
 			if (bls) {
-				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
 #if EC_CUR == PRIME
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
-				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
 				/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
-				result = 0;
+				ok = 0;
 #endif
 			}
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
+		if (ok) {
+			pc_get_ord(n);
+			g1_get_gen(g1);
+			g2_get_gen(g2);
 
-		pc_map_sim(e, a, z, slen);
-		pc_map_sim(u, c, y, slen);
-		pc_map(v, r, g2);
-		gt_mul(u, u, v);
-		gt_mul(u, u, vk);
-
-		if (gt_cmp(e, u) != RLC_EQ) {
-			result = 0;
+			pc_map_sim(e, a, z, slen);
+			pc_map_sim(u, c, y, slen);
+			pc_map(v, r, g2);
+			gt_mul(u, u, v);
+			gt_mul(u, u, vk);
+			ok = (gt_cmp(e, u) == RLC_EQ);
 		}
 
-		pc_map(e, g1, s);
-		g1_set_infty(g1);
-		for (size_t i = 0; i < slen; i++) {
-			g1_add(g1, g1, c[i]);
-		}
-		g1_norm(g1, g1);
-		pc_map(u, g1, g2);
-		gt_mul(e, e, u);
+		if (ok) {
+			pc_map(e, g1, s);
+			g1_set_infty(g1);
+			for (size_t i = 0; i < slen; i++) {
+				g1_add(g1, g1, c[i]);
+			}
+			g1_norm(g1, g1);
+			pc_map(u, g1, g2);
+			gt_mul(e, e, u);
 
-		g1_mul(g1, h, msg);
-		pc_map(v, g1, g2);
-		if (gt_cmp(e, v) != RLC_EQ) {
-			result = 0;
+			g1_mul(g1, h, msg);
+			pc_map(v, g1, g2);
+			ok = (gt_cmp(e, v) == RLC_EQ);
 		}
+
+		result = ok;
 	} RLC_CATCH_ANY {
 		result = 0;
 		RLC_THROW(ERR_CAUGHT);
