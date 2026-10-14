@@ -697,6 +697,9 @@ static int compression2(void) {
 			fp2_pck(c, b);
 			TEST_ASSERT(fp2_upk(d, c) == 1, end);
 			TEST_ASSERT(fp2_cmp(b, d) == RLC_EQ, end);
+			/* The compressed bit is the parity of a_1 as an integer. */
+			fp_write_bin(bin, RLC_FP_BYTES, b[1]);
+			TEST_ASSERT(fp_get_bit(c[1], 0) == (bin[RLC_FP_BYTES - 1] & 1), end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {

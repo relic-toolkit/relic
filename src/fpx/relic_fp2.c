@@ -587,12 +587,27 @@ TMPL_EXP_CYC_NAF(fp2, fp2_sqr_cyc);
 TMPL_EXP_CYC_SIM(fp2, fp2_sqr_cyc);
 
 void fp2_pck(fp2_t c, const fp2_t a) {
-	int b = fp_get_bit(a[1], 0);
-	fp2_copy(c, a);
-	if (fp2_test_cyc(a)) {
-		fp_copy(c[0], a[0]);
-		fp_zero(c[1]);
-		fp_set_bit(c[1], 0, b);
+	bn_t t;
+	int b;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		/* Take the parity of a_1 itself, not of its representation. */
+		fp_prime_back(t, a[1]);
+		b = bn_get_bit(t, 0);
+		fp2_copy(c, a);
+		if (fp2_test_cyc(a)) {
+			fp_copy(c[0], a[0]);
+			fp_zero(c[1]);
+			fp_set_bit(c[1], 0, b);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
 	}
 }
 
@@ -600,11 +615,14 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 	if (fp_bits(a[1]) <= 1) {
 		int result, b = fp_get_bit(a[1], 0);
 		fp_t t, u;
+		bn_t v;
 
 		fp_null_all(t, u);
+		bn_null(v);
 
 		RLC_TRY {
 			fp_new_all(t, u);
+			bn_new(v);
 
 			/* For i^2 = qnr, a_0^2 - qnr * a_1^2 = 1, thus
 			 * a_1^2 = (a_0^2 - 1) / qnr. */
@@ -623,9 +641,9 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 			result = fp_srt(t, t);
 
 			if (result) {
-				/* Verify if least significant bit of the result matches the
-				 * compressed second coordinate. */
-				if (fp_get_bit(t, 0) != b) {
+				/* Choose the root whose parity matches the compressed bit. */
+				fp_prime_back(v, t);
+				if (bn_get_bit(v, 0) != b) {
 					fp_neg(t, t);
 				}
 				fp_copy(c[0], a[0]);
@@ -636,6 +654,7 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
 			fp_free_all(t, u);
+			bn_free(v);
 		}
 		return result;
 	} else {
