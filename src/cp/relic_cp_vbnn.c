@@ -74,9 +74,16 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 		size_t id_len) {
 	uint8_t hash[RLC_MD_LEN];
 	size_t len;
-	uint8_t *buf = NULL;
+	uint8_t *buf;
 	bn_t n, r;
 	int result = RLC_OK;
+
+	/* Room for the point in compressed form, whatever it is. */
+	buf = RLC_ALLOCA(uint8_t, id_len + 1 + RLC_FC_BYTES);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	/* zero variables */
 	bn_null(n);
@@ -98,10 +105,6 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 
 		/* calculate s part of the user key */
 		len = id_len + ec_size_bin(pk, 1);
-		buf = RLC_ALLOCA(uint8_t, len);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		memcpy(buf, id, id_len);
 		ec_write_bin(buf + id_len, ec_size_bin(pk, 1), pk, 1);
 
@@ -127,10 +130,21 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
 		const uint8_t *msg, int msg_len, const bn_t sk, const ec_t pk) {
 	size_t len;
-	uint8_t *buf = NULL, *buf_i, hash[RLC_MD_LEN];
+	uint8_t *buf, *buf_i, hash[RLC_MD_LEN];
 	bn_t n, y;
 	ec_t t;
 	int result = RLC_OK;
+
+	if (msg_len < 0) {
+		return RLC_ERR;
+	}
+
+	/* Room for both points in compressed form, whatever they are. */
+	buf = RLC_ALLOCA(uint8_t, id_len + msg_len + 2 * (1 + RLC_FC_BYTES));
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	/* zero variables */
 	bn_null(n);
@@ -150,10 +164,6 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
 
 		/* calculate h part of the signature */
 		len = id_len + msg_len + ec_size_bin(t, 1) + ec_size_bin(pk, 1);
-		buf = RLC_ALLOCA(uint8_t, len);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		buf_i = buf;
 		memcpy(buf_i, id, id_len);

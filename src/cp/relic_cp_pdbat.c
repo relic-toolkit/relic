@@ -50,10 +50,16 @@
 /*============================================================================*/
 
 int cp_pdbat_gen(g1_t u, g2_t v, gt_t e) {
-	g1_rand(u);
-	g2_rand(v);
-	pc_map(e, u, v);
-	return RLC_OK;
+	int result = RLC_OK;
+
+	RLC_TRY {
+		g1_rand(u);
+		g2_rand(v);
+		pc_map(e, u, v);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	return result;
 }
 
 int cp_pdbat_ask(bn_t *l, bn_t *b, g1_t *z, g2_t c, const g1_t u, const g2_t v,

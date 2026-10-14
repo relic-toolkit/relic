@@ -46,6 +46,7 @@
 
 int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 	bn_t p, q;
+	int result = RLC_OK;
 
 	bn_null(p);
 	bn_null(q);
@@ -68,13 +69,14 @@ int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 			bn_gcd(p, g, n);
 		} while (bn_cmp_dig(p, 1) != RLC_EQ);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(q);
 	}
 
-	return RLC_OK;
+	return result;
 }
 
 int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
@@ -110,13 +112,15 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 	uint_t *shuffle = RLC_ALLOCA(uint_t, l);
 	bn_t p;
 
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(p);
 
 	RLC_TRY {
 		bn_new(p);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, l);
 

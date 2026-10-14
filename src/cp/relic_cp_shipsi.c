@@ -45,31 +45,36 @@
 /*============================================================================*/
 
 int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits) {
-	/* Generate different primes p and q. */
-	do {
-		bn_gen_prime(crt->p, bits / 2);
-		bn_gen_prime(crt->q, bits / 2);
-	} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
+	int result = RLC_OK;
 
-	/* Swap p and q so that p is smaller. */
-	if (bn_cmp(crt->p, crt->q) != RLC_LT) {
-		bn_swap(crt->p, crt->q);
+	RLC_TRY {
+		/* Generate different primes p and q. */
+		do {
+			bn_gen_prime(crt->p, bits / 2);
+			bn_gen_prime(crt->q, bits / 2);
+		} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
+
+		/* Swap p and q so that p is smaller. */
+		if (bn_cmp(crt->p, crt->q) != RLC_LT) {
+			bn_swap(crt->p, crt->q);
+		}
+
+		/* n = pq. */
+		bn_mul(crt->n, crt->p, crt->q);
+
+		do {
+			bn_rand_mod(g, crt->n);
+			bn_gcd(crt->qi, g, crt->n);
+		} while (bn_cmp_dig(crt->qi, 1) != RLC_EQ);
+
+		/* phi(n) = (p - 1)(q - 1). */
+		bn_sub_dig(crt->dp, crt->p, 1);
+		bn_sub_dig(crt->dq, crt->q, 1);
+		bn_mod_inv(crt->qi, crt->q, crt->p);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 	}
-
-	/* n = pq. */
-	bn_mul(crt->n, crt->p, crt->q);
-
-	do {
-		bn_rand_mod(g, crt->n);
-		bn_gcd(crt->qi, g, crt->n);
-	} while (bn_cmp_dig(crt->qi, 1) != RLC_EQ);
-
-	/* phi(n) = (p - 1)(q - 1). */
-	bn_sub_dig(crt->dp, crt->p, 1);
-	bn_sub_dig(crt->dq, crt->q, 1);
-	bn_mod_inv(crt->qi, crt->q, crt->p);
-
-	return RLC_OK;
+	return result;
 }
 
 int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
@@ -105,15 +110,17 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
 	bn_t p, q;
 
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(p);
 	bn_null(q);
 
 	RLC_TRY {
 		bn_new(p);
 		bn_new(q);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, n);
 

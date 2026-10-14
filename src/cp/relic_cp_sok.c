@@ -48,6 +48,11 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(r);
 	ec_null(t);
@@ -56,9 +61,6 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 		bn_new(n);
 		bn_new(r);
 		ec_new(t);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		buf = m;
 		ec_curve_get_ord(n);
@@ -112,6 +114,11 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		return 0;
 	}
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(n);
 	bn_null(v);
 	ec_null(t);
@@ -120,9 +127,6 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		bn_new(n);
 		bn_new(v);
 		ec_new(t);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		buf = m;
 		ec_curve_get_ord(n);
@@ -172,6 +176,11 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	int one = 1 ^ (first != 0);
 	int zero = 0 ^ (first != 0);
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(v[0]);
 	bn_null(v[1]);
@@ -188,9 +197,6 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		ec_new(u);
 		ec_new(t[0]);
 		ec_new(t[1]);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		buf = m;
 		ec_curve_get_ord(n);
@@ -280,6 +286,11 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		return 0;
 	}
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(n);
 	bn_null(v[0]);
 	bn_null(v[1]);
@@ -292,9 +303,6 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		bn_new(v[1]);
 		bn_new(z);
 		ec_new(t);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		buf = m;
 		ec_curve_get_ord(n);

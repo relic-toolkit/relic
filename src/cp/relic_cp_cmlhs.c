@@ -36,8 +36,14 @@
 /*============================================================================*/
 
 int cp_cmlhs_init(g1_t h) {
-	g1_rand(h);
-	return RLC_OK;
+	int result = RLC_OK;
+
+	RLC_TRY {
+		g1_rand(h);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	return result;
 }
 
 int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
@@ -110,8 +116,15 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = NULL;
+	/* Room for the point z in uncompressed form, whatever it is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(z->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
 	int result = RLC_OK;
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(k);
 	bn_null(m);
@@ -163,19 +176,15 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g1_add(c, c, t);
 		g1_norm(c, c);
 
-		/* Sign Z || data, with a buffer sized for the encoding of Z. */
+		/* Sign Z || data. */
 		len = g2_size_bin(z, 0);
-		buf = RLC_ALLOCA(uint8_t, len + dlen);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		g2_write_bin(buf, len, z, 0);
 		memcpy(buf + len, data, dlen);
 		if (bls) {
-			cp_bls_sig(sig, buf, len + dlen, sk);
+			result = cp_bls_sig(sig, buf, len + dlen, sk);
 		} else {
 #if EC_CUR == PRIME
-			cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
+			result = cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
 			fp_prime_conv(sig->x, m);
 			fp_prime_conv(sig->y, n);
 			fp_set_dig(sig->z, 1);
@@ -233,6 +242,11 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
 	int ok, result = 0;
 
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	g1_null(g1);
 	g2_null(g2);
 	gt_null(e);
@@ -249,9 +263,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		gt_new(v);
 		bn_new(k);
 		bn_new(n);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ok = 1;
 		for (size_t i = 0; ok && i < slen; i++) {
@@ -267,7 +278,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 				g1_set_g2(g1, pk[i]);
 				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
-				/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
+				/* ECDSA keys must be points in G1, on prime curves. */
 				ok = 0;
 #endif
 			}
@@ -363,6 +374,11 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
 	int ok, result = 0;
 
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	g1_null(g1);
 	g2_null(g2);
 	gt_null(e);
@@ -379,9 +395,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		gt_new(v);
 		bn_new(k);
 		bn_new(n);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ok = 1;
 		for (size_t i = 0; ok && i < slen; i++) {
@@ -397,7 +410,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 				g1_set_g2(g1, pk[i]);
 				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
-				/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
+				/* ECDSA keys must be points in G1, on prime curves. */
 				ok = 0;
 #endif
 			}

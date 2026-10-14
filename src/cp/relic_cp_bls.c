@@ -129,14 +129,16 @@ int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q) {
 	uint8_t h[RLC_MD_LEN], *buf = RLC_ALLOCA(uint8_t, g2_size_bin(q, 0));
 	int result = RLC_OK;
 
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(t);
 	g1_null(u);
 	g2_null(p);
 
 	RLC_TRY {
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		bn_new(t);
 		g1_new(u);
 		g2_new(p);

@@ -39,70 +39,78 @@
 int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 	int result = RLC_OK;
 
-	if (sbits > (nbits / 2)) {
+	/* The subgroup order must be a proper factor of p - 1. */
+	if (sbits >= (nbits / 2)) {
 		return RLC_ERR;
 	}
 
-	/* Generate primes p and q of equivalent length
-	 * and (p-1) has a prime factor (the subgroup order) of length sbits
-	 */
-	do {
-		bn_gen_prime_factor(prv->a, prv->crt->p, sbits, nbits / 2);
-		bn_gen_prime(prv->crt->q, nbits / 2);
-	} while (bn_cmp(prv->crt->p, prv->crt->q) == RLC_EQ);
+	RLC_TRY {
+		/* Generate primes p and q of equivalent length
+		 * and (p-1) has a prime factor (the subgroup order) of length sbits
+		 */
+		do {
+			result = bn_gen_prime_factor(prv->a, prv->crt->p, sbits, nbits / 2);
+			bn_gen_prime(prv->crt->q, nbits / 2);
+		} while (result == RLC_OK &&
+				bn_cmp(prv->crt->p, prv->crt->q) == RLC_EQ);
 
-	/* Compute n = pq. */
-	bn_mul(prv->crt->n, prv->crt->p, prv->crt->q);
+		if (result == RLC_OK) {
+			/* Compute n = pq. */
+			bn_mul(prv->crt->n, prv->crt->p, prv->crt->q);
 
-	/* compute the subgroup size */
-	bn_sub_dig(prv->crt->p, prv->crt->p, 1);
-	bn_sub_dig(prv->crt->q, prv->crt->q, 1);
-	bn_mul(pub->g, prv->crt->p, prv->crt->q);	// lambda = (p-1)(q-1)
-	bn_div(prv->b, pub->g, prv->a);	// lambda = a*b
+			/* compute the subgroup size */
+			bn_sub_dig(prv->crt->p, prv->crt->p, 1);
+			bn_sub_dig(prv->crt->q, prv->crt->q, 1);
+			bn_mul(pub->g, prv->crt->p, prv->crt->q);	// lambda = (p-1)(q-1)
+			bn_div(prv->b, pub->g, prv->a);	// lambda = a*b
 
-	/* Restore p and q. */
-	bn_add_dig(prv->crt->p, prv->crt->p, 1);
-	bn_add_dig(prv->crt->q, prv->crt->q, 1);
+			/* Restore p and q. */
+			bn_add_dig(prv->crt->p, prv->crt->p, 1);
+			bn_add_dig(prv->crt->q, prv->crt->q, 1);
 
-	/* Fix the generator to be g=(1+n)^b */
+			/* Fix the generator to be g=(1+n)^b */
 
-	/* Compute dp and dq. */
-	/* dp is 1/((q-1)*lambda) mod p */
-	bn_mod(prv->crt->dp, pub->g, prv->crt->p);
-	bn_mul(prv->crt->dp, prv->crt->dp, prv->crt->q);
-	bn_mod(prv->crt->dp, prv->crt->dp, prv->crt->p);
+			/* Compute dp and dq. */
+			/* dp is 1/((q-1)*lambda) mod p */
+			bn_mod(prv->crt->dp, pub->g, prv->crt->p);
+			bn_mul(prv->crt->dp, prv->crt->dp, prv->crt->q);
+			bn_mod(prv->crt->dp, prv->crt->dp, prv->crt->p);
 
-	/* dq is 1/((p-1)*lambda) mod q */
-	bn_mod(prv->crt->dq, pub->g, prv->crt->q);
-	bn_mul(prv->crt->dq, prv->crt->dq, prv->crt->p);
-	bn_mod(prv->crt->dq, prv->crt->dq, prv->crt->q);
+			/* dq is 1/((p-1)*lambda) mod q */
+			bn_mod(prv->crt->dq, pub->g, prv->crt->q);
+			bn_mul(prv->crt->dq, prv->crt->dq, prv->crt->p);
+			bn_mod(prv->crt->dq, prv->crt->dq, prv->crt->q);
 
-	/* invertions */
-	bn_mod_inv(prv->crt->dp, prv->crt->dp, prv->crt->p);
-	bn_mod_inv(prv->crt->dq, prv->crt->dq, prv->crt->q);
+			/* invertions */
+			bn_mod_inv(prv->crt->dp, prv->crt->dp, prv->crt->p);
+			bn_mod_inv(prv->crt->dq, prv->crt->dq, prv->crt->q);
 
-	/* Precompute G = (1+n)^b mod n^2. */
-	bn_sqr(prv->crt->qi, prv->crt->n);	// n^2
-	bn_add_dig(pub->g, prv->crt->n, 1);	// 1+n
-	bn_mxp(prv->g, pub->g, prv->b, prv->crt->qi);	// (1+n)^b mod n^2
+			/* Precompute G = (1+n)^b mod n^2. */
+			bn_sqr(prv->crt->qi, prv->crt->n);	// n^2
+			bn_add_dig(pub->g, prv->crt->n, 1);	// 1+n
+			bn_mxp(prv->g, pub->g, prv->b, prv->crt->qi);	// (1+n)^b mod n^2
 
-	/* As G has order n, G^n = 1 cannot randomize ciphertexts. Instead, take
-	 * h = x^(nb) mod n^2 for random x, so that h^a = x^(n(p-1)(q-1)) = 1
-	 * and powers of h vanish on decryption, which raises to a. */
-	bn_mul(pub->g, prv->crt->n, prv->b);
-	do {
-		bn_rand_mod(prv->gn, prv->crt->qi);
-		bn_mxp(prv->gn, prv->gn, pub->g, prv->crt->qi);
-	} while (bn_cmp_dig(prv->gn, 1) != RLC_GT);
+			/* As G has order n, G^n = 1 cannot randomize ciphertexts. Instead,
+			 * take h = x^(nb) mod n^2 for random x, so that h^a = 1, as the
+			 * exponent is n(p-1)(q-1), and powers of h vanish on decryption,
+			 * which raises to a. */
+			bn_mul(pub->g, prv->crt->n, prv->b);
+			do {
+				bn_rand_mod(prv->gn, prv->crt->qi);
+				bn_mxp(prv->gn, prv->gn, pub->g, prv->crt->qi);
+			} while (bn_cmp_dig(prv->gn, 1) != RLC_GT);
 
-	/* qInv = q^(-1) mod p. */
-	bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
+			/* qInv = q^(-1) mod p. */
+			bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
 
-	/* n=pq */
-	bn_copy(pub->crt->n, prv->crt->n);
-	bn_copy(pub->g, prv->g);
-	bn_copy(pub->gn, prv->gn);
-
+			/* n=pq */
+			bn_copy(pub->crt->n, prv->crt->n);
+			bn_copy(pub->g, prv->g);
+			bn_copy(pub->gn, prv->gn);
+		}
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
 	return result;
 }
 

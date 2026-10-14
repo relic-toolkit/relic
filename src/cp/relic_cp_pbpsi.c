@@ -136,6 +136,11 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 	g2_t g2;
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
 
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(q);
 	bn_null(tj);
 	g1_null(g1);
@@ -146,9 +151,6 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 		bn_new(tj);
 		g1_new(g1);
 		g2_new(g2);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, n);
 

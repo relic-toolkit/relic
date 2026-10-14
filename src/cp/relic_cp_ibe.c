@@ -69,7 +69,7 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		const char *id, const g1_t pub) {
 	int result = RLC_OK;
 	size_t l;
-	uint8_t *buf = NULL, h[RLC_MD_LEN];
+	uint8_t *buf, h[RLC_MD_LEN];
 	bn_t n;
 	bn_t r;
 	g1_t p;
@@ -82,12 +82,20 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 	g2_null(q);
 	gt_null(e);
 
-	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN || !g1_is_valid(pub)) {
+	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN ||
+			!g1_is_valid(pub)) {
 		return RLC_ERR;
 	}
 
 	l = 1 + 2 * RLC_FP_BYTES;
 	if (*out_len < (in_len + l)) {
+		return RLC_ERR;
+	}
+
+	/* Room for an element of G_T in uncompressed form. */
+	buf = RLC_ALLOCA(uint8_t, (sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
@@ -98,13 +106,7 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		g2_new(q);
 		gt_new(e);
 
-		/* Allocate size for storing the output. */
 		l = gt_size_bin(e, 0);
-		buf = RLC_ALLOCA(uint8_t, l);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-
 		pc_get_ord(n);
 
 		/* q = H_1(ID). */
@@ -147,7 +149,7 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		const g2_t prv) {
 	int result = RLC_OK;
 	size_t l;
-	uint8_t *buf = NULL, h[RLC_MD_LEN];
+	uint8_t *buf, h[RLC_MD_LEN];
 	g1_t p;
 	gt_t e;
 
@@ -163,6 +165,13 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		return RLC_ERR;
 	}
 
+	/* Room for an element of G_T in uncompressed form. */
+	buf = RLC_ALLOCA(uint8_t, (sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	RLC_TRY {
 		g1_new(p);
 		gt_new(e);
@@ -172,12 +181,7 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		} else {
 			pc_map(e, p, prv);
 
-			/* Allocate size for storing the output. */
 			l = gt_size_bin(e, 0);
-			buf = RLC_ALLOCA(uint8_t, l);
-			if (buf == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
-			}
 			gt_write_bin(buf, l, e, 0);
 			md_map(h, buf, l);
 

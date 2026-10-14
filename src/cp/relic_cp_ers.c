@@ -39,8 +39,14 @@
 /*============================================================================*/
 
 int cp_ers_gen(ec_t pp) {
-	ec_rand(pp);
-	return RLC_OK;
+	int result = RLC_OK;
+
+	RLC_TRY {
+		ec_rand(pp);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	return result;
 }
 
 int cp_ers_gen_key(bn_t sk, ec_t pk) {

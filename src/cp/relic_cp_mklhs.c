@@ -65,15 +65,17 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 	uint8_t *str = RLC_ALLOCA(uint8_t,
 			strlen(id) + RLC_MAX(strlen(data), strlen(tag)));
 
+	if (str == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	g1_null(a);
 
 	RLC_TRY {
 		bn_new(n);
 		g1_new(a);
-		if (str == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		pc_get_ord(n);
 		g1_mul_gen(a, m);

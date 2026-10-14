@@ -64,6 +64,11 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = RLC_OK;
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(k);
 	bn_null(x);
@@ -76,9 +81,6 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		bn_new(x);
 		bn_new(r);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
 		do {
@@ -130,6 +132,11 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = 0;
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(n);
 	bn_null(ev);
 	bn_null(rv);
@@ -140,9 +147,6 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		bn_new(ev);
 		bn_new(rv);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
 
