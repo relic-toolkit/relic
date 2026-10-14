@@ -415,6 +415,8 @@ TMPL_EC_MUL_SIM_PLAIN(ep, RLC_FP_BITS);
 
 TMPL_EC_MUL_SIM_LOT_PLAIN(ep);
 
+TMPL_EC_MUL_SIM_LOT_PIPPE(ep);
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -476,7 +478,12 @@ void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	}
 
 	if (!flag) {
-		ep_mul_sim_lot_plain(r, p, k, n);
+		/* Buckets pay off once the points outnumber a few dozen. */
+		if (n > 32) {
+			ep_mul_sim_lot_pippe(r, p, k, n);
+		} else {
+			ep_mul_sim_lot_plain(r, p, k, n);
+		}
 	}
 	(void)flag;
 }

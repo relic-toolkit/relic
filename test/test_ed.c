@@ -37,7 +37,8 @@
 #if ARCH == AVR || ARCH == MSP || ARCH == ARM
 #define SIM_LOT		4
 #else
-#define SIM_LOT		16
+/* Enough points to reach the bucket method. */
+#define SIM_LOT		40
 #endif
 
 /*
