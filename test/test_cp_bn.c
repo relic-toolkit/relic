@@ -354,9 +354,9 @@ static int rsa(void) {
 static int rabin(void) {
 	int code = RLC_ERR;
 	rabin_t pub, prv;
-	uint8_t in[10];
-	uint8_t out[RLC_BN_BITS / 8 + 1];
-	size_t in_len, out_len;
+	uint8_t in[RLC_BN_BITS / 8 + 1];
+	uint8_t out[RLC_BN_BITS / 8 + 1], tmp[RLC_BN_BITS / 8 + 1];
+	size_t in_len, out_len, tmp_len, k;
 	int result;
 
 	rabin_null(pub);
@@ -370,14 +370,35 @@ static int rabin(void) {
 
 		TEST_CASE("rabin encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
+			/* Messages may take up to k - 19 bytes for a k-byte modulus. */
+			k = bn_size_bin(pub->n);
+			for (int j = 0; j < 3; j++) {
+				in_len = (j == 0 ? 1 : (j == 1 ? 10 : k - 19));
+				out_len = sizeof(out);
+				rand_bytes(in, in_len);
+				TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len,
+								pub) == RLC_OK, end);
+				TEST_ASSERT(cp_rabin_dec(out, &out_len, out, out_len,
+								prv) == RLC_OK, end);
+				TEST_ASSERT(out_len == in_len && memcmp(in, out, in_len) == 0,
+						end);
+			}
+			out_len = sizeof(out);
+			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, k - 18, pub) == RLC_ERR,
+					end);
+			/* Encryption is randomized. */
 			in_len = 10;
-			out_len = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, in_len);
+			out_len = tmp_len = sizeof(out);
 			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len, pub) == RLC_OK,
 					end);
-			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, out_len,
-							prv) == RLC_OK, end);
-			TEST_ASSERT(out_len == in_len && memcmp(in, out, in_len) == 0, end);
+			TEST_ASSERT(cp_rabin_enc(tmp, &tmp_len, in, in_len, pub) == RLC_OK,
+					end);
+			TEST_ASSERT(memcmp(out, tmp, out_len) != 0, end);
+			/* A modified ciphertext is rejected. */
+			out[out_len - 1] ^= 1;
+			tmp_len = sizeof(tmp);
+			TEST_ASSERT(cp_rabin_dec(tmp, &tmp_len, out, out_len,
+							prv) == RLC_ERR, end);
 			/* A zero ciphertext has no valid padding. */
 			memset(out, 0, sizeof(out));
 			out_len = sizeof(out);

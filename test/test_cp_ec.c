@@ -206,21 +206,24 @@ static int ecies(void) {
 		ec_new(qa);
 		ec_new(q_b);
 
-		l = ec_param_level();
-		if (l == 80 || l == 128 || l == 192 || l == 256) {
-			TEST_CASE("ecies encryption/decryption is correct") {
-				TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
-				in_len = RLC_BC_LEN - 1;
-				out_len = RLC_BC_LEN + RLC_MD_LEN;
-				rand_bytes(in, in_len);
-				TEST_ASSERT(cp_ecies_enc(r, out, &out_len, in, in_len, qa)
-						== RLC_OK, end);
-				TEST_ASSERT(cp_ecies_dec(out, &out_len, r, out, out_len, da)
-						== RLC_OK, end);
-				TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
-			}
-			TEST_END;
+		TEST_CASE("ecies encryption/decryption is correct") {
+			TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
+			in_len = RLC_BC_LEN - 1;
+			out_len = RLC_BC_LEN + RLC_MD_LEN;
+			rand_bytes(in, in_len);
+			TEST_ASSERT(cp_ecies_enc(r, out, &out_len, in, in_len, qa)
+					== RLC_OK, end);
+			/* A modified ciphertext fails authentication. */
+			out[0] ^= 1;
+			l = out_len;
+			TEST_ASSERT(cp_ecies_dec(out, &l, r, out, out_len, da)
+					== RLC_ERR, end);
+			out[0] ^= 1;
+			TEST_ASSERT(cp_ecies_dec(out, &out_len, r, out, out_len, da)
+					== RLC_OK, end);
+			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
 		}
+		TEST_END;
 #if MD_MAP == SH256
 		uint8_t msg[RLC_BC_LEN + RLC_MD_LEN];
 		char str[2 * RLC_FC_BYTES + 1];

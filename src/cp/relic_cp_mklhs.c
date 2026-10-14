@@ -32,6 +32,32 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Hashes a pair of strings to G_1 as t || a || 0 || b, where t separates the
+ * uses of the hash. Strings have no zero bytes, so distinct pairs never give
+ * the same input.
+ *
+ * @param[out] p			- the resulting point.
+ * @param[out] buf			- a buffer with room for both strings and 2 bytes.
+ * @param[in] t				- the domain separation byte.
+ * @param[in] a				- the first string.
+ * @param[in] b				- the second string.
+ */
+static void mklhs_map(g1_t p, uint8_t *buf, uint8_t t, const char *a,
+		const char *b) {
+	size_t la = strlen(a), lb = strlen(b);
+
+	buf[0] = t;
+	memcpy(buf + 1, a, la);
+	buf[la + 1] = 0;
+	memcpy(buf + la + 2, b, lb);
+	g1_map(p, buf, la + lb + 2);
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -63,7 +89,7 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 	g1_t a;
 	int result = RLC_OK;
 	uint8_t *str = RLC_ALLOCA(uint8_t,
-			strlen(id) + RLC_MAX(strlen(data), strlen(tag)));
+			strlen(id) + RLC_MAX(strlen(data), strlen(tag)) + 2);
 
 	if (str == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -80,14 +106,10 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		pc_get_ord(n);
 		g1_mul_gen(a, m);
 
-		memcpy(str, data, strlen(data));
-		memcpy(str + strlen(data), id, strlen(id));
-		g1_map(s, str, strlen(data) + strlen(id));
+		mklhs_map(s, str, 1, data, id);
 		g1_add(s, s, a);
 
-		memcpy(str, id, strlen(id));
-		memcpy(str + strlen(id), tag, strlen(tag));
-		g1_map(a, str, strlen(id) + strlen(tag));
+		mklhs_map(a, str, 2, id, tag);
 		g1_add(s, s, a);
 		g1_norm(s, s);
 		g1_mul_sec(s, s, sk);
@@ -157,7 +179,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		}
 	}
 	g1_t *h = RLC_ALLOCA(g1_t, fmax);
-	uint8_t *str = RLC_ALLOCA(uint8_t, imax + RLC_MAX(strlen(data), lmax));
+	uint8_t *str = RLC_ALLOCA(uint8_t, imax + RLC_MAX(strlen(data), lmax) + 2);
 
 	if (g == NULL || h == NULL || str == NULL) {
 		RLC_FREE(g);
@@ -202,13 +224,9 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		/* Torsion added to the signature would not change the pairing. */
 		if (bn_cmp(m, t) == RLC_EQ && g1_is_valid(sig)) {
 			for (size_t i = 0; i < slen; i++) {
-				memcpy(str, data, strlen(data));
-				memcpy(str + strlen(data), id[i], strlen(id[i]));
-				g1_map(d, str, strlen(data) + strlen(id[i]));
-				memcpy(str, id[i], strlen(id[i]));
+				mklhs_map(d, str, 1, data, id[i]);
 				for (size_t j = 0; j < flen[i]; j++) {
-					memcpy(str + strlen(id[i]), tag[j], strlen(tag[j]));
-					g1_map(h[j], str, strlen(id[i]) + strlen(tag[j]));
+					mklhs_map(h[j], str, 2, id[i], tag[j]);
 					g1_add(h[j], h[j], d);
 				}
 				g1_norm_sim(h, h, flen[i]);
@@ -261,7 +279,7 @@ int cp_mklhs_off(g1_t h[], bn_t ft[], const char *id[], const char *tag[],
 		}
 	}
 	g1_t *_h = RLC_ALLOCA(g1_t, fmax);
-	uint8_t *str = RLC_ALLOCA(uint8_t, imax + lmax);
+	uint8_t *str = RLC_ALLOCA(uint8_t, imax + lmax + 2);
 
 	if (_h == NULL || str == NULL) {
 		RLC_FREE(_h);
@@ -284,10 +302,8 @@ int cp_mklhs_off(g1_t h[], bn_t ft[], const char *id[], const char *tag[],
 		pc_get_ord(n);
 		for (size_t i = 0; i < slen; i++) {
 			bn_zero(ft[i]);
-			memcpy(str, id[i], strlen(id[i]));
 			for (size_t j = 0; j < flen[i]; j++) {
-				memcpy(str + strlen(id[i]), tag[j], strlen(tag[j]));
-				g1_map(_h[j], str, strlen(id[i]) + strlen(tag[j]));
+				mklhs_map(_h[j], str, 2, id[i], tag[j]);
 				bn_add_dig(ft[i], ft[i], f[i][j]);
 			}
 			/* Reduce, as the sum of coefficients can exceed a digit. */
@@ -321,7 +337,7 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 	for (size_t i = 0; i < slen; i++) {
 		imax = RLC_MAX(imax, strlen(id[i]));
 	}
-	uint8_t *str = RLC_ALLOCA(uint8_t, strlen(data) + imax);
+	uint8_t *str = RLC_ALLOCA(uint8_t, strlen(data) + imax + 2);
 
 	if (g == NULL || str == NULL) {
 		RLC_FREE(g);
@@ -361,9 +377,7 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		/* Torsion added to the signature would not change the pairing. */
 		if (bn_cmp(m, t) == RLC_EQ && g1_is_valid(sig)) {
 			for (size_t i = 0; i < slen; i++) {
-				memcpy(str, data, strlen(data));
-				memcpy(str + strlen(data), id[i], strlen(id[i]));
-				g1_map(d, str, strlen(data) + strlen(id[i]));
+				mklhs_map(d, str, 1, data, id[i]);
 				g1_mul(g[i], d, ft[i]);
 				g1_add(g[i], g[i], h[i]);
 				g1_mul_gen(g1, mu[i]);

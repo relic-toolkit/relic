@@ -41,9 +41,14 @@
 #define RABIN_PAD_LEN		8
 
 /**
- * Byte used as padding unit in ciphertext.
+ * Minimum length in bytes of the random padding.
  */
-#define RABIN_PAD			(0xFF)
+#define RABIN_RND_LEN		8
+
+/**
+ * Byte that starts an encoded block.
+ */
+#define RABIN_TAG			(0x02)
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -95,33 +100,45 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, size_t bits) {
 
 int cp_rabin_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rabin_t pub) {
-	bn_t m, t;
-	size_t size;
+	bn_t m;
+	size_t size, len, pad;
+	uint8_t *buf;
 	int result = RLC_OK;
 
-	bn_null(m);
-	bn_null(t);
-
 	size = bn_size_bin(pub->n);
+	/* The block takes size - 1 bytes, so that it is smaller than n. */
+	if (in_len == 0 || size < 2 + RABIN_RND_LEN + RABIN_PAD_LEN + 2 ||
+			in_len > size - 3 - RABIN_RND_LEN - RABIN_PAD_LEN) {
+		return RLC_ERR;
+	}
+	len = size - 1 - RABIN_PAD_LEN;
+	pad = len - 2 - in_len;
 
-	if (in_len <= 0 || in_len > (size - RABIN_PAD_LEN - 2)) {
+	buf = RLC_ALLOCA(uint8_t, size - 1);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
+	bn_null(m);
+
 	RLC_TRY {
 		bn_new(m);
-		bn_new(t);
-		bn_zero(m);
 
-		/* EB = 00 | FF || D || SUFFIX */
-		bn_lsh(m, m, 8);
-		bn_add_dig(m, m, RABIN_PAD);
-		bn_lsh(m, m, in_len * 8);
-		bn_read_bin(t, in, in_len);
-		bn_add(m, m, t);
-		bn_mod_2b(t, m, 8 * RABIN_PAD_LEN);
-		bn_lsh(m, m, 8 * RABIN_PAD_LEN);
-		bn_add(m, m, t);
+		/* EB = 02 || PS || 00 || D || R, with PS random and nonzero, and R
+		 * repeating the bytes before it to select the right square root. A
+		 * full block is larger than the square root of n, so it wraps. */
+		buf[0] = RABIN_TAG;
+		rand_bytes(buf + 1, pad);
+		for (size_t i = 1; i <= pad; i++) {
+			while (buf[i] == 0) {
+				rand_bytes(buf + i, 1);
+			}
+		}
+		buf[pad + 1] = 0;
+		memcpy(buf + pad + 2, in, in_len);
+		memcpy(buf + len, buf + len - RABIN_PAD_LEN, RABIN_PAD_LEN);
+		bn_read_bin(m, buf, size - 1);
 
 		bn_sqr(m, m);
 		bn_mod(m, m, pub->n);
@@ -139,7 +156,7 @@ int cp_rabin_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 	}
 	RLC_FINALLY {
 		bn_free(m);
-		bn_free(t);
+		RLC_FREE(buf);
 	}
 
 	return result;
@@ -147,26 +164,32 @@ int cp_rabin_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 
 int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rabin_t prv) {
-	bn_t m, m0, m1, t, n;
-	size_t size;
+	bn_t m, m0, m1, t;
+	size_t j, size;
+	uint8_t *buf;
 	int result = RLC_OK;
-	uint8_t pad;
 
-	if (in_len < RABIN_PAD_LEN) {
+	size = bn_size_bin(prv->n);
+	if (in_len < RABIN_PAD_LEN ||
+			size < 2 + RABIN_RND_LEN + RABIN_PAD_LEN + 2) {
+		return RLC_ERR;
+	}
+
+	buf = RLC_ALLOCA(uint8_t, size);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
 	bn_null(m);
 	bn_null(m0);
 	bn_null(m1);
-	bn_null(n);
 	bn_null(t);
 
 	RLC_TRY {
 		bn_new(m);
 		bn_new(m0);
 		bn_new(m1);
-		bn_new(n);
 		bn_new(t);
 
 		bn_read_bin(m, in, in_len);
@@ -231,33 +254,20 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		}
 
 		if (result == RLC_OK) {
-			size = bn_size_bin(prv->n);
-			size--;
-			bn_rsh(t, m, 8 * size);
-
-			if (!bn_is_zero(t)) {
+			/* Parse EB without R: 02 || PS || 00 || D. */
+			size = bn_size_bin(prv->n) - 1 - RABIN_PAD_LEN;
+			if (bn_size_bin(m) > size) {
 				result = RLC_ERR;
 			} else {
-				/* A zero plaintext has no padding byte to stop at. */
-				do {
-					size--;
-					bn_rsh(t, m, 8 * size);
-					pad = (uint8_t)t->dp[0];
-				} while (pad == 0 && size > 0);
-
-				if (pad != RABIN_PAD) {
+				bn_write_bin(buf, size, m);
+				for (j = 1; j < size && buf[j] != 0; j++);
+				if (buf[0] != RABIN_TAG || j <= RABIN_RND_LEN || j >= size - 1
+						|| size - j - 1 > *out_len) {
 					result = RLC_ERR;
 				} else {
-					bn_mod_2b(m, m, size * 8);
+					*out_len = size - j - 1;
+					memcpy(out, buf + j + 1, *out_len);
 				}
-			}
-
-			if (result == RLC_OK && size <= *out_len) {
-				*out_len = size;
-				memset(out, 0, size);
-				bn_write_bin(out, size, m);
-			} else {
-				result = RLC_ERR;
 			}
 		}
 	}
@@ -268,8 +278,8 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		bn_free(m);
 		bn_free(m0);
 		bn_free(m1);
-		bn_free(n);
 		bn_free(t);
+		RLC_FREE(buf);
 	}
 
 	return result;

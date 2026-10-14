@@ -1259,10 +1259,12 @@ static int lhs(void) {
 		TEST_END;
 
 		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
+			/* Distinct tags, so that each label is hashed on its own. */
+			const char *tags[L] = { "l0", "l1", "l2", "l3" };
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
-					ls[l] = "l";
+					ls[l] = (char *)tags[l];
 					bn_rand_mod(msg[j][l], n);
 					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
 				}
@@ -1294,6 +1296,21 @@ static int lhs(void) {
 			cp_mklhs_off(as, ft, id, (const char **)ls, (const dig_t **)f,
 					flen, S);
 			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, id, as, ft, pk, S), end);
+
+			/* Moving bytes between the data set, identity and tag does not
+			 * give another valid signature. */
+			{
+				const char *x[1] = { "x" }, *t0[1] = { "zx" }, *t1[1] = { "yx" };
+				const dig_t one[1] = { 1 }, *fo[1] = { one };
+				const size_t fl[1] = { 1 };
+
+				bn_mod(msg[0][0], msg[0][0], n);
+				cp_mklhs_sig(_r, msg[0][0], "xy", x[0], t0[0], sk[0]);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", x, t0, fo,
+						fl, pk, 1) == 1, end);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xz", x, t1, fo,
+						fl, pk, 1) == 0, end);
+			}
 		}
 		TEST_END;
 	}

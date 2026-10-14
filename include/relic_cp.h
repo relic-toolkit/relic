@@ -995,7 +995,8 @@ int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 int cp_rabin_gen(rabin_t pub, rabin_t prv, size_t bits);
 
 /**
- * Encrypts using the Rabin cryptosystem.
+ * Encrypts using the Rabin cryptosystem. Messages are padded with random bytes
+ * to the size of the modulus, so a k-byte modulus encrypts up to k - 19 bytes.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -2432,7 +2433,7 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
  * @param[in] msg			- the message buffer to sign.
  * @param[in] msg_len		- the size of message buffer.
  * @param[in] mpk			- the master public key of the generation center.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @return a boolean value indicating the verification result.
  */
 int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 		size_t id_len, const uint8_t *msg, int msg_len, const ec_t mpk);
@@ -2622,7 +2623,7 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @return a boolean value indicating the verification result.
  */
 int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp);
@@ -2666,7 +2667,7 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @return a boolean value indicating the verification result.
  */
 int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp);
