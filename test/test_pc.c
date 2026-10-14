@@ -172,18 +172,12 @@ int util1(void) {
 					bin[j] = 0;
 				}
 				r = RLC_ERR;
-				RLC_TRY {
-					r = RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, l));
 				err_get_code();
 			}
 			if (r == RLC_OK && !g1_is_valid(a)) {
 				r = RLC_ERR;
-				RLC_TRY {
-					r = g1_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = g1_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
@@ -793,18 +787,12 @@ int util2(void) {
 					bin[j] = 0;
 				}
 				r = RLC_ERR;
-				RLC_TRY {
-					r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l));
 				err_get_code();
 			}
 			if (r == RLC_OK && !g2_is_valid(a)) {
 				r = RLC_ERR;
-				RLC_TRY {
-					r = g2_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = g2_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
@@ -1383,12 +1371,8 @@ int util(void) {
 			RLC_CAT(RLC_GT_LOWER, set_dig)(a, 2);
 			l = gt_size_bin(a, 0);
 			gt_write_bin(bin, l, a, 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = gt_read_bin(b, bin, l);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = gt_read_bin(b, bin, l));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;

@@ -188,11 +188,8 @@ static int shamir(void) {
 			TEST_ASSERT(mpc_sss_gen(x, y, s, q, 3, 5) == RLC_OK, end);
 			bn_copy(x[1], x[0]);
 			bn_copy(y[1], y[0]);
-			RLC_TRY {
-				ret = mpc_sss_key(t, x, y, q, 3);
-			} RLC_CATCH_ANY {
-				ret = RLC_ERR;
-			}
+			ret = RLC_ERR;
+			TEST_ERR(ret = mpc_sss_key(t, x, y, q, 3));
 			TEST_ASSERT(ret == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {

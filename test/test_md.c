@@ -633,17 +633,11 @@ static int kdf(void) {
 
 #if SIZE_MAX > UINT32_MAX
 	TEST_ONCE("key derivation function rejects too long output") {
-		RLC_TRY {
-			md_kdf(key, (size_t)RLC_MD_LEN * UINT32_MAX, message,
-					sizeof(message));
-		} RLC_CATCH_ANY {
-		}
+		TEST_ERR(md_kdf(key, (size_t)RLC_MD_LEN * UINT32_MAX, message,
+				sizeof(message)));
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
-		RLC_TRY {
-			md_mgf(key, (size_t)RLC_MD_LEN * UINT32_MAX, message,
-					sizeof(message));
-		} RLC_CATCH_ANY {
-		}
+		TEST_ERR(md_mgf(key, (size_t)RLC_MD_LEN * UINT32_MAX, message,
+				sizeof(message)));
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		TEST_ASSERT(memcmp(key, ref, sizeof(key)) == 0, end);
 	}
@@ -691,20 +685,11 @@ static int xof(void) {
 		memset(dst, 0x55, sizeof(dst));
 		memset(buf, 0xAA, sizeof(buf));
 		memset(out1, 0xAA, sizeof(out1));
-		RLC_TRY {
-			md_xmd(buf, 255 * RLC_MD_LEN + 1, in, sizeof(in), in, 1);
-		} RLC_CATCH_ANY {
-		}
+		TEST_ERR(md_xmd(buf, 255 * RLC_MD_LEN + 1, in, sizeof(in), in, 1));
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
-		RLC_TRY {
-			md_xmd(buf, SIZE_MAX, in, sizeof(in), in, 1);
-		} RLC_CATCH_ANY {
-		}
+		TEST_ERR(md_xmd(buf, SIZE_MAX, in, sizeof(in), in, 1));
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
-		RLC_TRY {
-			md_xmd(buf, sizeof(buf), in, sizeof(in), dst, 256);
-		} RLC_CATCH_ANY {
-		}
+		TEST_ERR(md_xmd(buf, sizeof(buf), in, sizeof(in), dst, 256));
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		TEST_ASSERT(memcmp(buf, out1, sizeof(out1)) == 0, end);
 		/* The largest valid lengths are accepted. */

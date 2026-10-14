@@ -147,6 +147,8 @@ typedef struct _ctx_t {
 	int code;
 	/** Error number of the last error thrown. */
 	err_t number;
+	/** A flag to indicate if error messages are printed. */
+	int quiet;
 
 #ifdef CHECK
 	/** The state of the last error caught. */

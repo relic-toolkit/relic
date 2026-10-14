@@ -230,12 +230,8 @@ static int test_##C##_util(void) {											\
 						l = (l - 1) / 2 + 1;								\
 						break;												\
 				}															\
-				err_get_code();												\
 				r = RLC_ERR;												\
-				RLC_TRY {													\
-					r = C##_read_bin(b, bin, l);							\
-				} RLC_CATCH_ANY {											\
-				}															\
+				TEST_ERR(r = C##_read_bin(b, bin, l));						\
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);\
 			}																\
 		}																	\

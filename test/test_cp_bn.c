@@ -453,7 +453,9 @@ static int benaloh(void) {
 			len = RLC_BN_BITS / 8 + 1;
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, prime, pub) == RLC_ERR, end);
 			/* Block sizes must be odd primes, or no key exists. */
-			TEST_ASSERT(cp_bdpe_gen(pub, prv, 2, RLC_BN_BITS) == RLC_ERR, end);
+			result = RLC_OK;
+			TEST_ERR(result = cp_bdpe_gen(pub, prv, 2, RLC_BN_BITS));
+			TEST_ASSERT(result == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);

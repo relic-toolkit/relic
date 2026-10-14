@@ -120,6 +120,7 @@ int core_init(void) {
 
 	core_ctx->code = RLC_OK;
 	core_ctx->number = 0;
+	core_ctx->quiet = 0;
 #ifndef CHECK
 	core_ctx->depth = 0;
 	core_ctx->pending = 0;

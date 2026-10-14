@@ -139,12 +139,8 @@ static int util(void) {
 			/* Bits beyond the degree of the field are rejected. */
 			if (RLC_FB_BITS % 8 != 0) {
 				bin[0] |= 0x80;
-				err_get_code();
 				r = RLC_ERR;
-				RLC_TRY {
-					r = fb_read_bin(b, bin, sizeof(bin));
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = fb_read_bin(b, bin, sizeof(bin)));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}

@@ -89,7 +89,9 @@ int main(void) {
 		/* Reinitialize library with new context. */
 		core_init();
 		/* Run function to manipulate the library context. */
+		err_set_quiet(1);
 		RLC_THROW(ERR_NO_MEMORY);
+		err_set_quiet(0);
 		core_set(old_ctx);
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 		core_set(&new_ctx);

@@ -513,9 +513,7 @@ int main(void) {
 
 	TEST_ONCE("using the generator without a seed is an error") {
 		uint8_t out[16];
-		err_get_code();
-		rand_clean();
-		rand_bytes(out, sizeof(out));
+		TEST_ERR(rand_clean(); rand_bytes(out, sizeof(out)));
 		TEST_ASSERT(err_get_code() == RLC_ERR, fail);
 		rand_init();
 		rand_bytes(out, sizeof(out));

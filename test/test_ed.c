@@ -232,12 +232,8 @@ int util(void) {
 				bin[0] = (j == 0 ? 3 : 4);
 				fp_write_bin(bin + 1, RLC_FP_BYTES, a->y);
 				l = (j == 0 ? RLC_FP_BYTES + 1 : 2 * RLC_FP_BYTES + 1);
-				err_get_code();
 				r = RLC_ERR;
-				RLC_TRY {
-					r = ed_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = ed_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
@@ -249,12 +245,8 @@ int util(void) {
 				l = ed_size_bin(a, j);
 				ed_write_bin(bin, l, a, j);
 				bin[0] = 5;
-				err_get_code();
 				r = RLC_ERR;
-				RLC_TRY {
-					r = ed_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = ed_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}

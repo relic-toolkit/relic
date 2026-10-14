@@ -408,4 +408,12 @@ void err_throw(const char *file, int line);
  */
 int err_get_code(void);
 
+/**
+ * Enables or disables printing of error messages at runtime, for errors that
+ * are expected. Errors are still recorded and caught as usual.
+ *
+ * @param[in] quiet			- the flag to disable printing.
+ */
+void err_set_quiet(int quiet);
+
 #endif /* !RLC_ERR_H */

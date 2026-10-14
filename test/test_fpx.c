@@ -717,12 +717,8 @@ static int compression2(void) {
 			fp2_conv_cyc(a, a);
 			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
 			bin[RLC_FP_BYTES] = 2;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			/* A first coordinate with no unitary element, as a_1^2 =
 			 * (a_0^2 - 1) / qnr has no root when a_0^2 - 1 is a square. */
@@ -733,12 +729,8 @@ static int compression2(void) {
 			} while (fp_is_zero(a[1]) || !fp_is_sqr(a[1]));
 			fp_write_bin(bin, RLC_FP_BYTES, a[0]);
 			bin[RLC_FP_BYTES] = 0;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -2899,12 +2891,8 @@ static int util8(void) {
 			fp8_conv_cyc(a, a);
 			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
 			bin[4 * RLC_FP_BYTES] = 2;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			/* A coordinate with no unitary element, as 1 + a_1^2 * v^2 is
 			 * not a square. */
@@ -2916,12 +2904,8 @@ static int util8(void) {
 			} while (fp4_is_sqr(a[0]));
 			fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1], 0);
 			bin[4 * RLC_FP_BYTES] = 0;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -3320,11 +3304,7 @@ static int cyclotomic8(void) {
 			/* The element -1 is unitary, but cannot be compressed. */
 			fp8_set_dig(a, 1);
 			fp8_neg(a, a);
-			err_get_code();
-			RLC_TRY {
-				fp8_pck_max(b, a);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(fp8_pck_max(b, a));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
@@ -4872,12 +4852,8 @@ static int compression12(void) {
 			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
 			fp2_rand(b[0][0]);
 			fp2_write_bin(bin, 2 * RLC_FP_BYTES, b[0][0], 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp12_read_bin(b, bin, 8 * RLC_FP_BYTES));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -5041,12 +5017,8 @@ static int util16(void) {
 			fp16_conv_cyc(a, a);
 			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
 			bin[8 * RLC_FP_BYTES] = 2;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			/* A coordinate with no unitary element, as 1 + a_1^2 * v^2 is
 			 * not a square. */
@@ -5058,12 +5030,8 @@ static int util16(void) {
 			} while (fp8_is_sqr(a[0]));
 			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[1], 0);
 			bin[8 * RLC_FP_BYTES] = 0;
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -5469,11 +5437,7 @@ static int cyclotomic16(void) {
 			/* The element -1 is unitary, but cannot be compressed. */
 			fp16_set_dig(a, 1);
 			fp16_neg(a, a);
-			err_get_code();
-			RLC_TRY {
-				fp16_pck_max(b, a);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(fp16_pck_max(b, a));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
@@ -6424,12 +6388,8 @@ static int compression18(void) {
 			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
 			fp3_rand(b[0][0]);
 			fp3_write_bin(bin, 3 * RLC_FP_BYTES, b[0][0], 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp18_read_bin(b, bin, 12 * RLC_FP_BYTES);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp18_read_bin(b, bin, 12 * RLC_FP_BYTES));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -7152,12 +7112,8 @@ static int compression24(void) {
 			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
 			fp4_rand(b[0][0]);
 			fp4_write_bin(bin, 4 * RLC_FP_BYTES, b[0][0], 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp24_read_bin(b, bin, 16 * RLC_FP_BYTES));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -7610,12 +7566,8 @@ static int compression48(void) {
 			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
 			fp8_rand(b[0][0]);
 			fp8_write_bin(bin, 8 * RLC_FP_BYTES, b[0][0], 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp48_read_bin(b, bin, 32 * RLC_FP_BYTES));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -8371,12 +8323,8 @@ static int compression54(void) {
 			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
 			fp9_rand(b[0][0]);
 			fp9_write_bin(bin, 9 * RLC_FP_BYTES, b[0][0], 0);
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp54_read_bin(b, bin, 36 * RLC_FP_BYTES));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;

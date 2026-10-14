@@ -167,12 +167,8 @@ static int util(void) {
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			/* Values that are not reduced modulo p are rejected. */
 			memset(bin, 0xFF, sizeof(bin));
-			err_get_code();
 			r = RLC_ERR;
-			RLC_TRY {
-				r = fp_read_bin(b, bin, sizeof(bin));
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(r = fp_read_bin(b, bin, sizeof(bin)));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;

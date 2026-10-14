@@ -180,12 +180,8 @@ static int util(void) {
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
 				bin[0] = 5;
-				err_get_code();
 				r = RLC_ERR;
-				RLC_TRY {
-					r = eb_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = eb_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}

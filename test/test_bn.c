@@ -255,11 +255,7 @@ static int util(void) {
 
 		TEST_CASE("generating a random integer modulo one fails") {
 			bn_set_dig(b, 1);
-			err_get_code();
-			RLC_TRY {
-				bn_rand_mod(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rand_mod(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -369,11 +365,7 @@ static int util(void) {
 			bn_read_str(b, str, bits, 36);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			/* Invalid digits are rejected. */
-			err_get_code();
-			RLC_TRY {
-				bn_read_str(b, "12x4", 4, 10);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_read_str(b, "12x4", 4, 10));
 			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
 		} TEST_END;
 
@@ -1603,11 +1595,7 @@ static int square_root(void) {
 			bn_set_dig(a, 4);
 			bn_neg(a, a);
 			bn_set_dig(b, 7);
-			err_get_code();
-			RLC_TRY {
-				bn_srt(b, a);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_srt(b, a));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -2186,19 +2174,11 @@ static int symbol(void) {
 		TEST_CASE("symbols reject invalid moduli") {
 			bn_set_dig(a, 1);
 			bn_set_dig(b, 2);
-			err_get_code();
-			RLC_TRY {
-				bn_smb_leg(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_smb_leg(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 			bn_set_dig(b, 7);
 			bn_neg(b, b);
-			err_get_code();
-			RLC_TRY {
-				bn_smb_jac(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_smb_jac(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -2714,11 +2694,7 @@ static int inversion(void) {
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
 			/* The modulus must be positive. */
 			bn_neg(c, a);
-			err_get_code();
-			RLC_TRY {
-				bn_mod_inv(b, b, c);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_mod_inv(b, b, c));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 
@@ -2869,11 +2845,7 @@ static int interpolation(void) {
 			}
 			/* Repeated abscissas are rejected. */
 			bn_copy(a[1], a[0]);
-			err_get_code();
-			RLC_TRY {
-				bn_lag_pre(w, a, b, n);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_lag_pre(w, a, b, n));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
@@ -3126,11 +3098,7 @@ static int recoding(void) {
 			/* Integers that do not fit the digits are rejected. */
 			bn_set_2b(a, RLC_BN_BITS / 2 + 2 * RLC_DIG);
 			l = RLC_BN_BITS + 1;
-			err_get_code();
-			RLC_TRY {
-				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4));
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
@@ -3160,11 +3128,7 @@ static int recoding(void) {
 			bn_set_dig(a, 1);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			l = 3;
-			err_get_code();
-			RLC_TRY {
-				bn_rec_jsf(e, &l, a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rec_jsf(e, &l, a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 

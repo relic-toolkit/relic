@@ -255,12 +255,8 @@ static int util(void) {
 						l = 1;
 						break;
 				}
-				err_get_code();
 				r = RLC_ERR;
-				RLC_TRY {
-					r = ep_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
+				TEST_ERR(r = ep_read_bin(b, bin, l));
 				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}

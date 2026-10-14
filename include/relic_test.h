@@ -83,6 +83,22 @@ extern "C" {
 	}																		\
 
 /**
+ * Runs commands that are expected to throw an error, with error messages
+ * disabled. The error code is reset before, so that err_get_code() returns
+ * whether the commands threw.
+ *
+ * @param[in] ...			- the commands.
+ */
+#define TEST_ERR(...)														\
+	err_get_code();															\
+	err_set_quiet(1);														\
+	RLC_TRY {																\
+		__VA_ARGS__;														\
+	} RLC_CATCH_ANY {														\
+	}																		\
+	err_set_quiet(0)														\
+
+/**
  * Finalizes a test printing the test result.
  */
 #define TEST_END															\

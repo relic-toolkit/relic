@@ -198,6 +198,13 @@ int main(void) {
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 	} TEST_END;
 
+	TEST_ONCE("disabling error messages keeps errors recorded") {
+		err_set_quiet(1);
+		RLC_THROW(ERR_NO_VALID);
+		err_set_quiet(0);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+	} TEST_END;
+
 	util_banner("All tests have passed.\n", 0);
 	code = RLC_OK;
 
