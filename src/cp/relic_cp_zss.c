@@ -98,7 +98,7 @@ int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 		bn_mul(t, t, r);
 		bn_mod(t, t, n);
 
-		/* Compute the sinature. */
+		/* Compute the signature. */
 		g2_mul_gen(s, t);
 	}
 	RLC_CATCH_ANY {

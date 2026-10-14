@@ -2,13 +2,13 @@
  * RELIC is an Efficient LIbrary for Cryptography
  * Copyright (c) 2021 RELIC Authors
  *
- * This file is part of RELIC. RELIC is legal property of its developsmlers,
+ * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
  * RELIC is free software; you can redistribute it and/or modify it under the
- * terms of the vsmlersion 2.1 (or later) of the GNU Lesser General Public License
- * as published by the Free Software Foundation; or vsmlersion 2.0 of the Apache
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
  * License as published by the Apache Software Foundation. See the LICENSE files
  * for more details.
  *

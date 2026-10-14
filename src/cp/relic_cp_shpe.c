@@ -58,7 +58,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 			/* Compute n = pq. */
 			bn_mul(prv->crt->n, prv->crt->p, prv->crt->q);
 
-			/* compute the subgroup size */
+			/* Compute lambda = (p-1)(q-1) and the cofactor b = lambda/a. */
 			bn_sub_dig(prv->crt->p, prv->crt->p, 1);
 			bn_sub_dig(prv->crt->q, prv->crt->q, 1);
 			bn_mul(pub->g, prv->crt->p, prv->crt->q);	// lambda = (p-1)(q-1)
@@ -71,17 +71,17 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 			/* Fix the generator to be g=(1+n)^b */
 
 			/* Compute dp and dq. */
-			/* dp is 1/((q-1)*lambda) mod p */
+			/* dp is 1/(q*lambda) mod p */
 			bn_mod(prv->crt->dp, pub->g, prv->crt->p);
 			bn_mul(prv->crt->dp, prv->crt->dp, prv->crt->q);
 			bn_mod(prv->crt->dp, prv->crt->dp, prv->crt->p);
 
-			/* dq is 1/((p-1)*lambda) mod q */
+			/* dq is 1/(p*lambda) mod q */
 			bn_mod(prv->crt->dq, pub->g, prv->crt->q);
 			bn_mul(prv->crt->dq, prv->crt->dq, prv->crt->p);
 			bn_mod(prv->crt->dq, prv->crt->dq, prv->crt->q);
 
-			/* invertions */
+			/* Inversions. */
 			bn_mod_inv(prv->crt->dp, prv->crt->dp, prv->crt->p);
 			bn_mod_inv(prv->crt->dq, prv->crt->dq, prv->crt->q);
 
