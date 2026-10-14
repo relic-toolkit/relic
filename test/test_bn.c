@@ -2860,8 +2860,8 @@ static int interpolation(void) {
 				bn_add(y, y, v[k]);
 				bn_mod(y, y, b);
 			}
-			bn_evl(x, c, x, b, n);
-			TEST_ASSERT(bn_cmp(x, y) == RLC_EQ, end);
+			bn_evl(c[n], c, x, b, n);
+			TEST_ASSERT(bn_cmp(c[n], y) == RLC_EQ, end);
 			/* At one of the abscissas, only its own point counts. */
 			bn_lag_fix(v, a[1], a, (const bn_t *)w, b, n);
 			for (k = 0; k < (int)n; k++) {

@@ -279,9 +279,10 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = 0;
 
-	/* Points off the curve are not in the statement. */
-	if (!ec_on_curve(y[0]) || !ec_on_curve(y[1])
-			|| !ec_on_curve(g[0]) || !ec_on_curve(g[1])) {
+	/* Points off the curve are not in the statement. Without generators,
+	 * the statements use the generator of the curve. */
+	if (!ec_on_curve(y[0]) || !ec_on_curve(y[1]) || (g != NULL &&
+			(!ec_on_curve(g[0]) || !ec_on_curve(g[1])))) {
 		RLC_FREE(m);
 		return 0;
 	}
