@@ -41,7 +41,8 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	bn_t *t = NULL;
 
     if (n == 0) {
-        bn_zero(c[0]);
+        /* The empty product is the constant polynomial 1. */
+        bn_set_dig(c[0], 1);
         return;
     }
 

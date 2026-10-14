@@ -193,8 +193,10 @@ int cp_pbpsi_int(bn_t *z, size_t *len, const g2_t *d, const bn_t *x,
 				for (j = 0; j < n; j++) {
 					pc_map(e, u[j], d[k + 1]);
 					if (gt_cmp(e, t[j]) == RLC_EQ && !gt_is_unity(e)) {
+						/* Report each element once, so that len <= m. */
 						bn_copy(z[*len], x[k]);
 						(*len)++;
+						break;
 					}
 				}
 			}

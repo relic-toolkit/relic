@@ -2828,6 +2828,9 @@ static int interpolation(void) {
 			bn_zero(a[0]);
 			bn_lag(c, a, b, 1);
 			TEST_ASSERT(bn_is_zero(c[0]) && bn_cmp_dig(c[1], 1) == RLC_EQ, end);
+			/* With no roots, the polynomial is the constant 1. */
+			bn_lag(c, a, b, 0);
+			TEST_ASSERT(bn_cmp_dig(c[0], 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

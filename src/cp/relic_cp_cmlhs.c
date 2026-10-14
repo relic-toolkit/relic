@@ -228,7 +228,9 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
+	/* Room for any point z[i] in uncompressed form, whatever s is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
 	int result = 1;
 
 	g1_null(g1);
@@ -354,7 +356,9 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
+	/* Room for any point z[i] in uncompressed form, whatever s is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(s->x) / sizeof(fp_t)) * RLC_FP_BYTES + dlen);
 	int result = 1;
 
 	g1_null(g1);

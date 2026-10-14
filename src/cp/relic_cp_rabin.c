@@ -170,6 +170,10 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		bn_new(t);
 
 		bn_read_bin(m, in, in_len);
+		/* Ciphertexts are reduced modulo n. */
+		if (bn_cmp(m, prv->n) != RLC_LT) {
+			result = RLC_ERR;
+		}
 
 		bn_add_dig(t, prv->p, 1);
 		bn_rsh(t, t, 2);
@@ -234,11 +238,12 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 			if (!bn_is_zero(t)) {
 				result = RLC_ERR;
 			} else {
+				/* A zero plaintext has no padding byte to stop at. */
 				do {
 					size--;
 					bn_rsh(t, m, 8 * size);
 					pad = (uint8_t)t->dp[0];
-				} while (pad == 0);
+				} while (pad == 0 && size > 0);
 
 				if (pad != RABIN_PAD) {
 					result = RLC_ERR;
@@ -247,7 +252,7 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 				}
 			}
 
-			if (size <= *out_len) {
+			if (result == RLC_OK && size <= *out_len) {
 				*out_len = size;
 				memset(out, 0, size);
 				bn_write_bin(out, size, m);

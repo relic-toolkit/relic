@@ -197,6 +197,18 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 	ec_t Z, t;
 	int result = 0;
 
+	/* The point r comes from the signature, so it must be a valid point. */
+	if (msg_len < 0 || ec_is_infty(r) || !ec_on_curve(r)) {
+		return 0;
+	}
+
+	/* Room for both points r and Z in compressed form, whatever they are. */
+	buf = RLC_ALLOCA(uint8_t, id_len + msg_len + 2 * (1 + RLC_FC_BYTES));
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	/* zero variables */
 	bn_null(n);
 	bn_null(c);
@@ -210,13 +222,6 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 		bn_new(_h);
 		ec_new(Z);
 		ec_new(t);
-
-		/* calculate c */
-		len = id_len + msg_len + 2 * ec_size_bin(r, 1);
-		buf = RLC_ALLOCA(uint8_t, len);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		/* get order of ECC group */
 		ec_curve_get_ord(n);
@@ -254,7 +259,6 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 		md_map(hash, buf, len);
 		bn_read_bin(_h, hash, RLC_MD_LEN);
 		bn_mod(_h, _h, n);
-		RLC_FREE(buf);
 
 		if (bn_cmp(h, _h) == RLC_EQ) {
 			result = 1;

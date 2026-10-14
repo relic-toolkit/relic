@@ -48,53 +48,53 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, size_t bits) {
 
 		prv->t = pub->t = block;
 
-		/* Make sure that block size is prime. */
+		/* Make sure that block size is an odd prime, or no q exists. */
 		bn_set_dig(t, block);
-		if (bn_is_prime_basic(t) == 0) {
+		if (block < 3 || bn_is_prime_basic(t) == 0) {
 			RLC_THROW(ERR_NO_VALID);
-		}
+		} else {
+			/* Generate prime q such that gcd(block, (q - 1)) = 1. */
+			do {
+				bn_gen_prime(prv->q, bits / 2);
+				bn_sub_dig(prv->q, prv->q, 1);
+				bn_gcd_dig(t, prv->q, block);
+				bn_add_dig(prv->q, prv->q, 1);
+			} while (bn_cmp_dig(t, 1) != RLC_EQ);
 
-		/* Generate prime q such that gcd(block, (q - 1)) = 1. */
-		do {
-			bn_gen_prime(prv->q, bits / 2);
+			/* Generate different primes p and q. */
+			do {
+				/* Compute p = block * (x * block + b) + 1, with random b. */
+				bn_rand(prv->p, RLC_POS, bits / 2 - 2 * util_bits_dig(block));
+				bn_mul_dig(prv->p, prv->p, block);
+				bn_rand(t, RLC_POS, util_bits_dig(block));
+				bn_add_dig(prv->p, prv->p, t->dp[0]);
+
+				/* We know that block divides (p-1). */
+				bn_gcd_dig(t, prv->p, block);
+				bn_mul_dig(prv->p, prv->p, block);
+				bn_add_dig(prv->p, prv->p, 1);
+			} while (bn_cmp_dig(t, 1) != RLC_EQ || bn_is_prime(prv->p) == 0);
+
+			/* Compute t = (p-1)*(q-1). */
 			bn_sub_dig(prv->q, prv->q, 1);
-			bn_gcd_dig(t, prv->q, block);
-			bn_add_dig(prv->q, prv->q, 1);
-		} while (bn_cmp_dig(t, 1) != RLC_EQ);
+			bn_sub_dig(prv->p, prv->p, 1);
+			bn_mul(t, prv->p, prv->q);
+			bn_div_dig(t, t, block);
 
-		/* Generate different primes p and q. */
-		do {
-			/* Compute p = block * (x * block + b) + 1, 0 < b < block random. */
-			bn_rand(prv->p, RLC_POS, bits / 2 - 2 * util_bits_dig(block));
-			bn_mul_dig(prv->p, prv->p, block);
-			bn_rand(t, RLC_POS, util_bits_dig(block));
-			bn_add_dig(prv->p, prv->p, t->dp[0]);
-
-			/* We know that block divides (p-1). */
-			bn_gcd_dig(t, prv->p, block);
-			bn_mul_dig(prv->p, prv->p, block);
+			/* Restore factors p and q and compute n = p * q. */
 			bn_add_dig(prv->p, prv->p, 1);
-		} while (bn_cmp_dig(t, 1) != RLC_EQ || bn_is_prime(prv->p) == 0);
+			bn_add_dig(prv->q, prv->q, 1);
+			bn_mul(pub->n, prv->p, prv->q);
+			bn_copy(prv->n, pub->n);
 
-		/* Compute t = (p-1)*(q-1). */
-		bn_sub_dig(prv->q, prv->q, 1);
-		bn_sub_dig(prv->p, prv->p, 1);
-		bn_mul(t, prv->p, prv->q);
-		bn_div_dig(t, t, block);
+			/* Select random y such that y^{(p-1)(q-1)}/block \neq 1 mod N. */
+			do {
+				bn_rand(pub->y, RLC_POS, bits);
+				bn_mxp(r, pub->y, t, pub->n);
+			} while (bn_cmp_dig(r, 1) == RLC_EQ);
 
-		/* Restore factors p and q and compute n = p * q. */
-		bn_add_dig(prv->p, prv->p, 1);
-		bn_add_dig(prv->q, prv->q, 1);
-		bn_mul(pub->n, prv->p, prv->q);
-		bn_copy(prv->n, pub->n);
-
-		/* Select random y such that y^{(p-1)(q-1)}/block \neq 1 mod N. */
-		do {
-			bn_rand(pub->y, RLC_POS, bits);
-			bn_mxp(r, pub->y, t, pub->n);
-		} while (bn_cmp_dig(r, 1) == RLC_EQ);
-
-		bn_copy(prv->y, pub->y);
+			bn_copy(prv->y, pub->y);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -117,7 +117,7 @@ int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 
 	size = bn_size_bin(pub->n);
 
-	if (in > pub->t) {
+	if (in >= pub->t) {
 		return RLC_ERR;
 	}
 

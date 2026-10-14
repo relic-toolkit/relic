@@ -1215,6 +1215,13 @@ static int lhs(void) {
 				flen, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
 				y, pk, S, b) == 1, end);
+			/* An aggregate s at infinity is rejected safely. */
+			g2_set_infty(_s);
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b) == 0,
+				end);
+			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
+				y, pk, S, b) == 0, end);
 		}
 		TEST_END;
 

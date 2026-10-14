@@ -154,6 +154,11 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	bn_t l, n, u;
 	ec_t w[2];
 
+	/* The threshold must be achievable by the ring. */
+	if (thres == 0 || thres > size) {
+		return 0;
+	}
+
 	size_t d = max + size - thres;
 	bn_t *v = RLC_ALLOCA(bn_t, d);
 	bn_t *_v = RLC_ALLOCA(bn_t, d);
@@ -289,21 +294,26 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 				break;
 			}
 		}
-		bn_copy(r, td[i]);
+		if (i == max) {
+			/* All the trapdoors were already used. */
+			RLC_THROW(ERR_NO_VALID);
+		} else {
+			bn_copy(r, td[i]);
 
-		ec_curve_get_ord(n);
-		ec_mul_gen(p[*size]->h, td[i]);
-		bn_copy(p[*size]->y, y[i]);
+			ec_curve_get_ord(n);
+			ec_mul_gen(p[*size]->h, td[i]);
+			bn_copy(p[*size]->y, y[i]);
 
-		bn_zero(td[i]);
-		bn_zero(y[i]);
+			bn_zero(td[i]);
+			bn_zero(y[i]);
 
-		ec_copy(p[*size]->pk, pk);
-		ec_copy(w[0], p[*size]->h);
-		ec_copy(w[1], p[*size]->pk);
-		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, NULL, r, 1);
-		(*size)++;
-		result = RLC_OK;
+			ec_copy(p[*size]->pk, pk);
+			ec_copy(w[0], p[*size]->h);
+			ec_copy(w[1], p[*size]->pk);
+			cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, NULL, r, 1);
+			(*size)++;
+			result = RLC_OK;
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

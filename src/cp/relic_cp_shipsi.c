@@ -175,8 +175,10 @@ int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 				}
 				for (j = 0; j < l; j++) {
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
+						/* Report each element once, so that len <= m. */
 						bn_copy(z[*len], x[k]);
 						(*len)++;
+						break;
 					}
 				}
 			}

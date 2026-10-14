@@ -3020,7 +3020,7 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 /**
  * Computes the intersection as the final part of the RSA-PSI protocol.
  *
- * @param[out] z			- the elements in the intersection.
+ * @param[out] z			- the intersection, with room for m elements.
  * @param[out] len			- the cardinality of the resulting intersection.
  * @param[in] r				- the random nonce.
  * @param[in] p				- the mapping of elements to prime numbers.
@@ -3076,7 +3076,7 @@ int cp_shipsi_ans(bn_t *t, bn_t u, bn_t d, const bn_t g, const crt_t crt,
 /**
  * Computes the intersection as the final part of the SHI-PSI protocol.
  *
- * @param[out] z			- the elements in the intersection.
+ * @param[out] z			- the intersection, with room for m elements.
  * @param[out] len			- the cardinality of the resulting intersection.
  * @param[in] r				- the random nonce.
  * @param[in] p				- the mapping of elements to prime numbers.
@@ -3129,7 +3129,7 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 /**
  * Computes the intersection as the final part of the PB-PSI protocol.
  *
- * @param[out] z			- the elements in the intersection.
+ * @param[out] z			- the intersection, with room for m elements.
  * @param[out] len			- the cardinality of the resulting intersection.
  * @param[in] d				- the polynomial interpolations in the exponent.
  * @param[in] x				- the receiver's input set.

@@ -162,8 +162,9 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	uint8_t h[RLC_MD_LEN];
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
-	int one = 1 ^ first;
-	int zero = 0 ^ first;
+	/* Treat any nonzero flag as one, so that the indices stay in range. */
+	int one = 1 ^ (first != 0);
+	int zero = 0 ^ (first != 0);
 
 	bn_null(n);
 	bn_null(v[0]);

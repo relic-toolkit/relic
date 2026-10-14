@@ -165,8 +165,16 @@ int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
 						}
 					}
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
-						bn_copy(z[*len], x[k]);
-						(*len)++;
+						/* Report each element once, so that len <= m. */
+						for (i = 0; i < *len; i++) {
+							if (bn_cmp(z[i], x[k]) == RLC_EQ) {
+								break;
+							}
+						}
+						if (i == *len) {
+							bn_copy(z[*len], x[k]);
+							(*len)++;
+						}
 					}
 				}
 			}

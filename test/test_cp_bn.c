@@ -377,7 +377,12 @@ static int rabin(void) {
 					end);
 			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, out_len,
 							prv) == RLC_OK, end);
-			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
+			TEST_ASSERT(out_len == in_len && memcmp(in, out, in_len) == 0, end);
+			/* A zero ciphertext has no valid padding. */
+			memset(out, 0, sizeof(out));
+			out_len = sizeof(out);
+			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, bn_size_bin(pub->n),
+							prv) == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -441,6 +446,14 @@ static int benaloh(void) {
 			bn_write_bin(buf, len, a);
 			TEST_ASSERT(cp_bdpe_dec(&out, buf, len, prv) == RLC_OK, end);
 			TEST_ASSERT(in == out, end);
+		} TEST_END;
+
+		TEST_CASE("benaloh rejects invalid parameters") {
+			/* Plaintexts must be smaller than the block size. */
+			len = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_bdpe_enc(buf, &len, prime, pub) == RLC_ERR, end);
+			/* Block sizes must be odd primes, or no key exists. */
+			TEST_ASSERT(cp_bdpe_gen(pub, prv, 2, RLC_BN_BITS) == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);

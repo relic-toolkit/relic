@@ -143,6 +143,11 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 	ec_null(y[0]);
 	ec_null(y[1]);
 
+	/* The new signature takes its tag from the last one in the ring. */
+	if (*size == 0) {
+		return RLC_ERR;
+	}
+
 	for (size_t i = 0; i < *size; i++) {
 		if (ec_cmp(pk, p[i]->sig->pk) == RLC_EQ) {
 			return RLC_ERR;

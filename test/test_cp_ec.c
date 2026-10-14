@@ -402,6 +402,9 @@ static int vbnn(void) {
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), mpk) == 0, end);
 			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), skb, pkb) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
+			/* A signature with r at infinity is rejected safely. */
+			ec_set_infty(r);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
 		}
 		TEST_END;
 	}
@@ -669,6 +672,9 @@ static int smlers(void) {
 				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 0, pp) == 0, end);
 				TEST_ASSERT(ec_cmp(ring[0]->tau, ring[j]->tau) == RLC_EQ, end);
 			}
+			/* An empty ring cannot be extended. */
+			size = 0;
+			TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[1]) == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -740,6 +746,14 @@ static int etrs(void) {
 				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 0, pp) == 0, end);
 			}
+			/* A threshold larger than the ring is rejected safely. */
+			TEST_ASSERT(cp_etrs_ver(size + 1, td, y, 4, ring, size, m, 5, pp) == 0, end);
+			/* The ring cannot be extended once all trapdoors are used. */
+			for (int j = 0; j < 4; j++) {
+				bn_zero(td[j]);
+			}
+			cp_ers_gen_key(sk[3], pk[3]);
+			TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[3]) == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
