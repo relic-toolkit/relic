@@ -24,7 +24,10 @@
 /**
  * @file
  *
- * Implementation of extendable ring signatures.
+ * Implementation of extendable threshold ring signatures, from
+ * "Count Me In! Extendability for Threshold Ring Signatures" by Aranha,
+ * Hall-Andersen, Nitulescu, Pagnin and Yakoubov (PKC 2022):
+ * https://eprint.iacr.org/2021/1240.
  *
  * @ingroup cp
  */

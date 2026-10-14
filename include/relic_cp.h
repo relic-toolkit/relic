@@ -224,11 +224,13 @@ typedef ers_st *ers_t;
 #endif
 
 /**
- * Represents an extendable ring signature.
+ * Represents a member of a same-message linkable extendable ring signature.
  */
 typedef struct _smlers_st {
-	/** The extendable ring signature. */
-	ers_t sig;
+	/** The ephemeral public key in the signature. */
+	ec_t h;
+	/** The public key associated to the signature. */
+	ec_t pk;
 	/** The linkability tag. */
 	ec_t tau;
 	/** The first component of the signature of knowledge. */
@@ -649,11 +651,12 @@ typedef etrs_st *etrs_t;
  */
 #if ALLOC == DYNAMIC
 #define smlers_new(A)														\
-	A = (smlers_t)calloc(1, sizeof(ers_st));								\
+	A = (smlers_t)calloc(1, sizeof(smlers_st));								\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
-	ers_new((A)->sig);														\
+	ec_new((A)->h);															\
+	ec_new((A)->pk);														\
 	ec_new((A)->tau);														\
 	bn_new((A)->c[0]);														\
 	bn_new((A)->c[1]);														\
@@ -672,7 +675,8 @@ typedef etrs_st *etrs_t;
 #if ALLOC == DYNAMIC
 #define smlers_free(A)														\
 	if (A != NULL) {														\
-		ers_free((A)->sig);													\
+		ec_free((A)->h);													\
+		ec_free((A)->pk);													\
 		ec_free((A)->tau);													\
 		bn_free((A)->c[0]);													\
 		bn_free((A)->c[1]);													\
@@ -838,8 +842,10 @@ int cp_rsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const rsa_t pub);
 
 /**
- * Encrypts using the RSA cryptosystem with OAEP+ padding (Shoup, CRYPTO 2001),
- * instantiated with the chosen hash function and MGF1. There is no standard
+ * Encrypts using the RSA cryptosystem with OAEP+ padding, from "OAEP
+ * Reconsidered" by Victor Shoup (CRYPTO 2001):
+ * https://eprint.iacr.org/2000/060, instantiated with the chosen hash function
+ * and MGF1. There is no standard
  * encoding, so ciphertexts only interoperate with this library.
  *
  * @param[out] out			- the output buffer.
@@ -2531,6 +2537,44 @@ int cp_sokor_sig(bn_t c[2], bn_t r[2], const uint8_t *msg, size_t len,
  */
 int cp_sokor_ver(const bn_t c[2], const bn_t r[2], const uint8_t *msg,
 		size_t len, const ec_t y[2], const ec_t g[2]);
+
+/**
+ * Signs a message using a proof of knowledge of either a discrete logarithm
+ * of an elliptic curve point h to the generator, or of an equality of discrete
+ * logarithms of points y to generators g. Proves that h = [x]G or that
+ * y_0 = [x]g_0 and y_1 = [x]g_1.
+ *
+ * @param[out] c			- the challenges.
+ * @param[out] s			- the responses.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the length of the message.
+ * @param[in] h				- the point of the first statement.
+ * @param[in] y				- the points of the second statement.
+ * @param[in] g				- the generators of the second statement.
+ * @param[in] x				- the witness.
+ * @param[in] first			- the flag to indicate the statement known.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
+		const ec_t h, const ec_t y[2], const ec_t g[2], const bn_t x,
+		int first);
+
+/**
+ * Verifies a proof of knowledge of either a discrete logarithm of an elliptic
+ * curve point h to the generator, or of an equality of discrete logarithms of
+ * points y to generators g.
+ *
+ * @param[in] c				- the challenges.
+ * @param[in] s				- the responses.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the length of the message.
+ * @param[in] h				- the point of the first statement.
+ * @param[in] y				- the points of the second statement.
+ * @param[in] g				- the generators of the second statement.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
+		size_t len, const ec_t h, const ec_t y[2], const ec_t g[2]);
 
 /**
  * Generates the public parameters of the extendable ring signature.

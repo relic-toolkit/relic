@@ -3791,6 +3791,8 @@
 #undef cp_sokdl_ver
 #undef cp_sokor_sig
 #undef cp_sokor_ver
+#undef cp_sokeqor_sig
+#undef cp_sokeqor_ver
 #undef cp_ers_gen
 #undef cp_ers_gen_key
 #undef cp_ers_sig
@@ -3968,6 +3970,8 @@
 #define cp_sokdl_ver 	RLC_PREFIX(cp_sokdl_ver)
 #define cp_sokor_sig 	RLC_PREFIX(cp_sokor_sig)
 #define cp_sokor_ver 	RLC_PREFIX(cp_sokor_ver)
+#define cp_sokeqor_sig 	RLC_PREFIX(cp_sokeqor_sig)
+#define cp_sokeqor_ver 	RLC_PREFIX(cp_sokeqor_ver)
 #define cp_ers_gen 	RLC_PREFIX(cp_ers_gen)
 #define cp_ers_gen_key 	RLC_PREFIX(cp_ers_gen_key)
 #define cp_ers_sig 	RLC_PREFIX(cp_ers_sig)

@@ -509,15 +509,17 @@ end:
 static int sok(void) {
 	int code = RLC_ERR;
 	bn_t c[2], n, r[2], x;
-	ec_t g[2], y[2];
+	ec_t g[2], y[2], h;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(n);
 	bn_null(x);
+	ec_null(h);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(x);
+		ec_new(h);
 		for (int i = 0; i < 2; i++) {
 			bn_null(c[i]);
 			bn_null(r[i]);
@@ -583,6 +585,34 @@ static int sok(void) {
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 0, end);
 		} TEST_END;
+
+		TEST_CASE("signature of knowledge of logarithm or equality is correct") {
+			/* Prove the equality y_0 = [x]g_0 and y_1 = [x]g_1. */
+			bn_rand_mod(x, n);
+			ec_rand(h);
+			ec_curve_get_gen(g[0]);
+			ec_rand(g[1]);
+			ec_mul(y[0], g[0], x);
+			ec_mul(y[1], g[1], x);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 1, end);
+			ec_dbl(y[1], y[1]);
+			ec_norm(y[1], y[1]);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+			/* Knowing only the logarithm of y_0 does not prove the equality. */
+			ec_rand(y[1]);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+			/* Prove the logarithm h = [x]G instead. */
+			ec_mul_gen(h, x);
+			ec_rand(y[0]);
+			ec_rand(y[1]);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 1, end);
+			ec_dbl(h, h);
+			ec_norm(h, h);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -592,6 +622,7 @@ static int sok(void) {
 end:
 	bn_free(n);
 	bn_free(x);
+	ec_free(h);
 	for (int i = 0; i < 2; i++) {
 		bn_free(c[i]);
 		bn_free(r[i]);
@@ -695,6 +726,22 @@ static int smlers(void) {
 			/* An empty ring cannot be extended. */
 			size = 0;
 			TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[1]) == RLC_ERR, end);
+			/* Signatures by the same key on the same message link. */
+			TEST_ASSERT(cp_smlers_sig(td, ring[1], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(ec_cmp(ring[0]->tau, ring[1]->tau) == RLC_EQ, end);
+			/* A tag under another key does not verify. */
+			ec_curve_get_gen(pk[2]);
+			ec_map(pk[3], m, 5);
+			ec_mul(ring[0]->tau, pk[3], sk[1]);
+			ec_copy(pk[1], ring[0]->tau);
+			TEST_ASSERT(cp_sokeqor_sig(ring[0]->c, ring[0]->r, m, 5,
+				ring[0]->h, pk, pk + 2, sk[1], 0) == RLC_OK, end);
+			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 5, pp) == 0, end);
+			/* Restore distinct keys for the next iteration. */
+			for (int j = 1; j < 4; j++) {
+				cp_ers_gen_key(sk[j], pk[j]);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

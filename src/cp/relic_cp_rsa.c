@@ -392,7 +392,8 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 }
 
 /**
- * Encodes a message for encryption with OAEP+ (Shoup, CRYPTO 2001):
+ * Encodes a message for encryption with OAEP+, from "OAEP Reconsidered" by
+ * Victor Shoup (CRYPTO 2001): https://eprint.iacr.org/2000/060. Computes
  * EM = 00 | s | t, with s = (G(r) XOR X) | H'(r | X), t = H(s) XOR r and
  * X = PS | 01 | M, for a random r of RLC_MD_LEN bytes. The three functions are
  * instantiated with the chosen hash function and MGF1, separated by a prefix:
