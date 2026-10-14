@@ -49,7 +49,8 @@
 /*============================================================================*/
 
 /**
- * Statistical security parameter in bits, which bounds collision probabilities.
+ * Statistical security parameter in bits, which bounds the probability of
+ * accidental collisions, but not the cost of finding them on purpose.
  */
 #define CP_STAT_SEC		40
 
@@ -3006,7 +3007,7 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 /**
  * Computes the sender part of the RSA-PSI protocol, given its input set.
  *
- * @param[out] t			- the accumulator results.
+ * @param[out] t			- the hashes of the accumulator results.
  * @param[out] u			- the missing elements in the exponent.
  * @param[in] d				- the receiver's accumulator.
  * @param[in] g				- the generator given by the trusted setup.
@@ -3027,7 +3028,7 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
  * @param[in] n				- the modulus given by the trusted setup.
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
- * @param[in] t				- the accumulator results.
+ * @param[in] t				- the hashes of the accumulator results.
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] l				- the sender's input set size.
  */
@@ -3062,7 +3063,7 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 /**
  * Computes the sender part of the SHI-PSI protocol, given its input set.
  *
- * @param[out] t			- the accumulator results.
+ * @param[out] t			- the hashes of the accumulator results.
  * @param[out] u			- the hint in the exponent.
  * @param[in] d				- the receiver's accumulator.
  * @param[in] g				- the generator given by the trusted setup.
@@ -3083,7 +3084,7 @@ int cp_shipsi_ans(bn_t *t, bn_t u, bn_t d, const bn_t g, const crt_t crt,
  * @param[in] n				- the modulus given by the trusted setup.
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
- * @param[in] t				- the accumulator results.
+ * @param[in] t				- the hashes of the accumulator results.
  * @param[in] u				- the hint in the exponent.
  * @param[in] l				- the sender's input set size.
  */
