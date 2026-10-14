@@ -38,16 +38,20 @@
 #include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-TMPL_FPX_BASE(fp48, fp24, 2);
-
-TMPL_FPX_BIN_QC(fp48, fp24, fp8, 48);
-
-TMPL_FPX_MUL_QUAD(fp48, fp24, fp24_mul_art);
-
-void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
+/**
+ * Multiplies two 48-extension field elements without reduction with
+ * Karatsuba, using Karatsuba or Toom-3 for the products in Fp^24.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 48-extension field element.
+ * @param[in] b				- the second 48-extension field element.
+ * @param[in] toom			- the flag to use Toom-3 in Fp^24.
+ */
+static void fp48_mul_unr_imp(dv48_t c, const fp48_t a, const fp48_t b,
+		int toom) {
 	fp24_t t0, t1;
 	dv24_t u0, u1, u2;
 
@@ -58,12 +62,18 @@ void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
 		fp24_new_all(t0, t1);
 		dv24_new_all(u0, u1, u2);
 
-		/* Karatsuba algorithm. */
-		fp24_mul_unr(u0, a[0], b[0]);
-		fp24_mul_unr(u1, a[1], b[1]);
+		/* Karatsuba algorithm over Karatsuba or Toom-3 products in Fp^24. */
 		fp24_add(t0, a[0], a[1]);
 		fp24_add(t1, b[0], b[1]);
-		fp24_mul_unr(u2, t0, t1);
+		if (toom) {
+			fp24_mul_toom_unr(u0, a[0], b[0]);
+			fp24_mul_toom_unr(u1, a[1], b[1]);
+			fp24_mul_toom_unr(u2, t0, t1);
+		} else {
+			fp24_mul_unr(u0, a[0], b[0]);
+			fp24_mul_unr(u1, a[1], b[1]);
+			fp24_mul_unr(u2, t0, t1);
+		}
 		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
 		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u2, u0);
 		TMPL_DV_SUBC(fp2, dv2, 12, c[1], c[1], u1);
@@ -79,9 +89,79 @@ void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
 	}
 }
 
+/**
+ * Multiplies a dense and a sparse 48-extension field element without
+ * reduction, for the sparse element L + LX * w + LY * w * s produced by the
+ * line functions, where w^3 = v, s^2 = w and L, LX, LY are in Fp^8. With
+ * t = a_1 * LY, a_1 * b_1 = w * t, so c_0 = a_0b_0 + w^2 * t and
+ * c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - w * t, where the sparse products in
+ * Fp^24 use Karatsuba or Toom-2.5.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48-extension field element.
+ * @param[in] b				- the sparse 48-extension field element.
+ * @param[in] toom			- the flag to use Toom-2.5 in Fp^24.
+ */
+static void fp48_mul_dxs_imp(dv48_t c, const fp48_t a, const fp48_t b,
+		int toom) {
+	fp24_t s0, s1;
+	dv24_t t0, t1, u;
+
+	fp24_null_all(s0, s1);
+	dv24_null_all(t0, t1, u);
+
+	RLC_TRY {
+		fp24_new_all(s0, s1);
+		dv24_new_all(t0, t1, u);
+
+		fp24_add(s0, a[0], a[1]);
+		fp8_copy(s1[0], b[0][0]);
+		fp8_add(s1[1], b[0][1], b[1][1]);
+		fp8_copy(s1[2], b[0][2]);
+		if (toom) {
+			fp24_mul_dxs_toom_unr(t0, a[0], b[0]);
+			fp24_mul_dxs_toom_unr(u, s0, s1);
+		} else {
+			fp24_mul_dxs_unr(t0, a[0], b[0]);
+			fp24_mul_dxs_unr(u, s0, s1);
+		}
+		fp8_mul_unr(t1[0], a[1][0], b[1][1]);
+		fp8_mul_unr(t1[1], a[1][1], b[1][1]);
+		fp8_mul_unr(t1[2], a[1][2], b[1][1]);
+		/* c_1 = u - (t_0 + w * t), where w * t = v * t_2 + t_0 w + t_1 w^2. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], t0[0], t1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][1], t0[1], t1[0]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], t0[2], t1[1]);
+		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u, c[0]);
+		/* c_0 = t_0 + w^2 * t, where w^2 * t = v * t_1 + v * t_2 w + t_0 w^2. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], t0[0], t1[1]);
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][1], t0[1], t1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], t0[2], t1[0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp24_free_all(s0, s1);
+		dv24_free_all(t0, t1, u);
+	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+TMPL_FPX_BASE(fp48, fp24, 2);
+
+TMPL_FPX_BIN_QC(fp48, fp24, fp8, 48);
+
+TMPL_FPX_MUL_QUAD(fp48, fp24, fp24_mul_art);
+
+void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
+	fp48_mul_unr_imp(c, a, b, 0);
+}
+
 TMPL_FPX_MUL_LAZYR(fp48, dv48, fp2, dv2, 24);
 
-void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
+void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
 	fp24_null_all(t0, t1, t2);
@@ -135,6 +215,54 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp24_free_all(t0, t1, t2);
+	}
+}
+
+void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
+	dv48_t t;
+
+	dv48_null(t);
+
+	RLC_TRY {
+		dv48_new(t);
+		fp48_mul_dxs_imp(t, a, b, 0);
+		TMPL_DV_RDCN(fp2, dv2, 24, c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv48_free(t);
+	}
+}
+
+void fp48_mul_dxs_toom(fp48_t c, const fp48_t a, const fp48_t b) {
+	dv48_t t;
+
+	dv48_null(t);
+
+	RLC_TRY {
+		dv48_new(t);
+		fp48_mul_dxs_imp(t, a, b, 1);
+		TMPL_DV_RDCN(fp2, dv2, 24, c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv48_free(t);
+	}
+}
+
+void fp48_mul_toom(fp48_t c, const fp48_t a, const fp48_t b) {
+	dv48_t t;
+
+	dv48_null(t);
+
+	RLC_TRY {
+		dv48_new(t);
+		fp48_mul_unr_imp(t, a, b, 1);
+		TMPL_DV_RDCN(fp2, dv2, 24, c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv48_free(t);
 	}
 }
 

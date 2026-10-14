@@ -3083,7 +3083,13 @@
 #undef fp24_mul_basic
 #undef fp24_mul_lazyr
 #undef fp24_mul_art
-#undef fp24_mul_dxs
+#undef fp24_mul_dxs_basic
+#undef fp24_mul_dxs_unr
+#undef fp24_mul_dxs_lazyr
+#undef fp24_mul_dxs_toom_unr
+#undef fp24_mul_dxs_toom
+#undef fp24_mul_toom_unr
+#undef fp24_mul_toom
 #undef fp24_sqr_unr
 #undef fp24_sqr_basic
 #undef fp24_sqr_lazyr
@@ -3129,7 +3135,13 @@
 #define fp24_mul_basic 	RLC_PREFIX(fp24_mul_basic)
 #define fp24_mul_lazyr 	RLC_PREFIX(fp24_mul_lazyr)
 #define fp24_mul_art 	RLC_PREFIX(fp24_mul_art)
-#define fp24_mul_dxs 	RLC_PREFIX(fp24_mul_dxs)
+#define fp24_mul_dxs_basic 	RLC_PREFIX(fp24_mul_dxs_basic)
+#define fp24_mul_dxs_unr 	RLC_PREFIX(fp24_mul_dxs_unr)
+#define fp24_mul_dxs_lazyr 	RLC_PREFIX(fp24_mul_dxs_lazyr)
+#define fp24_mul_dxs_toom_unr 	RLC_PREFIX(fp24_mul_dxs_toom_unr)
+#define fp24_mul_dxs_toom 	RLC_PREFIX(fp24_mul_dxs_toom)
+#define fp24_mul_toom_unr 	RLC_PREFIX(fp24_mul_toom_unr)
+#define fp24_mul_toom 	RLC_PREFIX(fp24_mul_toom)
 #define fp24_sqr_unr 	RLC_PREFIX(fp24_sqr_unr)
 #define fp24_sqr_basic 	RLC_PREFIX(fp24_sqr_basic)
 #define fp24_sqr_lazyr 	RLC_PREFIX(fp24_sqr_lazyr)
@@ -3175,7 +3187,10 @@
 #undef fp48_mul_basic
 #undef fp48_mul_lazyr
 #undef fp48_mul_art
-#undef fp48_mul_dxs
+#undef fp48_mul_dxs_basic
+#undef fp48_mul_dxs_lazyr
+#undef fp48_mul_dxs_toom
+#undef fp48_mul_toom
 #undef fp48_sqr_unr
 #undef fp48_sqr_basic
 #undef fp48_sqr_lazyr
@@ -3223,7 +3238,10 @@
 #define fp48_mul_basic 	RLC_PREFIX(fp48_mul_basic)
 #define fp48_mul_lazyr 	RLC_PREFIX(fp48_mul_lazyr)
 #define fp48_mul_art 	RLC_PREFIX(fp48_mul_art)
-#define fp48_mul_dxs 	RLC_PREFIX(fp48_mul_dxs)
+#define fp48_mul_dxs_basic 	RLC_PREFIX(fp48_mul_dxs_basic)
+#define fp48_mul_dxs_lazyr 	RLC_PREFIX(fp48_mul_dxs_lazyr)
+#define fp48_mul_dxs_toom 	RLC_PREFIX(fp48_mul_dxs_toom)
+#define fp48_mul_toom 	RLC_PREFIX(fp48_mul_toom)
 #define fp48_sqr_unr 	RLC_PREFIX(fp48_sqr_unr)
 #define fp48_sqr_basic 	RLC_PREFIX(fp48_sqr_basic)
 #define fp48_sqr_lazyr 	RLC_PREFIX(fp48_sqr_lazyr)

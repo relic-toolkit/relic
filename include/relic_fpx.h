@@ -1326,6 +1326,20 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
+ * Multiplies a dense and a sparse 24-degree extension field element. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense 24-degree extension field element.
+ * @param[in] B				- the sparse 24-degree extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp24_mul_dxs(C, A, B)	fp24_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp24_mul_dxs(C, A, B)	fp24_mul_dxs_lazyr(C, A, B)
+#endif
+
+/**
  * Squares a 24-degree extension field element. Computes C = A * A.
  *
  * @param[out] C			- the result.
@@ -1450,6 +1464,20 @@ typedef dv18_t dv54_t[3];
 #define fp48_mul(C, A, B)		fp48_mul_basic(C, A, B)
 #elif FPX_RDC == LAZYR
 #define fp48_mul(C, A, B)		fp48_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Multiplies a dense and a sparse 48-extension extension field element. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense 48-extension extension field element.
+ * @param[in] B				- the sparse 48-extension extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_lazyr(C, A, B)
 #endif
 
 /**
@@ -5142,13 +5170,80 @@ void fp24_mul_lazyr(fp24_t c, const fp24_t a, const fp24_t b);
 void fp24_mul_art(fp24_t c, const fp24_t a);
 
 /**
- * Multiples a dense 24-degree extension field element by a sparse element.
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, using basic arithmetic.
  *
  * @param[out] c			- the result.
- * @param[in] a				- a 24-degree extension field element.
- * @param[in] b				- a 24-degree quartic extension field element.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
  */
-void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b);
+void fp24_mul_dxs_basic(fp24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, without performing modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_unr(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_lazyr(fp24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * without performing modular reduction, with Toom-2.5 at the points 0, 1, -1
+ * and infinity when the coefficient of w^2 is zero, and as
+ * fp24_mul_dxs_unr() otherwise.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_toom_unr(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with lazy reduction, with Toom-2.5 at the points 0, 1, -1 and infinity when
+ * the coefficient of w^2 is zero, and as fp24_mul_dxs_lazyr() otherwise.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_toom(fp24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies two 24-degree extension field elements without performing
+ * modular reduction, with Toom-3 at the points 0, 1, -1, i and infinity over
+ * the octic extension. Requires i^2 = -1 in the quadratic extension, and uses
+ * Karatsuba otherwise.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 24-degree extension field element.
+ * @param[in] b				- the second 24-degree extension field element.
+ */
+void fp24_mul_toom_unr(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies two 24-degree extension field elements with lazy reduction, with
+ * Toom-3 at the points 0, 1, -1, i and infinity over the octic extension.
+ * Requires i^2 = -1 in the quadratic extension, and uses Karatsuba otherwise.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 24-degree extension field element.
+ * @param[in] b				- the second 24-degree extension field element.
+ */
+void fp24_mul_toom(fp24_t c, const fp24_t a, const fp24_t b);
 
 /**
  * Computes the square of a 24-degree extension field element without performing
@@ -5552,14 +5647,45 @@ void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b);
 void fp48_mul_art(fp48_t c, const fp48_t a);
 
 /**
- * Multiples a dense 48-extension field element by a sparse element using
+ * Multiplies a dense 48-extension field element by a sparse element using
  * basic arithmetic. Computes C = A * B.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the dense 48-extension field element.
  * @param[in] b				- the sparse 48-extension field element.
  */
-void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b);
+void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Multiplies a dense 48-extension field element by a sparse element using
+ * lazy reduction. Computes C = A * B.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48-extension field element.
+ * @param[in] b				- the sparse 48-extension field element.
+ */
+void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Multiplies a dense 48-extension field element by a sparse element using
+ * lazy reduction and Toom-2.5 for the sparse products in the 24-degree
+ * extension. Computes C = A * B.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48-extension field element.
+ * @param[in] b				- the sparse 48-extension field element.
+ */
+void fp48_mul_dxs_toom(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Multiplies two 48-extension field elements using lazy reduction and Toom-3
+ * for the products in the 24-degree extension. Computes C = A * B.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 48-extension field element.
+ * @param[in] b				- the second 48-extension field element.
+ */
+void fp48_mul_toom(fp48_t c, const fp48_t a, const fp48_t b);
 
 /**
  * Computes the square of a 48-degree extension field element without performing

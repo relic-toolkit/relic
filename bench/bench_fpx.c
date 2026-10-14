@@ -2906,6 +2906,49 @@ static void arith24(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp24_mul_dxs") {
+		fp24_rand(a);
+		fp24_rand(b);
+		fp8_zero(b[2]);
+		BENCH_ADD(fp24_mul_dxs(c, a, b));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp24_mul_dxs_basic") {
+		fp24_rand(a);
+		fp24_rand(b);
+		fp8_zero(b[2]);
+		BENCH_ADD(fp24_mul_dxs_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp24_mul_dxs_lazyr") {
+		fp24_rand(a);
+		fp24_rand(b);
+		fp8_zero(b[2]);
+		BENCH_ADD(fp24_mul_dxs_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("fp24_mul_dxs_toom") {
+		fp24_rand(a);
+		fp24_rand(b);
+		fp8_zero(b[2]);
+		BENCH_ADD(fp24_mul_dxs_toom(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp24_mul_toom") {
+		fp24_rand(a);
+		fp24_rand(b);
+		BENCH_ADD(fp24_mul_toom(c, a, b));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp24_sqr") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_sqr(c, a));
@@ -3214,8 +3257,52 @@ static void arith48(void) {
 
 	BENCH_RUN("fp48_mul_dxs") {
 		fp48_rand(a);
-		fp48_rand(b);
+		fp48_zero(b);
+		fp8_rand(b[0][0]);
+		fp8_rand(b[0][1]);
+		fp8_rand(b[1][1]);
 		BENCH_ADD(fp48_mul_dxs(c, a, b));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp48_mul_dxs_basic") {
+		fp48_rand(a);
+		fp48_zero(b);
+		fp8_rand(b[0][0]);
+		fp8_rand(b[0][1]);
+		fp8_rand(b[1][1]);
+		BENCH_ADD(fp48_mul_dxs_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp48_mul_dxs_lazyr") {
+		fp48_rand(a);
+		fp48_zero(b);
+		fp8_rand(b[0][0]);
+		fp8_rand(b[0][1]);
+		fp8_rand(b[1][1]);
+		BENCH_ADD(fp48_mul_dxs_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("fp48_mul_dxs_toom") {
+		fp48_rand(a);
+		fp48_zero(b);
+		fp8_rand(b[0][0]);
+		fp8_rand(b[0][1]);
+		fp8_rand(b[1][1]);
+		BENCH_ADD(fp48_mul_dxs_toom(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp48_mul_toom") {
+		fp48_rand(a);
+		fp48_rand(b);
+		BENCH_ADD(fp48_mul_toom(c, a, b));
 	}
 	BENCH_END;
 
