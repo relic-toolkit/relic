@@ -150,6 +150,17 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_free(A)				RLC_CAT(RLC_EC_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ec_null_all(...)		RLC_EACH(ec_null, __VA_ARGS__)
+#define ec_new_all(...)			RLC_EACH(ec_new, __VA_ARGS__)
+#define ec_free_all(...)		RLC_EACH(ec_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group of points in the elliptic curve.
  *
  * @param[out] G				- the returned generator.

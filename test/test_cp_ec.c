@@ -769,26 +769,24 @@ end:
 
 static int etrs(void) {
 	int code = RLC_ERR;
-	ec_t pp, pk[4];
+	ec_t pp, pk[4], com[4];
 	bn_t sk[4], td[4], y[4];
 	etrs_t ring[4];
 	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	size_t size;
 
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null_all(td[i], y[i], sk[i]);
+		ec_null_all(pk[i], com[i]);
+		etrs_null(ring[i]);
+	}
 
 	RLC_TRY {
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(td[i]);
-			bn_new(td[i]);
-			bn_null(y[i]);
-			bn_new(y[i]);
-			bn_null(sk[i]);
-			bn_new(sk[i]);
-			ec_null(pk[i]);
-			ec_new(pk[i]);
-			etrs_null(ring[i]);
+			bn_new_all(td[i], y[i], sk[i]);
+			ec_new_all(pk[i], com[i]);
 			etrs_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
@@ -796,40 +794,47 @@ static int etrs(void) {
 		cp_ers_gen(pp);
 
 		TEST_CASE("extendable threshold ring signature scheme is correct") {
-			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
-			TEST_ASSERT(cp_etrs_ver(0, td, y, 4, ring, 1, m, 5, pp) == 0, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 5, pp) == 1, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 0, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(0, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 0, pp) == 0, end);
+			/* The commitment must match the points of the polynomial. */
+			ec_dbl(com[1], com[1]);
+			ec_norm(com[1], com[1]);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			size = 1;
 			for (int j = 1; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, m, 5, pp) == 0, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 5, pp) == 1, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 0, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, com, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, com, m, 0, pp) == 0, end);
 			}
 
-			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			size = 1;
-			TEST_ASSERT(cp_etrs_uni(td, y, 4, ring, &size, m, 5, sk[1], pk[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, m, 5, pp) == 0, end);
-			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 5, pp) == 1, end);
-			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 0, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_uni(td, y, 4, ring, &size, com, m, 5, sk[1], pk[1]) == RLC_OK, end);
+			/* Two signers give a signature for any threshold up to two. */
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, com, m, 0, pp) == 0, end);
 			for (int j = 2; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 0, end);
-				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 1, end);
-				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 0, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(3, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 0, pp) == 0, end);
 			}
 			/* A threshold larger than the ring is rejected safely. */
-			TEST_ASSERT(cp_etrs_ver(size + 1, td, y, 4, ring, size, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(size + 1, td, y, 4, ring, size, com, m, 5, pp) == 0, end);
 			/* The ring cannot be extended once all trapdoors are used. */
 			for (int j = 0; j < 4; j++) {
 				bn_zero(td[j]);
 			}
 			cp_ers_gen_key(sk[3], pk[3]);
-			TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[3]) == RLC_ERR, end);
+			TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[3]) == RLC_ERR, end);
 			/* A member whose point has a known logarithm is not a signer. */
-			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			cp_ers_gen_key(sk[2], pk[2]);
 			cp_ers_gen_key(sk[3], pk[3]);
 			ec_copy(pk[3], pk[0]);
@@ -837,7 +842,7 @@ static int etrs(void) {
 			bn_copy(ring[0]->y, sk[3]);
 			ec_copy(ring[0]->pk, pk[0]);
 			TEST_ASSERT(cp_sokor_sig(ring[0]->c, ring[0]->r, m, 5, pk + 2, NULL, sk[2], 1) == RLC_OK, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
 			/* Restore distinct keys for the next iteration. */
 			cp_ers_gen_key(sk[3], pk[3]);
 		} TEST_END;
@@ -850,10 +855,8 @@ static int etrs(void) {
 end:
 	ec_free(pp);
 	for (int i = 0; i < 4; i++) {
-		bn_free(td[i]);
-		bn_free(y[i]);
-		bn_free(sk[i]);
-		ec_free(pk[i]);
+		bn_free_all(td[i], y[i], sk[i]);
+		ec_free_all(pk[i], com[i]);
 		etrs_free(ring[i])
 	}
 	return code;

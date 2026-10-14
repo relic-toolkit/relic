@@ -257,10 +257,12 @@ typedef smlers_st *smlers_t;
  * Represents an extendable threshold ring signature.
  */
 typedef struct _etrs_st {
-	/** The secret. */
+	/** The degree of the polynomial, the number of trapdoors of the signer. */
+	size_t deg;
+	/** The evaluation point of the polynomial. */
 	bn_t y;
 	/** The ephemeral public key in the signature. */
-    ec_t h;
+	ec_t h;
 	/** The public key associated to the signature. */
 	ec_t pk;
 	/** The first component of the signature of knowledge. */
@@ -2690,6 +2692,8 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
  * @param[out] y			- the signature randomness.
  * @param[out] max			- the maximum number of extensions.
  * @param[out] p			- the resulting signature.
+ * @param[out] com			- the commitment to the polynomial, with room for
+ * 							  max points and shared by the whole ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] sk			- the signer's private key.
@@ -2697,8 +2701,9 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
  * @param[in] pp			- the public parameters.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
-		size_t len, const bn_t sk, const ec_t pk, const ec_t pp);
+int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, ec_t *com,
+		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
+		const ec_t pp);
 
 /**
  * Verifies an extendable threshold ring signature scheme over some messages.
@@ -2709,14 +2714,15 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
  * @param[in] max			- the maximum number of extensions.
  * @param[in] s				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
+ * @param[in] com			- the commitment to the polynomial.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @return a boolean value indicating the verification result.
  */
 int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
-		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
-		const ec_t pp);
+		const etrs_t *s, size_t size, const ec_t *com, const uint8_t *msg,
+		size_t len, const ec_t pp);
 
 /**
  * Extends an extendable threshold ring signature with a new signature.
@@ -2726,13 +2732,14 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
  * @param[in] max			- the maximum number of extensions.
  * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
+ * @param[in] com			- the commitment to the polynomial.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const ec_t pk);
+		const ec_t *com, const uint8_t *msg, size_t len, const ec_t pk);
 /**
  * Joins an extendable threshold ring signature with a new signature.
  *
@@ -2741,6 +2748,7 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
  * @param[in] max			- the maximum number of extensions.
  * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
+ * @param[in] com			- the commitment to the polynomial.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] sk			- the signer's private key.
@@ -2748,7 +2756,8 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_uni(bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
-		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk);
+		const ec_t *com, const uint8_t *msg, size_t len, const bn_t sk,
+		const ec_t pk);
 
 /**
  * Compute a Pedersen commitment for randomness r and message x.
