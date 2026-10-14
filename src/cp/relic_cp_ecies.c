@@ -69,6 +69,11 @@ int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
 	uint8_t _x[RLC_FC_BYTES + 1], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
 
+	/* An invalid key, such as infinity, would not hide the message. */
+	if (!ec_is_valid(q)) {
+		return RLC_ERR;
+	}
+
 	bn_null(k);
 	bn_null(n);
 	bn_null(x);

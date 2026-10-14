@@ -153,7 +153,9 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		bn_read_bin(v, h, RLC_MD_LEN);
 		bn_mod(v, v, n);
 
-		if (bn_cmp(v, c) == RLC_EQ) {
+		/* A response outside [0, n) would give another valid proof. */
+		if (bn_cmp(v, c) == RLC_EQ &&
+				bn_sign(s) == RLC_POS && bn_cmp(s, n) == RLC_LT) {
 			result = 1;
 		}
 	}
@@ -347,7 +349,12 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		bn_sub(z, z, c[1]);
 		bn_mod(z, z, n);
 
-		if (bn_is_zero(z)) {
+		/* Values outside [0, n) would give another valid proof. */
+		if (bn_is_zero(z) &&
+				bn_sign(c[0]) == RLC_POS && bn_cmp(c[0], n) == RLC_LT &&
+				bn_sign(c[1]) == RLC_POS && bn_cmp(c[1], n) == RLC_LT &&
+				bn_sign(s[0]) == RLC_POS && bn_cmp(s[0], n) == RLC_LT &&
+				bn_sign(s[1]) == RLC_POS && bn_cmp(s[1], n) == RLC_LT) {
 			result = 1;
 		}
 	}
@@ -541,7 +548,12 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		bn_sub(z, z, c[0]);
 		bn_sub(z, z, c[1]);
 		bn_mod(z, z, n);
-		if (bn_is_zero(z)) {
+		/* Values outside [0, n) would give another valid proof. */
+		if (bn_is_zero(z) &&
+				bn_sign(c[0]) == RLC_POS && bn_cmp(c[0], n) == RLC_LT &&
+				bn_sign(c[1]) == RLC_POS && bn_cmp(c[1], n) == RLC_LT &&
+				bn_sign(s[0]) == RLC_POS && bn_cmp(s[0], n) == RLC_LT &&
+				bn_sign(s[1]) == RLC_POS && bn_cmp(s[1], n) == RLC_LT) {
 			result = 1;
 		}
 	}

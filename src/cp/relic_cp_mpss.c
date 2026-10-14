@@ -187,7 +187,7 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
 		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
 		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
-		if (g1_is_infty(a)) {
+		if (!g1_is_valid(a)) {
 			gt_rand(e);
 		} else {
 			/* Now combine shares and multiply. */
@@ -466,7 +466,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
 		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
-		if (g1_is_infty(a)) {
+		if (!g1_is_valid(a)) {
 			gt_rand(e);
 		} else {
 			/* Now combine shares and multiply. */

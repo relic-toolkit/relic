@@ -124,7 +124,9 @@ int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y) {
 		md_map(h, bin, sizeof(bin));
 		bn_read_bin(v, h, RLC_MD_LEN);
 		bn_mod(v, v, n);
-		if (bn_cmp(v, c) == RLC_EQ) {
+		/* A response outside [0, n) would give another valid proof. */
+		if (bn_cmp(v, c) == RLC_EQ &&
+				bn_sign(r) == RLC_POS && bn_cmp(r, n) == RLC_LT) {
 			result = 1;
 		}
 	}
@@ -257,7 +259,12 @@ int cp_pokor_ver(const bn_t c[2], const bn_t r[2], const ec_t y[2]) {
 		bn_sub(z, z, c[1]);
 		bn_mod(z, z, n);
 
-		if (bn_is_zero(z)) {
+		/* Values outside [0, n) would give another valid proof. */
+		if (bn_is_zero(z) &&
+				bn_sign(c[0]) == RLC_POS && bn_cmp(c[0], n) == RLC_LT &&
+				bn_sign(c[1]) == RLC_POS && bn_cmp(c[1], n) == RLC_LT &&
+				bn_sign(r[0]) == RLC_POS && bn_cmp(r[0], n) == RLC_LT &&
+				bn_sign(r[1]) == RLC_POS && bn_cmp(r[1], n) == RLC_LT) {
 			result = 1;
 		}
 	}

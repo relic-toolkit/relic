@@ -402,8 +402,8 @@ static int vbnn(void) {
 	bn_null(skb);
 	ec_null(r);
 	ec_null(mpk);
-	bn_null(pka);
-	bn_null(pkb);
+	ec_null(pka);
+	ec_null(pkb);
 
 	RLC_TRY {
 		bn_new(z);
@@ -422,6 +422,11 @@ static int vbnn(void) {
 			TEST_ASSERT(cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb)) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), ska, pka) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 1, end);
+			/* A response shifted by the order is not another signature. */
+			ec_curve_get_ord(msk);
+			bn_add(z, z, msk);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
+			bn_sub(z, z, msk);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), mpk) == 0, end);
 			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), skb, pkb) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
@@ -477,6 +482,10 @@ static int pok(void) {
 			ec_mul_gen(y[0], x);
 			TEST_ASSERT(cp_pokdl_prv(c[0], r[0], y[0], x) == RLC_OK, end);
 			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 1, end);
+			/* A response shifted by the order is not another proof. */
+			bn_add(r[0], r[0], n);
+			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 0, end);
+			bn_sub(r[0], r[0], n);
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 0, end);
@@ -544,6 +553,10 @@ static int sok(void) {
 			ec_mul_gen(y[0], x);
 			TEST_ASSERT(cp_sokdl_sig(c[0], r[0], m, 5, y[0], x) == RLC_OK, end);
 			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 1, end);
+			/* A response shifted by the order is not another signature. */
+			bn_add(r[0], r[0], n);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);
+			bn_sub(r[0], r[0], n);
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);

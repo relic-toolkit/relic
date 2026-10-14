@@ -270,11 +270,9 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 		bn_read_bin(_h, hash, RLC_MD_LEN);
 		bn_mod(_h, _h, n);
 
-		if (bn_cmp(h, _h) == RLC_EQ) {
-			result = 1;
-		} else {
-			result = 0;
-		}
+		/* A response z outside [0, n) would give another valid signature. */
+		result = (bn_cmp(h, _h) == RLC_EQ && bn_sign(z) == RLC_POS &&
+				bn_cmp(z, n) == RLC_LT);
 	}
 	RLC_CATCH_ANY {
 		result = 0;
