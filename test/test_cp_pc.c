@@ -40,7 +40,7 @@ static int pdpub(void) {
 	bn_t x, t, r1, r2;
 	g1_t p, u1, v1, w1;
 	g2_t q, u2, v2, w2;
-	gt_t e, r, g[3];
+	gt_t e, r, g[3], f;
 
 	bn_null(t);
 	bn_null(x);
@@ -59,8 +59,10 @@ static int pdpub(void) {
 	gt_null(g[0]);
 	gt_null(g[1]);
 	gt_null(g[2]);
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(t);
 		bn_new(x);
 		bn_new(r1);
@@ -84,6 +86,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_cades_ask(t, u1, u2, e, p, q) == RLC_OK, end);
 			TEST_ASSERT(cp_cades_ans(g, u1, u2, p, q) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 1, end);
 			pc_map(g[0], p, q);
 			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
@@ -95,6 +104,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
@@ -106,6 +122,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_lvpub_ask(v1, w2, r1, p, q, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_lvpub_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_lvpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
@@ -114,6 +137,12 @@ static int pdpub(void) {
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
 			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
 			pc_map(e, p, q);
@@ -142,6 +171,7 @@ static int pdpub(void) {
 	gt_free(g[0]);
 	gt_free(g[1]);
 	gt_free(g[2]);
+	gt_free(f);
 	return code;
 }
 
@@ -150,7 +180,7 @@ static int pdprv(void) {
 	bn_t r1, r2[3];
 	g1_t p, u1[2], v1[3];
 	g2_t q, u2[2], v2[4], w2[4];
-	gt_t e[2], r, g[4];
+	gt_t e[2], r, g[4], f;
 
 	bn_null(r1);
 	g1_null(p);
@@ -170,8 +200,10 @@ static int pdprv(void) {
 		g2_null(w2[i]);
 		gt_null(g[i]);
 	}
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(r1);
 		g1_new(p);
 		g2_new(q);
@@ -197,6 +229,13 @@ static int pdprv(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ans(g, v1, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
@@ -208,6 +247,13 @@ static int pdprv(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_lvprv_ask(v1, w2, r1, p, q, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvprv_ans(g, v1, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
@@ -236,6 +282,7 @@ static int pdprv(void) {
 		g2_free(w2[i]);
 		gt_free(g[i]);
 	}
+	gt_free(f);
 	return code;
 }
 
@@ -246,7 +293,7 @@ static int pdbat(void) {
 	bn_t r, ls[AGGS], b[AGGS];
 	g1_t p[AGGS], rs[AGGS], u1, v1;
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2, w2;
-	gt_t e, ts[AGGS + 1], g[AGGS + 1];
+	gt_t e, ts[AGGS + 1], g[AGGS + 1], f;
 
 	bn_null(r);
 	g1_null(u1);
@@ -268,8 +315,10 @@ static int pdbat(void) {
 	}
 	gt_null(ts[AGGS]);
 	gt_null(g[AGGS]);
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(r);
 		g1_new(u1);
 		g1_new(v1);
@@ -297,6 +346,13 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_pdbat_gen(u1, u2, e) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ask(ls, b, rs, v2, u1, u2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(ts[0], ts[0], f);
+			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			gt_inv(f, f);
+			gt_mul(ts[0], ts[0], f);
 			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 1, end);
 			for (size_t j = 0; j < AGGS; j++) {
 				pc_map(e, p[j], q[j]);
@@ -307,6 +363,12 @@ static int pdbat(void) {
 		TEST_CASE("faster delegated batch pairing is correct") {
 			TEST_ASSERT(cp_mvbat_gen(ls, u2, s, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ask(b, qs, s, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(ts[0], ts[0], f);
+			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
 			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 1, end);
 			for (size_t j = 0; j < AGGS; j++) {
@@ -319,11 +381,23 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t j = 0; j < AGGS; j++) {
@@ -357,6 +431,7 @@ static int pdbat(void) {
 	}
 	gt_free(ts[AGGS]);
 	gt_free(g[AGGS]);
+	gt_free(f);
 	return code;
 }
 
