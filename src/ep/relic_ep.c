@@ -257,12 +257,10 @@ void ep_pck(ep_t r, const ep_t p) {
 	int b;
 	bn_t hq, y;
 
-	bn_null(hq);
-	bn_null(y);
+	bn_null_all(hq, y);
 
 	RLC_TRY {
-		bn_new(hq);
-		bn_new(y);
+		bn_new_all(hq, y);
 
 		fp_copy(r->x, p->x);
 
@@ -289,25 +287,21 @@ void ep_pck(ep_t r, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(y);
-		bn_free(hq);
+		bn_free_all(hq, y);
 	}
 }
 
 int ep_upk(ep_t r, const ep_t p) {
 	fp_t t;
-	bn_t halfQ;
-	bn_t yValue;
+	bn_t hq, y;
 	int result = 0;
 
 	fp_null(t);
-	bn_null(halfQ);
-	bn_null(yValue);
+	bn_null_all(hq, y);
 
 	RLC_TRY {
 		fp_new(t);
-		bn_new(halfQ);
-		bn_new(yValue);
+		bn_new_all(hq, y);
 
 		ep_rhs(t, p->x);
 
@@ -321,12 +315,13 @@ int ep_upk(ep_t r, const ep_t p) {
 					sign_F_p(y) :=  { 1 if y > (p - 1) / 2, else
 									{ 0 otherwise.
 				*/
-				halfQ->used = RLC_FP_DIGS;
-				dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-				bn_hlv(halfQ, halfQ);  // This is equivalent to p - 1 / 2, floor division
+				hq->used = RLC_FP_DIGS;
+				dv_copy(hq->dp, fp_prime_get(), RLC_FP_DIGS);
+				/* hq = (p - 1) / 2, as p is odd. */
+				bn_hlv(hq, hq);
 
-				fp_prime_back(yValue, t);
-				int sign_fpy = bn_cmp(yValue, halfQ) == RLC_GT;
+				fp_prime_back(y, t);
+				int sign_fpy = bn_cmp(y, hq) == RLC_GT;
 
 				if (sign_fpy != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
@@ -334,8 +329,8 @@ int ep_upk(ep_t r, const ep_t p) {
 			} else {
 				/* Verify if least significant bit of the result matches the
 				 * compressed y-coordinate. */
-				fp_prime_back(yValue, t);
-				if (bn_get_bit(yValue, 0) != fp_get_bit(p->y, 0)) {
+				fp_prime_back(y, t);
+				if (bn_get_bit(y, 0) != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
 				}
 			}
@@ -351,8 +346,7 @@ int ep_upk(ep_t r, const ep_t p) {
 	}
 	RLC_FINALLY {
 		fp_free(t);
-		bn_free(yValue);
-		bn_free(halfQ);
+		bn_free_all(hq, y);
 	}
 	return result;
 }
