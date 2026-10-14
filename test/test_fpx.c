@@ -877,6 +877,7 @@ static int cube_root2(void) {
 			fp2_sqr(d, b);
 			fp2_mul(d, d, b);
 			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(d, c) == RLC_EQ, end);
 			fp2_rand(a);
 			fp2_sqr(c, a);
 			fp2_mul(c, c, a);
@@ -889,6 +890,14 @@ static int cube_root2(void) {
 				fp2_rand(a);
 			} while(fp2_is_cub(a) == 1);
 			TEST_ASSERT(fp2_crt(b, a) == 0, end);
+			/* Non-cubes with a zero coordinate are also detected. */
+			for (int j = 0; j < 2; j++) {
+				do {
+					fp2_zero(a);
+					fp_rand(a[j]);
+				} while (fp2_is_cub(a) == 1);
+				TEST_ASSERT(fp2_crt(b, a) == 0, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
