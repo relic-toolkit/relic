@@ -1669,6 +1669,10 @@ static int pairing(void) {
 	gt_null(e2);
 	bn_null(k);
 	bn_null(n);
+	for (j = 0; j < 2; j++) {
+		g1_null(p[j]);
+		g2_null(q[j]);
+	}
 
 	RLC_TRY {
 		gt_new(e1);
@@ -1677,8 +1681,6 @@ static int pairing(void) {
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
-			g1_null(p[j]);
-			g2_null(q[j]);
 			g1_new(p[j]);
 			g2_new(q[j]);
 		}

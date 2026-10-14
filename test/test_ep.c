@@ -1236,14 +1236,16 @@ static int simultaneous(void) {
 
 	bn_null(n);
 	ep_null(r);
+	for (int i = 0; i <= SIM_LOT; i++) {
+		bn_null(k[i]);
+		ep_null(p[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		ep_new(r);
 		for (int i = 0; i <= SIM_LOT; i++) {
-			bn_null(k[i]);
 			bn_new(k[i]);
-			ep_null(p[i]);
 			ep_new(p[i]);
 		}
 

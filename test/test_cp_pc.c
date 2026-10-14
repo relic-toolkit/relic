@@ -255,6 +255,19 @@ static int pdbat(void) {
 	g2_null(v2);
 	g2_null(w2);
 	gt_null(e);
+	for (size_t i = 0; i < AGGS; i++) {
+		bn_null(b[i]);
+		bn_null(ls[i]);
+		g1_null(p[i]);
+		g2_null(q[i]);
+		g1_null(rs[i]);
+		g2_null(s[i]);
+		g2_null(qs[i]);
+		gt_null(ts[i]);
+		gt_null(g[i]);
+	}
+	gt_null(ts[AGGS]);
+	gt_null(g[AGGS]);
 
 	RLC_TRY {
 		bn_new(r);
@@ -265,15 +278,6 @@ static int pdbat(void) {
 		g2_new(w2);
 		gt_new(e);
 		for (size_t i = 0; i < AGGS; i++) {
-			bn_null(b[i]);
-			bn_null(ls[i]);
-			g1_null(p[i]);
-			g2_null(q[i]);
-			g1_null(rs[i]);
-			g2_null(s[i]);
-			g2_null(qs[i]);
-			gt_null(ts[i]);
-			gt_null(g[i]);
 			bn_new(b[i]);
 			bn_new(ls[i]);
 			g1_new(p[i]);
@@ -286,8 +290,6 @@ static int pdbat(void) {
 			gt_new(ts[i]);
 			gt_new(g[i]);
 		}
-		gt_null(ts[AGGS]);
-		gt_null(g[AGGS]);
 		gt_new(ts[AGGS]);
 		gt_new(g[AGGS]);
 
@@ -455,6 +457,9 @@ static int bgn(void) {
 	g2_null(f[1]);
 	bgn_null(pub);
 	bgn_null(prv);
+	for (int i = 0; i < 4; i++) {
+		gt_null(g[i]);
+	}
 
 	RLC_TRY {
 		g1_new(c[0]);
@@ -468,7 +473,6 @@ static int bgn(void) {
 		bgn_new(pub);
 		bgn_new(prv);
 		for (int i = 0; i < 4; i++) {
-			gt_null(g[i]);
 			gt_new(g[i]);
 		}
 
@@ -817,6 +821,11 @@ static int pss(void) {
 	g2_null(g);
 	g2_null(x);
 	g2_null(y);
+	for (i = 0; i < 5; i++) {
+		bn_null(ms[i]);
+		bn_null(_v[i]);
+		g2_null(_y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -831,9 +840,6 @@ static int pss(void) {
 		g1_get_ord(n);
 
 		for (i = 0; i < 5; i++) {
-			bn_null(ms[i]);
-			bn_null(_v[i]);
-			g2_null(_y[i]);
 			bn_new(ms[i]);
 			bn_rand_mod(ms[i], n);
 			bn_new(_v[i]);
@@ -894,6 +900,28 @@ static int mpss(void) {
 	bn_null(n);
 	g1_null(g);
 	g2_null(h);
+	for (i = 0; i < 2; i++) {
+		bn_null(m[i]);
+		bn_null(u[i]);
+		bn_null(v[i]);
+		g1_null(s[i]);
+		g2_null(x[i]);
+		g2_null(y[i]);
+		gt_null(e[i]);
+		gt_null(f[i]);
+		mt_null(tri[0][i]);
+		mt_null(tri[1][i]);
+		mt_null(tri[2][i]);
+		for (int j = 0; j < 5; j++) {
+			mt_null(btri[j][i]);
+		}
+		pt_null(t[i]);
+		for (j = 0; j < 5; j++) {
+			bn_null(ms[j][i]);
+			bn_null(_v[j][i]);
+			g2_null(_y[j][i]);
+		}
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -901,21 +929,8 @@ static int mpss(void) {
 		g2_new(h);
 		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
-			bn_null(m[i]);
-			bn_null(u[i]);
-			bn_null(v[i]);
-			g1_null(s[i]);
-			g2_null(x[i]);
-			g2_null(y[i]);
-			gt_null(e[i]);
-			gt_null(f[i]);
-			mt_null(tri[0][i]);
-			mt_null(tri[1][i]);
-			mt_null(tri[2][i]);
 			for (int j = 0; j < 5; j++) {
-				mt_null(btri[j][i]);
 			}
-			pt_null(t[i]);
 			bn_new(m[i]);
 			bn_rand_mod(m[i], n);
 			bn_new(u[i]);
@@ -933,9 +948,6 @@ static int mpss(void) {
 			}
 			pt_new(t[i]);
 			for (j = 0; j < 5; j++) {
-				bn_null(ms[j][i]);
-				bn_null(_v[j][i]);
-				g2_null(_y[j][i]);
 				bn_new(ms[j][i]);
 				bn_rand_mod(ms[j][i], n);
 				bn_new(_v[j][i]);
@@ -1119,6 +1131,29 @@ static int lhs(void) {
 	g1_null(_r);
 	g2_null(_s);
 	gt_null(vk);
+	for (int i = 0; i < S; i++) {
+		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
+		for (int j = 0; j < RLC_TERMS; j++) {
+			gt_null(hs[i][j]);
+		}
+		for (int j = 0; j < L; j++) {
+			bn_null(x[i][j]);
+			bn_null(msg[i][j]);
+			g1_null(a[i][j]);
+			g1_null(c[i][j]);
+			g1_null(r[i][j]);
+			g2_null(s[i][j]);
+		}
+		bn_null(sk[i]);
+		bn_null(ft[i]);
+		bn_null(d[i]);
+		g1_null(sig[i]);
+		g1_null(as[i]);
+		g1_null(cs[i]);
+		g2_null(y[i]);
+		g2_null(z[i]);
+		g2_null(pk[i]);
+	}
 
 	RLC_TRY {
 		bn_new(m);
@@ -1129,18 +1164,10 @@ static int lhs(void) {
 		gt_new(vk);
 
 		for (int i = 0; i < S; i++) {
-			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
-				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
 			}
 			for (int j = 0; j < L; j++) {
-				bn_null(x[i][j]);
-				bn_null(msg[i][j]);
-				g1_null(a[i][j]);
-				g1_null(c[i][j]);
-				g1_null(r[i][j]);
-				g2_null(s[i][j]);
 				bn_new(x[i][j]);
 				bn_new(msg[i][j]);
 				g1_new(a[i][j]);
@@ -1148,15 +1175,6 @@ static int lhs(void) {
 				g1_new(r[i][j]);
 				g2_new(s[i][j]);
 			}
-			bn_null(sk[i]);
-			bn_null(ft[i]);
-			bn_null(d[i]);
-			g1_null(sig[i]);
-			g1_null(as[i]);
-			g1_null(cs[i]);
-			g2_null(y[i]);
-			g2_null(z[i]);
-			g2_null(pk[i]);
 
 			bn_new(sk[i]);
 			bn_new(ft[i]);

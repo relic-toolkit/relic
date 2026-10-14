@@ -53,6 +53,22 @@ static int psi(void) {
 	bn_null(r);
 	g1_null(ss);
 	crt_null(crt);
+	for (int i = 0; i < M; i++) {
+		bn_null(p[i]);
+		bn_null(x[i]);
+		bn_null(z[i]);
+		g2_null(d[i]);
+		g2_null(s[i]);
+	}
+	g2_null(s[M]);
+	g2_null(d[M]);
+	for (int i = 0; i < N; i++) {
+		bn_null(v[i]);
+		bn_null(w[i]);
+		bn_null(y[i]);
+		g1_null(u[i]);
+		gt_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(g);
@@ -61,27 +77,15 @@ static int psi(void) {
 		bn_new(r);
 		g1_new(ss);
 		for (int i = 0; i < M; i++) {
-			bn_null(p[i]);
-			bn_null(x[i]);
-			bn_null(z[i]);
-			g2_null(d[i]);
-			g2_null(s[i]);
 			bn_new(p[i]);
 			bn_new(x[i]);
 			bn_new(z[i]);
 			g2_new(d[i]);
 			g2_new(s[i]);
 		}
-		g2_null(s[M]);
 		g2_new(s[M]);
-		g2_null(d[M]);
 		g2_new(d[M]);
 		for (int i = 0; i < N; i++) {
-			bn_null(v[i]);
-			bn_null(w[i]);
-			bn_null(y[i]);
-			g1_null(u[i]);
-			gt_null(t[i]);
 			bn_new(v[i]);
 			bn_new(w[i]);
 			bn_new(y[i]);

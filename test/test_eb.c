@@ -1075,14 +1075,16 @@ static int simultaneous(void) {
 
 	bn_null(n);
 	eb_null(r);
+	for (int i = 0; i <= SIM_LOT; i++) {
+		bn_null(k[i]);
+		eb_null(p[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		eb_new(r);
 		for (int i = 0; i <= SIM_LOT; i++) {
-			bn_null(k[i]);
 			bn_new(k[i]);
-			eb_null(p[i]);
 			eb_new(p[i]);
 		}
 

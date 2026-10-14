@@ -453,14 +453,16 @@ static int pok(void) {
 
 	bn_null(n);
 	bn_null(x);
+	for (int i = 0; i < 2; i++) {
+		bn_null(c[i]);
+		bn_null(r[i]);
+		ec_null(y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(x);
 		for (int i = 0; i < 2; i++) {
-			bn_null(c[i]);
-			bn_null(r[i]);
-			ec_null(y[i]);
 			bn_new(c[i]);
 			bn_new(r[i]);
 			ec_new(y[i]);
@@ -515,16 +517,18 @@ static int sok(void) {
 	bn_null(n);
 	bn_null(x);
 	ec_null(h);
+	for (int i = 0; i < 2; i++) {
+		bn_null(c[i]);
+		bn_null(r[i]);
+		ec_null(g[i]);
+		ec_null(y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(x);
 		ec_new(h);
 		for (int i = 0; i < 2; i++) {
-			bn_null(c[i]);
-			bn_null(r[i]);
-			ec_null(g[i]);
-			ec_null(y[i]);
 			bn_new(c[i]);
 			bn_new(r[i]);
 			ec_new(g[i]);
@@ -642,16 +646,18 @@ static int ers(void) {
 
 	bn_null(td);
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null(sk[i]);
+		ec_null(pk[i]);
+		ers_null(ring[i]);
+	}
 
 	RLC_TRY {
 		bn_new(td);
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(sk[i]);
 			bn_new(sk[i]);
-			ec_null(pk[i]);
 			ec_new(pk[i]);
-			ers_null(ring[i]);
 			ers_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
@@ -696,16 +702,18 @@ static int smlers(void) {
 
 	bn_null(td);
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null(sk[i]);
+		ec_null(pk[i]);
+		smlers_null(ring[i]);
+	}
 
 	RLC_TRY {
 		bn_new(td);
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(sk[i]);
 			bn_new(sk[i]);
-			ec_null(pk[i]);
 			ec_new(pk[i]);
-			smlers_null(ring[i]);
 			smlers_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
