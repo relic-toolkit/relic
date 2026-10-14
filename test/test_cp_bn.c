@@ -516,7 +516,7 @@ static int paillier(void) {
 		}
 		TEST_END;
 
-		for (int k = 1; k <= 2; k++) {
+		for (int k = 1; k <= 3; k++) {
 			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / (2 * k));
 			util_print("(s = %d) ", k);
 			TEST_CASE("general paillier encryption/decryption is correct") {
@@ -535,15 +535,17 @@ static int paillier(void) {
 				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
 				TEST_ASSERT(cp_ghpe_enc(d, b, pub, k) == RLC_OK, end);
 				bn_mul(c, c, d);
-				bn_sqr(d, pub);
-				if (k == 2) {
+				/* Reduce modulo n^(s + 1). */
+				bn_copy(d, pub);
+				for (int j = 0; j < k; j++) {
 					bn_mul(d, d, pub);
 				}
 				bn_mod(c, c, d);
 				TEST_ASSERT(cp_ghpe_dec(c, c, pub, s, k) == RLC_OK, end);
 				bn_add(a, a, b);
+				/* Reduce modulo n^s. */
 				bn_copy(d, pub);
-				if (k == 2) {
+				for (int j = 1; j < k; j++) {
 					bn_mul(d, d, pub);
 				}
 				bn_mod(a, a, d);
