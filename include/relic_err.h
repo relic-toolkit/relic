@@ -44,6 +44,13 @@
 
 #ifdef CHECK
 #include <setjmp.h>
+#if defined(__MINGW32__) && defined(__x86_64__)
+/* MinGW-w64 makes longjmp() unwind the stack through SEH from the frame given
+ * to _setjmp(), which can crash on optimized frames. A null frame restores the
+ * registers directly, which is all that the error handling needs. */
+#undef setjmp
+#define setjmp(B)		_setjmp((B), NULL)
+#endif
 #endif
 
 /*============================================================================*/
