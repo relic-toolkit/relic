@@ -159,7 +159,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g1_mul_gen(a, k);
 		bn_mul(k, d, msg);
 		bn_mod(k, k, n);
-		g1_mul(t, h, k);
+		g1_mul_sec(t, h, k);
 		g1_add(a, a, t);
 		g1_norm(a, a);
 		/* Compute z = F_K(delta), Z = g2^z, A = A^(1/z). */
@@ -174,11 +174,11 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		bn_mod_inv(k, k, n);
 		bn_mul(k, k, m);
 		bn_mod(k, k, n);
-		g1_mul(a, a, k);
+		g1_mul_sec(a, a, k);
 
 		/* Compute C = C * sum H_j^m_j. */
 		bn_mod(k, msg, n);
-		g1_mul(t, h, k);
+		g1_mul_sec(t, h, k);
 		g1_add(c, c, t);
 		g1_norm(c, c);
 

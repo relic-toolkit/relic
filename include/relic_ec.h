@@ -366,6 +366,20 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_mul(R, P, K)			RLC_CAT(RLC_EC_LOWER, mul)(R, P, K)
 
 /**
+ * Multiplies an elliptic curve point by a secret integer in constant time.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the secret integer.
+ */
+#if EC_CUR == CHAR2
+#define ec_mul_sec(R, P, K)		eb_mul_lodah(R, P, K)
+#else
+#define ec_mul_sec(R, P, K)		RLC_CAT(RLC_EC_LOWER, mul_lwreg)(R, P, K)
+#endif
+
+/**
  * Multiplies the generator of a prime elliptic curve by an integer.
  *
  * @param[out] R				- the result.

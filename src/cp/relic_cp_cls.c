@@ -75,7 +75,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 		pc_get_ord(n);
 		bn_mul(m, r, s);
 		bn_mod(m, m, n);
-		g1_mul(b, a, s);
+		g1_mul_sec(b, a, s);
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
 		bn_mul(m, m, s);
@@ -84,7 +84,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 		bn_mod(m, m, n);
 		bn_add(m, m, r);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -203,14 +203,14 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		/* Choose random a in G1. */
 		g1_rand(a);
 		/* Compute A = a^z, B = A^y. */
-		g1_mul(A, a, v);
-		g1_mul(b, a, u);
-		g1_mul(B, A, u);
+		g1_mul_sec(A, a, v);
+		g1_mul_sec(b, a, u);
+		g1_mul_sec(B, A, u);
 		/* Compute c = A^(xyr) = B^{xr}. */
 		pc_get_ord(n);
 		bn_mul(m, t, r);
 		bn_mod(m, m, n);
-		g1_mul(b, B, m);
+		g1_mul_sec(b, B, m);
 		/* Compute c = a^{x+xym}A^(xyr). */
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
@@ -220,11 +220,11 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		bn_mod(m, m, n);
 		bn_add(m, m, t);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 		g1_add(c, c, b);
 		g1_norm(c, c);
 		/* Compute b = a^y. */
-		g1_mul(b, a, u);
+		g1_mul_sec(b, a, u);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -368,8 +368,8 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 		g1_rand(a);
 		/* Compute A_i = a^z_i, B_i = A_i^y. */
 		for (i = 1; i < l; i++) {
-			g1_mul(A[i - 1], a, v[i - 1]);
-			g1_mul(B[i - 1], A[i - 1], u);
+			g1_mul_sec(A[i - 1], a, v[i - 1]);
+			g1_mul_sec(B[i - 1], A[i - 1], u);
 		}
 		/* Compute c = a^(x+xym_0)\prod A_i^(xym_i) = B_i^(xm_i). */
 		pc_get_ord(n);
@@ -380,19 +380,19 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 		bn_mul(m, m, u);
 		bn_add(m, m, t);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 		/* This can be made faster with more interleaving. */
 		for (i = 1; i < l; i++) {
 			bn_read_bin(m, ms[i], ls[i]);
 			bn_mod(m, m, n);
 			bn_mul(m, m, t);
 			bn_mod(m, m, n);
-			g1_mul(b, B[i - 1], m);
+			g1_mul_sec(b, B[i - 1], m);
 			g1_add(c, c, b);
 		}
 		g1_norm(c, c);
 		/* Compute b = a^y. */
-		g1_mul(b, a, u);
+		g1_mul_sec(b, a, u);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
