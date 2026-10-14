@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
 	uint64_t expected[GROUPS] = { 0, 0, 0 };
 	uint64_t observed[STATES][GROUPS];
 	uint64_t ratios[STATES][GROUPS];
-	dig_t ft[STATES];
+	bn_t ft[STATES];
 	bn_t res, t[STATES], sk[STATES], m[STATES][3 * GROUPS * DAYS];
 	g1_t u, sig, sigs[STATES][3 * GROUPS * DAYS], cs[STATES];
 	g2_t pk[STATES];
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (pc_param_set_any() != RLC_OK) {
-		core_clean;
+		core_clean();
 		return 1;
 	}
 
@@ -193,10 +193,12 @@ int main(int argc, char *argv[]) {
 			bn_new(t[i]);
 			bn_null(sk[i]);
 			bn_new(sk[i]);
+			bn_null(ft[i]);
+			bn_new(ft[i]);
 			g1_null(cs[i]);
 			g1_new(cs[i]);
-			g2_null(sk[i]);
-			g2_new(sk[i]);
+			g2_null(pk[i]);
+			g2_new(pk[i]);
 			cp_mklhs_gen(sk[i], pk[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
@@ -335,6 +337,7 @@ int main(int argc, char *argv[]) {
 			RLC_FREE(f[i]);
 			bn_free(t[i]);
 			bn_free(sk[i]);
+			bn_free(ft[i]);
 			g1_free(cs[i]);
 			g2_free(pk[i]);
 			for (int j = 0; j < GROUPS; j++) {

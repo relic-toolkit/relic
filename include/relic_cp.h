@@ -3004,7 +3004,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t *mu,
  * messages.
  *
  * @param[out] h			- the hashes of labels
- * @param[out] ft			- the precomputed linear coefficients.
+ * @param[out] ft			- the sums of linear coefficients modulo the order.
  * @param[in] id			- the vector of identities.
  * @param[in] tag			- the vector of tags.
  * @param[in] f				- the linear coefficients in the function.
@@ -3012,7 +3012,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t *mu,
  * @param[in] slen			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_off(g1_t *h, dig_t *ft, const char *id[], const char *tag[],
+int cp_mklhs_off(g1_t *h, bn_t *ft, const char *id[], const char *tag[],
 		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
@@ -3031,7 +3031,7 @@ int cp_mklhs_off(g1_t *h, dig_t *ft, const char *id[], const char *tag[],
  * @return a boolean value indicating the verification result.
  */
 int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t *mu,
-		const char *data, const char *id[], const g1_t *h, const dig_t *ft,
+		const char *data, const char *id[], const g1_t *h, const bn_t *ft,
 		const g2_t *pk, size_t slen);
 
 /**

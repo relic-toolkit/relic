@@ -1108,7 +1108,8 @@ static int lhs(void) {
 	gt_t *hs[S], vk;
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
-	dig_t ft[S], *f[S] = { NULL };
+	bn_t ft[S];
+	dig_t *f[S] = { NULL };
 	size_t flen[S];
 	char *ls[L] = { NULL };
 
@@ -1148,6 +1149,7 @@ static int lhs(void) {
 				g2_new(s[i][j]);
 			}
 			bn_null(sk[i]);
+			bn_null(ft[i]);
 			bn_null(d[i]);
 			g1_null(sig[i]);
 			g1_null(as[i]);
@@ -1157,6 +1159,7 @@ static int lhs(void) {
 			g2_null(pk[i]);
 
 			bn_new(sk[i]);
+			bn_new(ft[i]);
 			bn_new(d[i]);
 			g1_new(sig[i]);
 			g1_new(as[i]);
@@ -1304,6 +1307,7 @@ static int lhs(void) {
 			g2_free(s[i][j]);
 		}
 		bn_free(sk[i]);
+		bn_free(ft[i]);
 		bn_free(d[i]);
 		g1_free(sig[i]);
 		g1_free(as[i]);

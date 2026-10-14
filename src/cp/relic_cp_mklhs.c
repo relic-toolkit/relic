@@ -146,7 +146,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 	g2_t g2;
 	gt_t c, e;
 	size_t imax = 0, lmax = 0, fmax = 0;
-	int ver1 = 0, ver2 = 0;
+	int result = 0;
 	for (size_t i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
 		imax = RLC_MAX(imax, strlen(id[i]));
@@ -197,35 +197,33 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 			g1_new(h[j]);
 		}
 
-		if (bn_cmp(m, t) == RLC_EQ) {
-			ver1 = 1;
-		}
-
-		for (size_t i = 0; i < slen; i++) {
-			memcpy(str, data, strlen(data));
-			memcpy(str + strlen(data), id[i], strlen(id[i]));
-			g1_map(d, str, strlen(data) + strlen(id[i]));
-			memcpy(str, id[i], strlen(id[i]));
-			for (size_t j = 0; j < flen[i]; j++) {
-				memcpy(str + strlen(id[i]), tag[j], strlen(tag[j]));
-				g1_map(h[j], str, strlen(id[i]) + strlen(tag[j]));
-				g1_add(h[j], h[j], d);
+		/* Torsion added to the signature would not change the pairing. */
+		if (bn_cmp(m, t) == RLC_EQ && g1_is_valid(sig)) {
+			for (size_t i = 0; i < slen; i++) {
+				memcpy(str, data, strlen(data));
+				memcpy(str + strlen(data), id[i], strlen(id[i]));
+				g1_map(d, str, strlen(data) + strlen(id[i]));
+				memcpy(str, id[i], strlen(id[i]));
+				for (size_t j = 0; j < flen[i]; j++) {
+					memcpy(str + strlen(id[i]), tag[j], strlen(tag[j]));
+					g1_map(h[j], str, strlen(id[i]) + strlen(tag[j]));
+					g1_add(h[j], h[j], d);
+				}
+				g1_norm_sim(h, h, flen[i]);
+				g1_mul_sim_dig(g[i], h, f[i], flen[i]);
+				g1_mul_gen(h[0], mu[i]);
+				g1_add(g[i], g[i], h[0]);
 			}
-			g1_norm_sim(h, h, flen[i]);
-			g1_mul_sim_dig(g[i], h, f[i], flen[i]);
-			g1_mul_gen(h[0], mu[i]);
-			g1_add(g[i], g[i], h[0]);
-		}
-		g1_norm_sim(g, g, slen);
+			g1_norm_sim(g, g, slen);
 
-		g2_get_gen(g2);
-		pc_map(e, sig, g2);
-		pc_map_sim(c, g, pk, slen);
-		if (gt_cmp(c, e) == RLC_EQ) {
-			ver2 = 1;
+			g2_get_gen(g2);
+			pc_map(e, sig, g2);
+			pc_map_sim(c, g, pk, slen);
+			result = (gt_cmp(c, e) == RLC_EQ);
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -245,11 +243,12 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		RLC_FREE(h);
 		RLC_FREE(str);
 	}
-	return (ver1 && ver2);
+	return result;
 }
 
-int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
+int cp_mklhs_off(g1_t h[], bn_t ft[], const char *id[], const char *tag[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
+	bn_t n;
 	size_t imax = 0, lmax = 0, fmax = 0;
 	int result = RLC_OK;
 	for (size_t i = 0; i < slen; i++) {
@@ -269,23 +268,28 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 		return RLC_ERR;
 	}
 
+	bn_null(n);
 	for (size_t j = 0; j < fmax; j++) {
 		g1_null(_h[j]);
 	}
 
 	RLC_TRY {
+		bn_new(n);
 		for (size_t j = 0; j < fmax; j++) {
 			g1_new(_h[j]);
 		}
 
+		pc_get_ord(n);
 		for (size_t i = 0; i < slen; i++) {
-			ft[i] = 0;
+			bn_zero(ft[i]);
 			memcpy(str, id[i], strlen(id[i]));
 			for (size_t j = 0; j < flen[i]; j++) {
 				memcpy(str + strlen(id[i]), tag[j], strlen(tag[j]));
 				g1_map(_h[j], str, strlen(id[i]) + strlen(tag[j]));
-				ft[i] += f[i][j];
+				bn_add_dig(ft[i], ft[i], f[i][j]);
 			}
+			/* Reduce, as the sum of coefficients can exceed a digit. */
+			bn_mod(ft[i], ft[i], n);
 			g1_mul_sim_dig(h[i], _h, f[i], flen[i]);
 		}
 	}
@@ -293,6 +297,7 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		bn_free(n);
 		for (size_t j = 0; j < fmax; j++) {
 			g1_free(_h[j]);
 		}
@@ -303,13 +308,13 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
 }
 
 int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
-		const char *data, const char *id[], const g1_t h[], const dig_t ft[],
+		const char *data, const char *id[], const g1_t h[], const bn_t ft[],
 		const g2_t pk[], size_t slen) {
 	bn_t t, n;
 	g1_t d, g1, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
 	gt_t c, e;
-	int ver1 = 0, ver2 = 0;
+	int result = 0;
 	size_t imax = 0;
 	for (size_t i = 0; i < slen; i++) {
 		imax = RLC_MAX(imax, strlen(id[i]));
@@ -351,29 +356,27 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 			bn_mod(t, t, n);
 		}
 
-		if (bn_cmp(m, t) == RLC_EQ) {
-			ver1 = 1;
-		}
+		/* Torsion added to the signature would not change the pairing. */
+		if (bn_cmp(m, t) == RLC_EQ && g1_is_valid(sig)) {
+			for (size_t i = 0; i < slen; i++) {
+				memcpy(str, data, strlen(data));
+				memcpy(str + strlen(data), id[i], strlen(id[i]));
+				g1_map(d, str, strlen(data) + strlen(id[i]));
+				g1_mul(g[i], d, ft[i]);
+				g1_add(g[i], g[i], h[i]);
+				g1_mul_gen(g1, mu[i]);
+				g1_add(g[i], g[i], g1);
+			}
+			g1_norm_sim(g, g, slen);
 
-		for (size_t i = 0; i < slen; i++) {
-			memcpy(str, data, strlen(data));
-			memcpy(str + strlen(data), id[i], strlen(id[i]));
-			g1_map(d, str, strlen(data) + strlen(id[i]));
-			g1_mul_dig(g[i], d, ft[i]);
-			g1_add(g[i], g[i], h[i]);
-			g1_mul_gen(g1, mu[i]);
-			g1_add(g[i], g[i], g1);
-		}
-		g1_norm_sim(g, g, slen);
-
-		g2_get_gen(g2);
-		pc_map(e, sig, g2);
-		pc_map_sim(c, g, pk, slen);
-		if (gt_cmp(c, e) == RLC_EQ) {
-			ver2 = 1;
+			g2_get_gen(g2);
+			pc_map(e, sig, g2);
+			pc_map_sim(c, g, pk, slen);
+			result = (gt_cmp(c, e) == RLC_EQ);
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -390,5 +393,5 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		RLC_FREE(g);
 		RLC_FREE(str);
 	}
-	return (ver1 && ver2);
+	return result;
 }

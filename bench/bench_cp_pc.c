@@ -1002,7 +1002,8 @@ static void lhs(void) {
 	gt_t *hs[S], vk;
 	const char *data = "id";
 	const char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-	dig_t ft[S], *f[S];
+	bn_t ft[S];
+	dig_t *f[S];
 	size_t flen[S];
 	int label[L];
 
@@ -1045,6 +1046,7 @@ static void lhs(void) {
 			g2_new(s[i][j]);
 		}
 		bn_null(sk[i]);
+		bn_null(ft[i]);
 		bn_null(d[i]);
 		g1_null(sig[i]);
 		g1_null(as[i]);
@@ -1054,6 +1056,7 @@ static void lhs(void) {
 		g2_null(pk[i]);
 
 		bn_new(sk[i]);
+		bn_new(ft[i]);
 		bn_new(d[i]);
 		g1_new(sig[i]);
 		g1_new(as[i]);
@@ -1373,6 +1376,7 @@ static void lhs(void) {
 			g2_free(s[i][j]);
 		}
 		bn_free(sk[i]);
+		bn_free(ft[i]);
 		bn_free(d[i]);
 		g1_free(sig[i]);
 		g1_free(as[i]);
