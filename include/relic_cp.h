@@ -106,7 +106,7 @@ typedef struct {
 	bn_t b;
 	/** The generator ((1+n)^b) mod n^2. */
 	bn_t g;
-	/** The precomputed ((1+n)^b)^n mod n^2. */
+	/** The randomizer h, with h^a = 1 mod n^2. */
 	bn_t gn;
 	/** The CRT parameters. */
 	crt_t crt;

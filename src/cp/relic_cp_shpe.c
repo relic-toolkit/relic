@@ -81,11 +81,19 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 	bn_mod_inv(prv->crt->dp, prv->crt->dp, prv->crt->p);
 	bn_mod_inv(prv->crt->dq, prv->crt->dq, prv->crt->q);
 
-	/* Precompute (1+n)^b)^n mod n^2 */
+	/* Precompute G = (1+n)^b mod n^2. */
 	bn_sqr(prv->crt->qi, prv->crt->n);	// n^2
 	bn_add_dig(pub->g, prv->crt->n, 1);	// 1+n
 	bn_mxp(prv->g, pub->g, prv->b, prv->crt->qi);	// (1+n)^b mod n^2
-	bn_mxp(prv->gn, prv->g, prv->crt->n, prv->crt->qi);	// ((1+n)^b)^n mod n^2
+
+	/* As G has order n, G^n = 1 cannot randomize ciphertexts. Instead, take
+	 * h = x^(nb) mod n^2 for random x, so that h^a = x^(n(p-1)(q-1)) = 1
+	 * and powers of h vanish on decryption, which raises to a. */
+	bn_mul(pub->g, prv->crt->n, prv->b);
+	do {
+		bn_rand_mod(prv->gn, prv->crt->qi);
+		bn_mxp(prv->gn, prv->gn, pub->g, prv->crt->qi);
+	} while (bn_cmp_dig(prv->gn, 1) != RLC_GT);
 
 	/* qInv = q^(-1) mod p. */
 	bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
@@ -93,6 +101,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 	/* n=pq */
 	bn_copy(pub->crt->n, prv->crt->n);
 	bn_copy(pub->g, prv->g);
+	bn_copy(pub->gn, prv->gn);
 
 	return result;
 }
@@ -121,17 +130,17 @@ int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv) {
 
 		/* Generate r in Z_alpha^*. */
 		bn_rand_mod(r, prv->a);
-		/* For G=(1+n)^b, compute c = (G^m)(G^n)^r mod n^2
-		 *  which is also c = (1+n*b*m)(G^n)^r mod n^2.
+		/* For G=(1+n)^b, compute c = (G^m)(h^r) mod n^2
+		 *  which is also c = (1+n*b*m)(h^r) mod n^2.
 		 */
 		bn_sqr(s, prv->crt->n);	// n^2
-		bn_mxp(r, prv->gn, r, s);	// (G^n)^r
+		bn_mxp(r, prv->gn, r, s);	// h^r
 		bn_mul(c, prv->crt->n, m);	// n*m
 		bn_mod(c, c, s);
 		bn_mul(c, c, prv->b);	// b*n*m
 		bn_add_dig(c, c, 1);	// 1+b*n*m
 		bn_mod(c, c, s);
-		bn_mul(c, c, r);		// (1+n*b*m)(G^n)^r
+		bn_mul(c, c, r);		// (1+n*b*m)(h^r)
 		bn_mod(c, c, s);
 
 	}
@@ -167,14 +176,14 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 		bn_new(r);
 		bn_new(s);
 
-		/* Generate r in Z_alpha^*. */
+		/* Generate r without knowing the order of h. */
 		bn_rand_mod(r, pub->crt->n);
-		/* For G=(1+n)^b, compute c = G^(m+nr) mod n^2
-		 */
+		/* For G=(1+n)^b, compute c = (G^m)(h^r) mod n^2. */
 		bn_sqr(s, pub->crt->n);
-		bn_mul(r, r, pub->crt->n);	// n*r
-		bn_add(r, r, m);		// m+n*r
-		bn_mxp(c, pub->g, r, s);	// G^(m+n*r) mod n^2
+		bn_mxp(r, pub->gn, r, s);	// h^r mod n^2
+		bn_mxp(c, pub->g, m, s);	// G^m mod n^2
+		bn_mul(c, c, r);
+		bn_mod(c, c, s);
 
 	}
 	RLC_CATCH_ANY {

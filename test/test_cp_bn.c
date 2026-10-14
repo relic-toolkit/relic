@@ -599,6 +599,11 @@ static int subgroup_paillier(void) {
 				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
 				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* Encryption is randomized. */
+				TEST_ASSERT(cp_shpe_enc(d, a, pub) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(c, d) != RLC_EQ, end);
+				TEST_ASSERT(cp_shpe_dec(b, d, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 			TEST_END;
 
@@ -608,6 +613,11 @@ static int subgroup_paillier(void) {
 				bn_rand_mod(a, pub->crt->n);
 				TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_OK, end);
 				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* Encryption is randomized. */
+				TEST_ASSERT(cp_shpe_enc_prv(d, a, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(c, d) != RLC_EQ, end);
+				TEST_ASSERT(cp_shpe_dec(b, d, prv) == RLC_OK, end);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 			TEST_END;
