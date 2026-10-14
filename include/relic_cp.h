@@ -43,6 +43,7 @@
 #include "relic_ec.h"
 #include "relic_pc.h"
 #include "relic_mpc.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -204,8 +205,10 @@ typedef bgn_st *bgn_t;
  * Represents an extendable ring signature.
  */
 typedef struct _ers_st {
+	/** The nonce shared by all members of the signature. */
+	uint8_t nonce[RLC_MD_LEN];
 	/** The ephemeral public key in the signature. */
-    ec_t h;
+	ec_t h;
 	/** The public key associated to the signature. */
 	ec_t pk;
 	/** The first component of the signature of knowledge. */
@@ -227,6 +230,8 @@ typedef ers_st *ers_t;
  * Represents a member of a same-message linkable extendable ring signature.
  */
 typedef struct _smlers_st {
+	/** The nonce shared by all members of the signature. */
+	uint8_t nonce[RLC_MD_LEN];
 	/** The ephemeral public key in the signature. */
 	ec_t h;
 	/** The public key associated to the signature. */

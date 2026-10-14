@@ -42,7 +42,13 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		const bn_t sk, const ec_t pk, const ec_t pp) {
 	bn_t n;
 	ec_t g[2], y[2];
+	uint8_t *buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
 	int result = RLC_OK;
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(n);
 	ec_null(g[0]);
@@ -70,10 +76,15 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		ec_map(g[1], msg, len);
 		ec_mul(p->tau, g[1], sk);
 
-		/* Prove the relation h = [x]G or (pk = [x]G and tau = [x]H(m)). */
+		/* Prove the relation h = [x]G or (pk = [x]G and tau = [x]H(m)),
+		 * signing the message with a fresh nonce shared by the signature. */
+		rand_bytes(p->nonce, RLC_MD_LEN);
+		memcpy(buf, p->nonce, RLC_MD_LEN);
+		memcpy(buf + RLC_MD_LEN, msg, len);
 		ec_copy(y[0], p->pk);
 		ec_copy(y[1], p->tau);
-		if (cp_sokeqor_sig(p->c, p->r, msg, len, p->h, y, g, sk, 0) != RLC_OK) {
+		if (cp_sokeqor_sig(p->c, p->r, buf, RLC_MD_LEN + len, p->h, y, g, sk,
+				0) != RLC_OK) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 	}
@@ -86,6 +97,7 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		ec_free(g[1]);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -93,7 +105,18 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp) {
 	ec_t t, g[2], y[2];
+	uint8_t *buf;
 	int flag = 0, result = 0;
+
+	if (size == 0) {
+		return 0;
+	}
+
+	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
 
 	ec_null(t);
 	ec_null(g[0]);
@@ -117,13 +140,16 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
+			memcpy(buf, s[0]->nonce, RLC_MD_LEN);
+			memcpy(buf + RLC_MD_LEN, msg, len);
 			for (size_t i = 0; i < size; i++) {
-				/* All members carry the tag of the same signer. */
+				/* All members carry the nonce and tag of the same signer. */
+				flag &= (memcmp(s[i]->nonce, s[0]->nonce, RLC_MD_LEN) == 0);
 				flag &= (ec_cmp(s[i]->tau, s[0]->tau) == RLC_EQ);
 				ec_copy(y[0], s[i]->pk);
 				ec_copy(y[1], s[i]->tau);
-				flag &= cp_sokeqor_ver(s[i]->c, s[i]->r, msg, len, s[i]->h,
-						y, g);
+				flag &= cp_sokeqor_ver(s[i]->c, s[i]->r, buf, RLC_MD_LEN + len,
+						s[i]->h, y, g);
 			}
 			result = flag;
 		}
@@ -138,6 +164,7 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		ec_free(g[1]);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -146,9 +173,10 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		size_t len, const ec_t pk) {
 	bn_t n, r;
 	ec_t g[2], y[2];
+	uint8_t *buf;
 	int result = RLC_OK;
 
-	/* The new member takes its tag from the last one in the ring. */
+	/* The new member takes its nonce and tag from the last one in the ring. */
 	if (*size == 0) {
 		return RLC_ERR;
 	}
@@ -157,6 +185,12 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		if (ec_cmp(pk, p[i]->pk) == RLC_EQ) {
 			return RLC_ERR;
 		}
+	}
+
+	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
 	}
 
 	bn_null(n);
@@ -182,14 +216,17 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		ec_mul_gen(p[*size]->h, r);
 		ec_copy(p[*size]->pk, pk);
 		ec_copy(p[*size]->tau, p[*size - 1]->tau);
+		memcpy(p[*size]->nonce, p[*size - 1]->nonce, RLC_MD_LEN);
 
 		/* Prove the same relation, using the trapdoor r as the witness. */
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
+		memcpy(buf, p[*size]->nonce, RLC_MD_LEN);
+		memcpy(buf + RLC_MD_LEN, msg, len);
 		ec_copy(y[0], p[*size]->pk);
 		ec_copy(y[1], p[*size]->tau);
-		if (cp_sokeqor_sig(p[*size]->c, p[*size]->r, msg, len, p[*size]->h,
-				y, g, r, 1) != RLC_OK) {
+		if (cp_sokeqor_sig(p[*size]->c, p[*size]->r, buf, RLC_MD_LEN + len,
+				p[*size]->h, y, g, r, 1) != RLC_OK) {
 			RLC_THROW(ERR_CAUGHT);
 		} else {
 			(*size)++;
@@ -206,6 +243,7 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		ec_free(g[1]);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }

@@ -735,8 +735,15 @@ static int smlers(void) {
 			ec_map(pk[3], m, 5);
 			ec_mul(ring[0]->tau, pk[3], sk[1]);
 			ec_copy(pk[1], ring[0]->tau);
-			TEST_ASSERT(cp_sokeqor_sig(ring[0]->c, ring[0]->r, m, 5,
-				ring[0]->h, pk, pk + 2, sk[1], 0) == RLC_OK, end);
+			{
+				/* Sign as the scheme does, with the nonce of the signature. */
+				uint8_t buf[RLC_MD_LEN + 5];
+				memcpy(buf, ring[0]->nonce, RLC_MD_LEN);
+				memcpy(buf + RLC_MD_LEN, m, 5);
+				TEST_ASSERT(cp_sokeqor_sig(ring[0]->c, ring[0]->r, buf,
+					sizeof(buf), ring[0]->h, pk, pk + 2, sk[1], 0) == RLC_OK,
+					end);
+			}
 			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 5, pp) == 0, end);
 			/* Restore distinct keys for the next iteration. */
 			for (int j = 1; j < 4; j++) {

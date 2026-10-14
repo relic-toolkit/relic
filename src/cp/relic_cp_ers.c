@@ -69,7 +69,13 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
 		const ec_t pk, const ec_t pp) {
 	bn_t n;
 	ec_t t, y[2];
+	uint8_t *buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
 	int result = RLC_OK;
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(n);
 	ec_null(t);
@@ -91,7 +97,14 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
 		ec_copy(p->pk, pk);
 		ec_copy(y[0], p->h);
 		ec_copy(y[1], p->pk);
-		cp_sokor_sig(p->c, p->r, msg, len, y, NULL, sk, 0);
+		/* Sign the message with a fresh nonce shared by the signature. */
+		rand_bytes(p->nonce, RLC_MD_LEN);
+		memcpy(buf, p->nonce, RLC_MD_LEN);
+		memcpy(buf + RLC_MD_LEN, msg, len);
+		if (cp_sokor_sig(p->c, p->r, buf, RLC_MD_LEN + len, y, NULL, sk,
+				0) != RLC_OK) {
+			RLC_THROW(ERR_CAUGHT);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -101,6 +114,7 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
 		ec_free(t);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -109,7 +123,18 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp) {
 	bn_t n;
 	ec_t t, y[2];
+	uint8_t *buf;
 	int flag = 0, result = 0;
+
+	if (size == 0) {
+		return 0;
+	}
+
+	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
 
 	bn_null(n);
 	ec_null(t);
@@ -130,10 +155,15 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
+			memcpy(buf, s[0]->nonce, RLC_MD_LEN);
+			memcpy(buf + RLC_MD_LEN, msg, len);
 			for (size_t i = 0; i < size; i++) {
+				/* All members sign the message with the same nonce. */
+				flag &= (memcmp(s[i]->nonce, s[0]->nonce, RLC_MD_LEN) == 0);
 				ec_copy(y[0], s[i]->h);
 				ec_copy(y[1], s[i]->pk);
-				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, NULL);
+				flag &= cp_sokor_ver(s[i]->c, s[i]->r, buf, RLC_MD_LEN + len,
+						y, NULL);
 			}
 		}
     result = flag;
@@ -147,6 +177,7 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		ec_free(t);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -155,18 +186,30 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 		const ec_t pk) {
 	bn_t n, r;
 	ec_t y[2];
+	uint8_t *buf;
 	int result = RLC_OK;
 
-	bn_null(n);
-	bn_null(r);
-	ec_null(y[0]);
-	ec_null(y[1]);
+	/* The new member takes the nonce of the signature being extended. */
+	if (*size == 0) {
+		return RLC_ERR;
+	}
 
 	for (size_t i = 0; i < *size; i++) {
 		if (ec_cmp(pk, p[i]->pk) == RLC_EQ) {
 			return RLC_ERR;
 		}
 	}
+
+	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(n);
+	bn_null(r);
+	ec_null(y[0]);
+	ec_null(y[1]);
 
 	RLC_TRY {
 		bn_new(n);
@@ -183,9 +226,16 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 		ec_copy(p[*size]->pk, pk);
 		ec_copy(y[0], p[*size]->h);
 		ec_copy(y[1], p[*size]->pk);
-		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, y, NULL, r, 1);
-		(*size)++;
-		result = RLC_OK;
+		memcpy(p[*size]->nonce, p[*size - 1]->nonce, RLC_MD_LEN);
+		memcpy(buf, p[*size]->nonce, RLC_MD_LEN);
+		memcpy(buf + RLC_MD_LEN, msg, len);
+		if (cp_sokor_sig(p[*size]->c, p[*size]->r, buf, RLC_MD_LEN + len, y,
+				NULL, r, 1) != RLC_OK) {
+			RLC_THROW(ERR_CAUGHT);
+		} else {
+			(*size)++;
+			result = RLC_OK;
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -195,6 +245,7 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 		bn_free(r);
 		ec_free(y[0]);
 		ec_free(y[1]);
+		RLC_FREE(buf);
 	}
 	return result;
 }
