@@ -85,6 +85,13 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 	size_t i;
 	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
 
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (i = 0; i < m; i++) {
+		if (bn_sign(x[i]) == RLC_NEG || bn_bits(x[i]) > RLC_BN_BITS) {
+			return RLC_ERR;
+		}
+	}
+
 	/* Compute R = g^r mod N. */
 	bn_rand_mod(r, n);
 	bn_mxp(d, g, r, n);
@@ -111,6 +118,14 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	uint_t *shuffle = RLC_ALLOCA(uint_t, l);
 	bn_t p;
+
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (j = 0; j < l; j++) {
+		if (bn_sign(y[j]) == RLC_NEG || bn_bits(y[j]) > RLC_BN_BITS) {
+			RLC_FREE(shuffle);
+			return RLC_ERR;
+		}
+	}
 
 	if (shuffle == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);

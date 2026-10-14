@@ -156,12 +156,13 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		const bdpe_t prv) {
 	bn_t m, t, z;
 	size_t size;
-	int result = RLC_OK;
-	dig_t i;
+	int eq, found = 0, result = RLC_OK;
+	dig_t i, r = 0;
+	uint8_t bm[RLC_BN_BITS / 8 + 1], bz[RLC_BN_BITS / 8 + 1];
 
 	size = bn_size_bin(prv->n);
 
-	if (in_len != size) {
+	if (in_len != size || size > sizeof(bm)) {
 		return RLC_ERR;
 	}
 
@@ -184,15 +185,22 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		bn_mxp(m, m, t, prv->n);
 		bn_mxp(t, prv->y, t, prv->n);
 
+		/* Try every candidate and select the match without branching, so
+		 * that the time does not depend on the plaintext. */
+		bn_write_bin(bm, size, m);
+		bn_set_dig(z, 1);
 		for (i = 0; i < prv->t; i++) {
-			bn_mxp_dig(z, t, i, prv->n);
-			if (bn_cmp(z, m) == RLC_EQ) {
-				*out = i;
-				break;
-			}
+			bn_write_bin(bz, size, z);
+			eq = (util_cmp_sec(bz, bm, size) == RLC_EQ);
+			r |= ((dig_t)0 - (dig_t)eq) & i;
+			found |= eq;
+			bn_mul(z, z, t);
+			bn_mod(z, z, prv->n);
 		}
 
-		if (i == prv->t) {
+		if (found) {
+			*out = r;
+		} else {
 			result = RLC_ERR;
 		}
 	} RLC_CATCH_ANY {

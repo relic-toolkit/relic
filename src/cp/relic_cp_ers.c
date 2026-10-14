@@ -225,8 +225,6 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 
 		ec_curve_get_ord(n);
 		bn_rand_mod(r, n);
-		bn_sub(td, td, r);
-		bn_mod(td, td, n);
 		ec_mul_gen(p[*size]->h, r);
 
 		ec_copy(p[*size]->pk, pk);
@@ -239,6 +237,9 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 				NULL, r, 1) != RLC_OK) {
 			RLC_THROW(ERR_CAUGHT);
 		} else {
+			/* Update the trapdoor only once the member was added. */
+			bn_sub(td, td, r);
+			bn_mod(td, td, n);
 			(*size)++;
 			result = RLC_OK;
 		}

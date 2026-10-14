@@ -208,11 +208,9 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		ec_new(y[0]);
 		ec_new(y[1]);
 
-		/* Compute h = [r]G for a fresh trapdoor r and update td. */
+		/* Compute h = [r]G for a fresh trapdoor r. */
 		ec_curve_get_ord(n);
 		bn_rand_mod(r, n);
-		bn_sub(td, td, r);
-		bn_mod(td, td, n);
 		ec_mul_gen(p[*size]->h, r);
 		ec_copy(p[*size]->pk, pk);
 		ec_copy(p[*size]->tau, p[*size - 1]->tau);
@@ -229,6 +227,9 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 				p[*size]->h, y, g, r, 1) != RLC_OK) {
 			RLC_THROW(ERR_CAUGHT);
 		} else {
+			/* Update the trapdoor only once the member was added. */
+			bn_sub(td, td, r);
+			bn_mod(td, td, n);
 			(*size)++;
 			result = RLC_OK;
 		}

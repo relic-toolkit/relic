@@ -563,7 +563,13 @@ typedef etrs_st *etrs_t;
 	g2_new((A)->hz);														\
 
 #elif ALLOC == AUTO
-#define bgn_new(A)				/* empty */
+#define bgn_new(A)															\
+	for (int _i = 0; _i < 2; _i++) {										\
+		bn_new((A)->x[_i]);													\
+		bn_new((A)->y[_i]);													\
+		bn_new((A)->z[_i]);													\
+	}																		\
+
 #endif
 
 /**

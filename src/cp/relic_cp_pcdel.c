@@ -248,12 +248,12 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		bn_rand_mod(r[2], n);
 		bn_rand(c, RLC_POS, RAND_DIST);
 		for (int i = 0; i < 2; i++) {
-			/* Generate random c, r, Ui. */
+			/* Generate random r_i and U_i, modulo the order restored below. */
+			pc_get_ord(n);
 			g1_rand(u1[i]);
 			bn_rand_mod(r[i], n);
 			g2_rand(u2[i]);
-			/* Compute gamma = e(U1, U2) and V2 = [1/r2]U2. */
-			pc_get_ord(n);
+			/* Compute gamma_i = e(U1_i, U2_i) and V2_i = [1/r_i]U2_i. */
 			bn_mod_inv(n, r[i], n);
 			g2_mul(v2[i], u2[i], n);
 			pc_map(e[i], u1[i], u2[i]);
@@ -487,12 +487,12 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		bn_rand(c, RLC_POS, RAND_DIST);
 		bn_rand_mod(r[2], n);
 		for (int i = 0; i < 2; i++) {
-			/* Generate random c, r, Ui. */
+			/* Generate random r_i and U_i, modulo the order restored below. */
+			pc_get_ord(n);
 			g1_rand(u1[i]);
 			bn_rand_mod(r[i], n);
 			g2_rand(u2[i]);
-			/* Compute gamma = e(U1, U2) and V2 = [1/r2]U2. */
-			pc_get_ord(n);
+			/* Compute gamma_i = e(U1_i, U2_i) and V2_i = [1/r_i]U2_i. */
 			bn_mod_inv(n, r[i], n);
 			g2_mul(v2[i], u2[i], n);
 			pc_map(e[i], u1[i], u2[i]);
