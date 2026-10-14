@@ -3314,6 +3314,15 @@ static int cyclotomic8(void) {
 			fp8_pck_max(b, a);
 			TEST_ASSERT(fp8_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp8_cmp(a, c) == RLC_EQ, end);
+			/* The element -1 is unitary, but cannot be compressed. */
+			fp8_set_dig(a, 1);
+			fp8_neg(a, a);
+			err_get_code();
+			RLC_TRY {
+				fp8_pck_max(b, a);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -4484,6 +4493,8 @@ static int cyclotomic12(void) {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			TEST_ASSERT(fp12_test_cyc(a) == 1, end);
+			fp12_zero(a);
+			TEST_ASSERT(fp12_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -5452,6 +5463,15 @@ static int cyclotomic16(void) {
 			fp16_pck_max(b, a);
 			TEST_ASSERT(fp16_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp16_cmp(a, c) == RLC_EQ, end);
+			/* The element -1 is unitary, but cannot be compressed. */
+			fp16_set_dig(a, 1);
+			fp16_neg(a, a);
+			err_get_code();
+			RLC_TRY {
+				fp16_pck_max(b, a);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5555,6 +5575,13 @@ static int exponentiatioAFG16(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp16_exp(c, a, d);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			/* All powers agree with repeated applications of Frobenius. */
+			fp16_copy(c, a);
+			for (int j = 0; j <= 16; j++) {
+				fp16_frb(b, a, j);
+				TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+				fp16_frb(c, c, 1);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -6020,6 +6047,8 @@ static int cyclotomic18(void) {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			TEST_ASSERT(fp18_test_cyc(a) == 1, end);
+			fp18_zero(a);
+			TEST_ASSERT(fp18_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -6810,6 +6839,8 @@ static int cyclotomic24(void) {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
 			TEST_ASSERT(fp24_test_cyc(a) == 1, end);
+			fp24_zero(a);
+			TEST_ASSERT(fp24_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -7620,6 +7651,8 @@ static int cyclotomic48(void) {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			TEST_ASSERT(fp48_test_cyc(a) == 1, end);
+			fp48_zero(a);
+			TEST_ASSERT(fp48_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -8381,6 +8414,8 @@ static int cyclotomic54(void) {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
 			TEST_ASSERT(fp54_test_cyc(a) == 1, end);
+			fp54_zero(a);
+			TEST_ASSERT(fp54_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {

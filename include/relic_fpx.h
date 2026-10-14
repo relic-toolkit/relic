@@ -2639,15 +2639,6 @@ void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b);
 void fp4_mul_fp(fp4_t c, const fp4_t a, const fp_t b);
 
 /**
- * Multiples a dense quartic extension field element by a sparse element.
- *
- * @param[out] c			- the result.
- * @param[in] a				- a quartic extension field element.
- * @param[in] b				- a sparse quartic extension field element.
- */
-void fp4_mul_dxs(fp4_t c, const fp4_t a, const fp4_t b);
-
-/**
  * Computes the square of a quartic extension field element without performing
  * modular reduction.
  *
@@ -3346,6 +3337,7 @@ void fp8_exp_cyc_sim(fp8_t e, const fp8_t a, const bn_t b, const fp8_t c,
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to compress.
+ * @throw ERR_NO_VALID		- if the element is -1, which cannot be compressed.
  */
 void fp8_pck_max(fp8_t c, const fp8_t a);
 
@@ -4068,16 +4060,6 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b);
 void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic dodecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp12_exp_cyc_gls(fp12_t c, const fp12_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic dodecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -4459,16 +4441,6 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b);
 void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic sextadecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp16_exp_cyc_gls(fp16_t c, const fp16_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic sextadecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -4485,6 +4457,7 @@ void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to compress.
+ * @throw ERR_NO_VALID		- if the element is -1, which cannot be compressed.
  */
 void fp16_pck_max(fp16_t c, const fp16_t a);
 
@@ -4902,16 +4875,6 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b);
 void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic octdecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp18_exp_cyc_gls(fp18_t c, const fp18_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic octdecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -5312,16 +5275,6 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b);
  * @param[in] b				- the exponent.
  */
 void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b);
-
-/**
- * Computes a power of a cyclotomic 24-extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp24_exp_cyc_gls(fp24_t c, const fp24_t a, const bn_t b);
 
 /**
  * Computes a power of two cyclotomic dodecic extension field elements.
@@ -5726,16 +5679,6 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b);
  * @param[in] b				- the exponent.
  */
 void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b);
-
-/**
- * Computes a power of a cyclotomic 48-extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp48_exp_cyc_gls(fp48_t c, const fp48_t a, const bn_t b);
 
 /**
  * Computes a power of a cyclotomic 48-extension field element.

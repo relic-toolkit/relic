@@ -238,7 +238,7 @@ TMPL_FPX_CYC_T2(fp16, fp8);
 void fp16_frb(fp16_t c, const fp16_t a, int i) {
 	/* Cost of four multiplication in Fp^2 per Frobenius. */
 	fp16_copy(c, a);
-	for (; i % 8 > 0; i--) {
+	for (; i % 16 > 0; i--) {
 		fp8_frb(c[0], c[0], 1);
 		fp8_frb(c[1], c[1], 1);
 		fp2_mul_frb(c[1][0][0], c[1][0][0], 2, 2);

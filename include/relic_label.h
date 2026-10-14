@@ -2457,7 +2457,6 @@
 #undef fp4_mul_frb
 #undef fp4_mul_dig
 #undef fp4_mul_fp
-#undef fp4_mul_dxs
 #undef fp4_sqr_unr
 #undef fp4_sqr_basic
 #undef fp4_sqr_lazyr
@@ -2495,7 +2494,6 @@
 #define fp4_mul_frb 	RLC_PREFIX(fp4_mul_frb)
 #define fp4_mul_dig 	RLC_PREFIX(fp4_mul_dig)
 #define fp4_mul_fp 	RLC_PREFIX(fp4_mul_fp)
-#define fp4_mul_dxs 	RLC_PREFIX(fp4_mul_dxs)
 #define fp4_sqr_unr 	RLC_PREFIX(fp4_sqr_unr)
 #define fp4_sqr_basic 	RLC_PREFIX(fp4_sqr_basic)
 #define fp4_sqr_lazyr 	RLC_PREFIX(fp4_sqr_lazyr)
@@ -2766,7 +2764,6 @@
 #undef fp12_exp
 #undef fp12_exp_dig
 #undef fp12_exp_cyc
-#undef fp12_exp_cyc_gls
 #undef fp12_exp_cyc_sim
 #undef fp12_exp_cyc_sps
 #undef fp12_pck
@@ -2815,7 +2812,6 @@
 #define fp12_exp 	RLC_PREFIX(fp12_exp)
 #define fp12_exp_dig 	RLC_PREFIX(fp12_exp_dig)
 #define fp12_exp_cyc 	RLC_PREFIX(fp12_exp_cyc)
-#define fp12_exp_cyc_gls 	RLC_PREFIX(fp12_exp_cyc_gls)
 #define fp12_exp_cyc_sim 	RLC_PREFIX(fp12_exp_cyc_sim)
 #define fp12_exp_cyc_sps 	RLC_PREFIX(fp12_exp_cyc_sps)
 #define fp12_pck 	RLC_PREFIX(fp12_pck)
@@ -2859,7 +2855,6 @@
 #undef fp16_exp
 #undef fp16_exp_dig
 #undef fp16_exp_cyc
-#undef fp16_exp_cyc_gls
 #undef fp16_exp_cyc_sim
 #undef fp16_pck_max
 #undef fp16_upk_max
@@ -2903,7 +2898,6 @@
 #define fp16_exp 	RLC_PREFIX(fp16_exp)
 #define fp16_exp_dig 	RLC_PREFIX(fp16_exp_dig)
 #define fp16_exp_cyc 	RLC_PREFIX(fp16_exp_cyc)
-#define fp16_exp_cyc_gls 	RLC_PREFIX(fp16_exp_cyc_gls)
 #define fp16_exp_cyc_sim 	RLC_PREFIX(fp16_exp_cyc_sim)
 #define fp16_pck_max 	RLC_PREFIX(fp16_pck_max)
 #define fp16_upk_max 	RLC_PREFIX(fp16_upk_max)
@@ -2952,7 +2946,6 @@
 #undef fp18_exp
 #undef fp18_exp_dig
 #undef fp18_exp_cyc
-#undef fp18_exp_cyc_gls
 #undef fp18_exp_cyc_sim
 #undef fp18_exp_cyc_sps
 #undef fp18_pck
@@ -3001,7 +2994,6 @@
 #define fp18_exp 	RLC_PREFIX(fp18_exp)
 #define fp18_exp_dig 	RLC_PREFIX(fp18_exp_dig)
 #define fp18_exp_cyc 	RLC_PREFIX(fp18_exp_cyc)
-#define fp18_exp_cyc_gls 	RLC_PREFIX(fp18_exp_cyc_gls)
 #define fp18_exp_cyc_sim 	RLC_PREFIX(fp18_exp_cyc_sim)
 #define fp18_exp_cyc_sps 	RLC_PREFIX(fp18_exp_cyc_sps)
 #define fp18_pck 	RLC_PREFIX(fp18_pck)
@@ -3047,7 +3039,6 @@
 #undef fp24_exp
 #undef fp24_exp_dig
 #undef fp24_exp_cyc
-#undef fp24_exp_cyc_gls
 #undef fp24_exp_cyc_sim
 #undef fp24_exp_cyc_sps
 #undef fp24_pck
@@ -3091,7 +3082,6 @@
 #define fp24_exp 	RLC_PREFIX(fp24_exp)
 #define fp24_exp_dig 	RLC_PREFIX(fp24_exp_dig)
 #define fp24_exp_cyc 	RLC_PREFIX(fp24_exp_cyc)
-#define fp24_exp_cyc_gls 	RLC_PREFIX(fp24_exp_cyc_gls)
 #define fp24_exp_cyc_sim 	RLC_PREFIX(fp24_exp_cyc_sim)
 #define fp24_exp_cyc_sps 	RLC_PREFIX(fp24_exp_cyc_sps)
 #define fp24_pck 	RLC_PREFIX(fp24_pck)
@@ -3137,7 +3127,6 @@
 #undef fp48_exp
 #undef fp48_exp_dig
 #undef fp48_exp_cyc
-#undef fp48_exp_cyc_gls
 #undef fp48_exp_cyc_sps
 #undef fp48_exp_cyc_sim
 #undef fp48_pck
@@ -3185,7 +3174,6 @@
 #define fp48_exp 	RLC_PREFIX(fp48_exp)
 #define fp48_exp_dig 	RLC_PREFIX(fp48_exp_dig)
 #define fp48_exp_cyc 	RLC_PREFIX(fp48_exp_cyc)
-#define fp48_exp_cyc_gls 	RLC_PREFIX(fp48_exp_cyc_gls)
 #define fp48_exp_cyc_sps 	RLC_PREFIX(fp48_exp_cyc_sps)
 #define fp48_exp_cyc_sim 	RLC_PREFIX(fp48_exp_cyc_sim)
 #define fp48_pck 	RLC_PREFIX(fp48_pck)
