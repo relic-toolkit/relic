@@ -149,21 +149,25 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
 		const ec_t pp) {
-	int flag = 0, result = 0;
-	size_t i;
-	bn_t l, n, u;
+	int flag = 1, result = 0;
+	size_t i, j, k, m, d;
+	bn_t n, u;
 	ec_t w[2];
+	bn_t *v, *_v, *_y;
+	ec_t *_t;
 
 	/* The threshold must be achievable by the ring. */
 	if (thres == 0 || thres > size) {
 		return 0;
 	}
 
-	size_t d = max + size - thres;
-	bn_t *v = RLC_ALLOCA(bn_t, d);
-	bn_t *_v = RLC_ALLOCA(bn_t, d);
-	bn_t *_y = RLC_ALLOCA(bn_t, d);
-	ec_t *_t = RLC_ALLOCA(ec_t, d);
+	/* Node 0 is (0, pp), followed by the m trapdoors and ring members. */
+	m = max + size;
+	d = m - thres;
+	v = RLC_ALLOCA(bn_t, m + 1);
+	_v = RLC_ALLOCA(bn_t, m + 1);
+	_y = RLC_ALLOCA(bn_t, m + 1);
+	_t = RLC_ALLOCA(ec_t, m + 1);
 
 	if (v == NULL || _v == NULL || _y == NULL || _t == NULL) {
 		RLC_FREE(v);
@@ -174,12 +178,11 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		return 0;
 	}
 
-	bn_null(l);
 	bn_null(n);
 	bn_null(u);
 	ec_null(w[0]);
 	ec_null(w[1]);
-	for (i = 0; i < d; i++) {
+	for (i = 0; i <= m; i++) {
 		bn_null(v[i]);
 		bn_null(_v[i]);
 		bn_null(_y[i]);
@@ -187,54 +190,99 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	}
 
 	RLC_TRY {
-		bn_new(l);
 		bn_new(n);
 		bn_new(u);
 		ec_new(w[0]);
 		ec_new(w[1]);
-		for (i = 0; i < d; i++) {
+		for (i = 0; i <= m; i++) {
 			bn_new(v[i]);
 			bn_new(_v[i]);
 			bn_new(_y[i]);
 			ec_new(_t[i]);
 		}
 
-		for (i = 0; i < max; i++) {
-			bn_copy(_y[i], y[i]);
-			ec_mul_gen(_t[i], td[i]);
-		}
-		for (; i < d; i++) {
-			bn_copy(_y[i], s[i - max]->y);
-			ec_copy(_t[i], s[i - max]->h);
-		}
-
 		ec_curve_get_ord(n);
 
-		flag = 1;
-		ec_set_infty(w[0]);
-		for (i = 0; i < d; i++) {
-			for (size_t j = 0; j < d; j++) {
-				bn_set_dig(_v[j], 1);
-				if (j != i) {
-					bn_sub(_v[j], _y[j], _y[i]);
-					bn_mod(_v[j], _v[j], n);
-				}
-			}
-			bn_mod_inv_sim(_v, _v, n, d);
-			bn_set_dig(v[i], 1);
-			for (size_t j = 0; j < d; j++) {
-				if (j != i) {
-					bn_mul(u, _y[j], _v[j]);
-					bn_mod(u, u, n);
-					bn_mul(v[i], v[i], u);
-					bn_mod(v[i], v[i], n);
+		bn_zero(_y[0]);
+		ec_copy(_t[0], pp);
+		for (i = 0; i < max; i++) {
+			bn_mod(_y[i + 1], y[i], n);
+			ec_mul_gen(_t[i + 1], td[i]);
+		}
+		for (i = 0; i < size; i++) {
+			bn_mod(_y[max + i + 1], s[i]->y, n);
+			ec_copy(_t[max + i + 1], s[i]->h);
+			flag &= ec_on_curve(s[i]->h);
+		}
+		/* The abscissas must be distinct for the interpolations below. */
+		for (i = 0; i <= m; i++) {
+			for (j = 0; j < i; j++) {
+				if (bn_cmp(_y[i], _y[j]) == RLC_EQ) {
+					flag = 0;
 				}
 			}
 		}
-		ec_mul_sim_lot(w[0], _t, v, d);
-		flag &= ec_cmp(w[0], pp) != RLC_EQ;
 
-		for (size_t i = 0; i < size; i++) {
+		if (flag) {
+			/* Nodes 1 to d must not lie with (0, pp) on a polynomial of
+			 * degree d - 1, or more than thres members would have signed. */
+			for (i = 1; i <= d; i++) {
+				bn_set_dig(v[i], 1);
+				bn_set_dig(_v[i], 1);
+				for (j = 1; j <= d; j++) {
+					if (j != i) {
+						bn_mul(v[i], v[i], _y[j]);
+						bn_mod(v[i], v[i], n);
+						bn_sub(u, _y[j], _y[i]);
+						bn_mod(u, u, n);
+						bn_mul(_v[i], _v[i], u);
+						bn_mod(_v[i], _v[i], n);
+					}
+				}
+			}
+			if (d > 0) {
+				bn_mod_inv_sim(_v + 1, (const bn_t *)(_v + 1), n, d);
+			}
+			for (i = 1; i <= d; i++) {
+				bn_mul(v[i], v[i], _v[i]);
+				bn_mod(v[i], v[i], n);
+			}
+			ec_mul_sim_lot(w[0], (const ec_t *)(_t + 1),
+					(const bn_t *)(v + 1), d);
+			flag &= ec_cmp(w[0], pp) != RLC_EQ;
+
+			/* The other nodes must lie on the polynomial of degree d through
+			 * (0, pp) and nodes 1 to d, or fewer than thres members signed. */
+			for (i = 0; i <= d; i++) {
+				bn_set_dig(_v[i], 1);
+				for (j = 0; j <= d; j++) {
+					if (j != i) {
+						bn_sub(u, _y[i], _y[j]);
+						bn_mod(u, u, n);
+						bn_mul(_v[i], _v[i], u);
+						bn_mod(_v[i], _v[i], n);
+					}
+				}
+			}
+			bn_mod_inv_sim(_v, (const bn_t *)_v, n, d + 1);
+			for (k = d + 1; k <= m; k++) {
+				for (i = 0; i <= d; i++) {
+					bn_copy(v[i], _v[i]);
+					for (j = 0; j <= d; j++) {
+						if (j != i) {
+							bn_sub(u, _y[k], _y[j]);
+							bn_mod(u, u, n);
+							bn_mul(v[i], v[i], u);
+							bn_mod(v[i], v[i], n);
+						}
+					}
+				}
+				ec_mul_sim_lot(w[0], (const ec_t *)_t, (const bn_t *)v, d + 1);
+				flag &= ec_cmp(w[0], _t[k]) == RLC_EQ;
+			}
+		}
+
+		for (i = 0; i < size; i++) {
 			ec_copy(w[0], s[i]->h);
 			ec_copy(w[1], s[i]->pk);
 			flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, w, NULL);
@@ -246,12 +294,11 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(l);
 		bn_free(n);
 		bn_free(u);
 		ec_free(w[0]);
 		ec_free(w[1]);
-		for (size_t i = 0; i < d; i++) {
+		for (i = 0; i <= m; i++) {
 			bn_free(v[i]);
 			bn_free(_v[i]);
 			bn_free(_y[i]);

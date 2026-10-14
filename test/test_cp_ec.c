@@ -311,6 +311,11 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
 			memset(h, 0, RLC_MD_LEN);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
+			/* The key at infinity is rejected, even for its own signatures. */
+			bn_zero(d);
+			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK, end);
+			ec_set_infty(q);
+			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -329,23 +334,37 @@ static int ecdsa(void) {
 
 static int ecss(void) {
 	int code = RLC_ERR;
-	bn_t d, r;
+	bn_t d, r, s;
 	ec_t q;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(d);
 	bn_null(r);
+	bn_null(s);
 	ec_null(q);
 
 	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
+		bn_new(s);
 		ec_new(q);
 
 		TEST_CASE("ecss signature is correct") {
 			TEST_ASSERT(cp_ecss_gen(d, q) == RLC_OK, end);
-			TEST_ASSERT(cp_ecss_sig(r, d, m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_ecss_ver(r, d, m, sizeof(m), q) == 1, end);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 1, end);
+			m[0] ^= 1;
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
+			m[0] ^= 1;
+			/* A zero challenge does not verify, as it would for any message. */
+			bn_zero(r);
+			bn_set_dig(s, 1);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
+			/* The key at infinity is rejected, even for its own signatures. */
+			bn_zero(d);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
+			ec_set_infty(q);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -357,6 +376,7 @@ static int ecss(void) {
   end:
 	bn_free(d);
 	bn_free(r);
+	bn_free(s);
 	ec_free(q);
 	return code;
 }
@@ -754,6 +774,18 @@ static int etrs(void) {
 			}
 			cp_ers_gen_key(sk[3], pk[3]);
 			TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[3]) == RLC_ERR, end);
+			/* A member whose point has a known logarithm is not a signer. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			cp_ers_gen_key(sk[2], pk[2]);
+			cp_ers_gen_key(sk[3], pk[3]);
+			ec_copy(pk[3], pk[0]);
+			ec_copy(ring[0]->h, pk[2]);
+			bn_copy(ring[0]->y, sk[3]);
+			ec_copy(ring[0]->pk, pk[0]);
+			TEST_ASSERT(cp_sokor_sig(ring[0]->c, ring[0]->r, m, 5, pk + 2, NULL, sk[2], 1) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 5, pp) == 0, end);
+			/* Restore distinct keys for the next iteration. */
+			cp_ers_gen_key(sk[3], pk[3]);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

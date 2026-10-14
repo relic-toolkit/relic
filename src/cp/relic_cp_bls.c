@@ -140,6 +140,8 @@ int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q) {
 		g1_new(u);
 		g2_new(p);
 
+		/* The coefficient is derived from the public key being added. */
+		g2_write_bin(buf, g2_size_bin(q, 0), q, 0);
 		md_map(h, buf, g2_size_bin(q, 0));
 		bn_read_bin(t, h, RLC_MIN(RLC_MD_LEN, RLC_CEIL(pc_param_level(), 8)));
 
@@ -197,11 +199,17 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 		g2_neg(r[0], r[0]);
 
 		pc_map_sim(e, p, r, size + 1);
-		if (gt_is_unity(e)) {
+		if (gt_is_unity(e) && g1_is_valid(s)) {
 			result = 1;
 		}
 		for (size_t i = 0; i < size; i++) {
 			result = result & g2_is_valid(q[i]);
+			/* Messages must be distinct, or rogue keys forge aggregates. */
+			for (size_t j = 0; j < i; j++) {
+				if (l[i] == l[j] && memcmp(m[i], m[j], l[i]) == 0) {
+					result = 0;
+				}
+			}
 		}
 	}
 	RLC_CATCH_ANY {

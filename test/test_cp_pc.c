@@ -606,9 +606,11 @@ static int bls(void) {
 			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 1, end);
+			/* The aggregate verifies under the aggregate key. */
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
 			m[0] ^= 1;
-			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 0, end);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 0, end);
+			m[0] ^= 1;
 			g1_set_infty(s[0]);
 			g2_set_infty(q[0]);
 			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
@@ -619,6 +621,16 @@ static int bls(void) {
 			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 1, end);
 			n[0] ^= 1;
 			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 0, end);
+			n[0] ^= 1;
+			/* Aggregates over repeated messages are rejected. */
+			TEST_ASSERT(cp_bls_sig(s[0], ms[1], ls[1], d) == RLC_OK, end);
+			g1_add(s[0], s[0], s[1]);
+			{
+				const uint8_t *dup[2] = { ms[1], ms[1] };
+				const size_t dl[2] = { ls[1], ls[1] };
+				g2_copy(q[0], q[1]);
+				TEST_ASSERT(cp_bls_agg_ver(s[0], dup, dl, 2, q) == 0, end);
+			}
 		}
 		TEST_END;
 	}
