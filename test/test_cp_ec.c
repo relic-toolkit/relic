@@ -881,14 +881,17 @@ static int etrs(void) {
 			ec_copy(ring[1]->pk, pk[1]);
 			size = 1;
 			TEST_ASSERT(cp_etrs_uni(td, y, 1, ring + 1, &size, com, m, 5, sk[0], pk[0]) == RLC_OK, end);
-			ring[1]->deg = ring[2]->deg;
-			bn_copy(ring[1]->y, ring[2]->y);
-			ec_copy(ring[1]->h, ring[2]->h);
-			ec_copy(ring[1]->pk, ring[2]->pk);
-			bn_copy(ring[1]->c[0], ring[2]->c[0]);
-			bn_copy(ring[1]->c[1], ring[2]->c[1]);
-			bn_copy(ring[1]->r[0], ring[2]->r[0]);
-			bn_copy(ring[1]->r[1], ring[2]->r[1]);
+			/* The joined member may have been moved into ring[1]. */
+			if (ec_cmp(ring[1]->pk, pk[0]) != RLC_EQ) {
+				ring[1]->deg = ring[2]->deg;
+				bn_copy(ring[1]->y, ring[2]->y);
+				ec_copy(ring[1]->h, ring[2]->h);
+				ec_copy(ring[1]->pk, ring[2]->pk);
+				bn_copy(ring[1]->c[0], ring[2]->c[0]);
+				bn_copy(ring[1]->c[1], ring[2]->c[1]);
+				bn_copy(ring[1]->r[0], ring[2]->r[0]);
+				bn_copy(ring[1]->r[1], ring[2]->r[1]);
+			}
 			TEST_ASSERT(cp_etrs_ver(2, td, y, 1, ring, 2, com, m, 5, pp) == 0, end);
 			/* A degree beyond what the ring can hold is rejected safely. */
 			TEST_ASSERT(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);

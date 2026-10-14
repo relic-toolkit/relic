@@ -263,6 +263,16 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 					bn_zero(y[i]);
 				}
 				(*size)++;
+				/* Move the new member to a random position of the ring. */
+				{
+					uint32_t j;
+					etrs_st t;
+					rand_bytes((uint8_t *)&j, sizeof(j));
+					j %= (uint32_t)*size;
+					t = *p[j];
+					*p[j] = *p[*size - 1];
+					*p[*size - 1] = t;
+				}
 			}
 		}
 	}

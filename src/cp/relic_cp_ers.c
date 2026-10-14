@@ -241,6 +241,16 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 			bn_sub(td, td, r);
 			bn_mod(td, td, n);
 			(*size)++;
+			/* Move the new member to a random position of the ring. */
+			{
+				uint32_t j;
+				ers_st t;
+				rand_bytes((uint8_t *)&j, sizeof(j));
+				j %= (uint32_t)*size;
+				t = *p[j];
+				*p[j] = *p[*size - 1];
+				*p[*size - 1] = t;
+			}
 			result = RLC_OK;
 		}
 	}
