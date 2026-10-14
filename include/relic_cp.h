@@ -751,8 +751,8 @@ typedef etrs_st *etrs_t;
  * @param[in] ...			- the public key and, optionally, the padding.
  */
 #define cp_rsa_enc(O, L, I, N, ...)											\
-	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_enc, cp_rsa_enc_oaep, _error))	\
-		(O, L, I, N, __VA_ARGS__)
+	RLC_ECHO(RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_enc, cp_rsa_enc_oaep,	\
+		_error))(O, L, I, N, __VA_ARGS__))
 #define _cp_rsa_enc(O, L, I, N, K, P)	cp_rsa_enc_ ## P(O, L, I, N, K)
 
 /**
@@ -766,8 +766,8 @@ typedef etrs_st *etrs_t;
  * @param[in] ...			- the private key and, optionally, the padding.
  */
 #define cp_rsa_dec(O, L, I, N, ...)											\
-	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_dec, cp_rsa_dec_oaep, _error))	\
-		(O, L, I, N, __VA_ARGS__)
+	RLC_ECHO(RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_dec, cp_rsa_dec_oaep,	\
+		_error))(O, L, I, N, __VA_ARGS__))
 #define _cp_rsa_dec(O, L, I, N, K, P)	cp_rsa_dec_ ## P(O, L, I, N, K)
 
 /**
@@ -782,8 +782,8 @@ typedef etrs_st *etrs_t;
  * @param[in] ...			- the private key and, optionally, the padding.
  */
 #define cp_rsa_sig(S, L, M, N, H, ...)										\
-	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_sig, cp_rsa_sig_pss, _error))	\
-		(S, L, M, N, H, __VA_ARGS__)
+	RLC_ECHO(RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_sig, cp_rsa_sig_pss,	\
+		_error))(S, L, M, N, H, __VA_ARGS__))
 #define _cp_rsa_sig(S, L, M, N, H, K, P)	cp_rsa_sig_ ## P(S, L, M, N, H, K)
 
 /**
@@ -798,8 +798,8 @@ typedef etrs_st *etrs_t;
  * @param[in] ...			- the public key and, optionally, the padding.
  */
 #define cp_rsa_ver(S, L, M, N, H, ...)										\
-	RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_ver, cp_rsa_ver_pss, _error))	\
-		(S, L, M, N, H, __VA_ARGS__)
+	RLC_ECHO(RLC_ECHO(_RSA_PAD(__VA_ARGS__, _cp_rsa_ver, cp_rsa_ver_pss,	\
+		_error))(S, L, M, N, H, __VA_ARGS__))
 #define _cp_rsa_ver(S, L, M, N, H, K, P)	cp_rsa_ver_ ## P(S, L, M, N, H, K)
 
 /*============================================================================*/

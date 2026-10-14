@@ -555,7 +555,7 @@ static int paillier(void) {
 	return code;
 }
 
-static int subgroup_paillier() {
+static int subgroup_paillier(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d;
 	shpe_t pub, prv;

@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp2_field_get_qnr() {
+int fp2_field_get_qnr(void) {
 #if FP_PRIME == 256
 	/* The search below finds 2 + u, but keep 4 + u = c^2 + d^3 * u for
 	 * c = 2, d = 1, as in "A family of implementation-friendly BN elliptic
@@ -47,7 +47,7 @@ int fp2_field_get_qnr() {
 #endif
 }
 
-int fp3_field_get_cnr() {
+int fp3_field_get_cnr(void) {
 #if FP_PRIME == 638
 	if (fp_param_get() == K18_638) {
 		return 8;
@@ -303,7 +303,7 @@ void fp3_field_init(void) {
 	}
 }
 
-void fp4_field_init() {
+void fp4_field_init(void) {
 	bn_t e;
 	fp4_t t0;
 	ctx_t *ctx = core_get();
@@ -339,7 +339,7 @@ void fp4_field_init() {
 	}
 }
 
-void fp8_field_init() {
+void fp8_field_init(void) {
 	bn_t e;
 	fp8_t t0;
 	ctx_t *ctx = core_get();

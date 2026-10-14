@@ -237,7 +237,7 @@ static unsigned int tzcnt64_gcc_builtin(unsigned long long x)
 }
 #endif
 
-static int has_tzcnt_hard()
+static int has_tzcnt_hard(void)
 {
 #if defined(ARCH_X86) || defined(ARCH_X64)
     int info[4] = {0};
