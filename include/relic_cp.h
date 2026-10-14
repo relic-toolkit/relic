@@ -167,15 +167,16 @@ typedef sokaka_st *sokaka_t;
 #endif
 
 /**
- * Represents a Boneh-Goh-Nissim cryptosystem key pair.
+ * Represents a Boneh-Goh-Nissim cryptosystem key pair, with independent
+ * exponents for each source group.
  */
 typedef struct {
-	/** The first exponent. */
-	bn_t x;
-	/** The second exponent. */
-	bn_t y;
-	/** The third exponent. */
-	bn_t z;
+	/** The first exponents, for the first and second groups. */
+	bn_t x[2];
+	/** The second exponents, for the first and second groups. */
+	bn_t y[2];
+	/** The third exponents, for the first and second groups. */
+	bn_t z[2];
 	/* The first element from the first group. */
 	g1_t gx;
 	/* The second element from the first group. */
@@ -540,9 +541,11 @@ typedef etrs_st *etrs_t;
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
-	bn_new((A)->x);															\
-	bn_new((A)->y);															\
-	bn_new((A)->z);															\
+	for (int _i = 0; _i < 2; _i++) {										\
+		bn_new((A)->x[_i]);													\
+		bn_new((A)->y[_i]);													\
+		bn_new((A)->z[_i]);													\
+	}																		\
 	g1_new((A)->gx);														\
 	g1_new((A)->gy);														\
 	g1_new((A)->gz);														\
@@ -562,9 +565,11 @@ typedef etrs_st *etrs_t;
 #if ALLOC == DYNAMIC
 #define bgn_free(A)															\
 	if (A != NULL) {														\
-		bn_free((A)->x);													\
-		bn_free((A)->y);													\
-		bn_free((A)->z);													\
+		for (int _i = 0; _i < 2; _i++) {									\
+			bn_free((A)->x[_i]);											\
+			bn_free((A)->y[_i]);											\
+			bn_free((A)->z[_i]);											\
+		}																	\
 		g1_free((A)->gx);													\
 		g1_free((A)->gy);													\
 		g1_free((A)->gz);													\
