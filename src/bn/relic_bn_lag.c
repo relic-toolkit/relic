@@ -92,6 +92,85 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	}
 }
 
+void bn_lag_pre(bn_t *w, const bn_t *a, const bn_t b, size_t n) {
+	bn_t t;
+	int valid = 1;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		for (size_t j = 0; j < n; j++) {
+			bn_set_dig(w[j], 1);
+			for (size_t m = 0; m < n; m++) {
+				if (m != j) {
+					bn_sub(t, a[j], a[m]);
+					bn_mod(t, t, b);
+					bn_mul(w[j], w[j], t);
+					bn_mod(w[j], w[j], b);
+				}
+			}
+			valid &= !bn_is_zero(w[j]);
+		}
+		if (!valid) {
+			RLC_THROW(ERR_NO_VALID);
+		} else if (n > 0) {
+			bn_mod_inv_sim(w, (const bn_t *)w, b, n);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
+void bn_lag_fix(bn_t *c, const bn_t x, const bn_t *a, const bn_t *w,
+		const bn_t b, size_t n) {
+	bn_t l;
+	size_t j, k = n;
+
+	bn_null(l);
+
+	RLC_TRY {
+		bn_new(l);
+
+		/* With L(x) = \prod_m (x - a_m), compute c_j = L(x) w_j / (x - a_j). */
+		bn_set_dig(l, 1);
+		for (j = 0; j < n; j++) {
+			bn_sub(c[j], x, a[j]);
+			bn_mod(c[j], c[j], b);
+			if (bn_is_zero(c[j])) {
+				k = j;
+			}
+			bn_mul(l, l, c[j]);
+			bn_mod(l, l, b);
+		}
+		if (k < n) {
+			/* The point x is one of the abscissas. */
+			for (j = 0; j < n; j++) {
+				bn_set_dig(c[j], j == k);
+			}
+		} else if (n > 0) {
+			bn_mod_inv_sim(c, (const bn_t *)c, b, n);
+			for (j = 0; j < n; j++) {
+				bn_mul(c[j], c[j], w[j]);
+				bn_mod(c[j], c[j], b);
+				bn_mul(c[j], c[j], l);
+				bn_mod(c[j], c[j], b);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(l);
+	}
+}
+
 void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n) {
     bn_zero(c);
     for (int j = n - 1; j >= 0; j--) {

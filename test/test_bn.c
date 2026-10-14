@@ -2789,10 +2789,13 @@ static int interpolation(void) {
 	const size_t n = 4;
 	int code = RLC_ERR;
 	int k;
-	bn_t a[4], c[5], b, x, y;
+	bn_t a[4], c[5], s[4], v[4], w[4], b, x, y;
 
 	for (k = 0; k < 4; k++) {
 		bn_null(a[k]);
+		bn_null(s[k]);
+		bn_null(v[k]);
+		bn_null(w[k]);
 	}
 	for (k = 0; k < 5; k++) {
 		bn_null(c[k]);
@@ -2802,6 +2805,9 @@ static int interpolation(void) {
 	RLC_TRY {
 		for (k = 0; k < 4; k++) {
 			bn_new(a[k]);
+			bn_new(s[k]);
+			bn_new(v[k]);
+			bn_new(w[k]);
 		}
 		for (k = 0; k < 5; k++) {
 			bn_new(c[k]);
@@ -2832,6 +2838,44 @@ static int interpolation(void) {
 			bn_lag(c, a, b, 0);
 			TEST_ASSERT(bn_cmp_dig(c[0], 1) == RLC_EQ, end);
 		} TEST_END;
+
+		bn_gen_prime(b, RLC_BN_BITS / 2);
+
+		TEST_CASE("lagrange interpolation with precomputation is correct") {
+			/* Sample a polynomial of degree n - 1 and n of its points. */
+			for (k = 0; k < (int)n; k++) {
+				bn_rand_mod(c[k], b);
+				bn_rand_mod(a[k], b);
+			}
+			for (k = 0; k < (int)n; k++) {
+				bn_evl(s[k], c, a[k], b, n);
+			}
+			bn_lag_pre(w, a, b, n);
+			/* The points interpolate the polynomial at a random point. */
+			bn_rand_mod(x, b);
+			bn_lag_fix(v, x, a, (const bn_t *)w, b, n);
+			bn_zero(y);
+			for (k = 0; k < (int)n; k++) {
+				bn_mul(v[k], v[k], s[k]);
+				bn_add(y, y, v[k]);
+				bn_mod(y, y, b);
+			}
+			bn_evl(x, c, x, b, n);
+			TEST_ASSERT(bn_cmp(x, y) == RLC_EQ, end);
+			/* At one of the abscissas, only its own point counts. */
+			bn_lag_fix(v, a[1], a, (const bn_t *)w, b, n);
+			for (k = 0; k < (int)n; k++) {
+				TEST_ASSERT(bn_cmp_dig(v[k], k == 1) == RLC_EQ, end);
+			}
+			/* Repeated abscissas are rejected. */
+			bn_copy(a[1], a[0]);
+			err_get_code();
+			RLC_TRY {
+				bn_lag_pre(w, a, b, n);
+			} RLC_CATCH_ANY {
+			}
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2840,6 +2884,9 @@ static int interpolation(void) {
   end:
 	for (k = 0; k < 4; k++) {
 		bn_free(a[k]);
+		bn_free(s[k]);
+		bn_free(v[k]);
+		bn_free(w[k]);
 	}
 	for (k = 0; k < 5; k++) {
 		bn_free(c[k]);

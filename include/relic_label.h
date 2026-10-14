@@ -322,6 +322,8 @@
 #undef bn_rec_frb
 #undef bn_rec_sac
 #undef bn_lag
+#undef bn_lag_pre
+#undef bn_lag_fix
 #undef bn_evl
 
 #define bn_make 	RLC_PREFIX(bn_make)
@@ -454,6 +456,8 @@
 #define bn_rec_frb 	RLC_PREFIX(bn_rec_frb)
 #define bn_rec_sac 	RLC_PREFIX(bn_rec_sac)
 #define bn_lag 	RLC_PREFIX(bn_lag)
+#define bn_lag_pre 	RLC_PREFIX(bn_lag_pre)
+#define bn_lag_fix 	RLC_PREFIX(bn_lag_fix)
 #define bn_evl 	RLC_PREFIX(bn_evl)
 
 #undef bn_add1_low

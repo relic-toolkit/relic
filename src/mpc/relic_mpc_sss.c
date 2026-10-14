@@ -118,46 +118,20 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
             bn_new(b[i]);
         }
 
+        /* The secret is the polynomial evaluated at zero. Indexes equal
+         * modulo the order make the precomputation throw. */
+        bn_lag_pre(b, x, order, k);
+        bn_zero(t);
+        bn_lag_fix(a, t, x, (const bn_t *)b, order, k);
+        bn_zero(key);
         for (size_t i = 0; i < k; i++) {
-            bn_set_dig(a[i], 1);
-            bn_set_dig(b[i], 1);
-            for (size_t m = 0; m < k; m++) {
-                if (m != i) {
-                    bn_sub(t, x[m], x[i]);
-                    bn_mod(t, t, order);
-                    bn_mul(a[i], a[i], x[m]);
-                    bn_mul(b[i], b[i], t);
-                    bn_mod(a[i], a[i], order);
-                    bn_mod(b[i], b[i], order);
-                }
-            }
-        }
-        for (size_t i = 0; i < k; i++) {
-            if (bn_is_zero(b[i])) {
-                /* Two indices are equal modulo the order. */
-                result = RLC_ERR;
-                RLC_THROW(ERR_NO_VALID);
-            }
-        }
-        if (result == RLC_ERR) {
-            bn_zero(key);
-        } else {
-            bn_mod_inv_sim(b, b, order, k);
-            bn_mul(a[0], a[0], b[0]);
-            bn_mod(a[0], a[0], order);
-            bn_mul(a[0], a[0], y[0]);
-            bn_mod(key, a[0], order);
-            for (size_t i = 1; i < k; i++) {
-                bn_mul(a[i], a[i], b[i]);
-                bn_mod(a[i], a[i], order);
-                bn_mul(a[i], a[i], y[i]);
-                bn_mod(a[i], a[i], order);
-                bn_add(key, key, a[i]);
-                bn_mod(key, key, order);
-            }
+            bn_mul(t, a[i], y[i]);
+            bn_add(key, key, t);
+            bn_mod(key, key, order);
         }
     } RLC_CATCH_ANY {
         result = RLC_ERR;
+        bn_zero(key);
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
         bn_free(t);
