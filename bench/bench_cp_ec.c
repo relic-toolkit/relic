@@ -399,7 +399,7 @@ static void smlers(void) {
 
 static void etrs(void) {
 	size_t size;
-	ec_t pp, pk[MAX_KEYS + 1];
+	ec_t pp, pk[MAX_KEYS + 1], com[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td[MAX_KEYS + 1], y[MAX_KEYS + 1];
 	etrs_t ring[MAX_KEYS + 1];
 	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
@@ -415,6 +415,8 @@ static void etrs(void) {
 		bn_new(sk[i]);
 		ec_null(pk[i]);
 		ec_new(pk[i]);
+		ec_null(com[i]);
+		ec_new(com[i]);
 		etrs_null(ring[i]);
 		etrs_new(ring[i]);
 		ec_curve_get_ord(sk[i]);
@@ -425,26 +427,26 @@ static void etrs(void) {
 
 	cp_ers_gen(pp);
 
-	BENCH_FEW("cp_etrs_sig", cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp), 1);
+	BENCH_FEW("cp_etrs_sig", cp_etrs_sig(td, y, MIN_KEYS, ring[0], com, m, 5, sk[0], pk[0], pp), 1);
 
-	BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td, y, MIN_KEYS, ring, 1, m, 5, pp), 1);
-
-	size = 1;
-	BENCH_FEW("cp_etrs_ext", (size = 1, cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size])), 1);
+	BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td, y, MIN_KEYS, ring, 1, com, m, 5, pp), 1);
 
 	size = 1;
-	cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp);
-	BENCH_FEW("cp_etrs_uni", cp_etrs_uni(td, y, MIN_KEYS, ring, &size, m, 5, sk[size], pk[size]), 1);
+	BENCH_FEW("cp_etrs_ext", (size = 1, cp_etrs_ext(td, y, MIN_KEYS, ring, &size, com, m, 5, pk[size])), 1);
 
 	size = 1;
-	cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp);
+	cp_etrs_sig(td, y, MIN_KEYS, ring[0], com, m, 5, sk[0], pk[0], pp);
+	BENCH_FEW("cp_etrs_uni", cp_etrs_uni(td, y, MIN_KEYS, ring, &size, com, m, 5, sk[size], pk[size]), 1);
+
+	size = 1;
+	cp_etrs_sig(td, y, MIN_KEYS, ring[0], com, m, 5, sk[0], pk[0], pp);
 	for (int j = 1; j < MIN_KEYS && size < MIN_KEYS; j = j << 1) {
 		for (int k = 0; k < j && size < MIN_KEYS; k++) {
-			cp_etrs_ext(td, y, MIN_KEYS, ring, &size, m, 5, pk[size]);
+			cp_etrs_ext(td, y, MIN_KEYS, ring, &size, com, m, 5, pk[size]);
 		}
-		cp_etrs_ver(1, td+size-1, y+size-1, MIN_KEYS-size+1, ring, size, m, 5, pp);
+		cp_etrs_ver(1, td+size-1, y+size-1, MIN_KEYS-size+1, ring, size, com, m, 5, pp);
 		util_print("(%2d exts) ", j);
-		BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td+size-1, y+size-1, MIN_KEYS-size+1, ring, size, m, 5, pp), 1);
+		BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td+size-1, y+size-1, MIN_KEYS-size+1, ring, size, com, m, 5, pp), 1);
 	}
 
 	ec_free(pp);
@@ -453,6 +455,7 @@ static void etrs(void) {
 		bn_free(y[i]);
 		bn_free(sk[i]);
 		ec_free(pk[i]);
+		ec_free(com[i]);
 		etrs_free(ring[i])
 	}
 }
