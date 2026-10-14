@@ -44,13 +44,6 @@
 
 #ifdef CHECK
 #include <setjmp.h>
-#if defined(__MINGW32__) && defined(__x86_64__)
-/* MinGW-w64 makes longjmp() unwind the stack through SEH from the frame given
- * to _setjmp(), which can crash on optimized frames. A null frame restores the
- * registers directly, which is all that the error handling needs. */
-#undef setjmp
-#define setjmp(B)		_setjmp((B), NULL)
-#endif
 #endif
 
 /*============================================================================*/
@@ -130,6 +123,20 @@ typedef struct _sts_t {
 /*============================================================================*/
 
 /**
+ * Saves the calling environment for the error handling. MinGW-w64 makes
+ * longjmp() unwind the stack through SEH from the frame given to _setjmp(),
+ * which can crash on optimized frames, while a null frame restores the
+ * registers directly, which is all that the error handling needs.
+ *
+ * @param[out] B			- the buffer to save the environment to.
+ */
+#if defined(__MINGW32__) && defined(__x86_64__)
+#define RLC_SETJMP(B)		_setjmp((B), NULL)
+#else
+#define RLC_SETJMP(B)		setjmp(B)
+#endif
+
+/**
  * Implements the TRY clause of the error-handling routines.
  *
  * This macro copies the last error from the current library context to
@@ -149,7 +156,7 @@ typedef struct _sts_t {
 		_ctx->last = &_this; 											\
 		for (int _z = 0; ; _z = 1) 										\
 			if (_z) { 													\
-				if (setjmp(_this.addr) == 0) { 							\
+				if (RLC_SETJMP(_this.addr) == 0) { 						\
 					if (1)												\
 
 /**
