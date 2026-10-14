@@ -544,6 +544,11 @@ static int sok(void) {
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);
+			/* The point at infinity has a shorter encoding. */
+			bn_zero(x);
+			ec_set_infty(y[0]);
+			TEST_ASSERT(cp_sokdl_sig(c[0], r[0], m, 5, y[0], x) == RLC_OK, end);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("signature of knowledge of disjunction is correct") {
@@ -851,6 +856,30 @@ static int etrs(void) {
 			ec_copy(ring[0]->pk, pk[0]);
 			TEST_ASSERT(cp_sokor_sig(ring[0]->c, ring[0]->r, m, 5, pk + 2, NULL, sk[2], 1) == RLC_OK, end);
 			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			/* A key cannot count twice towards the threshold: join from a
+			 * copy of the first member under another key, then use it. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			ring[1]->deg = ring[0]->deg;
+			bn_copy(ring[1]->y, ring[0]->y);
+			ec_copy(ring[1]->h, ring[0]->h);
+			ec_copy(ring[1]->pk, pk[1]);
+			size = 1;
+			TEST_ASSERT(cp_etrs_uni(td, y, 1, ring + 1, &size, com, m, 5, sk[0], pk[0]) == RLC_OK, end);
+			ring[1]->deg = ring[2]->deg;
+			bn_copy(ring[1]->y, ring[2]->y);
+			ec_copy(ring[1]->h, ring[2]->h);
+			ec_copy(ring[1]->pk, ring[2]->pk);
+			bn_copy(ring[1]->c[0], ring[2]->c[0]);
+			bn_copy(ring[1]->c[1], ring[2]->c[1]);
+			bn_copy(ring[1]->r[0], ring[2]->r[0]);
+			bn_copy(ring[1]->r[1], ring[2]->r[1]);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 1, ring, 2, com, m, 5, pp) == 0, end);
+			/* A degree beyond what the ring can hold is rejected safely. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			ring[0]->deg = (size_t)-1;
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 1, ring, 1, com, m, 5, pp) == 0, end);
+			size = 1;
+			TEST_ASSERT(cp_etrs_ext(td, y, 1, ring, &size, com, m, 5, pk[1]) == RLC_ERR, end);
 			/* Restore distinct keys for the next iteration. */
 			cp_ers_gen_key(sk[3], pk[3]);
 		} TEST_END;

@@ -192,7 +192,11 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		}
 	}
 
+	/* The degree comes from the ring, so bound it by the points it needs. */
 	deg = p[0]->deg;
+	if (deg >= max + *size) {
+		return RLC_ERR;
+	}
 	if (k > 0) {
 		b = RLC_ALLOCA(bn_t, 3 * k);
 		ys = RLC_ALLOCA(ec_t, k);
@@ -391,7 +395,12 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		return 0;
 	}
 
+	/* Accepting needs thres + deg points, so bound the untrusted degree
+	 * before it sizes anything. */
 	deg = s[0]->deg;
+	if (deg > max + size - thres) {
+		return 0;
+	}
 	d = deg + 1;
 	b = RLC_ALLOCA(bn_t, 2 * k + 4 * d);
 	ys = RLC_ALLOCA(ec_t, k + d);
@@ -430,8 +439,12 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		}
 
 		ec_curve_get_ord(n);
+		/* The ring is a set of keys, so a key cannot sign twice. */
 		for (size_t i = 0; i < size; i++) {
 			flag &= (s[i]->deg == deg) && ec_on_curve(s[i]->h);
+			for (size_t j = 0; j < i; j++) {
+				flag &= (ec_cmp(s[i]->pk, s[j]->pk) != RLC_EQ);
+			}
 		}
 		for (size_t i = 0; i < deg; i++) {
 			flag &= ec_on_curve(com[i]);

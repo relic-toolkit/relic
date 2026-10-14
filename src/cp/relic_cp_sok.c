@@ -62,6 +62,8 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 		bn_new(r);
 		ec_new(t);
 
+		/* Points at infinity are shorter, so clear the unused bytes. */
+		memset(m, 0, len + 3 * (RLC_FC_BYTES + 1));
 		buf = m;
 		ec_curve_get_ord(n);
 		ec_curve_get_gen(t);
@@ -128,6 +130,8 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		bn_new(v);
 		ec_new(t);
 
+		/* Points at infinity are shorter, so clear the unused bytes. */
+		memset(m, 0, len + 3 * (RLC_FC_BYTES + 1));
 		buf = m;
 		ec_curve_get_ord(n);
 		ec_curve_get_gen(t);
@@ -198,6 +202,8 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		ec_new(t[0]);
 		ec_new(t[1]);
 
+		/* Points at infinity are shorter, so clear the unused bytes. */
+		memset(m, 0, len + 6 * (RLC_FC_BYTES + 1));
 		buf = m;
 		ec_curve_get_ord(n);
 		bn_rand_mod(c[zero], n);
@@ -305,6 +311,8 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		bn_new(z);
 		ec_new(t);
 
+		/* Points at infinity are shorter, so clear the unused bytes. */
+		memset(m, 0, len + 6 * (RLC_FC_BYTES + 1));
 		buf = m;
 		ec_curve_get_ord(n);
 		memcpy(buf, msg, len);
