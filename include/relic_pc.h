@@ -365,6 +365,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
 	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
 	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+	(P)->coord = (Q)->coord;																						\
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -376,6 +377,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
 	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
 	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
+	(Q)->coord = (P)->coord;																						\
 
 /**
  * Assigns a G_T element to zero.

@@ -265,7 +265,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
-				fp_set_dig(g1->z, 1);
 				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
 				/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
