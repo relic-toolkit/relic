@@ -1943,17 +1943,31 @@ int cp_bls_sig(g1_t s, const uint8_t *msg, size_t len, const bn_t d);
 int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q);
 
 /**
- * Aggregates a pair (signature, public key) into a signature over the same
- * message, as in the Boneh-Drijvers-Neven scheme.
- * The aggregate signature can then be verified as in the original BLS scheme.
+ * Aggregates signatures over the same message, as in the Boneh-Drijvers-Neven
+ * scheme. Each signature and key is weighted by a coefficient that depends on
+ * the whole set of keys, so no proof of possession is needed. The aggregate
+ * signature verifies as in the original BLS scheme under the aggregate key.
  *
- * @param[in,out] sig		- the aggregate signature.
- * @param[in,out] a			- the aggregate public key
- * @param[in] s				- the signature to aggregate.
- * @param[in] q				- the public key to aggregate.
+ * @param[out] sig			- the aggregate signature.
+ * @param[out] a			- the aggregate public key.
+ * @param[in] s				- the signatures to aggregate.
+ * @param[in] q				- the public keys of the signers.
+ * @param[in] n				- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q);
+int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s[], const g2_t q[],
+		size_t n);
+
+/**
+ * Computes the aggregate public key of a set of keys, as in the
+ * Boneh-Drijvers-Neven scheme, for verifying an aggregate signature.
+ *
+ * @param[out] a			- the aggregate public key.
+ * @param[in] q				- the public keys of the signers.
+ * @param[in] n				- the number of public keys.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_bls_agg_key(g2_t a, const g2_t q[], size_t n);
 
 /**
  * Verifies an aggregate signature over distinct messages, given an aggregate

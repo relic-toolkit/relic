@@ -559,20 +559,24 @@ static int bgn(void) {
 static int bls(void) {
 	int code = RLC_ERR;
 	bn_t d;
-	g1_t s[2];
-	g2_t q[2];
+	g1_t a, s[2];
+	g2_t b, c, q[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	uint8_t n[5] = { 4, 3, 2, 1, 0 };
 	const uint8_t *ms[2] = { m, n };
 	const size_t ls[2] = { sizeof(m), sizeof(n) };
 
 	bn_null(d);
+	g1_null(a);
+	g2_null_all(b, c);
 	g1_null(s[0]);
 	g1_null(s[1]);
 	g2_null(q[0]);
 	g2_null(q[1]);
 
 	RLC_TRY {
+		g1_new(a);
+		g2_new_all(b, c);
 		bn_new(d);
 		g1_new(s[0]);
 		g1_new(s[1]);
@@ -602,19 +606,27 @@ static int bls(void) {
 		TEST_END;
 
 		TEST_CASE("boneh-drijvers-neven aggregate signature is correct") {
-			g1_set_infty(s[0]);
-			g2_set_infty(q[0]);
-			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
+			for (int j = 0; j < 2; j++) {
+				TEST_ASSERT(cp_bls_gen(d, q[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_bls_sig(s[j], m, sizeof(m), d) == RLC_OK, end);
+			}
+			TEST_ASSERT(cp_bls_agg_sig(a, b, (const g1_t *)s, (const g2_t *)q,
+					2) == RLC_OK, end);
 			/* The aggregate verifies under the aggregate key. */
-			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
+			TEST_ASSERT(cp_bls_ver(a, m, sizeof(m), b) == 1, end);
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 2) == RLC_OK, end);
+			TEST_ASSERT(g2_cmp(b, c) == RLC_EQ, end);
 			m[0] ^= 1;
-			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 0, end);
+			TEST_ASSERT(cp_bls_ver(a, m, sizeof(m), b) == 0, end);
 			m[0] ^= 1;
+			/* The plain sum is not the aggregate, as keys are weighted. */
+			g1_add(s[0], s[0], s[1]);
+			g1_norm(s[0], s[0]);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), b) == 0, end);
+			/* Aggregating no keys or an invalid key fails. */
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 0) == RLC_ERR, end);
+			g2_set_infty(q[1]);
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 2) == RLC_ERR, end);
 			g1_set_infty(s[0]);
 			g2_set_infty(q[0]);
 			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
@@ -645,6 +657,8 @@ static int bls(void) {
 
   end:
 	bn_free(d);
+	g1_free(a);
+	g2_free_all(b, c);
 	g1_free(s[0]);
 	g1_free(s[1]);
 	g2_free(q[0]);

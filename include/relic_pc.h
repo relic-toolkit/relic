@@ -229,6 +229,23 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_free(A)			RLC_CAT(RLC_GT_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen elements at once, in order.
+ *
+ * @param[in,out] ...		- the elements.
+ */
+/** @{ */
+#define g1_null_all(...)	RLC_EACH(g1_null, __VA_ARGS__)
+#define g1_new_all(...)		RLC_EACH(g1_new, __VA_ARGS__)
+#define g1_free_all(...)	RLC_EACH(g1_free, __VA_ARGS__)
+#define g2_null_all(...)	RLC_EACH(g2_null, __VA_ARGS__)
+#define g2_new_all(...)		RLC_EACH(g2_new, __VA_ARGS__)
+#define g2_free_all(...)	RLC_EACH(g2_free, __VA_ARGS__)
+#define gt_null_all(...)	RLC_EACH(gt_null, __VA_ARGS__)
+#define gt_new_all(...)		RLC_EACH(gt_new, __VA_ARGS__)
+#define gt_free_all(...)	RLC_EACH(gt_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group G_1.
  *
  * @param[out] G			- the returned generator.

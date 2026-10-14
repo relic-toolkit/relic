@@ -3761,6 +3761,7 @@
 #undef cp_bls_sig
 #undef cp_bls_ver
 #undef cp_bls_agg_sig
+#undef cp_bls_agg_key
 #undef cp_bls_agg_ver
 #undef cp_bbs_gen
 #undef cp_bbs_sig
@@ -3940,6 +3941,7 @@
 #define cp_bls_sig 	RLC_PREFIX(cp_bls_sig)
 #define cp_bls_ver 	RLC_PREFIX(cp_bls_ver)
 #define cp_bls_agg_sig 	RLC_PREFIX(cp_bls_agg_sig)
+#define cp_bls_agg_key 	RLC_PREFIX(cp_bls_agg_key)
 #define cp_bls_agg_ver 	RLC_PREFIX(cp_bls_agg_ver)
 #define cp_bbs_gen 	RLC_PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	RLC_PREFIX(cp_bbs_sig)
