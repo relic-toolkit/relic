@@ -277,20 +277,20 @@ void fp24_mul_toom_unr(dv24_t c, const fp24_t a, const fp24_t b) {
 		/* Toom-3 at 0, 1, -1, i and infinity for i^2 = -1, with
 		 * a(i) = a_0 - a_2 + i * a_1 computed in each Fp^2 part of Fp^8. */
 		for (int k = 0; k < 2; k++) {
-			const fp24_t *x = (k == 0 ? (const fp24_t *)a : (const fp24_t *)b);
+			const fp8_t *x = (k == 0 ? a : b);
 			fp8_t *y = (k == 0 ? e : f);
-			fp8_add(t, (*x)[0], (*x)[2]);
-			fp8_add(y[0], t, (*x)[1]);
-			fp8_sub(y[1], t, (*x)[1]);
+			fp8_add(t, x[0], x[2]);
+			fp8_add(y[0], t, x[1]);
+			fp8_sub(y[1], t, x[1]);
 			for (int j = 0; j < 4; j++) {
-				fp_sub(y[2][j / 2][j % 2][0], (*x)[0][j / 2][j % 2][0],
-						(*x)[2][j / 2][j % 2][0]);
+				fp_sub(y[2][j / 2][j % 2][0], x[0][j / 2][j % 2][0],
+						x[2][j / 2][j % 2][0]);
 				fp_sub(y[2][j / 2][j % 2][0], y[2][j / 2][j % 2][0],
-						(*x)[1][j / 2][j % 2][1]);
-				fp_sub(y[2][j / 2][j % 2][1], (*x)[0][j / 2][j % 2][1],
-						(*x)[2][j / 2][j % 2][1]);
+						x[1][j / 2][j % 2][1]);
+				fp_sub(y[2][j / 2][j % 2][1], x[0][j / 2][j % 2][1],
+						x[2][j / 2][j % 2][1]);
 				fp_add(y[2][j / 2][j % 2][1], y[2][j / 2][j % 2][1],
-						(*x)[1][j / 2][j % 2][0]);
+						x[1][j / 2][j % 2][0]);
 			}
 		}
 		fp8_mul_unr(u0, a[0], b[0]);

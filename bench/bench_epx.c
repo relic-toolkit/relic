@@ -582,15 +582,11 @@ TMPL_BENCH_EPX(ep8, fp8)
 TMPL_BENCH_EPX(ep9, fp9)
 
 static void arith2(void) {
-	ep2_t p, q;
-	bn_t k, n;
+	ep2_t p;
 
-	ep2_null_all(p, q);
-	bn_null_all(k, n);
+	ep2_null(p);
 
-	ep2_new_all(p, q);
-	bn_new_all(k, n);
-	ep2_curve_get_ord(n);
+	ep2_new(p);
 
 	BENCH_RUN("ep2_map_basic") {
 		uint8_t msg[5];
@@ -610,8 +606,7 @@ static void arith2(void) {
 		BENCH_ADD(ep2_map_swift(p, msg, 5));
 	} BENCH_END;
 
-	ep2_free_all(p, q);
-	bn_free_all(k, n);
+	ep2_free(p);
 }
 
 int main(void) {

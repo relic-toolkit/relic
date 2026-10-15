@@ -174,8 +174,9 @@ static int tw_mod9(const dig_t *a, size_t s) {
 	const dig_t d = (RLC_DMASK % 9 + 1) % 9, w[3] = { 1, d, d * d % 9 };
 	dig_t r = 0;
 
+	/* Reducing at every step keeps r small for every digit size. */
 	for (size_t i = 0; i < s; i++) {
-		r += (a[i] % 9) * w[i % 3];
+		r = (r + (a[i] % 9) * w[i % 3]) % 9;
 	}
 	/* Subtract 2^(s * RLC_DIG) for negative integers. */
 	r += (a[s - 1] >> (RLC_DIG - 1)) * (9 - w[s % 3]);
@@ -265,13 +266,14 @@ static void tw_div3(dig_t *a, dig_t *b, size_t s) {
 
 /**
  * Converts u + v * w to a + b * tau = (u + v) - v * tau, in two's complement
- * representation with s digits.
+ * representation with s digits. The digits are read with masks, so the time
+ * does not depend on the lengths of u and v.
  */
 static void tw_set(dig_t *a, dig_t *b, const bn_t u, const bn_t v, size_t s) {
-	dv_zero(a, s);
-	dv_zero(b, s);
-	dv_copy(a, u->dp, RLC_MIN(u->used, s));
-	dv_copy(b, v->dp, RLC_MIN(v->used, s));
+	for (size_t i = 0; i < s; i++) {
+		a[i] = (i < u->alloc ? u->dp[i] : 0) & -(dig_t)(i < u->used);
+		b[i] = (i < v->alloc ? v->dp[i] : 0) & -(dig_t)(i < v->used);
+	}
 	bn_sneg_low(a, a, bn_sign(u), s);
 	bn_sneg_low(b, b, bn_sign(v), s);
 	bn_addn_low(a, a, b, s);
@@ -1256,6 +1258,7 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
 	int d;
 
 	if (s > RLC_BN_DIGS + 1) {
+		*len = 0;
 		RLC_THROW(ERR_NO_PRECI);
 		return;
 	}
@@ -1269,11 +1272,13 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
 		if (z == 0) {
 			break;
 		}
-		if (l + 3 > *len) {
+		d = tw_mod9(a, s);
+		/* A zero digit takes one position and a nonzero one three. */
+		if (l + (d % 3 == 0 ? 1 : 3) > *len) {
+			*len = 0;
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		}
-		d = tw_mod9(a, s);
 		if (d % 3 == 0) {
 			naf[l] = 0;
 			tw_div(a, b, s);
@@ -1296,13 +1301,17 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
 void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
 		const bn_t v) {
 	/* The remainders have absolute value below 27^(len/2) * 2 and their
-	 * coordinates grow by a few bits in the divisions. */
-	size_t s = RLC_MAX(RLC_CEIL(12 * len / 5 + 8, RLC_DIG),
-			RLC_MAX(u->used, v->used) + 1);
+	 * coordinates grow by a few bits in the divisions. The length depends
+	 * only on len, so that the time does not depend on u and v, which must
+	 * fit with two bits to spare. */
+	size_t s = RLC_CEIL(12 * len / 5 + 8, RLC_DIG);
 	dig_t a[RLC_BN_DIGS + 1], b[RLC_BN_DIGS + 1];
 	int d, e, g, h;
 
-	if (s > RLC_BN_DIGS + 1) {
+	if (s > RLC_BN_DIGS + 1 || bn_bits(u) + 2 > s * RLC_DIG ||
+			bn_bits(v) + 2 > s * RLC_DIG) {
+		memset(reg, 0, len + 1);
+		*c = 0;
 		RLC_THROW(ERR_NO_PRECI);
 		return;
 	}
@@ -1313,7 +1322,8 @@ void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
 	tw_sub(a, b, -(int)*c, 0, s);
 	for (size_t i = 0; i < len; i++) {
 		e = tw_mod9(a, s);
-		e = 9 * (e - e / 3 - 1) + tw_mod9(b, s);
+		/* e / 3 = (e * 11) >> 5 for e < 9, without a division. */
+		e = 9 * (e - ((e * 11) >> 5) - 1) + tw_mod9(b, s);
 		d = g = h = 0;
 		for (int j = 0; j < 54; j++) {
 			d |= tw_reg[j] & -(j == e);

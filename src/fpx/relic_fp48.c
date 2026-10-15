@@ -91,8 +91,8 @@ static void fp48_mul_unr_imp(dv48_t c, const fp48_t a, const fp48_t b,
 
 /**
  * Multiplies a dense and a sparse 48-extension field element without
- * reduction, for the sparse element L + LX * w + LY * w * s produced by the
- * line functions, where w^3 = v, s^2 = w and L, LX, LY are in Fp^8. With
+ * reduction, for a sparse element L + LX * w + LY * w * s, where w^3 = v,
+ * s^2 = w and L, LX, LY are in Fp^8. With
  * t = a_1 * LY, a_1 * b_1 = w * t, so c_0 = a_0b_0 + w^2 * t and
  * c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - w * t, where the sparse products in
  * Fp^24 use Karatsuba or Toom-2.5.
@@ -133,7 +133,8 @@ static void fp48_mul_dxs_imp(dv48_t c, const fp48_t a, const fp48_t b,
 		TMPL_DV_ADDC(fp2, dv2, 4, c[0][1], t0[1], t1[0]);
 		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], t0[2], t1[1]);
 		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u, c[0]);
-		/* c_0 = t_0 + w^2 * t, where w^2 * t = v * t_1 + v * t_2 w + t_0 w^2. */
+		/* c_0 = t_0 + w^2 * t, where
+		 * w^2 * t = v * t_1 + v * t_2 w + t_0 w^2. */
 		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], t0[0], t1[1]);
 		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][1], t0[1], t1[2]);
 		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], t0[2], t1[0]);

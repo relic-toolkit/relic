@@ -1467,12 +1467,12 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
- * Multiplies a dense and a sparse 48-extension extension field element. Computes
+ * Multiplies a dense and a sparse 48-extension field element. Computes
  * C = A * B.
  *
  * @param[out] C			- the result.
- * @param[in] A				- the dense 48-extension extension field element.
- * @param[in] B				- the sparse 48-extension extension field element.
+ * @param[in] A				- the dense 48-extension field element.
+ * @param[in] B				- the sparse 48-extension field element.
  */
 #if FPX_RDC == BASIC
 #define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_basic(C, A, B)
@@ -1506,11 +1506,11 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
- * Cubes a octaeicosic extension field element in the cyclotomic subgroup.
+ * Cubes a 48-extension field element in the cyclotomic subgroup.
  * Computes C = A * A * A.
  *
  * @param[out] C			- the result.
- * @param[in] A				- the octaeicosic extension field element to cube.
+ * @param[in] A				- the 48-extension field element to cube.
  */
 #if FPX_RDC == BASIC
 #define fp48_cub_cyc(C, A)		fp48_cub_cyc_basic(C, A)
@@ -5654,7 +5654,8 @@ void fp48_mul_dxs_toom(fp48_t c, const fp48_t a, const fp48_t b);
 
 /**
  * Multiplies two 48-extension field elements using lazy reduction and Toom-3
- * for the products in the 24-degree extension. Computes C = A * B.
+ * for the products in the 24-degree extension, which uses Karatsuba unless
+ * i^2 = -1 in the quadratic extension. Computes C = A * B.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first 48-extension field element.
@@ -5725,7 +5726,7 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a);
 void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a);
 
 /**
- * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * Computes the cube of a cyclotomic 48-extension field element using
  * basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -5734,7 +5735,7 @@ void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a);
 void fp48_cub_cyc_basic(fp48_t c, const fp48_t a);
 
 /**
- * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * Computes the cube of a cyclotomic 48-extension field element using
  * lazy reduction.
  *
  * @param[out] c			- the result.

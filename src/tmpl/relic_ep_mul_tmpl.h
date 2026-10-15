@@ -415,11 +415,19 @@
 		}																	\
 	}
 
+/**
+ * Defines a template for the evaluation of e interleaved tau-adic NAFs from
+ * bn_rec_etnaf() with Horner's rule in base tau^2 = -3w, on tables of 6 points
+ * per expansion from C##_tw_tab(), in variable time.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
 #define TMPL_EP_MUL_TW_NAF(C, F)											\
 	static void C##_tw_naf(C##_t r, C##_t *t,								\
 			int8_t naf[][RLC_FP_BITS + 1], const size_t *len, int e,		\
 			const F##_t beta) {												\
-		int d, f, j;														\
+		int d, f, j, first = 1;												\
 		size_t l = 0;														\
 		C##_t q;															\
 																			\
@@ -436,7 +444,7 @@
 			 * unit (-w)^m only changes the unit of the digit. */			\
 			C##_set_infty(r);												\
 			for (int m = ((int)l - 1) / 2; m >= 0 && l > 0; m--) {			\
-				if (m < ((int)l - 1) / 2) {									\
+				if (!first) {												\
 					C##_tpl(r, r);											\
 				}															\
 				for (int i = 2 * m; i < RLC_MIN(2 * m + 2, (int)l); i++) {	\
@@ -460,7 +468,12 @@
 						if (((d % 6) / 3) ^ (m & 1)) {						\
 							C##_neg(q, q);									\
 						}													\
-						C##_add(r, r, q);									\
+						if (first) {										\
+							C##_copy(r, q);									\
+							first = 0;										\
+						} else {											\
+							C##_add(r, r, q);								\
+						}													\
 					}														\
 				}															\
 			}																\
@@ -473,11 +486,20 @@
 		}																	\
 	}
 
+/**
+ * Defines a template for the evaluation of e interleaved regular tau-adic
+ * expansions from bn_rec_retnaf() with Horner's rule in base tau^2 = -3w, on
+ * tables of 12 points per expansion from C##_tw_tab(), read by scanning them
+ * and added with complete formulas, in constant time.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
 #define TMPL_EP_MUL_TW_REG(C, F)											\
 	static void C##_tw_reg(C##_t r, C##_t *t,								\
 			int8_t reg[][RLC_FP_BITS + 1], const int8_t *c, int len,		\
 			int e, const F##_t beta) {										\
-		int d, f, top = 3 * len;											\
+		int d, f, g, top = 3 * len;											\
 		dig_t s;															\
 		C##_t q, u;															\
 																			\
@@ -501,9 +523,15 @@
 					}														\
 					for (int k = 0; k < e; k++) {							\
 						d = reg[k][i / 3];									\
-						f = (d % 3 + m) % 3;								\
-						s = ((d % 6) / 3) ^ (m & 1);						\
-						d = d / 6;											\
+						/* Split the secret digit d < 36 into the			\
+						 * base digit d / 6 and the unit g = d % 6,			\
+						 * with sign g / 3 and power of w g % 3,			\
+						 * without divisions. */							\
+						g = d - 6 * ((d * 43) >> 8);						\
+						d = (d * 43) >> 8;									\
+						s = ((g * 11) >> 5) ^ (m & 1);						\
+						f = g - 3 * ((g * 11) >> 5) + m % 3;				\
+						f -= 3 & -(f >= 3);									\
 						/* Select x and y in the entries of the right		\
 						 * parity, then w^f(x) as w(x) = beta * x and		\
 						 * w^2(x) = -x - w(x). */							\
@@ -599,23 +627,28 @@
 		bn_null_all(n, x, a, b, m0, m1);									\
 		F##_null(beta);														\
 		C##_null(q);														\
+		for (int i = 0; i < S; i++) {										\
+			bn_null(_k[i]);													\
+		}																	\
+		for (int i = 0; i < 2 * s * H; i++) {								\
+			C##_null(t[i]);													\
+		}																	\
 																			\
 		RLC_TRY {															\
 			bn_new_all(n, x, a, b, m0, m1);									\
 			F##_new(beta);													\
 			C##_new(q);														\
 			for (int i = 0; i < S; i++) {									\
-				bn_null(_k[i]);												\
 				bn_new(_k[i]);												\
 			}																\
 			for (int i = 0; i < 2 * s * H; i++) {							\
-				C##_null(t[i]);												\
 				C##_new(t[i]);												\
 			}																\
 																			\
-			/* psi acts as x, or as 6x^2 on BN curves, and w acts on G2 as	\
-			 * the conjugate w^2 of its eigenvalue on G1, since w preserves	\
-			 * both eigenspaces of the Frobenius. Hence psi^H acts as		\
+			/* psi acts as x, or as 6x^2 on BN curves, and w acts on this	\
+			 * curve as the conjugate w^2 of its eigenvalue on the curve	\
+			 * over the prime field, since w preserves both eigenspaces of	\
+			 * the Frobenius. Hence psi^H acts as							\
 			 * m0 + m1 * w^2 = (m0 - m1) - m1 * w, for m0 and m1 the		\
 			 * decomposition of its eigenvalue along the lattice of w. */	\
 			C##_curve_get_ord(n);											\
@@ -677,18 +710,14 @@
 						ep_curve_is_pairf() == EP_BN);						\
 				for (int i = 0; i < H; i++) {								\
 					/* k_i + k_(i + H) * (u0 + u1 * w) = a + b * w. */		\
-					bn_copy(a, _k[i]);										\
-					bn_zero(b);												\
-					if (i + H < S) {										\
-						bn_mul_dig(m0, _k[i + H], d0);						\
-						if (u0 < 0) {										\
-							bn_neg(m0, m0);									\
-						}													\
-						bn_add(a, a, m0);									\
-						bn_mul_dig(b, _k[i + H], d1);						\
-						if (u1 < 0) {										\
-							bn_neg(b, b);									\
-						}													\
+					bn_mul_dig(m0, _k[i + H], d0);							\
+					if (u0 < 0) {											\
+						bn_neg(m0, m0);										\
+					}														\
+					bn_add(a, _k[i], m0);									\
+					bn_mul_dig(b, _k[i + H], d1);							\
+					if (u1 < 0) {											\
+						bn_neg(b, b);										\
 					}														\
 					if (reg) {												\
 						len[i] = (20000 * l + 1200) / 47549 + 1;			\

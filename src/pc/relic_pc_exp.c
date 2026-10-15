@@ -761,7 +761,8 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 #endif
 
-#if RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48
+/* Embedding degrees 12, 18, 24 and 48, whose fields have cyclotomic cubing. */
+#if RLC_GT_EMBED % 6 == 0 && RLC_GT_EMBED <= 48
 
 /**
  * Number of tau-adic expansions in the tau-adic method, k/6 for embedding
@@ -792,7 +793,12 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 	size_t l, len[RLC_GT_TW];
 	int d, f, j, v, first = 1, mu[2 * RLC_GT_TW][2];
 	bn_t n, x, y, _b[2 * RLC_GT_TW], r[2];
-	gt_t q, t[6 * RLC_GT_TW];
+	gt_t q, *t = RLC_ALLOCA(gt_t, 6 * RLC_GT_TW);
+
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
 	bn_null_all(n, x, y);
 	bn_null(r[0]);
@@ -818,8 +824,8 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 		}
 
 		/* The coefficients mu^i * (1 + w)^(i / H) in Z[w], with
-		 * (a0 + a1 * w)(c0 + c1 * w) = (a0c0 - a1c1) + (a0c1 + a1c0 - a1c1) * w,
-		 * as w^2 = -1 - w. */
+		 * (a0 + a1 * w)(c0 + c1 * w) =
+		 * (a0c0 - a1c1) + (a0c1 + a1c0 - a1c1) * w, as w^2 = -1 - w. */
 		mu[0][0] = 1;
 		mu[0][1] = 0;
 		for (int i = 1; i < 2 * h; i++) {
@@ -924,6 +930,7 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 		for (int i = 0; i < 6 * h; i++) {
 			gt_free(t[i]);
 		}
+		RLC_FREE(t);
 	}
 }
 
@@ -1079,7 +1086,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 }
 
 void gt_exp_twnaf(gt_t c, const gt_t a, const bn_t b) {
-#if RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48
+#if RLC_GT_EMBED % 6 == 0 && RLC_GT_EMBED <= 48
 	switch (ep_curve_is_pairf()) {
 		case EP_BN:
 		case EP_B12:

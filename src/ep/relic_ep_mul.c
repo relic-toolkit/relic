@@ -264,11 +264,13 @@ static void ep_mul_twnaf_imp(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[6];
 
 	bn_null_all(k0, k1);
+	for (int i = 0; i < 6; i++) {
+		ep_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new_all(k0, k1);
 		for (int i = 0; i < 6; i++) {
-			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 
@@ -293,11 +295,13 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[12];
 
 	bn_null_all(k0, k1);
+	for (int i = 0; i < 12; i++) {
+		ep_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new_all(k0, k1);
 		for (int i = 0; i < 12; i++) {
-			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 
@@ -325,12 +329,12 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 		len = (l * 10000 + 13000 + 47548) / 47549;
 		if (len >= RLC_FP_BITS + 1) {
 			RLC_THROW(ERR_NO_BUFFER);
+		} else {
+			ep_tw_glv(k0, k1, k);
+			bn_rec_retnaf(reg[0], &c[0], len, k0, k1);
+			ep_tw_tab(t, p, 6, ep_curve_get_beta());
+			ep_tw_reg(r, t, reg, c, len, 1, ep_curve_get_beta());
 		}
-
-		ep_tw_glv(k0, k1, k);
-		bn_rec_retnaf(reg[0], &c[0], len, k0, k1);
-		ep_tw_tab(t, p, 6, ep_curve_get_beta());
-		ep_tw_reg(r, t, reg, c, len, 1, ep_curve_get_beta());
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

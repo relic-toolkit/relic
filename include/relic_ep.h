@@ -999,27 +999,27 @@ void ep_dbl_projc(ep_t r, const ep_t p);
 void ep_dbl_jacob(ep_t r, const ep_t p);
 
 /**
- * Doubles a prime elliptic curve point represented in affine coordinates.
+ * Triples a prime elliptic curve point represented in affine coordinates.
  *
  * @param[out] r			- the result.
- * @param[in] p				- the point to double.
+ * @param[in] p				- the point to triple.
  */
 void ep_tpl_basic(ep_t r, const ep_t p);
 
 /**
- * Doubles a prime elliptic curve point represented in projective coordinates.
+ * Triples a prime elliptic curve point represented in projective coordinates.
  *
  * @param[out] r			- the result.
- * @param[in] p				- the point to double.
+ * @param[in] p				- the point to triple.
  */
 void ep_tpl_projc(ep_t r, const ep_t p);
 
 /**
- * Doubles a prime elliptic curve point represented in Jacobian projective
+ * Triples a prime elliptic curve point represented in Jacobian projective
  * coordinates.
  *
  * @param[out] r			- the result.
- * @param[in] p				- the point to double.
+ * @param[in] p				- the point to triple.
  */
 void ep_tpl_jacob(ep_t r, const ep_t p);
 

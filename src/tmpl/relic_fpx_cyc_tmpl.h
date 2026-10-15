@@ -1035,18 +1035,18 @@
  * C = C0 + C1 * z, in a quadratic-over-cubic (QC) or a cubic-over-quadratic
  * (CQ) tower.
  */
-#define TMPL_QC_A0(A)		A[0][0]
-#define TMPL_QC_A1(A)		A[1][1]
-#define TMPL_QC_B0(A)		A[1][0]
-#define TMPL_QC_B1(A)		A[0][2]
-#define TMPL_QC_C0(A)		A[0][1]
-#define TMPL_QC_C1(A)		A[1][2]
-#define TMPL_CQ_A0(A)		A[0][0]
-#define TMPL_CQ_A1(A)		A[0][1]
-#define TMPL_CQ_B0(A)		A[1][0]
-#define TMPL_CQ_B1(A)		A[1][1]
-#define TMPL_CQ_C0(A)		A[2][0]
-#define TMPL_CQ_C1(A)		A[2][1]
+#define TMPL_QC_A0(A)		(A)[0][0]
+#define TMPL_QC_A1(A)		(A)[1][1]
+#define TMPL_QC_B0(A)		(A)[1][0]
+#define TMPL_QC_B1(A)		(A)[0][2]
+#define TMPL_QC_C0(A)		(A)[0][1]
+#define TMPL_QC_C1(A)		(A)[1][2]
+#define TMPL_CQ_A0(A)		(A)[0][0]
+#define TMPL_CQ_A1(A)		(A)[0][1]
+#define TMPL_CQ_B0(A)		(A)[1][0]
+#define TMPL_CQ_B1(A)		(A)[1][1]
+#define TMPL_CQ_C0(A)		(A)[2][0]
+#define TMPL_CQ_C1(A)		(A)[2][1]
 
 /**
  * Defines a template for cyclotomic cubing in an extension field built as
@@ -1169,8 +1169,9 @@
 /**
  * Defines a template for cyclotomic cubing with lazy reduction in an
  * extension field built as quadratic over cubic or as cubic over quadratic,
- * with the formula of the basic version. The products over the quadratic extension use Karatsuba without
- * reduction, and the norms are folded into the coefficients they update.
+ * with the formula of the basic version. The products over the quadratic
+ * extension use Karatsuba without reduction, and the norms are folded into the
+ * coefficients they update.
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] Z			- the prefix of the subfield holding the coefficients.
@@ -1195,8 +1196,9 @@
 			Z##_new_all(t0, t1, t2, t3, t4, t5);							\
 			D##_new_all(u0, u1, u2, u3, u4, u5, u6, u7);					\
 																			\
-			/* Now a is seen as A + B * w + C * w^2, with z = w^3. The squares\
-			 * for the norms of B and C come first, so that c can alias a. */\
+			/* Now a is seen as A + B * w + C * w^2, with z = w^3. The		\
+			 * squares for the norms of B and C come first, so that c can	\
+			 * alias a. */													\
 			SQRU(u4, TMPL_##T##_B0(a));										\
 			SQRU(u5, TMPL_##T##_B1(a));										\
 			SQRU(u6, TMPL_##T##_C0(a));										\
@@ -1313,8 +1315,9 @@
  * Defines a template for inversion and the arithmetic in the cyclotomic
  * subgroup of an extension field with compressed squarings: cyclotomic
  * inversion and exponentiation, conversion, membership testing,
- * decompression, sparse and simultaneous exponentiation, and compression,
- * including at the maximum rate in quadratic-over-cubic towers.
+ * decompression, sparse and simultaneous exponentiation, cyclotomic cubing
+ * and compression, including at the maximum rate in quadratic-over-cubic
+ * towers.
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] H			- the subfield of half the degree.

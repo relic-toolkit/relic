@@ -186,7 +186,8 @@
 					C##_curve_mul_b(r->z, p->z);							\
 					F##_sub(r->y, t4, r->z);								\
 				}															\
-				/* B = t1 + 3 * (t4 - b * z1), F = t1 - 3 * (t4 - b * z1). */\
+				/* B = t1 + 3 * (t4 - b * z1),								\
+				 * F = t1 - 3 * (t4 - b * z1). */							\
 				F##_dbl(r->z, r->y);										\
 				F##_add(r->y, r->y, r->z);									\
 				F##_add(r->x, t1, r->y);									\
@@ -233,7 +234,8 @@
 			}																\
 																			\
 			/* X3 = A * B - C * D, Y3 = B * F + D * E and Z3 = C * F + A * E\
-			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and F = z. */\
+			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and		\
+			 * F = z. */													\
 			F##_add(t0, r->z, t2);											\
 			F##_mul(r->z, r->z, t5);										\
 			F##_sub(t4, r->x, t5);											\
@@ -309,7 +311,8 @@
 				F##_add(t1, t1, t0);										\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 11M + 2m_b. */									\
-				/* B = t1 + 3 * (t4 - b * t2), F = t1 - 3 * (t4 - b * t2). */\
+				/* B = t1 + 3 * (t4 - b * t2),								\
+				 * F = t1 - 3 * (t4 - b * t2). */							\
 				C##_curve_mul_b(r->z, t2);									\
 				F##_sub(r->y, t4, r->z);									\
 				F##_dbl(r->z, r->y);										\
@@ -351,7 +354,8 @@
 			}																\
 																			\
 			/* X3 = A * B - C * D, Y3 = B * F + D * E and Z3 = C * F + A * E\
-			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and F = z. */\
+			 * in 5M, with A = t3, B = x, C = t5, D = t2, E = t1 and		\
+			 * F = z. */													\
 			F##_add(t0, r->z, t2);											\
 			F##_mul(r->z, r->z, t5);										\
 			F##_sub(t4, r->x, t5);											\

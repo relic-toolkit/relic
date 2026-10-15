@@ -816,7 +816,8 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Triples a point in an elliptic curve over a quartic extension. Computes R = 3P.
+ * Triples a point in an elliptic curve over a quartic extension.
+ * Computes R = 3P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
@@ -924,7 +925,8 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Triples a point in an elliptic curve over an octic extension. Computes R = 3P.
+ * Triples a point in an elliptic curve over an octic extension.
+ * Computes R = 3P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
@@ -1529,8 +1531,8 @@ void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k);
 /**
  * Multiplies a point in an elliptic curve over a quadratic extension by an
  * integer using two interleaved tau-adic NAFs, with tau = 1 - w for the cube
- * root of unity w of the endomorphism and the decomposition along psi.
- * Curves where psi^2 does not act as a unit use the w-NAF method.
+ * root of unity w of the endomorphism and the decomposition along psi. Curves
+ * where psi^2 does not act as a small element of Z[w] use the w-NAF method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -2128,8 +2130,8 @@ void ep3_dbl_jacob(ep3_t r, const ep3_t p);
 void ep3_tpl_basic(ep3_t r, const ep3_t p);
 
 /**
- * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
- * a cubic extension.
+ * Triples a point represented in homogeneous projective coordinates on an
+ * elliptic curve over a cubic extension.
  *
  * @param[out] r				- the result.
  * @param[in] p					- the point to triple.
@@ -2186,7 +2188,7 @@ void ep3_mul_lwreg(ep3_t r, const ep3_t p, const bn_t k);
  * Multiplies a point in an elliptic curve over a cubic extension by an integer
  * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
  * w of the endomorphism and the decomposition along psi. Curves where a power
- * of psi does not act as a unit use the w-NAF method.
+ * of psi does not act as a small element of Z[w] use the w-NAF method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -2750,8 +2752,8 @@ void ep4_dbl_jacob(ep4_t r, const ep4_t p);
 void ep4_tpl_basic(ep4_t r, const ep4_t p);
 
 /**
- * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
- * a quartic extension.
+ * Triples a point represented in homogeneous projective coordinates on an
+ * elliptic curve over a quartic extension.
  *
  * @param[out] r				- the result.
  * @param[in] p					- the point to triple.
@@ -2805,10 +2807,10 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k);
 void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
- * Multiplies a point in an elliptic curve over a quartic extension by an integer
- * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
- * w of the endomorphism and the decomposition along psi. Curves where a power
- * of psi does not act as a unit use the w-NAF method.
+ * Multiplies a point in an elliptic curve over a quartic extension by an
+ * integer using interleaved tau-adic NAFs, with tau = 1 - w for the cube root
+ * of unity w of the endomorphism and the decomposition along psi. Curves where
+ * a power of psi does not act as a small element of Z[w] use the w-NAF method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -2817,9 +2819,9 @@ void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k);
 void ep4_mul_twnaf(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
- * Multiplies a point in an elliptic curve over a quartic extension by an integer
- * using interleaved regular tau-adic expansions and complete formulas, in
- * constant time and without exceptions. Curves where a power of psi does not
+ * Multiplies a point in an elliptic curve over a quartic extension by an
+ * integer using interleaved regular tau-adic expansions and complete formulas,
+ * in constant time and without exceptions. Curves where a power of psi does not
  * act as a unit use the regular method.
  *
  * @param[out] r			- the result.
@@ -3372,8 +3374,8 @@ void ep8_dbl_jacob(ep8_t r, const ep8_t p);
 void ep8_tpl_basic(ep8_t r, const ep8_t p);
 
 /**
- * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
- * an octic extension.
+ * Triples a point represented in homogeneous projective coordinates on an
+ * elliptic curve over an octic extension.
  *
  * @param[out] r				- the result.
  * @param[in] p					- the point to triple.
@@ -3430,7 +3432,7 @@ void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k);
  * Multiplies a point in an elliptic curve over an octic extension by an integer
  * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
  * w of the endomorphism and the decomposition along psi. Curves where a power
- * of psi does not act as a unit use the w-NAF method.
+ * of psi does not act as a small element of Z[w] use the w-NAF method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -3985,8 +3987,8 @@ void ep9_dbl_jacob(ep9_t r, const ep9_t p);
 void ep9_tpl_basic(ep9_t r, const ep9_t p);
 
 /**
- * Triples a point represented in homogeneous projective coordinates on an elliptic curve over
- * a nonic extension.
+ * Triples a point represented in homogeneous projective coordinates on an
+ * elliptic curve over a nonic extension.
  *
  * @param[out] r				- the result.
  * @param[in] p					- the point to triple.
@@ -4043,7 +4045,8 @@ void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k);
  * Multiplies a point in an elliptic curve over a nonic extension by an integer
  * using interleaved tau-adic NAFs, with tau = 1 - w for the cube root of unity
  * w of the endomorphism and the decomposition along psi. Curves where a power
- * of psi does not act as a unit use the w-NAF method.
+ * of psi does not act as a small element of Z[w] use the w-NAF method, as do
+ * the SG54 curves, whose decomposition along psi has dimension 10.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -4055,7 +4058,8 @@ void ep9_mul_twnaf(ep9_t r, const ep9_t p, const bn_t k);
  * Multiplies a point in an elliptic curve over a nonic extension by an integer
  * using interleaved regular tau-adic expansions and complete formulas, in
  * constant time and without exceptions. Curves where a power of psi does not
- * act as a unit use the regular method.
+ * act as a unit use the regular method, as do the SG54 curves, whose
+ * decomposition along psi has dimension 10.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

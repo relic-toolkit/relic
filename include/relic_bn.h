@@ -1751,13 +1751,15 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
  * @param[in] u				- the first coordinate.
  * @param[in] v				- the coordinate of w.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
+ * @throw ERR_NO_PRECI		- if the coordinates are too large.
  */
 void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v);
 
 /**
  * Recodes an element u + v * w of Z[w], for a primitive cube root of unity w,
  * in constant time as a regular \tau-adic expansion with \tau = 1 - w: a
- * nonzero digit at every position multiple of 3, least significant first.
+ * nonzero digit at every position multiple of 3, least significant first,
+ * where reg[i] is the digit at position 3i.
  * Digit 6 * i + j is the unit (-1)^(j / 3) * w^(j % 3) times the i-th base
  * digit among 1, 2, 1 + \tau, 1 - 2\tau, 2 + \tau and 1 + 2\tau. The element
  * is first incremented by c in {0, 1} so that \tau does not divide it, and
@@ -1770,6 +1772,7 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v);
  * @param[in] len			- the number of digits before the last.
  * @param[in] u				- the first coordinate.
  * @param[in] v				- the coordinate of w.
+ * @throw ERR_NO_PRECI		- if the coordinates are too large for len.
  */
 void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
 		const bn_t v);
