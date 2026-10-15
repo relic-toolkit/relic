@@ -63,7 +63,7 @@ static int memory(void) {
 
 static int util(void) {
 	uint_t bits;
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
@@ -163,8 +163,13 @@ static int util(void) {
 				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			}
 			fp_write_bin(bin, sizeof(bin), a);
-			fp_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			/* Values that are not reduced modulo p are rejected. */
+			memset(bin, 0xFF, sizeof(bin));
+			r = RLC_ERR;
+			TEST_ERR(r = fp_read_bin(b, bin, sizeof(bin)));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 

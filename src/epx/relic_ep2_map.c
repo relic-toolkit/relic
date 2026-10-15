@@ -201,6 +201,11 @@ void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len) {
 }
 
 void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
+	ep2_map_dst(p, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
+}
+
+void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t lpe = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 4 * lpe);
@@ -211,7 +216,7 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len) {
 		}
 		/* XXX(rsw) See note in ep/relic_ep_map.c about using MD_MAP. */
 		/* hash to a pseudorandom string using md_xmd */
-		md_xmd(r, 4 * lpe, msg, len, (const uint8_t *)"RELIC", 5);
+		md_xmd(r, 4 * lpe, msg, len, dst, dst_len);
 		ep2_map_from_field(p, r, 2 * lpe);
 	}
 	RLC_CATCH_ANY {

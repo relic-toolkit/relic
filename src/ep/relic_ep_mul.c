@@ -43,20 +43,14 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	ep_t q, t[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
-	bn_null(n);
-	bn_null(m);
-	bn_null(k0);
-	bn_null(k1);
+	bn_null_all(n, m, k0, k1);
 	ep_null(q);
 	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		ep_null(t[i]);
 	}
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-		bn_new(k0);
-		bn_new(k1);
+		bn_new_all(n, m, k0, k1);
 		ep_new(q);
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_new(t[i]);
@@ -120,11 +114,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-		bn_free(k0);
-		bn_free(k1);
-		bn_free(n)
+		bn_free_all(n, m, k0, k1);
 		ep_free(q);
 		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
 			ep_free(t[i]);
@@ -140,23 +130,15 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	ep_t q, t[1 << (RLC_WIDTH - 2)], u, w;
 	size_t l;
 
-	bn_null(n);
-	bn_null(m[0]);
-	bn_null(m[1]);
-	ep_null(q);
-	ep_null(u);
-	ep_null(w);
+	bn_null_all(n, m[0], m[1]);
+	ep_null_all(q, u, w);
 	for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		ep_null(t[i]);
 	}
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(m[0]);
-		bn_new(m[1]);
-		ep_new(q);
-		ep_new(u);
-		ep_new(w);
+		bn_new_all(n, m[0], m[1]);
+		ep_new_all(q, u, w);
 
 		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_new(t[i]);
@@ -240,13 +222,8 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(m[0]);
-		bn_free(m[1]);
-		bn_free(n);
-		ep_free(q);
-		ep_free(u);
-		ep_free(w);
+		bn_free_all(n, m[0], m[1]);
+		ep_free_all(q, u, w);
 		for (size_t i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
 			ep_free(t[i]);
 		}

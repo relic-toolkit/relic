@@ -61,8 +61,8 @@ static void fp4_mul_dxs_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp2_free(t0);
-		dv2_free_all(t1, u0, u1);
+		fp2_free_all(t0, t1);
+		dv2_free_all(u0, u1);
 	}
 }
 
@@ -123,8 +123,8 @@ void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp4_free(t0);
-		dv4_free_all(t1, u0, u1, u2, u3);
+		fp4_free_all(t0, t1);
+		dv4_free_all(u0, u1, u2, u3);
 	}
 }
 

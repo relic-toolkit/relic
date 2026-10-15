@@ -34,8 +34,7 @@
 #include "relic_conf.h"
 #include "relic_core.h"
 #include "relic_md.h"
-#include "sha.h"
-#include "blake2.h"
+#include "relic_md_hash.h"
 
 /*============================================================================*/
 /* Private definitions														*/
@@ -54,26 +53,6 @@
 	} while (0)
 
 /**
- * BLAKE2s-160 under the names expected by make_md_xmd.
- */
-#define B2S160_Message_Block_Size	BLAKE2S_BLOCKBYTES
-#define B2S160HashSize				RLC_MD_LEN_B2S160
-#define B2S160Context				blake2s_state
-#define B2S160Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S160)
-#define B2S160Input					blake2s_update
-#define B2S160Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S160)
-
-/**
- * BLAKE2s-256 under the names expected by make_md_xmd.
- */
-#define B2S256_Message_Block_Size	BLAKE2S_BLOCKBYTES
-#define B2S256HashSize				RLC_MD_LEN_B2S256
-#define B2S256Context				blake2s_state
-#define B2S256Reset(C)				blake2s_init(C, RLC_MD_LEN_B2S256)
-#define B2S256Input					blake2s_update
-#define B2S256Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S256)
-
-/**
  * Construct an extensible-output function based on HASH, which must be
  * one of SHA224, SHA256, SHA384, SHA512, B2S160 or B2S256.
  */
@@ -87,11 +66,12 @@
 #define _make_md_xmd(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)		\
 	void HName(uint8_t *buf, size_t buf_len, const uint8_t *in, size_t in_len,				\
 			const uint8_t *dst, size_t dst_len) {											\
-		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;							\
-		if (ell > 255 || dst_len > 255) {													\
+		/* At most 255 blocks, checked before the length can wrap around. */				\
+		if (buf_len > 255 * HHashSize || dst_len > 255) {									\
 			RLC_THROW(ERR_NO_VALID);														\
 			return;																			\
 		}																					\
+		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;							\
 																							\
 		/* info needed for hashing: zero padding and some lengths */						\
 		const uint8_t Z_pad[HBlockSize] = {													\
@@ -105,7 +85,11 @@
 		HContext ctx;																		\
 		_check_md(HReset(&ctx));															\
 		_check_md(HInput(&ctx, Z_pad, HBlockSize)); /* Z_pad */								\
-		_check_md(HInput(&ctx, in, in_len));		/* msg */								\
+		/* msg, in chunks that fit the 32-bit lengths of the hash */						\
+		for (size_t off = 0; off < in_len; off += (1U << 30)) {								\
+			size_t n = RLC_MIN(in_len - off, (size_t)1 << 30);								\
+			_check_md(HInput(&ctx, in + off, (unsigned int)n));								\
+		}																					\
 		_check_md(HInput(&ctx, lib0_str, 3));		/* l_i_b_str || I2OSP(0, 1) */			\
 		_check_md(HInput(&ctx, dst, dst_len));		/* DST */								\
 		_check_md(HInput(&ctx, dstlen_str, 1));		/* I2OSP(len(dst), 1) */				\

@@ -371,6 +371,7 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 		if (end == NULL) {
 			/* should not happen --- means there's no second coeff */
 			RLC_THROW(ERR_NO_VALID);
+			return 0;
 		}
 		unsigned len = end - str - offset;
 		fp_read_str(coeffs[degree][0], str + offset, len, 16);
@@ -904,6 +905,10 @@ void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r, co
 
 	fp2_copy(ctx->ep2_a, a);
 	fp2_copy(ctx->ep2_b, b);
+
+	ep2_detect_opt(&(ctx->ep2_opt_a), ctx->ep2_a);
+	ep2_detect_opt(&(ctx->ep2_opt_b), ctx->ep2_b);
+	ctx->ep2_is_ctmap = 0;
 
 	ep2_norm(ctx->ep2_g, g);
 	bn_copy(&(ctx->ep2_r), r);

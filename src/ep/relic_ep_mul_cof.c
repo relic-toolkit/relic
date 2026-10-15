@@ -57,6 +57,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
 				/* h = 1 */
+				ep_copy(r, p);
 				break;
 			case EP_B12:
 			case EP_B24:

@@ -56,7 +56,7 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_ONCE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
 
 /**
  * Tests a sequence of commands to see if they respect some property.
@@ -64,7 +64,7 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_CASE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
 	for (int i = 0; i < TESTS; i++)											\
 
 /**
@@ -81,6 +81,22 @@ extern "C" {
 		test_fail(__FILE__, __LINE__);										\
 		RLC_ERROR(LABEL);													\
 	}																		\
+
+/**
+ * Runs commands that are expected to throw an error, with error messages
+ * disabled. The error code is reset before, so that err_get_code() returns
+ * whether the commands threw.
+ *
+ * @param[in] ...			- the commands.
+ */
+#define TEST_ERR(...)														\
+	err_get_code();															\
+	err_set_quiet(1);														\
+	RLC_TRY {																\
+		__VA_ARGS__;														\
+	} RLC_CATCH_ANY {														\
+	}																		\
+	err_set_quiet(0)														\
 
 /**
  * Finalizes a test printing the test result.

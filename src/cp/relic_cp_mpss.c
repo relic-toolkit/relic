@@ -50,13 +50,13 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t h, g2_t x[2], g2_t y[2]) {
 
 		bn_rand_mod(r[0], n);
 		bn_rand_mod(r[1], n);
-		g2_mul(x[0], h, r[0]);
-		g2_mul(x[1], h, r[1]);
+		g2_mul_sec(x[0], h, r[0]);
+		g2_mul_sec(x[1], h, r[1]);
 
 		bn_rand_mod(s[0], n);
 		bn_rand_mod(s[1], n);
-		g2_mul(y[0], h, s[0]);
-		g2_mul(y[1], h, s[1]);
+		g2_mul_sec(y[0], h, s[0]);
+		g2_mul_sec(y[1], h, s[1]);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
@@ -109,8 +109,8 @@ int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
 		g1_rand(b[1]);
 		g1_add(a, b[0], b[1]);
 		g1_norm(a, a);
-		g1_mul(b[0], a, d[0]);
-		g1_mul(b[1], a, d[1]);
+		g1_mul_sec(b[0], a, d[0]);
+		g1_mul_sec(b[1], a, d[1]);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
@@ -187,7 +187,7 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
 		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
 		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
-		if (g1_is_infty(a)) {
+		if (!g1_is_valid(a)) {
 			gt_rand(e);
 		} else {
 			/* Now combine shares and multiply. */
@@ -230,14 +230,14 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2],
 
 		bn_rand_mod(r[0], n);
 		bn_rand_mod(r[1], n);
-		g2_mul(x[0], h, r[0]);
-		g2_mul(x[1], h, r[1]);
+		g2_mul_sec(x[0], h, r[0]);
+		g2_mul_sec(x[1], h, r[1]);
 
 		for (size_t i = 0; i < l; i++) {
 			bn_rand_mod(s[i][0], n);
 			bn_rand_mod(s[i][1], n);
-			g2_mul(y[i][0], h, s[i][0]);
-			g2_mul(y[i][1], h, s[i][1]);
+			g2_mul_sec(y[i][0], h, s[i][0]);
+			g2_mul_sec(y[i][1], h, s[i][1]);
 		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -320,8 +320,8 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
 		g1_rand(b[1]);
 		g1_add(a, b[0], b[1]);
 		g1_norm(a, a);
-		g1_mul(b[0], a, t[0]);
-		g1_mul(b[1], a, t[1]);
+		g1_mul_sec(b[0], a, t[0]);
+		g1_mul_sec(b[1], a, t[1]);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -466,7 +466,7 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
 		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
-		if (g1_is_infty(a)) {
+		if (!g1_is_valid(a)) {
 			gt_rand(e);
 		} else {
 			/* Now combine shares and multiply. */

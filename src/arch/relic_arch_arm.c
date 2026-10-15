@@ -104,16 +104,16 @@ ull_t arch_cycles(void) {
 	return value;
 }
 
-uint_t arch_lzcnt(uint_t x) {
-#ifdef WSIZE == 32
+uint_t arch_lzcnt(dig_t x) {
+#if WSIZE == 32
 	return lzcnt32_gcc_arm(x);
 #elif WSIZE == 64
 	return lzcnt64_gcc_arm(x);
 #endif
 }
 
-uint_t arch_tzcnt(uint_t x) {
-#ifdef WSIZE == 32
+uint_t arch_tzcnt(dig_t x) {
+#if WSIZE == 32
 	return tzcnt32_gcc_arm(x);
 #elif WSIZE == 64
 	return tzcnt64_gcc_arm(x);

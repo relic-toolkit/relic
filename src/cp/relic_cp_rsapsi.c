@@ -32,11 +32,21 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Domain separation tag for hashing set elements to primes.
+ */
+#define RSAPSI_TAG		"RELIC-RSAPSI"
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 	bn_t p, q;
+	int result = RLC_OK;
 
 	bn_null(p);
 	bn_null(q);
@@ -59,20 +69,28 @@ int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 			bn_gcd(p, g, n);
 		} while (bn_cmp_dig(p, 1) != RLC_EQ);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(q);
 	}
 
-	return RLC_OK;
+	return result;
 }
 
 int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 		const bn_t *x, size_t m) {
 	int result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	size_t i;
-	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
+	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
+
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (i = 0; i < m; i++) {
+		if (bn_sign(x[i]) == RLC_NEG || bn_bits(x[i]) > RLC_BN_BITS) {
+			return RLC_ERR;
+		}
+	}
 
 	/* Compute R = g^r mod N. */
 	bn_rand_mod(r, n);
@@ -81,14 +99,12 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
 	/* Now hash all x_i and accmulate on R. */
 	for (i = 0; i < m; i++) {
 		bn_write_bin(bin, len, x[i]);
-		md_map(h, bin, len);
-		bn_read_bin(p[i], h, 2 * CP_STAT_SEC / 8);
-		if (bn_is_even(p[i])) {
-			bn_add_dig(p[i], p[i], 1);
+		/* Primes of 2 * CP_STAT_SEC bits avoid accidental collisions. */
+		if (bn_map_prime(p[i], NULL, bin, len, 2 * CP_STAT_SEC, 0,
+				(const uint8_t *)RSAPSI_TAG, strlen(RSAPSI_TAG)) != RLC_OK) {
+			result = RLC_ERR;
+			break;
 		}
-		do {
-			bn_add_dig(p[i], p[i], 2);
-		} while (!bn_is_prime(p[i]));
 		bn_mxp(d, d, p[i], n);
 	}
 
@@ -103,30 +119,42 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 	uint_t *shuffle = RLC_ALLOCA(uint_t, l);
 	bn_t p;
 
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (j = 0; j < l; j++) {
+		if (bn_sign(y[j]) == RLC_NEG || bn_bits(y[j]) > RLC_BN_BITS) {
+			RLC_FREE(shuffle);
+			return RLC_ERR;
+		}
+	}
+
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(p);
 
 	RLC_TRY {
 		bn_new(p);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, l);
 
 		for (j = 0; j < l; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
-			md_map(h, bin, len);
-			bn_read_bin(p, h, 2 * CP_STAT_SEC / 8);
-			if (bn_is_even(p)) {
-				bn_add_dig(p, p, 1);
+			if (bn_map_prime(p, NULL, bin, len, 2 * CP_STAT_SEC, 0,
+					(const uint8_t *)RSAPSI_TAG, strlen(RSAPSI_TAG))
+					!= RLC_OK) {
+				RLC_THROW(ERR_NO_VALID);
 			}
-			do {
-				bn_add_dig(p, p, 2);
-			} while (!bn_is_prime(p));
 			bn_mxp(p, g, p, n);
 			bn_rand_mod(t[j], n);
 			bn_mxp(u[j], p, t[j], n);
 			bn_mxp(t[j], d, t[j], n);
+			/* Send only a hash of the tag, or the receiver could test any
+			 * guess against it, and not only its own elements. */
+			bn_write_bin(bin, len, t[j]);
+			md_map(h, bin, len);
+			bn_read_bin(t[j], h, RLC_MD_LEN);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -144,6 +172,7 @@ int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
 		size_t l) {
 	int result = RLC_OK;
 	size_t i, j, k;
+	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	bn_t e, f;
 
 	bn_null(e);
@@ -164,9 +193,21 @@ int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
 							bn_mxp(e, e, p[i], n);
 						}
 					}
+					/* Compare with the hash of the tag sent by the sender. */
+					bn_write_bin(bin, sizeof(bin), e);
+					md_map(h, bin, sizeof(bin));
+					bn_read_bin(e, h, RLC_MD_LEN);
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
-						bn_copy(z[*len], x[k]);
-						(*len)++;
+						/* Report each element once, so that len <= m. */
+						for (i = 0; i < *len; i++) {
+							if (bn_cmp(z[i], x[k]) == RLC_EQ) {
+								break;
+							}
+						}
+						if (i == *len) {
+							bn_copy(z[*len], x[k]);
+							(*len)++;
+						}
 					}
 				}
 			}

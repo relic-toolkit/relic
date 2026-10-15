@@ -40,7 +40,7 @@ static int pdpub(void) {
 	bn_t x, t, r1, r2;
 	g1_t p, u1, v1, w1;
 	g2_t q, u2, v2, w2;
-	gt_t e, r, g[3];
+	gt_t e, r, g[3], f;
 
 	bn_null(t);
 	bn_null(x);
@@ -59,8 +59,10 @@ static int pdpub(void) {
 	gt_null(g[0]);
 	gt_null(g[1]);
 	gt_null(g[2]);
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(t);
 		bn_new(x);
 		bn_new(r1);
@@ -84,6 +86,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_cades_ask(t, u1, u2, e, p, q) == RLC_OK, end);
 			TEST_ASSERT(cp_cades_ans(g, u1, u2, p, q) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 1, end);
 			pc_map(g[0], p, q);
 			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
@@ -95,6 +104,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
@@ -106,6 +122,13 @@ static int pdpub(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_lvpub_ask(v1, w2, r1, p, q, r2, u1, u2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_lvpub_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_lvpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
@@ -114,6 +137,12 @@ static int pdpub(void) {
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
 			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
 			pc_map(e, p, q);
@@ -142,6 +171,7 @@ static int pdpub(void) {
 	gt_free(g[0]);
 	gt_free(g[1]);
 	gt_free(g[2]);
+	gt_free(f);
 	return code;
 }
 
@@ -150,7 +180,7 @@ static int pdprv(void) {
 	bn_t r1, r2[3];
 	g1_t p, u1[2], v1[3];
 	g2_t q, u2[2], v2[4], w2[4];
-	gt_t e[2], r, g[4];
+	gt_t e[2], r, g[4], f;
 
 	bn_null(r1);
 	g1_null(p);
@@ -170,8 +200,10 @@ static int pdprv(void) {
 		g2_null(w2[i]);
 		gt_null(g[i]);
 	}
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(r1);
 		g1_new(p);
 		g2_new(q);
@@ -197,6 +229,13 @@ static int pdprv(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ans(g, v1, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
@@ -208,6 +247,13 @@ static int pdprv(void) {
 			g2_rand(q);
 			TEST_ASSERT(cp_lvprv_ask(v1, w2, r1, p, q, r2, u1, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_lvprv_ans(g, v1, w2) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 0, end);
+			TEST_ASSERT(gt_is_unity(r), end);
+			gt_inv(f, f);
+			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
@@ -236,6 +282,7 @@ static int pdprv(void) {
 		g2_free(w2[i]);
 		gt_free(g[i]);
 	}
+	gt_free(f);
 	return code;
 }
 
@@ -246,7 +293,7 @@ static int pdbat(void) {
 	bn_t r, ls[AGGS], b[AGGS];
 	g1_t p[AGGS], rs[AGGS], u1, v1;
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2, w2;
-	gt_t e, ts[AGGS + 1], g[AGGS + 1];
+	gt_t e, ts[AGGS + 1], g[AGGS + 1], f;
 
 	bn_null(r);
 	g1_null(u1);
@@ -255,8 +302,23 @@ static int pdbat(void) {
 	g2_null(v2);
 	g2_null(w2);
 	gt_null(e);
+	for (size_t i = 0; i < AGGS; i++) {
+		bn_null(b[i]);
+		bn_null(ls[i]);
+		g1_null(p[i]);
+		g2_null(q[i]);
+		g1_null(rs[i]);
+		g2_null(s[i]);
+		g2_null(qs[i]);
+		gt_null(ts[i]);
+		gt_null(g[i]);
+	}
+	gt_null(ts[AGGS]);
+	gt_null(g[AGGS]);
+	gt_null(f);
 
 	RLC_TRY {
+		gt_new(f);
 		bn_new(r);
 		g1_new(u1);
 		g1_new(v1);
@@ -265,15 +327,6 @@ static int pdbat(void) {
 		g2_new(w2);
 		gt_new(e);
 		for (size_t i = 0; i < AGGS; i++) {
-			bn_null(b[i]);
-			bn_null(ls[i]);
-			g1_null(p[i]);
-			g2_null(q[i]);
-			g1_null(rs[i]);
-			g2_null(s[i]);
-			g2_null(qs[i]);
-			gt_null(ts[i]);
-			gt_null(g[i]);
 			bn_new(b[i]);
 			bn_new(ls[i]);
 			g1_new(p[i]);
@@ -286,8 +339,6 @@ static int pdbat(void) {
 			gt_new(ts[i]);
 			gt_new(g[i]);
 		}
-		gt_null(ts[AGGS]);
-		gt_null(g[AGGS]);
 		gt_new(ts[AGGS]);
 		gt_new(g[AGGS]);
 
@@ -295,10 +346,17 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_pdbat_gen(u1, u2, e) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ask(ls, b, rs, v2, u1, u2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(ts[0], ts[0], f);
+			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			gt_inv(f, f);
+			gt_mul(ts[0], ts[0], f);
 			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
@@ -306,10 +364,16 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_mvbat_gen(ls, u2, s, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ask(b, qs, s, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(ts[0], ts[0], f);
+			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			TEST_ASSERT(cp_mvbat_ans(ts, g, qs, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mvbat_ver(g, ts, g, b, ls, u2, p, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
@@ -317,16 +381,28 @@ static int pdbat(void) {
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
+			/* A modified answer is rejected and gives no result. */
+			gt_rand(f);
+			gt_mul(g[0], g[0], f);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 0, end);
+			TEST_ASSERT(gt_is_unity(g[0]), end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
-			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[i]);
-				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			for (size_t j = 0; j < AGGS; j++) {
+				pc_map(e, p[j], q[j]);
+				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
 		} TEST_END;
 	} RLC_CATCH_ANY {
@@ -355,6 +431,7 @@ static int pdbat(void) {
 	}
 	gt_free(ts[AGGS]);
 	gt_free(g[AGGS]);
+	gt_free(f);
 	return code;
 }
 
@@ -455,6 +532,9 @@ static int bgn(void) {
 	g2_null(f[1]);
 	bgn_null(pub);
 	bgn_null(prv);
+	for (int i = 0; i < 4; i++) {
+		gt_null(g[i]);
+	}
 
 	RLC_TRY {
 		g1_new(c[0]);
@@ -468,7 +548,6 @@ static int bgn(void) {
 		bgn_new(pub);
 		bgn_new(prv);
 		for (int i = 0; i < 4; i++) {
-			gt_null(g[i]);
 			gt_new(g[i]);
 		}
 
@@ -555,20 +634,24 @@ static int bgn(void) {
 static int bls(void) {
 	int code = RLC_ERR;
 	bn_t d;
-	g1_t s[2];
-	g2_t q[2];
+	g1_t a, s[2];
+	g2_t b, c, q[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	uint8_t n[5] = { 4, 3, 2, 1, 0 };
 	const uint8_t *ms[2] = { m, n };
 	const size_t ls[2] = { sizeof(m), sizeof(n) };
 
 	bn_null(d);
+	g1_null(a);
+	g2_null_all(b, c);
 	g1_null(s[0]);
 	g1_null(s[1]);
 	g2_null(q[0]);
 	g2_null(q[1]);
 
 	RLC_TRY {
+		g1_new(a);
+		g2_new_all(b, c);
 		bn_new(d);
 		g1_new(s[0]);
 		g1_new(s[1]);
@@ -598,17 +681,27 @@ static int bls(void) {
 		TEST_END;
 
 		TEST_CASE("boneh-drijvers-neven aggregate signature is correct") {
-			g1_set_infty(s[0]);
-			g2_set_infty(q[0]);
-			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 1, end);
+			for (int j = 0; j < 2; j++) {
+				TEST_ASSERT(cp_bls_gen(d, q[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_bls_sig(s[j], m, sizeof(m), d) == RLC_OK, end);
+			}
+			TEST_ASSERT(cp_bls_agg_sig(a, b, (const g1_t *)s, (const g2_t *)q,
+					2) == RLC_OK, end);
+			/* The aggregate verifies under the aggregate key. */
+			TEST_ASSERT(cp_bls_ver(a, m, sizeof(m), b) == 1, end);
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 2) == RLC_OK, end);
+			TEST_ASSERT(g2_cmp(b, c) == RLC_EQ, end);
 			m[0] ^= 1;
-			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 0, end);
+			TEST_ASSERT(cp_bls_ver(a, m, sizeof(m), b) == 0, end);
+			m[0] ^= 1;
+			/* The plain sum is not the aggregate, as keys are weighted. */
+			g1_add(s[0], s[0], s[1]);
+			g1_norm(s[0], s[0]);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), b) == 0, end);
+			/* Aggregating no keys or an invalid key fails. */
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 0) == RLC_ERR, end);
+			g2_set_infty(q[1]);
+			TEST_ASSERT(cp_bls_agg_key(c, (const g2_t *)q, 2) == RLC_ERR, end);
 			g1_set_infty(s[0]);
 			g2_set_infty(q[0]);
 			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
@@ -619,6 +712,16 @@ static int bls(void) {
 			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 1, end);
 			n[0] ^= 1;
 			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 0, end);
+			n[0] ^= 1;
+			/* Aggregates over repeated messages are rejected. */
+			TEST_ASSERT(cp_bls_sig(s[0], ms[1], ls[1], d) == RLC_OK, end);
+			g1_add(s[0], s[0], s[1]);
+			{
+				const uint8_t *dup[2] = { ms[1], ms[1] };
+				const size_t dl[2] = { ls[1], ls[1] };
+				g2_copy(q[0], q[1]);
+				TEST_ASSERT(cp_bls_agg_ver(s[0], dup, dl, 2, q) == 0, end);
+			}
 		}
 		TEST_END;
 	}
@@ -629,6 +732,8 @@ static int bls(void) {
 
   end:
 	bn_free(d);
+	g1_free(a);
+	g2_free_all(b, c);
 	g1_free(s[0]);
 	g1_free(s[1]);
 	g2_free(q[0]);
@@ -805,6 +910,11 @@ static int pss(void) {
 	g2_null(g);
 	g2_null(x);
 	g2_null(y);
+	for (i = 0; i < 5; i++) {
+		bn_null(ms[i]);
+		bn_null(_v[i]);
+		g2_null(_y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -819,9 +929,6 @@ static int pss(void) {
 		g1_get_ord(n);
 
 		for (i = 0; i < 5; i++) {
-			bn_null(ms[i]);
-			bn_null(_v[i]);
-			g2_null(_y[i]);
 			bn_new(ms[i]);
 			bn_rand_mod(ms[i], n);
 			bn_new(_v[i]);
@@ -882,6 +989,28 @@ static int mpss(void) {
 	bn_null(n);
 	g1_null(g);
 	g2_null(h);
+	for (i = 0; i < 2; i++) {
+		bn_null(m[i]);
+		bn_null(u[i]);
+		bn_null(v[i]);
+		g1_null(s[i]);
+		g2_null(x[i]);
+		g2_null(y[i]);
+		gt_null(e[i]);
+		gt_null(f[i]);
+		mt_null(tri[0][i]);
+		mt_null(tri[1][i]);
+		mt_null(tri[2][i]);
+		for (int j = 0; j < 5; j++) {
+			mt_null(btri[j][i]);
+		}
+		pt_null(t[i]);
+		for (j = 0; j < 5; j++) {
+			bn_null(ms[j][i]);
+			bn_null(_v[j][i]);
+			g2_null(_y[j][i]);
+		}
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -889,21 +1018,8 @@ static int mpss(void) {
 		g2_new(h);
 		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
-			bn_null(m[i]);
-			bn_null(u[i]);
-			bn_null(v[i]);
-			g1_null(s[i]);
-			g2_null(x[i]);
-			g2_null(y[i]);
-			gt_null(e[i]);
-			gt_null(f[i]);
-			mt_null(tri[0][i]);
-			mt_null(tri[1][i]);
-			mt_null(tri[2][i]);
 			for (int j = 0; j < 5; j++) {
-				mt_null(btri[j][i]);
 			}
-			pt_null(t[i]);
 			bn_new(m[i]);
 			bn_rand_mod(m[i], n);
 			bn_new(u[i]);
@@ -921,9 +1037,6 @@ static int mpss(void) {
 			}
 			pt_new(t[i]);
 			for (j = 0; j < 5; j++) {
-				bn_null(ms[j][i]);
-				bn_null(_v[j][i]);
-				g2_null(_y[j][i]);
 				bn_new(ms[j][i]);
 				bn_rand_mod(ms[j][i], n);
 				bn_new(_v[j][i]);
@@ -1096,7 +1209,8 @@ static int lhs(void) {
 	gt_t *hs[S], vk;
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
-	dig_t ft[S], *f[S] = { NULL };
+	bn_t ft[S];
+	dig_t *f[S] = { NULL };
 	size_t flen[S];
 	char *ls[L] = { NULL };
 
@@ -1106,6 +1220,29 @@ static int lhs(void) {
 	g1_null(_r);
 	g2_null(_s);
 	gt_null(vk);
+	for (int i = 0; i < S; i++) {
+		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
+		for (int j = 0; j < RLC_TERMS; j++) {
+			gt_null(hs[i][j]);
+		}
+		for (int j = 0; j < L; j++) {
+			bn_null(x[i][j]);
+			bn_null(msg[i][j]);
+			g1_null(a[i][j]);
+			g1_null(c[i][j]);
+			g1_null(r[i][j]);
+			g2_null(s[i][j]);
+		}
+		bn_null(sk[i]);
+		bn_null(ft[i]);
+		bn_null(d[i]);
+		g1_null(sig[i]);
+		g1_null(as[i]);
+		g1_null(cs[i]);
+		g2_null(y[i]);
+		g2_null(z[i]);
+		g2_null(pk[i]);
+	}
 
 	RLC_TRY {
 		bn_new(m);
@@ -1116,18 +1253,10 @@ static int lhs(void) {
 		gt_new(vk);
 
 		for (int i = 0; i < S; i++) {
-			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
-				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
 			}
 			for (int j = 0; j < L; j++) {
-				bn_null(x[i][j]);
-				bn_null(msg[i][j]);
-				g1_null(a[i][j]);
-				g1_null(c[i][j]);
-				g1_null(r[i][j]);
-				g2_null(s[i][j]);
 				bn_new(x[i][j]);
 				bn_new(msg[i][j]);
 				g1_new(a[i][j]);
@@ -1135,16 +1264,9 @@ static int lhs(void) {
 				g1_new(r[i][j]);
 				g2_new(s[i][j]);
 			}
-			bn_null(sk[i]);
-			bn_null(d[i]);
-			g1_null(sig[i]);
-			g1_null(as[i]);
-			g1_null(cs[i]);
-			g2_null(y[i]);
-			g2_null(z[i]);
-			g2_null(pk[i]);
 
 			bn_new(sk[i]);
+			bn_new(ft[i]);
 			bn_new(d[i]);
 			g1_new(sig[i]);
 			g1_new(as[i]);
@@ -1215,14 +1337,23 @@ static int lhs(void) {
 				flen, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
 				y, pk, S, b) == 1, end);
+			/* An aggregate s at infinity is rejected safely. */
+			g2_set_infty(_s);
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b) == 0,
+				end);
+			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
+				y, pk, S, b) == 0, end);
 		}
 		TEST_END;
 
 		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
+			/* Distinct tags, so that each label is hashed on its own. */
+			const char *tags[L] = { "l0", "l1", "l2", "l3" };
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
-					ls[l] = "l";
+					ls[l] = (char *)tags[l];
 					bn_rand_mod(msg[j][l], n);
 					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
 				}
@@ -1254,6 +1385,21 @@ static int lhs(void) {
 			cp_mklhs_off(as, ft, id, (const char **)ls, (const dig_t **)f,
 					flen, S);
 			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, id, as, ft, pk, S), end);
+
+			/* Moving bytes between the data set, identity and tag does not
+			 * give another valid signature. */
+			{
+				const char *x[1] = { "x" }, *t0[1] = { "zx" }, *t1[1] = { "yx" };
+				const dig_t one[1] = { 1 }, *fo[1] = { one };
+				const size_t fl[1] = { 1 };
+
+				bn_mod(msg[0][0], msg[0][0], n);
+				cp_mklhs_sig(_r, msg[0][0], "xy", x[0], t0[0], sk[0]);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", x, t0, fo,
+						fl, pk, 1) == 1, end);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xz", x, t1, fo,
+						fl, pk, 1) == 0, end);
+			}
 		}
 		TEST_END;
 	}
@@ -1285,6 +1431,7 @@ static int lhs(void) {
 			g2_free(s[i][j]);
 		}
 		bn_free(sk[i]);
+		bn_free(ft[i]);
 		bn_free(d[i]);
 		g1_free(sig[i]);
 		g1_free(as[i]);

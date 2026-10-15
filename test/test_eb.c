@@ -37,7 +37,8 @@
 #if ARCH == AVR || ARCH == MSP || ARCH == ARM
 #define SIM_LOT		4
 #else
-#define SIM_LOT		16
+/* Enough points to reach the bucket method. */
+#define SIM_LOT		40
 #endif
 
 static int memory(void) {
@@ -67,7 +68,7 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	eb_t a, b, c;
 	uint8_t bin[2 * RLC_FB_BYTES + 1];
 
@@ -155,19 +156,19 @@ static int util(void) {
 				eb_set_infty(a);
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				eb_dbl(a, a);
 				l = eb_size_bin(a, j);
 				eb_norm(a, a);
 				eb_write_bin(bin, l, a, j);
-				eb_read_bin(b, bin, l);
+				TEST_ASSERT(eb_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 			}
 		}
@@ -179,12 +180,9 @@ static int util(void) {
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
 				bin[0] = 5;
-				err_get_code();
-				RLC_TRY {
-					eb_read_bin(b, bin, l);
-				} RLC_CATCH_ANY {
-				}
-				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				r = RLC_ERR;
+				TEST_ERR(r = eb_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -1073,14 +1071,16 @@ static int simultaneous(void) {
 
 	bn_null(n);
 	eb_null(r);
+	for (int i = 0; i <= SIM_LOT; i++) {
+		bn_null(k[i]);
+		eb_null(p[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		eb_new(r);
 		for (int i = 0; i <= SIM_LOT; i++) {
-			bn_null(k[i]);
 			bn_new(k[i]);
-			eb_null(p[i]);
 			eb_new(p[i]);
 		}
 

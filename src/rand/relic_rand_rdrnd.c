@@ -43,12 +43,22 @@
 #if RAND == RDRND
 
 void rand_bytes(uint8_t *buf, size_t size) {
-	int i = 0, j;
+	size_t i = 0, j;
 	unsigned long long r;
+	int tries;
 
+	if (!core_get()->seeded) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
 	while (i < size) {
 #ifdef __RDRND__
-		while (_rdrand64_step(&r) == 0);
+		/* Intel recommends giving up after 10 consecutive failures. */
+		for (tries = 0; tries < 10 && _rdrand64_step(&r) == 0; tries++);
+		if (tries == 10) {
+			RLC_THROW(ERR_NO_RAND);
+			return;
+		}
 #else
 #error "RdRand not available, check your compiler settings."
 #endif

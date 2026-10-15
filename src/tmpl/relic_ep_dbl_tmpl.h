@@ -44,7 +44,8 @@
  */
 #define TMPL_EP_DBL_BASIC(C, F)												\
 	void C##_dbl_slp_basic(C##_t r, F##_t s, const C##_t p) {				\
-		if (C##_is_infty(p)) {												\
+		/* Points of order two double to infinity, with a vertical tangent. */\
+		if (C##_is_infty(p) || F##_is_zero(p->y)) {							\
 			C##_set_infty(r);												\
 			return;															\
 		}																	\

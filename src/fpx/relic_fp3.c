@@ -47,14 +47,17 @@ int fp3_size_bin(const fp3_t a, int pack) {
 	return 3 * RLC_FP_BYTES;
 }
 
-void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len) {
+int fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len) {
 	if (len != 3 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
-	fp_read_bin(a[0], bin, RLC_FP_BYTES);
-	fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES);
-	fp_read_bin(a[2], bin + 2 * RLC_FP_BYTES, RLC_FP_BYTES);
+	for (int i = 0; i < 3; i++) {
+		if (fp_read_bin(a[i], bin + i * RLC_FP_BYTES, RLC_FP_BYTES) != RLC_OK) {
+			return RLC_ERR;
+		}
+	}
+	return RLC_OK;
 }
 
 void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack) {
@@ -167,7 +170,6 @@ void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 #else
 		fp_addc_low(t6, t0, t2);
 #endif
-		fp_addc_low(t6, t0, t2);
 		fp_subc_low(t5, t, t6);
 		fp_addc_low(t5, t5, t1);
 
@@ -236,14 +238,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 			case 1:
 			case 7:
 				if (cnr != 0) {
-					fp3_copy(u, a);
-					while (cnr > 1) {
-						fp3_dbl(u, u);
-						if (cnr & 1) {
-							fp3_add(u, u, a);
-						}
-						cnr = cnr >> 1;
-					}
+					fp3_mul_dig(u, a, cnr);
 					if (fp3_field_get_cnr() > 0) {
 						fp3_add(t, t, u);
 					} else {

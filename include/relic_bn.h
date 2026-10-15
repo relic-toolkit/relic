@@ -1080,7 +1080,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
  *
  * @param[out] c			- the results.
  * @param[in] a				- the elements to invert.
- * param[in] b				- the modulus.
+ * @param[in] b				- the modulus.
  * @param[in] n				- the number of elements.
  */
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
@@ -1856,15 +1856,43 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
- * Evaluates an interpolated n-degree polynomial over a value in a modular way,
- * given the (n+1) coefficients of the polynomial and the modulus.
- * Computes c = a(x) mod q.
+ * Precomputes the barycentric weights of a set of distinct abscissas for
+ * Lagrange interpolation modulo a prime.
+ * Computes w_j = 1 / \prod_{m != j}(a_j - a_m) mod b.
+ *
+ * @param[out] w			- the weights.
+ * @param[in] a				- the abscissas.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of abscissas.
+ * @throw ERR_NO_VALID		- if two abscissas are equal modulo b.
+ */
+void bn_lag_pre(bn_t *w, const bn_t *a, const bn_t b, size_t n);
+
+/**
+ * Computes the Lagrange coefficients at a point from precomputed barycentric
+ * weights, so that the polynomial through (a_j, y_j) evaluates at x to
+ * \sum_j c_j y_j. Computes c_j = w_j \prod_{m != j}(x - a_m) mod b.
+ *
+ * @param[out] c			- the coefficients, distinct from a and w.
+ * @param[in] x				- the point of evaluation.
+ * @param[in] a				- the abscissas.
+ * @param[in] w				- the weights of the abscissas.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of abscissas.
+ */
+void bn_lag_fix(bn_t *c, const bn_t x, const bn_t *a, const bn_t *w,
+		const bn_t b, size_t n);
+
+/**
+ * Evaluates a polynomial at a value in a modular way, given its n
+ * coefficients and the modulus.
+ * Computes c = a(x) mod b.
  *
  * @param[out] c			- the result of the evaluation.
- * @param[in] a			- the coefficients of the polynomial.
+ * @param[in] a				- the coefficients of the polynomial.
  * @param[in] x				- the value to evaluate.
  * @param[in] b				- the modulus.
- * @param[in] n				- the degree of the polynomial.
+ * @param[in] n				- the number of coefficients.
  */
 void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n);
 	

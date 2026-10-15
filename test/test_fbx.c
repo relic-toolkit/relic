@@ -303,8 +303,7 @@ static int solve2(void) {
 		TEST_CASE("solving a quadratic equation is correct") {
 			fb2_rand(a);
 			fb2_rand(b);
-			/* Make Tr(a_1) = 0. */
-			fb_add_dig(a[0], a[0], fb_trc(a[0]));
+			/* Make Tr(a_1) = 0, which is enough for a solution. */
 			fb_add_dig(a[1], a[1], fb_trc(a[1]));
 			fb2_slv(b, a);
 			/* Verify the solution. */

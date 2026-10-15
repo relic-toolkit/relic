@@ -237,13 +237,18 @@ static unsigned int tzcnt64_gcc_builtin(unsigned long long x)
 }
 #endif
 
-static int has_tzcnt_hard()
+static int has_tzcnt_hard(void)
 {
 #if defined(ARCH_X86) || defined(ARCH_X64)
     int info[4] = {0};
 
+    /* TZCNT belongs to BMI1, reported in EBX bit 3 of leaf 7, sub-leaf 0. */
     #if defined(_MSC_VER)
-        __cpuid(info, 0x80000001);
+        __cpuid(info, 0);
+        if (info[0] < 7) {
+            return 0;
+        }
+        __cpuidex(info, 7, 0);
     #elif defined(__GNUC__) || defined(__clang__)
         /*
         It looks like the -fPIC option uses the ebx register which GCC complains about. We can work around this by just using a different register, the
@@ -252,21 +257,26 @@ static int has_tzcnt_hard()
 
         What's basically happening is that we're saving and restoring the ebx register manually.
         */
+        for (int leaf = 0; leaf <= 7; leaf += 7) {
         #if defined(ARCH_X86) && defined(__PIC__)
             __asm__ __volatile__ (
                 "xchg{l} {%%}ebx, %k1;"
                 "cpuid;"
                 "xchg{l} {%%}ebx, %k1;"
-                : "=a"(info[0]), "=&r"(info[1]), "=c"(info[2]), "=d"(info[3]) : "a"(0x80000001), "c"(0)
+                : "=a"(info[0]), "=&r"(info[1]), "=c"(info[2]), "=d"(info[3]) : "a"(leaf), "c"(0)
             );
         #else
             __asm__ __volatile__ (
-                "cpuid" : "=a"(info[0]), "=b"(info[1]), "=c"(info[2]), "=d"(info[3]) : "a"(0x80000001), "c"(0)
+                "cpuid" : "=a"(info[0]), "=b"(info[1]), "=c"(info[2]), "=d"(info[3]) : "a"(leaf), "c"(0)
             );
         #endif
+            if (leaf == 0 && info[0] < 7) {
+                return 0;
+            }
+        }
     #endif
 
-    return (info[2] & (1 << 5)) != 0;
+    return (info[1] & (1 << 3)) != 0;
 #elif defined(ARCH_ARM)
     return 1;   /* The CLZ instruction is available starting from ARM architecture version 5. Our ARCH_ARM #define is only defined when targeting version 5 at compile time. */
 #else
@@ -314,6 +324,8 @@ static int has_tzcnt_hard()
                     return sizeof(x) << 3;
                 }
 
+                /* Isolate the lowest set bit, whose index is 31 - clz. */
+                x &= 0U - x;
                 __asm__ __volatile__ (
                 #if defined(ARCH_32BIT)
                     "clz %[out], %[in]" : [out]"=r"(r) : [in]"r"(x)
@@ -376,7 +388,10 @@ static int has_tzcnt_hard()
         #if defined(__GNUC__) || defined(__clang__)
             static unsigned int tzcnt64_gcc_arm(unsigned long long x)
             {
-				return __builtin_ctzl(x);
+                if (x == 0) {
+                    return 64;
+                }
+                return __builtin_ctzll(x);
             }
         #endif
     #endif
@@ -443,7 +458,7 @@ inline static unsigned int tzcnt32(unsigned int x)
     }
 }
 
-inline static unsigned int tzcnt64(unsigned int x)
+inline static unsigned int tzcnt64(unsigned long long x)
 {
 #if defined(HAS_TZCNT64_HARD)
     if (has_tzcnt_hard()) {

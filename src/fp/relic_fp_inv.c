@@ -155,11 +155,10 @@ static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	/* Choose md and me to clear the low s bits of the sums. */
 	md = (u & sd) + (v & se);
 	me = (q & sd) + (r & se);
-	/* The products are taken in dbl_t, since dig_t may be promoted to int. */
-	cd = (dig_t)((dbl_t)(dig_t)u * d[0]) + (dig_t)((dbl_t)(dig_t)v * e[0]);
-	ce = (dig_t)((dbl_t)(dig_t)q * d[0]) + (dig_t)((dbl_t)(dig_t)r * e[0]);
-	md -= (md - (dig_t)((dbl_t)cd * rdc)) & RLC_MASK(s);
-	me -= (me - (dig_t)((dbl_t)ce * rdc)) & RLC_MASK(s);
+	cd = RLC_MUL_LOW((dig_t)u, d[0]) + RLC_MUL_LOW((dig_t)v, e[0]);
+	ce = RLC_MUL_LOW((dig_t)q, d[0]) + RLC_MUL_LOW((dig_t)r, e[0]);
+	md -= (md - RLC_MUL_LOW(cd, rdc)) & RLC_MASK(s);
+	me -= (me - RLC_MUL_LOW(ce, rdc)) & RLC_MASK(s);
 
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
@@ -619,7 +618,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 		fp_mul(c, v, t);
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free(t);

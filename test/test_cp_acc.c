@@ -53,6 +53,22 @@ static int psi(void) {
 	bn_null(r);
 	g1_null(ss);
 	crt_null(crt);
+	for (int i = 0; i < M; i++) {
+		bn_null(p[i]);
+		bn_null(x[i]);
+		bn_null(z[i]);
+		g2_null(d[i]);
+		g2_null(s[i]);
+	}
+	g2_null(s[M]);
+	g2_null(d[M]);
+	for (int i = 0; i < N; i++) {
+		bn_null(v[i]);
+		bn_null(w[i]);
+		bn_null(y[i]);
+		g1_null(u[i]);
+		gt_null(t[i]);
+	}
 
 	RLC_TRY {
 		bn_new(g);
@@ -61,27 +77,15 @@ static int psi(void) {
 		bn_new(r);
 		g1_new(ss);
 		for (int i = 0; i < M; i++) {
-			bn_null(p[i]);
-			bn_null(x[i]);
-			bn_null(z[i]);
-			g2_null(d[i]);
-			g2_null(s[i]);
 			bn_new(p[i]);
 			bn_new(x[i]);
 			bn_new(z[i]);
 			g2_new(d[i]);
 			g2_new(s[i]);
 		}
-		g2_null(s[M]);
 		g2_new(s[M]);
-		g2_null(d[M]);
 		g2_new(d[M]);
 		for (int i = 0; i < N; i++) {
-			bn_null(v[i]);
-			bn_null(w[i]);
-			bn_null(y[i]);
-			g1_null(u[i]);
-			gt_null(t[i]);
 			bn_new(v[i]);
 			bn_new(w[i]);
 			bn_new(y[i]);
@@ -109,6 +113,13 @@ static int psi(void) {
 				TEST_ASSERT(cp_rsapsi_int(z, &l, r, p, n, x, M, v, w, N) == RLC_OK, end);
 				TEST_ASSERT(l == k, end);
 			}
+			/* A single element found twice is reported once. */
+			bn_copy(y[0], x[0]);
+			bn_copy(y[1], x[0]);
+			TEST_ASSERT(cp_rsapsi_ask(q, r, p, g, n, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_rsapsi_ans(v, w, q, g, n, y, N) == RLC_OK, end);
+			TEST_ASSERT(cp_rsapsi_int(z, &l, r, p, n, x, 1, v, w, N) == RLC_OK, end);
+			TEST_ASSERT(l == 1 && bn_cmp(z[0], x[0]) == RLC_EQ, end);
 		} TEST_END;
 
 		result = cp_shipsi_gen(g, crt, RLC_BN_BITS);
@@ -132,6 +143,14 @@ static int psi(void) {
 					N) == RLC_OK, end);
 				TEST_ASSERT(l == k, end);
 			}
+			/* A single element found twice is reported once. */
+			bn_copy(y[0], x[0]);
+			bn_copy(y[1], x[0]);
+			TEST_ASSERT(cp_shipsi_ask(q, r, p, g, crt->n, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK, end);
+			TEST_ASSERT(cp_shipsi_int(z, &l, r, p, crt->n, x, 1, v, w[0],
+				N) == RLC_OK, end);
+			TEST_ASSERT(l == 1 && bn_cmp(z[0], x[0]) == RLC_EQ, end);
 		} TEST_END;
 
 		if (pc_param_set_any() == RLC_OK) {
@@ -154,6 +173,14 @@ static int psi(void) {
 						end);
 					TEST_ASSERT(l == k, end);
 				}
+				/* A single element found twice is reported once. */
+				bn_copy(y[0], x[0]);
+				bn_copy(y[1], x[0]);
+				TEST_ASSERT(cp_pbpsi_ask(d, r, x, s, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_int(z, &l, d, x, 1, t, u, N) == RLC_OK,
+					end);
+				TEST_ASSERT(l == 1 && bn_cmp(z[0], x[0]) == RLC_EQ, end);
 			} TEST_END;
 		}
 	}

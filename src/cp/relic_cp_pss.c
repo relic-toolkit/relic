@@ -48,8 +48,8 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 		bn_rand_mod(r, n);
 		bn_rand_mod(s, n);
 		g2_rand(g);
-		g2_mul(x, g, r);
-		g2_mul(y, g, s);
+		g2_mul_sec(x, g, r);
+		g2_mul_sec(y, g, s);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -77,7 +77,7 @@ int cp_pss_sig(g1_t a, g1_t b, const bn_t m, const bn_t r, const bn_t s) {
 		bn_add(t, t, r);
 		bn_mod(t, t, n);
 		g1_rand(a);
-		g1_mul(b, a, t);
+		g1_mul_sec(b, a, t);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -118,7 +118,7 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 		g2_norm(r[0], r[0]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e) && !g1_is_infty(a)) {
+		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
 			result = 1;
 		}
 	}
@@ -149,10 +149,10 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l) {
 		pc_get_ord(n);
 		bn_rand_mod(r, n);
 		g2_rand(g);
-		g2_mul(x, g, r);
+		g2_mul_sec(x, g, r);
 		for (i = 0; i < l; i++) {
 			bn_rand_mod(s[i], n);
-			g2_mul(y[i], g, s[i]);
+			g2_mul_sec(y[i], g, s[i]);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -192,7 +192,7 @@ int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
 			bn_add(t, t, m);
 			bn_mod(t, t, n);
 		}
-		g1_mul(b, a, t);
+		g1_mul_sec(b, a, t);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -241,7 +241,7 @@ int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
 		g2_copy(q[1], g);
 		g2_neg(q[1], q[1]);
 		pc_map_sim(e, p, q, 2);
-		if (!g1_is_infty(a) && gt_is_unity(e)) {
+		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
 			result = 1;
 		}
 	}

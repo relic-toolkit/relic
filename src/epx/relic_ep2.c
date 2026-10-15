@@ -74,8 +74,9 @@ void ep2_frb(ep2_t r, const ep2_t p, int i) {
 			
 			/* Can we do faster than this? */
 			fp_prime_get_par(t);
+			ep2_copy(r, p);
 			for (; i > 0; i--) {
-				ep2_mul_basic(r, p, t);
+				ep2_mul_basic(r, r, t);
 			}
 		} RLC_CATCH_ANY {
 			RLC_THROW(ERR_NO_MEMORY);

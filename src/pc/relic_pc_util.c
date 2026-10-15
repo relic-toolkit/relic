@@ -648,3 +648,39 @@ int gt_is_valid(const gt_t a) {
 
 	return r;
 }
+
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Points on the curve may lie outside the subgroup of prime order. */
+	if (!g1_is_infty(a) && !g1_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
+}
+
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Points on the curve may lie outside the subgroup of prime order. */
+	if (!g2_is_infty(a) && !g2_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
+}
+
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_GT_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Field elements may lie outside the subgroup of prime order. */
+	if (!gt_is_unity(a) && !gt_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
+}

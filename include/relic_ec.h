@@ -150,6 +150,17 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_free(A)				RLC_CAT(RLC_EC_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ec_null_all(...)		RLC_EACH(ec_null, __VA_ARGS__)
+#define ec_new_all(...)			RLC_EACH(ec_new, __VA_ARGS__)
+#define ec_free_all(...)		RLC_EACH(ec_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group of points in the elliptic curve.
  *
  * @param[out] G				- the returned generator.
@@ -265,6 +276,14 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_on_curve(P)			RLC_CAT(RLC_EC_LOWER, on_curve)(P)
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] P					- the point to test.
+ */
+#define ec_is_valid(P)			RLC_CAT(RLC_EC_LOWER, is_valid)(P)
+
+/**
  * Returns the number of bytes necessary to store an elliptic curve point with
  * optional point compression.
  *
@@ -279,6 +298,9 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[out] A				- the result.
  * @param[in] B					- the byte vector.
  * @param[in] L					- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID			- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER			- if the buffer capacity is invalid.
  */
 #define ec_read_bin(A, B, L)	RLC_CAT(RLC_EC_LOWER, read_bin)(A, B, L)
 
@@ -342,6 +364,20 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[in] K					- the integer.
  */
 #define ec_mul(R, P, K)			RLC_CAT(RLC_EC_LOWER, mul)(R, P, K)
+
+/**
+ * Multiplies an elliptic curve point by a secret integer in constant time.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the secret integer.
+ */
+#if EC_CUR == CHAR2
+#define ec_mul_sec(R, P, K)		eb_mul_lodah(R, P, K)
+#else
+#define ec_mul_sec(R, P, K)		RLC_CAT(RLC_EC_LOWER, mul_lwreg)(R, P, K)
+#endif
 
 /**
  * Multiplies the generator of a prime elliptic curve by an integer.

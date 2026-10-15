@@ -306,7 +306,8 @@ static int rsa(void) {
 				bn_read_str(*k[j], rsa_kat[j], strlen(rsa_kat[j]), 16);
 			}
 			bn_copy(prv->crt->n, pub->crt->n);
-			bn_set_dig(pub->e, 65537);
+			bn_set_2b(pub->e, 16);
+			bn_add_dig(pub->e, pub->e, 1);
 			bn_copy(prv->e, pub->e);
 			ol = bn_size_bin(pub->crt->n);
 			/* OAEP. */
@@ -353,9 +354,9 @@ static int rsa(void) {
 static int rabin(void) {
 	int code = RLC_ERR;
 	rabin_t pub, prv;
-	uint8_t in[10];
-	uint8_t out[RLC_BN_BITS / 8 + 1];
-	size_t in_len, out_len;
+	uint8_t in[RLC_BN_BITS / 8 + 1];
+	uint8_t out[RLC_BN_BITS / 8 + 1], tmp[RLC_BN_BITS / 8 + 1];
+	size_t in_len, out_len, tmp_len, k;
 	int result;
 
 	rabin_null(pub);
@@ -369,14 +370,40 @@ static int rabin(void) {
 
 		TEST_CASE("rabin encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
+			/* Messages may take up to k - 19 bytes for a k-byte modulus. */
+			k = bn_size_bin(pub->n);
+			for (int j = 0; j < 3; j++) {
+				in_len = (j == 0 ? 1 : (j == 1 ? 10 : k - 19));
+				out_len = sizeof(out);
+				rand_bytes(in, in_len);
+				TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len,
+								pub) == RLC_OK, end);
+				TEST_ASSERT(cp_rabin_dec(out, &out_len, out, out_len,
+								prv) == RLC_OK, end);
+				TEST_ASSERT(out_len == in_len && memcmp(in, out, in_len) == 0,
+						end);
+			}
+			out_len = sizeof(out);
+			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, k - 18, pub) == RLC_ERR,
+					end);
+			/* Encryption is randomized. */
 			in_len = 10;
-			out_len = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, in_len);
+			out_len = tmp_len = sizeof(out);
 			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len, pub) == RLC_OK,
 					end);
-			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, out_len,
-							prv) == RLC_OK, end);
-			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
+			TEST_ASSERT(cp_rabin_enc(tmp, &tmp_len, in, in_len, pub) == RLC_OK,
+					end);
+			TEST_ASSERT(memcmp(out, tmp, out_len) != 0, end);
+			/* A modified ciphertext is rejected. */
+			out[out_len - 1] ^= 1;
+			tmp_len = sizeof(tmp);
+			TEST_ASSERT(cp_rabin_dec(tmp, &tmp_len, out, out_len,
+							prv) == RLC_ERR, end);
+			/* A zero ciphertext has no valid padding. */
+			memset(out, 0, sizeof(out));
+			out_len = sizeof(out);
+			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, bn_size_bin(pub->n),
+							prv) == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -441,6 +468,16 @@ static int benaloh(void) {
 			TEST_ASSERT(cp_bdpe_dec(&out, buf, len, prv) == RLC_OK, end);
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
+
+		TEST_CASE("benaloh rejects invalid parameters") {
+			/* Plaintexts must be smaller than the block size. */
+			len = RLC_BN_BITS / 8 + 1;
+			TEST_ASSERT(cp_bdpe_enc(buf, &len, prime, pub) == RLC_ERR, end);
+			/* Block sizes must be odd primes, or no key exists. */
+			result = RLC_OK;
+			TEST_ERR(result = cp_bdpe_gen(pub, prv, 2, RLC_BN_BITS));
+			TEST_ASSERT(result == RLC_ERR, end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
@@ -502,7 +539,7 @@ static int paillier(void) {
 		}
 		TEST_END;
 
-		for (int k = 1; k <= 2; k++) {
+		for (int k = 1; k <= 3; k++) {
 			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / (2 * k));
 			util_print("(s = %d) ", k);
 			TEST_CASE("general paillier encryption/decryption is correct") {
@@ -521,15 +558,17 @@ static int paillier(void) {
 				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
 				TEST_ASSERT(cp_ghpe_enc(d, b, pub, k) == RLC_OK, end);
 				bn_mul(c, c, d);
-				bn_sqr(d, pub);
-				if (k == 2) {
+				/* Reduce modulo n^(s + 1). */
+				bn_copy(d, pub);
+				for (int j = 0; j < k; j++) {
 					bn_mul(d, d, pub);
 				}
 				bn_mod(c, c, d);
 				TEST_ASSERT(cp_ghpe_dec(c, c, pub, s, k) == RLC_OK, end);
 				bn_add(a, a, b);
+				/* Reduce modulo n^s. */
 				bn_copy(d, pub);
-				if (k == 2) {
+				for (int j = 1; j < k; j++) {
 					bn_mul(d, d, pub);
 				}
 				bn_mod(a, a, d);
@@ -554,7 +593,7 @@ static int paillier(void) {
 	return code;
 }
 
-static int subgroup_paillier() {
+static int subgroup_paillier(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d;
 	shpe_t pub, prv;
@@ -585,6 +624,11 @@ static int subgroup_paillier() {
 				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
 				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* Encryption is randomized. */
+				TEST_ASSERT(cp_shpe_enc(d, a, pub) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(c, d) != RLC_EQ, end);
+				TEST_ASSERT(cp_shpe_dec(b, d, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 			TEST_END;
 
@@ -594,6 +638,11 @@ static int subgroup_paillier() {
 				bn_rand_mod(a, pub->crt->n);
 				TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_OK, end);
 				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* Encryption is randomized. */
+				TEST_ASSERT(cp_shpe_enc_prv(d, a, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(c, d) != RLC_EQ, end);
+				TEST_ASSERT(cp_shpe_dec(b, d, prv) == RLC_OK, end);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 			TEST_END;

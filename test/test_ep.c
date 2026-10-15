@@ -37,7 +37,8 @@
 #if ARCH == AVR || ARCH == MSP || ARCH == ARM
 #define SIM_LOT		4
 #else
-#define SIM_LOT		16
+/* Enough points to reach the bucket method. */
+#define SIM_LOT		40
 #endif
 
 static int memory(void) {
@@ -67,7 +68,7 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	ep_t a, b, c, t[3];
 	uint8_t bin[2 * RLC_FP_BYTES + 1];
 
@@ -177,25 +178,86 @@ static int util(void) {
 			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
+#if FP_PRIME == 256
+		if (ep_param_get() == NIST_P256) {
+			TEST_ONCE("compressed points follow sec1 (p-256)") {
+				/* The generator has an odd y-coordinate, so its prefix is 03. */
+				uint8_t g[33] = {
+					0x03, 0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47, 0xF8,
+					0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2, 0x77, 0x03, 0x7D,
+					0x81, 0x2D, 0xEB, 0x33, 0xA0, 0xF4, 0xA1, 0x39, 0x45, 0xD8,
+					0x98, 0xC2, 0x96
+				};
+				ep_curve_get_gen(a);
+				TEST_ASSERT(ep_size_bin(a, 1) == sizeof(g), end);
+				ep_write_bin(bin, sizeof(g), a, 1);
+				TEST_ASSERT(memcmp(bin, g, sizeof(g)) == 0, end);
+				TEST_ASSERT(ep_read_bin(b, g, sizeof(g)) == RLC_OK, end);
+				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			} TEST_END;
+		}
+#endif
+
 		TEST_CASE("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				ep_set_infty(a);
 				l = ep_size_bin(a, j);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 				ep_rand(a);
 				l = ep_size_bin(a, j);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 				ep_rand(a);
 				ep_dbl(a, a);
 				l = ep_size_bin(a, j);
 				ep_norm(a, a);
 				ep_write_bin(bin, l, a, j);
-				ep_read_bin(b, bin, l);
+				TEST_ASSERT(ep_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid point fails") {
+			for (int j = 0; j < 5; j++) {
+				ep_rand(a);
+				l = ep_size_bin(a, 0);
+				ep_write_bin(bin, l, a, 0);
+				switch (j) {
+					case 0:
+						/* An invalid tag. */
+						bin[0] = 5;
+						break;
+					case 1:
+						/* A point off the curve. */
+						bin[l - 1] ^= 1;
+						break;
+					case 2:
+						/* A coordinate that is not reduced modulo p. */
+						memset(bin + 1, 0xFF, RLC_FP_BYTES);
+						break;
+					case 3:
+						/* A compressed x-coordinate with no point. */
+						do {
+							fp_rand(a->x);
+							ep_rhs(c->x, a->x);
+						} while (fp_is_sqr(c->x));
+						bin[0] = 2;
+						fp_write_bin(bin + 1, RLC_FP_BYTES, a->x);
+						l = RLC_FP_BYTES + 1;
+						break;
+					default:
+						/* A single byte other than the point at infinity. */
+						bin[0] = 1;
+						l = 1;
+						break;
+				}
+				r = RLC_ERR;
+				TEST_ERR(r = ep_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -290,6 +352,22 @@ static int addition(void) {
 			ep_norm(a, a);
 			ep_norm(b, b);
 			ep_add(e, a, b);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition with the output aliasing an operand is correct") {
+			ep_rand(a);
+			ep_rand(b);
+			ep_rand(c);
+			/* a and b in projective coordinates. */
+			ep_add_projc(a, a, c);
+			ep_add_projc(b, b, c);
+			ep_add_projc(d, a, b);
+			ep_copy(e, b);
+			ep_add_projc(e, a, e);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+			ep_copy(e, a);
+			ep_add_projc(e, e, b);
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
@@ -454,15 +532,20 @@ static int subtraction(void) {
 static int doubling(void) {
 	int code = RLC_ERR;
 	ep_t a, b, c;
+	fp_t s0, s1;
 
 	ep_null(a);
 	ep_null(b);
 	ep_null(c);
+	fp_null(s0);
+	fp_null(s1);
 
 	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
+		fp_new(s0);
+		fp_new(s1);
 
 		TEST_CASE("point doubling is correct") {
 			ep_rand(a);
@@ -477,6 +560,12 @@ static int doubling(void) {
 			ep_dbl(b, a);
 			ep_dbl_basic(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+			/* Adding a point to itself gives the doubling and its slope. */
+			ep_norm(a, a);
+			ep_add_slp_basic(b, s0, a, a);
+			ep_dbl_slp_basic(c, s1, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(s0, s1) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -528,6 +617,8 @@ static int doubling(void) {
 	ep_free(a);
 	ep_free(b);
 	ep_free(c);
+	fp_free(s0);
+	fp_free(s1);
 	return code;
 }
 
@@ -573,6 +664,11 @@ static int tripling(void) {
 			ep_norm(a, a);
 			ep_tpl(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+			/* The same in place, on a point in projective coordinates. */
+			ep_dbl_projc(a, a);
+			ep_tpl_projc(b, a);
+			ep_tpl_projc(a, a);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("point tripling in mixed coordinates (z1 = 1) is correct") {
@@ -754,8 +850,18 @@ static int multiplication(void) {
 
 		TEST_ONCE("generator has the right order") {
 			TEST_ASSERT(ep_on_curve(p), end);
-			ep_mul(r, p, n);
+			/* The basic method does not reduce the scalar modulo n. */
+			ep_mul_basic(r, p, n);
 			TEST_ASSERT(ep_is_infty(r) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("cofactor multiplication is correct") {
+			ep_rand(q);
+			ep_set_infty(r);
+			ep_mul_cof(r, q);
+			ep_mul_cof(q, q);
+			TEST_ASSERT(ep_cmp(r, q) == RLC_EQ, end);
+			TEST_ASSERT(ep_on_curve(r), end);
 		} TEST_END;
 
 		TEST_CASE("generator multiplication is correct") {
@@ -1188,14 +1294,16 @@ static int simultaneous(void) {
 
 	bn_null(n);
 	ep_null(r);
+	for (int i = 0; i <= SIM_LOT; i++) {
+		bn_null(k[i]);
+		ep_null(p[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		ep_new(r);
 		for (int i = 0; i <= SIM_LOT; i++) {
-			bn_null(k[i]);
 			bn_new(k[i]);
-			ep_null(p[i]);
 			ep_new(p[i]);
 		}
 
@@ -1310,6 +1418,20 @@ static int simultaneous(void) {
 			ep_mul_sim_lot(p[SIM_LOT], p, k, SIM_LOT);
 			TEST_ASSERT(ep_cmp(p[SIM_LOT], r) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous multiplication by digits is correct") {
+			dig_t d[2];
+			rand_bytes((uint8_t *)d, sizeof(d));
+			ep_rand(p[0]);
+			ep_rand(p[1]);
+			ep_mul_sim_dig(r, p, d, 2);
+			ep_mul_dig(p[2], p[0], d[0]);
+			ep_mul_dig(p[3], p[1], d[1]);
+			ep_add(p[2], p[2], p[3]);
+			TEST_ASSERT(ep_cmp(r, p[2]) == RLC_EQ, end);
+			ep_mul_sim_dig(r, p, d, 0);
+			TEST_ASSERT(ep_is_infty(r), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1360,16 +1482,18 @@ static int compression(void) {
 
 static int hashing(void) {
 	int code = RLC_ERR;
-	ep_t a;
+	ep_t a, b;
 	bn_t n;
 	/* Allocate buffer with plenty of room. */
 	uint8_t msg[4 * RLC_FP_BYTES];
 
 	ep_null(a);
+	ep_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		ep_new(a);
+		ep_new(b);
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -1378,11 +1502,14 @@ static int hashing(void) {
 			rand_bytes(msg, ep_map_rnd_size());
 			ep_map(a, msg, ep_map_rnd_size());
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-			ep_mul(a, a, n);
+			/* Hashing is deterministic. */
+			ep_map(b, msg, ep_map_rnd_size());
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			ep_mul_basic(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 			ep_map_rnd(a, msg, ep_map_rnd_size());
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-			ep_mul(a, a, n);
+			ep_mul_basic(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
@@ -1392,7 +1519,7 @@ static int hashing(void) {
 			rand_bytes(msg, ep_map_rnd_size());
 			ep_map_basic(a, msg, ep_map_rnd_size());
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-			ep_mul(a, a, n);
+			ep_mul_basic(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
@@ -1403,10 +1530,86 @@ static int hashing(void) {
 			rand_bytes(msg, ep_map_rnd_size());
 			ep_map_sswum(a, msg, ep_map_rnd_size());
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-			ep_mul(a, a, n);
+			ep_mul_basic(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+		TEST_CASE("point hashing with a domain separation tag is correct") {
+			rand_bytes(msg, ep_map_rnd_size());
+			ep_map_dst(a, msg, ep_map_rnd_size(), (const uint8_t *)RLC_DSTAG,
+					strlen(RLC_DSTAG));
+			ep_map_sswum(b, msg, ep_map_rnd_size());
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			ep_map_dst(b, msg, ep_map_rnd_size(), (const uint8_t *)"TAG", 3);
+			TEST_ASSERT(ep_cmp(a, b) != RLC_EQ, end);
+			TEST_ASSERT(ep_on_curve(b) && ep_is_infty(b) == 0, end);
+			ep_mul_basic(b, b, n);
+			TEST_ASSERT(ep_on_curve(b) && ep_is_infty(b) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM && (FP_PRIME == 256 || FP_PRIME == 384 || FP_PRIME == 521)
+		/* Test vectors from RFC 9380, Appendix J, for messages "" and "abc". */
+#if FP_PRIME == 256
+		const int id = NIST_P256;
+		const char *dst = "QUUX-V01-CS02-with-P256_XMD:SHA-256_SSWU_RO_";
+		const char *v[4] = {
+			"2C15230B26DBC6FC9A37051158C95B79656E17A1A920B11394CA91C44247D3E4",
+			"8A7A74985CC5C776CDFE4B1F19884970453912E9D31528C060BE9AB5C43E8415",
+			"0BB8B87485551AA43ED54F009230450B492FEAD5F1CC91658775DAC4A3388A0F",
+			"5C41B3D0731A27A7B14BC0BF0CCDED2D8751F83493404C84A88E71FFD424212E"
+		};
+#define XMD		md_xmd_sh256
+#elif FP_PRIME == 384
+		const int id = NIST_P384;
+		const char *dst = "QUUX-V01-CS02-with-P384_XMD:SHA-384_SSWU_RO_";
+		const char *v[4] = {
+			"EB9FE1B4F4E14E7140803C1D99D0A93CD823D2B024040F9C067A8ECA1F5A2EEA"
+			"C9AD604973527A356F3FA3AEFF0E4D83",
+			"0C21708CFF382B7F4643C07B105C2EAEC2CEAD93A917D825601E63C8F21F6ABD"
+			"9ABC22C93C2BED6F235954B25048BB1A",
+			"E02FC1A5F44A7519419DD314E29863F30DF55A514DA2D655775A81D413003C4D"
+			"4E7FD59AF0826DFAAD4200AC6F60ABE1",
+			"01F638D04D98677D65BEF99AEF1A12A70A4CBB9270EC55248C04530D8BC1F8F9"
+			"0F8A6A859A7C1F1DDCCEDF8F96D675F6"
+		};
+#define XMD		md_xmd_sh384
+#else
+		const int id = NIST_P521;
+		const char *dst = "QUUX-V01-CS02-with-P521_XMD:SHA-512_SSWU_RO_";
+		const char *v[4] = {
+			"00FD767CEBB2452030358D0E9CF907F525F50920C8F607889A6A35680727F64F"
+			"4D66B161FAFEB2654BEA0D35086BEC0A10B30B14ADEF3556ED9F7F1BC23CECC9"
+			"C088",
+			"0169BA78D8D851E930680322596E39C78F4FE31B97E57629EF6460DDD68F8763"
+			"FD7BD767A4E94A80D3D21A3C2EE98347E024FC73EE1C27166DC3FE5EEEF782BE"
+			"411D",
+			"002F89A1677B28054B50D15E1F81ED6669B5A2158211118EBDEF8A6EFC77F8CC"
+			"AA528F698214E4340155ABC1FA08F8F613EF14A043717503D57E267D57155CF7"
+			"84A4",
+			"010E0BE5DC8E753DA8CE51091908B72396D3DEED14AE166F66D8EBF0A4E7059E"
+			"AD169EA4BEAD0232E9B700DD380B316E9361CFDBA55A08C73545563A80966ECB"
+			"B86D"
+		};
+#define XMD		md_xmd_sh512
+#endif
+		if (ep_param_get() == id) {
+			TEST_ONCE("point hashing follows rfc 9380") {
+				for (int j = 0; j < 2; j++) {
+					XMD(msg, ep_map_rnd_size(), (const uint8_t *)"abc",
+							3 * j, (const uint8_t *)dst, strlen(dst));
+					ep_map_rnd(a, msg, ep_map_rnd_size());
+					fp_read_str(b->x, v[2 * j], strlen(v[2 * j]), 16);
+					fp_read_str(b->y, v[2 * j + 1], strlen(v[2 * j + 1]), 16);
+					fp_set_dig(b->z, 1);
+					b->coord = BASIC;
+					TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+				}
+			} TEST_END;
+		}
+#undef XMD
 #endif
 
 		if (!ep_curve_is_super()) {
@@ -1416,7 +1619,7 @@ static int hashing(void) {
 					rand_bytes(msg, ep_map_rnd_size());
 					ep_map_swift(a, msg, ep_map_rnd_size());
 					TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-					ep_mul(a, a, n);
+					ep_mul_basic(a, a, n);
 					TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 				}
 				TEST_END;
@@ -1430,6 +1633,7 @@ static int hashing(void) {
 	code = RLC_OK;
   end:
 	ep_free(a);
+	ep_free(b);
 	bn_free(n);
 	return code;
 }

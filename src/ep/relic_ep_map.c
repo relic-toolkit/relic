@@ -38,13 +38,6 @@
 /*============================================================================*/
 
 /**
- * Domain separation tag.
- */
-#ifndef RLC_DSTAG
-#define RLC_DSTAG		RLC_STRING
-#endif
-
-/**
  * Evaluate a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  *
@@ -465,6 +458,11 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 }
 
 void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
+	ep_map_dst(p, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
+}
+
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
@@ -479,8 +477,7 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)RLC_DSTAG,
-				sizeof(RLC_DSTAG));
+		md_xmd(r, 2 * elm, msg, len, dst, dst_len);
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
@@ -517,7 +514,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 	RLC_TRY {
 		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)RLC_DSTAG,
-				sizeof(RLC_DSTAG));
+				strlen(RLC_DSTAG));
 
 		ep_map_swift_impl(p, r, 2 * elm + 1);
 	}

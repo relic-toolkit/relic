@@ -124,6 +124,11 @@ void ed_param_set(int param) {
 #endif
 			default:
 				(void)str;
+				/* Leave the curve unset, and the rest well defined. */
+				param = 0;
+				ed_set_infty(g);
+				bn_zero(r);
+				bn_zero(h);
 				RLC_THROW(ERR_NO_VALID);
 				break;
 		}

@@ -207,6 +207,7 @@ int fp2_is_cub(const fp2_t a) {
 int fp2_crt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	bn_t d, e;
+	fp_t w, x;
 	fp2_t t, u;
 #if ALLOC == AUTO
 	const dig_t *crt = (const dig_t *)fp_prime_get_crt();
@@ -218,6 +219,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	 * Youssef El Housni: https://eprint.iacr.org/2026/392.pdf */
 
 	bn_null_all(d, e);
+	fp_null_all(w, x);
 	fp2_null_all(t, u);
 
 	if (fp2_is_zero(a)) {
@@ -227,23 +229,22 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 
 	RLC_TRY {
 		bn_new_all(d, e);
+		fp_new_all(w, x);
 		fp2_new_all(t, u);
 
 		if (fp_prime_get_mod18() % 3 == 1) {
 			if (fp_is_zero(a[1])) {
-				r = 1;
-				fp_crt(c[0], a[0]);
+				r = fp_crt(c[0], a[0]);
 				fp_zero(c[1]);
 			} else if (fp_is_zero(a[0])) {
-				r = 1;
+				/* (y * i)^3 = y^3 * qnr * i, thus y^3 = a_1 / qnr. */
 #ifdef FP_QNRES
-				fp_copy(t[1], a[1]);
+				fp_neg(t[1], a[1]);
 #else
 				fp_mul(t[1], core_get()->iqnr, a[1]);
 #endif
-				fp_neg(t[1], t[1]);
 				fp_zero(c[0]);
-				fp_crt(c[1], t[1]);
+				r = fp_crt(c[1], t[1]);
 			} else {
 				fp_sqr(t[0], a[0]);
 				fp_sqr(t[1], a[1]);
@@ -285,30 +286,29 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 					fp2_copy(c, t);
 				}
 				
-				if (fp_prime_get_mod18() % 9 == 1) {
-					fp_mul(u[0], u[0], crt);
-					fp_mul(u[0], u[0], crt);
-					fp_mul(u[0], u[0], crt);
-					fp_mul(u[1], u[1], crt);
-					fp_mul(u[1], u[1], crt);
-					fp_mul(u[1], u[1], crt);
-					if (fp2_cmp(u, a) == RLC_EQ) {
-						r = 1;
-						fp_mul(c[0], t[0], crt);
-						fp_mul(c[0], c[0], crt);
-						fp_mul(c[1], t[1], crt);
-						fp_mul(c[1], c[1], crt);
-					} else {
-						fp_mul(u[0], u[0], crt);
-						fp_mul(u[0], u[0], crt);
-						fp_mul(u[0], u[0], crt);
-						fp_mul(u[1], u[1], crt);
-						fp_mul(u[1], u[1], crt);
-						fp_mul(u[1], u[1], crt);
+				if (r == 0 && fp_prime_get_mod18() % 9 == 1) {
+					/* The other candidates are t * w and t * w^2 for w a
+					 * primitive 9th root of unity, obtained by cubing the
+					 * primitive (3^f)-th root of unity crt. */
+					fp_copy(w, crt);
+					while (1) {
+						fp_sqr(x, w);
+						fp_mul(x, x, w);
+						fp_sqr(u[0], x);
+						fp_mul(u[0], u[0], x);
+						if (fp_cmp_dig(u[0], 1) == RLC_EQ) {
+							break;
+						}
+						fp_copy(w, x);
+					}
+					for (int j = 0; j < 2 && r == 0; j++) {
+						fp_mul(t[0], t[0], w);
+						fp_mul(t[1], t[1], w);
+						fp2_sqr(u, t);
+						fp2_mul(u, u, t);
 						if (fp2_cmp(u, a) == RLC_EQ) {
 							r = 1;
-							fp_mul(c[0], t[0], crt);
-							fp_mul(c[1], t[1], crt);
+							fp2_copy(c, t);
 						}
 					}
 				}
@@ -323,6 +323,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	}
 	RLC_FINALLY {
 		bn_free_all(d, e);
+		fp_free_all(w, x);
 		fp2_free_all(t, u);
 	}
 	return r;

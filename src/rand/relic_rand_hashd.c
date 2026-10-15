@@ -29,7 +29,6 @@
  * @ingroup rand
  */
 
-#include <stdlib.h>
 #include <stdint.h>
 
 #include "relic_conf.h"
@@ -38,6 +37,10 @@
 #include "relic_rand.h"
 #include "relic_md.h"
 #include "relic_err.h"
+
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#endif
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -56,7 +59,7 @@
 static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 		size_t in_len) {
 	size_t len = RLC_CEIL(out_len, RLC_MD_LEN);
-	uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[RLC_MD_LEN];
 
 	if (buf == NULL) {
@@ -162,6 +165,20 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
 
+	if (!ctx->seeded) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
+#ifdef RLC_RAND_FORK
+	/* A forked process instantiates its own generator from fresh entropy. */
+	if (ctx->pid != (long)getpid()) {
+		rand_init();
+		if (!ctx->seeded || ctx->pid != (long)getpid()) {
+			RLC_THROW(ERR_NO_RAND);
+			return;
+		}
+	}
+#endif
 	if (sizeof(int) > 2 && size > (1 << 16)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -190,13 +207,13 @@ void rand_seed(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 	size_t len = (RLC_RAND_SIZE - 1) / 2;
 
-	if (size <= 0) {
+	if (size < RLC_RAND_MIN) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
-	/* The seed has at most 2^35 bits. */
-	if ((uint64_t)size > ((uint64_t)1 << 32)) {
+	/* Seeds are copied to the stack, so their length is bounded. */
+	if (size > RLC_RAND_MAX) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -209,8 +226,8 @@ void rand_seed(uint8_t *buf, size_t size) {
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
 	} else {
 		/* V = hash_df(01 || V || seed). */
-        int tmp_size = 1 + len + size;
-		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
+		size_t tmp_size = 1 + len + size;
+		uint8_t *tmp = RLC_ALLOCA(uint8_t, tmp_size);
 		if (tmp == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 			return;

@@ -206,21 +206,24 @@ static int ecies(void) {
 		ec_new(qa);
 		ec_new(q_b);
 
-		l = ec_param_level();
-		if (l == 80 || l == 128 || l == 192 || l == 256) {
-			TEST_CASE("ecies encryption/decryption is correct") {
-				TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
-				in_len = RLC_BC_LEN - 1;
-				out_len = RLC_BC_LEN + RLC_MD_LEN;
-				rand_bytes(in, in_len);
-				TEST_ASSERT(cp_ecies_enc(r, out, &out_len, in, in_len, qa)
-						== RLC_OK, end);
-				TEST_ASSERT(cp_ecies_dec(out, &out_len, r, out, out_len, da)
-						== RLC_OK, end);
-				TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
-			}
-			TEST_END;
+		TEST_CASE("ecies encryption/decryption is correct") {
+			TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
+			in_len = RLC_BC_LEN - 1;
+			out_len = RLC_BC_LEN + RLC_MD_LEN;
+			rand_bytes(in, in_len);
+			TEST_ASSERT(cp_ecies_enc(r, out, &out_len, in, in_len, qa)
+					== RLC_OK, end);
+			/* A modified ciphertext fails authentication. */
+			out[0] ^= 1;
+			l = out_len;
+			TEST_ASSERT(cp_ecies_dec(out, &l, r, out, out_len, da)
+					== RLC_ERR, end);
+			out[0] ^= 1;
+			TEST_ASSERT(cp_ecies_dec(out, &out_len, r, out, out_len, da)
+					== RLC_OK, end);
+			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
 		}
+		TEST_END;
 #if MD_MAP == SH256
 		uint8_t msg[RLC_BC_LEN + RLC_MD_LEN];
 		char str[2 * RLC_FC_BYTES + 1];
@@ -260,6 +263,9 @@ static int ecies(void) {
 			}
 			TEST_END;
 		}
+#else
+		/* The second key pair is only used by the test vectors. */
+		(void)q_b;
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -308,6 +314,11 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
 			memset(h, 0, RLC_MD_LEN);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
+			/* The key at infinity is rejected, even for its own signatures. */
+			bn_zero(d);
+			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK, end);
+			ec_set_infty(q);
+			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -326,23 +337,37 @@ static int ecdsa(void) {
 
 static int ecss(void) {
 	int code = RLC_ERR;
-	bn_t d, r;
+	bn_t d, r, s;
 	ec_t q;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(d);
 	bn_null(r);
+	bn_null(s);
 	ec_null(q);
 
 	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
+		bn_new(s);
 		ec_new(q);
 
 		TEST_CASE("ecss signature is correct") {
 			TEST_ASSERT(cp_ecss_gen(d, q) == RLC_OK, end);
-			TEST_ASSERT(cp_ecss_sig(r, d, m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_ecss_ver(r, d, m, sizeof(m), q) == 1, end);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 1, end);
+			m[0] ^= 1;
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
+			m[0] ^= 1;
+			/* A zero challenge does not verify, as it would for any message. */
+			bn_zero(r);
+			bn_set_dig(s, 1);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
+			/* The key at infinity is rejected, even for its own signatures. */
+			bn_zero(d);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
+			ec_set_infty(q);
+			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -354,6 +379,7 @@ static int ecss(void) {
   end:
 	bn_free(d);
 	bn_free(r);
+	bn_free(s);
 	ec_free(q);
 	return code;
 }
@@ -376,8 +402,8 @@ static int vbnn(void) {
 	bn_null(skb);
 	ec_null(r);
 	ec_null(mpk);
-	bn_null(pka);
-	bn_null(pkb);
+	ec_null(pka);
+	ec_null(pkb);
 
 	RLC_TRY {
 		bn_new(z);
@@ -396,8 +422,16 @@ static int vbnn(void) {
 			TEST_ASSERT(cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb)) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), ska, pka) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 1, end);
+			/* A response shifted by the order is not another signature. */
+			ec_curve_get_ord(msk);
+			bn_add(z, z, msk);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
+			bn_sub(z, z, msk);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), mpk) == 0, end);
 			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), skb, pkb) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
+			/* A signature with r at infinity is rejected safely. */
+			ec_set_infty(r);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
 		}
 		TEST_END;
@@ -427,14 +461,16 @@ static int pok(void) {
 
 	bn_null(n);
 	bn_null(x);
+	for (int i = 0; i < 2; i++) {
+		bn_null(c[i]);
+		bn_null(r[i]);
+		ec_null(y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(x);
 		for (int i = 0; i < 2; i++) {
-			bn_null(c[i]);
-			bn_null(r[i]);
-			ec_null(y[i]);
 			bn_new(c[i]);
 			bn_new(r[i]);
 			ec_new(y[i]);
@@ -446,6 +482,10 @@ static int pok(void) {
 			ec_mul_gen(y[0], x);
 			TEST_ASSERT(cp_pokdl_prv(c[0], r[0], y[0], x) == RLC_OK, end);
 			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 1, end);
+			/* A response shifted by the order is not another proof. */
+			bn_add(r[0], r[0], n);
+			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 0, end);
+			bn_sub(r[0], r[0], n);
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_pokdl_ver(c[0], r[0], y[0]) == 0, end);
@@ -483,20 +523,24 @@ end:
 static int sok(void) {
 	int code = RLC_ERR;
 	bn_t c[2], n, r[2], x;
-	ec_t g[2], y[2];
+	ec_t g[2], y[2], h;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(n);
 	bn_null(x);
+	ec_null(h);
+	for (int i = 0; i < 2; i++) {
+		bn_null(c[i]);
+		bn_null(r[i]);
+		ec_null(g[i]);
+		ec_null(y[i]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(x);
+		ec_new(h);
 		for (int i = 0; i < 2; i++) {
-			bn_null(c[i]);
-			bn_null(r[i]);
-			ec_null(g[i]);
-			ec_null(y[i]);
 			bn_new(c[i]);
 			bn_new(r[i]);
 			ec_new(g[i]);
@@ -509,9 +553,18 @@ static int sok(void) {
 			ec_mul_gen(y[0], x);
 			TEST_ASSERT(cp_sokdl_sig(c[0], r[0], m, 5, y[0], x) == RLC_OK, end);
 			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 1, end);
+			/* A response shifted by the order is not another signature. */
+			bn_add(r[0], r[0], n);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);
+			bn_sub(r[0], r[0], n);
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);
+			/* The point at infinity has a shorter encoding. */
+			bn_zero(x);
+			ec_set_infty(y[0]);
+			TEST_ASSERT(cp_sokdl_sig(c[0], r[0], m, 5, y[0], x) == RLC_OK, end);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("signature of knowledge of disjunction is correct") {
@@ -557,6 +610,34 @@ static int sok(void) {
 			ec_norm(y[0], y[0]);
 			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 0, end);
 		} TEST_END;
+
+		TEST_CASE("signature of knowledge of logarithm or equality is correct") {
+			/* Prove the equality y_0 = [x]g_0 and y_1 = [x]g_1. */
+			bn_rand_mod(x, n);
+			ec_rand(h);
+			ec_curve_get_gen(g[0]);
+			ec_rand(g[1]);
+			ec_mul(y[0], g[0], x);
+			ec_mul(y[1], g[1], x);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 1, end);
+			ec_dbl(y[1], y[1]);
+			ec_norm(y[1], y[1]);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+			/* Knowing only the logarithm of y_0 does not prove the equality. */
+			ec_rand(y[1]);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+			/* Prove the logarithm h = [x]G instead. */
+			ec_mul_gen(h, x);
+			ec_rand(y[0]);
+			ec_rand(y[1]);
+			TEST_ASSERT(cp_sokeqor_sig(c, r, m, 5, h, y, g, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 1, end);
+			ec_dbl(h, h);
+			ec_norm(h, h);
+			TEST_ASSERT(cp_sokeqor_ver(c, r, m, 5, h, y, g) == 0, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -566,6 +647,7 @@ static int sok(void) {
 end:
 	bn_free(n);
 	bn_free(x);
+	ec_free(h);
 	for (int i = 0; i < 2; i++) {
 		bn_free(c[i]);
 		bn_free(r[i]);
@@ -585,16 +667,18 @@ static int ers(void) {
 
 	bn_null(td);
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null(sk[i]);
+		ec_null(pk[i]);
+		ers_null(ring[i]);
+	}
 
 	RLC_TRY {
 		bn_new(td);
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(sk[i]);
 			bn_new(sk[i]);
-			ec_null(pk[i]);
 			ec_new(pk[i]);
-			ers_null(ring[i]);
 			ers_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
@@ -639,16 +723,18 @@ static int smlers(void) {
 
 	bn_null(td);
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null(sk[i]);
+		ec_null(pk[i]);
+		smlers_null(ring[i]);
+	}
 
 	RLC_TRY {
 		bn_new(td);
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(sk[i]);
 			bn_new(sk[i]);
-			ec_null(pk[i]);
 			ec_new(pk[i]);
-			smlers_null(ring[i]);
 			smlers_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
@@ -665,6 +751,32 @@ static int smlers(void) {
 				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 0, pp) == 0, end);
 				TEST_ASSERT(ec_cmp(ring[0]->tau, ring[j]->tau) == RLC_EQ, end);
+			}
+			/* An empty ring cannot be extended. */
+			size = 0;
+			TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[1]) == RLC_ERR, end);
+			/* Signatures by the same key on the same message link. */
+			TEST_ASSERT(cp_smlers_sig(td, ring[1], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(ec_cmp(ring[0]->tau, ring[1]->tau) == RLC_EQ, end);
+			/* A tag under another key does not verify. */
+			ec_curve_get_gen(pk[2]);
+			ec_map(pk[3], m, 5);
+			ec_mul(ring[0]->tau, pk[3], sk[1]);
+			ec_copy(pk[1], ring[0]->tau);
+			{
+				/* Sign as the scheme does, with the nonce of the signature. */
+				uint8_t buf[RLC_MD_LEN + 5];
+				memcpy(buf, ring[0]->nonce, RLC_MD_LEN);
+				memcpy(buf + RLC_MD_LEN, m, 5);
+				TEST_ASSERT(cp_sokeqor_sig(ring[0]->c, ring[0]->r, buf,
+					sizeof(buf), ring[0]->h, pk, pk + 2, sk[1], 0) == RLC_OK,
+					end);
+			}
+			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 5, pp) == 0, end);
+			/* Restore distinct keys for the next iteration. */
+			for (int j = 1; j < 4; j++) {
+				cp_ers_gen_key(sk[j], pk[j]);
 			}
 		} TEST_END;
 	}
@@ -686,26 +798,24 @@ end:
 
 static int etrs(void) {
 	int code = RLC_ERR;
-	ec_t pp, pk[4];
+	ec_t pp, pk[4], com[4];
 	bn_t sk[4], td[4], y[4];
 	etrs_t ring[4];
 	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	size_t size;
 
 	ec_null(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_null_all(td[i], y[i], sk[i]);
+		ec_null_all(pk[i], com[i]);
+		etrs_null(ring[i]);
+	}
 
 	RLC_TRY {
 		ec_new(pp);
 		for (int i = 0; i < 4; i++) {
-			bn_null(td[i]);
-			bn_new(td[i]);
-			bn_null(y[i]);
-			bn_new(y[i]);
-			bn_null(sk[i]);
-			bn_new(sk[i]);
-			ec_null(pk[i]);
-			ec_new(pk[i]);
-			etrs_null(ring[i]);
+			bn_new_all(td[i], y[i], sk[i]);
+			ec_new_all(pk[i], com[i]);
 			etrs_new(ring[i]);
 			cp_ers_gen_key(sk[i], pk[i]);
 		}
@@ -713,30 +823,84 @@ static int etrs(void) {
 		cp_ers_gen(pp);
 
 		TEST_CASE("extendable threshold ring signature scheme is correct") {
-			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
-			TEST_ASSERT(cp_etrs_ver(0, td, y, 4, ring, 1, m, 5, pp) == 0, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 5, pp) == 1, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 0, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(0, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 0, pp) == 0, end);
+			/* The commitment must match the points of the polynomial. */
+			ec_dbl(com[1], com[1]);
+			ec_norm(com[1], com[1]);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			size = 1;
 			for (int j = 1; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, m, 5, pp) == 0, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 5, pp) == 1, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 0, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, com, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, com, m, 0, pp) == 0, end);
 			}
 
-			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
 			size = 1;
-			TEST_ASSERT(cp_etrs_uni(td, y, 4, ring, &size, m, 5, sk[1], pk[1]) == RLC_OK, end);
-			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, m, 5, pp) == 0, end);
-			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 5, pp) == 1, end);
-			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 0, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_uni(td, y, 4, ring, &size, com, m, 5, sk[1], pk[1]) == RLC_OK, end);
+			/* Two signers give a signature for any threshold up to two. */
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, com, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, com, m, 0, pp) == 0, end);
 			for (int j = 2; j < 4; j++) {
-				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 0, end);
-				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 1, end);
-				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 0, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(3, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, com, m, 0, pp) == 0, end);
 			}
+			/* A threshold larger than the ring is rejected safely. */
+			TEST_ASSERT(cp_etrs_ver(size + 1, td, y, 4, ring, size, com, m, 5, pp) == 0, end);
+			/* The ring cannot be extended once all trapdoors are used. */
+			for (int j = 0; j < 4; j++) {
+				bn_zero(td[j]);
+			}
+			cp_ers_gen_key(sk[3], pk[3]);
+			TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, com, m, 5, pk[3]) == RLC_ERR, end);
+			/* A member whose point has a known logarithm is not a signer. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			cp_ers_gen_key(sk[2], pk[2]);
+			cp_ers_gen_key(sk[3], pk[3]);
+			ec_copy(pk[3], pk[0]);
+			ec_copy(ring[0]->h, pk[2]);
+			bn_copy(ring[0]->y, sk[3]);
+			ec_copy(ring[0]->pk, pk[0]);
+			TEST_ASSERT(cp_sokor_sig(ring[0]->c, ring[0]->r, m, 5, pk + 2, NULL, sk[2], 1) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, com, m, 5, pp) == 0, end);
+			/* A key cannot count twice towards the threshold: join from a
+			 * copy of the first member under another key, then use it. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			ring[1]->deg = ring[0]->deg;
+			bn_copy(ring[1]->y, ring[0]->y);
+			ec_copy(ring[1]->h, ring[0]->h);
+			ec_copy(ring[1]->pk, pk[1]);
+			size = 1;
+			TEST_ASSERT(cp_etrs_uni(td, y, 1, ring + 1, &size, com, m, 5, sk[0], pk[0]) == RLC_OK, end);
+			/* The joined member may have been moved into ring[1]. */
+			if (ec_cmp(ring[1]->pk, pk[0]) != RLC_EQ) {
+				ring[1]->deg = ring[2]->deg;
+				bn_copy(ring[1]->y, ring[2]->y);
+				ec_copy(ring[1]->h, ring[2]->h);
+				ec_copy(ring[1]->pk, ring[2]->pk);
+				bn_copy(ring[1]->c[0], ring[2]->c[0]);
+				bn_copy(ring[1]->c[1], ring[2]->c[1]);
+				bn_copy(ring[1]->r[0], ring[2]->r[0]);
+				bn_copy(ring[1]->r[1], ring[2]->r[1]);
+			}
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 1, ring, 2, com, m, 5, pp) == 0, end);
+			/* A degree beyond what the ring can hold is rejected safely. */
+			TEST_ASSERT(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			ring[0]->deg = (size_t)-1;
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 1, ring, 1, com, m, 5, pp) == 0, end);
+			size = 1;
+			TEST_ASSERT(cp_etrs_ext(td, y, 1, ring, &size, com, m, 5, pk[1]) == RLC_ERR, end);
+			/* Restore distinct keys for the next iteration. */
+			cp_ers_gen_key(sk[3], pk[3]);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -747,10 +911,8 @@ static int etrs(void) {
 end:
 	ec_free(pp);
 	for (int i = 0; i < 4; i++) {
-		bn_free(td[i]);
-		bn_free(y[i]);
-		bn_free(sk[i]);
-		ec_free(pk[i]);
+		bn_free_all(td[i], y[i], sk[i]);
+		ec_free_all(pk[i], com[i]);
 		etrs_free(ring[i])
 	}
 	return code;
@@ -782,9 +944,16 @@ static int pedersen(void) {
 		ec_curve_get_ord(n);
 
 		TEST_CASE("pedersen commitment is consistent") {
-			bn_rand_mod(r1, n);
+			do {
+				bn_rand_mod(r1, n);
+			} while (bn_is_zero(r1));
+			/* A zero message commits to the randomness alone. */
 			bn_zero(m);
-			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_ERR, end);
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			ec_mul(c2, h, r1);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+			bn_zero(r2);
+			TEST_ASSERT(cp_ped_com(c1, h, r2, m) == RLC_ERR, end);
 			do {
 				bn_rand_mod(m, n);
 			} while (bn_is_zero(m));

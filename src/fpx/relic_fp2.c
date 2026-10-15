@@ -54,21 +54,33 @@ int fp2_size_bin(const fp2_t a, int pack) {
 	}
 }
 
-void fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len) {
+int fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len) {
 	if (len != RLC_FP_BYTES + 1 && len != 2 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 	if (len == RLC_FP_BYTES + 1) {
-		fp_read_bin(a[0], bin, RLC_FP_BYTES);
+		/* The last byte is the sign of a unitary element. */
+		if (bin[RLC_FP_BYTES] > 1) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
+		if (fp_read_bin(a[0], bin, RLC_FP_BYTES) != RLC_OK) {
+			return RLC_ERR;
+		}
 		fp_zero(a[1]);
 		fp_set_bit(a[1], 0, bin[RLC_FP_BYTES]);
-		fp2_upk(a, a);
+		if (!fp2_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
+		return RLC_OK;
 	}
-	if (len == 2 * RLC_FP_BYTES) {
-		fp_read_bin(a[0], bin, RLC_FP_BYTES);
-		fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES);
+	if (fp_read_bin(a[0], bin, RLC_FP_BYTES) != RLC_OK ||
+			fp_read_bin(a[1], bin + RLC_FP_BYTES, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
@@ -82,7 +94,6 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 		if (pack && fp2_test_cyc(a)) {
 			if (len < RLC_FP_BYTES + 1) {
 				RLC_THROW(ERR_NO_BUFFER);
-				return;
 			} else {
 				fp2_pck(t, a);
 				fp_write_bin(bin, RLC_FP_BYTES, t[0]);
@@ -91,7 +102,6 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 		} else {
 			if (len < 2 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
-				return;
 			} else {
 				fp_write_bin(bin, RLC_FP_BYTES, a[0]);
 				fp_write_bin(bin + RLC_FP_BYTES, RLC_FP_BYTES, a[1]);
@@ -577,12 +587,27 @@ TMPL_EXP_CYC_NAF(fp2, fp2_sqr_cyc);
 TMPL_EXP_CYC_SIM(fp2, fp2_sqr_cyc);
 
 void fp2_pck(fp2_t c, const fp2_t a) {
-	int b = fp_get_bit(a[1], 0);
-	fp2_copy(c, a);
-	if (fp2_test_cyc(a)) {
-		fp_copy(c[0], a[0]);
-		fp_zero(c[1]);
-		fp_set_bit(c[1], 0, b);
+	bn_t t;
+	int b;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		/* Take the parity of a_1 itself, not of its representation. */
+		fp_prime_back(t, a[1]);
+		b = bn_get_bit(t, 0);
+		fp2_copy(c, a);
+		if (fp2_test_cyc(a)) {
+			fp_copy(c[0], a[0]);
+			fp_zero(c[1]);
+			fp_set_bit(c[1], 0, b);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
 	}
 }
 
@@ -590,11 +615,14 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 	if (fp_bits(a[1]) <= 1) {
 		int result, b = fp_get_bit(a[1], 0);
 		fp_t t, u;
+		bn_t v;
 
 		fp_null_all(t, u);
+		bn_null(v);
 
 		RLC_TRY {
 			fp_new_all(t, u);
+			bn_new(v);
 
 			/* For i^2 = qnr, a_0^2 - qnr * a_1^2 = 1, thus
 			 * a_1^2 = (a_0^2 - 1) / qnr. */
@@ -613,9 +641,9 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 			result = fp_srt(t, t);
 
 			if (result) {
-				/* Verify if least significant bit of the result matches the
-				 * compressed second coordinate. */
-				if (fp_get_bit(t, 0) != b) {
+				/* Choose the root whose parity matches the compressed bit. */
+				fp_prime_back(v, t);
+				if (bn_get_bit(v, 0) != b) {
 					fp_neg(t, t);
 				}
 				fp_copy(c[0], a[0]);
@@ -626,6 +654,7 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
 			fp_free_all(t, u);
+			bn_free(v);
 		}
 		return result;
 	} else {

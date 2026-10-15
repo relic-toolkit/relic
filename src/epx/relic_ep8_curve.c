@@ -405,6 +405,9 @@ void ep8_curve_set(const fp8_t a, const fp8_t b, const ep8_t g, const bn_t r, co
 	fp8_copy(ctx->ep8_a, a);
 	fp8_copy(ctx->ep8_b, b);
 
+	ep8_detect_opt(&(ctx->ep8_opt_a), ctx->ep8_a);
+	ep8_detect_opt(&(ctx->ep8_opt_b), ctx->ep8_b);
+
 	ep8_norm(ctx->ep8_g, g);
 	bn_copy(&(ctx->ep8_r), r);
 	bn_copy(&(ctx->ep8_h), h);

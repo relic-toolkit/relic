@@ -472,7 +472,8 @@
 			X##_mul(t0, t0, a);												\
 			X##_frb(t1, a, (F));											\
 																			\
-			result = ((X##_cmp(t0, t1) == RLC_EQ) ? 1 : 0);					\
+			/* Zero satisfies the equation, but it is not invertible. */	\
+			result = !X##_is_zero(a) && (X##_cmp(t0, t1) == RLC_EQ);		\
 		}																	\
 		RLC_CATCH_ANY {														\
 			result = 0;														\
@@ -970,13 +971,19 @@
 			 * subgroup. */													\
 			X##_zero(c);													\
 		} else if (X##_test_cyc(c)) {										\
-			/* Use torus-based compression from Section 4.1 in "On			\
-			 * Compressible Pairings and Their Computation" by Naehrig et	\
-			 * al. */														\
-			fp_add_dig(((fp_t *)c[0])[0], ((fp_t *)c[0])[0], 1);			\
-			H##_inv(c[1], a[1]);											\
-			H##_mul(c[0], c[0], c[1]);										\
-			H##_zero(c[1]);													\
+			if (H##_is_zero(a[1])) {										\
+				/* Only -1 is left with a_1 = 0, and the torus has no room	\
+				 * for it once unity takes zero. */							\
+				RLC_THROW(ERR_NO_VALID);									\
+			} else {														\
+				/* Use torus-based compression from Section 4.1 in "On		\
+				 * Compressible Pairings and Their Computation" by Naehrig	\
+				 * et al. */												\
+				fp_add_dig(((fp_t *)c[0])[0], ((fp_t *)c[0])[0], 1);		\
+				H##_inv(c[1], a[1]);										\
+				H##_mul(c[0], c[0], c[1]);									\
+				H##_zero(c[1]);												\
+			}																\
 		}																	\
 	}																		\
 																			\

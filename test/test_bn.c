@@ -255,11 +255,7 @@ static int util(void) {
 
 		TEST_CASE("generating a random integer modulo one fails") {
 			bn_set_dig(b, 1);
-			err_get_code();
-			RLC_TRY {
-				bn_rand_mod(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rand_mod(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -369,11 +365,7 @@ static int util(void) {
 			bn_read_str(b, str, bits, 36);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			/* Invalid digits are rejected. */
-			err_get_code();
-			RLC_TRY {
-				bn_read_str(b, "12x4", 4, 10);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_read_str(b, "12x4", 4, 10));
 			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
 		} TEST_END;
 
@@ -1603,11 +1595,7 @@ static int square_root(void) {
 			bn_set_dig(a, 4);
 			bn_neg(a, a);
 			bn_set_dig(b, 7);
-			err_get_code();
-			RLC_TRY {
-				bn_srt(b, a);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_srt(b, a));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -2186,19 +2174,11 @@ static int symbol(void) {
 		TEST_CASE("symbols reject invalid moduli") {
 			bn_set_dig(a, 1);
 			bn_set_dig(b, 2);
-			err_get_code();
-			RLC_TRY {
-				bn_smb_leg(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_smb_leg(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 			bn_set_dig(b, 7);
 			bn_neg(b, b);
-			err_get_code();
-			RLC_TRY {
-				bn_smb_jac(a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_smb_jac(a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
@@ -2714,11 +2694,7 @@ static int inversion(void) {
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
 			/* The modulus must be positive. */
 			bn_neg(c, a);
-			err_get_code();
-			RLC_TRY {
-				bn_mod_inv(b, b, c);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_mod_inv(b, b, c));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 
@@ -2789,10 +2765,13 @@ static int interpolation(void) {
 	const size_t n = 4;
 	int code = RLC_ERR;
 	int k;
-	bn_t a[4], c[5], b, x, y;
+	bn_t a[4], c[5], s[4], v[4], w[4], b, x, y;
 
 	for (k = 0; k < 4; k++) {
 		bn_null(a[k]);
+		bn_null(s[k]);
+		bn_null(v[k]);
+		bn_null(w[k]);
 	}
 	for (k = 0; k < 5; k++) {
 		bn_null(c[k]);
@@ -2802,6 +2781,9 @@ static int interpolation(void) {
 	RLC_TRY {
 		for (k = 0; k < 4; k++) {
 			bn_new(a[k]);
+			bn_new(s[k]);
+			bn_new(v[k]);
+			bn_new(w[k]);
 		}
 		for (k = 0; k < 5; k++) {
 			bn_new(c[k]);
@@ -2828,6 +2810,43 @@ static int interpolation(void) {
 			bn_zero(a[0]);
 			bn_lag(c, a, b, 1);
 			TEST_ASSERT(bn_is_zero(c[0]) && bn_cmp_dig(c[1], 1) == RLC_EQ, end);
+			/* With no roots, the polynomial is the constant 1. */
+			bn_lag(c, a, b, 0);
+			TEST_ASSERT(bn_cmp_dig(c[0], 1) == RLC_EQ, end);
+		} TEST_END;
+
+		bn_gen_prime(b, RLC_BN_BITS / 2);
+
+		TEST_CASE("lagrange interpolation with precomputation is correct") {
+			/* Sample a polynomial of degree n - 1 and n of its points. */
+			for (k = 0; k < (int)n; k++) {
+				bn_rand_mod(c[k], b);
+				bn_rand_mod(a[k], b);
+			}
+			for (k = 0; k < (int)n; k++) {
+				bn_evl(s[k], c, a[k], b, n);
+			}
+			bn_lag_pre(w, a, b, n);
+			/* The points interpolate the polynomial at a random point. */
+			bn_rand_mod(x, b);
+			bn_lag_fix(v, x, a, (const bn_t *)w, b, n);
+			bn_zero(y);
+			for (k = 0; k < (int)n; k++) {
+				bn_mul(v[k], v[k], s[k]);
+				bn_add(y, y, v[k]);
+				bn_mod(y, y, b);
+			}
+			bn_evl(c[n], c, x, b, n);
+			TEST_ASSERT(bn_cmp(c[n], y) == RLC_EQ, end);
+			/* At one of the abscissas, only its own point counts. */
+			bn_lag_fix(v, a[1], a, (const bn_t *)w, b, n);
+			for (k = 0; k < (int)n; k++) {
+				TEST_ASSERT(bn_cmp_dig(v[k], k == 1) == RLC_EQ, end);
+			}
+			/* Repeated abscissas are rejected. */
+			bn_copy(a[1], a[0]);
+			TEST_ERR(bn_lag_pre(w, a, b, n));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2837,6 +2856,9 @@ static int interpolation(void) {
   end:
 	for (k = 0; k < 4; k++) {
 		bn_free(a[k]);
+		bn_free(s[k]);
+		bn_free(v[k]);
+		bn_free(w[k]);
 	}
 	for (k = 0; k < 5; k++) {
 		bn_free(c[k]);
@@ -3076,11 +3098,7 @@ static int recoding(void) {
 			/* Integers that do not fit the digits are rejected. */
 			bn_set_2b(a, RLC_BN_BITS / 2 + 2 * RLC_DIG);
 			l = RLC_BN_BITS + 1;
-			err_get_code();
-			RLC_TRY {
-				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4));
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
@@ -3110,11 +3128,7 @@ static int recoding(void) {
 			bn_set_dig(a, 1);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			l = 3;
-			err_get_code();
-			RLC_TRY {
-				bn_rec_jsf(e, &l, a, b);
-			} RLC_CATCH_ANY {
-			}
+			TEST_ERR(bn_rec_jsf(e, &l, a, b));
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 

@@ -982,6 +982,11 @@
 																			\
 		C##_null(t);														\
 																			\
+		if (len == 0) {														\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		max = util_bits_dig(k[0]);											\
 		for (size_t i = 1; i < len; i++) {									\
 			max = RLC_MAX(max, (int)util_bits_dig(k[i]));					\
@@ -1079,6 +1084,122 @@
 			RLC_FREE(_l);													\
 			RLC_FREE(_p);													\
 			RLC_FREE(naf);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous multiplication of many points by the
+ * bucket method of Pippenger. Each scalar is recoded in signed digits of w
+ * bits, and each window is computed by accumulating points in buckets
+ * indexed by the digit magnitudes. The number of points must be positive.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EC_MUL_SIM_LOT_PIPPE(C)										\
+	static void C##_mul_sim_lot_pippe(C##_t r, const C##_t p[],				\
+			const bn_t k[], int n) {										\
+		const int w = RLC_MAX(2, (int)util_bits_dig((dig_t)n) - 3);		\
+		const int h = 1 << (w - 1);											\
+		int i, j, b, d, c, l = 0, m;										\
+		int *dig = NULL;													\
+		C##_t s, t, u, v, *_b = RLC_ALLOCA(C##_t, h);						\
+		C##_t *_p = RLC_ALLOCA(C##_t, n);									\
+																			\
+		for (i = 0; i < n; i++) {											\
+			l = RLC_MAX(l, (int)bn_bits(k[i]));								\
+		}																	\
+		/* One more window absorbs the carry of the signed recoding. */		\
+		m = l / w + 1;														\
+		dig = RLC_ALLOCA(int, n * m);										\
+		if (dig == NULL || _b == NULL || _p == NULL) {						\
+			RLC_FREE(dig);													\
+			RLC_FREE(_b);													\
+			RLC_FREE(_p);													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		C##_null(s);														\
+		C##_null(t);														\
+		C##_null(u);														\
+		C##_null(v);														\
+		for (i = 0; i < h; i++) {											\
+			C##_null(_b[i]);												\
+		}																	\
+		for (i = 0; i < n; i++) {											\
+			C##_null(_p[i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new(s);														\
+			C##_new(t);														\
+			C##_new(u);														\
+			C##_new(v);														\
+			for (i = 0; i < h; i++) {										\
+				C##_new(_b[i]);												\
+			}																\
+			for (i = 0; i < n; i++) {										\
+				C##_new(_p[i]);												\
+				C##_copy(_p[i], p[i]);										\
+				if (bn_sign(k[i]) == RLC_NEG) {								\
+					C##_neg(_p[i], _p[i]);									\
+				}															\
+				/* Recode |k_i| in digits of [-2^(w-1), 2^(w-1)]. */		\
+				c = 0;														\
+				for (j = 0; j < m; j++) {									\
+					d = c;													\
+					for (b = 0; b < w; b++) {								\
+						d += bn_get_bit(k[i], j * w + b) << b;				\
+					}														\
+					c = (d > h);											\
+					dig[i * m + j] = d - (c << w);							\
+				}															\
+			}																\
+			/* Mixed additions are faster with affine points. */			\
+			C##_norm_sim(_p, (const C##_t *)_p, n);							\
+																			\
+			C##_set_infty(s);												\
+			for (j = m - 1; j >= 0; j--) {									\
+				for (b = 0; b < w; b++) {									\
+					C##_dbl(s, s);											\
+				}															\
+				for (i = 0; i < h; i++) {									\
+					C##_set_infty(_b[i]);									\
+				}															\
+				for (i = 0; i < n; i++) {									\
+					d = dig[i * m + j];										\
+					if (d > 0) {											\
+						C##_add(_b[d - 1], _b[d - 1], _p[i]);				\
+					} else if (d < 0) {										\
+						C##_neg(t, _p[i]);									\
+						C##_add(_b[-d - 1], _b[-d - 1], t);					\
+					}														\
+				}															\
+				/* Compute v = sum_d d * B_d with running sums. */			\
+				C##_set_infty(u);											\
+				C##_set_infty(v);											\
+				for (i = h - 1; i >= 0; i--) {								\
+					C##_add(u, u, _b[i]);									\
+					C##_add(v, v, u);										\
+				}															\
+				C##_add(s, s, v);											\
+			}																\
+			C##_norm(r, s);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free(s);													\
+			C##_free(t);													\
+			C##_free(u);													\
+			C##_free(v);													\
+			for (i = 0; i < h; i++) {										\
+				C##_free(_b[i]);											\
+			}																\
+			for (i = 0; i < n; i++) {										\
+				C##_free(_p[i]);											\
+			}																\
+			RLC_FREE(dig);													\
+			RLC_FREE(_b);													\
+			RLC_FREE(_p);													\
 		}																	\
 	}
 

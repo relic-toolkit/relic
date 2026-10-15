@@ -277,14 +277,15 @@ void fb_write_str(char *str, size_t len, const fb_t a, uint_t radix) {
 	}
 }
 
-void fb_read_bin(fb_t a, const uint8_t *bin, size_t len) {
+int fb_read_bin(fb_t a, const uint8_t *bin, size_t len) {
+	int result = RLC_ERR;
 	bn_t t;
 
 	bn_null(t);
 
 	if (len != RLC_FB_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	RLC_TRY {
@@ -297,14 +298,17 @@ void fb_read_bin(fb_t a, const uint8_t *bin, size_t len) {
 			RLC_THROW(ERR_NO_VALID);
 		} else {
 			fb_copy(a, t->dp);
+			result = RLC_OK;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(t);
 	}
+	return result;
 }
 
 void fb_write_bin(uint8_t *bin, size_t len, const fb_t a) {

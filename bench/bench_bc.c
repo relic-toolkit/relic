@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2025 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,17 +24,47 @@
 /**
  * @file
  *
- * Implementation of inner product arguments.
+ * Benchmarks for the block cipher module.
  *
- * @ingroup cp
+ * @ingroup bench
  */
 
+#include <stdio.h>
+
 #include "relic.h"
+#include "relic_bench.h"
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+static void aes(void) {
+	uint8_t key[32], iv[RLC_BC_LEN], in[256], out[256 + RLC_BC_LEN];
+	size_t out_len, in_len;
 
-int cp_ipa_prv(ec_t *g, ec_t *h, ec_t u, bn_t *a, bn_t *b, bn_t c, size_t n) {
+	rand_bytes(key, sizeof(key));
+	rand_bytes(iv, sizeof(iv));
 
+	BENCH_RUN("bc_aes_cbc_enc (256)") {
+		rand_bytes(in, sizeof(in));
+		out_len = sizeof(out);
+		BENCH_ADD(bc_aes_cbc_enc(out, &out_len, in, sizeof(in), key, 16, iv));
+	} BENCH_END;
+
+	BENCH_RUN("bc_aes_cbc_dec (256)") {
+		rand_bytes(in, sizeof(in));
+		out_len = sizeof(out);
+		bc_aes_cbc_enc(out, &out_len, in, sizeof(in), key, 16, iv);
+		in_len = sizeof(in);
+		BENCH_ADD(bc_aes_cbc_dec(in, &in_len, out, out_len, key, 16, iv));
+	} BENCH_END;
+}
+
+int main(void) {
+	if (core_init() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	conf_print();
+	util_banner("Benchmarks for the BC module:\n", 0);
+	aes();
+	core_clean();
+	return 0;
 }

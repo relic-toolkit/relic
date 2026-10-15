@@ -35,10 +35,10 @@
 
 /**
  * Evaluates a polynomial represented by its coefficients over a using Horner's
- * rule. Might promove to an API if needed elsewhere in the future.
+ * rule. Might be promoted to an API if needed elsewhere in the future.
  */
 #define TMPL_EP_MAP_HORNER(PFX, IN)											\
-	static void PFX##_eval(PFX##_t c, PFX##_t a, IN *coeffs, int deg) {		\
+	static void PFX##_evl(PFX##_t c, PFX##_t a, IN *coeffs, int deg) {		\
 		PFX##_copy(c, coeffs[deg]);											\
 		for (int i = deg; i > 0; --i) {										\
 			PFX##_mul(c, c, a);												\
@@ -128,11 +128,11 @@
 			ISO##_t coeffs = CUR##_curve_get_iso();							\
 																			\
 			/* numerators */												\
-			PFX##_eval(t0, p->x, coeffs->xn, coeffs->deg_xn);				\
-			PFX##_eval(t1, p->x, coeffs->yn, coeffs->deg_yn);				\
+			PFX##_evl(t0, p->x, coeffs->xn, coeffs->deg_xn);				\
+			PFX##_evl(t1, p->x, coeffs->yn, coeffs->deg_yn);				\
 			/* denominators */												\
-			PFX##_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);				\
-			PFX##_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);				\
+			PFX##_evl(t2, p->x, coeffs->yd, coeffs->deg_yd);				\
+			PFX##_evl(t3, p->x, coeffs->xd, coeffs->deg_xd);				\
 																			\
 			/* normalize if necessary */									\
 			TMPL_EP_MAP_ISOMAP_NORM(PFX);										\
@@ -360,7 +360,8 @@
 			if (r == NULL) {												\
 				RLC_THROW(ERR_NO_MEMORY);									\
 			}																\
-			md_xmd(r, 2 * D * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);\
+			md_xmd(r, 2 * D * elm + 1, msg, len,							\
+					(const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));			\
 			for (int i = 0; i < D; i++) {									\
 				bn_read_bin(k, r + 2 * i * elm, elm);						\
 				fp_prime_conv(((fp_t *)u)[i], k);							\

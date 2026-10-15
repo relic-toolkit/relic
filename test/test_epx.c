@@ -69,7 +69,7 @@ static int test_##C##_memory(void) {										\
 }																			\
 																			\
 static int test_##C##_util(void) {											\
-	int l, code = RLC_ERR;													\
+	int l, r, code = RLC_ERR;												\
 	C##_t a, b, c, t[3];													\
 	uint8_t bin[2 * (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES + 1];		\
 																			\
@@ -183,20 +183,56 @@ static int test_##C##_util(void) {											\
 				C##_set_infty(a);											\
 				l = C##_size_bin(a, j);										\
 				C##_write_bin(bin, l, a, j);								\
-				C##_read_bin(b, bin, l);									\
+				TEST_ASSERT(C##_read_bin(b, bin, l) == RLC_OK, end);		\
 				TEST_ASSERT(C##_cmp(a, b) == RLC_EQ, end);					\
 				C##_rand(a);												\
 				l = C##_size_bin(a, j);										\
 				C##_write_bin(bin, l, a, j);								\
-				C##_read_bin(b, bin, l);									\
+				TEST_ASSERT(C##_read_bin(b, bin, l) == RLC_OK, end);		\
 				TEST_ASSERT(C##_cmp(a, b) == RLC_EQ, end);					\
 				C##_rand(a);												\
 				C##_dbl(a, a);												\
 				l = C##_size_bin(a, j);										\
 				C##_norm(a, a);												\
 				C##_write_bin(bin, l, a, j);								\
-				C##_read_bin(b, bin, l);									\
+				TEST_ASSERT(C##_read_bin(b, bin, l) == RLC_OK, end);		\
 				TEST_ASSERT(C##_cmp(a, b) == RLC_EQ, end);					\
+			}																\
+		}																	\
+		TEST_END;															\
+																			\
+		TEST_CASE("reading an invalid point fails") {						\
+			for (int j = 0; j < 4; j++) {									\
+				C##_rand(a);												\
+				l = C##_size_bin(a, 0);										\
+				C##_write_bin(bin, l, a, 0);								\
+				switch (j) {												\
+					case 0:													\
+						/* An invalid tag. */								\
+						bin[0] = 5;											\
+						break;												\
+					case 1:													\
+						/* A point off the curve. */						\
+						bin[l - 1] ^= 1;									\
+						break;												\
+					case 2:													\
+						/* A coordinate that is not reduced modulo p. */	\
+						memset(bin + 1, 0xFF, RLC_FP_BYTES);				\
+						break;												\
+					default:												\
+						/* A compressed x-coordinate with no point. */		\
+						do {												\
+							F##_rand(a->x);									\
+							C##_rhs(c->x, a->x);							\
+						} while (F##_is_sqr(c->x));							\
+						bin[0] = 2;											\
+						F##_write_bin(bin + 1, (l - 1) / 2, a->x, 0);		\
+						l = (l - 1) / 2 + 1;								\
+						break;												\
+				}															\
+				r = RLC_ERR;												\
+				TEST_ERR(r = C##_read_bin(b, bin, l));						\
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);\
 			}																\
 		}																	\
 		TEST_END;															\
@@ -538,7 +574,8 @@ static int test_##C##_multiplication(void) {								\
 																			\
 		TEST_ONCE("generator has the right order") {						\
 			TEST_ASSERT(C##_on_curve(p), end);								\
-			C##_mul(r, p, n);												\
+			/* The basic method does not reduce the scalar modulo n. */		\
+			C##_mul_basic(r, p, n);											\
 			TEST_ASSERT(C##_is_infty(r) == 1, end);							\
 		} TEST_END;															\
 																			\
@@ -1140,7 +1177,7 @@ static int test_##C##_hashing(void) {										\
 			rand_bytes(msg, sizeof(msg));									\
 			C##_map(a, msg, sizeof(msg));									\
 			TEST_ASSERT(C##_on_curve(a) == 1, end);							\
-			C##_mul(a, a, n);												\
+			C##_mul_basic(a, a, n);											\
 			TEST_ASSERT(C##_is_infty(a) == 1, end);							\
 		}																	\
 		TEST_END;															\
@@ -1178,12 +1215,15 @@ static int test_##C##_frobenius(void) {										\
 																			\
 		TEST_CASE("frobenius and point multiplication are consistent") {	\
 			C##_rand(a);													\
-			C##_frb(b, a, 1);												\
-			d->used = RLC_FP_DIGS;											\
-			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);					\
-			bn_mod(d, d, n);												\
-			C##_mul_basic(c, a, d);											\
-			TEST_ASSERT(C##_cmp(c, b) == RLC_EQ, end);						\
+			/* The j-th power of Frobenius acts as multiplication by p^j. */ \
+			bn_set_dig(d, 1);												\
+			for (int j = 0; j < 4; j++) {									\
+				C##_frb(b, a, j);											\
+				C##_mul_basic(c, a, d);										\
+				TEST_ASSERT(C##_cmp(c, b) == RLC_EQ, end);					\
+				bn_mul(d, d, &(core_get()->prime));							\
+				bn_mod(d, d, n);											\
+			}																\
 		} TEST_END;															\
 																			\
 		TEST_CASE("endomorphism and point multiplication are consistent") {	\
@@ -1225,15 +1265,17 @@ TMPL_TEST_EPX(ep9, fp9)
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
-	ep2_t a;
+	ep2_t a, b;
 	uint8_t msg[5];
 
 	bn_null(n);
 	ep2_null(a);
+	ep2_null(b);
 
 	RLC_TRY {
 		bn_new(n);
 		ep2_new(a);
+		ep2_new(b);
 
 		ep2_curve_get_ord(n);
 
@@ -1241,7 +1283,7 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_basic(a, msg, sizeof(msg));
 			TEST_ASSERT(ep2_is_infty(a) == 0, end);
-			ep2_mul(a, a, n);
+			ep2_mul_basic(a, a, n);
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
@@ -1250,8 +1292,22 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map_sswum(a, msg, sizeof(msg));
 			TEST_ASSERT(ep2_is_infty(a) == 0, end);
-			ep2_mul(a, a, n);
+			ep2_mul_basic(a, a, n);
 			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("point hashing with a domain separation tag is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_dst(a, msg, sizeof(msg), (const uint8_t *)RLC_DSTAG,
+					strlen(RLC_DSTAG));
+			ep2_map_sswum(b, msg, sizeof(msg));
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
+			ep2_map_dst(b, msg, sizeof(msg), (const uint8_t *)"TAG", 3);
+			TEST_ASSERT(ep2_cmp(a, b) != RLC_EQ, end);
+			TEST_ASSERT(ep2_on_curve(b) && ep2_is_infty(b) == 0, end);
+			ep2_mul_basic(b, b, n);
+			TEST_ASSERT(ep2_is_infty(b) == 1, end);
 		}
 		TEST_END;
 
@@ -1260,7 +1316,7 @@ static int hashing2(void) {
 						rand_bytes(msg, sizeof(msg));
 						ep2_map_swift(a, msg, sizeof(msg));
 						TEST_ASSERT(ep2_is_infty(a) == 0, end);
-						ep2_mul(a, a, n);
+						ep2_mul_basic(a, a, n);
 						TEST_ASSERT(ep2_is_infty(a) == 1, end);
 					}
 					TEST_END;
@@ -1274,6 +1330,7 @@ static int hashing2(void) {
   end:
 	bn_free(n);
 	ep2_free(a);
+	ep2_free(b);
 	return code;
 }
 

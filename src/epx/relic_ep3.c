@@ -102,6 +102,9 @@ void ep3_psi(ep3_t r, const ep3_t p) {
 				ep3_sub(r, q, p);
 				ep3_frb(r, r, 1);
 				break;
+			default:
+				RLC_THROW(ERR_NO_CONFIG);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {

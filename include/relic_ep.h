@@ -850,6 +850,15 @@ void ep_rhs(fp_t rhs, const fp_t x);
 int ep_on_curve(const ep_t p);
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is valid, 0 otherwise.
+ */
+int ep_is_valid(const ep_t p);
+
+/**
  * Builds a precomputation table for multiplying a random prime elliptic point.
  *
  * @param[out] t			- the precomputation table.
@@ -881,10 +890,11 @@ size_t ep_size_bin(const ep_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep_read_bin(ep_t a, const uint8_t *bin, size_t len);
+int ep_read_bin(ep_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve point to a byte vector in big-endian format
@@ -920,7 +930,7 @@ void ep_add_basic(ep_t r, const ep_t p, const ep_t q);
  * returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -966,7 +976,7 @@ void ep_dbl_basic(ep_t r, const ep_t p);
  * returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep_dbl_slp_basic(ep_t r, fp_t s, const ep_t p);
@@ -1257,6 +1267,19 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
  * @param[in] len			- the array length in bytes.
  */
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len);
+
+/**
+ * Maps a byte array to a point in a prime elliptic curve with an explicit
+ * domain separation tag, as hash_to_curve from RFC 9380 does.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
 
 /**
  * Returns number of bytes required as input for secure hashing.

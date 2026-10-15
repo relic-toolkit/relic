@@ -70,8 +70,8 @@
 			/* If t0 is zero. */											\
 			if (F##_is_zero(t0)) {											\
 				if (F##_is_zero(t1)) {										\
-					/* If t1 is zero, q = p, should have doubled. */		\
-					C##_dbl_basic(r, p);									\
+					/* If t1 is zero, q = p, so double and keep the slope. */\
+					C##_dbl_slp_basic(r, s, p);								\
 				} else {													\
 					/* If t1 != 0 and t0 == 0, q = -p and r = infinity. */	\
 					C##_set_infty(r);										\

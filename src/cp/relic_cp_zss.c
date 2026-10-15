@@ -90,10 +90,15 @@ int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 
 		/* Compute (H(m) + d) and invert. */
 		bn_add(t, m, d);
+		/* Blind the secret, as inversion takes variable time. */
+		bn_rand_mod(r, n);
+		bn_mul(t, t, r);
 		bn_mod(t, t, n);
 		bn_mod_inv(t, t, n);
+		bn_mul(t, t, r);
+		bn_mod(t, t, n);
 
-		/* Compute the sinature. */
+		/* Compute the signature. */
 		g2_mul_gen(s, t);
 	}
 	RLC_CATCH_ANY {
@@ -120,6 +125,10 @@ int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
 	bn_null(n);
 	g1_null(g);
 	gt_null(e);
+
+	if (!g2_is_valid(s)) {
+		return result;
+	}
 
 	RLC_TRY {
 		bn_new(m);

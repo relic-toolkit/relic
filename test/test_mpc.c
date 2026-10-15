@@ -46,6 +46,12 @@ static int triple(void) {
 	bn_null(u);
 	mt_null(tri[0]);
 	mt_null(tri[1]);
+	for (int j = 0; j < 2; j++) {
+		bn_null(d[j]);
+		bn_null(e[j]);
+		bn_null(x[j]);
+		bn_null(y[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -55,10 +61,6 @@ static int triple(void) {
 		mt_new(tri[1]);
 
 		for (int j = 0; j < 2; j++) {
-			bn_null(d[j]);
-			bn_null(e[j]);
-			bn_null(x[j]);
-			bn_null(y[j]);
 			bn_new(d[j]);
 			bn_new(e[j]);
 			bn_new(x[j]);
@@ -142,15 +144,17 @@ static int shamir(void) {
 	bn_null(q);
 	bn_null(t);
 	bn_null(s);
+	for (int j = 0; j < 10; j++) {
+		bn_null(y[j]);
+		bn_null(x[j]);
+	}
 
 	RLC_TRY {
 		bn_new(q);
 		bn_new(t);
 		bn_new(s);
 		for (int j = 0; j < 10; j++) {
-			bn_null(y[j]);
 			bn_new(y[j]);
-			bn_null(x[j]);
 			bn_new(x[j]);
 		}
 
@@ -184,11 +188,8 @@ static int shamir(void) {
 			TEST_ASSERT(mpc_sss_gen(x, y, s, q, 3, 5) == RLC_OK, end);
 			bn_copy(x[1], x[0]);
 			bn_copy(y[1], y[0]);
-			RLC_TRY {
-				ret = mpc_sss_key(t, x, y, q, 3);
-			} RLC_CATCH_ANY {
-				ret = RLC_ERR;
-			}
+			ret = RLC_ERR;
+			TEST_ERR(ret = mpc_sss_key(t, x, y, q, 3));
 			TEST_ASSERT(ret == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
@@ -221,6 +222,24 @@ static int pairing(void) {
 	g2_null(_q);
 	gt_null(_r);
 	bn_null(n);
+	for (j = 0; j < 2; j++) {
+		g1_null(b1[j]);
+		g2_null(b2[j]);
+		gt_null(bt[j]);
+		g1_null(c1[j]);
+		g2_null(c2[j]);
+		gt_null(ct[j]);
+		g1_null(d[j]);
+		g2_null(e[j]);
+		bn_null(k[j]);
+		bn_null(l[j]);
+		g1_null(p[j]);
+		g2_null(q[j]);
+		gt_null(r[j]);
+		gt_null(f[j]);
+		mt_null(tri[j]);
+		pt_null(t[j]);
+	}
 
 	RLC_TRY {
 		g1_new(_p);
@@ -229,22 +248,6 @@ static int pairing(void) {
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
-			g1_null(b1[j]);
-			g2_null(b2[j]);
-			gt_null(bt[j]);
-			g1_null(c1[j]);
-			g2_null(c2[j]);
-			gt_null(ct[j]);
-			g1_null(d[j]);
-			g2_null(e[j]);
-			bn_null(k[j]);
-			bn_null(l[j]);
-			g1_null(p[j]);
-			g2_null(q[j]);
-			gt_null(r[j]);
-			gt_null(f[j]);
-			mt_null(tri[j]);
-			pt_null(t[j]);
 			g1_new(b1[j]);
 			g2_new(b2[j]);
 			gt_new(bt[j]);

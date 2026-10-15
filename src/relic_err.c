@@ -49,7 +49,7 @@
 #ifdef CHECK
 
 void err_simple_msg(int error) {
-	if (error != ERR_CAUGHT) {
+	if (error != ERR_CAUGHT && !core_get()->quiet) {
 		fprintf(stderr, "\nERROR: %s.\n", core_get()->reason[error]);
 	}
 }
@@ -59,6 +59,10 @@ void err_simple_msg(int error) {
 void err_full_msg(const char *function, const char *file, int line,
 		int error) {
 	ctx_t *ctx = core_get();
+
+	if (ctx->quiet) {
+		return;
+	}
 
 	if (error == ERR_CAUGHT) {
 		fprintf(stderr, "\tCAUGHT in %s() at %s,%d.\n", function, file, line);
@@ -91,6 +95,12 @@ void err_full_msg(const char *function, const char *file, int line,
 
 void err_get_msg(err_t *e, char **msg) {
 	ctx_t *ctx = core_get();
+	if (ctx->last == NULL || ctx->last->error == NULL) {
+		/* No error was thrown outside of a try-catch block. */
+		*e = 0;
+		*msg = NULL;
+		return;
+	}
 	*e = *(ctx->last->error);
 	*msg = ctx->reason[*e];
 	ctx->last = NULL;
@@ -100,6 +110,9 @@ void err_get_msg(err_t *e, char **msg) {
 
 void err_throw(const char *file, int line) {
 	core_get()->code = RLC_ERR;
+	if (core_get()->quiet) {
+		return;
+	}
 #if ARCH == AVR
 	/* The file name is stored in program memory. */
 	util_print("ERROR THROWN in %S:%d\n", file, line);
@@ -112,5 +125,18 @@ int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;
 	ctx->code = RLC_OK;
+#ifdef CHECK
+	/* Forget an error thrown outside of a try-catch block, so that the next
+	 * one is reported. */
+	if (ctx->last == &(ctx->error)) {
+		ctx->last = NULL;
+	}
+#else
+	ctx->pending = 0;
+#endif
 	return r;
+}
+
+void err_set_quiet(int quiet) {
+	core_get()->quiet = quiet;
 }

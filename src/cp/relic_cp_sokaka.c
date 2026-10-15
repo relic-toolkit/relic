@@ -74,10 +74,23 @@ int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
 		const sokaka_t k, const char *id2) {
 	size_t size, len1 = strlen(id1), len2 = strlen(id2);
 	int first = 0, result = RLC_OK;
-	uint8_t *buf;
+	/* Room for an element of G_T in uncompressed form. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			(sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
 	g1_t p;
 	g2_t q;
 	gt_t e;
+
+	/* The key is shared between two different identities. */
+	if (len1 == len2 && strncmp(id1, id2, len1) == 0) {
+		RLC_FREE(buf);
+		return RLC_ERR;
+	}
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	g1_null(p);
 	g2_null(q);
@@ -88,15 +101,8 @@ int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
 		g2_new(q);
 		gt_new(e);
 		size = gt_size_bin(e, 0);
-		buf = RLC_ALLOCA(uint8_t, size);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		if (len1 == len2) {
-			if (strncmp(id1, id2, len1) == 0) {
-				RLC_THROW(ERR_NO_VALID);
-			}
 			first = (strncmp(id1, id2, len1) < 0 ? 1 : 2);
 		} else {
 			if (len1 < len2) {
@@ -127,7 +133,7 @@ int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
 			}
 		}
 
-		/* Allocate size for storing the output. */
+		/* Derive the key from the shared pairing value. */
 		gt_write_bin(buf, size, e, 0);
 		md_kdf(key, key_len, buf, size);
 	}

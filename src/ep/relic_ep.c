@@ -125,25 +125,27 @@ size_t ep_size_bin(const ep_t a, int pack) {
 	return size;
 }
 
-void ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
+int ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep_set_infty(a);
-			return;
+			return RLC_OK;
 		} else {
 			RLC_THROW(ERR_NO_BUFFER);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	a->coord = BASIC;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->x, bin + 1, RLC_FP_BYTES);
+	if (fp_read_bin(a->x, bin + 1, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
+	}
 	if (len == RLC_FP_BYTES + 1) {
 		switch(bin[0]) {
 			case 2:
@@ -155,24 +157,31 @@ void ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return RLC_ERR;
 		}
-		ep_upk(a, a);
+		if (!ep_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
 	}
 
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
+			if (fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES)
+					!= RLC_OK) {
+				return RLC_ERR;
+			}
 		} else {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (!ep_on_curve(a)) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack) {
@@ -246,29 +255,27 @@ void ep_psi(ep_t r, const ep_t p) {
 
 void ep_pck(ep_t r, const ep_t p) {
 	int b;
-	bn_t halfQ, yValue;
+	bn_t hq, y;
 
-	bn_null(halfQ);
-	bn_null(yValue);
+	bn_null_all(hq, y);
 
 	RLC_TRY {
-		bn_new(halfQ);
-		bn_new(yValue);
+		bn_new_all(hq, y);
 
 		fp_copy(r->x, p->x);
 
 		if (ep_curve_is_pairf()) {
-			halfQ->used = RLC_FP_DIGS;
-			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-			bn_hlv(halfQ, halfQ);
+			hq->used = RLC_FP_DIGS;
+			dv_copy(hq->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_hlv(hq, hq);
 
-			fp_prime_back(yValue, p->y);
+			fp_prime_back(y, p->y);
 
-			b = bn_cmp(yValue, halfQ) == RLC_GT;
+			b = bn_cmp(y, hq) == RLC_GT;
 		} else {
-			/* Take the parity of the canonical representative. */
-			fp_norm(r->y, p->y);
-			b = fp_get_bit(r->y, 0);
+			/* Take the parity of y itself, not of its representation. */
+			fp_prime_back(y, p->y);
+			b = bn_get_bit(y, 0);
 		}
 
 		fp_zero(r->y);
@@ -280,25 +287,21 @@ void ep_pck(ep_t r, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(yValue);
-		bn_free(halfQ);
+		bn_free_all(hq, y);
 	}
 }
 
 int ep_upk(ep_t r, const ep_t p) {
 	fp_t t;
-	bn_t halfQ;
-	bn_t yValue;
+	bn_t hq, y;
 	int result = 0;
 
 	fp_null(t);
-	bn_null(halfQ);
-	bn_null(yValue);
+	bn_null_all(hq, y);
 
 	RLC_TRY {
 		fp_new(t);
-		bn_new(halfQ);
-		bn_new(yValue);
+		bn_new_all(hq, y);
 
 		ep_rhs(t, p->x);
 
@@ -312,12 +315,13 @@ int ep_upk(ep_t r, const ep_t p) {
 					sign_F_p(y) :=  { 1 if y > (p - 1) / 2, else
 									{ 0 otherwise.
 				*/
-				halfQ->used = RLC_FP_DIGS;
-				dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-				bn_hlv(halfQ, halfQ);  // This is equivalent to p - 1 / 2, floor division
+				hq->used = RLC_FP_DIGS;
+				dv_copy(hq->dp, fp_prime_get(), RLC_FP_DIGS);
+				/* hq = (p - 1) / 2, as p is odd. */
+				bn_hlv(hq, hq);
 
-				fp_prime_back(yValue, t);
-				int sign_fpy = bn_cmp(yValue, halfQ) == RLC_GT;
+				fp_prime_back(y, t);
+				int sign_fpy = bn_cmp(y, hq) == RLC_GT;
 
 				if (sign_fpy != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
@@ -325,8 +329,8 @@ int ep_upk(ep_t r, const ep_t p) {
 			} else {
 				/* Verify if least significant bit of the result matches the
 				 * compressed y-coordinate. */
-				fp_norm(t, t);
-				if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
+				fp_prime_back(y, t);
+				if (bn_get_bit(y, 0) != fp_get_bit(p->y, 0)) {
 					fp_neg(t, t);
 				}
 			}
@@ -342,8 +346,47 @@ int ep_upk(ep_t r, const ep_t p) {
 	}
 	RLC_FINALLY {
 		fp_free(t);
-		bn_free(yValue);
-		bn_free(halfQ);
+		bn_free_all(hq, y);
+	}
+	return result;
+}
+
+int ep_is_valid(const ep_t p) {
+	bn_t h, n;
+	ep_t t;
+	int result = 0;
+
+	if (ep_is_infty(p) || !ep_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	ep_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		ep_new(t);
+
+		result = 1;
+		ep_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			ep_curve_get_ord(n);
+			ep_mul_basic(t, p, n);
+			result = ep_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		ep_free(t);
 	}
 	return result;
 }

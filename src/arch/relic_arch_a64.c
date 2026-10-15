@@ -108,7 +108,7 @@
 static uint64_t g_counters[COUNTERS_COUNT];
 static uint64_t g_config[COUNTERS_COUNT];
 
-static void configure_rdtsc() {
+static void configure_rdtsc(void) {
 	if (kpc_force_all_ctrs_set(1)) {
 		printf("kpc_force_all_ctrs_set failed\n");
 		return;
@@ -130,7 +130,7 @@ static void configure_rdtsc() {
 	}
 }
 
-static void init_rdtsc() {
+static void init_rdtsc(void) {
 	void *kperf = dlopen(
 		"/System/Library/PrivateFrameworks/kperf.framework/Versions/A/kperf",
 		RTLD_LAZY);

@@ -64,6 +64,11 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = RLC_OK;
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(k);
 	bn_null(x);
@@ -76,9 +81,6 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		bn_new(x);
 		bn_new(r);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
 		do {
@@ -95,7 +97,8 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		if (8 * RLC_MD_LEN > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(e, hash, len);
-			bn_rsh(e, e, 8 * RLC_MD_LEN - bn_bits(n));
+			/* Keep the leftmost bits of the hash, as many as in n. */
+			bn_rsh(e, e, 8 * len - bn_bits(n));
 		} else {
 			bn_read_bin(e, hash, RLC_MD_LEN);
 		}
@@ -129,6 +132,11 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = 0;
 
+	if (m == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	bn_null(n);
 	bn_null(ev);
 	bn_null(rv);
@@ -139,13 +147,12 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		bn_new(ev);
 		bn_new(rv);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
 
-		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s)) {
+		/* The key at infinity would let anyone produce valid signatures. */
+		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s) &&
+				!ec_is_infty(q) && ec_on_curve(q)) {
 			if (bn_cmp(e, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				ec_mul_sim_gen(p, s, q, e);
 				ec_get_x(rv, p);
@@ -159,7 +166,8 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 				if (8 * RLC_MD_LEN > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(ev, hash, len);
-					bn_rsh(ev, ev, 8 * RLC_MD_LEN - bn_bits(n));
+					/* Keep the leftmost bits of the hash, as many as in n. */
+					bn_rsh(ev, ev, 8 * len - bn_bits(n));
 				} else {
 					bn_read_bin(ev, hash, RLC_MD_LEN);
 				}

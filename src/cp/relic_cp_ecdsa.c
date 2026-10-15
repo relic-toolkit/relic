@@ -79,6 +79,21 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		ec_new(p);
 
 		ec_curve_get_ord(n);
+
+		/* Hash once, so retries sign the same digest. */
+		if (!hash) {
+			md_map(h, msg, len);
+			msg = h;
+			len = RLC_MD_LEN;
+		}
+		if (8 * len > bn_bits(n)) {
+			len = RLC_CEIL(bn_bits(n), 8);
+			bn_read_bin(e, msg, len);
+			bn_rsh(e, e, 8 * len - bn_bits(n));
+		} else {
+			bn_read_bin(e, msg, len);
+		}
+
 		do {
 			do {
 				bn_rand_mod(k, n);
@@ -87,24 +102,17 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 				bn_mod(r, x, n);
 			} while (bn_is_zero(r));
 
-			if (!hash) {
-				md_map(h, msg, len);
-				msg = h;
-				len = RLC_MD_LEN;
-			}
-			if (8 * len > bn_bits(n)) {
-				len = RLC_CEIL(bn_bits(n), 8);
-				bn_read_bin(e, msg, len);
-				bn_rsh(e, e, 8 * len - bn_bits(n));
-			} else {
-				bn_read_bin(e, msg, len);
-			}
-
 			bn_mul(s, d, r);
 			bn_mod(s, s, n);
 			bn_add(s, s, e);
 			bn_mod(s, s, n);
+			/* Blind the secret, as inversion takes variable time. */
+			bn_rand_mod(x, n);
+			bn_mul(k, k, x);
+			bn_mod(k, k, n);
 			bn_mod_inv(k, k, n);
+			bn_mul(k, k, x);
+			bn_mod(k, k, n);
 			bn_mul(s, s, k);
 			bn_mod(s, s, n);
 		} while (bn_is_zero(s));
@@ -144,8 +152,10 @@ int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
 
 		ec_curve_get_ord(n);
 
+		/* The key at infinity would let anyone produce valid signatures. */
 		if (bn_sign(r) == RLC_POS && bn_sign(s) == RLC_POS &&
-				!bn_is_zero(r) && !bn_is_zero(s) && ec_on_curve(q)) {
+				!bn_is_zero(r) && !bn_is_zero(s) && !ec_is_infty(q) &&
+				ec_on_curve(q)) {
 			if (bn_cmp(r, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				bn_mod_inv(k, s, n);
 
@@ -174,15 +184,8 @@ int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
 				bn_mod(v, v, n);
 
 				cmp = dv_equ_sec(v->dp, r->dp, RLC_MIN(v->used, r->used));
-				result = (cmp == RLC_EQ ? 1 : 0);
-
-				if (v->used != r->used) {
-					result = 0;
-				}
-
-				if (ec_is_infty(p)) {
-					result = 0;
-				}
+				result = (cmp == RLC_EQ && v->used == r->used &&
+						!ec_is_infty(p));
 			}
 		}
 	}

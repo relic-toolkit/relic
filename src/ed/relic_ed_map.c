@@ -162,7 +162,7 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 #endif /* ED_ADD */
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(h);
@@ -278,7 +278,7 @@ static void ed_map_ell2_3mod4(ed_t p, const fp_t u) {
 #endif
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(h);
@@ -298,6 +298,11 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ed_param_level() + 7) / 8;
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
+
+	if (pseudo_random_bytes == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
 
 	bn_null(k);
 	fp_null(t);
@@ -361,5 +366,5 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 }
 
 void ed_map(ed_t p, const uint8_t *msg, size_t len) {
-	ed_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
+	ed_map_dst(p, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
 }

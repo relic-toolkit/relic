@@ -36,7 +36,8 @@
 #ifndef RLC_RAND_H
 #define RLC_RAND_H
 
-#include "relic_rand.h"
+#include "relic_conf.h"
+#include "relic_types.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -62,9 +63,33 @@
 #endif
 
 /**
- * Minimum size of the PRNG seed.
+ * Size of the seed gathered when initializing the PRNG.
  */
 #define RLC_RAND_SEED	    64
+
+/**
+ * Minimum size of the PRNG seed, for 128 bits of security.
+ */
+#define RLC_RAND_MIN		16
+
+/**
+ * Maximum size of the PRNG seed, which is copied to the stack when seeding.
+ */
+#define RLC_RAND_MAX		1024
+
+/**
+ * Path to the character device that supplies entropy.
+ */
+#define RLC_RAND_PATH		"/dev/urandom"
+
+/**
+ * Flag to reseed the PRNG when its process forks, for generators with state
+ * on systems where the process identifier is available.
+ */
+#if RAND == HASHD && (OPSYS == LINUX || OPSYS == MACOSX || OPSYS == FREEBSD ||\
+		OPSYS == NETBSD || OPSYS == DROID)
+#define RLC_RAND_FORK
+#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -86,7 +111,8 @@ void rand_clean(void);
  * Sets the initial state of the pseudo-random number generator.
  *
  * @param[in] buf			- the buffer that represents the initial state.
- * @param[in] size			- the number of bytes.
+ * @param[in] size			- the number of bytes, between RLC_RAND_MIN and
+ * 							  RLC_RAND_MAX.
  * @throw ERR_NO_VALID		- if the entropy length is too small or too large.
  */
 void rand_seed(uint8_t *buf, size_t size);

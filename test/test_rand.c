@@ -34,6 +34,11 @@
 #include "relic.h"
 #include "relic_test.h"
 
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
+
 #if RAND == HASHD
 
 /*
@@ -367,20 +372,23 @@ static int test(void) {
 #elif RAND == UDEV
 
 static int test(void) {
+	int code = RLC_ERR;
 	uint8_t out[20], digit;
 
 	TEST_ONCE("reading from /dev/urandom is correct") {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
 	}
 	TEST_END;
+
+	code = RLC_OK;
   end:
-	return RLC_OK;
+	return code;
 }
 
 #elif RAND == RDRND
@@ -432,6 +440,7 @@ static void test_bytes(uint8_t *buf, size_t size, void *args) {
 }
 
 static int test(void) {
+	int code = RLC_ERR;
 	uint8_t out[20], digit;
 	int fd = open("/dev/urandom", O_RDONLY);
 
@@ -439,21 +448,25 @@ static int test(void) {
 		digit = 0;
 		memset(out, 0, sizeof(out));
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
+		digit = 0;
+		memset(out, 0, sizeof(out));
 		rand_seed(&test_bytes, (void *)&fd);
 		rand_bytes(out, sizeof(out));
-		for (int j = 0; j < sizeof(out); j++) {
-			digit ^= out[j];
+		for (size_t j = 0; j < sizeof(out); j++) {
+			digit |= out[j];
 		}
 		TEST_ASSERT(digit != 0, end);
 	}
 	TEST_END;
+
+	code = RLC_OK;
   end:
-  	close(fd);
-	return RLC_OK;
+	close(fd);
+	return code;
 }
 
 #endif
@@ -471,8 +484,48 @@ int main(void) {
 		return 1;
 	}
 
+#ifdef RLC_RAND_FORK
+	TEST_ONCE("forked processes do not repeat the random output") {
+		uint8_t mine[32], theirs[32];
+		int fds[2];
+		pid_t pid;
+
+		TEST_ASSERT(pipe(fds) == 0, fail);
+		pid = fork();
+		TEST_ASSERT(pid >= 0, fail);
+		if (pid == 0) {
+			/* The child reports its output to the parent and leaves. */
+			rand_bytes(theirs, sizeof(theirs));
+			if (write(fds[1], theirs, sizeof(theirs)) != sizeof(theirs)) {
+				_exit(1);
+			}
+			_exit(0);
+		}
+		rand_bytes(mine, sizeof(mine));
+		TEST_ASSERT(read(fds[0], theirs, sizeof(theirs)) == sizeof(theirs),
+			fail);
+		waitpid(pid, NULL, 0);
+		close(fds[0]);
+		close(fds[1]);
+		TEST_ASSERT(memcmp(mine, theirs, sizeof(mine)) != 0, fail);
+	} TEST_END;
+#endif
+
+	TEST_ONCE("using the generator without a seed is an error") {
+		uint8_t out[16];
+		TEST_ERR(rand_clean(); rand_bytes(out, sizeof(out)));
+		TEST_ASSERT(err_get_code() == RLC_ERR, fail);
+		rand_init();
+		rand_bytes(out, sizeof(out));
+		TEST_ASSERT(err_get_code() == RLC_OK, fail);
+	} TEST_END;
+
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();
 	return 0;
+
+  fail:
+	core_clean();
+	return 1;
 }

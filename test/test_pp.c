@@ -235,6 +235,10 @@ static int pairing1(void) {
 	ep_null(r);
 	fp_null(e1);
 	fp_null(e2);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -244,8 +248,6 @@ static int pairing1(void) {
 		fp_new(e2);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep_null(q[j]);
 			ep_new(p[j]);
 			ep_new(q[j]);
 		}
@@ -716,6 +718,10 @@ static int pairing2(void) {
 	ep_null(r);
 	fp2_null(e1);
 	fp2_null(e2);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -725,8 +731,6 @@ static int pairing2(void) {
 		fp2_new(e2);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep_null(q[j]);
 			ep_new(p[j]);
 			ep_new(q[j]);
 		}
@@ -1143,6 +1147,10 @@ static int pairing8(void) {
 	fp8_null(e1);
 	fp8_null(e2);
 	ep2_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep2_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -1152,8 +1160,6 @@ static int pairing8(void) {
 		ep2_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep2_null(q[j]);
 			ep_new(p[j]);
 			ep2_new(q[j]);
 		}
@@ -1589,6 +1595,10 @@ static int pairing12(void) {
 	fp12_null(e1);
 	fp12_null(e2);
 	ep2_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep2_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -1598,8 +1608,6 @@ static int pairing12(void) {
 		ep2_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep2_null(q[j]);
 			ep_new(p[j]);
 			ep2_new(q[j]);
 		}
@@ -2090,6 +2098,10 @@ static int pairing16(void) {
 	fp16_null(e1);
 	fp16_null(e2);
 	ep4_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep4_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -2099,8 +2111,6 @@ static int pairing16(void) {
 		ep4_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep4_null(q[j]);
 			ep_new(p[j]);
 			ep4_new(q[j]);
 		}
@@ -2621,6 +2631,10 @@ static int pairing18(void) {
 	fp18_null(e1);
 	fp18_null(e2);
 	ep3_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep3_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -2630,8 +2644,6 @@ static int pairing18(void) {
 		ep3_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep3_null(q[j]);
 			ep_new(p[j]);
 			ep3_new(q[j]);
 		}
@@ -3126,6 +3138,10 @@ static int pairing24(void) {
 	fp24_null(e1);
 	fp24_null(e2);
 	ep4_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep4_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -3135,8 +3151,6 @@ static int pairing24(void) {
 		ep4_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep4_null(q[j]);
 			ep_new(p[j]);
 			ep4_new(q[j]);
 		}
@@ -3635,6 +3649,10 @@ static int pairing48(void) {
 	fp48_null(e1);
 	fp48_null(e2);
 	ep8_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep8_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -3644,8 +3662,6 @@ static int pairing48(void) {
 		ep8_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep8_null(q[j]);
 			ep_new(p[j]);
 			ep8_new(q[j]);
 		}
@@ -4144,6 +4160,10 @@ static int pairing54(void) {
 	fp54_null(e1);
 	fp54_null(e2);
 	ep9_null(r);
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep9_null(q[j]);
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -4153,8 +4173,6 @@ static int pairing54(void) {
 		ep9_new(r);
 
 		for (j = 0; j < 2; j++) {
-			ep_null(p[j]);
-			ep9_null(q[j]);
 			ep_new(p[j]);
 			ep9_new(q[j]);
 		}

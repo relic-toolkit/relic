@@ -1347,10 +1347,11 @@ size_t ep2_size_bin(const ep2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
+int ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quadratic extension to a byte
@@ -1388,7 +1389,7 @@ void ep2_add_basic(ep2_t r, const ep2_t p, const ep2_t q);
  * quadratic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -1438,7 +1439,7 @@ void ep2_dbl_basic(ep2_t r, const ep2_t p);
  * a quadratic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep2_dbl_slp_basic(ep2_t r, fp2_t s, const ep2_t p);
@@ -1727,6 +1728,20 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len);
 void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
+ * Maps a byte array to a point in an elliptic curve over a quadratic
+ * extension with an explicit domain separation tag, as hash_to_curve from
+ * RFC 9380 does.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
+
+/**
  * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
  * quadratic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
@@ -1988,10 +2003,11 @@ size_t ep3_size_bin(const ep3_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
+int ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a cubic extension to a byte
@@ -2029,7 +2045,7 @@ void ep3_add_basic(ep3_t r, const ep3_t p, const ep3_t q);
  * cubic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -2079,7 +2095,7 @@ void ep3_dbl_basic(ep3_t r, const ep3_t p);
  * a cubic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p);
@@ -2487,6 +2503,8 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
+ * It must be called once after configuring the base field, since it adjusts
+ * constants of the field in place.
  *
  * @param[in] type			- the type of twist (multiplicative or divisive).
  */
@@ -2607,10 +2625,11 @@ size_t ep4_size_bin(const ep4_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
+int ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quartic extension to a byte
@@ -2648,7 +2667,7 @@ void ep4_add_basic(ep4_t r, const ep4_t p, const ep4_t q);
  * quartic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -2698,7 +2717,7 @@ void ep4_dbl_basic(ep4_t r, const ep4_t p);
  * a quartic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p);
@@ -3106,6 +3125,8 @@ void ep8_curve_set(const fp8_t a, const fp8_t b, const ep8_t g, const bn_t r,
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
+ * It must be called once after configuring the base field, since it adjusts
+ * constants of the field in place.
  *
  * @param[in] type			- the type of twist (multiplicative or divisive).
  */
@@ -3226,10 +3247,11 @@ size_t ep8_size_bin(const ep8_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
+int ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over an octic extension to a byte
@@ -3267,7 +3289,7 @@ void ep8_add_basic(ep8_t r, const ep8_t p, const ep8_t q);
  * octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -3317,7 +3339,7 @@ void ep8_dbl_basic(ep8_t r, const ep8_t p);
  * an octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep8_dbl_slp_basic(ep8_t r, fp8_t s, const ep8_t p);
@@ -3838,10 +3860,11 @@ size_t ep9_size_bin(const ep9_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep9_read_bin(ep9_t a, const uint8_t *bin, size_t len);
+int ep9_read_bin(ep9_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a nonic extension to a byte
@@ -3879,7 +3902,7 @@ void ep9_add_basic(ep9_t r, const ep9_t p, const ep9_t q);
  * nonic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -3929,7 +3952,7 @@ void ep9_dbl_basic(ep9_t r, const ep9_t p);
  * a nonic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep9_dbl_slp_basic(ep9_t r, fp9_t s, const ep9_t p);

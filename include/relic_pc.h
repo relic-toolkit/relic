@@ -229,6 +229,23 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_free(A)			RLC_CAT(RLC_GT_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen elements at once, in order.
+ *
+ * @param[in,out] ...		- the elements.
+ */
+/** @{ */
+#define g1_null_all(...)	RLC_EACH(g1_null, __VA_ARGS__)
+#define g1_new_all(...)		RLC_EACH(g1_new, __VA_ARGS__)
+#define g1_free_all(...)	RLC_EACH(g1_free, __VA_ARGS__)
+#define g2_null_all(...)	RLC_EACH(g2_null, __VA_ARGS__)
+#define g2_new_all(...)		RLC_EACH(g2_new, __VA_ARGS__)
+#define g2_free_all(...)	RLC_EACH(g2_free, __VA_ARGS__)
+#define gt_null_all(...)	RLC_EACH(gt_null, __VA_ARGS__)
+#define gt_new_all(...)		RLC_EACH(gt_new, __VA_ARGS__)
+#define gt_free_all(...)	RLC_EACH(gt_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group G_1.
  *
  * @param[out] G			- the returned generator.
@@ -365,6 +382,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
 	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
 	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+	(P)->coord = (Q)->coord;																						\
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -376,6 +394,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
 	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
 	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
+	(Q)->coord = (P)->coord;																						\
 
 /**
  * Assigns a G_T element to zero.
@@ -538,36 +557,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #else
 #define gt_size_bin(A, C)	RLC_FP_BYTES
 #endif
-
-/**
- * Reads a G_1 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g1_read_bin(P, B, L) 	RLC_CAT(RLC_G1_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_2 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g2_read_bin(P, B, L) 	RLC_CAT(RLC_G2_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_T element from a byte vector in big-endian format.
- *
- * @param[out] A			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define gt_read_bin(A, B, L) 	RLC_CAT(RLC_GT_LOWER, read_bin)(A, B, L)
 
 /**
  * Writes an optionally compressed G_1 element to a byte vector in big-endian
@@ -1139,5 +1128,44 @@ int g2_is_valid(const g2_t a);
  * @param[in] a             - the element to check.
  */
 int gt_is_valid(const gt_t a);
+
+/**
+ * Reads a G_1 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_2 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_T element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len);
 
 #endif /* !RLC_PC_H */

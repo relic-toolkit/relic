@@ -87,7 +87,8 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 	bn_null(r);
 	bn_null(t);
 
-	if (pub == NULL || bn_bits(m) > s * bn_bits(pub)) {
+	if (pub == NULL || s == 0 || bn_sign(m) == RLC_NEG ||
+			bn_bits(m) > s * bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
@@ -96,24 +97,33 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 		bn_new(r);
 		bn_new(t);
 
-		/* Generate r in Z_n^*. */
-		bn_rand_mod(r, pub);
-		/* Compute c = (g^m)(r^n) mod n^2. */
-		bn_add_dig(g, pub, 1);
-
-		/* t = n^(s + 1). */
+		/* t = n^s, which must be larger than the message. */
 		bn_copy(t, pub);
-		for (size_t i = 0; i < s; i++) {
+		for (size_t j = 1; j < s; j++) {
 			bn_mul(t, t, pub);
 		}
 
-		bn_mxp(c, g, m, t);
-		for (size_t i = 0; i < s; i++) {
-			bn_mxp(r, r, pub, t);
-		}
+		if (bn_cmp(m, t) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			/* t = n^(s + 1). */
+			bn_mul(t, t, pub);
 
-		bn_mul(c, c, r);
-		bn_mod(c, c, t);
+			/* Generate r in Z_n^*. */
+			do {
+				bn_rand_mod(r, pub);
+			} while (bn_is_zero(r));
+
+			/* Compute c = (g^m)(r^(n^s)) mod n^(s + 1). */
+			bn_add_dig(g, pub, 1);
+			bn_mxp(c, g, m, t);
+			for (size_t j = 0; j < s; j++) {
+				bn_mxp(r, r, pub, t);
+			}
+
+			bn_mul(c, c, r);
+			bn_mod(c, c, t);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -129,14 +139,15 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 
 int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 		size_t s) {
-	bn_t i, l, r, t, u, v, x;
+	bn_t f, i, l, r, t, u, v, x;
 	int result = RLC_OK;
-	dig_t fk;
 
-	if (bn_bits(c) > (s + 1) * bn_bits(pub)) {
+	if (s == 0 || bn_sign(c) == RLC_NEG ||
+			bn_bits(c) > (s + 1) * bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
+	bn_null(f);
 	bn_null(i);
 	bn_null(l);
 	bn_null(r);
@@ -146,6 +157,7 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 	bn_null(x);
 
 	RLC_TRY {
+		bn_new(f);
 		bn_new(i);
 		bn_new(l);
 		bn_new(r);
@@ -156,55 +168,62 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
 
 		/* t = n^(s + 1). */
 		bn_sqr(t, pub);
-		for (size_t i = 1; i < s; i++) {
+		for (size_t j = 1; j < s; j++) {
 			bn_mul(t, t, pub);
 		}
 
-		/* Compute (c^l mod n^(s + 1)) * u mod n. */
-		bn_mxp(m, c, prv, t);
+		if (bn_cmp(c, t) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			/* Compute c^l mod n^(s + 1). */
+			bn_mxp(m, c, prv, t);
 
-		bn_zero(i);
-		bn_copy(t, pub);
-		for (size_t j = 1; j <= s; j++) {
-			/* u = t1 = L(c mod n^(j+1)). */
-			bn_mul(r, t, pub);
-			bn_mod(u, m, r);
-			bn_sub_dig(u, u, 1);
-			bn_div(u, u, pub);
-			/* v = t2 = i. */
-			bn_copy(v, i);
-			bn_copy(l, pub);
-			fk = 1;
-			for (size_t k = 2; k <= j; k++) {
-				bn_sub_dig(i, i, 1);
-				/* Accumulate fk = f!. */
-				fk = fk * k;
-				/* t2 = t2 * i mod n^j. */
-				bn_mul(v, v, i);
-				bn_mod(v, v, t);
-				/* t1 = t1 - t2 * n^(k-1)/k! mod n^j. */
-				bn_mul(x, v, l);
-				bn_div_dig(x, x, fk);
-				bn_mod(x, x, t);
-				bn_sub(u, u, x);
-				while (bn_sign(u) == RLC_NEG) {
-					bn_add(u, u, t);
+			/* Recover i = ml mod n^s, following Damgard and Jurik. */
+			bn_zero(i);
+			bn_copy(t, pub);
+			for (size_t j = 1; j <= s; j++) {
+				/* u = t1 = L(c mod n^(j+1)). */
+				bn_mul(r, t, pub);
+				bn_mod(u, m, r);
+				bn_sub_dig(u, u, 1);
+				bn_div(u, u, pub);
+				/* v = t2 = i. */
+				bn_copy(v, i);
+				bn_copy(l, pub);
+				bn_set_dig(f, 1);
+				for (size_t k = 2; k <= j; k++) {
+					bn_sub_dig(i, i, 1);
+					/* Accumulate f = k!. */
+					bn_mul_dig(f, f, k);
+					/* t2 = t2 * i mod n^j. */
+					bn_mul(v, v, i);
+					bn_mod(v, v, t);
+					/* t1 = t1 - t2 * n^(k-1) * (k!)^(-1) mod n^j. */
+					bn_mod_inv(x, f, t);
+					bn_mul(x, x, v);
+					bn_mod(x, x, t);
+					bn_mul(x, x, l);
+					bn_mod(x, x, t);
+					bn_sub(u, u, x);
+					if (bn_sign(u) == RLC_NEG) {
+						bn_add(u, u, t);
+					}
+					bn_mul(l, l, pub);
 				}
-				bn_mod(u, u, t);
-				bn_mul(l, l, pub);
+				if (j < s) {
+					bn_copy(t, r);
+					bn_copy(i, u);
+				}
 			}
-			if (j < s) {
-				bn_copy(t, r);
-				bn_copy(i, u);
-			}
+			bn_mod_inv(v, prv, t);
+			bn_mul(m, u, v);
+			bn_mod(m, m, t);
 		}
-		bn_mod_inv(v, prv, t);
-		bn_mul(m, u, v);
-		bn_mod(m, m, t);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		bn_free(f);
 		bn_free(i);
 		bn_free(l);
 		bn_free(r);

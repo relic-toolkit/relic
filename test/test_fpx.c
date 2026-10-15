@@ -139,7 +139,7 @@ static int util2(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp2_rand(a);
 			fp2_write_bin(bin, sizeof(bin), a, 0);
-			fp2_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp2_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -678,7 +678,7 @@ static int exponentiation2(void) {
 }
 
 static int compression2(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	fp2_t a, b, c, d;
 	uint8_t bin[2 * RLC_FP_BYTES];
 
@@ -697,14 +697,41 @@ static int compression2(void) {
 			fp2_pck(c, b);
 			TEST_ASSERT(fp2_upk(d, c) == 1, end);
 			TEST_ASSERT(fp2_cmp(b, d) == RLC_EQ, end);
+			/* The compressed bit is the parity of a_1 as an integer. */
+			fp_write_bin(bin, RLC_FP_BYTES, b[1]);
+			TEST_ASSERT(fp_get_bit(c[1], 0) == (bin[RLC_FP_BYTES - 1] & 1), end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp2_rand(a);
 			fp2_conv_cyc(a, a);
 			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
-			fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp2_read_bin(b, bin, RLC_FP_BYTES + 1) == RLC_OK, end);
 			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* A sign byte other than 0 or 1. */
+			fp2_rand(a);
+			fp2_conv_cyc(a, a);
+			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
+			bin[RLC_FP_BYTES] = 2;
+			r = RLC_ERR;
+			TEST_ERR(r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			/* A first coordinate with no unitary element, as a_1^2 =
+			 * (a_0^2 - 1) / qnr has no root when a_0^2 - 1 is a square. */
+			do {
+				fp_rand(a[0]);
+				fp_sqr(a[1], a[0]);
+				fp_sub_dig(a[1], a[1], 1);
+			} while (fp_is_zero(a[1]) || !fp_is_sqr(a[1]));
+			fp_write_bin(bin, RLC_FP_BYTES, a[0]);
+			bin[RLC_FP_BYTES] = 0;
+			r = RLC_ERR;
+			TEST_ERR(r = fp2_read_bin(b, bin, RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -845,6 +872,7 @@ static int cube_root2(void) {
 			fp2_sqr(d, b);
 			fp2_mul(d, d, b);
 			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(d, c) == RLC_EQ, end);
 			fp2_rand(a);
 			fp2_sqr(c, a);
 			fp2_mul(c, c, a);
@@ -857,6 +885,14 @@ static int cube_root2(void) {
 				fp2_rand(a);
 			} while(fp2_is_cub(a) == 1);
 			TEST_ASSERT(fp2_crt(b, a) == 0, end);
+			/* Non-cubes with a zero coordinate are also detected. */
+			for (int j = 0; j < 2; j++) {
+				do {
+					fp2_zero(a);
+					fp_rand(a[j]);
+				} while (fp2_is_cub(a) == 1);
+				TEST_ASSERT(fp2_crt(b, a) == 0, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1034,7 +1070,7 @@ static int util3(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp3_rand(a);
 			fp3_write_bin(bin, sizeof(bin), a, 0);
-			fp3_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp3_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -1729,7 +1765,7 @@ static int util4(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp4_rand(a);
 			fp4_write_bin(bin, sizeof(bin), a, 0);
-			fp4_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp4_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp4_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -2348,7 +2384,7 @@ static int util6(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp6_rand(a);
 			fp6_write_bin(bin, sizeof(bin), a, 0);
-			fp6_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp6_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp6_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -2741,7 +2777,7 @@ static int memory8(void) {
 }
 
 static int util8(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[8 * RLC_FP_BYTES];
 	fp8_t a, b, c;
 	dig_t d;
@@ -2821,7 +2857,7 @@ static int util8(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp8_rand(a);
 			fp8_write_bin(bin, sizeof(bin), a, 0);
-			fp8_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp8_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -2838,12 +2874,39 @@ static int util8(void) {
 			fp8_rand(a);
 			fp8_conv_cyc(a, a);
 			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
-			fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1) == RLC_OK,
+				end);
 			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
 			fp8_inv_cyc(a, a);
 			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
-			fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1) == RLC_OK,
+				end);
 			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* A sign byte other than 0 or 1. */
+			fp8_rand(a);
+			fp8_conv_cyc(a, a);
+			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
+			bin[4 * RLC_FP_BYTES] = 2;
+			r = RLC_ERR;
+			TEST_ERR(r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			/* A coordinate with no unitary element, as 1 + a_1^2 * v^2 is
+			 * not a square. */
+			do {
+				fp4_rand(a[1]);
+				fp4_sqr(a[0], a[1]);
+				fp4_mul_art(a[0], a[0]);
+				fp_add_dig(((fp_t *)a[0])[0], ((fp_t *)a[0])[0], 1);
+			} while (fp4_is_sqr(a[0]));
+			fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1], 0);
+			bin[4 * RLC_FP_BYTES] = 0;
+			r = RLC_ERR;
+			TEST_ERR(r = fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -3238,6 +3301,11 @@ static int cyclotomic8(void) {
 			fp8_pck_max(b, a);
 			TEST_ASSERT(fp8_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp8_cmp(a, c) == RLC_EQ, end);
+			/* The element -1 is unitary, but cannot be compressed. */
+			fp8_set_dig(a, 1);
+			fp8_neg(a, a);
+			TEST_ERR(fp8_pck_max(b, a));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3538,7 +3606,7 @@ static int util9(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp9_rand(a);
 			fp9_write_bin(bin, sizeof(bin), a, 0);
-			fp9_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp9_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp9_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -4084,7 +4152,7 @@ static int util12(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp12_rand(a);
 			fp12_write_bin(bin, sizeof(bin), a, 0);
-			fp12_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp12_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -4408,6 +4476,8 @@ static int cyclotomic12(void) {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			TEST_ASSERT(fp12_test_cyc(a) == 1, end);
+			fp12_zero(a);
+			TEST_ASSERT(fp12_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -4717,7 +4787,7 @@ static int exponentiation12(void) {
 }
 
 static int compression12(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[12 * RLC_FP_BYTES];
 	fp12_t a, b, c;
 
@@ -4764,12 +4834,27 @@ static int compression12(void) {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
-			fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
+			TEST_ASSERT(fp12_read_bin(b, bin, 8 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 			fp12_set_dig(a, 1);
 			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
-			fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
+			TEST_ASSERT(fp12_read_bin(b, bin, 8 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* Replacing a coefficient leaves the cyclotomic subgroup. */
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
+			fp2_rand(b[0][0]);
+			fp2_write_bin(bin, 2 * RLC_FP_BYTES, b[0][0], 0);
+			r = RLC_ERR;
+			TEST_ERR(r = fp12_read_bin(b, bin, 8 * RLC_FP_BYTES));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -4818,7 +4903,7 @@ static int memory16(void) {
 }
 
 static int util16(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[16 * RLC_FP_BYTES];
 	fp16_t a, b, c;
 	dig_t d;
@@ -4898,7 +4983,7 @@ static int util16(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp16_rand(a);
 			fp16_write_bin(bin, sizeof(bin), a, 0);
-			fp16_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp16_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -4915,12 +5000,39 @@ static int util16(void) {
 			fp16_rand(a);
 			fp16_conv_cyc(a, a);
 			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
-			fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1) == RLC_OK,
+				end);
 			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
 			fp16_inv_cyc(a, a);
 			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
-			fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1) == RLC_OK,
+				end);
 			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* A sign byte other than 0 or 1. */
+			fp16_rand(a);
+			fp16_conv_cyc(a, a);
+			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
+			bin[8 * RLC_FP_BYTES] = 2;
+			r = RLC_ERR;
+			TEST_ERR(r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			/* A coordinate with no unitary element, as 1 + a_1^2 * v^2 is
+			 * not a square. */
+			do {
+				fp8_rand(a[1]);
+				fp8_sqr(a[0], a[1]);
+				fp8_mul_art(a[0], a[0]);
+				fp_add_dig(((fp_t *)a[0])[0], ((fp_t *)a[0])[0], 1);
+			} while (fp8_is_sqr(a[0]));
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[1], 0);
+			bin[8 * RLC_FP_BYTES] = 0;
+			r = RLC_ERR;
+			TEST_ERR(r = fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -5322,6 +5434,11 @@ static int cyclotomic16(void) {
 			fp16_pck_max(b, a);
 			TEST_ASSERT(fp16_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp16_cmp(a, c) == RLC_EQ, end);
+			/* The element -1 is unitary, but cannot be compressed. */
+			fp16_set_dig(a, 1);
+			fp16_neg(a, a);
+			TEST_ERR(fp16_pck_max(b, a));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5425,6 +5542,13 @@ static int exponentiatioAFG16(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp16_exp(c, a, d);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			/* All powers agree with repeated applications of Frobenius. */
+			fp16_copy(c, a);
+			for (int j = 0; j <= 16; j++) {
+				fp16_frb(b, a, j);
+				TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+				fp16_frb(c, c, 1);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5620,7 +5744,7 @@ static int util18(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp18_rand(a);
 			fp18_write_bin(bin, sizeof(bin), a, 0);
-			fp18_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp18_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -5890,6 +6014,8 @@ static int cyclotomic18(void) {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			TEST_ASSERT(fp18_test_cyc(a) == 1, end);
+			fp18_zero(a);
+			TEST_ASSERT(fp18_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -6203,7 +6329,7 @@ static int exponentiation18(void) {
 }
 
 static int compression18(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[18 * RLC_FP_BYTES];
 	fp18_t a, b, c;
 
@@ -6250,12 +6376,27 @@ static int compression18(void) {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
-			fp18_read_bin(b, bin, 12 * RLC_FP_BYTES);
+			TEST_ASSERT(fp18_read_bin(b, bin, 12 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
 			fp18_set_dig(a, 1);
 			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
-			fp18_read_bin(b, bin, 12 * RLC_FP_BYTES);
+			TEST_ASSERT(fp18_read_bin(b, bin, 12 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* Replacing a coefficient leaves the cyclotomic subgroup. */
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
+			fp3_rand(b[0][0]);
+			fp3_write_bin(bin, 3 * RLC_FP_BYTES, b[0][0], 0);
+			r = RLC_ERR;
+			TEST_ERR(r = fp18_read_bin(b, bin, 12 * RLC_FP_BYTES));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -6384,7 +6525,7 @@ static int util24(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp24_rand(a);
 			fp24_write_bin(bin, sizeof(bin), a, 0);
-			fp24_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp24_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -6739,6 +6880,8 @@ static int cyclotomic24(void) {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
 			TEST_ASSERT(fp24_test_cyc(a) == 1, end);
+			fp24_zero(a);
+			TEST_ASSERT(fp24_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -7038,7 +7181,7 @@ static int exponentiation24(void) {
 }
 
 static int compression24(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[24 * RLC_FP_BYTES];
 	fp24_t a, b, c;
 
@@ -7068,12 +7211,27 @@ static int compression24(void) {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
 			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
-			fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
+			TEST_ASSERT(fp24_read_bin(b, bin, 16 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
 			fp24_set_dig(a, 1);
 			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
-			fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
+			TEST_ASSERT(fp24_read_bin(b, bin, 16 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* Replacing a coefficient leaves the cyclotomic subgroup. */
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
+			fp4_rand(b[0][0]);
+			fp4_write_bin(bin, 4 * RLC_FP_BYTES, b[0][0], 0);
+			r = RLC_ERR;
+			TEST_ERR(r = fp24_read_bin(b, bin, 16 * RLC_FP_BYTES));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -7202,7 +7360,7 @@ static int util48(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp48_rand(a);
 			fp48_write_bin(bin, sizeof(bin), a, 0);
-			fp48_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp48_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
@@ -7523,7 +7681,7 @@ static int squaring48(void) {
 }
 
 static int compression48(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[48 * RLC_FP_BYTES];
 	fp48_t a, b, c;
 
@@ -7570,12 +7728,27 @@ static int compression48(void) {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
-			fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
+			TEST_ASSERT(fp48_read_bin(b, bin, 32 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
 			fp48_set_dig(a, 1);
 			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
-			fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
+			TEST_ASSERT(fp48_read_bin(b, bin, 32 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* Replacing a coefficient leaves the cyclotomic subgroup. */
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
+			fp8_rand(b[0][0]);
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, b[0][0], 0);
+			r = RLC_ERR;
+			TEST_ERR(r = fp48_read_bin(b, bin, 32 * RLC_FP_BYTES));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -7613,6 +7786,8 @@ static int cyclotomic48(void) {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			TEST_ASSERT(fp48_test_cyc(a) == 1, end);
+			fp48_zero(a);
+			TEST_ASSERT(fp48_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {
@@ -8028,7 +8203,7 @@ static int util54(void) {
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp54_rand(a);
 			fp54_write_bin(bin, sizeof(bin), a, 0);
-			fp54_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp54_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
@@ -8286,7 +8461,7 @@ static int squaring54(void) {
 }
 
 static int compression54(void) {
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	uint8_t bin[54 * RLC_FP_BYTES];
 	fp54_t a, b, c;
 
@@ -8316,12 +8491,27 @@ static int compression54(void) {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
 			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
-			fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
+			TEST_ASSERT(fp54_read_bin(b, bin, 36 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);
 			fp54_set_dig(a, 1);
 			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
-			fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
+			TEST_ASSERT(fp54_read_bin(b, bin, 36 * RLC_FP_BYTES) == RLC_OK,
+				end);
 			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading an invalid compressed element fails") {
+			/* Replacing a coefficient leaves the cyclotomic subgroup. */
+			fp54_rand(a);
+			fp54_conv_cyc(a, a);
+			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
+			fp9_rand(b[0][0]);
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, b[0][0], 0);
+			r = RLC_ERR;
+			TEST_ERR(r = fp54_read_bin(b, bin, 36 * RLC_FP_BYTES));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -8361,6 +8551,8 @@ static int cyclotomic54(void) {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
 			TEST_ASSERT(fp54_test_cyc(a) == 1, end);
+			fp54_zero(a);
+			TEST_ASSERT(fp54_test_cyc(a) == 0, end);
 		} TEST_END;
 
 		TEST_CASE("compression in cyclotomic subgroup is correct") {

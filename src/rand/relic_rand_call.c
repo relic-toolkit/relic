@@ -46,9 +46,11 @@
 #if RAND == CALL
 
 static void rand_stub(uint8_t *buf, size_t size, void *args) {
-	int fd = open("/dev/urandom", O_RDONLY);
+	int fd = open(RLC_RAND_PATH, O_RDONLY);
 	ssize_t c;
 	size_t l;
+
+	(void)args;
 
 	if (fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
@@ -82,6 +84,10 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 
+	if (!ctx->seeded || ctx->rand_call == NULL) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
 	ctx->rand_call(buf, size, ctx->rand_args);
 	if (rand_check(buf, size) == RLC_ERR) {
 		RLC_THROW(ERR_NO_RAND);

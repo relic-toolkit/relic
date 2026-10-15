@@ -96,7 +96,7 @@ void* core_init_ptr = NULL;
 #if MULTI
 rlc_thread ctx_t *core_ctx = NULL;
 #else
-static ctx_t *core_ctx = NULL;
+ctx_t *core_ctx = NULL;
 #endif
 
 int core_init(void) {
@@ -119,6 +119,12 @@ int core_init(void) {
 #endif /* CHECK */
 
 	core_ctx->code = RLC_OK;
+	core_ctx->number = 0;
+	core_ctx->quiet = 0;
+#ifndef CHECK
+	core_ctx->depth = 0;
+	core_ctx->pending = 0;
+#endif
 
 	RLC_TRY {
 		arch_init();
@@ -153,7 +159,12 @@ int core_init(void) {
 		return RLC_ERR;
 	}
 
+#ifndef CHECK
+	/* Without error checking, failures are only recorded in the code. */
+	return core_ctx->code;
+#else
 	return RLC_OK;
+#endif
 }
 
 int core_clean(void) {
@@ -194,14 +205,14 @@ int core_clean(void) {
 	return RLC_OK;
 }
 
-ctx_t *core_get(void) {
 #if defined(MULTI)
+ctx_t *core_get(void) {
     if (core_ctx == NULL && core_thread_initializer != NULL) {
         core_thread_initializer(core_init_ptr);
     }
-#endif
 	return core_ctx;
 }
+#endif
 
 void core_set(ctx_t *ctx) {
 	core_ctx = ctx;
