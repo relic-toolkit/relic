@@ -1042,9 +1042,13 @@ static int trsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 
 		if (pad(em, k, in, in_len, l, l_len) == RLC_OK) {
 			bn_read_bin(m, em, k);
-			/* The key may be secret, so exponentiate in constant time. */
-			for (size_t i = 0; i < tau; i++) {
+			/* A key without delay is kept secret, so use a ladder for it. */
+			if (tau == 1) {
 				bn_mxp_monty(m, m, ek->e, ek->crt->n);
+			} else {
+				for (size_t i = 0; i < tau; i++) {
+					bn_mxp(m, m, ek->e, ek->crt->n);
+				}
 			}
 			bn_write_bin(out, k, m);
 			*out_len = k;

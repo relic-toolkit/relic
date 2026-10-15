@@ -1073,6 +1073,9 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
 /**
  * Encrypts using Timed RSA with OAEP padding and a label, computing
  * c = x^(e^tau) for the encoded message x by tau sequential exponentiations.
+ * The key is taken as secret when tau = 1, as in timed decryption, and then
+ * exponentiated by a constant-time ladder. Larger delays use the configured
+ * exponentiation method.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -1091,6 +1094,9 @@ int cp_trsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 /**
  * Encrypts using Timed RSA with OAEP+ padding and a label, computing
  * c = x^(e^tau) for the encoded message x by tau sequential exponentiations.
+ * The key is taken as secret when tau = 1, as in timed decryption, and then
+ * exponentiated by a constant-time ladder. Larger delays use the configured
+ * exponentiation method.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
