@@ -6732,6 +6732,52 @@ static int multiplication24(void) {
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
+
+		TEST_CASE("sparse multiplication is correct") {
+			fp24_rand(a);
+			fp24_rand(b);
+			fp8_zero(b[2]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+			fp24_rand(b);
+			fp8_zero(b[1]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC | !defined(STRIP)
+		TEST_CASE("basic sparse multiplication is correct") {
+			fp24_rand(a);
+			fp24_rand(b);
+			fp8_zero(b[2]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs_basic(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+			fp24_rand(b);
+			fp8_zero(b[1]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs_basic(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced sparse multiplication is correct") {
+			fp24_rand(a);
+			fp24_rand(b);
+			fp8_zero(b[2]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs_lazyr(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+			fp24_rand(b);
+			fp8_zero(b[1]);
+			fp24_mul(c, a, b);
+			fp24_mul_dxs_lazyr(a, a, b);
+			TEST_ASSERT(fp24_cmp(c, a) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);
@@ -7444,6 +7490,46 @@ static int multiplication48(void) {
 			fp48_mul(c, a, b);
 			fp48_mul_lazyr(d, a, b);
 			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("sparse multiplication is correct") {
+			fp48_rand(a);
+			fp48_zero(b);
+			/* Test common case among configurations. */
+			fp8_rand(b[0][0]);
+			fp8_rand(b[0][1]);
+			fp_rand(b[1][1][0][0][0]);
+			fp48_mul(c, a, b);
+			fp48_mul_dxs(d, a, b);
+			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC | !defined(STRIP)
+		TEST_CASE("basic sparse multiplication is correct") {
+			fp48_rand(a);
+			fp48_zero(b);
+			fp8_rand(b[0][0]);
+			fp8_rand(b[0][1]);
+			fp_rand(b[1][1][0][0][0]);
+			fp48_mul(c, a, b);
+			fp48_mul_dxs_basic(d, a, b);
+			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced sparse multiplication is correct") {
+			fp48_rand(a);
+			fp48_zero(b);
+			fp8_rand(b[0][0]);
+			fp8_rand(b[0][1]);
+			fp8_rand(b[1][1]);
+			fp48_mul(c, a, b);
+			fp48_mul_dxs_lazyr(d, a, b);
+			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
+			fp48_mul_dxs_lazyr(a, a, b);
+			TEST_ASSERT(fp48_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	} RLC_CATCH_ANY {
