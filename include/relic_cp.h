@@ -825,6 +825,52 @@ typedef etrs_st *etrs_t;
 		_error))(S, L, M, N, H, __VA_ARGS__))
 #define _cp_rsa_ver(S, L, M, N, H, K, P)	cp_rsa_ver_ ## P(S, L, M, N, H, K)
 
+/**
+ * Selects the Timed RSA function for a padding given as an optional last
+ * argument, or the default one if it is missing.
+ */
+#define _TRSA_PAD(_1, _2, _3, N, ...)	N
+
+/**
+ * Encrypts using Timed RSA. The optional last argument chooses the padding
+ * between oaep (the default) and oaepp. Computes O = Enc_K(I) with tau
+ * sequential exponentiations.
+ *
+ * @param[out] O			- the output buffer.
+ * @param[in, out] L		- the buffer capacity and number of bytes written.
+ * @param[in] I				- the input buffer.
+ * @param[in] N				- the number of bytes to encrypt.
+ * @param[in] B				- the label.
+ * @param[in] M				- the label length in bytes, zero for no label.
+ * @param[in] ...			- the encryption key, the encryption hardness tau
+ * 							  and, optionally, the padding.
+ */
+#define cp_trsa_enc(O, L, I, N, B, M, ...)									\
+	RLC_ECHO(RLC_ECHO(_TRSA_PAD(__VA_ARGS__, _cp_trsa_enc, cp_trsa_enc_oaep, \
+		_error, _error))(O, L, I, N, B, M, __VA_ARGS__))
+#define _cp_trsa_enc(O, L, I, N, B, M, K, T, P) cp_trsa_enc_ ## P(			\
+		O, L, I, N, B, M, K, T)
+
+/**
+ * Decrypts using Timed RSA. The optional last argument chooses the padding
+ * between oaep (the default) and oaepp. Computes O = Dec_K(I) with theta
+ * sequential exponentiations.
+ *
+ * @param[out] O			- the output buffer.
+ * @param[in, out] L		- the buffer capacity and number of bytes written.
+ * @param[in] I				- the input buffer.
+ * @param[in] N				- the number of bytes to decrypt.
+ * @param[in] B				- the label.
+ * @param[in] M				- the label length in bytes, zero for no label.
+ * @param[in] ...			- the decryption key, the decryption hardness theta
+ * 							  and, optionally, the padding.
+ */
+#define cp_trsa_dec(O, L, I, N, B, M, ...)									\
+	RLC_ECHO(RLC_ECHO(_TRSA_PAD(__VA_ARGS__, _cp_trsa_dec, cp_trsa_dec_oaep, \
+		_error, _error))(O, L, I, N, B, M, __VA_ARGS__))
+#define _cp_trsa_dec(O, L, I, N, B, M, K, T, P) cp_trsa_dec_ ## P(			\
+		O, L, I, N, B, M, K, T)
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -989,6 +1035,112 @@ int cp_rsa_ver_pss(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
  */
 int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub);
+
+/**
+ * Generates a key pair for Timed RSA, from "Dual-Timed Cryptosystems". Samples
+ * x in Z_Lambda^* for the Carmichael function Lambda of an RSA modulus n and
+ * sets e = x^theta and d = x^(-tau) mod Lambda, so that e^tau * d^theta = 1 mod
+ * Lambda. The encryption key holds only n and e, and the decryption key only n
+ * and d, as both together reveal a multiple of Lambda.
+ *
+ * @param[out] ek			- the encryption key.
+ * @param[out] dk			- the decryption key.
+ * @param[in] bits			- the length of the modulus in bits.
+ * @param[in] tau			- the encryption hardness, at least one.
+ * @param[in] theta			- the decryption hardness, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
+
+/**
+ * Generates a key pair for Timed RSA with a given encryption exponent e, such
+ * as one required by a standard. The primes p and q end Cunningham chains of
+ * the first kind of length 3, so that the Carmichael function Lambda' of
+ * Lambda is known and d = e^(-tau * w) mod Lambda for w = theta^(-1) mod
+ * Lambda'. Generating such primes is much slower than ordinary ones.
+ *
+ * @param[out] ek			- the encryption key.
+ * @param[out] dk			- the decryption key.
+ * @param[in] bits			- the length of the modulus in bits.
+ * @param[in] e				- the encryption exponent, odd and greater than one.
+ * @param[in] tau			- the encryption hardness, at least one.
+ * @param[in] theta			- the decryption hardness, odd.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
+		size_t theta);
+
+/**
+ * Encrypts using Timed RSA with OAEP padding and a label, computing
+ * c = x^(e^tau) for the encoded message x by tau sequential exponentiations.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] ek			- the encryption key.
+ * @param[in] tau			- the encryption hardness, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
+		size_t tau);
+
+/**
+ * Encrypts using Timed RSA with OAEP+ padding and a label, computing
+ * c = x^(e^tau) for the encoded message x by tau sequential exponentiations.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] ek			- the encryption key.
+ * @param[in] tau			- the encryption hardness, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
+		size_t tau);
+
+/**
+ * Decrypts using Timed RSA with OAEP padding and a label, computing
+ * x = c^(d^theta) by theta sequential exponentiations and decoding x.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] dk			- the decryption key.
+ * @param[in] theta			- the decryption hardness, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
+		size_t theta);
+
+/**
+ * Decrypts using Timed RSA with OAEP+ padding and a label, computing
+ * x = c^(d^theta) by theta sequential exponentiations and decoding x.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] dk			- the decryption key.
+ * @param[in] theta			- the decryption hardness, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_trsa_dec_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
+		size_t theta);
 
 /**
  * Generates a key pair for the Rabin cryptosystem.

@@ -51,6 +51,28 @@
 #define RSA_IS_ZERO(B)		((uint32_t)((uint32_t)(B) - 1) >> 31)
 
 /**
+ * Number of small primes used to sieve candidates for Cunningham chains.
+ */
+#define TRSA_SIEVE		(512)
+
+/**
+ * Encodes a message m with a label l into a block em of k bytes.
+ */
+typedef int (*rsa_enc_pad_t)(uint8_t *em, size_t k, const uint8_t *m,
+		size_t m_len, const uint8_t *l, size_t l_len);
+
+/**
+ * Decodes a message m with a label l from a block em of k bytes.
+ */
+typedef int (*rsa_dec_pad_t)(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
+		const uint8_t *l, size_t l_len);
+
+/**
+ * Encodes or verifies a hash h in a block em of em_bits bits.
+ */
+typedef int (*rsa_sig_pad_t)(uint8_t *em, size_t em_bits, const uint8_t *h);
+
+/**
  * Computes the private-key operation c = a^d mod n. The input is blinded with
  * r^e for a random r, and the result is checked against faults before the
  * blinding is removed.
@@ -193,10 +215,16 @@ static const uint8_t *hash_id(size_t *len) {
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most k - 11.
+ * @param[in] l				- the label, unused as the encoding has none.
+ * @param[in] l_len			- the label length in bytes, unused.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
+		const uint8_t *l, size_t l_len) {
 	size_t ps_len = k - m_len - 3;
+
+	(void)l;
+	(void)l_len;
 
 	em[0] = 0x00;
 	em[1] = 0x02;
@@ -219,11 +247,17 @@ static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
+ * @param[in] l				- the label, unused as the encoding has none.
+ * @param[in] l_len			- the label length in bytes, unused.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pkcs1_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+static int pkcs1_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
+		const uint8_t *l, size_t l_len) {
 	uint32_t good, found = 0, zero, sel;
 	size_t idx = 0;
+
+	(void)l;
+	(void)l_len;
 
 	good = RSA_IS_ZERO(em[0]) & RSA_IS_ZERO(em[1] ^ 0x02);
 	for (size_t i = 2; i < k; i++) {
@@ -295,17 +329,21 @@ static int pkcs1_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 }
 
 /**
- * Encodes a message for encryption with EME-OAEP and an empty label:
- * EM = 00 | maskedSeed | maskedDB, with DB = lHash | PS | 01 | M.
+ * Encodes a message for encryption with EME-OAEP and a label:
+ * EM = 00 | maskedSeed | maskedDB, with DB = lHash | PS | 01 | M and lHash the
+ * hash of the label.
  *
  * @param[out] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most
  * 							  k - 2 * RLC_MD_LEN - 2.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
+		const uint8_t *l, size_t l_len) {
 	size_t db_len = k - RLC_MD_LEN - 1;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -316,7 +354,7 @@ static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	}
 
 	em[0] = 0x00;
-	md_map(db, NULL, 0);
+	md_map(db, l, l_len);
 	memset(db + RLC_MD_LEN, 0, db_len - m_len - RLC_MD_LEN - 1);
 	db[db_len - m_len - 1] = 0x01;
 	memcpy(db + db_len - m_len, m, m_len);
@@ -336,16 +374,19 @@ static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 }
 
 /**
- * Decodes a message encoded with EME-OAEP and an empty label, in constant time
- * up to the result. The encoded message is unmasked in place.
+ * Decodes a message encoded with EME-OAEP and a label, in constant time up to
+ * the result. The encoded message is unmasked in place.
  *
  * @param[out] m			- the message.
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in,out] em		- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
+		const uint8_t *l, size_t l_len) {
 	size_t db_len = k - RLC_MD_LEN - 1, idx = 0;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN, h[RLC_MD_LEN], diff = 0;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -366,7 +407,7 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	}
 	RLC_FREE(mask);
 
-	md_map(h, NULL, 0);
+	md_map(h, l, l_len);
 	for (size_t i = 0; i < RLC_MD_LEN; i++) {
 		diff |= db[i] ^ h[i];
 	}
@@ -397,19 +438,23 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
  * EM = 00 | s | t, with s = (G(r) XOR X) | H'(r | X), t = H(s) XOR r and
  * X = PS | 01 | M, for a random r of RLC_MD_LEN bytes. The three functions are
  * instantiated with the chosen hash function and MGF1, separated by a prefix:
- * G(r) = MGF(00 | r), H'(r | X) = Hash(01 | r | X) and H(s) = MGF(02 | s).
+ * G(r) = MGF(00 | r), H'(r | X) = Hash(01 | r | X | L) and H(s) = MGF(02 | s),
+ * where the label L binds context to the tag and is empty by default.
  *
  * @param[out] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most
  * 							  k - 2 * RLC_MD_LEN - 2.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
+static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
+		const uint8_t *l, size_t l_len) {
 	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1;
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN];
-	uint8_t *buf = RLC_ALLOCA(uint8_t, k);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k + l_len);
 
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -423,11 +468,14 @@ static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	memcpy(s + x_len - m_len, m, m_len);
 	rand_bytes(r, RLC_MD_LEN);
 
-	/* s = (G(r) XOR X) | H'(r | X). */
+	/* s = (G(r) XOR X) | H'(r | X | L). */
 	buf[0] = 0x01;
 	memcpy(buf + 1, r, RLC_MD_LEN);
 	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
-	md_map(s + x_len, buf, 1 + RLC_MD_LEN + x_len);
+	if (l_len > 0) {
+		memcpy(buf + 1 + RLC_MD_LEN + x_len, l, l_len);
+	}
+	md_map(s + x_len, buf, 1 + RLC_MD_LEN + x_len + l_len);
 	buf[0] = 0x00;
 	md_mgf(buf + 1 + RLC_MD_LEN, x_len, buf, 1 + RLC_MD_LEN);
 	for (size_t i = 0; i < x_len; i++) {
@@ -447,19 +495,22 @@ static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 }
 
 /**
- * Decodes a message encoded with OAEP+, in constant time up to the result. The
- * encoded message is unmasked in place.
+ * Decodes a message encoded with OAEP+ and a label, in constant time up to the
+ * result. The encoded message is unmasked in place.
  *
  * @param[out] m			- the message.
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in,out] em		- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
+static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
+		const uint8_t *l, size_t l_len) {
 	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1, idx = 0;
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN], h[RLC_MD_LEN];
-	uint8_t *buf = RLC_ALLOCA(uint8_t, k), diff = 0;
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k + l_len), diff = 0;
 	uint32_t good, found = 0, bad = 0, one, zero, sel;
 
 	if (buf == NULL) {
@@ -483,11 +534,14 @@ static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 		s[i] ^= buf[1 + RLC_MD_LEN + i];
 	}
 
-	/* Check the tag H'(r | X). */
+	/* Check the tag H'(r | X | L). */
 	buf[0] = 0x01;
 	memcpy(buf + 1, r, RLC_MD_LEN);
 	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
-	md_map(h, buf, 1 + RLC_MD_LEN + x_len);
+	if (l_len > 0) {
+		memcpy(buf + 1 + RLC_MD_LEN + x_len, l, l_len);
+	}
+	md_map(h, buf, 1 + RLC_MD_LEN + x_len + l_len);
 	RLC_FREE(buf);
 	for (size_t i = 0; i < RLC_MD_LEN; i++) {
 		diff |= h[i] ^ s[x_len + i];
@@ -621,8 +675,7 @@ static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const rsa_t pub, size_t pad_len,
-		int (*pad)(uint8_t *, size_t, const uint8_t *, size_t)) {
+		size_t in_len, const rsa_t pub, size_t pad_len, rsa_enc_pad_t pad) {
 	bn_t m;
 	size_t k;
 	uint8_t *em;
@@ -648,7 +701,7 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 	RLC_TRY {
 		bn_new(m);
 
-		if (pad(em, k, in, in_len) == RLC_OK) {
+		if (pad(em, k, in, in_len, NULL, 0) == RLC_OK) {
 			bn_read_bin(m, em, k);
 			bn_mxp(m, m, pub->e, pub->crt->n);
 			bn_write_bin(out, k, m);
@@ -681,8 +734,7 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const rsa_t prv, size_t pad_len,
-		int (*pad)(uint8_t *, size_t *, uint8_t *, size_t)) {
+		size_t in_len, const rsa_t prv, size_t pad_len, rsa_dec_pad_t pad) {
 	bn_t m;
 	size_t k;
 	uint8_t *em;
@@ -714,7 +766,7 @@ static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 			result = RLC_ERR;
 		} else {
 			bn_write_bin(em, k, m);
-			result = pad(out, out_len, em, k);
+			result = pad(out, out_len, em, k, NULL, 0);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -743,7 +795,7 @@ static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
  */
 static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t prv, int pss,
-		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
+		rsa_sig_pad_t pad) {
 	bn_t m;
 	size_t k, em_bits;
 	uint8_t h[RLC_MD_LEN], *em;
@@ -815,7 +867,7 @@ static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
  */
 static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub, int pss,
-		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
+		rsa_sig_pad_t pad) {
 	bn_t m;
 	size_t k, em_bits;
 	uint8_t h[RLC_MD_LEN], *em;
@@ -867,6 +919,229 @@ static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 	}
 
 	return result;
+}
+
+/**
+ * Generates a prime p = 2p' + 1 with p' = 2p'' + 1, so that p is the last term
+ * of a Cunningham chain of the first kind of length 3 and the Carmichael
+ * function of p - 1 is known. Candidates for p'' are sieved by small primes so
+ * that p'', p' and p are tested only when none of them has a small factor.
+ *
+ * @param[out] p			- the prime p.
+ * @param[out] u			- the prime p''.
+ * @param[in] bits			- the length of p in bits.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int trsa_chain(bn_t p, bn_t u, size_t bits) {
+	dig_t q[TRSA_SIEVE], r[TRSA_SIEVE], a, b;
+	size_t n = 0;
+	int ok, found = 0, result = RLC_OK;
+
+	if (bits < 16) {
+		return RLC_ERR;
+	}
+
+	/* Collect the first odd primes for the sieve. */
+	for (dig_t c = 3; n < TRSA_SIEVE; c += 2) {
+		ok = 1;
+		for (size_t i = 0; ok && i < n && q[i] * q[i] <= c; i++) {
+			ok = (c % q[i] != 0);
+		}
+		if (ok) {
+			q[n++] = c;
+		}
+	}
+
+	RLC_TRY {
+		while (!found) {
+			/* Start from a random odd u of bits - 2 bits. */
+			bn_rand(u, RLC_POS, bits - 2);
+			bn_set_bit(u, bits - 3, 1);
+			bn_set_bit(u, 0, 1);
+			for (size_t i = 0; i < n; i++) {
+				bn_mod_dig(&r[i], u, q[i]);
+			}
+			/* Walk u, u + 2, ... while it keeps its length. */
+			for (dig_t k = 0; !found && k < ((dig_t)1 << 16); k++) {
+				ok = 1;
+				for (size_t i = 0; ok && i < n; i++) {
+					a = r[i];
+					b = (2 * a + 1) % q[i];
+					ok = (a != 0 && b != 0 && (2 * b + 1) % q[i] != 0);
+				}
+				if (ok && bn_is_prime(u)) {
+					bn_dbl(p, u);
+					bn_add_dig(p, p, 1);
+					if (bn_is_prime(p)) {
+						bn_dbl(p, p);
+						bn_add_dig(p, p, 1);
+						found = bn_is_prime(p) && bn_bits(p) == bits;
+					}
+				}
+				if (!found) {
+					bn_add_dig(u, u, 2);
+					for (size_t i = 0; i < n; i++) {
+						r[i] = (r[i] + 2) % q[i];
+					}
+					if (bn_bits(u) != bits - 2) {
+						break;
+					}
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	return result;
+}
+
+/**
+ * Encrypts with Timed RSA, computing c = x^(e^tau) for the encoded message x
+ * by tau sequential exponentiations with the exponent in the encryption key.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] ek			- the encryption key.
+ * @param[in] tau			- the number of sequential exponentiations.
+ * @param[in] pad			- the encoding function.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int trsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
+		size_t tau, rsa_enc_pad_t pad) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
+
+	if (ek == NULL || tau == 0 || (l == NULL && l_len > 0) ||
+			bn_cmp_dig(ek->e, 1) != RLC_GT) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(ek->crt->n);
+	if (in_len + RSA_OAEP_LEN > k || *out_len < k) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		if (pad(em, k, in, in_len, l, l_len) == RLC_OK) {
+			bn_read_bin(m, em, k);
+			/* The key may be secret, so exponentiate in constant time. */
+			for (size_t i = 0; i < tau; i++) {
+				bn_mxp_monty(m, m, ek->e, ek->crt->n);
+			}
+			bn_write_bin(out, k, m);
+			*out_len = k;
+		} else {
+			result = RLC_ERR;
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
+
+/**
+ * Decrypts with Timed RSA, computing x = c^(d^theta) by theta sequential
+ * exponentiations with the exponent in the decryption key, and decoding x.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] l				- the label.
+ * @param[in] l_len			- the label length in bytes, zero for no label.
+ * @param[in] dk			- the decryption key.
+ * @param[in] theta			- the number of sequential exponentiations.
+ * @param[in] pad			- the decoding function.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
+		size_t theta, rsa_dec_pad_t pad) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
+
+	if (dk == NULL || theta == 0 || (l == NULL && l_len > 0) ||
+			bn_cmp_dig(dk->d, 1) != RLC_GT) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(dk->crt->n);
+	if (in_len != k || k < RSA_OAEP_LEN) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		bn_read_bin(m, in, in_len);
+		if (bn_cmp(m, dk->crt->n) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			for (size_t i = 0; i < theta; i++) {
+				bn_mxp(m, m, dk->d, dk->crt->n);
+			}
+			bn_write_bin(em, k, m);
+			result = pad(out, out_len, em, k, l, l_len);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
+}
+
+/**
+ * Assigns a size to a multiple precision integer, byte by byte so that any
+ * digit size works.
+ *
+ * @param[out] a			- the result.
+ * @param[in] v				- the size to assign.
+ */
+static void trsa_set(bn_t a, size_t v) {
+	bn_zero(a);
+	for (int b = 8 * (int)sizeof(size_t) - 8; b >= 0; b -= 8) {
+		bn_lsh(a, a, 8);
+		bn_add_dig(a, a, (dig_t)((v >> b) & 0xFF));
+	}
 }
 
 /*============================================================================*/
@@ -991,4 +1266,153 @@ int cp_rsa_ver_pss(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub) {
 	return rsa_ver(sig, sig_len, msg, msg_len, hash, pub, 0, pkcs1_ver);
+}
+
+int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
+	bn_t p, q, l, t, x;
+	int result = RLC_OK;
+
+	if (ek == NULL || dk == NULL || bits < 16 || tau == 0 || theta == 0) {
+		return RLC_ERR;
+	}
+
+	bn_null_all(p, q, l, t, x);
+
+	RLC_TRY {
+		bn_new_all(p, q, l, t, x);
+
+		/* Generate different primes p and q with n = pq of exactly the
+		 * requested length. */
+		do {
+			bn_gen_prime(p, bits / 2);
+			bn_gen_prime(q, bits - bits / 2);
+			bn_mul(ek->crt->n, p, q);
+		} while (bn_cmp(p, q) == RLC_EQ || bn_bits(ek->crt->n) != bits);
+		bn_copy(dk->crt->n, ek->crt->n);
+
+		/* Lambda = lcm(p - 1, q - 1). */
+		bn_sub_dig(p, p, 1);
+		bn_sub_dig(q, q, 1);
+		bn_lcm(l, p, q);
+
+		/* Sample x in Z_Lambda^* and set e = x^theta, d = x^(-tau). */
+		do {
+			do {
+				bn_rand_mod(x, l);
+				bn_gcd(t, x, l);
+			} while (bn_cmp_dig(t, 1) != RLC_EQ);
+			trsa_set(t, theta);
+			bn_mxp(ek->e, x, t, l);
+			bn_mod_inv(x, x, l);
+			trsa_set(t, tau);
+			bn_mxp(dk->d, x, t, l);
+		} while (bn_cmp_dig(ek->e, 1) != RLC_GT ||
+				bn_cmp_dig(dk->d, 1) != RLC_GT);
+
+		/* Each key holds only its own exponent, as together they factor n. */
+		bn_zero(ek->d);
+		bn_zero(dk->e);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free_all(p, q, l, t, x);
+	}
+
+	return result;
+}
+
+int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
+		size_t theta) {
+	bn_t p, q, u, v, l, m, t;
+	int err = 0, ok = 0, result = RLC_OK;
+
+	/* With Lambda = 2p'q' and Lambda' = 2p''q'', both e and theta are odd. */
+	if (ek == NULL || dk == NULL || bits < 32 || tau == 0 ||
+			(theta & 1) == 0 || bn_cmp_dig(e, 1) != RLC_GT || bn_is_even(e)) {
+		return RLC_ERR;
+	}
+
+	bn_null_all(p, q, u, v, l, m, t);
+
+	RLC_TRY {
+		bn_new_all(p, q, u, v, l, m, t);
+
+		while (!ok && !err) {
+			/* Primes p = 2p' + 1 and q = 2q' + 1, with p' = 2p'' + 1 and
+			 * q' = 2q'' + 1 also prime, and n = pq of the requested length. */
+			do {
+				err = (trsa_chain(p, u, bits / 2) != RLC_OK ||
+						trsa_chain(q, v, bits - bits / 2) != RLC_OK);
+				bn_mul(ek->crt->n, p, q);
+			} while (!err && (bn_cmp(p, q) == RLC_EQ ||
+					bn_bits(ek->crt->n) != bits));
+			if (err) {
+				break;
+			}
+
+			/* Lambda = lcm(p - 1, q - 1) and Lambda' = lcm(2p'', 2q''). */
+			bn_sub_dig(p, p, 1);
+			bn_sub_dig(q, q, 1);
+			bn_lcm(l, p, q);
+			bn_dbl(u, u);
+			bn_dbl(v, v);
+			bn_lcm(m, u, v);
+
+			/* Lemma 2 needs gcd(e, Lambda) = gcd(theta, Lambda') = 1. */
+			bn_gcd(t, e, l);
+			ok = (bn_cmp_dig(t, 1) == RLC_EQ);
+			trsa_set(u, theta);
+			bn_gcd(t, u, m);
+			ok &= (bn_cmp_dig(t, 1) == RLC_EQ);
+		}
+		if (err) {
+			RLC_THROW(ERR_CAUGHT);
+		}
+		bn_copy(dk->crt->n, ek->crt->n);
+
+		/* d = e^(-tau * w) mod Lambda, with w = theta^(-1) mod Lambda'. */
+		bn_mod_inv(u, u, m);
+		trsa_set(t, tau);
+		bn_mul(u, u, t);
+		bn_mod_inv(t, e, l);
+		bn_mxp(dk->d, t, u, l);
+
+		bn_copy(ek->e, e);
+		bn_zero(ek->d);
+		bn_zero(dk->e);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free_all(p, q, u, v, l, m, t);
+	}
+
+	return result;
+}
+
+int cp_trsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
+		size_t tau) {
+	return trsa_enc(out, out_len, in, in_len, l, l_len, ek, tau, oaep_enc);
+}
+
+int cp_trsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
+		size_t tau) {
+	return trsa_enc(out, out_len, in, in_len, l, l_len, ek, tau, oaepp_enc);
+}
+
+int cp_trsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
+		size_t theta) {
+	return trsa_dec(out, out_len, in, in_len, l, l_len, dk, theta, oaep_dec);
+}
+
+int cp_trsa_dec_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
+		size_t theta) {
+	return trsa_dec(out, out_len, in, in_len, l, l_len, dk, theta, oaepp_dec);
 }

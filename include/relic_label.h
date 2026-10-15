@@ -3681,6 +3681,12 @@
 #undef cp_rsa_sig_pkcs1
 #undef cp_rsa_ver_pss
 #undef cp_rsa_ver_pkcs1
+#undef cp_trsa_gen
+#undef cp_trsa_gen_exp
+#undef cp_trsa_enc_oaep
+#undef cp_trsa_enc_oaepp
+#undef cp_trsa_dec_oaep
+#undef cp_trsa_dec_oaepp
 #undef cp_rabin_gen
 #undef cp_rabin_enc
 #undef cp_rabin_dec
@@ -3861,6 +3867,12 @@
 #define cp_rsa_sig_pkcs1 	RLC_PREFIX(cp_rsa_sig_pkcs1)
 #define cp_rsa_ver_pss 	RLC_PREFIX(cp_rsa_ver_pss)
 #define cp_rsa_ver_pkcs1 	RLC_PREFIX(cp_rsa_ver_pkcs1)
+#define cp_trsa_gen 	RLC_PREFIX(cp_trsa_gen)
+#define cp_trsa_gen_exp 	RLC_PREFIX(cp_trsa_gen_exp)
+#define cp_trsa_enc_oaep 	RLC_PREFIX(cp_trsa_enc_oaep)
+#define cp_trsa_enc_oaepp 	RLC_PREFIX(cp_trsa_enc_oaepp)
+#define cp_trsa_dec_oaep 	RLC_PREFIX(cp_trsa_dec_oaep)
+#define cp_trsa_dec_oaepp 	RLC_PREFIX(cp_trsa_dec_oaepp)
 #define cp_rabin_gen 	RLC_PREFIX(cp_rabin_gen)
 #define cp_rabin_enc 	RLC_PREFIX(cp_rabin_enc)
 #define cp_rabin_dec 	RLC_PREFIX(cp_rabin_dec)
