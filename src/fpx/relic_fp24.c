@@ -53,7 +53,7 @@ TMPL_FPX_MUL_LAZYR(fp24, dv24, fp2, dv2, 12);
 
 TMPL_FPX_MUL_ART_CUBIC(fp24, fp8, fp8_mul_art);
 
-void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b) {
+void fp24_mul_dxs_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 	fp8_t t0, t1, t2, t3, t4;
 
 	fp8_null_all(t0, t1, t2, t3, t4);
@@ -114,6 +114,74 @@ void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp8_free_all(t0, t1, t2, t3, t4);
+	}
+}
+
+void fp24_mul_dxs_unr(dv24_t c, const fp24_t a, const fp24_t b) {
+	fp8_t t0, t1;
+	dv8_t u0, u1, u2;
+
+	fp8_null_all(t0, t1);
+	dv8_null_all(u0, u1, u2);
+
+	RLC_TRY {
+		fp8_new_all(t0, t1);
+		dv8_new_all(u0, u1, u2);
+
+		/* Karatsuba algorithm without reduction. */
+		fp8_mul_unr(u0, a[0], b[0]);
+		if (fp8_is_zero(b[2])) {
+			/* b_2 = 0: c_0 = a_0b_0 + v * a_2b_1, c_2 = a_1b_1 + a_2b_0 and
+			 * c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
+			fp8_mul_unr(u1, a[1], b[1]);
+			fp8_add(t0, a[0], a[1]);
+			fp8_add(t1, b[0], b[1]);
+			fp8_mul_unr(u2, t0, t1);
+			TMPL_DV_SUBC(fp2, dv2, 4, c[1], u2, u0);
+			TMPL_DV_SUBC(fp2, dv2, 4, c[1], c[1], u1);
+			fp8_mul_unr(u2, a[2], b[1]);
+			TMPL_DV_NADD(fp2, dv2, 4, 2, c[0], u0, u2);
+			fp8_mul_unr(u2, a[2], b[0]);
+			TMPL_DV_ADDC(fp2, dv2, 4, c[2], u1, u2);
+		} else {
+			/* b_1 = 0: c_0 = a_0b_0 + v * a_1b_2, c_1 = a_1b_0 + v * a_2b_2 and
+			 * c_2 = (a_0 + a_2)(b_0 + b_2) - a_0b_0 - a_2b_2. */
+			fp8_mul_unr(u1, a[2], b[2]);
+			fp8_add(t0, a[1], a[2]);
+			fp8_mul_unr(u2, t0, b[2]);
+			TMPL_DV_SUBC(fp2, dv2, 4, u2, u2, u1);
+			TMPL_DV_NADD(fp2, dv2, 4, 2, c[0], u0, u2);
+			fp8_add(t0, a[0], a[1]);
+			fp8_mul_unr(u2, t0, b[0]);
+			TMPL_DV_SUBC(fp2, dv2, 4, u2, u2, u0);
+			TMPL_DV_NADD(fp2, dv2, 4, 2, c[1], u2, u1);
+			fp8_add(t0, a[0], a[2]);
+			fp8_add(t1, b[0], b[2]);
+			fp8_mul_unr(u2, t0, t1);
+			TMPL_DV_SUBC(fp2, dv2, 4, c[2], u2, u0);
+			TMPL_DV_SUBC(fp2, dv2, 4, c[2], c[2], u1);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free_all(t0, t1);
+		dv8_free_all(u0, u1, u2);
+	}
+}
+
+void fp24_mul_dxs_lazyr(fp24_t c, const fp24_t a, const fp24_t b) {
+	dv24_t t;
+
+	dv24_null(t);
+
+	RLC_TRY {
+		dv24_new(t);
+		fp24_mul_dxs_unr(t, a, b);
+		TMPL_DV_RDCN(fp2, dv2, 12, c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv24_free(t);
 	}
 }
 

@@ -81,7 +81,7 @@ void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
 
 TMPL_FPX_MUL_LAZYR(fp48, dv48, fp2, dv2, 24);
 
-void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
+void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
 	fp24_null_all(t0, t1, t2);
@@ -135,6 +135,52 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp24_free_all(t0, t1, t2);
+	}
+}
+
+void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
+	fp24_t s0, s1;
+	dv24_t t0, t1, u;
+	dv48_t r;
+
+	fp24_null_all(s0, s1);
+	dv24_null_all(t0, t1, u);
+	dv48_null(r);
+
+	RLC_TRY {
+		fp24_new_all(s0, s1);
+		dv24_new_all(t0, t1, u);
+		dv48_new(r);
+
+		/* For the sparse element L + LX * w + LY * w * s produced by the line
+		 * functions, where w^3 = v, s^2 = w and L, LX, LY are in Fp^8, let
+		 * t = a_1 * LY. Then a_1 * b_1 = w * t, c_0 = a_0b_0 + w^2 * t and
+		 * c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - w * t. */
+		fp24_add(s0, a[0], a[1]);
+		fp8_copy(s1[0], b[0][0]);
+		fp8_add(s1[1], b[0][1], b[1][1]);
+		fp8_copy(s1[2], b[0][2]);
+		fp24_mul_dxs_unr(t0, a[0], b[0]);
+		fp24_mul_dxs_unr(u, s0, s1);
+		fp8_mul_unr(t1[0], a[1][0], b[1][1]);
+		fp8_mul_unr(t1[1], a[1][1], b[1][1]);
+		fp8_mul_unr(t1[2], a[1][2], b[1][1]);
+		/* c_1 = u - (t_0 + w * t), where w * t = v * t_2 + t_0 w + t_1 w^2. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, r[0][0], t0[0], t1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, r[0][1], t0[1], t1[0]);
+		TMPL_DV_ADDC(fp2, dv2, 4, r[0][2], t0[2], t1[1]);
+		TMPL_DV_SUBC(fp2, dv2, 12, r[1], u, r[0]);
+		/* c_0 = t_0 + w^2 * t, where w^2 * t = v * t_1 + v * t_2 w + t_0 w^2. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, r[0][0], t0[0], t1[1]);
+		TMPL_DV_NADD(fp2, dv2, 4, 2, r[0][1], t0[1], t1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, r[0][2], t0[2], t1[0]);
+		TMPL_DV_RDCN(fp2, dv2, 24, c, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp24_free_all(s0, s1);
+		dv24_free_all(t0, t1, u);
+		dv48_free(r);
 	}
 }
 
