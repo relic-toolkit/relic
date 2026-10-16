@@ -2460,13 +2460,13 @@ static int digit(void) {
 
 static int prime(void) {
 	int code = RLC_ERR;
-	bn_t p, q;
+	bn_t p, q, r;
 	uint8_t msg[16];
 
-	bn_null_all(p, q);
+	bn_null_all(p, q, r);
 
 	RLC_TRY {
-		bn_new_all(p, q);
+		bn_new_all(p, q, r);
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
@@ -2514,6 +2514,29 @@ static int prime(void) {
 			/* The shortest prime with the top two bits set. */
 			TEST_ASSERT(bn_gen_prime_chain(p, NULL, 2, 1) == RLC_OK, end);
 			TEST_ASSERT(bn_cmp_dig(p, 3) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_ONCE("next prime agrees with a naive search") {
+			/* Small values cover sieving primes close to the candidates. */
+			bn_zero(r);
+			for (int k = 0; k < 2048; k++) {
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+				bn_add_dig(r, r, 1);
+			}
+			for (int k = 0; k < 4; k++) {
+				bn_rand(r, RLC_POS, RLC_BN_BITS / 8);
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+			}
 		} TEST_END;
 
 		TEST_CASE("chain prime generation rejects invalid parameters") {
@@ -2587,7 +2610,7 @@ static int prime(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free_all(p, q);
+	bn_free_all(p, q, r);
 	return code;
 }
 

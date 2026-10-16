@@ -1650,10 +1650,11 @@ int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
 /**
- * Compute the next prime q strictly greater than p.
+ * Computes the smallest probable prime q strictly greater than p, with
+ * consecutive candidates sieved by small primes before they are tested.
  *
  * @param[out] q			- the result.
- * @param[in] p				- the starting prime.
+ * @param[in] p				- the starting integer.
  */
 void bn_next_prime(bn_t q, const bn_t p);
 
