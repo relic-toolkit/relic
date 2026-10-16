@@ -951,6 +951,9 @@ static void arith(void) {
 
 	BENCH_ONE("bn_gen_prime_stron", bn_gen_prime_stron(a, RLC_BN_BITS), 1);
 
+	BENCH_ONE("bn_gen_prime_chain (len = 3)", bn_gen_prime_chain(a, b,
+			RLC_BN_BITS / 4, 3), 1);
+
 	BENCH_ONE("bn_next_prime", bn_next_prime(b, a), 1);
 
 	BENCH_ONE("bn_is_prime", bn_is_prime(a), 1);

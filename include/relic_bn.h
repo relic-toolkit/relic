@@ -1597,18 +1597,19 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len);
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number with the top two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 2.
  */
 void bn_gen_prime_basic(bn_t a, size_t bits);
 
 /**
- * Generates a probable prime number a with (a - 1)/2 also prime.
+ * Generates a probable prime number a with (a - 1)/2 also prime and the top
+ * two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 16.
  */
 void bn_gen_prime_safep(bn_t a, size_t bits);
 
@@ -1620,6 +1621,22 @@ void bn_gen_prime_safep(bn_t a, size_t bits);
  * @param[in] bits			- the length of the number in bits.
  */
 void bn_gen_prime_stron(bn_t a, size_t bits);
+
+/**
+ * Generates the probable primes u, 2u + 1, ..., p = 2^(len - 1) * (u + 1) - 1,
+ * a Cunningham chain of the first kind of a given length. The top two bits of
+ * p are set, so that the product of two such primes has exactly the sum of
+ * their lengths. Candidates for u are taken in windows of consecutive odd
+ * integers, those with a term divisible by a small prime are sieved out, and
+ * the terms of the rest pass a Fermat test before the full primality test.
+ *
+ * @param[out] p			- the last term of the chain.
+ * @param[out] u			- the first term of the chain, or NULL.
+ * @param[in] bits			- the length of p in bits, at least 16 when len > 1.
+ * @param[in] len			- the number of primes in the chain, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
 
 /**
  * Generates a probable prime number b, with (b-1) divisible by a probable large

@@ -2496,6 +2496,35 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("chain prime generation is consistent") {
+			for (size_t k = 1; k <= 3; k++) {
+				TEST_ASSERT(bn_gen_prime_chain(p, q, RLC_BN_BITS / 4,
+						k) == RLC_OK, end);
+				TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
+				TEST_ASSERT(bn_get_bit(p, RLC_BN_BITS / 4 - 2) == 1, end);
+				/* Walk the chain from its first term to its last one. */
+				for (size_t l = 1; l < k; l++) {
+					TEST_ASSERT(bn_is_prime(q) == 1, end);
+					bn_dbl(q, q);
+					bn_add_dig(q, q, 1);
+				}
+				TEST_ASSERT(bn_is_prime(q) == 1, end);
+				TEST_ASSERT(bn_cmp(q, p) == RLC_EQ, end);
+			}
+			/* The shortest prime with the top two bits set. */
+			TEST_ASSERT(bn_gen_prime_chain(p, NULL, 2, 1) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp_dig(p, 3) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("chain prime generation rejects invalid parameters") {
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 16, 0));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 1, 1));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 15, 2));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		} TEST_END;
+
 		TEST_ONCE("strong prime generation is consistent") {
 			/* Strong primes need several prime searches, so keep them smaller. */
 			bn_gen_prime_stron(p, RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG));

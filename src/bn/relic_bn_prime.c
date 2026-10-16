@@ -50,6 +50,21 @@
 #define BN_MAP_TRIES	((uint32_t)1 << 20)
 
 /**
+ * Number of consecutive candidates sieved at once when generating primes. The
+ * small primes for the sieve are the odd ones below twice this number.
+ */
+#if WSIZE > 16
+#define BN_SIEVE_WINDOW	(16384)
+#else
+#define BN_SIEVE_WINDOW	(1024)
+#endif
+
+/**
+ * Maximum number of small primes used for sieving.
+ */
+#define BN_SIEVE_PRIMES	(BN_SIEVE_WINDOW / 4)
+
+/**
  * Small prime numbers table.
  */
 static const dig_t primes[] = {
@@ -579,46 +594,150 @@ int bn_is_prime_lucas(const bn_t a) {
 	return result;
 }
 
-void bn_gen_prime_basic(bn_t a, size_t bits) {
-	while (1) {
-		do {
-			bn_rand(a, RLC_POS, bits);
-		} while (bn_bits(a) != bits);
-		if (bn_is_prime(a)) {
-			return;
+int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len) {
+	size_t ubits, ulen, n = 0;
+	uint16_t *q = RLC_ALLOCA(uint16_t, BN_SIEVE_PRIMES);
+	uint16_t *r = RLC_ALLOCA(uint16_t, BN_SIEVE_PRIMES);
+	uint8_t *bad = RLC_ALLOCA(uint8_t, BN_SIEVE_WINDOW), *buf;
+	uint32_t c, g, h, j, m;
+	int found = 0, result = RLC_OK;
+	bn_t s, t;
+
+	/* The first term has len - 1 bits less than the last one, and at least
+	 * two for its top bits to be set. Longer chains are rare at short
+	 * lengths, where some do not exist at all. */
+	if (len == 0 || bits < len + 1 || (len > 1 && bits < 16)) {
+		RLC_FREE(q);
+		RLC_FREE(r);
+		RLC_FREE(bad);
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	ubits = bits - len + 1;
+	ulen = RLC_CEIL(ubits, 8);
+	buf = RLC_ALLOCA(uint8_t, ulen);
+	if (q == NULL || r == NULL || bad == NULL || buf == NULL) {
+		RLC_FREE(q);
+		RLC_FREE(r);
+		RLC_FREE(bad);
+		RLC_FREE(buf);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null_all(s, t);
+
+	RLC_TRY {
+		bn_new_all(s, t);
+
+		/* Collect odd primes m = 2j + 1 with the sieve of Eratosthenes, all
+		 * below the first term so that no term is sieved out for being one
+		 * of them. */
+		memset(bad, 0, BN_SIEVE_WINDOW);
+		for (j = 1; j < BN_SIEVE_WINDOW && n < BN_SIEVE_PRIMES; j++) {
+			m = 2 * j + 1;
+			if (ubits <= 16 && m >= ((uint32_t)1 << (ubits - 1))) {
+				break;
+			}
+			if (bad[j] == 0) {
+				q[n++] = (uint16_t)m;
+				for (g = (m * m) / 2; g < BN_SIEVE_WINDOW; g += m) {
+					bad[g] = 1;
+				}
+			}
+		}
+
+		while (!found) {
+			/* Start from a random odd s with the top two bits set, so that
+			 * the last term has them set too. */
+			bn_rand(s, RLC_POS, ubits);
+			bn_set_bit(s, ubits - 1, 1);
+			bn_set_bit(s, ubits - 2, 1);
+			bn_set_bit(s, 0, 1);
+			bn_write_bin(buf, ulen, s);
+			for (size_t i = 0; i < n; i++) {
+				h = 0;
+				for (size_t k = 0; k < ulen; k++) {
+					h = ((h << 8) | buf[k]) % q[i];
+				}
+				r[i] = (uint16_t)h;
+			}
+
+			/* Sieve windows of candidates s + 2j while they keep their
+			 * length. The k-th term 2^k * (s + 2j + 1) - 1 is divisible by
+			 * a small prime m when s + 2j = 2^(-k) - 1 mod m. */
+			while (!found && bn_bits(s) == ubits) {
+				memset(bad, 0, BN_SIEVE_WINDOW);
+				for (size_t i = 0; i < n; i++) {
+					m = q[i];
+					h = (m + 1) / 2;
+					g = 1;
+					for (size_t k = 0; k < len; k++) {
+						c = (g + m - 1) % m;
+						j = ((c + m - r[i]) % m) * h % m;
+						for (; j < BN_SIEVE_WINDOW; j += m) {
+							bad[j] = 1;
+						}
+						g = (g * h) % m;
+					}
+					r[i] = (uint16_t)((r[i] + 2 * (BN_SIEVE_WINDOW % m)) % m);
+				}
+
+				for (j = 0; !found && j < BN_SIEVE_WINDOW; j++) {
+					if (bn_bits(s) != ubits) {
+						break;
+					}
+					if (bad[j] == 0) {
+						/* Test all terms with a single exponentiation each,
+						 * and only then with the full test. */
+						bn_copy(t, s);
+						found = bn_is_prime_fermt(t);
+						for (size_t k = 1; found && k < len; k++) {
+							bn_dbl(t, t);
+							bn_add_dig(t, t, 1);
+							found = bn_is_prime_fermt(t);
+						}
+						if (found) {
+							bn_copy(t, s);
+							found = bn_is_prime(t);
+							for (size_t k = 1; found && k < len; k++) {
+								bn_dbl(t, t);
+								bn_add_dig(t, t, 1);
+								found = bn_is_prime(t);
+							}
+						}
+					}
+					if (!found) {
+						bn_add_dig(s, s, 2);
+					}
+				}
+			}
+		}
+		bn_copy(p, t);
+		if (u != NULL) {
+			bn_copy(u, s);
 		}
 	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(s, t);
+		RLC_FREE(q);
+		RLC_FREE(r);
+		RLC_FREE(bad);
+		RLC_FREE(buf);
+	}
+	return result;
+}
+
+void bn_gen_prime_basic(bn_t a, size_t bits) {
+	bn_gen_prime_chain(a, NULL, bits, 1);
 }
 
 void bn_gen_prime_safep(bn_t a, size_t bits) {
-	/* The smallest safe prime, 5, has three bits. */
-	if (bits < 3) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	while (1) {
-		do {
-			bn_rand(a, RLC_POS, bits);
-		} while (bn_bits(a) != bits);
-		/* Make a = 3 mod 4, so that (a - 1)/2 is odd and a keeps its length
-		 * when rebuilt below. */
-		bn_set_bit(a, 0, 1);
-		bn_set_bit(a, 1, 1);
-		/* Trial divide both a and (a - 1)/2 before any expensive test. */
-		if (!bn_is_prime_basic(a)) {
-			continue;
-		}
-		bn_rsh(a, a, 1);
-		if (bn_is_prime_basic(a) && bn_is_prime(a)) {
-			/* Restore a. */
-			bn_lsh(a, a, 1);
-			bn_add_dig(a, a, 1);
-			if (bn_is_prime(a)) {
-				return;
-			}
-		}
-	}
+	bn_gen_prime_chain(a, NULL, bits, 2);
 }
 
 void bn_gen_prime_stron(bn_t a, size_t bits) {

@@ -51,11 +51,6 @@
 #define RSA_IS_ZERO(B)		((uint32_t)((uint32_t)(B) - 1) >> 31)
 
 /**
- * Number of small primes used to sieve candidates for Cunningham chains.
- */
-#define TRSA_SIEVE		(512)
-
-/**
  * Encodes a message m with a label l into a block em of k bytes.
  */
 typedef int (*rsa_enc_pad_t)(uint8_t *em, size_t k, const uint8_t *m,
@@ -922,81 +917,6 @@ static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 }
 
 /**
- * Generates a prime p = 2p' + 1 with p' = 2p'' + 1, so that p is the last term
- * of a Cunningham chain of the first kind of length 3 and the Carmichael
- * function of p - 1 is known. Candidates for p'' are sieved by small primes so
- * that p'', p' and p are tested only when none of them has a small factor.
- *
- * @param[out] p			- the prime p.
- * @param[out] u			- the prime p''.
- * @param[in] bits			- the length of p in bits.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-static int trsa_chain(bn_t p, bn_t u, size_t bits) {
-	dig_t q[TRSA_SIEVE], r[TRSA_SIEVE], a, b;
-	size_t n = 0;
-	int ok, found = 0, result = RLC_OK;
-
-	if (bits < 16) {
-		return RLC_ERR;
-	}
-
-	/* Collect the first odd primes for the sieve. */
-	for (dig_t c = 3; n < TRSA_SIEVE; c += 2) {
-		ok = 1;
-		for (size_t i = 0; ok && i < n && q[i] * q[i] <= c; i++) {
-			ok = (c % q[i] != 0);
-		}
-		if (ok) {
-			q[n++] = c;
-		}
-	}
-
-	RLC_TRY {
-		while (!found) {
-			/* Start from a random odd u of bits - 2 bits. */
-			bn_rand(u, RLC_POS, bits - 2);
-			bn_set_bit(u, bits - 3, 1);
-			bn_set_bit(u, 0, 1);
-			for (size_t i = 0; i < n; i++) {
-				bn_mod_dig(&r[i], u, q[i]);
-			}
-			/* Walk u, u + 2, ... while it keeps its length. */
-			for (dig_t k = 0; !found && k < ((dig_t)1 << 16); k++) {
-				ok = 1;
-				for (size_t i = 0; ok && i < n; i++) {
-					a = r[i];
-					b = (2 * a + 1) % q[i];
-					ok = (a != 0 && b != 0 && (2 * b + 1) % q[i] != 0);
-				}
-				if (ok && bn_is_prime(u)) {
-					bn_dbl(p, u);
-					bn_add_dig(p, p, 1);
-					if (bn_is_prime(p)) {
-						bn_dbl(p, p);
-						bn_add_dig(p, p, 1);
-						found = bn_is_prime(p) && bn_bits(p) == bits;
-					}
-				}
-				if (!found) {
-					bn_add_dig(u, u, 2);
-					for (size_t i = 0; i < n; i++) {
-						r[i] = (r[i] + 2) % q[i];
-					}
-					if (bn_bits(u) != bits - 2) {
-						break;
-					}
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	return result;
-}
-
-/**
  * Encrypts with Timed RSA, computing c = x^(e^tau) for the encoded message x
  * by tau sequential exponentiations with the exponent in the encryption key.
  *
@@ -1347,8 +1267,8 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
 			/* Primes p = 2p' + 1 and q = 2q' + 1, with p' = 2p'' + 1 and
 			 * q' = 2q'' + 1 also prime, and n = pq of the requested length. */
 			do {
-				err = (trsa_chain(p, u, bits / 2) != RLC_OK ||
-						trsa_chain(q, v, bits - bits / 2) != RLC_OK);
+				err = (bn_gen_prime_chain(p, u, bits / 2, 3) != RLC_OK ||
+						bn_gen_prime_chain(q, v, bits - bits / 2, 3) != RLC_OK);
 				bn_mul(ek->crt->n, p, q);
 			} while (!err && (bn_cmp(p, q) == RLC_EQ ||
 					bn_bits(ek->crt->n) != bits));
