@@ -1664,8 +1664,9 @@ static int square_root(void) {
 		} TEST_END;
 
 		TEST_CASE("modular square root is correct for a prime one mod four") {
+			/* Safe primes are all three mod four, so avoid them as default. */
 			do {
-				bn_gen_prime(p, RLC_BN_BITS / 4);
+				bn_gen_prime_basic(p, RLC_BN_BITS / 4);
 				bn_mod_dig(&d, p, 4);
 			} while (d != 1);
 			bn_rand_mod(a, p);
@@ -2556,10 +2557,16 @@ static int prime(void) {
 		} TEST_END;
 
 		TEST_ONCE("prime generation with a close prime factor terminates") {
+#if BN_GEN == STRON
+			/* Strong primes need a few bits more than a digit. */
+			const int b = RLC_DIG + 6;
+#else
+			const int b = 30;
+#endif
 			for (int k = 1; k <= 2; k++) {
-				bn_gen_prime_factor(q, p, 30, 30 + k);
+				TEST_ASSERT(bn_gen_prime_factor(q, p, b, b + k) == RLC_OK, end);
 				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
-				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
+				TEST_ASSERT(bn_bits(p) == (size_t)(b + k), end);
 				bn_sub_dig(p, p, 1);
 				bn_mod(p, p, q);
 				TEST_ASSERT(bn_is_zero(p), end);
@@ -2807,7 +2814,8 @@ static int factor(void) {
 		bn_new_all(p, q, n);
 
 		TEST_ONCE("integer factorization is consistent") {
-			bn_gen_prime(p, 16);
+			/* The factor is short, so avoid strong primes as the default. */
+			bn_gen_prime_basic(p, 16);
 			bn_rand(n, RLC_POS, RLC_BN_BITS - 16);
 			bn_mul(n, n, p);
 			if (bn_factor(q, n) == 1) {
