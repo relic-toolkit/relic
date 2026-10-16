@@ -302,6 +302,7 @@
 #undef bn_is_prime_basic
 #undef bn_is_prime_rabin
 #undef bn_is_prime_solov
+#undef bn_is_prime_fermt
 #undef bn_is_prime_lucas
 #undef bn_map_prime
 #undef bn_gen_prime_basic
@@ -436,6 +437,7 @@
 #define bn_is_prime_basic 	RLC_PREFIX(bn_is_prime_basic)
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
 #define bn_is_prime_solov 	RLC_PREFIX(bn_is_prime_solov)
+#define bn_is_prime_fermt 	RLC_PREFIX(bn_is_prime_fermt)
 #define bn_is_prime_lucas 	RLC_PREFIX(bn_is_prime_lucas)
 #define bn_map_prime 	RLC_PREFIX(bn_map_prime)
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
