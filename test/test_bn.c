@@ -2534,6 +2534,10 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime_solov(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("fermat prime testing is correct") {
+			TEST_ASSERT(bn_is_prime_fermt(p) == 1, end);
+		} TEST_END;
+
 		TEST_ONCE("lucas prime testing is correct") {
 			TEST_ASSERT(bn_is_prime_lucas(p) == 1, end);
 		} TEST_END;
@@ -2606,6 +2610,20 @@ static int small_primes(void) {
 			for(i = 0; i < nr_tests; i++) {
 				bn_set_dig(p, non_primes[i]);
 				TEST_ASSERT(bn_is_prime_rabin(p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("fermat testing of small primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, primes[i]);
+				TEST_ASSERT(bn_is_prime_fermt(p) == 1, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("fermat testing of small non-primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, non_primes[i]);
+				TEST_ASSERT(bn_is_prime_fermt(p) == 0, end);
 			}
 		} TEST_END;
 

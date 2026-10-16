@@ -961,6 +961,8 @@ static void arith(void) {
 
 	BENCH_ONE("bn_is_prime_solov", bn_is_prime_solov(a), 1);
 
+	BENCH_ONE("bn_is_prime_fermt", bn_is_prime_fermt(a), 1);
+
 	BENCH_ONE("bn_is_prime_lucas", bn_is_prime_lucas(a), 1);
 
 	rand_bytes(m, sizeof(m));

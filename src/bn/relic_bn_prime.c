@@ -403,6 +403,46 @@ int bn_is_prime_solov(const bn_t a) {
 	return result;
 }
 
+int bn_is_prime_fermt(const bn_t a) {
+	bn_t t, u;
+	int result = 0, cmp2;
+
+	cmp2 = bn_cmp_dig(a, 2);
+	if (cmp2 == RLC_LT) {
+		/* Numbers 1 or smaller are not prime */
+		return 0;
+	}
+	if (cmp2 == RLC_EQ) {
+		/* The number 2 is prime */
+		return 1;
+	}
+
+	if (bn_is_even(a) == 1) {
+		/* Even numbers > 2 are not prime */
+		return 0;
+	}
+
+	bn_null_all(t, u);
+
+	RLC_TRY {
+		bn_new_all(t, u);
+
+		/* Test if 2^(a - 1) = 1 mod a. */
+		bn_sub_dig(u, a, 1);
+		bn_set_dig(t, 2);
+		bn_prime_exp(t, t, u, a);
+		result = (bn_cmp_dig(t, 1) == RLC_EQ);
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(t, u);
+	}
+	return result;
+}
+
 int bn_is_prime_lucas(const bn_t a) {
 	bn_t d, n1, q, qk, u, v, t0, t1;
 	dis_t p = 1, s;

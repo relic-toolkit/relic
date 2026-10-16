@@ -1559,6 +1559,16 @@ int bn_is_prime_rabin(const bn_t a);
 int bn_is_prime_solov(const bn_t a);
 
 /**
+ * Tests if a number is prime using the Fermat test to base two. A single
+ * exponentiation rejects most composites, but some pass, so a number accepted
+ * by this test should be confirmed by another one.
+ *
+ * @param[in] a				- the number to test.
+ * @return 1 if a is a probable prime, 0 otherwise.
+ */
+int bn_is_prime_fermt(const bn_t a);
+
+/**
  * Tests if a number a > 2 is a strong Lucas probable prime, with the
  * parameters chosen by Selfridge's method A.
  *

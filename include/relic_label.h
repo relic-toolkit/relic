@@ -302,6 +302,7 @@
 #undef bn_is_prime_basic
 #undef bn_is_prime_rabin
 #undef bn_is_prime_solov
+#undef bn_is_prime_fermt
 #undef bn_is_prime_lucas
 #undef bn_map_prime
 #undef bn_gen_prime_basic
@@ -436,6 +437,7 @@
 #define bn_is_prime_basic 	RLC_PREFIX(bn_is_prime_basic)
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
 #define bn_is_prime_solov 	RLC_PREFIX(bn_is_prime_solov)
+#define bn_is_prime_fermt 	RLC_PREFIX(bn_is_prime_fermt)
 #define bn_is_prime_lucas 	RLC_PREFIX(bn_is_prime_lucas)
 #define bn_map_prime 	RLC_PREFIX(bn_map_prime)
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
@@ -3033,7 +3035,9 @@
 #undef fp24_mul_basic
 #undef fp24_mul_lazyr
 #undef fp24_mul_art
-#undef fp24_mul_dxs
+#undef fp24_mul_dxs_basic
+#undef fp24_mul_dxs_unr
+#undef fp24_mul_dxs_lazyr
 #undef fp24_sqr_unr
 #undef fp24_sqr_basic
 #undef fp24_sqr_lazyr
@@ -3076,7 +3080,9 @@
 #define fp24_mul_basic 	RLC_PREFIX(fp24_mul_basic)
 #define fp24_mul_lazyr 	RLC_PREFIX(fp24_mul_lazyr)
 #define fp24_mul_art 	RLC_PREFIX(fp24_mul_art)
-#define fp24_mul_dxs 	RLC_PREFIX(fp24_mul_dxs)
+#define fp24_mul_dxs_basic 	RLC_PREFIX(fp24_mul_dxs_basic)
+#define fp24_mul_dxs_unr 	RLC_PREFIX(fp24_mul_dxs_unr)
+#define fp24_mul_dxs_lazyr 	RLC_PREFIX(fp24_mul_dxs_lazyr)
 #define fp24_sqr_unr 	RLC_PREFIX(fp24_sqr_unr)
 #define fp24_sqr_basic 	RLC_PREFIX(fp24_sqr_basic)
 #define fp24_sqr_lazyr 	RLC_PREFIX(fp24_sqr_lazyr)
@@ -3119,7 +3125,8 @@
 #undef fp48_mul_basic
 #undef fp48_mul_lazyr
 #undef fp48_mul_art
-#undef fp48_mul_dxs
+#undef fp48_mul_dxs_basic
+#undef fp48_mul_dxs_lazyr
 #undef fp48_sqr_unr
 #undef fp48_sqr_basic
 #undef fp48_sqr_lazyr
@@ -3166,7 +3173,8 @@
 #define fp48_mul_basic 	RLC_PREFIX(fp48_mul_basic)
 #define fp48_mul_lazyr 	RLC_PREFIX(fp48_mul_lazyr)
 #define fp48_mul_art 	RLC_PREFIX(fp48_mul_art)
-#define fp48_mul_dxs 	RLC_PREFIX(fp48_mul_dxs)
+#define fp48_mul_dxs_basic 	RLC_PREFIX(fp48_mul_dxs_basic)
+#define fp48_mul_dxs_lazyr 	RLC_PREFIX(fp48_mul_dxs_lazyr)
 #define fp48_sqr_unr 	RLC_PREFIX(fp48_sqr_unr)
 #define fp48_sqr_basic 	RLC_PREFIX(fp48_sqr_basic)
 #define fp48_sqr_lazyr 	RLC_PREFIX(fp48_sqr_lazyr)
