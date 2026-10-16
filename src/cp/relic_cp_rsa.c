@@ -1035,8 +1035,13 @@ static int trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		if (bn_cmp(m, dk->crt->n) != RLC_LT) {
 			result = RLC_ERR;
 		} else {
-			for (size_t i = 0; i < theta; i++) {
-				bn_mxp(m, m, dk->d, dk->crt->n);
+			/* A key without delay is kept secret, so use a ladder for it. */
+			if (theta == 1) {
+				bn_mxp_monty(m, m, dk->d, dk->crt->n);
+			} else {
+				for (size_t i = 0; i < theta; i++) {
+					bn_mxp(m, m, dk->d, dk->crt->n);
+				}
 			}
 			bn_write_bin(em, k, m);
 			result = pad(out, out_len, em, k, l, l_len);

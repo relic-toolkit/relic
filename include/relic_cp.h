@@ -1115,6 +1115,9 @@ int cp_trsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
 /**
  * Decrypts using Timed RSA with OAEP padding and a label, computing
  * x = c^(d^theta) by theta sequential exponentiations and decoding x.
+ * The key is taken as secret when theta = 1, as in timed encryption, and then
+ * exponentiated by a constant-time ladder. Larger delays use the configured
+ * exponentiation method.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -1133,6 +1136,9 @@ int cp_trsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
 /**
  * Decrypts using Timed RSA with OAEP+ padding and a label, computing
  * x = c^(d^theta) by theta sequential exponentiations and decoding x.
+ * The key is taken as secret when theta = 1, as in timed encryption, and then
+ * exponentiated by a constant-time ladder. Larger delays use the configured
+ * exponentiation method.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
