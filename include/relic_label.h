@@ -4042,6 +4042,12 @@
 #undef md_map_sh512
 #undef md_map_b2s160
 #undef md_map_b2s256
+#undef md_map_s3224
+#undef md_map_s3256
+#undef md_map_s3384
+#undef md_map_s3512
+#undef md_shake128
+#undef md_shake256
 #undef md_kdf
 #undef md_mgf
 #undef md_hmac
@@ -4051,6 +4057,10 @@
 #undef md_xmd_sh512
 #undef md_xmd_b2s160
 #undef md_xmd_b2s256
+#undef md_xmd_s3224
+#undef md_xmd_s3256
+#undef md_xmd_s3384
+#undef md_xmd_s3512
 #undef md_xof_init
 #undef md_xof_bytes
 #undef md_xof_double
@@ -4063,6 +4073,12 @@
 #define md_map_sh512 	RLC_PREFIX(md_map_sh512)
 #define md_map_b2s160 	RLC_PREFIX(md_map_b2s160)
 #define md_map_b2s256 	RLC_PREFIX(md_map_b2s256)
+#define md_map_s3224 	RLC_PREFIX(md_map_s3224)
+#define md_map_s3256 	RLC_PREFIX(md_map_s3256)
+#define md_map_s3384 	RLC_PREFIX(md_map_s3384)
+#define md_map_s3512 	RLC_PREFIX(md_map_s3512)
+#define md_shake128 	RLC_PREFIX(md_shake128)
+#define md_shake256 	RLC_PREFIX(md_shake256)
 #define md_kdf 	RLC_PREFIX(md_kdf)
 #define md_mgf 	RLC_PREFIX(md_mgf)
 #define md_hmac 	RLC_PREFIX(md_hmac)
@@ -4072,6 +4088,10 @@
 #define md_xmd_sh512 	RLC_PREFIX(md_xmd_sh512)
 #define md_xmd_b2s160 	RLC_PREFIX(md_xmd_b2s160)
 #define md_xmd_b2s256 	RLC_PREFIX(md_xmd_b2s256)
+#define md_xmd_s3224 	RLC_PREFIX(md_xmd_s3224)
+#define md_xmd_s3256 	RLC_PREFIX(md_xmd_s3256)
+#define md_xmd_s3384 	RLC_PREFIX(md_xmd_s3384)
+#define md_xmd_s3512 	RLC_PREFIX(md_xmd_s3512)
 #define md_xof_init 	RLC_PREFIX(md_xof_init)
 #define md_xof_bytes 	RLC_PREFIX(md_xof_bytes)
 #define md_xof_double 	RLC_PREFIX(md_xof_double)

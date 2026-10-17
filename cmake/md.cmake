@@ -6,7 +6,11 @@ message("      MD_METHD=SH256        SHA-256 hash function.")
 message("      MD_METHD=SH384        SHA-384 hash function.")
 message("      MD_METHD=SH512        SHA-512 hash function.")
 message("      MD_METHD=B2S160       BLAKE2s-160 hash function.")
-message("      MD_METHD=B2S256       BLAKE2s-256 hash function.\n")
+message("      MD_METHD=B2S256       BLAKE2s-256 hash function.")
+message("      MD_METHD=S3224        SHA3-224 hash function.")
+message("      MD_METHD=S3256        SHA3-256 hash function.")
+message("      MD_METHD=S3384        SHA3-384 hash function.")
+message("      MD_METHD=S3512        SHA3-512 hash function.\n")
 
 # Choose the arithmetic methods.
 if (NOT MD_METHD)

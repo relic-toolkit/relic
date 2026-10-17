@@ -49,9 +49,10 @@
 #if RLC_RAND == RLC_HASHD
 
 #if MD_MAP == MD_SH224 || MD_MAP == MD_SH256 || MD_MAP == MD_B2S160 || \
-	MD_MAP == MD_B2S256
+	MD_MAP == MD_B2S256 || MD_MAP == MD_S3224 || MD_MAP == MD_S3256
 #define RLC_RAND_SIZE		(1 + 2*440/8)
-#elif MD_MAP == MD_SH384 || MD_MAP == MD_SH512
+#elif MD_MAP == MD_SH384 || MD_MAP == MD_SH512 || MD_MAP == MD_S3384 || \
+	MD_MAP == MD_S3512
 #define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 

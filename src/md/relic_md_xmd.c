@@ -134,3 +134,11 @@ make_md_xmd(SHA512, sh512)
 make_md_xmd(B2S160, b2s160)
 
 make_md_xmd(B2S256, b2s256)
+
+make_md_xmd(S3224, s3224)
+
+make_md_xmd(S3256, s3256)
+
+make_md_xmd(S3384, s3384)
+
+make_md_xmd(S3512, s3512)

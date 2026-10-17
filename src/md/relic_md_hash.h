@@ -37,6 +37,7 @@
 #include "relic_md.h"
 #include "sha.h"
 #include "blake2.h"
+#include "keccak.h"
 
 /**
  * BLAKE2s-160 under the names of the SHA-2 implementation.
@@ -59,6 +60,58 @@
 #define B2S256Result(C, H)			blake2s_final(C, H, RLC_MD_LEN_B2S256)
 
 /**
+ * SHA3-224 under the names of the SHA-2 implementation, its block being the
+ * rate of the sponge.
+ */
+#define S3224_Message_Block_Size	(200 - 2 * RLC_MD_LEN_S3224)
+#define S3224HashSize				RLC_MD_LEN_S3224
+#define S3224Context				keccak_state
+#define S3224Reset(C)				md_keccak_init(C, \
+		S3224_Message_Block_Size, KECCAK_SHA3)
+#define S3224Input					md_keccak_absorb
+#define S3224Result(C, H)			md_keccak_squeeze(C, H, \
+		RLC_MD_LEN_S3224)
+
+/**
+ * SHA3-256 under the names of the SHA-2 implementation, its block being the
+ * rate of the sponge.
+ */
+#define S3256_Message_Block_Size	(200 - 2 * RLC_MD_LEN_S3256)
+#define S3256HashSize				RLC_MD_LEN_S3256
+#define S3256Context				keccak_state
+#define S3256Reset(C)				md_keccak_init(C, \
+		S3256_Message_Block_Size, KECCAK_SHA3)
+#define S3256Input					md_keccak_absorb
+#define S3256Result(C, H)			md_keccak_squeeze(C, H, \
+		RLC_MD_LEN_S3256)
+
+/**
+ * SHA3-384 under the names of the SHA-2 implementation, its block being the
+ * rate of the sponge.
+ */
+#define S3384_Message_Block_Size	(200 - 2 * RLC_MD_LEN_S3384)
+#define S3384HashSize				RLC_MD_LEN_S3384
+#define S3384Context				keccak_state
+#define S3384Reset(C)				md_keccak_init(C, \
+		S3384_Message_Block_Size, KECCAK_SHA3)
+#define S3384Input					md_keccak_absorb
+#define S3384Result(C, H)			md_keccak_squeeze(C, H, \
+		RLC_MD_LEN_S3384)
+
+/**
+ * SHA3-512 under the names of the SHA-2 implementation, its block being the
+ * rate of the sponge.
+ */
+#define S3512_Message_Block_Size	(200 - 2 * RLC_MD_LEN_S3512)
+#define S3512HashSize				RLC_MD_LEN_S3512
+#define S3512Context				keccak_state
+#define S3512Reset(C)				md_keccak_init(C, \
+		S3512_Message_Block_Size, KECCAK_SHA3)
+#define S3512Input					md_keccak_absorb
+#define S3512Result(C, H)			md_keccak_squeeze(C, H, \
+		RLC_MD_LEN_S3512)
+
+/**
  * Incremental interface of the chosen hash function. Every call returns zero
  * on success.
  */
@@ -74,6 +127,14 @@
 #define MD_HASH(X)				B2S160 ## X
 #elif MD_MAP == MD_B2S256
 #define MD_HASH(X)				B2S256 ## X
+#elif MD_MAP == MD_S3224
+#define MD_HASH(X)				S3224 ## X
+#elif MD_MAP == MD_S3256
+#define MD_HASH(X)				S3256 ## X
+#elif MD_MAP == MD_S3384
+#define MD_HASH(X)				S3384 ## X
+#elif MD_MAP == MD_S3512
+#define MD_HASH(X)				S3512 ## X
 #endif
 
 /** Context of the chosen hash function. */

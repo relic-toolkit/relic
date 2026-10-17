@@ -153,6 +153,38 @@ static const uint8_t b2s256_id[] = {
 };
 
 /**
+ * ASN.1 identifier of the hash function SHA3-224.
+ */
+static const uint8_t s3224_id[] = {
+	0x30, 0x2d, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x07, 0x05, 0x00, 0x04, 0x1c
+};
+
+/**
+ * ASN.1 identifier of the hash function SHA3-256.
+ */
+static const uint8_t s3256_id[] = {
+	0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x08, 0x05, 0x00, 0x04, 0x20
+};
+
+/**
+ * ASN.1 identifier of the hash function SHA3-384.
+ */
+static const uint8_t s3384_id[] = {
+	0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x09, 0x05, 0x00, 0x04, 0x30
+};
+
+/**
+ * ASN.1 identifier of the hash function SHA3-512.
+ */
+static const uint8_t s3512_id[] = {
+	0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x0a, 0x05, 0x00, 0x04, 0x40
+};
+
+/**
  * Returns the ASN.1 DigestInfo prefix of the chosen hash function, as in the
  * PKCS#1 v1.5 signature encoding.
  *
@@ -179,6 +211,18 @@ static const uint8_t *hash_id(size_t *len) {
 		case MD_B2S256:
 			*len = sizeof(b2s256_id);
 			return b2s256_id;
+		case MD_S3224:
+			*len = sizeof(s3224_id);
+			return s3224_id;
+		case MD_S3256:
+			*len = sizeof(s3256_id);
+			return s3256_id;
+		case MD_S3384:
+			*len = sizeof(s3384_id);
+			return s3384_id;
+		case MD_S3512:
+			*len = sizeof(s3512_id);
+			return s3512_id;
 		default:
 			*len = 0;
 			return NULL;

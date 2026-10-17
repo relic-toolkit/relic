@@ -549,6 +549,14 @@
 #define MD_B2S160         6
 /** BLAKE2s-256 hash function. */
 #define MD_B2S256         7
+/** SHA3-224 hash function. */
+#define MD_S3224          8
+/** SHA3-256 hash function. */
+#define MD_S3256          9
+/** SHA3-384 hash function. */
+#define MD_S3384          10
+/** SHA3-512 hash function. */
+#define MD_S3512          11
 /** Chosen hash function. */
 #define MD_MAP   MD_@MD_MAP@
 
