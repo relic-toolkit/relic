@@ -84,7 +84,7 @@ cdecl(fp_sqrm_low):
 	subq	$SFRAME, %rsp
 
 	movq	%rdi, CPTR
-	movq	$0, ZERO
+	movq	$0, ZEROS
 	movq	$-1, ONES
 	.set	k, 0
 	.rept	RLC_FP_DIGS

@@ -52,7 +52,7 @@ cdecl(fp_rdcn_low):
 	subq	$FRAME, %rsp
 
 	movq	%rdi, CPTR
-	movq	$0, ZERO
+	movq	$0, ZEROS
 	movq	$-1, ONES
 	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %rdi, p0(%rip)
 

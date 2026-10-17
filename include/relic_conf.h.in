@@ -573,8 +573,8 @@
 /** Chosen random generator. */
 #define RLC_RAND	 @RAND@
 
-/** Standard C library generator. */
-#define LIBC     1
+/** Fixed zero seed. */
+#define ZERO     1
 /** Intel RdRand instruction. */
 #define RDRND    2
 /** Device node generator. */
@@ -582,7 +582,7 @@
 /** Use Windows' CryptGenRandom. */
 #define WCGR     4
 /** Chosen random generator seeder. */
-#cmakedefine RLC_SEED	 @SEED@
+#define RLC_SEED	 @SEED@
 
 /** GNU/Linux operating system. */
 #define LINUX    1

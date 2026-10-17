@@ -83,7 +83,7 @@ void rand_init(void) {
 	/* The device generator opens its file when seeded and needs no seed. */
 #if RLC_RAND != UDEV
 
-#if !defined(RLC_SEED)
+#if RLC_SEED == ZERO
 
 	memset(buf, 0, RLC_RAND_SEED);
 
@@ -112,21 +112,6 @@ void rand_init(void) {
 		}
 	}
 	close(fd);
-#elif RLC_SEED == LIBC
-
-#if OPSYS == FREEBSD || OPSYS == NETBSD
-	/* This is better than using a fixed value. */
-	arc4random_buf(buf, RLC_RAND_SEED);
-#else
-	/* This is horribly insecure, serves only for benchmarking. A local
-	 * generator leaves the state of rand() to the application. */
-	uint32_t s = 1;
-	for (int i = 0; i < RLC_RAND_SEED; i++) {
-		s = s * 1103515245 + 12345;
-		buf[i] = (uint8_t)(s >> 16);
-	}
-#endif
-
 #elif RLC_SEED == WCGR
 
 	HCRYPTPROV hCryptProv;

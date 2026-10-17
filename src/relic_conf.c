@@ -108,8 +108,8 @@
 /**
  * Names the chosen seeder of the generator.
  */
-#if RLC_SEED == LIBC
-#define CONF_SEED			"LIBC"
+#if RLC_SEED == ZERO
+#define CONF_SEED			"ZERO"
 #elif RLC_SEED == RDRND
 #define CONF_SEED			"RDRND"
 #elif RLC_SEED == UDEV

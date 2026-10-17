@@ -344,7 +344,7 @@ cdecl(fp_muln_low):
 
 	movq	%rdi, CPTR
 	movq	%rsi, APTR
-	movq	$0, ZERO
+	movq	$0, ZEROS
 	movq	$-1, ONES
 	movq	$0, CARRY
 	.set	k, 0
@@ -377,7 +377,7 @@ cdecl(fp_mulm_low):
 
 	movq	%rdi, CPTR
 	movq	%rsi, APTR
-	movq	$0, ZERO
+	movq	$0, ZEROS
 	movq	$-1, ONES
 	movq	$0, CARRY
 	.set	k, 0
