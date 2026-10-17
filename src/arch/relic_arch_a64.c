@@ -43,7 +43,7 @@
  */
 #define asm					__asm__ volatile
 
-#if TIMER == CYCLE
+#if RLC_TIMER == CYCLE
 #if OPSYS == MACOSX
 /*
  * Adapted from work by D. Lemire, Duc Tri Nguyen (CERG GMU), Dougall Johnson
@@ -182,7 +182,7 @@ void arch_init(void) {
 			(has_lzcnt_hard() ? tzcnt64_hard : tzcnt64_soft);
 	}
 
-#if TIMER == CYCLE
+#if RLC_TIMER == CYCLE
 
 #if OPSYS == MACOSX
 	int test_high_perf_cores = 1;
@@ -194,7 +194,7 @@ void arch_init(void) {
 	init_rdtsc();
 #endif
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = CYCLE */
 }
 
 void arch_clean(void) {
@@ -208,7 +208,7 @@ void arch_clean(void) {
 ull_t arch_cycles(void) {
 	uint_t value = 0;
 
-#if TIMER == CYCLE
+#if RLC_TIMER == CYCLE
 
 #if OPSYS == MACOSX
 	static bool warned = false;
@@ -228,7 +228,7 @@ ull_t arch_cycles(void) {
 
 #endif
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = CYCLE */
 
 	return value;
 }

@@ -65,7 +65,7 @@ void arch_clean(void) {
 	}
 }
 
-#if TIMER == CYCLE
+#if RLC_TIMER == CYCLE
 
 ull_t arch_cycles(void) {
 	uint32_t hi, lo;
@@ -79,7 +79,7 @@ ull_t arch_cycles(void) {
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
 }
 
-#elif TIMER == PERF
+#elif RLC_TIMER == PERF
 
 ull_t arch_cycles(void) {
 	uint_t seq;

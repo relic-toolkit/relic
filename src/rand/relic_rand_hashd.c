@@ -46,7 +46,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if RAND == HASHD
+#if RLC_RAND == HASHD
 
 /*
  * Computes the hash derivation function.
@@ -158,7 +158,7 @@ static void rand_gen(uint8_t *out, size_t out_len) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == HASHD
+#if RLC_RAND == HASHD
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	uint8_t hash[RLC_MD_LEN];

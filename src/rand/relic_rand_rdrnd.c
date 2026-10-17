@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == RDRND
+#if RLC_RAND == RDRND
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	size_t i = 0, j;

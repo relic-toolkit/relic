@@ -501,7 +501,7 @@ typedef struct _ctx_t {
 	ull_t total;
 #endif
 
-#if RAND != CALL
+#if RLC_RAND != CALL
 	/** Internal state of the PRNG. */
 	uint8_t rand[RLC_RAND_SIZE];
 #else
@@ -517,7 +517,7 @@ typedef struct _ctx_t {
 	long pid;
 #endif
 
-#if TIMER == PERF
+#if RLC_TIMER == PERF
 	/** File descriptor for perf system call. */
 	int perf_fd;
 	/** Buffer for storing perf data, */
@@ -525,10 +525,10 @@ typedef struct _ctx_t {
 #endif
 
 	/** Function pointer to underlying lznct implementation. */
-#if ARCH == X86
+#if RLC_ARCH == X86
 	unsigned int (*lzcnt_ptr)(dig_t);
 	unsigned int (*tzcnt_ptr)(dig_t);
-#elif ARCH == X64 || ARCH == A64
+#elif RLC_ARCH == X64 || RLC_ARCH == A64
 	unsigned int (*lzcnt_ptr)(ull_t);
 	unsigned int (*tzcnt_ptr)(ull_t);
 #endif
@@ -553,7 +553,7 @@ int core_init(void);
  */
 int core_clean(void);
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 
 /**
  * Returns a pointer to the current library context.
@@ -588,7 +588,7 @@ static inline ctx_t *core_get(void) {
  */
 void core_set(ctx_t *ctx);
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 
 #include "relic_multi.h"
 

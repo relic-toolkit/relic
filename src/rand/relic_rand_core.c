@@ -40,14 +40,14 @@
 #include "relic_md.h"
 #include "relic_err.h"
 
-#if RAND == UDEV || SEED == UDEV
+#if RLC_RAND == UDEV || RLC_SEED == UDEV
 
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#elif SEED == WCGR
+#elif RLC_SEED == WCGR
 
 /* Avoid redefinition warning. */
 #undef ERROR
@@ -56,7 +56,7 @@
 #include <windows.h>
 #include <wincrypt.h>
 
-#elif SEED == RDRND
+#elif RLC_SEED == RDRND
 
 #include <immintrin.h>
 
@@ -81,13 +81,13 @@ void rand_init(void) {
 	uint8_t buf[RLC_RAND_SEED];
 
 	/* The device generator opens its file when seeded and needs no seed. */
-#if RAND != UDEV
+#if RLC_RAND != UDEV
 
-#if !defined(SEED)
+#if !defined(RLC_SEED)
 
 	memset(buf, 0, RLC_RAND_SEED);
 
-#elif SEED == UDEV
+#elif RLC_SEED == UDEV
 	int fd;
 	ssize_t c;
 	size_t l;
@@ -112,7 +112,7 @@ void rand_init(void) {
 		}
 	}
 	close(fd);
-#elif SEED == LIBC
+#elif RLC_SEED == LIBC
 
 #if OPSYS == FREEBSD || OPSYS == NETBSD
 	/* This is better than using a fixed value. */
@@ -127,7 +127,7 @@ void rand_init(void) {
 	}
 #endif
 
-#elif SEED == WCGR
+#elif RLC_SEED == WCGR
 
 	HCRYPTPROV hCryptProv;
 
@@ -145,7 +145,7 @@ void rand_init(void) {
 		return;
 	}
 
-#elif SEED == RDRND
+#elif RLC_SEED == RDRND
 
 	size_t i = 0, j;
 	ull_t r;
@@ -172,9 +172,9 @@ void rand_init(void) {
 #error "Unknown seeder, check the SEED option."
 #endif
 
-#endif /* RAND != UDEV */
+#endif /* RLC_RAND != UDEV */
 
-#if RAND != CALL
+#if RLC_RAND != CALL
 	core_get()->seeded = 0;
 	rand_seed(buf, RLC_RAND_SEED);
 	util_zero(buf, RLC_RAND_SEED);
@@ -208,8 +208,8 @@ int rand_check(uint8_t *buf, size_t size) {
 void rand_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-#if RAND != CALL
-#if RAND == UDEV
+#if RLC_RAND != CALL
+#if RLC_RAND == UDEV
 		int *fd = (int *)&(ctx->rand);
 		/* The descriptor is only open while seeded. */
 		if (ctx->seeded) {
@@ -217,7 +217,7 @@ void rand_clean(void) {
 		}
 #endif
 		memset(ctx->rand, 0, sizeof(ctx->rand));
-#if RAND == UDEV
+#if RLC_RAND == UDEV
 		/* A zero descriptor would read from the standard input. */
 		*fd = -1;
 #endif

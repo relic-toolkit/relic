@@ -46,7 +46,7 @@
 /**
  * Size of the PRNG internal state in bytes.
  */
-#if RAND == HASHD
+#if RLC_RAND == HASHD
 
 #if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == B2S160 || MD_MAP == B2S256
 #define RLC_RAND_SIZE		(1 + 2*440/8)
@@ -54,11 +54,11 @@
 #define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 
-#elif RAND == UDEV
+#elif RLC_RAND == UDEV
 #define RLC_RAND_SIZE		(sizeof(int))
-#elif RAND == CALL
+#elif RLC_RAND == CALL
 #define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, size_t, void *)))
-#elif RAND == RDRND
+#elif RLC_RAND == RDRND
 #define RLC_RAND_SIZE      0
 #endif
 
@@ -86,8 +86,8 @@
  * Flag to reseed the PRNG when its process forks, for generators with state
  * on systems where the process identifier is available.
  */
-#if RAND == HASHD && (OPSYS == LINUX || OPSYS == MACOSX || OPSYS == FREEBSD ||\
-		OPSYS == NETBSD || OPSYS == DROID)
+#if RLC_RAND == HASHD && (OPSYS == LINUX || OPSYS == MACOSX || \
+		OPSYS == FREEBSD || OPSYS == NETBSD || OPSYS == DROID)
 #define RLC_RAND_FORK
 #endif
 
@@ -105,7 +105,7 @@ void rand_init(void);
  */
 void rand_clean(void);
 
-#if RAND != CALL
+#if RLC_RAND != CALL
 
 /**
  * Sets the initial state of the pseudo-random number generator.

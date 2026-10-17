@@ -34,7 +34,7 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if ARCH == AVR || ARCH == MSP || ARCH == ARM
+#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == ARM
 #define SIM_LOT		4
 #else
 /* Enough points to reach the bucket method. */

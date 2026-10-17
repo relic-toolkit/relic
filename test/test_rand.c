@@ -39,7 +39,7 @@
 #include <sys/wait.h>
 #endif
 
-#if RAND == HASHD
+#if RLC_RAND == HASHD
 
 /*
  * Test vectors taken from:
@@ -369,7 +369,7 @@ static int test(void) {
 	return code;
 }
 
-#elif RAND == UDEV
+#elif RLC_RAND == UDEV
 
 static int test(void) {
 	int code = RLC_ERR;
@@ -391,7 +391,7 @@ static int test(void) {
 	return code;
 }
 
-#elif RAND == RDRND
+#elif RLC_RAND == RDRND
 
 static int test(void) {
 	uint8_t out[64];
@@ -414,7 +414,7 @@ static int test(void) {
 	return code;
 }
 
-#elif RAND == CALL
+#elif RLC_RAND == CALL
 
 #include <unistd.h>
 #include <sys/stat.h>

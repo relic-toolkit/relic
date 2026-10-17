@@ -42,7 +42,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == UDEV
+#if RLC_RAND == UDEV
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	int *fd = (int *)&(core_get()->rand);

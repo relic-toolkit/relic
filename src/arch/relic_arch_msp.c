@@ -41,7 +41,7 @@ void arch_init(void) {
 void arch_clean(void) {
 }
 
-#if TIMER == CYCLE
+#if RLC_TIMER == CYCLE
 
 #ifdef __MSP430__
 /* Support for MSPGCC with custom MSPsim simulator. */
@@ -89,7 +89,7 @@ ull_t arch_cycles(void) {
 
 #endif /* __ICC430__ */
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = CYCLE */
 
 uint_t arch_lzcnt(dig_t a) {
 	/* Leading zeros of a nibble. */

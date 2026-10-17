@@ -39,7 +39,7 @@
 #include "relic_types.h"
 #include "relic_label.h"
 
-#if ARCH == AVR
+#if RLC_ARCH == AVR
 #include <avr/pgmspace.h>
 #endif
 
@@ -52,7 +52,7 @@
  *
  * @param[in] S					- the string to store.
  */
-#if ARCH == AVR
+#if RLC_ARCH == AVR
 #define RLC_STR(S)				PSTR(S)
 #else
 #define RLC_STR(S)				S
@@ -65,7 +65,7 @@
  * @param[in] ID			- the parameter represented as a string.
  * @param[in] L				- the length of the string.
  */
-#if ARCH == AVR
+#if RLC_ARCH == AVR
 #define RLC_GET(S, ID, L)		arch_copy_rom(S, RLC_STR(ID), L);
 #else
 #define RLC_GET(S, ID, L)		memcpy(S, ID, L);
@@ -100,7 +100,7 @@ uint_t arch_lzcnt(dig_t);
  */
 uint_t arch_tzcnt(dig_t);
 
-#if ARCH == AVR
+#if RLC_ARCH == AVR
 
 /**
  * Copies a string from the text section to the destination vector.

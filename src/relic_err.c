@@ -113,7 +113,7 @@ void err_throw(const char *file, int line) {
 	if (core_get()->quiet) {
 		return;
 	}
-#if ARCH == AVR
+#if RLC_ARCH == AVR
 	/* The file name is stored in program memory. */
 	util_print("ERROR THROWN in %S:%d\n", file, line);
 #else
