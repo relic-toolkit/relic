@@ -30,29 +30,51 @@
 # GMP_INCLUDE_DIR - The GMP include directory
 # GMP_LIBRARIES - Libraries needed to use GMP
 
-if (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
-	# Force search at every time, in case configuration changes
+# Search again only when an input of the search changes, since STBIN picks the
+# static or the shared library, and keep the paths given by the user otherwise.
+set(GMP_SEARCH "${STBIN};${GMP_ROOT};$ENV{GMP_ROOT}")
+if(DEFINED GMP_SEARCHED AND NOT GMP_SEARCHED STREQUAL GMP_SEARCH)
 	unset(GMP_INCLUDE_DIR CACHE)
 	unset(GMP_LIBRARIES CACHE)
-endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
+endif()
+set(GMP_SEARCHED "${GMP_SEARCH}" CACHE INTERNAL "Inputs of the GMP search")
 
+# Hints come before the system paths, so that GMP_ROOT takes precedence.
 find_path(GMP_INCLUDE_DIR gmp.h
-	PATHS
+	HINTS
+		${GMP_ROOT}
 		ENV GMP_ROOT
 		ENV GMP_INCLUDE_DIR
-		${GMP_ROOT}
+	PATHS
 		/usr
 		/usr/local
+		/opt/homebrew
+		/opt/local
 		$ENV{HOME}/.local
 	PATH_SUFFIXES
 		include
 )
 
 if(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.a libgmp.dll.a gmp.lib libgmp-10 libgmp gmp)
+	set(GMP_NAMES libgmp.a libgmp.dll.a gmp.lib libgmp-10 libgmp gmp)
 else(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.so libgmp.dll.so gmp.lib libgmp-10 libgmp gmp)
+	set(GMP_NAMES libgmp.so libgmp.dylib libgmp.dll.a gmp.lib libgmp-10
+		libgmp gmp)
 endif(STBIN)
+find_library(GMP_LIBRARIES NAMES ${GMP_NAMES}
+	HINTS
+		${GMP_ROOT}
+		ENV GMP_ROOT
+	PATHS
+		/usr
+		/usr/local
+		/opt/homebrew
+		/opt/local
+		$ENV{HOME}/.local
+	PATH_SUFFIXES
+		lib
+		lib64
+)
 
 if(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
    set(GMP_FOUND TRUE)

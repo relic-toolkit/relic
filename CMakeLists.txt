@@ -282,14 +282,23 @@ if(MULTI STREQUAL "OPENMP")
 		set(CFLAGS "${CFLAGS} /openmp")
 	else()
 		if (OPSYS STREQUAL "MACOSX" AND CMAKE_C_COMPILER_ID MATCHES "Clang")
-			include_directories("/usr/local/include")
-			link_directories("/usr/local/lib")
+			# Apple Clang has no OpenMP runtime, so take libomp from Homebrew,
+			# which keeps it apart under opt/libomp, or from MacPorts.
+			set(OMP_PATHS /opt/homebrew/opt/libomp /usr/local/opt/libomp
+				/opt/local /opt/homebrew /usr/local)
+			find_path(OMP_INCLUDE_DIR omp.h HINTS ${LIBOMP_ROOT} ENV LIBOMP_ROOT
+				PATHS ${OMP_PATHS} PATH_SUFFIXES include include/libomp)
+			find_library(OMP_LIBRARY omp HINTS ${LIBOMP_ROOT} ENV LIBOMP_ROOT
+				PATHS ${OMP_PATHS} PATH_SUFFIXES lib lib/libomp)
+			if(NOT OMP_INCLUDE_DIR OR NOT OMP_LIBRARY)
+				message(FATAL_ERROR "MULTI=OPENMP with Apple Clang needs libomp, "
+					"from brew install libomp, or LIBOMP_ROOT pointing to it.")
+			endif()
+			include_directories(${OMP_INCLUDE_DIR})
 			set(OpenMP_C "${CMAKE_C_COMPILER}")
-			set(OpenMP_C_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
-			set(OpenMP_C_LIB_NAMES "libomp" "libgomp" "libiomp5")
-			set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-			set(OpenMP_libgomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-			set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+			set(OpenMP_C_FLAGS "-Xclang -fopenmp -I${OMP_INCLUDE_DIR}")
+			set(OpenMP_C_LIB_NAMES "omp")
+			set(OpenMP_omp_LIBRARY "${OMP_LIBRARY}")
 			set(CFLAGS "${CFLAGS} -Xclang -fopenmp")
 		else()
 			set(CFLAGS "${CFLAGS} -fopenmp")
@@ -311,10 +320,6 @@ if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp-sec")
 		include_directories(${GMP_INCLUDE_DIR})
 		set(ARITH_LIBS ${GMP_LIBRARIES})
 	endif()
-endif()
-
-if(ARITH STREQUAL "fiat")
-	message(STATUS "Configured Fiat-Crypto: After build completes, set FIAT_CRYPTO to root folder and run: make fiat; cmake; make.")
 endif()
 
 # Let the linker remove unused code and data when stripping.
