@@ -173,10 +173,19 @@ set(SIMUL "$ENV{SIMUL}" CACHE STRING "Path to call a simulator of the target pla
 set(SIMAR "$ENV{SIMAR}" CACHE STRING "Arguments to call a simulator of the target platform.")
 string(REPLACE " " ";" SIMAR "${SIMAR}")
 
-# Linker flags.
+# A top-level build takes CFLAGS and LDFLAGS, while a subproject takes them as
+# RLC_CFLAGS and RLC_LDFLAGS, which cannot clash with a parent project's.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+	set(FLAGS_PREFIX "")
+else()
+	set(FLAGS_PREFIX "RLC_")
+endif()
+
+# Linker flags, by default from LDFLAGS in the environment.
+set(${FLAGS_PREFIX}LDFLAGS "$ENV{LDFLAGS}" CACHE STRING "Linker flags.")
 string(TOLOWER ${ARITH} LFLAGS)
 set(LFLAGS "-L${CMAKE_CURRENT_SOURCE_DIR}/src/low/${LFLAGS}/")
-set(LFLAGS "${LFLAGS} $ENV{LDFLAGS} ${LDFLAGS}")
+set(LFLAGS "${LFLAGS} ${${FLAGS_PREFIX}LDFLAGS}")
 
 if(STBIN)
 	set(LFLAGS "${LFLAGS} -static")
@@ -237,28 +246,30 @@ if(MSVC)
 	endforeach()
 endif()
 
-# Compiler flags come from CFLAGS on the command line or in the environment.
-# When it is empty, the defaults below apply. They are not cached, so that
-# switching DEBUG in an existing build directory takes effect.
-set(CFLAGS "$ENV{CFLAGS}" CACHE STRING
+# Compiler flags, by default from CFLAGS in the environment, and collected in
+# RLC_CFLAGS. When they are empty, the defaults below apply. They are not
+# cached, so that switching DEBUG in an existing build directory takes effect.
+set(${FLAGS_PREFIX}CFLAGS "$ENV{CFLAGS}" CACHE STRING
 	"Compiler flags, empty for the defaults.")
-if(CFLAGS STREQUAL "")
+set(RLC_CFLAGS "${${FLAGS_PREFIX}CFLAGS}")
+if(RLC_CFLAGS STREQUAL "")
 	if(DEBUG)
 		if(MSVC)
-			set(CFLAGS "/Od")
+			set(RLC_CFLAGS "/Od")
 		else()
 			# Turn off all optimizations.
-			set(CFLAGS "-pipe -std=c99 -O0 -fno-omit-frame-pointer")
+			set(RLC_CFLAGS "-pipe -std=c99 -O0 -fno-omit-frame-pointer")
 		endif()
 	else()
 		if(MSVC)
-			set(CFLAGS "/O2")
+			set(RLC_CFLAGS "/O2")
 		else()
-			set(CFLAGS "-pipe -std=c99 -O2 -funroll-loops -fomit-frame-pointer")
+			set(RLC_CFLAGS "-pipe -std=c99 -O2 -funroll-loops -fomit-frame-pointer")
 		endif()
 	endif()
 endif()
 # Turn on debugging symbols.
+set(DFLAGS "")
 if(DEBUG)
 	if(MSVC)
 		set(DFLAGS "/Z7")
@@ -269,7 +280,7 @@ endif()
 
 # Remove annoying flags when compiler cannot compute buffer sizes.
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	set(CFLAGS "${CFLAGS} -Wno-stringop-overflow -Wno-stringop-overread")
+	set(RLC_CFLAGS "${RLC_CFLAGS} -Wno-stringop-overflow -Wno-stringop-overread")
 endif()
 
 if(AUSAN)
@@ -279,7 +290,7 @@ endif()
 # Find OpenMP
 if(MULTI STREQUAL "OPENMP")
 	if (MSVC)
-		set(CFLAGS "${CFLAGS} /openmp")
+		set(RLC_CFLAGS "${RLC_CFLAGS} /openmp")
 	else()
 		if (OPSYS STREQUAL "MACOSX" AND CMAKE_C_COMPILER_ID MATCHES "Clang")
 			# Apple Clang has no OpenMP runtime, so take libomp from Homebrew,
@@ -299,9 +310,9 @@ if(MULTI STREQUAL "OPENMP")
 			set(OpenMP_C_FLAGS "-Xclang -fopenmp -I${OMP_INCLUDE_DIR}")
 			set(OpenMP_C_LIB_NAMES "omp")
 			set(OpenMP_omp_LIBRARY "${OMP_LIBRARY}")
-			set(CFLAGS "${CFLAGS} -Xclang -fopenmp")
+			set(RLC_CFLAGS "${RLC_CFLAGS} -Xclang -fopenmp")
 		else()
-			set(CFLAGS "${CFLAGS} -fopenmp")
+			set(RLC_CFLAGS "${RLC_CFLAGS} -fopenmp")
 		endif()
 		find_package(OpenMP REQUIRED)
 	endif()
@@ -309,7 +320,7 @@ if(MULTI STREQUAL "OPENMP")
 else()
 	if(MULTI STREQUAL "PTHREAD")
 		find_package(Threads REQUIRED)
-		set(CFLAGS "${CFLAGS} -pthread")
+		set(RLC_CFLAGS "${RLC_CFLAGS} -pthread")
 		set(MULTI "PTHREAD" CACHE STRING "Multithreading interface")
 	endif()
 endif()
@@ -325,10 +336,10 @@ endif()
 # Let the linker remove unused code and data when stripping.
 if(STRIP)
 	if(MSVC)
-		set(CFLAGS "${CFLAGS} /Gy /Gw")
+		set(RLC_CFLAGS "${RLC_CFLAGS} /Gy /Gw")
 		set(LFLAGS "${LFLAGS} /OPT:REF")
 	else()
-		set(CFLAGS "${CFLAGS} -ffunction-sections -fdata-sections")
+		set(RLC_CFLAGS "${RLC_CFLAGS} -ffunction-sections -fdata-sections")
 		if(OPSYS STREQUAL "MACOSX")
 			set(LFLAGS "${LFLAGS} -Wl,-dead_strip")
 		else()
@@ -338,19 +349,24 @@ if(STRIP)
 endif()
 
 # Flags given to CMake itself come last, so that they win. CMake derives the
-# initial values from the environment, which CFLAGS and LFLAGS already hold,
-# so only values that differ from those are the user's own.
+# initial values from the environment, which RLC_CFLAGS and LFLAGS already
+# hold, so only values that differ from those are the user's own. CMake reads
+# the environment on the first run only, so remember the values from then.
+if(NOT DEFINED RLC_INIT_CFLAGS)
+	set(RLC_INIT_CFLAGS "${CMAKE_C_FLAGS_INIT}" CACHE INTERNAL "")
+	set(RLC_INIT_LFLAGS "${CMAKE_EXE_LINKER_FLAGS_INIT}" CACHE INTERNAL "")
+endif()
 string(STRIP "${CMAKE_C_FLAGS}" USER_CFLAGS)
-string(STRIP "${CMAKE_C_FLAGS_INIT}" INIT_CFLAGS)
+string(STRIP "${RLC_INIT_CFLAGS}" INIT_CFLAGS)
 if("${USER_CFLAGS}" STREQUAL "${INIT_CFLAGS}")
 	set(USER_CFLAGS "")
 endif()
 string(STRIP "${CMAKE_EXE_LINKER_FLAGS}" USER_LFLAGS)
-string(STRIP "${CMAKE_EXE_LINKER_FLAGS_INIT}" INIT_LFLAGS)
+string(STRIP "${RLC_INIT_LFLAGS}" INIT_LFLAGS)
 if("${USER_LFLAGS}" STREQUAL "${INIT_LFLAGS}")
 	set(USER_LFLAGS "")
 endif()
-set(CMAKE_C_FLAGS "${AFLAGS} ${WFLAGS} ${DFLAGS} ${CFLAGS}")
+set(CMAKE_C_FLAGS "${AFLAGS} ${WFLAGS} ${DFLAGS} ${RLC_CFLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${LFLAGS}")
 if(USER_CFLAGS)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USER_CFLAGS}")
@@ -360,7 +376,7 @@ if(USER_LFLAGS)
 endif()
 if(CMAKE_BUILD_TYPE)
 	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} adds its own flags, "
-		"while RELIC chooses them through CFLAGS and DEBUG.")
+		"while RELIC chooses them through ${FLAGS_PREFIX}CFLAGS and DEBUG.")
 endif()
 
 message(STATUS "Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} (${CMAKE_C_COMPILER})")
