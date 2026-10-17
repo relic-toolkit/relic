@@ -8,18 +8,16 @@
 #define N	2			/* Number of client messages. */
 
 static int test(void) {
-	int result, code = RLC_ERR;
+	int code = RLC_ERR;
 	size_t len;
-	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
+	bn_t n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
 	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
-	crt_t crt;
 
 	bn_null(n);
 	bn_null(q);
 	g1_null(ss);
-	crt_null(crt);
 
 	RLC_TRY {
 		bn_new(n);
@@ -98,7 +96,6 @@ static int test(void) {
 		g1_free(u[i]);
 		gt_free(t[i]);
 	}
-	crt_free(crt);
 	return code;
 }
 
@@ -107,7 +104,7 @@ static int test(void) {
 #include "params.h"
 
 static void bench(void) {
-	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
+	bn_t n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[N], ss;
 	g2_t d[M + 1], s[M + 1];
 	gt_t t[N];
@@ -195,7 +192,6 @@ static void bench(void) {
 }
 
 int main(int argc, char *argv[]) {
-	int m, n;
 	core_init();
 	if (pc_param_set_any() == RLC_OK) {
 		if (test() != RLC_OK) {
