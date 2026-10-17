@@ -391,29 +391,6 @@ static int test(void) {
 	return code;
 }
 
-#elif RLC_RAND == RDRND
-
-static int test(void) {
-	uint8_t out[64];
-	size_t len = sizeof(out) / 2, code = RLC_ERR;
-
-	TEST_ONCE("rdrand hardware generator is non-trivial") {
-		memset(out, 0, 2 * len);
-		rand_bytes(out, len);
-		/* This fails with negligible probability. */
-		TEST_ASSERT(memcmp(out, out + len, len) != 0, end);
-		/* Runs of repeated bytes mean the output is not being consumed. */
-		rand_bytes(out, 2 * len);
-		TEST_ASSERT(rand_check(out, 2 * len) == RLC_OK, end);
-	}
-	TEST_END;
-
-	code = RLC_OK;
-
-  end:
-	return code;
-}
-
 #elif RLC_RAND == CALL
 
 #include <unistd.h>

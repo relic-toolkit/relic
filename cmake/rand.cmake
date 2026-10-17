@@ -1,7 +1,6 @@
 message(STATUS "Available pseudo-random number generators (default = HASHD):\n")
 
 message("   RAND=HASHD     Use the HASH-DRBG generator. (recommended)")
-message("   RAND=RDRND     Use Intel RdRand instruction directly.")
 message("   RAND=UDEV      Use the operating system underlying generator.")
 message("   RAND=CALL      Override the generator with a callback.\n")
 
@@ -27,6 +26,10 @@ else()
 
 endif()
 
+if(RAND STREQUAL "RDRND")
+	message(FATAL_ERROR "RAND=RDRND was removed, use RAND=HASHD with "
+		"SEED=RDRND to seed it from RdRand.")
+endif()
 if(SEED STREQUAL "")
 	message(FATAL_ERROR "SEED is empty, use SEED=ZERO for a fixed seed.")
 endif()

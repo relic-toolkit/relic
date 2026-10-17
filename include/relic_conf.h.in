@@ -564,8 +564,6 @@
 
 /** NIST HASH-DRBG generator. */
 #define HASHD    1
-/** Intel RdRand instruction. */
-#define RDRND    2
 /** Operating system underlying generator. */
 #define UDEV     3
 /** Override library generator with the callback. */

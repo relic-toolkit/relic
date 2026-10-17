@@ -58,8 +58,6 @@
 #define RLC_RAND_SIZE		(sizeof(int))
 #elif RLC_RAND == CALL
 #define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, size_t, void *)))
-#elif RLC_RAND == RDRND
-#define RLC_RAND_SIZE      0
 #endif
 
 /**
