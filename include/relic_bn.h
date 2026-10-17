@@ -444,18 +444,13 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number. Safe and strong primes have their own
+ * functions, for the callers that need them.
  *
  * @param[out] A			- the result.
  * @param[in] B				- the length of the number in bits.
  */
-#if BN_GEN == BASIC
 #define bn_gen_prime(A, B)	bn_gen_prime_basic(A, B)
-#elif BN_GEN == SAFEP
-#define bn_gen_prime(A, B)	bn_gen_prime_safep(A, B)
-#elif BN_GEN == STRON
-#define bn_gen_prime(A, B)	bn_gen_prime_stron(A, B)
-#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -1640,8 +1635,7 @@ int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
 
 /**
  * Generates a probable prime number b, with (b-1) divisible by a probable large
- * prime a. The factor a comes from the basic method, whatever the configured
- * prime generation method is.
+ * prime a.
  *
  * @param[out] a			- the prime factor of (b-1).
  * @param[out] b			- the prime result b.

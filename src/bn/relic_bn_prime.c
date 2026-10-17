@@ -837,8 +837,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 		do {
 			/* Generate two large primes s and t, each on its own, since
 			 * retrying both until both are prime squares the number of
-			 * candidates. The basic method avoids recursing through
-			 * bn_gen_prime() when it selects this function. */
+			 * candidates. */
 			bn_gen_prime_basic(s, bits / 2 - RLC_DIG / 2);
 			bn_gen_prime_basic(t, bits / 2 - RLC_DIG / 2);
 			bn_rand(a, RLC_POS, bits / 2 - bn_bits(t) - 1);

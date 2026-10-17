@@ -178,15 +178,6 @@
 /** Chosen multiple precision greatest common divisor method. */
 #define BN_GCD   @BN_GCD@
 
-/** Basic prime generation. */
-#define BASIC    1
-/** Safe prime generation. */
-#define SAFEP    2
-/** Strong prime generation. */
-#define STRON    3
-/** Chosen prime generation algorithm. */
-#define BN_GEN   @BN_GEN@
-
 /** Multiple precision arithmetic method */
 #define BN_METHD "@BN_METHD@"
 
