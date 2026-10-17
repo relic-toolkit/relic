@@ -284,21 +284,77 @@ static int ecies(void) {
 
 #endif
 
+#if EC_CUR == EC_PRIME && FP_PRIME == 256
+
+/*
+ * Test vectors for deterministic ECDSA on NIST P-256 taken from RFC 6979,
+ * Appendix A.2.5, for the messages "sample" and "test".
+ */
+#define ECDSA_D	\
+	"C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721"
+
+#if MD_MAP == MD_SH224
+#define ECDSA_R1	\
+	"53B2FFF5D1752B2C689DF257C04C40A587FABABB3F6FC2702F1343AF7CA9AA3F"
+#define ECDSA_S1	\
+	"B9AFB64FDC03DC1A131C7D2386D11E349F070AA432A4ACC918BEA988BF75C74C"
+#define ECDSA_R2	\
+	"C37EDB6F0AE79D47C3C27E962FA269BB4F441770357E114EE511F662EC34A692"
+#define ECDSA_S2	\
+	"C820053A05791E521FCAAD6042D40AEA1D6B1A540138558F47D0719800E18F2D"
+#elif MD_MAP == MD_SH256
+#define ECDSA_R1	\
+	"EFD48B2AACB6A8FD1140DD9CD45E81D69D2C877B56AAF991C34D0EA84EAF3716"
+#define ECDSA_S1	\
+	"F7CB1C942D657C41D436C7A1B6E29F65F3E900DBB9AFF4064DC4AB2F843ACDA8"
+#define ECDSA_R2	\
+	"F1ABB023518351CD71D881567B1EA663ED3EFCF6C5132B354F28D3B0B7D38367"
+#define ECDSA_S2	\
+	"019F4113742A2B14BD25926B49C649155F267E60D3814B4C0CC84250E46F0083"
+#elif MD_MAP == MD_SH384
+#define ECDSA_R1	\
+	"0EAFEA039B20E9B42309FB1D89E213057CBF973DC0CFC8F129EDDDC800EF7719"
+#define ECDSA_S1	\
+	"4861F0491E6998B9455193E34E7B0D284DDD7149A74B95B9261F13ABDE940954"
+#define ECDSA_R2	\
+	"83910E8B48BB0C74244EBDF7F07A1C5413D61472BD941EF3920E623FBCCEBEB6"
+#define ECDSA_S2	\
+	"8DDBEC54CF8CD5874883841D712142A56A8D0F218F5003CB0296B6B509619F2C"
+#elif MD_MAP == MD_SH512
+#define ECDSA_R1	\
+	"8496A60B5E9B47C825488827E0495B0E3FA109EC4568FD3F8D1097678EB97F00"
+#define ECDSA_S1	\
+	"2362AB1ADBE2B8ADF9CB9EDAB740EA6049C028114F2460F96554F61FAE3302FE"
+#define ECDSA_R2	\
+	"461D93F31B6540894788FD206C07CFA0CC35F46FA3C91816FFF1040AD1581A04"
+#define ECDSA_S2	\
+	"39AF9F15DE0DB8D97E72719C74820D304CE5226E32DEDAE67519E840D1194E55"
+#endif
+
+#endif
+
 static int ecdsa(void) {
 	int code = RLC_ERR;
-	bn_t d, r, s;
+	bn_t d, r, s, t, u;
 	ec_t q;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
+#if defined(ECDSA_R1)
+	int id;
+#endif
 
 	bn_null(d);
 	bn_null(r);
 	bn_null(s);
+	bn_null(t);
+	bn_null(u);
 	ec_null(q);
 
 	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		bn_new(s);
+		bn_new(t);
+		bn_new(u);
 		ec_new(q);
 
 		TEST_CASE("ecdsa signature is correct") {
@@ -321,6 +377,49 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
 		}
 		TEST_END;
+
+		TEST_CASE("ecdsa deterministic signature is correct") {
+			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
+			TEST_ASSERT(cp_ecdsa_sig_det(r, s, m, sizeof(m), 0, d) == RLC_OK,
+					end);
+			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 1, end);
+			TEST_ASSERT(cp_ecdsa_sig_det(t, u, m, sizeof(m), 0, d) == RLC_OK,
+					end);
+			TEST_ASSERT(bn_cmp(r, t) == RLC_EQ && bn_cmp(s, u) == RLC_EQ, end);
+			md_map(h, m, sizeof(m));
+			TEST_ASSERT(cp_ecdsa_sig_det(t, u, h, RLC_MD_LEN, 1, d) == RLC_OK,
+					end);
+			TEST_ASSERT(bn_cmp(r, t) == RLC_EQ && bn_cmp(s, u) == RLC_EQ, end);
+			m[0] ^= 1;
+			TEST_ASSERT(cp_ecdsa_sig_det(t, u, m, sizeof(m), 0, d) == RLC_OK,
+					end);
+			TEST_ASSERT(bn_cmp(r, t) != RLC_EQ, end);
+			TEST_ASSERT(cp_ecdsa_ver(t, u, m, sizeof(m), 0, q) == 1, end);
+		}
+		TEST_END;
+
+#if defined(ECDSA_R1)
+		id = ep_param_get();
+		ep_param_set(NIST_P256);
+		TEST_CASE("ecdsa deterministic signature matches rfc 6979") {
+			bn_read_str(d, ECDSA_D, strlen(ECDSA_D), 16);
+			ec_mul_gen(q, d);
+			TEST_ASSERT(cp_ecdsa_sig_det(r, s, (const uint8_t *)"sample", 6,
+					0, d) == RLC_OK, end);
+			bn_read_str(t, ECDSA_R1, strlen(ECDSA_R1), 16);
+			bn_read_str(u, ECDSA_S1, strlen(ECDSA_S1), 16);
+			TEST_ASSERT(bn_cmp(r, t) == RLC_EQ && bn_cmp(s, u) == RLC_EQ, end);
+			TEST_ASSERT(cp_ecdsa_sig_det(r, s, (const uint8_t *)"test", 4,
+					0, d) == RLC_OK, end);
+			bn_read_str(t, ECDSA_R2, strlen(ECDSA_R2), 16);
+			bn_read_str(u, ECDSA_S2, strlen(ECDSA_S2), 16);
+			TEST_ASSERT(bn_cmp(r, t) == RLC_EQ && bn_cmp(s, u) == RLC_EQ, end);
+			TEST_ASSERT(cp_ecdsa_ver(r, s, (const uint8_t *)"test", 4, 0,
+					q) == 1, end);
+		}
+		TEST_END;
+		ep_param_set(id);
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -331,6 +430,8 @@ static int ecdsa(void) {
 	bn_free(d);
 	bn_free(r);
 	bn_free(s);
+	bn_free(t);
+	bn_free(u);
 	ec_free(q);
 	return code;
 }

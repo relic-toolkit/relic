@@ -3713,6 +3713,7 @@
 #undef cp_ecies_dec
 #undef cp_ecdsa_gen
 #undef cp_ecdsa_sig
+#undef cp_ecdsa_sig_det
 #undef cp_ecdsa_ver
 #undef cp_ecss_gen
 #undef cp_ecss_sig
@@ -3893,6 +3894,7 @@
 #define cp_ecies_dec 	RLC_PREFIX(cp_ecies_dec)
 #define cp_ecdsa_gen 	RLC_PREFIX(cp_ecdsa_gen)
 #define cp_ecdsa_sig 	RLC_PREFIX(cp_ecdsa_sig)
+#define cp_ecdsa_sig_det 	RLC_PREFIX(cp_ecdsa_sig_det)
 #define cp_ecdsa_ver 	RLC_PREFIX(cp_ecdsa_ver)
 #define cp_ecss_gen 	RLC_PREFIX(cp_ecss_gen)
 #define cp_ecss_sig 	RLC_PREFIX(cp_ecss_sig)
