@@ -1664,8 +1664,9 @@ static int square_root(void) {
 		} TEST_END;
 
 		TEST_CASE("modular square root is correct for a prime one mod four") {
+			/* Safe primes are all three mod four, so avoid them as default. */
 			do {
-				bn_gen_prime(p, RLC_BN_BITS / 4);
+				bn_gen_prime_basic(p, RLC_BN_BITS / 4);
 				bn_mod_dig(&d, p, 4);
 			} while (d != 1);
 			bn_rand_mod(a, p);
@@ -2460,13 +2461,13 @@ static int digit(void) {
 
 static int prime(void) {
 	int code = RLC_ERR;
-	bn_t p, q;
+	bn_t p, q, r;
 	uint8_t msg[16];
 
-	bn_null_all(p, q);
+	bn_null_all(p, q, r);
 
 	RLC_TRY {
-		bn_new_all(p, q);
+		bn_new_all(p, q, r);
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
@@ -2496,6 +2497,58 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("chain prime generation is consistent") {
+			for (size_t k = 1; k <= 3; k++) {
+				TEST_ASSERT(bn_gen_prime_chain(p, q, RLC_BN_BITS / 4,
+						k) == RLC_OK, end);
+				TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
+				TEST_ASSERT(bn_get_bit(p, RLC_BN_BITS / 4 - 2) == 1, end);
+				/* Walk the chain from its first term to its last one. */
+				for (size_t l = 1; l < k; l++) {
+					TEST_ASSERT(bn_is_prime(q) == 1, end);
+					bn_dbl(q, q);
+					bn_add_dig(q, q, 1);
+				}
+				TEST_ASSERT(bn_is_prime(q) == 1, end);
+				TEST_ASSERT(bn_cmp(q, p) == RLC_EQ, end);
+			}
+			/* The shortest prime with the top two bits set. */
+			TEST_ASSERT(bn_gen_prime_chain(p, NULL, 2, 1) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp_dig(p, 3) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_ONCE("next prime agrees with a naive search") {
+			/* Small values cover sieving primes close to the candidates. */
+			bn_zero(r);
+			for (int k = 0; k < 2048; k++) {
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+				bn_add_dig(r, r, 1);
+			}
+			for (int k = 0; k < 4; k++) {
+				bn_rand(r, RLC_POS, RLC_BN_BITS / 8);
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("chain prime generation rejects invalid parameters") {
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 16, 0));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 1, 1));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 15, 2));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		} TEST_END;
+
 		TEST_ONCE("strong prime generation is consistent") {
 			/* Strong primes need several prime searches, so keep them smaller. */
 			bn_gen_prime_stron(p, RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG));
@@ -2505,7 +2558,8 @@ static int prime(void) {
 
 		TEST_ONCE("prime generation with a close prime factor terminates") {
 			for (int k = 1; k <= 2; k++) {
-				bn_gen_prime_factor(q, p, 30, 30 + k);
+				TEST_ASSERT(bn_gen_prime_factor(q, p, 30, 30 + k) == RLC_OK,
+						end);
 				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
 				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
 				bn_sub_dig(p, p, 1);
@@ -2558,7 +2612,7 @@ static int prime(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free_all(p, q);
+	bn_free_all(p, q, r);
 	return code;
 }
 
@@ -2755,7 +2809,8 @@ static int factor(void) {
 		bn_new_all(p, q, n);
 
 		TEST_ONCE("integer factorization is consistent") {
-			bn_gen_prime(p, 16);
+			/* The factor is short, so avoid strong primes as the default. */
+			bn_gen_prime_basic(p, 16);
 			bn_rand(n, RLC_POS, RLC_BN_BITS - 16);
 			bn_mul(n, n, p);
 			if (bn_factor(q, n) == 1) {

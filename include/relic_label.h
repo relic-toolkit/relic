@@ -308,6 +308,7 @@
 #undef bn_gen_prime_basic
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
+#undef bn_gen_prime_chain
 #undef bn_gen_prime_factor
 #undef bn_next_prime
 #undef bn_factor
@@ -443,6 +444,7 @@
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)
+#define bn_gen_prime_chain 	RLC_PREFIX(bn_gen_prime_chain)
 #define bn_gen_prime_factor 	RLC_PREFIX(bn_gen_prime_factor)
 #define bn_next_prime 	RLC_PREFIX(bn_next_prime)
 #define bn_factor 	RLC_PREFIX(bn_factor)

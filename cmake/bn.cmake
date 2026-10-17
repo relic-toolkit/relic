@@ -34,11 +34,6 @@ message("      BN_METHD=BINAR    Binary GCD algorithm.")
 message("      BN_METHD=LEHME    Lehmer's fast GCD algorithm.\n")
 message("      BN_METHD=LOWER    Pass GCD to the lower level.\n")
 
-message("      Prime generation:")
-message("      BN_METHD=BASIC    Basic prime generation.")
-message("      BN_METHD=SAFEP    Safe prime generation.")
-message("      BN_METHD=STRON    Strong prime generation.\n")
-
 # Choose the arithmetic precision.
 if (NOT BN_PRECI)
 	set(BN_PRECI 2048)
@@ -53,17 +48,20 @@ set(BN_KARAT ${BN_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
 # Choose the arithmetic methods.
 if (NOT BN_METHD)
-	set(BN_METHD "COMBA;COMBA;MONTY;SLIDE;BASIC;BASIC")
+	set(BN_METHD "COMBA;COMBA;MONTY;SLIDE;BASIC")
 endif(NOT BN_METHD)
 list(LENGTH BN_METHD BN_LEN)
-if (BN_LEN LESS 6)
+if (BN_LEN LESS 5)
 	message(FATAL_ERROR "Incomplete BN_METHD specification: ${BN_METHD}")
-endif(BN_LEN LESS 6)
+endif(BN_LEN LESS 5)
+if (BN_LEN GREATER 5)
+	message(FATAL_ERROR "Too many entries in BN_METHD, prime generation is no "
+		"longer configurable: ${BN_METHD}")
+endif(BN_LEN GREATER 5)
 
 list(GET BN_METHD 0 BN_MUL)
 list(GET BN_METHD 1 BN_SQR)
 list(GET BN_METHD 2 BN_MOD)
 list(GET BN_METHD 3 BN_MXP)
 list(GET BN_METHD 4 BN_GCD)
-list(GET BN_METHD 5 BN_GEN)
 set(BN_METHD ${BN_METHD} CACHE STRING "Method for multiple precision arithmetic.")
