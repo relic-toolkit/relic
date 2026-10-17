@@ -834,6 +834,9 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/* Only the curves that hash with an isogeny map need these. */
+#if FP_PRIME == 381
+
 /**
  * Reads a sequence of polynomial coefficients from semicolon separated string.
  *
@@ -875,8 +878,7 @@ static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
  * @param[in] yn_str			- the string representing the y numerator coefficients.
  * @param[in] yd_str			- the string representing the y denominator coefficients.
  */
-/* declaring this function inline suppresses unused function warnings */
-static inline void ep_param_set_ctmap(const char *a_str, const char *b_str,
+static void ep_param_set_ctmap(const char *a_str, const char *b_str,
 		const char *xn_str, const char *xd_str, const char *yn_str,
 		const char *yd_str, const char *u_str) {
 	/* coefficients of isogenous curve */
@@ -891,6 +893,8 @@ static inline void ep_param_set_ctmap(const char *a_str, const char *b_str,
 	coeffs->deg_yn = ep_param_get_coeffs(coeffs->yn, yn_str);
 	coeffs->deg_yd = ep_param_get_coeffs(coeffs->yd, yd_str);
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */

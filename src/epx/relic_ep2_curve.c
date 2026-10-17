@@ -350,6 +350,9 @@
                         CURVE##_ISO2_B1, CURVE##_ISO2_XN, CURVE##_ISO2_XD,	\
 						CURVE##_ISO2_YN, CURVE##_ISO2_YD)
 
+/* Only the curves that hash with an isogeny map need these. */
+#if FP_PRIME == 381
+
 /**
  * Reads a sequence of polynomial coefficients from semicolon separated string.
  *
@@ -407,11 +410,9 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
  * @param[in] yn_str			- the string representing the y numerator coefficients.
  * @param[in] yd_str			- the string representing the y denominator coefficients.
  */
-/* declaring this function inline suppresses unused function warnings */
-static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
-									   const char *b0_str, const char *b1_str,
-									   const char *xn_str, const char *xd_str,
-									   const char *yn_str, const char *yd_str) {
+static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
+		const char *b0_str, const char *b1_str, const char *xn_str,
+		const char *xd_str, const char *yn_str, const char *yd_str) {
 	iso2_t iso = ep2_curve_get_iso();
 
 	/* coefficients of isogenous curve */
@@ -426,6 +427,8 @@ static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 	iso->deg_yn = ep2_curve_get_coeffs(iso->yn, yn_str);
 	iso->deg_yd = ep2_curve_get_coeffs(iso->yd, yd_str);
 }
+
+#endif
 
 /**
  * Precomputes constants used by the ep2_map function.
