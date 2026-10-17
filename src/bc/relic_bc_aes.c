@@ -102,7 +102,7 @@ int bc_aes_cbc_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 			memcpy(cipher_inst.IV, out + full - RLC_BC_LEN, RLC_BC_LEN);
 		}
 		memcpy(block, in + full, in_len - full);
-		memset(block + in_len - full, (int)pad, pad);
+		memset(block + (in_len - full), (int)pad, pad);
 		if (result == RLC_OK && blockEncrypt(&cipher_inst, &key_inst, block,
 				8 * RLC_BC_LEN, out + full) != 8 * RLC_BC_LEN) {
 			result = RLC_ERR;
