@@ -204,20 +204,33 @@ macro(LINK_LIBS LIBRARY)
 	endif()
 endmacro()
 
-function(AMALGAMATE output inputFiles)
-	file(WRITE "${output}" "// This file is an automatic amalgamation of all relic source files.\n" )
-	FOREACH(file ${inputFiles})
-		file(APPEND "${output}" "#include \"${file}\"\n")
-	ENDFOREACH()
+# Writes a file that includes every C source, in the build tree so that build
+# directories do not overwrite each other, and only when its contents change,
+# so that running CMake again does not rebuild everything.
+function(AMALGAMATE output)
+	set(TEXT "// An automatic amalgamation of all relic source files.\n")
+	foreach(file ${ARGN})
+		get_filename_component(file "${file}" ABSOLUTE
+			BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+		string(APPEND TEXT "#include \"${file}\"\n")
+	endforeach()
+	file(WRITE "${output}.tmp" "${TEXT}")
+	configure_file("${output}.tmp" "${output}" COPYONLY)
 endfunction()
 
 if(AMALG)
-	AMALGAMATE("relic-all.c" "${RELIC_SRCS}${ARITH_OBJS}")
+	# Assembly sources cannot be included in a C file, so they stay apart.
+	set(AMALG_SRCS ${RELIC_SRCS})
+	if(ARITH_ASMS)
+		list(REMOVE_ITEM AMALG_SRCS ${ARITH_ASMS})
+	endif()
+	AMALGAMATE("${CMAKE_CURRENT_BINARY_DIR}/relic-all.c" ${AMALG_SRCS})
+	set(AMALG_SRCS "${CMAKE_CURRENT_BINARY_DIR}/relic-all.c" ${ARITH_ASMS})
 endif(AMALG)
 
 if (SHLIB)
 	if (AMALG)
-		add_library(${RELIC} SHARED "relic-all.c")
+		add_library(${RELIC} SHARED ${AMALG_SRCS})
 	else()
 		add_library(${RELIC} SHARED ${RELIC_SRCS} ${ARITH_OBJS})
 	endif()
@@ -225,13 +238,19 @@ if (SHLIB)
 	add_dependencies(${RELIC} arith_objs)
 	target_link_libraries(${RELIC} ${ARITH_LIBS})
 	link_libs(${RELIC})
-	target_include_directories(${RELIC} PUBLIC ${INCLUDE})
-	install(TARGETS ${RELIC} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+	target_include_directories(${RELIC} PUBLIC
+		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+		"$<INSTALL_INTERFACE:include/${RELIC}>"
+		PRIVATE "${PROJECT_SOURCE_DIR}/include/low"
+		"${PROJECT_SOURCE_DIR}/src/tmpl")
+	install(TARGETS ${RELIC} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin)
 endif()
 
 if (STLIB)
 	if (AMALG)
-		add_library(${RELIC_S} STATIC "relic-all.c")
+		add_library(${RELIC_S} STATIC ${AMALG_SRCS})
 	else()
 		add_library(${RELIC_S} STATIC ${RELIC_SRCS} ${ARITH_OBJS})
 	endif()
@@ -239,6 +258,11 @@ if (STLIB)
 	add_dependencies(${RELIC_S} arith_objs)
 	target_link_libraries(${RELIC_S} ${ARITH_LIBS})
 	link_libs(${RELIC_S})
-	target_include_directories(${RELIC_S} PUBLIC ${INCLUDE})
+	target_include_directories(${RELIC_S} PUBLIC
+		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+		"$<INSTALL_INTERFACE:include/${RELIC}>"
+		PRIVATE "${PROJECT_SOURCE_DIR}/include/low"
+		"${PROJECT_SOURCE_DIR}/src/tmpl")
 	install(TARGETS ${RELIC_S} ARCHIVE DESTINATION lib)
 endif(STLIB)
