@@ -43,6 +43,6 @@ dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 }
 
 dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	/* RLC_GMP returns the bits shifted out in the top of the digit. */
+	/* GMP returns the bits shifted out in the top of the digit. */
 	return mpn_rshift(c, a, RLC_FP_DIGS, bits) >> (RLC_DIG - bits);
 }

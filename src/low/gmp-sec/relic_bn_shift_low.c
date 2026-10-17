@@ -49,7 +49,7 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
-	/* RLC_GMP needs a nonzero count; the selection below discards it. */
+	/* GMP needs a nonzero count; the selection below discards it. */
 	carry = mpn_lshift((mp_ptr)t, (mp_srcptr)a, size, bits | (bits == 0));
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, bits > 0);
@@ -63,7 +63,7 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
 
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
-	/* RLC_GMP needs a nonzero count; the selection below discards it. */
+	/* GMP needs a nonzero count; the selection below discards it. */
 	carry = mpn_rshift((mp_ptr)t, (mp_srcptr)a, size, bits | (bits == 0));
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, bits > 0);
@@ -79,7 +79,7 @@ dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	mask = RLC_MASK(bits);
 	r = a[size - 1] & mask;
 	c[size - 1] = (dis_t)a[size - 1] >> bits;
-	/* RLC_GMP requires at least one digit and a nonzero shift. */
+	/* GMP requires at least one digit and a nonzero shift. */
 	if (size == 1 || bits == 0) {
 		if (bits == 0) {
 			dv_copy(c, a, size - 1);

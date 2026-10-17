@@ -81,7 +81,7 @@ enum errors {
 };
 
 /**
- * Truncate file name if verbosity is turned off. On RLC_AVR the name is kept in
+ * Truncate file name if verbosity is turned off. On AVR the name is kept in
  * program memory, where it cannot be searched with strrchr().
  */
 #if defined(RLC_VERBS) || RLC_ARCH == RLC_AVR

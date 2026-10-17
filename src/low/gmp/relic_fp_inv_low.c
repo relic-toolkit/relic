@@ -42,7 +42,7 @@
 void fp_invm_low(dig_t *c, const dig_t *a) {
 	mp_size_t cn;
 	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
-	/* RLC_GMP needs one more limb than the modulus for the cofactor. */
+	/* GMP needs one more limb than the modulus for the cofactor. */
 	rlc_align dig_t w[RLC_FP_DIGS + 1];
 
 #if FP_RDC == FP_MONTY

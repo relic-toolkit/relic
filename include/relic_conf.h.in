@@ -72,13 +72,13 @@
 /** Number of available cores. */
 #define RLC_CORES    @CORES@
 
-/** Atmel RLC_AVR ATMega128 8-bit architecture. */
+/** Atmel AVR ATMega128 8-bit architecture. */
 #define RLC_AVR      1
 /** MSP430 16-bit architecture. */
 #define RLC_MSP      2
-/** RLC_ARM 32-bit architecture. */
+/** ARM 32-bit architecture. */
 #define RLC_ARM      3
-/** RLC_ARM 64-bit architecture. */
+/** ARM 64-bit architecture. */
 #define RLC_A64      4
 /** Intel x86-compatible 32-bit architecture. */
 #define RLC_X86      5
@@ -126,9 +126,9 @@
 
 /** Easy C-only backend. */
 #define RLC_EASY	 1
-/** RLC_GMP backend. */
+/** GMP backend. */
 #define RLC_GMP      2
-/** RLC_GMP constant-time backend. */
+/** GMP constant-time backend. */
 #define RLC_GMP_SEC  3
 /** Arithmetic backend. */
 #define RLC_ARITH    RLC_@ARITH@
@@ -631,7 +631,7 @@
 #define RLC_HPROC    2
 /** Per-thread high-resolution timer. */
 #define RLC_HTHRD    3
-/** RLC_ANSI-compatible timer. */
+/** ANSI-compatible timer. */
 #define RLC_ANSI     5
 /** Cycle-counting timer. */
 #define RLC_CYCLE    6
