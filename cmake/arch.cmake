@@ -40,16 +40,11 @@ if(WORD AND NOT WSIZE)
 endif()
 
 if(NOT WSIZE)
-	# Default is 64 bits. The flags are cached together with the word size,
-	# so that later runs of CMake keep them.
+	# Default is 64 bits.
 	set(WSIZE 64)
-	# Only x86 compilers take -m64 and -m32, which GCC for ARM rejects.
-	if(ARCH STREQUAL "X64")
-		set(AFLAGS "-m64" CACHE STRING "Architecture flags")
-	elseif(ARCH STREQUAL "A64")
+	if(ARCH STREQUAL "A64")
 		set(WSIZE 64)
 	elseif(ARCH STREQUAL "X86")
-		set(AFLAGS "-m32" CACHE STRING "Architecture flags")
 		set(WSIZE 32)
 	elseif(ARCH STREQUAL "ARM")
 		set(WSIZE 32)
@@ -61,6 +56,16 @@ if(NOT WSIZE)
 endif()
 
 set(WSIZE ${WSIZE} CACHE STRING "Processor word size")
+
+# Only x86 compilers take -m64 and -m32, which GCC for ARM rejects. The flags
+# follow ARCH and WSIZE on every run, so that changing either takes effect.
+unset(AFLAGS CACHE)
+set(AFLAGS "")
+if(ARCH STREQUAL "X64" AND WSIZE EQUAL 64)
+	set(AFLAGS "-m64")
+elseif(ARCH STREQUAL "X86" AND WSIZE EQUAL 32)
+	set(AFLAGS "-m32")
+endif()
 
 if(NOT ALIGN)
 	set(ALIGN 1)
