@@ -41,8 +41,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_EXP == BASIC || !defined(STRIP)
-
 void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 	size_t l;
 	fb_t r;
@@ -82,10 +80,6 @@ void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if FB_EXP == SLIDE || !defined(STRIP)
-
 void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 	fb_t t[1 << (RLC_WIDTH - 1)], r;
 	uint8_t win[RLC_FB_BITS + 1];
@@ -97,7 +91,6 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 		fb_set_dig(c, 1);
 		return;
 	}
-
 
 	/* Initialize table. */
 	for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
@@ -149,10 +142,6 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if FB_EXP == MONTY || !defined(STRIP)
-
 void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 	fb_t t[2];
 
@@ -192,5 +181,3 @@ void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 		fb_free(t[0]);
 	}
 }
-
-#endif

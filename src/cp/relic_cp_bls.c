@@ -32,6 +32,88 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Aggregates signatures over the same message as in the Boneh-Drijvers-Neven
+ * scheme, with coefficients t_i = H(q_i || H(q_1 || ... || q_n)) that depend
+ * on the whole set of keys, so that rogue keys cannot cancel honest ones.
+ *
+ * @param[out] sig			- the aggregate signature, or NULL.
+ * @param[out] a			- the aggregate public key.
+ * @param[in] s				- the signatures to aggregate, or NULL.
+ * @param[in] q				- the public keys to aggregate.
+ * @param[in] n				- the number of public keys.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int bls_agg(g1_t sig, g2_t a, const g1_t s[], const g2_t q[],
+		size_t n) {
+	const size_t len = (n > 0 ? g2_size_bin(q[0], 1) : 0);
+	const size_t k = RLC_MIN(RLC_MD_LEN, RLC_CEIL(pc_param_level(), 8));
+	bn_t *t;
+	uint8_t d[RLC_MD_LEN], h[RLC_MD_LEN], *buf;
+	int result = RLC_OK;
+
+	if (n == 0) {
+		return RLC_ERR;
+	}
+	/* Invalid keys would make the coefficients and the aggregate useless. */
+	for (size_t i = 0; i < n; i++) {
+		if (!g2_is_valid(q[i])) {
+			return RLC_ERR;
+		}
+	}
+
+	t = RLC_ALLOCA(bn_t, n);
+	buf = RLC_ALLOCA(uint8_t, RLC_MAX(n * len, len + RLC_MD_LEN));
+	if (t == NULL || buf == NULL) {
+		RLC_FREE(t);
+		RLC_FREE(buf);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		bn_null(t[i]);
+	}
+
+	RLC_TRY {
+		for (size_t i = 0; i < n; i++) {
+			bn_new(t[i]);
+		}
+
+		/* Valid keys have compressed encodings of the same length. */
+		for (size_t i = 0; i < n; i++) {
+			g2_write_bin(buf + i * len, len, q[i], 1);
+		}
+		md_map(d, buf, n * len);
+		for (size_t i = 0; i < n; i++) {
+			g2_write_bin(buf, len, q[i], 1);
+			memcpy(buf + len, d, RLC_MD_LEN);
+			md_map(h, buf, len + RLC_MD_LEN);
+			bn_read_bin(t[i], h, k);
+		}
+
+		g2_mul_sim_lot(a, q, (const bn_t *)t, n);
+		if (sig != NULL) {
+			g1_mul_sim_lot(sig, s, (const bn_t *)t, n);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		for (size_t i = 0; i < n; i++) {
+			bn_free(t[i]);
+		}
+		RLC_FREE(t);
+		RLC_FREE(buf);
+	}
+	return result;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -103,11 +185,13 @@ int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 		g2_neg(r[1], r[1]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e) && g2_is_valid(q)) {
+		/* Torsion added to the signature would not change the pairing. */
+		if (gt_is_unity(e) && g1_is_valid(s) && g2_is_valid(q)) {
 			result = 1;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -120,44 +204,13 @@ int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 	return result;
 }
 
-int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q) {
-	bn_t t;
-	g1_t u;
-	g2_t p;
-	uint8_t h[RLC_MD_LEN], *buf = RLC_ALLOCA(uint8_t, g2_size_bin(q, 0));
-	int result = RLC_OK;
+int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s[], const g2_t q[],
+		size_t n) {
+	return bls_agg(sig, a, s, q, n);
+}
 
-	bn_null(t);
-	g1_null(u);
-	g2_null(p);
-
-	RLC_TRY {
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		bn_new(t);
-		g1_new(u);
-		g2_new(p);
-
-		md_map(h, buf, g2_size_bin(q, 0));
-		bn_read_bin(t, h, RLC_MIN(RLC_MD_LEN, RLC_CEIL(pc_param_level(), 8)));
-
-		g1_mul(u, s, t);
-		g1_add(sig, sig, u);
-
-		g2_mul(p, q, t);
-		g2_add(a, a, p);
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(t);
-		g1_free(u);
-		g2_free(p);
-		RLC_FREE(buf);
-	}
-	return result;
+int cp_bls_agg_key(g2_t a, const g2_t q[], size_t n) {
+	return bls_agg(NULL, a, NULL, q, n);
 }
 
 int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
@@ -167,22 +220,24 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	gt_t e;
 	int result = 0;
 
+	if (p == NULL || r == NULL) {
+		RLC_FREE(p);
+		RLC_FREE(r);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
 	gt_null(e);
+	for (size_t i = 0; i < size + 1; i++) {
+		g1_null(p[i]);
+		g2_null(r[i]);
+	}
 
 	RLC_TRY {
-		if (p == NULL || r == NULL) {
-			RLC_FREE(p);
-			RLC_FREE(r);
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		g1_null(p[0]);
-		g2_null(r[0]);
 		g1_new(p[0]);
 		g2_new(r[0]);
 		for (size_t i = 0; i < size; i++) {
-			g1_null(p[i + 1]);
 			g1_new(p[i + 1]);
-			g2_null(r[i + 1]);
 			g2_new(r[i + 1]);
 			g1_map(p[i + 1], m[i], l[i]);
 			g2_copy(r[i + 1], q[i]);
@@ -194,14 +249,21 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 		g2_neg(r[0], r[0]);
 
 		pc_map_sim(e, p, r, size + 1);
-		if (gt_is_unity(e)) {
+		if (gt_is_unity(e) && g1_is_valid(s)) {
 			result = 1;
 		}
 		for (size_t i = 0; i < size; i++) {
 			result = result & g2_is_valid(q[i]);
+			/* Messages must be distinct, or rogue keys forge aggregates. */
+			for (size_t j = 0; j < i; j++) {
+				if (l[i] == l[j] && memcmp(m[i], m[j], l[i]) == 0) {
+					result = 0;
+				}
+			}
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

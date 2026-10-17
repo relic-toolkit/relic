@@ -26,24 +26,27 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field addition and subtraction
- * functions.
+ * Implementation of the low-level prime field shifting functions.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
-.text
-.global fp_rsh1_low
-.global fp_lsh1_low
+#include "relic_fp_low.h"
+#include "macro.s"
 
-fp_rsh1_low:
+.text
+.global cdecl(fp_rsh1_low)
+.global cdecl(fp_lsh1_low)
+
+cdecl(fp_rsh1_low):
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
 	movq	40(%rsi), %rcx
+	movq	%r8, %rdx
+	andq	$1, %rdx
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
@@ -56,15 +59,18 @@ fp_rsh1_low:
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
 	movq	%rcx,40(%rdi)
+	movq	%rdx, %rax
 	ret
 
-fp_lsh1_low:
+cdecl(fp_lsh1_low):
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
 	movq	40(%rsi), %rcx
+	movq	%rcx, %rdx
+	shrq	$63, %rdx
 	shld	$1, %rax, %rcx
 	shld	$1, %r11, %rax
 	shld	$1, %r10, %r11
@@ -77,5 +83,5 @@ fp_lsh1_low:
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
 	movq	%rcx,40(%rdi)
-	xorq	%rax, %rax
+	movq	%rdx, %rax
 	ret

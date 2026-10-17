@@ -63,7 +63,7 @@ static int memory(void) {
 
 static int util(void) {
 	uint_t bits;
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
@@ -71,15 +71,12 @@ static int util(void) {
 	bn_t c, e;
 	dig_t d;
 
-	fp_null(a);
-	fp_null(b);
-	bn_null(c);
+	fp_null_all(a, b);
+	bn_null_all(c, e);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		bn_new(c);
-		bn_new(e);
+		fp_new_all(a, b);
+		bn_new_all(c, e);
 
 		TEST_CASE("copy and comparison are consistent") {
 			fp_rand(a);
@@ -166,8 +163,13 @@ static int util(void) {
 				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			}
 			fp_write_bin(bin, sizeof(bin), a);
-			fp_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp_read_bin(b, bin, sizeof(bin)) == RLC_OK, end);
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			/* Values that are not reduced modulo p are rejected. */
+			memset(bin, 0xFF, sizeof(bin));
+			r = RLC_ERR;
+			TEST_ERR(r = fp_read_bin(b, bin, sizeof(bin)));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 
@@ -194,16 +196,67 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp_dig(e, c->dp[0]) == RLC_EQ, end);
 		}
 		TEST_END;
+
+		TEST_CASE("parity test is correct") {
+			fp_rand(a);
+			fp_prime_back(c, a);
+			TEST_ASSERT(fp_is_even(a) == bn_is_even(c), end);
+			fp_set_dig(a, 2);
+			TEST_ASSERT(fp_is_even(a) == 1, end);
+			fp_set_dig(a, 3);
+			TEST_ASSERT(fp_is_even(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("normalization is correct") {
+			fp_rand(a);
+			fp_norm(b, a);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			/* A representative above p, when it fits, normalizes back. */
+			if (fp_addn_low(b, a, fp_prime_get()) == 0) {
+				fp_norm(b, b);
+				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("prime field constants are correct") {
+			bn_read_raw(c, fp_prime_get(), RLC_FP_DIGS);
+			bn_mod_dig(&d, c, 8);
+			TEST_ASSERT(d == fp_prime_get_mod8(), end);
+			/* p - 1 = 2^f * q with q odd. */
+			bn_sub_dig(e, c, 1);
+			bn_rsh(e, e, fp_prime_get_2ad());
+			TEST_ASSERT(bn_is_even(e) == 0, end);
+			bn_lsh(e, e, fp_prime_get_2ad());
+			bn_add_dig(e, e, 1);
+			TEST_ASSERT(bn_cmp(e, c) == RLC_EQ, end);
+			fp_set_dig(a, -fp_prime_get_qnr());
+			fp_neg(a, a);
+			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+			/* A 2^f-root of unity, primitive when p = 1 mod 4. */
+			dv_copy(a, fp_prime_get_srt(), RLC_FP_DIGS);
+			for (int k = 1; k < fp_prime_get_2ad(); k++) {
+				fp_sqr(a, a);
+			}
+			fp_set_dig(b, 1);
+			if (fp_prime_get_mod8() % 4 == 1) {
+				fp_neg(b, b);
+				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+				fp_neg(b, b);
+			}
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	bn_free(c);
-	bn_free(e);
+	fp_free_all(a, b);
+	bn_free_all(c, e);
 	return code;
 }
 
@@ -211,18 +264,10 @@ static int addition(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d, e;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
-	fp_null(e);
+	fp_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
-		fp_new(e);
+		fp_new_all(a, b, c, d, e);
 
 		TEST_CASE("addition is commutative") {
 			fp_rand(a);
@@ -257,7 +302,7 @@ static int addition(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -267,7 +312,7 @@ static int addition(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -282,11 +327,7 @@ static int addition(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
-	fp_free(e);
+	fp_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -294,16 +335,10 @@ static int subtraction(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 
 		TEST_CASE("subtraction is anti-commutative") {
 			fp_rand(a);
@@ -330,7 +365,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -340,7 +375,7 @@ static int subtraction(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -350,7 +385,7 @@ static int subtraction(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
@@ -359,7 +394,7 @@ static int subtraction(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
@@ -373,10 +408,7 @@ static int subtraction(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	return code;
 }
 
@@ -384,20 +416,10 @@ static int multiplication(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d, e, f;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
-	fp_null(e);
-	fp_null(f);
+	fp_null_all(a, b, c, d, e, f);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
-		fp_new(e);
-		fp_new(f);
+		fp_new_all(a, b, c, d, e, f);
 
 		TEST_CASE("multiplication is commutative") {
 			fp_rand(a);
@@ -444,7 +466,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_MUL == BASIC || !defined(STRIP)
+#if FP_MUL == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -455,7 +477,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FP_MUL == INTEG || !defined(STRIP)
+#if FP_MUL == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -466,7 +488,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FP_MUL == COMBA || !defined(STRIP)
+#if FP_MUL == FP_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -477,7 +499,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FP_KARAT > 0 || !defined(STRIP)
+#if FP_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -493,12 +515,7 @@ static int multiplication(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
-	fp_free(e);
-	fp_free(f);
+	fp_free_all(a, b, c, d, e, f);
 	return code;
 }
 
@@ -506,14 +523,10 @@ static int squaring(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("squaring is correct") {
 			fp_rand(a);
@@ -522,7 +535,7 @@ static int squaring(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_SQR == BASIC || !defined(STRIP)
+#if FP_SQR == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -531,7 +544,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FP_SQR == INTEG || !defined(STRIP)
+#if FP_SQR == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -540,7 +553,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FP_SQR == COMBA || !defined(STRIP)
+#if FP_SQR == FP_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -549,7 +562,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FP_KARAT > 0 || !defined(STRIP)
+#if FP_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -563,9 +576,7 @@ static int squaring(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -573,14 +584,10 @@ static int doubling_halving_trisecting(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("doubling is consistent") {
 			fp_rand(a);
@@ -589,7 +596,7 @@ static int doubling_halving_trisecting(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
@@ -598,7 +605,7 @@ static int doubling_halving_trisecting(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
@@ -615,7 +622,7 @@ static int doubling_halving_trisecting(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
@@ -624,7 +631,7 @@ static int doubling_halving_trisecting(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == FP_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
@@ -649,9 +656,7 @@ static int doubling_halving_trisecting(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -659,14 +664,10 @@ static int shifting(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("shifting by 1 bit is consistent") {
 			fp_rand(a);
@@ -723,25 +724,21 @@ static int shifting(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
 static int reduction(void) {
 	int code = RLC_ERR;
 	fp_t a, b;
-	dv_t t;
+	dv_t t, u;
 
-	fp_null(a);
-	fp_null(b);
-	dv_null(t);
+	fp_null_all(a, b);
+	dv_null_all(t, u);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		dv_new(t);
+		fp_new_all(a, b);
+		dv_new_all(t, u);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
 		TEST_CASE("modular reduction is correct") {
@@ -753,7 +750,7 @@ static int reduction(void) {
 			TEST_ASSERT(fp_is_zero(b) == 1 || fp_is_zero(t) == 1, end);
 		} TEST_END;
 
-#if FP_RDC == BASIC || !defined(STRIP)
+#if FP_RDC == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
@@ -762,17 +759,41 @@ static int reduction(void) {
 		} TEST_END;
 #endif
 
-#if FP_RDC == MONTY || !defined(STRIP)
+#if FP_RDC == FP_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_monty(b, t);
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
+
+		TEST_CASE("basic montgomery modular reduction is correct") {
+			fp_rand(a);
+			fp_muln_low(t, a, fp_prime_get());
+			fp_rdc_monty_basic(b, t);
+			TEST_ASSERT(fp_is_zero(b), end);
+		} TEST_END;
+
+		TEST_CASE("comba montgomery modular reduction is correct") {
+			fp_rand(a);
+			fp_muln_low(t, a, fp_prime_get());
+			fp_rdc_monty_comba(b, t);
+			TEST_ASSERT(fp_is_zero(b), end);
+		} TEST_END;
+
+		TEST_CASE("montgomery modular reductions are consistent") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_muln_low(t, a, b);
+			dv_copy(u, t, 2 * RLC_FP_DIGS);
+			fp_rdc_monty_basic(a, t);
+			fp_rdc_monty_comba(b, u);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
 #endif
 
-#if FP_RDC == QUICK || !defined(STRIP)
 		if (fp_prime_get_sps(NULL) != NULL) {
+#if FP_RDC == FP_QUICK || !defined(RLC_STRIP)
 			TEST_CASE("fast modular reduction is correct") {
 				fp_rand(a);
 				fp_muln_low(t, a, fp_prime_get());
@@ -780,7 +801,21 @@ static int reduction(void) {
 				TEST_ASSERT(fp_is_zero(b), end);
 			}
 			TEST_END;
+#endif
 		}
+
+#if FP_RDC == FP_LOWER
+#if FP_RDC == FP_QUICK || !defined(RLC_STRIP)
+		TEST_CASE("lower modular reduction is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_muln_low(t, a, b);
+			dv_copy(u, t, 2 * RLC_FP_DIGS);
+			fp_rdc_quick(a, t);
+			fp_rdc_lower(b, u);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -788,9 +823,8 @@ static int reduction(void) {
 	}
 	code = RLC_OK;
   end:
-	fb_free(a);
-	fb_free(b);
-	dv_free(t);
+	fp_free_all(a, b);
+	dv_free_all(t, u);
 	return code;
 }
 
@@ -798,18 +832,10 @@ static int inversion(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d[2];
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d[0]);
-	fp_null(d[1]);
+	fp_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d[0]);
-		fp_new(d[1]);
+		fp_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -823,7 +849,7 @@ static int inversion(void) {
 			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_INV == BASIC || !defined(STRIP)
+#if FP_INV == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic inversion is correct") {
 			do {
 				fp_rand(a);
@@ -834,7 +860,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == BINAR || !defined(STRIP)
+#if FP_INV == FP_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary inversion is correct") {
 			do {
 				fp_rand(a);
@@ -845,7 +871,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == MONTY || !defined(STRIP)
+#if FP_INV == FP_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("montgomery inversion is correct") {
 			do {
 				fp_rand(a);
@@ -856,7 +882,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == EXGCD || !defined(STRIP)
+#if FP_INV == FP_EXGCD || !defined(RLC_STRIP)
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fp_rand(a);
@@ -867,7 +893,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == DIVST || !defined(STRIP)
+#if FP_INV == FP_DIVST || !defined(RLC_STRIP)
 		TEST_CASE("division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -878,7 +904,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == JMPDS || !defined(STRIP)
+#if FP_INV == FP_JMPDS || !defined(RLC_STRIP)
 		TEST_CASE("jump division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -889,7 +915,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == LOWER || !defined(STRIP)
+#if FP_INV == FP_LOWER
 		TEST_CASE("lower inversion is correct") {
 			do {
 				fp_rand(a);
@@ -919,11 +945,7 @@ static int inversion(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d[0]);
-	fp_free(d[1]);
+	fp_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -931,12 +953,10 @@ static int symbol(void) {
 	int code = RLC_ERR;
 	fp_t a, b;
 
-	fp_null(a);
-	fp_null(b);
+	fp_null_all(a, b);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
+		fp_new_all(a, b);
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
@@ -951,33 +971,33 @@ static int symbol(void) {
 		}
 		TEST_END;
 
-#if FP_SMB == BASIC || !defined(STRIP)
+#if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
 		} TEST_END;
 #endif
 
-#if FP_SMB == BINAR || !defined(STRIP)
+#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
 		} TEST_END;
 #endif
 
-#if FP_SMB == DIVST || !defined(STRIP)
+#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
 		} TEST_END;
 #endif
-#if FP_SMB == JMPDS || !defined(STRIP)
+#if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
 		TEST_CASE("jump division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
 		} TEST_END;
 #endif
-#if FP_SMB == LOWER || !defined(STRIP)
+#if FP_SMB == FP_LOWER
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
@@ -989,8 +1009,7 @@ static int symbol(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
+	fp_free_all(a, b);
 	return code;
 }
 
@@ -999,15 +1018,11 @@ static int exponentiation(void) {
 	fp_t a, b, c;
 	bn_t d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 	bn_null(d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 		bn_new(d);
 
 		TEST_CASE("exponentiation is correct") {
@@ -1032,7 +1047,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-#if FP_EXP == BASIC || !defined(STRIP)
+#if FP_EXP == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1043,7 +1058,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if FP_EXP == SLIDE || !defined(STRIP)
+#if FP_EXP == FP_SLIDE || !defined(RLC_STRIP)
 		TEST_CASE("sliding window exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1054,7 +1069,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if FP_EXP == MONTY || !defined(STRIP)
+#if FP_EXP == FP_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("constant-time exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
@@ -1064,15 +1079,30 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 #endif
+		TEST_CASE("lucas sequence is correct") {
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
+			/* For a = x + 1/x, V_d(a) = x^d + x^(-d). */
+			fp_inv(b, a);
+			fp_add(c, a, b);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp_luc(c, c, d);
+			fp_exp(a, a, d);
+			fp_inv(b, a);
+			fp_add(a, a, b);
+			TEST_ASSERT(fp_cmp(a, c) == RLC_EQ, end);
+			bn_zero(d);
+			fp_luc(c, a, d);
+			TEST_ASSERT(fp_cmp_dig(c, 2) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	bn_free(d);
 	return code;
 }
@@ -1081,14 +1111,10 @@ static int square_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp_zero(a);
@@ -1126,9 +1152,7 @@ static int square_root(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -1136,16 +1160,10 @@ static int cube_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 
 		TEST_CASE("cubic residuosity test is correct") {
 			fp_zero(a);
@@ -1202,10 +1220,7 @@ static int cube_root(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	return code;
 }
 
@@ -1215,17 +1230,11 @@ static int digit(void) {
 	dig_t g;
 	bn_t e;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 	bn_null(e);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 		bn_new(e);
 
 		TEST_CASE("addition of a single digit is consistent") {
@@ -1272,10 +1281,7 @@ static int digit(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	bn_free(e);
 	return code;
 }

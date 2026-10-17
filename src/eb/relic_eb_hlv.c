@@ -41,12 +41,10 @@
 void eb_hlv(eb_t r, const eb_t p) {
 	fb_t l, t;
 
-	fb_null(l);
-	fb_null(t);
+	fb_null_all(l, t);
 
 	RLC_TRY {
-		fb_new(l);
-		fb_new(t);
+		fb_new_all(l, t);
 
 		/* Solve l^2 + l = u + a. */
 		switch (eb_curve_opt_a()) {
@@ -66,7 +64,7 @@ void eb_hlv(eb_t r, const eb_t p) {
 
 		fb_slv(l, t);
 
-		if (p->coord == BASIC) {
+		if (p->coord == EC_AFFIN) {
 			/* Compute t = v + u * lambda. */
 			fb_mul(t, l, p->x);
 			fb_add(t, t, p->y);
@@ -88,13 +86,12 @@ void eb_hlv(eb_t r, const eb_t p) {
 			fb_srt(r->x, t);
 		}
 		fb_set_dig(r->z, 1);
-		r->coord = HALVE;
+		r->coord = EC_HALVE;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(l);
-		fb_free(t);
+		fb_free_all(l, t);
 	}
 }

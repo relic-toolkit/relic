@@ -26,19 +26,102 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @ingroup bn
+ * @ingroup fp
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
-.text
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application to Bilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
+.text
+.global cdecl(fp_mul1_low)
 .global cdecl(fp_muln_low)
 .global cdecl(fp_mulm_low)
 
+/*
+ * Function: fp_mul1_low
+ * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
+ * Output: c = a * digit mod p, in constant time
+ */
+cdecl(fp_mul1_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+
+	/* d = a * digit in r8-r15, rbx, rbp. */
+	xorq	%rax, %rax
+	mulx	0(%rsi), %r8, %r9
+	mulx	8(%rsi), %r11, %r10
+	adox	%r11, %r9
+	mulx	16(%rsi), %r12, %r11
+	adox	%r12, %r10
+	mulx	24(%rsi), %r13, %r12
+	adox	%r13, %r11
+	mulx	32(%rsi), %r14, %r13
+	adox	%r14, %r12
+	mulx	40(%rsi), %r15, %r14
+	adox	%r15, %r13
+	mulx	48(%rsi), %rbx, %r15
+	adox	%rbx, %r14
+	mulx	56(%rsi), %rbp, %rbx
+	adox	%rbp, %r15
+	mulx	64(%rsi), %rsi, %rbp
+	adox	%rsi, %rbx
+	adox	%rax, %rbp
+
+	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
+	 * floor(d / p). Limbs BARJ = 8 and 9 of d are in rbx and rbp. */
+	movq	%rbx, %rax
+	shrdq	$BARS, %rbp, %rax
+	movq	$BAR, %rdx
+	mulx	%rax, %rax, %rdx
+
+	/* d = d - q * p, which is below 3p. */
+	MULSUB	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rcx, p0(%rip)
+
+	/* Subtract p twice, keeping the difference when there is no borrow. */
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rdi
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rdi
+
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
+	ret
+
 cdecl(fp_muln_low):
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	// 8(%rsp) <- c, 0(%rsp) <- a: rdi and rsi are needed as temporaries.
+	push	%rdi
+	push	%rsi
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsp), 1, 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi
+	FP_MUL_LOW	0(%rsp), 1, 0(%rcx), 8(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0
+
+	addq	$16, %rsp
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
 	ret
 
 cdecl(fp_mulm_low):
@@ -46,23 +129,22 @@ cdecl(fp_mulm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	subq 	$160, %rsp
+	// 8(%rsp) <- c, 0(%rsp) <- a: rdi and rsi are needed as temporaries.
+	push	%rdi
+	push	%rsi
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rcx
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	0(%rsp), 1, 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi
+	FP_MUL_LOW	0(%rsp), 1, 0(%rcx), 8(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$160, %rsp
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
+	addq	$16, %rsp
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
 	ret

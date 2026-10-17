@@ -41,10 +41,17 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 	fp8_t t0, t1, t2, t3, t4;
 	bn_t x, t;
 
+	/* The addition chain below is specific to the GMT8-544 parameters. */
+	if (ep_param_get() != GMT8_P544) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	fp8_null(t0);
 	fp8_null(t1);
 	fp8_null(t2);
 	fp8_null(t3);
+	fp8_null(t4);
 	bn_null(x);
 	bn_null(t);
 
@@ -75,7 +82,7 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 		bn_set_dig(t, 0xdc);
 		bn_lsh(t, t, 8);
 		bn_add_dig(t, t, 0x4);
-		/* t1 = a_y = a^y, t2 = a_u = a^u */
+		/* t1 = a_y = a^y, t2 = a_u = a^u with u = 1. */
 		fp8_exp_cyc(t1, t0, t);
 		fp8_copy(t2, t0);
 		/* t3 = a_q = a_y^y * a_u^u, b = a_q * !a_u. */

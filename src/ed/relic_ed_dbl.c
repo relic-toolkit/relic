@@ -22,13 +22,12 @@
  */
 
 /**
-* @file
-*
-* Implementation of the point doubling on prime elliptic twisted Edwards curves.
-*
-* @version $Id$
-* @ingroup ed
-*/
+ * @file
+ *
+ * Implementation of the point doubling on prime elliptic twisted Edwards curves.
+ *
+ * @ingroup ed
+ */
 
 #include "relic_core.h"
 #include "relic_label.h"
@@ -37,19 +36,13 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_ADD == BASIC || !defined(STRIP)
-
 void ed_dbl_basic(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
+	fp_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
+		fp_new_all(t0, t1, t2);
 
 		/* x3 = (x1*y1+y1*x1)/(1+d*x1*x1*y1*y1)
 		 * y3 = (y1*y1-a*x1*x1)/(1-d*x1*x1*y1*y1) */
@@ -76,41 +69,23 @@ void ed_dbl_basic(ed_t r, const ed_t p) {
 		fp_copy(r->x, t0);
 		fp_copy(r->z, p->z);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
+		fp_free_all(t0, t1, t2);
 	}
 }
-
-#endif /* ED_ADD == BASIC */
-
-#if ED_ADD == PROJC || !defined(STRIP)
 
 void ed_dbl_projc(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2, t3, t4, t5, t6;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
-	fp_null(t5);
-	fp_null(t6);
+	fp_null_all(t0, t1, t2, t3, t4, t5, t6);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
-		fp_new(t5);
-		fp_new(t6);
+		fp_new_all(t0, t1, t2, t3, t4, t5, t6);
 
 		// 3M + 4S + 1D + 7add
 
@@ -127,9 +102,13 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 		/* E = a * C */
 		fp_mul(t3, core_get()->ed_a, t1);
 
-		/* F = E + D, H = Z^2 */
+		/* F = E + D, H = Z^2, saving 1S if z1 = 1. */
 		fp_add(t4, t3, t2);
-		fp_sqr(t5, p->z);
+		if (p->coord == EC_AFFIN) {
+			fp_set_dig(t5, 1);
+		} else {
+			fp_sqr(t5, p->z);
+		}
 
 		// J = F - 2H
 		fp_dbl(t6, t5);
@@ -147,39 +126,21 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 		/* x3 = F * J */
 		fp_mul(r->z, t4, t6);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
-		fp_free(t5);
-		fp_free(t6);
+		fp_free_all(t0, t1, t2, t3, t4, t5, t6);
 	}
 }
-
-#endif /* ED_PROJC */
-
-#if ED_ADD == EXTND || !defined(STRIP)
 
 void ed_dbl_extnd(ed_t r, const ed_t p) {
 	fp_t t0, t1, t2, t3, t4;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
+	fp_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
+		fp_new_all(t0, t1, t2, t3, t4);
 
 		// efd: dbl-2008-hwcd, rfc edition
 		// 4M + 4S + 1D + 7add
@@ -188,9 +149,13 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_sqr(t0, p->x);
 		fp_sqr(t1, p->y);
 
-		/* C = 2 * Z^2 */
-		fp_sqr(r->z, p->z);
-		fp_dbl(r->z, r->z);
+		/* C = 2 * Z^2, saving 1S if z1 = 1. */
+		if (p->coord == EC_AFFIN) {
+			fp_set_dig(r->z, 2);
+		} else {
+			fp_sqr(r->z, p->z);
+			fp_dbl(r->z, r->z);
+		}
 
 		/* D = a * A */
 		fp_mul(r->t, core_get()->ed_a, t0);
@@ -214,16 +179,10 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_mul(r->t, t2, r->z);
 		/* Z = F * G */
 		fp_mul(r->z, t3, t4);
-		r->coord = EXTND;
+		r->coord = EC_EXTND;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
+		fp_free_all(t0, t1, t2, t3, t4);
 	}
 }
-
-#endif /* ED_EXTND */

@@ -94,7 +94,13 @@ int cp_bbs_sig(g1_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 
 		/* m = 1/(m + d) mod n. */
 		bn_add(m, m, d);
+		/* Blind the secret, as inversion takes variable time. */
+		bn_rand_mod(r, n);
+		bn_mul(m, m, r);
+		bn_mod(m, m, n);
 		bn_mod_inv(m, m, n);
+		bn_mul(m, m, r);
+		bn_mod(m, m, n);
 		/* s = 1/(m+d) * g1. */
 		g1_mul_gen(s, m);
 	}
@@ -154,6 +160,7 @@ int cp_bbs_ver(g1_t s, const uint8_t *msg, size_t len, int hash, const g2_t q,
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

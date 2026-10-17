@@ -187,8 +187,8 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 			case 5:
 				/* If p = 5 mod 8, (u) is a QNR. */
 				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_zero(t[1], RLC_FP_DIGS);
-				dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
+				/* Subtracting from zero keeps -a_1 below pR, also for a_1 = 0. */
+				dv_zero(t[1], 2 * RLC_FP_DIGS);
 				fp_subc_low(c[0], t[1], a[1]);
 				for (int i = -1; i > fp_prime_get_qnr(); i--) {
 					fp_subc_low(c[0], c[0], a[1]);
@@ -204,8 +204,10 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 				for (int i = 1; i < bn_bits(b) / 2; i++) {
 					fp2_addc_low(t, t, t);
 				}
+				/* Read a before writing c, as c may alias a. */
+				fp_addc_low(t[1], t[1], a[0]);
 				fp_subc_low(c[0], t[0], a[1]);
-				fp_addc_low(c[1], t[1], a[0]);
+				dv_copy(c[1], t[1], 2 * RLC_FP_DIGS);
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);

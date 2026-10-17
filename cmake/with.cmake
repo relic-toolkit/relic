@@ -1,5 +1,14 @@
 # Default modules.
 set(WITH "ALL" CACHE STRING "Selected modules")
+set(MODULES ALL BN DV FP FPX FB FBX EP EPX EB ED EC PP PC BC MD CP MPC)
+foreach(MODULE ${WITH})
+	list(FIND MODULES "${MODULE}" TEMP)
+	if(TEMP EQUAL -1)
+		string(REPLACE ";" " " MODULES "${MODULES}")
+		message(FATAL_ERROR "Unknown module WITH=${MODULE}, choose from: "
+			"${MODULES}")
+	endif()
+endforeach()
 LIST(FIND WITH "ALL" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_BN 1)
@@ -91,12 +100,6 @@ endif(TEMP GREATER -1)
 list(FIND WITH "PP" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_PP 1)
-endif(TEMP GREATER -1)
-
-# Check if support for pairings over binary curves is required.
-list(FIND WITH "PB" TEMP)
-if(TEMP GREATER -1)
-	set(WITH_PB 1)
 endif(TEMP GREATER -1)
 
 # Check if elliptic curve cryptography support is required.

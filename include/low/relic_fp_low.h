@@ -36,15 +36,38 @@
 /* Constant definitions                                                       */
 /*============================================================================*/
 
+#include "relic_conf.h"
+
+/*
+ * Size in bytes of a temporary double-precision vector, written with integer
+ * arithmetic only so that assembly can use it as an offset.
+ */
+#if defined(WITH_FB) && FB_POLYN > FP_PRIME
+#define RLC_DV_STRIDE_D	((2 * FB_POLYN - 1) / RLC_WSIZE + 2)
+#else
+#define RLC_DV_STRIDE_D	((2 * FP_PRIME - 1) / RLC_WSIZE + 2)
+#endif
+#define RLC_DV_STRIDE_B	(2 * ((BN_PRECI - 1) / RLC_WSIZE + 1) + 2)
+#if RLC_DV_STRIDE_D > RLC_DV_STRIDE_B
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_D * (RLC_WSIZE / 8))
+#else
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_B * (RLC_WSIZE / 8))
+#endif
+#if RLC_ALIGN > 1 && (RLC_DV_STRIDE_N % RLC_ALIGN) > 0
+#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N + ((RLC_ALIGN - RLC_DV_STRIDE_N % RLC_ALIGN) / (RLC_WSIZE / 8)) * (RLC_WSIZE / 8))
+#else
+#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N)
+#endif
+
 #ifdef ASM
 
 #include "relic_conf.h"
 #include "relic_label.h"
 
-#if (FP_PRIME % WSIZE) > 0
-#define RLC_FP_DIGS		(FP_PRIME/WSIZE + 1)
+#if (FP_PRIME % RLC_WSIZE) > 0
+#define RLC_FP_DIGS		(FP_PRIME/RLC_WSIZE + 1)
 #else
-#define RLC_FP_DIGS		(FP_PRIME/WSIZE)
+#define RLC_FP_DIGS		(FP_PRIME/RLC_WSIZE)
 #endif
 #else
 
@@ -250,15 +273,14 @@ dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits);
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit);
 
 /**
- * Multiplies a digit vector by a digit and stores this result in another digit
- * vector. Computes c = a * digit.
+ * Multiplies a digit vector by a digit with modular reduction, in constant
+ * time. Computes c = (a * digit) mod p for digit < 2^(RLC_DIG - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to multiply.
  * @param[in] digit			- the digit to multiply.
- * @return the most significant digit.
  */
-dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit);
+void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit);
 
 /**
  * Multiplies two digit vectors of the same size. Computes c = a * b.
@@ -297,7 +319,8 @@ void fp_sqrm_low(dig_t *c, const dig_t *a);
 
 /**
  * Reduces a digit vector modulo m represented in special form.
- * Computes c = a mod m.
+ * Computes c = a mod m. Only arithmetic backends that support FP_RDC = FP_LOWER
+ * provide it.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to reduce.

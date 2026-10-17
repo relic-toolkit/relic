@@ -59,6 +59,7 @@ int fp_is_cub(const fp_t a) {
 		r = (fp_cmp_dig(t->dp, 1) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -73,12 +74,7 @@ int fp_crt(fp_t c, const fp_t a) {
 	int f = 0, r = 0;
 
 	bn_null(e);
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-	fp_null(t4);
-	fp_null(t5);
+	fp_null_all(t0, t1, t2, t3, t4, t5);
 
 	if (fp_is_zero(a)) {
 		fp_zero(c);
@@ -87,12 +83,7 @@ int fp_crt(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		bn_new(e);
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-		fp_new(t4);
-		fp_new(t5);
+		fp_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* Make e = p. */
 		e->used = RLC_FP_DIGS;
@@ -157,7 +148,7 @@ int fp_crt(fp_t c, const fp_t a) {
 			fp_exp(t0, a, e);
 
 			/* Recover 3^f-root of unity, and continue algorithm. */
-			fp_copy(t3, (const dig_t *)fp_prime_get_crt());
+			fp_copy(t3, (dig_t *)fp_prime_get_crt());
 
 			fp_copy(t5, t3);
 			for (int i = 0; i < f - 1; i++) {
@@ -202,16 +193,12 @@ int fp_crt(fp_t c, const fp_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(e);
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-		fp_free(t4);
-		fp_free(t5);
+		fp_free_all(t0, t1, t2, t3, t4, t5);
 	}
 	return r;
 }

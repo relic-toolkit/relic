@@ -29,6 +29,8 @@
  * @ingroup rand
  */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "relic_conf.h"
@@ -37,37 +39,49 @@
 #include "relic_rand.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * The path to the char device that supplies entropy.
- */
-#define RLC_RAND_PATH		"/dev/urandom"
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == UDEV
+#if RLC_RAND == RLC_UDEV
 
 void rand_bytes(uint8_t *buf, size_t size) {
-	int c, l, *fd = (int *)&(core_get()->rand);
+	int *fd = (int *)&(core_get()->rand);
+	ssize_t c;
+	size_t l;
 
-	l = 0;
-	do {
+	if (!core_get()->seeded || *fd == -1) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
+	for (l = 0; l < size; l += c) {
 		c = read(*fd, buf + l, size - l);
-		l += c;
-		if (c == -1) {
+		if (c == -1 && errno == EINTR) {
+			c = 0;
+			continue;
+		}
+		/* An error or the end of the file leaves the output incomplete. */
+		if (c <= 0) {
 			RLC_THROW(ERR_NO_READ);
 			return;
 		}
-	} while (l < size);
+	}
 }
 
 void rand_seed(uint8_t *buf, size_t size) {
-	/* Do nothing, only mark as seeded. */
-	core_get()->seeded = 1;
+	ctx_t *ctx = core_get();
+	int *fd = (int *)&(ctx->rand);
+
+	/* The seed is not used, the device is opened once. */
+	(void)buf;
+	(void)size;
+	if (!ctx->seeded) {
+		*fd = open(RLC_RAND_PATH, O_RDONLY);
+		if (*fd == -1) {
+			RLC_THROW(ERR_NO_FILE);
+			return;
+		}
+		ctx->seeded = 1;
+	}
 }
 
 #endif

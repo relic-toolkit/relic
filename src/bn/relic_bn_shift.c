@@ -58,9 +58,32 @@ void bn_dbl(bn_t c, const bn_t a) {
 }
 
 void bn_hlv(bn_t c, const bn_t a) {
-	bn_copy(c, a);
-	bn_rsh1_low(c->dp, c->dp, c->used);
-	bn_trim(c);
+	dig_t down = a->dp[0] & (bn_sign(a) == RLC_NEG);
+
+	if (a->used == 0) {
+		bn_zero(c);
+		return;
+	}
+
+#if RLC_ALLOC == RLC_DYNAMIC
+	RLC_TRY {
+		bn_grow(c, a->used);
+		bn_rsh1_low(c->dp, a->dp, a->used);
+		c->used = a->used;
+		c->sign = a->sign;
+		if (down) {
+			bn_sub_dig(c, c, down);
+		}
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+#else
+	c->used = a->used;
+	c->sign = a->sign;
+	bn_rsh1_low(c->dp, a->dp, a->used);
+	bn_sub_dig(c, c, down);
+#endif
 }
 
 void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
@@ -95,12 +118,22 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 }
 
 void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
-	uint_t digits = 0;
+	uint_t digits = 0, down = 0;
 
 	RLC_RIP(bits, digits, bits);
 
 	RLC_TRY {
 		bn_grow(c, a->used);
+
+		if (bn_sign(a) == RLC_NEG) {
+			/* Round towards minus infinity if any discarded bit is set. */
+			for (uint_t i = 0; i < digits && i < a->used; i++) {
+				down |= (a->dp[i] != 0);
+			}
+			if (digits < a->used && bits > 0) {
+				down |= ((a->dp[digits] & RLC_MASK(bits)) != 0);
+			}
+		}
 
 		if (digits > 0) {
 			if (a->used > digits) {
@@ -119,6 +152,10 @@ void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
 			bn_rshb_low(c->dp, c->dp, c->used, bits);
 		}
 		bn_trim(c);
+
+		if (down) {
+			bn_sub_dig(c, c, 1);
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}

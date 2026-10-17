@@ -65,6 +65,9 @@
 #elif FP_PRIME == 354 || FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_G2_LOWER			ep3_
 #define RLC_G2_BASEF(A)			A[0]
+#elif FP_PRIME == 569
+#define RLC_G2_LOWER			ep9_
+#define RLC_G2_BASEF(A)			A[0][0]
 #else
 #define RLC_G2_LOWER			ep2_
 #define RLC_G2_BASEF(A)			A[0]
@@ -87,6 +90,9 @@
 #elif FP_PRIME == 544
 #define RLC_GT_LOWER			fp8_
 #define RLC_GT_EMBED      		8
+#elif FP_PRIME == 569
+#define RLC_GT_LOWER			fp54_
+#define RLC_GT_EMBED      		54
 #else
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
@@ -223,6 +229,23 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_free(A)			RLC_CAT(RLC_GT_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen elements at once, in order.
+ *
+ * @param[in,out] ...		- the elements.
+ */
+/** @{ */
+#define g1_null_all(...)	RLC_EACH(g1_null, __VA_ARGS__)
+#define g1_new_all(...)		RLC_EACH(g1_new, __VA_ARGS__)
+#define g1_free_all(...)	RLC_EACH(g1_free, __VA_ARGS__)
+#define g2_null_all(...)	RLC_EACH(g2_null, __VA_ARGS__)
+#define g2_new_all(...)		RLC_EACH(g2_new, __VA_ARGS__)
+#define g2_free_all(...)	RLC_EACH(g2_free, __VA_ARGS__)
+#define gt_null_all(...)	RLC_EACH(gt_null, __VA_ARGS__)
+#define gt_new_all(...)		RLC_EACH(gt_new, __VA_ARGS__)
+#define gt_free_all(...)	RLC_EACH(gt_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group G_1.
  *
  * @param[out] G			- the returned generator.
@@ -254,7 +277,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define pc_param_set_any()	ep_param_set_any_pairf()
 #else
 #define pc_param_set_any()	RLC_ERR
@@ -359,6 +382,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
 	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
 	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+	(P)->coord = (Q)->coord;																						\
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -370,6 +394,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
 	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
 	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
+	(Q)->coord = (P)->coord;																						\
 
 /**
  * Assigns a G_T element to zero.
@@ -534,36 +559,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #endif
 
 /**
- * Reads a G_1 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g1_read_bin(P, B, L) 	RLC_CAT(RLC_G1_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_2 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g2_read_bin(P, B, L) 	RLC_CAT(RLC_G2_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_T element from a byte vector in big-endian format.
- *
- * @param[out] A			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define gt_read_bin(A, B, L) 	RLC_CAT(RLC_GT_LOWER, read_bin)(A, B, L)
-
-/**
  * Writes an optionally compressed G_1 element to a byte vector in big-endian
  * format.
  *
@@ -693,12 +688,18 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_dbl(R, P)		RLC_CAT(RLC_G2_LOWER, dbl)(R, P)
 
 /**
- * Squares a G_T element. Computes C = A^2.
+ * Squares a G_T element. Computes C = A^2. Elements of G_T lie in the
+ * cyclotomic subgroup, so the cheaper cyclotomic squaring is used when the
+ * extension field has one.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the element to square.
  */
+#if FP_PRIME <= 1536
+#define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr_cyc)(C, A)
+#else
 #define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr)(C, A)
+#endif
 
 /**
  * Normalizes an element of G_1.
@@ -979,7 +980,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the field element to exponentiate.
  */
-#define pc_exp(C, A);			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
+#define pc_exp(C, A)			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -999,7 +1000,6 @@ void pc_core_calc(void);
  * Finalizes the cryptographic protocol module.
  */
 void pc_core_clean(void);
-
 
 /**
  * Assigns a random value to an element from G_T.
@@ -1116,5 +1116,44 @@ int g2_is_valid(const g2_t a);
  * @param[in] a             - the element to check.
  */
 int gt_is_valid(const gt_t a);
+
+/**
+ * Reads a G_1 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_2 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_T element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len);
 
 #endif /* !RLC_PC_H */

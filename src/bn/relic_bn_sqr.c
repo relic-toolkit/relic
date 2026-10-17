@@ -37,8 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if BN_KARAT > 0 || !defined(STRIP)
-
 /**
  * Computes the square of a multiple precision integer using recursive Karatsuba
  * squaring.
@@ -51,19 +49,13 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 	bn_t a0, a1, a0a0, a1a1, t;
 	int h = a->used >> 1;
 
-	bn_null(a0);
-	bn_null(a1);
-	bn_null(a0a0);
-	bn_null(a1a1);
-	bn_null(t);
+	bn_null_all(a0, a1, a0a0, a1a1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
 		bn_new_size(a0, h);
 		bn_new_size(a1, a->used - h);
-		bn_new(a0a0);
-		bn_new(a1a1);
-		bn_new(t);
+		bn_new_all(a0a0, a1a1, t);
 
 		/* a = a1 || a0 */
 		a0->used = h;
@@ -75,13 +67,13 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 
 		if (level <= 1) {
 			/* a0a0 = a0 * a0 and a1a1 = a1 * a1 */
-#if BN_SQR == BASIC
+#if BN_SQR == BN_BASIC
 			bn_sqr_basic(a0a0, a0);
 			bn_sqr_basic(a1a1, a1);
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 			bn_sqr_comba(a0a0, a0);
 			bn_sqr_comba(a1a1, a1);
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 			bn_mul_comba(a0a0, a0, a0);
 			bn_mul_comba(a1a1, a1, a1);
 #endif
@@ -95,11 +87,11 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 
 		if (level <= 1) {
 			/* t = (a1 + a0)*(a1 + a0) */
-#if BN_SQR == BASIC
+#if BN_SQR == BN_BASIC
 			bn_sqr_basic(t, t);
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 			bn_sqr_comba(t, t);
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 			bn_mul_comba(t, t, t);
 #endif
 		} else {
@@ -129,24 +121,16 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(a0);
-		bn_free(a1);
-		bn_free(a0a0);
-		bn_free(a1a1);
-		bn_free(t);
+		bn_free_all(a0, a1, a0a0, a1a1, t);
 	}
 }
-
-#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if BN_SQR == BASIC || !defined(STRIP)
-
 void bn_sqr_basic(bn_t c, const bn_t a) {
-	int i;
+	size_t i;
 	bn_t t;
 
 	bn_null(t);
@@ -174,10 +158,6 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 	}
 }
 
-#endif
-
-#if BN_SQR == COMBA || !defined(STRIP)
-
 void bn_sqr_comba(bn_t c, const bn_t a) {
 	int digits;
 	bn_t t;
@@ -204,12 +184,6 @@ void bn_sqr_comba(bn_t c, const bn_t a) {
 	}
 }
 
-#endif
-
-#if BN_KARAT > 0 || !defined(STRIP)
-
 void bn_sqr_karat(bn_t c, const bn_t a) {
 	bn_sqr_karat_imp(c, a, BN_KARAT);
 }
-
-#endif

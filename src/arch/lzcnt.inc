@@ -233,6 +233,7 @@ static unsigned int lzcnt32_gcc_builtin(unsigned int x)
     return (unsigned int)__builtin_clzl((unsigned long)x);
 }
 
+#if defined(ARCH_64BIT)
 static unsigned int lzcnt64_gcc_builtin(unsigned long long x)
 {
     if (x == 0) {
@@ -241,9 +242,10 @@ static unsigned int lzcnt64_gcc_builtin(unsigned long long x)
 
     return (unsigned int)__builtin_clzll(x);
 }
+#endif  /* ARCH_64BIT */
 #endif
 
-static int has_lzcnt_hard()
+inline static int has_lzcnt_hard(void)
 {
 #if defined(ARCH_X86) || defined(ARCH_X64)
     int info[4] = {0};

@@ -33,13 +33,14 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <string.h>
 
 #include "relic_core.h"
 #include "relic_conf.h"
 #include "relic_util.h"
 #include "relic_types.h"
 
-#if ARCH == ARM && OPSYS == DROID
+#if RLC_ARCH == RLC_ARM && RLC_OPSYS == RLC_DROID
 #include <android/log.h>
 #endif
 
@@ -50,13 +51,13 @@
 /**
  * Buffer to hold printed messages.
  */
-#if ARCH == AVR
+#if RLC_ARCH == RLC_AVR
 
-#ifndef QUIET
+#ifndef RLC_QUIET
 volatile char print_buf[128 + 1];
 volatile char *util_print_ptr;
 
-#if OPSYS == DUINO
+#if RLC_OPSYS == RLC_DUINO
 /**
  * Send byte to serial port.
  */
@@ -76,41 +77,27 @@ FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 #endif
 #endif
 
-#endif /* QUIET */
+#endif /* RLC_QUIET */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-uint32_t util_conv_endian(uint32_t i) {
-	uint32_t i1, i2, i3, i4;
-	i1 = i & 0xFF;
-	i2 = (i >> 8) & 0xFF;
-	i3 = (i >> 16) & 0xFF;
-	i4 = (i >> 24) & 0xFF;
-
-	return ((uint32_t) i1 << 24) | ((uint32_t) i2 << 16) | ((uint32_t) i3 << 8)
-			| i4;
+void util_write_uint32(uint8_t *bin, uint32_t a) {
+	bin[0] = (uint8_t)(a >> 24);
+	bin[1] = (uint8_t)(a >> 16);
+	bin[2] = (uint8_t)(a >> 8);
+	bin[3] = (uint8_t)a;
 }
 
-uint32_t util_conv_big(uint32_t i) {
-#ifdef BIGED
-	return i;
-#else
-	return util_conv_endian(i);
-#endif
-}
-
-uint32_t util_conv_little(uint32_t i) {
-#ifndef BIGED
-	return util_conv_endian(i);
-#else
-	return i;
-#endif
+void util_write_size(uint8_t *bin, size_t a) {
+	/* The cast keeps the shift defined where size_t is only 32 bits wide. */
+	util_write_uint32(bin, (uint32_t)((uint64_t)a >> 32));
+	util_write_uint32(bin + sizeof(uint32_t), (uint32_t)a);
 }
 
 char util_conv_char(dig_t i) {
-#if WSIZE == 8 || WSIZE == 16
+#if RLC_WSIZE == 8 || RLC_WSIZE == 16
 	/* Avoid tables to save up some memory. This is not performance-critical. */
 	if (i < 10) {
 		return i + '0';
@@ -142,13 +129,21 @@ int util_cmp_sec(const void *a, const void *b, size_t size) {
 	const uint8_t *_a = (const uint8_t *)a;
 	const uint8_t *_b = (const uint8_t *)b;
 	uint8_t result = 0;
-	int i;
+	size_t i;
 
 	for (i = 0; i < size; i++) {
 		result |= _a[i] ^ _b[i];
 	}
 
 	return (result == 0 ? RLC_EQ : RLC_NE);
+}
+
+void util_zero(void *a, size_t n) {
+	/* Calling through a volatile pointer keeps the compiler from removing
+	 * the call when the buffer is dead afterwards. */
+	static void *(*const volatile set)(void *, int, size_t) = &memset;
+
+	set(a, 0, n);
 }
 
 void util_perm(uint_t p[], size_t n) {
@@ -162,28 +157,28 @@ void util_perm(uint_t p[], size_t n) {
 	}
 }
 
-#ifndef QUIET
-void util_print(const char *format, ...) {
-#if ARCH == AVR && !defined(OPSYS)
+#ifndef RLC_QUIET
+void util_printf(const char *format, ...) {
+#if RLC_ARCH == RLC_AVR && !defined(RLC_OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;
 	va_start(list, format);
 	vsnprintf_P((char *)util_print_ptr, sizeof(print_buf) - 1, format, list);
 	va_end(list);
 	print_buf[0] = (uint8_t)2;
-#elif ARCH == AVR && OPSYS == DUINO
+#elif RLC_ARCH == RLC_AVR && RLC_OPSYS == RLC_DUINO
 	stdout = &uart_output;
 	va_list list;
 	va_start(list, format);
 	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
 	printf("%s", (char *)print_buf);
 	va_end(list);
-#elif ARCH == MSP && !defined(OPSYS)
+#elif RLC_ARCH == RLC_MSP && !defined(RLC_OPSYS)
 	va_list list;
 	va_start(list, format);
 	vprintf(format, list);
 	va_end(list);
-#elif ARCH == ARM && OPSYS == DROID
+#elif RLC_ARCH == RLC_ARM && RLC_OPSYS == RLC_DROID
 	va_list list;
 	va_start(list, format);
 	__android_log_vprint(ANDROID_LOG_INFO, "relic-toolkit", format, list);

@@ -29,6 +29,7 @@
  * @ingroup rand
  */
 
+#include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -42,26 +43,33 @@
 /* Private definitions                                                         */
 /*============================================================================*/
 
-#if RAND == CALL
+#if RLC_RAND == RLC_CALL
 
 static void rand_stub(uint8_t *buf, size_t size, void *args) {
-	int c, l, fd = open("/dev/urandom", O_RDONLY);
+	int fd = open(RLC_RAND_PATH, O_RDONLY);
+	ssize_t c;
+	size_t l;
+
+	(void)args;
 
 	if (fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
 		return;
 	}
 
-	l = 0;
-	do {
+	for (l = 0; l < size; l += c) {
 		c = read(fd, buf + l, size - l);
-		l += c;
-		if (c == -1) {
+		if (c == -1 && errno == EINTR) {
+			c = 0;
+			continue;
+		}
+		/* An error or the end of the file leaves the output incomplete. */
+		if (c <= 0) {
+			close(fd);
 			RLC_THROW(ERR_NO_READ);
 			return;
 		}
-	} while (l < size);
-
+	}
 	close(fd);
 }
 
@@ -71,11 +79,15 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == CALL
+#if RLC_RAND == RLC_CALL
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 
+	if (!ctx->seeded || ctx->rand_call == NULL) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
 	ctx->rand_call(buf, size, ctx->rand_args);
 	if (rand_check(buf, size) == RLC_ERR) {
 		RLC_THROW(ERR_NO_RAND);

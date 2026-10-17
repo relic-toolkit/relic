@@ -31,6 +31,7 @@
  */
 
 #include <gmp.h>
+#include <stdlib.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
@@ -45,7 +46,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_invert_itch(RLC_FP_DIGS));
 	mp_bitcnt_t cnt = 2 * RLC_FP_DIGS * GMP_NUMB_BITS;
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	rlc_align dig_t s[2 * RLC_FP_DIGS];
 	dv_copy(s, a, RLC_FP_DIGS);
 	dv_zero(s + RLC_FP_DIGS, RLC_FP_DIGS);
@@ -57,10 +58,10 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	mpn_sec_invert((mp_ptr)c, (mp_ptr)u, (mp_srcptr)fp_prime_get(),
 		RLC_FP_DIGS, cnt, (mp_ptr)t);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	dv_zero(s, RLC_FP_DIGS);
 	dv_copy(s + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	dig_t *v = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(RLC_FP_DIGS, RLC_FP_DIGS));
+	dig_t *v = RLC_ALLOCA(dig_t, mpn_sec_div_r_itch(2 * RLC_FP_DIGS, RLC_FP_DIGS));
 	mpn_sec_div_r((mp_ptr)s, 2 * RLC_FP_DIGS, (mp_srcptr)fp_prime_get(),
 		RLC_FP_DIGS, (mp_ptr)v);
 	dv_copy(c, s, RLC_FP_DIGS);

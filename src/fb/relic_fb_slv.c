@@ -41,10 +41,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_SLV == BASIC || !defined(STRIP)
-
 void fb_slv_basic(fb_t c, const fb_t a) {
-	int i;
+	size_t i;
 	fb_t t0;
 
 	fb_null(t0);
@@ -71,13 +69,12 @@ void fb_slv_basic(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_SLV == QUICK || !defined(STRIP)
-
 void fb_slv_quick(fb_t c, const fb_t a) {
+	if (fb_poly_get_slv() == NULL) {
+		/* Without the table of half-traces, compute them directly. */
+		fb_slv_basic(c, a);
+		return;
+	}
 	fb_slvn_low(c, a);
 	fb_add_dig(c, c, fb_trc(c));
 }
-
-#endif

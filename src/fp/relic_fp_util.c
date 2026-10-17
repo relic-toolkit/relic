@@ -49,18 +49,20 @@ void fp_zero(fp_t a) {
 }
 
 int fp_is_zero(const fp_t a) {
-	int i;
-	dig_t t = 0, u = 0;
+	const dig_t *p = fp_prime_get();
+	dig_t t = 0, u = 0, v = 0, c = 0;
 
-	for (i = 0; i < RLC_FP_DIGS; i++) {
+	/* Lazily reduced values may also represent zero as p or 2p. */
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
 		t |= a[i];
+		u |= a[i] ^ p[i];
+		v |= a[i] ^ ((p[i] << 1) | c);
+		c = p[i] >> (RLC_DIG - 1);
 	}
 
-	for (i = 0; i < RLC_FP_DIGS; i++) {
-		u |= a[i] ^ fp_prime_get()[i];
-	}
-
-	return !t || !u;
+	/* All tests are evaluated, so that no zero is told apart by time. When 2p
+	 * does not fit the digits (c is set), a cannot be equal to it. */
+	return (!t) | (!u) | ((!v) & (!c));
 }
 
 int fp_is_even(const fp_t a) {
@@ -75,6 +77,7 @@ int fp_is_even(const fp_t a) {
 		fp_prime_back(t, a);
 		r = bn_is_even(t);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -153,7 +156,7 @@ void fp_print(const fp_t a) {
 	RLC_TRY {
 		bn_new(t);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		if (a != fp_prime_get()) {
 			fp_prime_back(t, a);
 		} else {
@@ -166,7 +169,7 @@ void fp_print(const fp_t a) {
 #endif
 
 		for (i = RLC_FP_DIGS - 1; i > 0; i--) {
-			if (i >= t->used) {
+			if ((size_t)i >= t->used) {
 				util_print_dig(0, 1);
 			} else {
 				util_print_dig(t->dp[i], 1);
@@ -197,6 +200,7 @@ size_t fp_size_str(const fp_t a, uint_t radix) {
 
 		digits = bn_size_str(t, radix);
 	} RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -254,14 +258,15 @@ void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix) {
 	}
 }
 
-void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
+int fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
+	int result = RLC_ERR;
 	bn_t t;
 
 	bn_null(t);
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	RLC_TRY {
@@ -281,14 +286,17 @@ void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
 					fp_prime_conv(a, t);
 				}
 			}
+			result = RLC_OK;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(t);
 	}
+	return result;
 }
 
 void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {

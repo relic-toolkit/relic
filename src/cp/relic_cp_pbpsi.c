@@ -36,7 +36,8 @@
 /*============================================================================*/
 
 int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m) {
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 	bn_t q;
 
 	bn_null(q);
@@ -63,22 +64,29 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m) {
 }
 
 int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m) {
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1);
+
+	if (p == NULL || _x == NULL) {
+		RLC_FREE(p);
+		RLC_FREE(_x);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(q);
 	bn_null(t);
+	for (i = 0; i <= m; i++) {
+		bn_null(p[i]);
+		bn_null(_x[i]);
+	}
 
 	RLC_TRY {
 		bn_new(q);
 		bn_new(t);
-		if (p == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i <= m; i++) {
-			bn_null(p[i]);
 			bn_new(p[i]);
-			bn_null(_x[i]);
 			bn_new(_x[i]);
 		}
 
@@ -121,11 +129,17 @@ int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m) {
 
 int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 		const bn_t *y, size_t n) {
-	int j, result = RLC_OK;
+	int result = RLC_OK;
+	size_t j;
 	bn_t q, tj;
 	g1_t g1;
 	g2_t g2;
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
+
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(q);
 	bn_null(tj);
@@ -137,9 +151,6 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 		bn_new(tj);
 		g1_new(g1);
 		g2_new(g2);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, n);
 
@@ -169,7 +180,8 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 
 int cp_pbpsi_int(bn_t *z, size_t *len, const g2_t *d, const bn_t *x,
 		size_t m, const gt_t *t, const g1_t *u, size_t n) {
-	int j, k, result = RLC_OK;
+	int result = RLC_OK;
+	size_t j, k;
 	gt_t e;
 
 	gt_null(e);
@@ -183,8 +195,10 @@ int cp_pbpsi_int(bn_t *z, size_t *len, const g2_t *d, const bn_t *x,
 				for (j = 0; j < n; j++) {
 					pc_map(e, u[j], d[k + 1]);
 					if (gt_cmp(e, t[j]) == RLC_EQ && !gt_is_unity(e)) {
+						/* Report each element once, so that len <= m. */
 						bn_copy(z[*len], x[k]);
 						(*len)++;
+						break;
 					}
 				}
 			}

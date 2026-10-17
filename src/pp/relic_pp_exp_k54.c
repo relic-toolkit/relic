@@ -37,7 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-
 void pp_exp_k54(fp54_t c, fp54_t a) {
 	bn_t x;
 	const int *b;
@@ -153,7 +152,7 @@ void pp_exp_k54(fp54_t c, fp54_t a) {
 		fp54_exp_cyc_sps(t3, t3, b, l, bn_sign(x));
 		fp54_inv_cyc(t2, t2);
 		fp54_exp_cyc_sps(t2, t2, b, l, bn_sign(x));
-		fp54_sqr(t0, t3);
+		fp54_sqr_cyc(t0, t3);
 		fp54_mul(t3, t3, t0);
 		fp54_mul(t3, t3, t2);
 		fp54_frb(t, t3, 6);
@@ -183,7 +182,7 @@ void pp_exp_k54(fp54_t c, fp54_t a) {
 
 		/* k13 = 3*x*k5 + k4. */
 		fp54_exp_cyc_sps(t3, t3, b, l, bn_sign(x));
-		fp54_sqr(t0, t3);
+		fp54_sqr_cyc(t0, t3);
 		fp54_mul(t0, t0, t3);
 		fp54_mul(t0, t0, t4);
 		fp54_frb(t, t0, 13);
@@ -206,7 +205,7 @@ void pp_exp_k54(fp54_t c, fp54_t a) {
 
 		/* k2 = -3*x*k3 - 3*x^2*k4. */
 		fp54_exp_cyc_sps(t0, t0, b, l, bn_sign(x));
-		fp54_sqr(t, t0);
+		fp54_sqr_cyc(t, t0);
 		fp54_mul(t0, t0, t);
 		fp54_inv_cyc(t0, t0);
 		fp54_mul(t2, t0, t5);
@@ -231,11 +230,11 @@ void pp_exp_k54(fp54_t c, fp54_t a) {
 
 		/* k9 = -3*x*k10 - 3*x^2*k11 - 2. */
 		fp54_exp_cyc_sps(t0, t0, b, l, bn_sign(x));
-		fp54_sqr(t, t0);
+		fp54_sqr_cyc(t, t0);
 		fp54_mul(t0, t0, t);
 		fp54_inv_cyc(t0, t0);
 		fp54_exp_cyc_sps(t5, t5, b, l, bn_sign(x));
-		fp54_sqr(t, t5);
+		fp54_sqr_cyc(t, t5);
 		fp54_mul(t5, t5, t);
 		fp54_mul(t0, t0, t5);
 		fp54_inv_cyc(t6, t6);

@@ -38,7 +38,7 @@
 #include "relic_conf.h"
 #include "relic_err.h"
 
-#if defined(VERBS) && OPSYS == LINUX && HAVE_EXECINFO_H
+#if defined(RLC_VERBS) && RLC_OPSYS == RLC_LINUX && HAVE_EXECINFO_H
 #include <execinfo.h>
 #endif
 
@@ -46,19 +46,23 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 
 void err_simple_msg(int error) {
-	if (error != ERR_CAUGHT) {
+	if (error != ERR_CAUGHT && !core_get()->quiet) {
 		fprintf(stderr, "\nERROR: %s.\n", core_get()->reason[error]);
 	}
 }
 
-#ifdef VERBS
+#ifdef RLC_VERBS
 
 void err_full_msg(const char *function, const char *file, int line,
 		int error) {
 	ctx_t *ctx = core_get();
+
+	if (ctx->quiet) {
+		return;
+	}
 
 	if (error == ERR_CAUGHT) {
 		fprintf(stderr, "\tCAUGHT in %s() at %s,%d.\n", function, file, line);
@@ -66,7 +70,7 @@ void err_full_msg(const char *function, const char *file, int line,
 		fprintf(stderr, "\nERROR in %s() at %s,%d: %s.\n", function, file, line,
 				ctx->reason[error]);
 
-#if OPSYS == LINUX && HAVE_BACKTRACE && HAVE_BACKTRACE_SYMBOLS 
+#if RLC_OPSYS == RLC_LINUX && HAVE_BACKTRACE && HAVE_BACKTRACE_SYMBOLS 
 		void *trace[100];
 		char **symbols;
 		int n;
@@ -87,20 +91,52 @@ void err_full_msg(const char *function, const char *file, int line,
 	}
 }
 
-#endif /* VERBS */
+#endif /* RLC_VERBS */
 
 void err_get_msg(err_t *e, char **msg) {
 	ctx_t *ctx = core_get();
+	if (ctx->last == NULL || ctx->last->error == NULL) {
+		/* No error was thrown outside of a try-catch block. */
+		*e = 0;
+		*msg = NULL;
+		return;
+	}
 	*e = *(ctx->last->error);
 	*msg = ctx->reason[*e];
 	ctx->last = NULL;
 }
 
-#endif /* CHECK */
+#endif /* RLC_CHECK */
+
+void err_throw(const char *file, int line) {
+	core_get()->code = RLC_ERR;
+	if (core_get()->quiet) {
+		return;
+	}
+#if RLC_ARCH == RLC_AVR
+	/* The file name is stored in program memory. */
+	util_print("ERROR THROWN in %S:%d\n", file, line);
+#else
+	util_print("ERROR THROWN in %s:%d\n", file, line);
+#endif
+}
 
 int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;
 	ctx->code = RLC_OK;
+#ifdef RLC_CHECK
+	/* Forget an error thrown outside of a try-catch block, so that the next
+	 * one is reported. */
+	if (ctx->last == &(ctx->error)) {
+		ctx->last = NULL;
+	}
+#else
+	ctx->pending = 0;
+#endif
 	return r;
+}
+
+void err_set_quiet(int quiet) {
+	core_get()->quiet = quiet;
 }

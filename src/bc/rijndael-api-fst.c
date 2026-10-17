@@ -3,7 +3,7 @@
  *
  * @version 2.9 (December 2000)
  *
- * Optimised ANSI C code for the Rijndael cipher (now AES)
+ * Optimised RLC_ANSI C code for the Rijndael cipher (now AES)
  *
  * @author Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
  * @author Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "relic_util.h"
 #include "rijndael-alg-fst.h"
 #include "rijndael-api-fst.h"
 
@@ -142,6 +143,7 @@ int makeKey2(keyInstance * key, BYTE direction, int keyLen, char *keyMaterial) {
 		key->Nr = rijndaelKeySetupDec(key->rk, cipherKey, keyLen);
 	}
 	rijndaelKeySetupEnc(key->ek, cipherKey, keyLen);
+	util_zero(cipherKey, sizeof(cipherKey));
 	return TRUE;
 }
 

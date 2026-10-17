@@ -30,398 +30,70 @@
  */
 
 #include "relic_core.h"
-
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-#if EB_FIX == LWNAF || !defined(STRIP)
-
-#if defined(EB_KBLTZ)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-TNAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
-	int i, n;
-	int8_t u, tnaf[RLC_FB_BITS + 8];
-	size_t l;
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
-	if (eb_curve_opt_a() == RLC_ZERO) {
-		u = -1;
-	} else {
-		u = 1;
-	}
-
-	/* Compute the w-TNAF representation of k. */
-	l = sizeof(tnaf);
-	bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_DEPTH);
-
-	n = tnaf[l - 1];
-	if (n > 0) {
-		eb_copy(r, t[n / 2]);
-	} else {
-		eb_neg(r, t[-n / 2]);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
-		eb_frb(r, r);
-
-		n = tnaf[i];
-		if (n > 0) {
-			eb_add(r, r, t[n / 2]);
-		}
-		if (n < 0) {
-			eb_sub(r, r, t[-n / 2]);
-		}
-	}
-	/* Convert r to affine coordinates. */
-	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
-}
-
-#endif /* EB_KBLTZ */
-
-#if defined(EB_PLAIN)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t				- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FB_BITS + 1];
-	size_t l;
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
-	l = RLC_FB_BITS + 1;
-	bn_rec_naf(naf, &l, k, RLC_DEPTH);
-
-	n = naf[l - 1];
-	if (n > 0) {
-		eb_copy(r, t[n / 2]);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
-		eb_dbl(r, r);
-
-		n = naf[i];
-		if (n > 0) {
-			eb_add(r, r, t[n / 2]);
-		}
-		if (n < 0) {
-			eb_sub(r, r, t[-n / 2]);
-		}
-	}
-	/* Convert r to affine coordinates. */
-	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
-}
-
-#endif /* EB_PLAIN */
-
-#endif /* EB_FIX == LWNAF */
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EB_FIX == BASIC || !defined(STRIP)
+TMPL_EC_MUL_FIX_BASIC(eb, plain);
 
-void eb_mul_pre_basic(eb_t *t, const eb_t p) {
-	bn_t n;
+TMPL_EC_MUL_FIX_LWREG(eb, plain, 1, RLC_FB_BITS);
 
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		eb_curve_get_ord(n);
-
-		eb_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			eb_dbl(t[i], t[i - 1]);
-		}
-
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, bn_bits(n) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-void eb_mul_fix_basic(eb_t r, const eb_t *t, const bn_t k) {
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_set_infty(r);
-	for (int i = 0; i < bn_bits(k); i++) {
-		if (bn_get_bit(k, i)) {
-			eb_add(r, r, t[i]);
-		}
-	}
-	eb_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		eb_neg(r, r);
-	}
-}
-
-#endif
-
-#if EB_FIX == COMBS || !defined(STRIP)
-
-void eb_mul_pre_combs(eb_t *t, const eb_t p) {
-	int i, j, l;
-	bn_t ord;
-
-	bn_null(ord);
-
-	RLC_TRY {
-		bn_new(ord);
-
-		eb_curve_get_ord(ord);
-		l = RLC_CEIL(bn_bits(ord), RLC_DEPTH);
-
-		eb_set_infty(t[0]);
-
-		eb_copy(t[1], p);
-		for (j = 1; j < RLC_DEPTH; j++) {
-			eb_dbl(t[1 << j], t[1 << (j - 1)]);
-			for (i = 1; i < l; i++) {
-				eb_dbl(t[1 << j], t[1 << j]);
-			}
-#if defined(EB_MIXED)
-			eb_norm(t[1 << j], t[1 << j]);
-#endif
-			for (i = 1; i < (1 << j); i++) {
-				eb_add(t[(1 << j) + i], t[i], t[1 << j]);
-			}
-		}
-
-		eb_norm_sim(t + 2, (const eb_t *)t + 2, RLC_EB_TABLE_COMBS - 2);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(ord);
-	}
-}
-
-void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
-	int i, j, l, w, n, p0, p1;
-	bn_t ord;
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	bn_null(ord);
-
-	RLC_TRY {
-		bn_new(ord);
-
-		eb_curve_get_ord(ord);
-		l = RLC_CEIL(bn_bits(ord), RLC_DEPTH);
-
-		n = bn_bits(k);
-		p0 = (RLC_DEPTH) * l - 1;
-
-		w = 0;
-		p1 = p0--;
-		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-			w = w << 1;
-			if (p1 < n && bn_get_bit(k, p1)) {
-				w = w | 1;
-			}
-		}
-		eb_copy(r, t[w]);
-
-		for (i = l - 2; i >= 0; i--) {
-			eb_dbl(r, r);
-
-			w = 0;
-			p1 = p0--;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-				w = w << 1;
-				if (p1 < n && bn_get_bit(k, p1)) {
-					w = w | 1;
-				}
-			}
-			if (w > 0) {
-				eb_add(r, r, t[w]);
-			}
-		}
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(ord);
-	}
-}
-
-#endif
-
-#if EB_FIX == COMBD || !defined(STRIP)
-
-void eb_mul_pre_combd(eb_t *t, const eb_t p) {
-	int i, j, d, e;
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		eb_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
-
-		eb_set_infty(t[0]);
-		eb_copy(t[1], p);
-		for (j = 1; j < RLC_DEPTH; j++) {
-			eb_dbl(t[1 << j], t[1 << (j - 1)]);
-			for (i = 1; i < d; i++) {
-				eb_dbl(t[1 << j], t[1 << j]);
-			}
-			for (i = 1; i < (1 << j); i++) {
-				eb_add(t[(1 << j) + i], t[1 << j], t[i]);
-			}
-		}
-		eb_set_infty(t[1 << RLC_DEPTH]);
-		for (j = 1; j < (1 << RLC_DEPTH); j++) {
-			eb_dbl(t[(1 << RLC_DEPTH) + j], t[j]);
-			for (i = 1; i < e; i++) {
-				eb_dbl(t[(1 << RLC_DEPTH) + j], t[(1 << RLC_DEPTH) + j]);
-			}
-		}
-
-		eb_norm_sim(t + 2, (const eb_t *)t + 2, (1 << RLC_DEPTH) - 2);
-		eb_norm_sim(t + (1 << RLC_DEPTH) + 1,
-				(const eb_t *)t + (1 << RLC_DEPTH) + 1, (1 << RLC_DEPTH) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
-	int i, j, d, e, w0, w1, n0, p0, p1;
-	bn_t n;
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		eb_curve_get_ord(n);
-
-		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
-
-		eb_set_infty(r);
-		n0 = bn_bits(k);
-
-		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
-		for (i = e - 1; i >= 0; i--) {
-			eb_dbl(r, r);
-
-			w0 = 0;
-			p0 = p1;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
-				w0 = w0 << 1;
-				if (p0 < n0 && bn_get_bit(k, p0)) {
-					w0 = w0 | 1;
-				}
-			}
-
-			w1 = 0;
-			p0 = p1-- + e;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
-				w1 = w1 << 1;
-				if (i + e < d && p0 < n0 && bn_get_bit(k, p0)) {
-					w1 = w1 | 1;
-				}
-			}
-
-			eb_add(r, r, t[w0]);
-			eb_add(r, r, t[(1 << RLC_DEPTH) + w1]);
-		}
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-#endif
-
-#if EB_FIX == LWNAF || !defined(STRIP)
+TMPL_EC_MUL_COMBD(eb);
 
 void eb_mul_pre_lwnaf(eb_t *t, const eb_t p) {
 	eb_tab(t, p, RLC_DEPTH);
 }
 
 void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k) {
-#if defined(EB_KBLTZ)
-	if (eb_curve_is_kbltz()) {
-		eb_mul_fix_kbltz(r, t, k);
-		return;
-	}
-#endif
+	int i, d, kbltz = eb_curve_is_kbltz();
+	int8_t u, naf[RLC_FB_BITS + 8];
+	bn_t n, _k;
+	size_t l;
 
-#if defined(EB_PLAIN)
-	eb_mul_fix_plain(r, t, k);
-#endif
+	bn_null_all(n, _k);
+
+	RLC_TRY {
+		bn_new_all(n, _k);
+
+		/* Reduce the scalar to bound the length of its recoding. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		/* Compute the w-TNAF or w-NAF representation of k. */
+		l = sizeof(naf);
+		if (kbltz) {
+			u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+			bn_rec_tnaf(naf, &l, _k, u, RLC_FB_BITS, RLC_DEPTH);
+		} else {
+			bn_rec_naf(naf, &l, _k, RLC_DEPTH);
+		}
+
+		eb_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			/* The Frobenius map replaces doubling on Koblitz curves. */
+			if (kbltz) {
+				eb_frb(r, r);
+			} else {
+				eb_dbl(r, r);
+			}
+
+			d = naf[i];
+			if (d > 0) {
+				eb_add(r, r, t[d / 2]);
+			}
+			if (d < 0) {
+				eb_sub(r, r, t[-d / 2]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		eb_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+	}
 }
-#endif

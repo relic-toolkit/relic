@@ -36,7 +36,9 @@
 #ifndef RLC_RAND_H
 #define RLC_RAND_H
 
-#include "relic_rand.h"
+#include "relic_conf.h"
+#include "relic_types.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -45,26 +47,54 @@
 /**
  * Size of the PRNG internal state in bytes.
  */
-#if RAND == HASHD
+#if RLC_RAND == RLC_HASHD
 
-#if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == B2S160 || MD_MAP == B2S256
+#if MD_MAP == MD_SH224 || MD_MAP == MD_SH256 || MD_MAP == MD_B2S160 || \
+	MD_MAP == MD_B2S256 || MD_MAP == MD_S3224 || MD_MAP == MD_S3256
 #define RLC_RAND_SIZE		(1 + 2*440/8)
-#elif MD_MAP == SH384 || MD_MAP == SH512
+#elif MD_MAP == MD_SH384 || MD_MAP == MD_SH512 || MD_MAP == MD_S3384 || \
+	MD_MAP == MD_S3512
 #define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 
-#elif RAND == UDEV
+#elif RLC_RAND == RLC_HMACD
+#define RLC_RAND_SIZE		(2 * RLC_MD_LEN)
+#elif RLC_RAND == RLC_UDEV
 #define RLC_RAND_SIZE		(sizeof(int))
-#elif RAND == CALL
-#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
-#elif RAND == RDRND
-#define RLC_RAND_SIZE      0
+#elif RLC_RAND == RLC_CALL
+#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, size_t, void *)))
 #endif
 
 /**
- * Minimum size of the PRNG seed.
+ * Size of the seed gathered when initializing the PRNG.
  */
 #define RLC_RAND_SEED	    64
+
+/**
+ * Minimum size of the PRNG seed, for 128 bits of security.
+ */
+#define RLC_RAND_MIN		16
+
+/**
+ * Maximum size of the PRNG seed, which is copied to the stack when seeding.
+ */
+#define RLC_RAND_MAX		1024
+
+/**
+ * Path to the character device that supplies entropy.
+ */
+#define RLC_RAND_PATH		"/dev/urandom"
+
+/**
+ * Flag to reseed the PRNG when its process forks, for generators with state
+ * on systems where the process identifier is available.
+ */
+#if (RLC_RAND == RLC_HASHD || RLC_RAND == RLC_HMACD) && \
+		(RLC_OPSYS == RLC_LINUX || RLC_OPSYS == RLC_MACOSX || \
+		RLC_OPSYS == RLC_FREEBSD || RLC_OPSYS == RLC_NETBSD || \
+		RLC_OPSYS == RLC_DROID)
+#define RLC_RAND_FORK
+#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -80,13 +110,14 @@ void rand_init(void);
  */
 void rand_clean(void);
 
-#if RAND != CALL
+#if RLC_RAND != RLC_CALL
 
 /**
  * Sets the initial state of the pseudo-random number generator.
  *
  * @param[in] buf			- the buffer that represents the initial state.
- * @param[in] size			- the number of bytes.
+ * @param[in] size			- the number of bytes, between RLC_RAND_MIN and
+ * 							  RLC_RAND_MAX.
  * @throw ERR_NO_VALID		- if the entropy length is too small or too large.
  */
 void rand_seed(uint8_t *buf, size_t size);

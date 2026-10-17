@@ -35,8 +35,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ED_ADD == BASIC || !defined(STRIP)
-
 void ed_neg_basic(ed_t r, const ed_t p) {
 	if (ed_is_infty(p)) {
 		ed_set_infty(r);
@@ -45,13 +43,11 @@ void ed_neg_basic(ed_t r, const ed_t p) {
 
 	fp_copy(r->y, p->y);
 	fp_neg(r->x, p->x);
+	fp_copy(r->z, p->z);
+	fp_neg(r->t, p->t);
 
-	r->coord = BASIC;
+	r->coord = EC_AFFIN;
 }
-
-#endif
-
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 
 void ed_neg_projc(ed_t r, const ed_t p) {
 	if (ed_is_infty(p)) {
@@ -62,11 +58,9 @@ void ed_neg_projc(ed_t r, const ed_t p) {
 	fp_neg(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_neg(r->t, p->t);
 #endif
 
 	r->coord = p->coord;
 }
-
-#endif

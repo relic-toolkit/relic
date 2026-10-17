@@ -40,7 +40,7 @@
 
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t _c, r0, r1, carry = 0;
-	for (int i = 0; i < size; i++, a++, c++) {
+	for (size_t i = 0; i < size; i++, a++, c++) {
 		/* Multiply the digit *a by d and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
 		RLC_MUL_DIG(r1, r0, *a, digit);
@@ -54,9 +54,22 @@ dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return carry;
 }
 
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	dig_t _c, r0, r1, borrow = 0;
+	for (size_t i = 0; i < size; i++, a++, c++) {
+		/* Same column-by-column product as bn_mula_low, subtracted instead. */
+		RLC_MUL_DIG(r1, r0, *a, digit);
+		_c = r0 + borrow;
+		borrow = r1 + (_c < borrow);
+		borrow += (*c < _c);
+		*c = *c - _c;
+	}
+	return borrow;
+}
+
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t r0, r1, carry = 0;
-	for (int i = 0; i < size; i++, a++, c++) {
+	for (size_t i = 0; i < size; i++, a++, c++) {
 		RLC_MUL_DIG(r1, r0, *a, digit);
 		*c = r0 + carry;
 		carry = r1 + (*c < carry);
@@ -64,7 +77,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return carry;
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 		size_t size) {
 	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
@@ -77,7 +90,7 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 	c[0] = _c - sign;
 	c1 = (c[0] < _c);
 	c0 = r;
-	for (int i = 1; i < size; i++) {
+	for (size_t i = 1; i < size; i++) {
 		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
 		_c += c0;
 		c0 = r + (_c < c0);
@@ -89,7 +102,7 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 }
 
 void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	int i, j;
+	size_t i, j;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
 
@@ -120,7 +133,7 @@ void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 
 void bn_muld_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		uint_t l, uint_t h) {
-	int i, j, ta;
+	size_t i, j, ta;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
 

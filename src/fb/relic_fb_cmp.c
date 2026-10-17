@@ -38,15 +38,16 @@
 /*============================================================================*/
 
 int fb_cmp_dig(const fb_t a, dig_t b) {
-	dig_t r = b;
+	/* The low digit must match and all the others must be zero. */
+	dig_t r = a[0] ^ b;
 
-	for (int i = 0; i < RLC_FB_DIGS; i++) {
-		r ^= a[i];
+	for (size_t i = 1; i < RLC_FB_DIGS; i++) {
+		r |= a[i];
 	}
 
 	return (r == 0 ? RLC_EQ : RLC_NE);
 }
 
 int fb_cmp(const fb_t a, const fb_t b) {
-	return dv_cmp_sec(a, b, RLC_FB_DIGS);
+	return dv_equ_sec(a, b, RLC_FB_DIGS);
 }

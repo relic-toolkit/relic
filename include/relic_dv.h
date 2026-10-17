@@ -48,12 +48,12 @@
 /*============================================================================*/
 
 /**
- * Size in bits of the largest field element.
+ * Size in bits of a product of the largest field elements.
  */
 #ifdef WITH_FP
 
 #ifdef WITH_FB
-#define RLC_DV_MAX		(RLC_MAX(FP_PRIME, FB_POLYN))
+#define RLC_DV_MAX		((size_t)(2 * RLC_MAX(FP_PRIME, FB_POLYN)))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
 #endif
@@ -61,7 +61,7 @@
 #else /* !WITH_FP */
 
 #ifdef WITH_FB
-#define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
+#define RLC_DV_MAX		((size_t)(2 * FB_POLYN))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		(0)
 #endif
@@ -72,9 +72,9 @@
  * Size in digits of a temporary vector.
  *
  * A temporary vector has enough size to store a multiplication/squaring result
- * produced by any module.
+ * produced by any module, plus one digit for the carry of Montgomery reduction.
  */
-#define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG), RLC_BN_SIZE))
+#define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG) + 1, RLC_BN_SIZE))
 
 /**
  * Size in bytes of a temporary vector.
@@ -88,7 +88,7 @@
 /**
  * Represents a temporary double-precision digit vector.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t dv_t[RLC_DV_DIGS + RLC_PAD(RLC_DV_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *dv_t;
@@ -103,7 +103,7 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the digit vector to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define dv_null(A)			/* empty */
 #else
 #define dv_null(A)			A = NULL;
@@ -114,9 +114,9 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the double-precision result.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define dv_new(A)			dv_new_dynam(&(A), RLC_DV_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define dv_new(A)			/* empty */
 #endif
 
@@ -125,11 +125,23 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the temporary digit vector to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define dv_free(A)			dv_free_dynam(&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define dv_free(A)			(void)A
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen digit vectors at once, in
+ * order.
+ *
+ * @param[in,out] ...		- the digit vectors.
+ */
+/** @{ */
+#define dv_null_all(...)	RLC_EACH(dv_null, __VA_ARGS__)
+#define dv_new_all(...)		RLC_EACH(dv_new, __VA_ARGS__)
+#define dv_free_all(...)	RLC_EACH(dv_free, __VA_ARGS__)
+/** @} */
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -152,6 +164,15 @@ void dv_print(const dig_t *a, size_t digits);
 void dv_zero(dig_t *a, size_t digits);
 
 /**
+ * Returns whether a digit vector is zero.
+ *
+ * @param[in] a				- the digit vector to test.
+ * @param[in] digits		- the number of words to test.
+ * @return 1 if every word is zero, 0 otherwise.
+ */
+int dv_is_zero(const dig_t *a, size_t digits);
+
+/**
  * Copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.
@@ -164,9 +185,9 @@ void dv_copy(dig_t *c, const dig_t *a, size_t digits);
  * Conditionally copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.
- * @paraim[in] a			- the source.
+ * @param[in] a				- the source.
  * @param[in] digits		- the number of digits to copy.
- * @param[in] bit			- the condition bit to evaluate.
+ * @param[in] bit			- the condition bit, 0 or 1.
  */
 void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
 
@@ -174,9 +195,9 @@ void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
  * Conditionally swap two digit vectors.
  *
  * @param[in,out] c			- the destination.
- * @paraim[in,out] a		- the source.
- * @param[in] digits		- the number of digits to copy.
- * @param[in] bit			- the condition bit to evaluate.
+ * @param[in,out] a			- the source.
+ * @param[in] digits		- the number of digits to swap.
+ * @param[in] bit			- the condition bit, 0 or 1.
  */
 void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit);
 
@@ -196,9 +217,29 @@ int dv_cmp(const dig_t *a, const dig_t *b, size_t size);
  * @param[in] a				- the first digit vector.
  * @param[in] b				- the second digit vector.
  * @param[in] size			- the length in digits of the vectors.
- * @return RLC_EQ if they are equal and RLC_NE otherwise.
+ * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size);
+
+/**
+ * Returns the result of a equality test between two digit vectors.
+ *
+ * @param[in] a				- the first digit vector.
+ * @param[in] b				- the second digit vector.
+ * @param[in] size			- the length in digits of the vectors.
+ * @return RLC_EQ if a == b and RLC_NE otherwise.
+ */
+int dv_equ(const dig_t *a, const dig_t *b, size_t size);
+
+/**
+ * Tests two digit vectors for equality in constant time.
+ *
+ * @param[in] a				- the first digit vector.
+ * @param[in] b				- the second digit vector.
+ * @param[in] size			- the length in digits of the vectors.
+ * @return RLC_EQ if they are equal and RLC_NE otherwise.
+ */
+int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Allocates and initializes a temporary double-precision digit vector.
@@ -209,7 +250,7 @@ int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size);
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  * 							by the library.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 void dv_new_dynam(dv_t *a, size_t digits);
 #endif
 
@@ -218,29 +259,31 @@ void dv_new_dynam(dv_t *a, size_t digits);
  *
  * @param[out] a			- the temporary digit vector to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 void dv_free_dynam(dv_t *a);
 #endif
 
 /**
- * Shifts a digit vector to the left by some digits.
+ * Shifts a digit vector to the left by some digits. Shifting by size digits or
+ * more gives zero.
  * Computes c = a << (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to shift.
- * @param[in] size			- the number of digits to shift.
- * @param[in] digits		- the shift amount.
+ * @param[in] size			- the length of the vectors in digits.
+ * @param[in] digits		- the shift amount in digits.
  */
 void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 
 /**
- * Shifts a digit vector to the right by some digits.
+ * Shifts a digit vector to the right by some digits. Shifting by size digits or
+ * more gives zero.
  * Computes c = a >> (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to shift.
- * @param[in] size			- the number of digits to shift.
- * @param[in] digits		- the shift amount.
+ * @param[in] size			- the length of the vectors in digits.
+ * @param[in] digits		- the shift amount in digits.
  */
 void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 

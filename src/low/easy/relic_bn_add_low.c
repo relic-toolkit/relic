@@ -98,7 +98,7 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	return carry;
 }
 
-dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
+dig_t bn_sneg_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
     dig_t carry = sa & 1;
 
 	sa = -sa;

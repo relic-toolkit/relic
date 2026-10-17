@@ -45,7 +45,7 @@ void eb_set_infty(eb_t p) {
 	fb_zero(p->x);
 	fb_zero(p->y);
 	fb_zero(p->z);
-	p->coord = BASIC;
+	p->coord = EC_AFFIN;
 }
 
 void eb_copy(eb_t r, const eb_t p) {
@@ -55,15 +55,23 @@ void eb_copy(eb_t r, const eb_t p) {
 	r->coord = p->coord;
 }
 
+void eb_copy_sec(eb_t r, const eb_t p, dig_t bit) {
+	/* Copy all coordinates and the coordinate system at once. */
+	dv_copy_sec((dig_t *)r, (const dig_t *)p, sizeof(eb_st) / sizeof(dig_t),
+		bit);
+}
+
+void eb_swap_sec(eb_t p, eb_t q, dig_t bit) {
+	dv_swap_sec((dig_t *)p, (dig_t *)q, sizeof(eb_st) / sizeof(dig_t), bit);
+}
+
 void eb_rand(eb_t p) {
 	bn_t n, k;
 
-	bn_null(n);
-	bn_null(k);
+	bn_null_all(n, k);
 
 	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
+		bn_new_all(k, n);
 
 		eb_curve_get_ord(n);
 
@@ -73,20 +81,17 @@ void eb_rand(eb_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
+		bn_free_all(k, n);
 	}
 }
 
 void eb_rhs(fb_t rhs, const fb_t x) {
 	fb_t t0, t1;
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		/* t0 = x1^2. */
 		fb_sqr(t0, x);
@@ -130,8 +135,7 @@ void eb_rhs(fb_t rhs, const fb_t x) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 
@@ -148,7 +152,7 @@ void eb_blind(eb_t r, const eb_t p) {
 		fb_mul(r->x, p->x, rand);
 		fb_sqr(rand, rand);
 		fb_mul(r->y, p->y, rand);
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -177,6 +181,7 @@ int eb_on_curve(const eb_t p) {
 		r = (fb_cmp(lhs, t->x) == RLC_EQ) || eb_is_infty(p);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -186,33 +191,62 @@ int eb_on_curve(const eb_t p) {
 	return r;
 }
 
+int eb_is_valid(const eb_t p) {
+	bn_t h, n;
+	eb_t t;
+	int result = 0;
+
+	if (eb_is_infty(p) || !eb_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	eb_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		eb_new(t);
+
+		result = 1;
+		eb_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			eb_curve_get_ord(n);
+			eb_mul_basic(t, p, n);
+			result = eb_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		eb_free(t);
+	}
+	return result;
+}
+
 void eb_tab(eb_t *t, const eb_t p, int w) {
 	int u;
 
-#if defined(EB_PLAIN)
 	if (!eb_curve_is_kbltz()) {
 		if (w > 2) {
 			eb_dbl(t[0], p);
-#if defined(EB_MIXED)
 			eb_norm(t[0], t[0]);
-#endif
 			eb_add(t[1], t[0], p);
 			for (int i = 2; i < (1 << (w - 2)); i++) {
 				eb_add(t[i], t[i - 1], t[0]);
 			}
-#if defined(EB_MIXED)
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
-#endif
 		}
-#if defined(EB_MIXED)
 		eb_norm(t[0], p);
-#else
-		eb_copy(t[0], p);
-#endif
 	}
-#endif /* EB_PLAIN */
 
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 
@@ -220,10 +254,13 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		for (int i = 0; i < 1 << (w - 2); i++) {
 			eb_set_infty(t[i]);
 			fb_set_dig(t[i]->z, 1);
-			t[i]->coord = BASIC;
+			t[i]->coord = EC_AFFIN;
 		}
 
 		switch (w) {
+			case 2:
+				eb_copy(t[0], p);
+				break;
 			/* Formulas from https://eprint.iacr.org/2014/664. */
 #if RLC_DEPTH == 3 || RLC_WIDTH ==  3
 			case 3:
@@ -474,13 +511,10 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				break;
 #endif
 		}
-#if defined(EB_MIXED)
 		if (w > 2) {
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
 		}
-#endif
 	}
-#endif /* EB_KBLTZ */
 }
 
 void eb_print(const eb_t p) {
@@ -504,25 +538,27 @@ size_t eb_size_bin(const eb_t a, int pack) {
 	return size;
 }
 
-void eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
+int eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			eb_set_infty(a);
-			return;
+			return RLC_OK;
 		} else {
 			RLC_THROW(ERR_NO_BUFFER);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len != (RLC_FB_BYTES + 1) && len != (2 * RLC_FB_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
-	a->coord = BASIC;
+	a->coord = EC_AFFIN;
 	fb_set_dig(a->z, 1);
-	fb_read_bin(a->x, bin + 1, RLC_FB_BYTES);
+	if (fb_read_bin(a->x, bin + 1, RLC_FB_BYTES) != RLC_OK) {
+		return RLC_ERR;
+	}
 	if (len == RLC_FB_BYTES + 1) {
 		switch(bin[0]) {
 			case 2:
@@ -534,24 +570,31 @@ void eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return RLC_ERR;
 		}
-		eb_upk(a, a);
+		if (!eb_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
 	}
 
 	if (len == 2 * RLC_FB_BYTES + 1) {
 		if (bin[0] == 4) {
-			fb_read_bin(a->y, bin + RLC_FB_BYTES + 1, RLC_FB_BYTES);
+			if (fb_read_bin(a->y, bin + RLC_FB_BYTES + 1, RLC_FB_BYTES)
+					!= RLC_OK) {
+				return RLC_ERR;
+			}
 		} else {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (!eb_on_curve(a)) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void eb_write_bin(uint8_t *bin, size_t len, const eb_t a, int pack) {

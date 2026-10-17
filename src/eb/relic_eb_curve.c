@@ -43,7 +43,7 @@
  * @param opt		- the resulting optimization.
  * @param a			- the curve coefficient.
  */
-static void detect_opt(int *opt, fb_t a) {
+static void eb_detect_opt(int *opt, fb_t a) {
 	if (fb_is_zero(a)) {
 		*opt = RLC_ZERO;
 	} else {
@@ -121,7 +121,7 @@ const eb_t *eb_curve_get_tab(void) {
 #if defined(EB_PRECO)
 
 	/* Return a meaningful pointer. */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (const eb_t *)*(core_get()->eb_ptr);
 #else
 	return (const eb_t *)core_get()->eb_ptr;
@@ -139,8 +139,8 @@ void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r,
 	fb_copy(ctx->eb_a, a);
 	fb_copy(ctx->eb_b, b);
 
-	detect_opt(&(ctx->eb_opt_a), ctx->eb_a);
-	detect_opt(&(ctx->eb_opt_b), ctx->eb_b);
+	eb_detect_opt(&(ctx->eb_opt_a), ctx->eb_a);
+	eb_detect_opt(&(ctx->eb_opt_b), ctx->eb_b);
 
 	if (fb_cmp_dig(ctx->eb_b, 1) == RLC_EQ) {
 		ctx->eb_is_kbltz = 1;

@@ -68,3 +68,29 @@ const dig_t fb_sqrl_table[256] = { 0x0, 0x1, 0x4, 0x5, 0x10, 0x11, 0x14, 0x15,
 		0x5414, 0x5415, 0x5440, 0x5441, 0x5444, 0x5445, 0x5450, 0x5451, 0x5454,
 		0x5455, 0x5500, 0x5501, 0x5504, 0x5505, 0x5510, 0x5511, 0x5514, 0x5515,
 		0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555 };
+
+void fb_sqrn_low(dig_t *c, const dig_t *a) {
+	dig_t *tmp, x, y, z;
+
+	tmp = c;
+	for (int i = 0; i < RLC_FB_DIGS; i++, tmp++) {
+		x = a[i];
+		y = x & 0x00FF;
+		z = x >> 8;
+		y = (y | (y << 4)) & 0x0F0F;
+		y = (y | (y << 2)) & 0x3333;
+		y = (y | (y << 1)) & 0x5555;
+		*tmp++ = y;
+		z = (z | (z << 4)) & 0x0F0F;
+		z = (z | (z << 2)) & 0x3333;
+		z = (z | (z << 1)) & 0x5555;
+		*tmp = z;
+	}
+}
+
+void fb_sqrm_low(dig_t *c, const dig_t *a) {
+	rlc_align dig_t t[2 * RLC_FB_DIGS];
+
+	fb_sqrl_low(t, a);
+	fb_rdc(c, t);
+}

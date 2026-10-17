@@ -111,7 +111,20 @@ dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	fp_subn_low(c, fp_prime_get(), a);
+	const dig_t *p = fp_prime_get();
+	dig_t t = 0, u = 0, mask;
+
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		t |= a[i];
+		u |= a[i] ^ p[i];
+	}
+	/* All ones unless a is 0 or p, in which case p - a is masked to zero. */
+	mask = (dig_t)0 - (dig_t)((t != 0) & (u != 0));
+
+	fp_subn_low(c, p, a);
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		c[i] &= mask;
+	}
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {

@@ -31,7 +31,7 @@
  */
 
 #include <gmp.h>
-#include <string.h>
+#include <stdlib.h>
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
@@ -48,7 +48,7 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	dig_t r, *tc = c, t[sm + 1];
 
 	mpn_copyd((mp_ptr)c, (mp_srcptr)a, sa);
-	for (int i = 0; i < sm; i++, tc++) {
+	for (size_t i = 0; i < sm; i++, tc++) {
 		r = (dig_t)(*tc * u);
 		mpn_sec_mul((mp_ptr)t, (mp_srcptr)m, sm, (mp_srcptr)&r, 1, (mp_ptr)s);
 		*tc = t[sm] + mpn_add_n((mp_ptr)tc, (mp_srcptr)tc, (mp_srcptr)t, sm);

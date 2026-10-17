@@ -21,173 +21,68 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_dv_low.h"
+/**
+ * @file
+ *
+ * Implementation of the low-level quadratic extension field squaring.
+ *
+ * @ingroup fpx
+ */
 
+#include "relic_fp_low.h"
 #include "macro.s"
+
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
+
+.text
+
+#ifdef FP2_ASM
 
 .global cdecl(fp2_sqrn_low)
 .global cdecl(fp2_sqrm_low)
 
 /*
+ * Function: fp2_sqrn_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2, with c[1] at RLC_DV_STRIDE bytes from c[0]
+ */
+cdecl(fp2_sqrn_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	subq	$112, %rsp
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 96(%rsp)
+
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0, 0(%rsp)
+
+	addq	$112, %rsp
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
+/*
  * Function: fp2_sqrm_low
  * Inputs: rdi = c, rsi = a
- * Output: c = a * a
+ * Output: c = a^2/R mod p, coefficient-wise
  */
 cdecl(fp2_sqrm_low):
-	push %r12
-	push %r13
-	push %r14
-	push %r15
+	push	%r12
+	push	%r13
+	push	%r14
+	subq	$112, %rsp
 
-	subq $96, %rsp
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1, 0(%rsp)
 
-	/* rsp[8..15] = t0 = a0 + a1. */
-	movq	0(%rsi), %r8
-	addq	32(%rsi), %r8
-	movq	%r8, 64(%rsp)
-	movq	8(%rsi), %r9
-	adcq	40(%rsi), %r9
-	movq	%r9, 72(%rsp)
-	movq	16(%rsi), %r10
-	adcq	48(%rsi), %r10
-	movq	%r10, 80(%rsp)
-	movq	24(%rsi), %r11
-	adcq	56(%rsi), %r11
-	movq	%r11, 88(%rsp)
-
-	/* (r15, r14, r3, r12) = t1 = a0 - a1. */
-	movq	0(%rsi), %r12
-	subq	32(%rsi), %r12
-	movq	$0, %rax            ////////try it on ib (w/o interleaving)
-	movq	8(%rsi), %r13
-	sbbq	40(%rsi), %r13
-	movq	$0, %rcx
-	movq	16(%rsi), %r14
-	sbbq	48(%rsi), %r14
-	movq	$0, %rdx
-	movq	24(%rsi), %r15
-	sbbq	56(%rsi), %r15
-	movq	$0, %r11
-
-	movq	P0,%r8
-	cmovc	%r8, %rax
-	movq	P1,%r9
-	cmovc	%r9, %rcx
-	movq	P2,%r8
-	cmovc	%r8, %rdx
-	movq	P3,%r9
-	cmovc	%r9, %r11
-
-	addq	%rax,%r12
-	adcq	%rcx,%r13
-	adcq	%rdx,%r14
-	adcq	%r11,%r15
-
-	/* c0 = a0^2 + b_0^2 * u^2. */
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, 64(%rsp), 72(%rsp), 80(%rsp), 88(%rsp), %r12, %r13, %r14, %r15
-
-	/* (r11, r10, r9, r8) = t2 = 2 * a0. */
-	movq	0(%rsi), %r8
-	addq	%r8, %r8
-	movq	%r8, 64(%rsp)
-	movq	8(%rsi), %r9
-	adcq	%r9, %r9
-	movq	%r9, 72(%rsp)
-	movq	16(%rsi), %r10
-	adcq	%r10, %r10
-	movq	%r10, 80(%rsp)
-	movq	24(%rsi), %r11
-	adcq	%r11, %r11
-	movq	%r11, 88(%rsp)
-
-	FP_RDCN_LOW %rdi, %rsp
-
-	FP_MULN_LOW %rsp, %r12, %r13, %r14, 64(%rsp), 72(%rsp), 80(%rsp), 88(%rsp), 32(%rsi), 40(%rsi), 48(%rsi), 56(%rsi)
-	addq	$(8 * RLC_FP_DIGS), %rdi
-	FP_RDCN_LOW %rdi, %rsp
-
-	addq $96, %rsp
-
-	pop %r15
-	pop %r14
-	pop %r13
-	pop %r12
+	addq	$112, %rsp
+	popq	%r14
+	popq	%r13
+	popq	%r12
 	ret
 
-cdecl(fp2_sqrn_low):
-	push %r12
-	push %r13
-	push %r14
-	push %r15
-
-	subq $96, %rsp
-
-	/* rsp[8..15] = t0 = a0 + a1. */
-	movq	0(%rsi), %r8
-	movq	%r8, %r12
-	addq	32(%rsi), %r8
-	movq	%r8, 64(%rsp)
-	movq	8(%rsi), %r9
-	movq	%r9, %r13
-	adcq	40(%rsi), %r9
-	movq	%r9, 72(%rsp)
-	movq	16(%rsi), %r10
-	movq	%r10, %r14
-	adcq	48(%rsi), %r10
-	movq	%r10, 80(%rsp)
-	movq	24(%rsi), %r11
-	movq	%r11, %r15
-	adcq	56(%rsi), %r11
-	movq	%r11, 88(%rsp)
-
-	/* (r15, r14, r3, r12) = t1 = a0 - a1. */
-	subq	32(%rsi), %r12
-	sbbq	40(%rsi), %r13
-	sbbq	48(%rsi), %r14
-	sbbq	56(%rsi), %r15
-
-	movq	$0, %rax
-	movq	$0, %rcx
-	movq	$0, %rdx
-	movq	$0, %r11
-	movq	P0,%r8
-	cmovc	%r8, %rax
-	movq	P1,%r9
-	cmovc	%r9, %rcx
-	movq	P2,%r8
-	cmovc	%r8, %rdx
-	movq	P3,%r9
-	cmovc	%r9, %r11
-
-	addq	%rax,%r12
-	adcq	%rcx,%r13
-	adcq	%rdx,%r14
-	adcq	%r11,%r15
-
-	/* c0 = a0^2 + b_0^2 * u^2. */
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, 64(%rsp), 72(%rsp), 80(%rsp), 88(%rsp), %r12, %r13, %r14, %r15
-
-	/* (r11, r10, r9, r8) = t2 = 2 * a0. */
-	movq	0(%rsi), %r8
-	addq	%r8, %r8
-	movq	%r8, 64(%rsp)
-	movq	8(%rsi), %r9
-	adcq	%r9, %r9
-	movq	%r9, 72(%rsp)
-	movq	16(%rsi), %r10
-	adcq	%r10, %r10
-	movq	%r10, 80(%rsp)
-	movq	24(%rsi), %r11
-	adcq	%r11, %r11
-	movq	%r11, 88(%rsp)
-
-	addq	$(8*RLC_DV_DIGS), %rdi
-	FP_MULN_LOW %rdi, %r12, %r13, %r14, 64(%rsp), 72(%rsp), 80(%rsp), 88(%rsp), 32(%rsi), 40(%rsi), 48(%rsi), 56(%rsi)
-
-	addq $96, %rsp
-
-	pop %r15
-	pop %r14
-	pop %r13
-	pop %r12
-	ret
+#endif /* FP2_ASM */

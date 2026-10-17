@@ -42,7 +42,7 @@
 #include "relic_util.h"
 #include "relic_label.h"
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 #include <setjmp.h>
 #endif
 
@@ -80,12 +80,16 @@ enum errors {
 	ERR_MAX
 };
 
-/** Truncate file name if verbosity is turned off. */
-#ifdef VERBS
+/**
+ * Truncate file name if verbosity is turned off. On RLC_AVR the name is kept in
+ * program memory, where it cannot be searched with strrchr().
+ */
+#if defined(RLC_VERBS) || RLC_ARCH == RLC_AVR
 #define RLC_FILE	RLC_STR(__FILE__)
 #else
-#define RLC_FILE															\
-	((strrchr(RLC_STR(__FILE__), '/') ? : RLC_STR(__FILE__) - 1) + 1)
+#define RLC_FILE														\
+	(strrchr(RLC_STR(__FILE__), '/') ?									\
+		strrchr(RLC_STR(__FILE__), '/') + 1 : RLC_STR(__FILE__))
 #endif
 
 /*============================================================================*/
@@ -97,8 +101,7 @@ enum errors {
  */
 typedef int err_t;
 
-
-#ifdef CHECK
+#ifdef RLC_CHECK
 
 /**
  * Type that describes an error status, including the error code and the program
@@ -120,6 +123,20 @@ typedef struct _sts_t {
 /*============================================================================*/
 
 /**
+ * Saves the calling environment for the error handling. MinGW-w64 makes
+ * longjmp() unwind the stack through SEH from the frame given to _setjmp(),
+ * which can crash on optimized frames, while a null frame restores the
+ * registers directly, which is all that the error handling needs.
+ *
+ * @param[out] B			- the buffer to save the environment to.
+ */
+#if defined(__MINGW32__) && defined(__x86_64__)
+#define RLC_SETJMP(B)		_setjmp((B), NULL)
+#else
+#define RLC_SETJMP(B)		setjmp(B)
+#endif
+
+/**
  * Implements the TRY clause of the error-handling routines.
  *
  * This macro copies the last error from the current library context to
@@ -139,7 +156,7 @@ typedef struct _sts_t {
 		_ctx->last = &_this; 											\
 		for (int _z = 0; ; _z = 1) 										\
 			if (_z) { 													\
-				if (setjmp(_this.addr) == 0) { 							\
+				if (RLC_SETJMP(_this.addr) == 0) { 						\
 					if (1)												\
 
 /**
@@ -164,8 +181,8 @@ typedef struct _sts_t {
 				_this.error = ADDR; 									\
 			}															\
 	} 																	\
-	for (int _z = 0; _z < 2; _z++) 										\
-		if (_z == 1 && core_get()->caught) 								\
+	for (int _z = 0, _ctx_c = core_get()->caught; _z < 2; _z++)			\
+		if (_z == 1 && _ctx_c)											\
 
 /**
  * Implements the THROW clause of the error-handling routines.
@@ -185,54 +202,60 @@ typedef struct _sts_t {
  * @param[in] E		- the exception being caught.
  */
 #define RLC_ERR_THROW(E)												\
-	{																	\
+	do {																\
 		ctx_t *_ctx = core_get();										\
 		_ctx->code = RLC_ERR;											\
 		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
+			/* Remember the original code, so that rethrows keep it. */	\
+			if (E != ERR_CAUGHT) {										\
+				_ctx->number = E;										\
+			}															\
 			if (_ctx->last == NULL) {									\
 				_ctx->last = &(_ctx->error);							\
 				_ctx->error.error = &(_ctx->number);					\
 				_ctx->error.block = 0;									\
-				_ctx->number = E;										\
 				RLC_ERR_PRINT(E);										\
 			} else {													\
 				for (; ; longjmp(_ctx->last->addr, 1)) {				\
 					RLC_ERR_PRINT(E);									\
 					if (_ctx->last->error) {							\
-						if (E != ERR_CAUGHT) {							\
-							*(_ctx->last->error) = E;					\
-						}												\
+						*(_ctx->last->error) = _ctx->number;			\
 					}													\
 				}														\
 			}															\
 		}																\
-	}																	\
+	} while (0)															\
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a TRY clause.
  */
 #define RLC_TRY					RLC_ERR_TRY
 #else
 /**
- * Stub for the TRY clause.
+ * Implements a TRY clause without error checking. The block always runs to
+ * the end, and the number of blocks entered is counted so that errors thrown
+ * inside them are reported to their CATCH clause.
  */
-#define RLC_TRY					if (1)
+#define RLC_TRY					if ((core_get()->depth++, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a CATCH clause.
  */
 #define RLC_CATCH(E)			RLC_ERR_CATCH(&(E))
 #else
 /**
- * Stub for the CATCH clause.
+ * Implements a CATCH clause without error checking, which runs if an error was
+ * thrown in its TRY clause and consumes it.
  */
-#define RLC_CATCH(E)			else
+#define RLC_CATCH(E)														\
+	if ((core_get()->depth--, core_get()->pending) &&						\
+			(core_get()->pending = 0, (E) = core_get()->number, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a CATCH clause for any possible error.
  *
@@ -242,12 +265,15 @@ typedef struct _sts_t {
 #define RLC_CATCH_ANY			RLC_ERR_CATCH(NULL)
 #else
 /**
- * Stub for the RLC_CATCH_ANY clause.
+ * Implements a CATCH clause for any possible error without error checking,
+ * which runs if an error was thrown in its TRY clause and consumes it.
  */
-#define RLC_CATCH_ANY			if (0)
+#define RLC_CATCH_ANY														\
+	if ((core_get()->depth--, core_get()->pending) &&						\
+			(core_get()->pending = 0, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements the RLC_FINALLY clause.
  */
@@ -256,23 +282,39 @@ typedef struct _sts_t {
 #define RLC_FINALLY				if (1)
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a THROW clause.
  */
 #define RLC_THROW				RLC_ERR_THROW
 #else
 /**
- * Stub for the THROW clause.
+ * Implements a THROW clause without error checking. The error is recorded in
+ * the code returned by err_get_code() and execution continues; inside a
+ * try-catch block, the error is also passed on to its CATCH clause.
+ *
+ * @param[in] E		- the exception being thrown.
  */
-#ifdef QUIET
-#define RLC_THROW(E)			core_get()->code = RLC_ERR;
+#ifdef RLC_QUIET
+#define RLC_ERR_PRINT_OFF(E)	/* empty */
 #else
-#define RLC_THROW(E)														\
-	core_get()->code = RLC_ERR; 											\
-	util_print("ERROR THROWN in %s:%d\n", RLC_FILE, __LINE__);				\
-
+#define RLC_ERR_PRINT_OFF(E)												\
+	if (E != ERR_CAUGHT) {													\
+		err_throw(RLC_FILE, __LINE__);										\
+	}
 #endif
+#define RLC_THROW(E)														\
+	do {																	\
+		ctx_t *_ctx = core_get();											\
+		_ctx->code = RLC_ERR;												\
+		if (E != ERR_CAUGHT) {												\
+			_ctx->number = E;												\
+		}																	\
+		if (_ctx->depth > 0) {												\
+			_ctx->pending = 1;												\
+		}																	\
+		RLC_ERR_PRINT_OFF(E);												\
+	} while (0)
 #endif
 
 /**
@@ -282,7 +324,7 @@ typedef struct _sts_t {
  */
 #define RLC_ERROR(LABEL)		goto LABEL
 
-#ifdef QUIET
+#ifdef RLC_QUIET
 
 /**
  * Stub for the error printing function.
@@ -293,7 +335,7 @@ typedef struct _sts_t {
 
 #else
 
-#ifdef VERBS
+#ifdef RLC_VERBS
 
 /**
  * Prints the current error message in a complete format.
@@ -303,7 +345,7 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_full_msg(__func__, RLC_FILE, __LINE__, ERROR)						\
 
-#else /* VERBS */
+#else /* RLC_VERBS */
 
 /**
  * Prints the current error message.
@@ -313,14 +355,14 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_simple_msg(ERROR)													\
 
-#endif /* VERBS */
-#endif /* QUIET */
+#endif /* RLC_VERBS */
+#endif /* RLC_QUIET */
 
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 
 /**
  * Prints the error message with little information.
@@ -351,11 +393,27 @@ void err_get_msg(err_t *e, char **msg);
 #endif
 
 /**
+ * Records an error without error checking and prints where it was thrown.
+ *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
+ */
+void err_throw(const char *file, int line);
+
+/**
  * Returns the code returned by the last function call and resets the current
  * code.
  *
  * @returns ERR_OK if no errors occurred in the function, ERR_ERR otherwise.
  */
 int err_get_code(void);
+
+/**
+ * Enables or disables printing of error messages at runtime, for errors that
+ * are expected. Errors are still recorded and caught as usual.
+ *
+ * @param[in] quiet			- the flag to disable printing.
+ */
+void err_set_quiet(int quiet);
 
 #endif /* !RLC_ERR_H */

@@ -35,8 +35,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
-
 /**
  * Normalizes a point represented in projective coordinates.
  *
@@ -44,7 +42,7 @@
  * @param p			- the point to normalize.
  */
 static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
-	if (p->coord != BASIC) {
+	if (p->coord != EC_AFFIN) {
 		if (inverted) {
 			fp_copy(r->z, p->z);
 		} else {
@@ -52,16 +50,14 @@ static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 		}
 		fp_mul(r->x, p->x, r->z);
 		fp_mul(r->y, p->y, r->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(r->t, p->t, r->z);
 #endif
 		fp_set_dig(r->z, 1);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 }
-
-#endif /* ED_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -73,25 +69,28 @@ void ed_norm(ed_t r, const ed_t p) {
 		return;
 	}
 
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		/* If the point is represented in affine coordinates, just copy it. */
 		ed_copy(r, p);
 		return;
 	}
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 	ed_norm_imp(r, p, 0);
-#endif /* ED_ADD != BASIC*/
 }
 
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
+	if (a == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (int i = 0; i < n; i++) {
+		fp_null(a[i]);
+	}
+
 	RLC_TRY {
-		if (a == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < n; i++) {
-			fp_null(a[i]);
 			fp_new(a[i]);
 			if (ed_is_infty(t[i])) {
 				fp_set_dig(a[i], 1);
@@ -105,7 +104,7 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fp_copy(r[i]->x, t[i]->x);
 			fp_copy(r[i]->y, t[i]->y);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 			fp_copy(r[i]->t, t[i]->t);
 #endif
 			if (ed_is_infty(t[i])) {
@@ -115,11 +114,9 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 			}
 		}
 
-#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 		for (int i = 0; i < n; i++) {
 			ed_norm_imp(r[i], r[i], 1);
 		}
-#endif /* ED_ADD != BASIC*/
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

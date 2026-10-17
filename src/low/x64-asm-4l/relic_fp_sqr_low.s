@@ -21,116 +21,51 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_fp_low.h"
-
 /**
  * @file
  *
- * Implementation of low-level prime field multiplication.
+ * Implementation of the low-level prime field squaring functions.
  *
  * @ingroup fp
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
 .global cdecl(fp_sqrn_low)
+.global cdecl(fp_sqrm_low)
 
 /*
  * Function: fp_sqrn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
+ * Output: c = a^2
  */
 cdecl(fp_sqrn_low):
-	xorq %r10,%r10
-	movq 0(%rsi),%rax
-	mulq 8(%rsi)
-	addq %rax,%rax
-	movq %rax,%r8
-	adcq %rdx,%rdx
-	movq %rdx,%r9
-	adcq $0,%r10
+	push	%r12
+	push	%r13
+	push	%r14
 
-	movq 0(%rsi),%rax
-	mulq %rax
-	movq %rax,0(%rdi)
-	addq %rdx,%r8
-	movq %r8,8(%rdi)
-	adcq $0,%r9
-	adcq $0,%r10
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rsi, %rax, %rcx, p0(%rip), 0
 
-	xorq %rcx,%rcx
-	movq 0(%rsi),%rax
-	mulq 16(%rsi)
-	addq %rax,%rax
-	movq %rax,%r8
-	adcq %rdx,%rdx
-	movq %rdx,%r11
-	adcq $0,%rcx
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
 
-	movq 8(%rsi),%rax
-	mulq 8(%rsi)
-	addq %rax,%r8
-	adcq %rdx,%r11
-	adcq $0,%rcx
+/*
+ * Function: fp_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p
+ */
+cdecl(fp_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
 
-	movq 0(%rsi),%rax
-	mulq 24(%rsi)
-	addq %r9,%r8
-	movq %r8,16(%rdi)
-	adcq %r10,%r11
-	adcq $0,%rcx
-	movq %rax,%r8
-	movq %rdx,%r10
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rsi, %rax, %rcx, p0(%rip), 1
 
-	xorq %r9,%r9
-	movq 8(%rsi),%rax
-	mulq 16(%rsi)
-	addq %rax,%r8
-	adcq %rdx,%r10
-	adcq $0,%r9
-	addq %r8,%r8
-	adcq %r10,%r10
-	adcq %r9,%r9
-
-	movq 8(%rsi),%rax
-	mulq 24(%rsi)
-	addq %r11,%r8
-	movq %r8,24(%rdi)
-	adcq %rcx,%r10
-	adcq $0,%r9
-	xorq %rcx,%rcx
-	addq %rax,%rax
-	movq %rax,%r8
-	adcq %rdx,%rdx
-	movq %rdx,%r11
-	adcq $0,%rcx
-
-	movq 16(%rsi),%rax
-	mulq 16(%rsi)
-	addq %r10,%r8
-	adcq %r11,%r9
-	adcq $0,%rcx
-	addq %rax,%r8
-	movq %r8,32(%rdi)
-	adcq %rdx,%r9
-	adcq $0,%rcx
-
-	xorq %r11,%r11
-	movq 16(%rsi),%rax
-	mulq 24(%rsi)
-	addq %rax,%rax
-	adcq %rdx,%rdx
-	adcq $0,%r11
-	addq %rax,%r9
-	movq %r9,40(%rdi)
-	adcq %rdx,%rcx
-	adcq $0,%r11
-
-	movq 24(%rsi),%rax
-	mulq %rax
-	addq %rax,%rcx
-	movq %rcx,48(%rdi)
-	adcq %rdx,%r11
-	movq %r11,56(%rdi)
+	popq	%r14
+	popq	%r13
+	popq	%r12
 	ret

@@ -36,8 +36,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FP_ADD == BASIC || !defined(STRIP)
-
 void fp_hlv_basic(fp_t c, const fp_t a) {
 	dig_t carry = 0;
 
@@ -52,15 +50,9 @@ void fp_hlv_basic(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_ADD == INTEG || !defined(STRIP)
-
 void fp_hlv_integ(fp_t c, const fp_t a) {
 	fp_hlvm_low(c, a);
 }
-
-#endif
 
 void fp_trs(fp_t c, const fp_t a) {
 	const dig_t mask = (2 * RLC_3MASK + 1);

@@ -24,7 +24,7 @@
 #endif /* USE_MODIFIED_MACROS */
 
 #define SHA_Parity(x, y, z)  ((x) ^ (y) ^ (z))
-#if WSIZE <= 32
+#if RLC_WSIZE <= 32
 #define USE_32BIT_ONLY
 #endif
 

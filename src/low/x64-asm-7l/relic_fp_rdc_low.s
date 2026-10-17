@@ -35,23 +35,21 @@
 
 .text
 
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
  */
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	leaq 	p0(%rip), %rbx
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip)
 
 	pop		%rbp
 	pop		%rbx

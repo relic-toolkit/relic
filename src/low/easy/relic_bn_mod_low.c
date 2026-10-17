@@ -40,7 +40,7 @@
 
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
-	int i, j;
+	size_t i, j;
 	dig_t t, r0, r1, r2;
 	dig_t *tmp, *tmpc;
 	const dig_t *tmpm;
@@ -57,7 +57,7 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		if (i < sa) {
 			RLC_COMBA_ADD(t, r2, r1, r0, *a);
 		}
-		*tmpc = (dig_t)(r0 * u);
+		*tmpc = RLC_MUL_LOW(r0, u);
 		RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpc, *m);
 		r0 = r1;
 		r1 = r2;

@@ -29,7 +29,6 @@
  * @ingroup rand
  */
 
-#include <stdlib.h>
 #include <stdint.h>
 
 #include "relic_conf.h"
@@ -39,11 +38,15 @@
 #include "relic_md.h"
 #include "relic_err.h"
 
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if RAND == HASHD
+#if RLC_RAND == RLC_HASHD
 
 /*
  * Computes the hash derivation function.
@@ -55,9 +58,8 @@
  */
 static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 		size_t in_len) {
-	uint32_t j = util_conv_big(8 * out_len);
 	size_t len = RLC_CEIL(out_len, RLC_MD_LEN);
-	uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[RLC_MD_LEN];
 
 	if (buf == NULL) {
@@ -66,10 +68,10 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 	}
 
 	buf[0] = 1;
-	memcpy(buf + 1, &j, sizeof(uint32_t));
+	util_write_uint32(buf + 1, 8 * out_len);
 	memcpy(buf + 1 + sizeof(uint32_t), in, in_len);
 
-	for (int i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 		/* h = Hash(counter || bits_to_return || input_string) */
 		md_map(hash, buf, 1 + sizeof(uint32_t) + in_len);
 		/* temp = temp || h */
@@ -80,24 +82,28 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 		buf[0]++;
 	}
 
+	util_zero(hash, sizeof(hash));
+	util_zero(buf, 1 + sizeof(uint32_t) + in_len);
 	RLC_FREE(buf);
 }
 
 /**
- * Accumulates a small integer in the internal state.
+ * Accumulates an integer in the internal state, seen as a big-endian number.
  *
  * @param[in,out] state		- the internal state.
- * @param[in] digit			- the small integer.
+ * @param[in] size			- the size of the state in bytes.
+ * @param[in] digit			- the integer to add.
+ * @return the carry out of the state.
  */
-static int rand_inc(uint8_t *data, size_t size, int digit) {
-	int carry = digit;
+static int rand_inc(uint8_t *data, size_t size, uint64_t digit) {
+	uint64_t s, carry = digit;
 	for (int i = size - 1; i >= 0; i--) {
-		int16_t s;
-		s = (data[i] + carry);
+		/* Add one byte of the integer at a time, so nothing overflows. */
+		s = (uint64_t)data[i] + (carry & 0xFF);
 		data[i] = s & 0xFF;
-		carry = s >> 8;
+		carry = (carry >> 8) + (s >> 8);
 	}
-	return carry;
+	return carry != 0;
 }
 
 /**
@@ -125,13 +131,14 @@ static int rand_add(uint8_t *state, uint8_t *hash, size_t size) {
  * @param[in] out_len		- the number of bytes to write.
  */
 static void rand_gen(uint8_t *out, size_t out_len) {
-	int m = RLC_CEIL(out_len, RLC_MD_LEN);
+	/* Not RLC_CEIL, which wraps around for an empty output. */
+	size_t m = (out_len + RLC_MD_LEN - 1) / RLC_MD_LEN;
 	uint8_t hash[RLC_MD_LEN], data[(RLC_RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
 	/* data = V */
 	memcpy(data, ctx->rand + 1, (RLC_RAND_SIZE - 1)/2);
-	for (int i = 0; i < m; i++) {
+	for (size_t i = 0; i < m; i++) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
 		/* W = W || w_i */
@@ -141,6 +148,8 @@ static void rand_gen(uint8_t *out, size_t out_len) {
 		/* data = data + 1 mod 2^b. */
 		rand_inc(data, (RLC_RAND_SIZE - 1)/2, 1);
 	}
+	util_zero(hash, sizeof(hash));
+	util_zero(data, sizeof(data));
 }
 
 #endif
@@ -149,14 +158,33 @@ static void rand_gen(uint8_t *out, size_t out_len) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == HASHD
+#if RLC_RAND == RLC_HASHD
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	uint8_t hash[RLC_MD_LEN];
 	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
 
+	if (!ctx->seeded) {
+		RLC_THROW(ERR_NO_RAND);
+		return;
+	}
+#ifdef RLC_RAND_FORK
+	/* A forked process instantiates its own generator from fresh entropy. */
+	if (ctx->pid != (long)getpid()) {
+		rand_init();
+		if (!ctx->seeded || ctx->pid != (long)getpid()) {
+			RLC_THROW(ERR_NO_RAND);
+			return;
+		}
+	}
+#endif
 	if (sizeof(int) > 2 && size > (1 << 16)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	/* The generator must be reseeded after 2^48 requests. */
+	if (ctx->counter > ((uint64_t)1 << 48)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -172,18 +200,20 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	rand_inc(ctx->rand, len - RLC_MD_LEN + 1, carry);
 	rand_inc(ctx->rand, len + 1, ctx->counter);
 	ctx->counter = ctx->counter + 1;
+	util_zero(hash, sizeof(hash));
 }
 
 void rand_seed(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 	size_t len = (RLC_RAND_SIZE - 1) / 2;
 
-	if (size <= 0) {
+	if (size < RLC_RAND_MIN) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
-	if (sizeof(int) > 4 && size > (1 << 32)) {
+	/* Seeds are copied to the stack, so their length is bounded. */
+	if (size > RLC_RAND_MAX) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -196,8 +226,8 @@ void rand_seed(uint8_t *buf, size_t size) {
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
 	} else {
 		/* V = hash_df(01 || V || seed). */
-        int tmp_size = 1 + len + size;
-		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
+		size_t tmp_size = 1 + len + size;
+		uint8_t *tmp = RLC_ALLOCA(uint8_t, tmp_size);
 		if (tmp == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 			return;
@@ -208,6 +238,7 @@ void rand_seed(uint8_t *buf, size_t size) {
 		rand_hash(ctx->rand + 1, len, tmp, tmp_size);
 		/* C = hash_df(00 || V). */
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
+		util_zero(tmp, tmp_size);
 		RLC_FREE(tmp);
 	}
 	ctx->counter = ctx->seeded = 1;

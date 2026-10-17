@@ -56,7 +56,7 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_ONCE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
 
 /**
  * Tests a sequence of commands to see if they respect some property.
@@ -64,8 +64,8 @@ extern "C" {
  * @param[in] P				- the property description.
  */
 #define TEST_CASE(P)														\
-	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
-	for (int i = 0; i < TESTS; i++)											\
+	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
+	for (int i = 0; i < RLC_TESTS; i++)											\
 
 /**
  * Asserts a condition.
@@ -78,12 +78,25 @@ extern "C" {
  */
 #define TEST_ASSERT(C, LABEL)												\
 	if (!(C)) {																\
-		test_fail();														\
-		util_print("(at ");													\
-		util_print(__FILE__);												\
-		util_print(":%d)\n", __LINE__);										\
+		test_fail(__FILE__, __LINE__);										\
 		RLC_ERROR(LABEL);													\
 	}																		\
+
+/**
+ * Runs commands that are expected to throw an error, with error messages
+ * disabled. The error code is reset before, so that err_get_code() returns
+ * whether the commands threw.
+ *
+ * @param[in] ...			- the commands.
+ */
+#define TEST_ERR(...)														\
+	err_get_code();															\
+	err_set_quiet(1);														\
+	RLC_TRY {																\
+		__VA_ARGS__;														\
+	} RLC_CATCH_ANY {														\
+	}																		\
+	err_set_quiet(0)														\
 
 /**
  * Finalizes a test printing the test result.
@@ -96,9 +109,12 @@ extern "C" {
 /*============================================================================*/
 
 /**
- * Prints a string indicating that the test failed.
+ * Prints a string indicating that the test failed and where.
+ *
+ * @param[in] file			- the source file of the failed assertion.
+ * @param[in] line			- the line of the failed assertion.
  */
-void test_fail(void);
+void test_fail(const char *file, int line);
 
 /**
  * Prints a string indicating that the test passed.

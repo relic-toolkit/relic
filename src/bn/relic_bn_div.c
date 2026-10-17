@@ -45,75 +45,121 @@
  * @param[in] a			- the dividend.
  * @param[in] b			- the the divisor.
  */
-static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
-	bn_t q, x, y, r;
+static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
+	bn_t q, r;
+	bn_st *pq, *pr;
 	int sign;
 
-	bn_null(q);
-	bn_null(x);
-	bn_null(y);
-	bn_null(r);
+	bn_null_all(q, r);
 
 	/* If |a| < |b|, we're done. */
 	if (bn_cmp_abs(a, b) == RLC_LT) {
-		if (bn_sign(a) == bn_sign(b)) {
+		if (bn_is_zero(a)) {
 			if (c != NULL) {
 				bn_zero(c);
 			}
 			if (d != NULL) {
-				bn_copy(d, a);
+				bn_zero(d);
 			}
-		} else {
+			return;
+		}
+		/*
+		 * The quotient is one of zero, one or minus one here, according to the
+		 * signs and the rounding: rounding away from the truncated value costs
+		 * a unit in the quotient and a divisor in the remainder.
+		 */
+		/*
+		 * The remainder is taken first because it is the only one of the two
+		 * that reads the operands, and the quotient may be written over one
+		 * of them.
+		 */
+		if ((bn_sign(a) == bn_sign(b)) == (ceil != 0)) {
+			if (d != NULL) {
+				if (ceil) {
+					bn_sub(d, a, b);
+				} else {
+					bn_add(d, a, b);
+				}
+			}
 			if (c != NULL) {
 				bn_set_dig(c, 1);
-				bn_neg(c, c);
+				if (!ceil) {
+					bn_neg(c, c);
+				}
 			}
+		} else {
 			if (d != NULL) {
-				bn_add(d, a, b);
+				bn_copy(d, a);
+			}
+			if (c != NULL) {
+				bn_zero(c);
 			}
 		}
 		return;
 	}
 
 	RLC_TRY {
-		/* Be conservative about space for scratch memory, many attempts to
-		 * optimize these had invalid reads. */
-		bn_new_size(x, a->used + 1);
-		bn_new_size(q, a->used + 1);
-		bn_new_size(y, a->used + 1);
-		bn_new_size(r, a->used + 1);
-		bn_zero(q);
-		bn_zero(r);
-		bn_abs(x, a);
-		bn_abs(y, b);
+		/*
+		 * Both results are written while the operands are still being read,
+		 * so a destination that is one of them, or that the other result also
+		 * wants, has to be built elsewhere. Anything else is written in place.
+		 */
+		if (c != NULL && c->dp != a->dp && c->dp != b->dp &&
+				(d == NULL || c->dp != d->dp)) {
+			bn_grow(c, a->used + 1);
+			pq = c;
+		} else {
+			bn_new_size(q, a->used + 1);
+			pq = q;
+		}
+		if (d != NULL && d->dp != a->dp && d->dp != b->dp && d->dp != pq->dp) {
+			bn_grow(d, a->used + 1);
+			pr = d;
+		} else {
+			bn_new_size(r, a->used + 1);
+			pr = r;
+		}
 
 		/* Find the sign. */
 		sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
 
-		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
+		bn_divn_low(pq->dp, pr->dp, a->dp, a->used, b->dp, b->used);
 
-		q->used = a->used - b->used + 1;
-		q->sign = sign;
-		bn_trim(q);
+		pq->used = a->used - b->used + 1;
+		pq->sign = sign;
+		bn_trim(pq);
 
-		r->used = b->used;
-		r->sign = b->sign;
-		bn_trim(r);
+		pr->used = b->used;
+		pr->sign = a->sign;			/* truncating remainder */
+		bn_trim(pr);
 
-		/* We have the quotient in q and the remainder in r. */
-		if (c != NULL) {
-			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
-				bn_copy(c, q);
-			} else {
-				bn_sub_dig(c, q, 1);
+		/*
+		 * We have the truncated quotient in q and remainder in r. Flooring
+		 * corrects when the signs differ, rounding up when they agree, so the
+		 * two modes share one branch and neither costs the caller a second
+		 * pass over the operands.
+		 */
+		if ((bn_is_zero(pr)) || ((bn_sign(a) == bn_sign(b)) != (ceil != 0))) {
+			if (c != NULL && pq != (bn_st *)c) {
+				bn_copy(c, pq);
 			}
-		}
-
-		if (d != NULL) {
-			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
-				bn_copy(d, r);
-			} else {
-				bn_sub(d, b, r);
+			if (d != NULL && pr != (bn_st *)d) {
+				bn_copy(d, pr);
+			}
+		} else if (ceil) {
+			/* The remainder reads b, which c may alias, so it comes first. */
+			if (d != NULL) {
+				bn_sub(d, pr, b);
+			}
+			if (c != NULL) {
+				bn_add_dig(c, pq, 1);
+			}
+		} else {
+			if (d != NULL) {
+				bn_add(d, pr, b);
+			}
+			if (c != NULL) {
+				bn_sub_dig(c, pq, 1);
 			}
 		}
 	}
@@ -121,10 +167,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
-		bn_free(q);
-		bn_free(x);
-		bn_free(y);
+		bn_free_all(q, r);
 	}
 }
 
@@ -132,12 +175,58 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void bn_div_exc(bn_t c, const bn_t a, const bn_t b) {
+	int sign;
+	bn_t t;
+
+	bn_null(t);
+
+	if (bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	if (bn_is_zero(a)) {
+		bn_zero(c);
+		return;
+	}
+
+	if (a->used < b->used) {
+		/* a is nonzero and b divides it, so this cannot be an exact quotient */
+		bn_div(c, a, b);
+		return;
+	}
+	sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_grow(c, a->used - b->used + 2);
+
+		if (c == b) {
+			/* The quotient cannot overlap the divisor, so copy it away. */
+			bn_copy(t, b);
+			bn_dive_low(c->dp, a->dp, a->used, t->dp, t->used);
+			c->used = a->used - t->used + 1;
+		} else {
+			bn_dive_low(c->dp, a->dp, a->used, b->dp, b->used);
+			c->used = a->used - b->used + 1;
+		}
+		c->sign = sign;
+		bn_trim(c);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
 void bn_div(bn_t c, const bn_t a, const bn_t b) {
 	if (bn_is_zero(b)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
-	bn_div_imp(c, NULL, a, b);
+	bn_div_imp(c, NULL, a, b, 0);
 }
 
 void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b) {
@@ -145,7 +234,15 @@ void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
-	bn_div_imp(c, d, a, b);
+	bn_div_imp(c, d, a, b, 0);
+}
+
+void bn_div_rem_rup(bn_t c, bn_t d, const bn_t a, const bn_t b) {
+	if (bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	bn_div_imp(c, d, a, b, 1);
 }
 
 void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
@@ -172,7 +269,11 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 		bn_copy(q, a);
 		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 		if (c != NULL) {
-			bn_copy(c, q);
+			if (bn_sign(a) == RLC_NEG && r != 0) {
+				bn_sub_dig(c, q, 1);
+			} else {
+				bn_copy(c, q);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -211,11 +312,15 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 
 		if (c != NULL) {
-			bn_copy(c, q);
+			if (bn_sign(a) == RLC_NEG && r != 0) {
+				bn_sub_dig(c, q, 1);
+			} else {
+				bn_copy(c, q);
+			}
 		}
 
 		if (d != NULL) {
-			if (bn_sign(a) == RLC_NEG) {
+			if (bn_sign(a) == RLC_NEG && r != 0) {
 				*d = b - r;
 			} else {
 				*d = r;

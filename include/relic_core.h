@@ -125,6 +125,12 @@ extern "C" {
 #define RLC_HUGE		5
 
 /**
+ * Optimization identifier for the case where a coefficient is a power of 2
+ * larger than 2.
+ */
+#define RLC_POW2		6
+
+/**
  * Maximum number of terms to describe a sparse object.
  */
 #define RLC_TERMS		16
@@ -139,19 +145,26 @@ extern "C" {
 typedef struct _ctx_t {
 	/** The value returned by the last call, can be RLC_OK or RLC_ERR. */
 	int code;
+	/** Error number of the last error thrown. */
+	err_t number;
+	/** A flag to indicate if error messages are printed. */
+	int quiet;
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 	/** The state of the last error caught. */
 	sts_t *last;
 	/** Error state to be used outside try-catch blocks. */
 	sts_t error;
-	/** Error number to be used outside try-catch blocks. */
-	err_t number;
 	/** The error message respective to the last error. */
 	char *reason[ERR_MAX];
 	/** A flag to indicate if the last error was already caught. */
 	int caught;
-#endif /* CHECK */
+#else
+	/** Number of try-catch blocks entered and not yet caught. */
+	int depth;
+	/** A flag to indicate if an error thrown inside a try-catch is pending. */
+	int pending;
+#endif /* RLC_CHECK */
 
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
@@ -162,30 +175,26 @@ typedef struct _ctx_t {
 	int fb_pa, fb_pb, fb_pc;
 	/** Positions of the non-zero coefficients of trinomials or pentanomials. */
 	int fb_na, fb_nb, fb_nc;
-#if FB_TRC == QUICK || !defined(STRIP)
 	/** Powers of z with non-zero traces. */
 	int fb_ta, fb_tb, fb_tc;
-#endif /* FB_TRC == QUICK */
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	/** Table of precomputed half-traces. */
 	fb_st fb_half[(RLC_DIG / 8 + 1) * RLC_FB_DIGS][16];
-#endif /* FB_SLV == QUICK */
-#if FB_SRT == QUICK || !defined(STRIP)
+#endif /* FB_SLV == FB_QUICK */
 	/** Square root of z. */
 	fb_st fb_srz;
 #ifdef FB_PRECO
 	/** Multiplication table for the polynomial z^(1/2). */
 	fb_st fb_tab_srz[256];
 #endif /* FB_PRECO */
-#endif /* FB_SRT == QUICK */
-#if FB_INV == ITOHT || !defined(STRIP)
 	/** Stores an addition chain for (RLC_FB_BITS - 1). */
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
 	int chain_len;
-	/** Tables for repeated squarings. */
-	fb_st fb_tab_sqr[RLC_TERMS][RLC_FB_TABLE];
-#endif /* FB_INV == ITOHT */
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
+	/** Tables for repeated squarings, one per element of the chain. */
+	fb_st fb_tab_sqr[RLC_FB_CHAIN][RLC_FB_TABLE];
+#endif /* FB_INV == FB_ITOHT */
 #endif /* WITH_FB */
 
 #ifdef WITH_EB
@@ -228,16 +237,12 @@ typedef struct _ctx_t {
 	int par_sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int par_len;
-#if FP_RDC == MONTY || !defined(STRIP)
 	/** Value (R^2 mod p) for converting small integers to Montgomery form. */
 	fp_st conv;
 	/** Value of constant one in Montgomery form. */
 	fp_st one;
-#endif /* FP_RDC == MONTY */
-#if FP_INV == JMPDS || !defined(STRIP)
-	/** Value of constant for divstep-based inversion. */
+	/** Value of R^3 mod p for inversion by jump division steps. */
 	fp_st inv;
-#endif /* FP_INV */
 	/** Square root of unity for square root extraction. */
 	fp_st srt;
 	/** Primitive cube root of unity for cube root extraction. */
@@ -256,12 +261,12 @@ typedef struct _ctx_t {
 	dig_t ad2;
 	/** Value derived from the prime used for modular reduction. */
 	dig_t u;
-#if FP_RDC == QUICK || !defined(STRIP)
+	/** Value floor(2^(|p| + RLC_DIG - 1) / p) for multiplying by a digit. */
+	dig_t rdc1;
 	/** Sparse representation of prime modulus. */
 	int sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int sps_len;
-#endif /* FP_RDC == QUICK */
 #endif /* WITH_FP */
 
 #ifdef WITH_EP
@@ -271,6 +276,8 @@ typedef struct _ctx_t {
 	fp_st ep_a;
 	/** The b-coefficient of the elliptic curve. */
 	fp_st ep_b;
+	/** The b-coefficient if it fits in a digit, zero otherwise. */
+	dig_t ep_b_dig;
 	/** The generator of the elliptic curve. */
 	ep_st ep_g;
 	/** The order of the group of points in the elliptic curve. */
@@ -281,15 +288,11 @@ typedef struct _ctx_t {
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
 	fp_st ep_map_c[7];
-#ifdef EP_ENDOM
 	fp_st beta;
-#if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */
-#endif /* EP_MUL */
-#endif /* EP_ENDOM */
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -308,10 +311,8 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso_st ep_iso;
-#endif /* EP_CTMAP */
 #endif /* WITH_EP */
 
 #ifdef WITH_EPX
@@ -345,10 +346,8 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep2_st *ep2_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso2_st ep2_iso;
-#endif /* EP_CTMAP */
 	/** The generator of the elliptic curve. */
 	ep3_t ep3_g;
 	/** The 'a' coefficient of the curve. */
@@ -383,6 +382,8 @@ typedef struct _ctx_t {
 	bn_st ep4_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep4_h;
+	/** The constants needed for Frobenius. */
+	fp4_t ep4_frb[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep4_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -405,6 +406,8 @@ typedef struct _ctx_t {
 	bn_st ep8_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep8_h;
+	/** The constants needed for Frobenius. */
+	fp8_t ep8_frb[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep8_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -416,6 +419,28 @@ typedef struct _ctx_t {
 	ep8_st ep8_pre[RLC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
 	ep8_st *ep8_ptr[RLC_EP_TABLE];
+#endif /* EP_PRECO */
+	/** The generator of the elliptic curve. */
+	ep9_t ep9_g;
+	/** The 'a' coefficient of the curve. */
+	fp9_t ep9_a;
+	/** The 'b' coefficient of the curve. */
+	fp9_t ep9_b;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ep9_r;
+	/** The constants needed for Frobenius and its 11th power. */
+	fp9_t ep9_frb[4];
+	/** Optimization identifier for the a-coefficient. */
+	int ep9_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep9_opt_b;
+	/** Flag that stores if the prime curve is a twist. */
+	int ep9_is_twist;
+#ifdef EP_PRECO
+	/** Precomputation table for generator multiplication.*/
+	ep9_st ep9_pre[RLC_EP_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ep9_st *ep9_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
 #endif /* WITH_EPX */
 
@@ -447,6 +472,7 @@ typedef struct _ctx_t {
 	/** Integer part of the quadratic non-residue in the quadratic extension. */
 	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
+	fp_st fp2_p0[2];
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[4];
 	int frb3[3];
@@ -466,20 +492,16 @@ typedef struct _ctx_t {
 	gt_t gt_g;
 #endif
 
-#if BENCH > 0
+#if RLC_BENCH > 0
 	/** Stores the time measured before the execution of the benchmark. */
 	ben_t before;
 	/** Stores the time measured after the execution of the benchmark. */
 	ben_t after;
 	/** Stores the sum of timings for the current benchmark. */
 	ull_t total;
-#ifdef OVERH
-	/** Benchmarking overhead to be measured and subtracted from benchmarks. */
-	ull_t over;
-#endif
 #endif
 
-#if RAND != CALL
+#if RLC_RAND != RLC_CALL
 	/** Internal state of the PRNG. */
 	uint8_t rand[RLC_RAND_SIZE];
 #else
@@ -489,9 +511,13 @@ typedef struct _ctx_t {
 	/** Flag to indicate if PRNG is seed. */
 	int seeded;
 	/** Counter to keep track of number of calls since last seeding. */
-	int counter;
+	uint64_t counter;
+#ifdef RLC_RAND_FORK
+	/** Identifier of the process that seeded the PRNG. */
+	long pid;
+#endif
 
-#if TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 	/** File descriptor for perf system call. */
 	int perf_fd;
 	/** Buffer for storing perf data, */
@@ -499,10 +525,10 @@ typedef struct _ctx_t {
 #endif
 
 	/** Function pointer to underlying lznct implementation. */
-#if ARCH == X86
+#if RLC_ARCH == RLC_X86
 	unsigned int (*lzcnt_ptr)(dig_t);
 	unsigned int (*tzcnt_ptr)(dig_t);
-#elif ARCH == X64 || ARCH == A64
+#elif RLC_ARCH == RLC_X64 || RLC_ARCH == RLC_A64
 	unsigned int (*lzcnt_ptr)(ull_t);
 	unsigned int (*tzcnt_ptr)(ull_t);
 #endif
@@ -513,7 +539,8 @@ typedef struct _ctx_t {
 /*============================================================================*/
 
 /**
- * Initializes the library.
+ * Initializes the library. Calling it again without calling core_clean() first
+ * leaks the state allocated by the previous call when RLC_ALLOC = RLC_DYNAMIC.
  *
  * @return RLC_OK if no error occurs, RLC_ERR otherwise.
  */
@@ -526,12 +553,33 @@ int core_init(void);
  */
 int core_clean(void);
 
+#if defined(RLC_MULTI)
+
 /**
  * Returns a pointer to the current library context.
  *
  * @return a pointer to the library context.
  */
 ctx_t *core_get(void);
+
+#else
+
+/**
+ * Pointer to the current library context.
+ */
+extern ctx_t *core_ctx;
+
+/**
+ * Returns a pointer to the current library context. Without multithreading,
+ * the context is a single pointer, so the call is inlined.
+ *
+ * @return a pointer to the library context.
+ */
+static inline ctx_t *core_get(void) {
+	return core_ctx;
+}
+
+#endif
 
 /**
  * Switched the library context to a new context.
@@ -540,7 +588,7 @@ ctx_t *core_get(void);
  */
 void core_set(ctx_t *ctx);
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 
 #include "relic_multi.h"
 

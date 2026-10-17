@@ -36,28 +36,23 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_srt(bn_t c, bn_t a) {
+void bn_srt(bn_t c, const bn_t a) {
 	bn_t h, l, m, t;
 	size_t bits;
 	int cmp;
 
 	if (bn_sign(a) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	bits = bn_bits(a);
 	bits += (bits % 2);
 
-	bn_null(h);
-	bn_null(l);
-	bn_null(m);
-	bn_null(t);
+	bn_null_all(h, l, m, t);
 
 	RLC_TRY {
-		bn_new(h);
-		bn_new(l);
-		bn_new(m);
-		bn_new(t);
+		bn_new_all(h, l, m, t);
 
 		bn_zero(l);
 		bn_set_2b(h, bits >> 1);
@@ -86,9 +81,99 @@ void bn_srt(bn_t c, bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(h);
-		bn_free(l);
-		bn_free(m);
-		bn_free(t);
+		bn_free_all(h, l, m, t);
 	}
+}
+
+int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
+	bn_t e, n, t, u, w;
+	size_t i, j, s;
+	int result = 0;
+
+	if (bn_sign(b) == RLC_NEG || bn_is_even(b) || bn_cmp_dig(b, 3) == RLC_LT) {
+		RLC_THROW(ERR_NO_VALID);
+		return 0;
+	}
+
+	bn_null_all(e, n, t, u, w);
+
+	RLC_TRY {
+		bn_new_all(e, n, t, u, w);
+
+		bn_mod(t, a, b);
+		if (bn_is_zero(t)) {
+			bn_zero(c);
+			result = 1;
+		} else {
+			if (bn_smb_leg(t, b) == 1) {
+				/* b - 1 = e * 2^s with e odd */
+				bn_sub_dig(e, b, 1);
+				s = 0;
+				while (bn_is_even(e)) {
+					bn_hlv(e, e);
+					s++;
+				}
+
+				if (s == 1) {
+					/*
+					* For a modulus that is 3 mod 4 four the root is a power, and
+					* the general path below would do the same work with a search for a
+					* non-residue in front of it.
+					*/
+					bn_add_dig(u, b, 1);
+					bn_rsh(u, u, 2);
+					bn_mxp(c, t, u, b);
+				} else {
+					bn_set_dig(n, 2);
+					while (bn_smb_leg(n, b) != -1) {
+						bn_add_dig(n, n, 1);
+					}
+					bn_mxp(n, n, e, b);
+					bn_mxp(w, t, e, b);
+					bn_add_dig(u, e, 1);
+					bn_hlv(u, u);
+					bn_mxp(c, t, u, b);
+
+					while (bn_cmp_dig(w, 1) != RLC_EQ) {
+						bn_copy(u, w);
+						for (i = 0; i < s; i++) {
+							if (bn_cmp_dig(u, 1) == RLC_EQ) {
+								break;
+							}
+							bn_sqr(u, u);
+							bn_mod(u, u, b);
+						}
+						if (i >= s) {
+							break;
+						}
+						bn_copy(t, n);
+						for (j = 0; j + i + 1 < s; j++) {
+							bn_sqr(t, t);
+							bn_mod(t, t, b);
+						}
+						s = i;
+						bn_sqr(n, t);
+						bn_mod(n, n, b);
+						bn_mul(w, w, n);
+						bn_mod(w, w, b);
+						bn_mul(c, c, t);
+						bn_mod(c, c, b);
+					}
+				}
+				bn_sub(u, b, c);
+				if (bn_cmp(u, c) == RLC_LT) {
+					bn_copy(c, u);
+				}
+				result = 1;
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(e, n, t, u, w);
+	}
+	return result;
 }

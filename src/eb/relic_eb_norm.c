@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == PROJC || !defined(STRIP)
-
 /**
  * Normalizes a point represented in projective coordinates.
  *
@@ -48,7 +46,7 @@
  * @param inv			- the flag to indicate if z is already inverted.
  */
 static void eb_norm_imp(eb_t r, const eb_t p, int inv) {
-	if (p->coord != BASIC) {
+	if (p->coord != EC_AFFIN) {
 		if (inv) {
 			fb_copy(r->z, p->z);
 		} else {
@@ -60,10 +58,8 @@ static void eb_norm_imp(eb_t r, const eb_t p, int inv) {
 		fb_set_dig(r->z, 1);
 	}
 
-	r->coord = BASIC;
+	r->coord = EC_AFFIN;
 }
-
-#endif /* EB_ADD == PROJC */
 
 /**
  * Normalizes a point represented in lambda-coordinates.
@@ -75,7 +71,7 @@ static void eb_norm_hlv(eb_t r, const eb_t p) {
 	fb_add(r->y, p->x, p->y);
 	fb_mul(r->y, r->y, p->x);
 	fb_copy(r->x, p->x);
-	r->coord = BASIC;
+	r->coord = EC_AFFIN;
 }
 
 /*============================================================================*/
@@ -88,36 +84,43 @@ void eb_norm(eb_t r, const eb_t p) {
 		return;
 	}
 
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		/* If the point is represented in affine coordinates, just copy it. */
 		eb_copy(r, p);
 		return;
 	}
 
-	if (p->coord == HALVE) {
+	if (p->coord == EC_HALVE) {
 		eb_norm_hlv(r, p);
 		return;
 	}
 
-#if EB_ADD == PROJC || !defined(STRIP)
 	eb_norm_imp(r, p, 0);
-#endif /* EB_ADD == PROJC */
 }
 
 void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
-	fb_t *a = RLC_ALLOCA(fb_t, n);
+	fb_t *a;
 
+	if (n <= 0) {
+		return;
+	}
 	if (n == 1) {
 		eb_norm(r[0], t[0]);
 		return;
 	}
 
+	/* Allocate after the early returns, so that they do not leak. */
+	a = RLC_ALLOCA(fb_t, n);
+	if (a == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+	for (int i = 0; i < n; i++) {
+		fb_null(a[i]);
+	}
+
 	RLC_TRY {
-		if (a == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (int i = 0; i < n; i++) {
-			fb_null(a[i]);
 			fb_new(a[i]);
 			if (eb_is_infty(t[i])) {
 				fb_set_dig(a[i], 1);
@@ -137,11 +140,9 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 				fb_copy(r[i]->z, a[i]);
 			}
 		}
-#if EB_ADD == PROJC || !defined(STRIP)
 		for (int i = 0; i < n; i++) {
 			eb_norm_imp(r[i], r[i], 1);
 		}
-#endif /* EB_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

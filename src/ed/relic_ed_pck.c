@@ -36,25 +36,42 @@
 /*============================================================================*/
 
 void ed_pck(ed_t r, const ed_t p) {
-	fp_copy(r->y, p->y);
-	fp_norm(r->x, p->x);
-	int b = fp_get_bit(r->x, 0);
-	fp_zero(r->x);
-	fp_set_bit(r->x, 0, b);
-	fp_set_dig(r->z, 1);
-	r->coord = BASIC;
+	bn_t x;
+	int b;
+
+	bn_null(x);
+
+	RLC_TRY {
+		bn_new(x);
+
+		/* Take the parity of x itself, out of the internal representation. */
+		fp_prime_back(x, p->x);
+		b = bn_get_bit(x, 0);
+		fp_copy(r->y, p->y);
+		fp_zero(r->x);
+		fp_set_bit(r->x, 0, b);
+		fp_set_dig(r->z, 1);
+		r->coord = EC_AFFIN;
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+	}
 }
 
 int ed_upk(ed_t r, const ed_t p) {
 	int result = 1;
 	fp_t t, u;
+	bn_t x;
 
-	fp_null(t);
-	fp_null(u);
+	fp_null_all(t, u);
+	bn_null(x);
 
 	RLC_TRY {
-		fp_new(t);
-		fp_new(u);
+		fp_new_all(t, u);
+		bn_new(x);
 
 		fp_copy(r->y, p->y);
 
@@ -65,27 +82,28 @@ int ed_upk(ed_t r, const ed_t p) {
 		fp_sub(t, t, core_get()->ed_a);
 		fp_inv(t, t);
 		fp_mul(u, u, t);
-		fp_srt(u, u);
+		result = fp_srt(u, u);
 
-		fp_norm(u, u);
-		fp_norm(r->x, p->x);
-
-		if (fp_get_bit(u, 0) != fp_get_bit(r->x, 0)) {
+		/* Choose the root whose parity matches the compressed bit. */
+		fp_prime_back(x, u);
+		if (bn_get_bit(x, 0) != fp_get_bit(p->x, 0)) {
 			fp_neg(u, u);
 		}
 		fp_copy(r->x, u);
 
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(r->t, r->x, r->y);
 #endif
 		fp_set_dig(r->z, 1);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t);
+		fp_free_all(t, u);
+		bn_free(x);
 	}
 	return result;
 }

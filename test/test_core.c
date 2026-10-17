@@ -34,8 +34,8 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if defined(MULTI)
-#if MULTI == PTHREAD
+#if defined(RLC_MULTI)
+#if RLC_MULTI == RLC_PTHREAD
 
 void *master(void *ptr) {
 	int *code = (int *)ptr;
@@ -89,7 +89,9 @@ int main(void) {
 		/* Reinitialize library with new context. */
 		core_init();
 		/* Run function to manipulate the library context. */
+		err_set_quiet(1);
 		RLC_THROW(ERR_NO_MEMORY);
+		err_set_quiet(0);
 		core_set(old_ctx);
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 		core_set(&new_ctx);
@@ -102,10 +104,10 @@ int main(void) {
 
 	code = RLC_OK;
 
-#if defined(MULTI)
-#if MULTI == OPENMP
+#if defined(RLC_MULTI)
+#if RLC_MULTI == RLC_OPENMP
 	TEST_ONCE("library context is thread-safe") {
-		omp_set_num_threads(CORES);
+		omp_set_num_threads(RLC_CORES);
 #pragma omp parallel shared(code)
 		{
 			if (omp_get_thread_num() == 0) {
@@ -136,11 +138,11 @@ int main(void) {
 	} TEST_END;
 #endif
 
-#if MULTI == PTHREAD
+#if RLC_MULTI == RLC_PTHREAD
 	TEST_ONCE("library context is thread-safe") {
-		pthread_t thread[CORES];
-		int result[CORES] = { RLC_OK };
-		for (int i = 0; i < CORES; i++) {
+		pthread_t thread[RLC_CORES];
+		int result[RLC_CORES] = { RLC_OK };
+		for (int i = 0; i < RLC_CORES; i++) {
 			if (i == 0) {
 				if (pthread_create(&(thread[0]), NULL, master, &(result[0]))) {
 					code = RLC_ERR;
@@ -150,13 +152,11 @@ int main(void) {
 					code = RLC_ERR;
 				}
 			}
-			if (result[i] != RLC_OK) {
-				code = RLC_ERR;
-			}
 		}
 
-		for (int i = 0; i < CORES; i++) {
-			if (pthread_join(thread[i], NULL)) {
+		/* The results are only available after the threads finish. */
+		for (int i = 0; i < RLC_CORES; i++) {
+			if (pthread_join(thread[i], NULL) || result[i] != RLC_OK) {
 				code = RLC_ERR;
 			}
 		}

@@ -24,13 +24,12 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of the low-level prime field modular reduction functions.
  *
  * @ingroup fp
  */
 
 #include "relic_fp_low.h"
-
 #include "macro.s"
 
 .text
@@ -39,24 +38,21 @@
 
 /*
  * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
+ * Inputs: rdi = c, rsi = a, with a a double-length value of 17 limbs
+ * Output: c = a * 2^-576 mod p
  */
 cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
+	push	%rbx
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+	FP_RDCN_LOW	0(%rsi), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rax, p0(%rip)
 
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
 	ret

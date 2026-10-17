@@ -48,7 +48,7 @@ int fp_smbm_low(const dig_t *a) {
 	mpz_init(n);
 	mpz_init(p);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
 	dv_copy(t, a, RLC_FP_DIGS);
 	fp_rdcn_low(u, t);

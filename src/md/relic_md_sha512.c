@@ -38,8 +38,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if MD_MAP == SH512 || !defined(STRIP)
-
 void md_map_sh512(uint8_t *hash, const uint8_t *msg, size_t len) {
 	SHA512Context ctx;
 
@@ -47,14 +45,18 @@ void md_map_sh512(uint8_t *hash, const uint8_t *msg, size_t len) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
-	if (SHA512Input(&ctx, msg, len) != shaSuccess) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
+	/* The reference implementation takes lengths of at most 32 bits. */
+	while (len > 0) {
+		unsigned int n = (len > (1U << 30) ? (1U << 30) : (unsigned int)len);
+		if (SHA512Input(&ctx, msg, n) != shaSuccess) {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
+		msg += n;
+		len -= n;
 	}
 	if (SHA512Result(&ctx, hash) != shaSuccess) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 }
-
-#endif

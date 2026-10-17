@@ -37,6 +37,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/* Defining FP2_ASM leaves out the Fp2 functions, so they can be replaced. */
+#ifndef FP2_ASM
+
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
@@ -118,6 +121,8 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 		dv2_free(t);
 	}
 }
+
+#endif
 
 void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];

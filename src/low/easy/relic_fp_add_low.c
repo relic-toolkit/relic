@@ -39,23 +39,20 @@
 /*============================================================================*/
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 	dig_t carry, r0;
 
 	carry = digit;
-	for (i = 0; i < RLC_FP_DIGS && carry; i++, a++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		r0 = (*a) + carry;
 		carry = (r0 < carry);
 		(*c) = r0;
-	}
-	for (; i < RLC_FP_DIGS; i++, a++, c++) {
-		(*c) = (*a);
 	}
 	return carry;
 }
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -71,7 +68,7 @@ dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -89,7 +86,7 @@ void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -113,7 +110,7 @@ void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 	dig_t carry, r0;
 
 	carry = digit;
@@ -126,7 +123,7 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -141,7 +138,7 @@ dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -164,7 +161,7 @@ void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
@@ -179,15 +176,24 @@ dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	if (fp_is_zero(a)) {
-		fp_zero(c);
-	} else {
-		fp_subn_low(c, fp_prime_get(), a);
+	const dig_t *p = fp_prime_get();
+	dig_t t = 0, u = 0, mask;
+
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		t |= a[i];
+		u |= a[i] ^ p[i];
+	}
+	/* All ones unless a is 0 or p, in which case p - a is masked to zero. */
+	mask = (dig_t)0 - (dig_t)((t != 0) & (u != 0));
+
+	fp_subn_low(c, p, a);
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+		c[i] &= mask;
 	}
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
@@ -203,7 +209,7 @@ dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	int i;
+	size_t i;
 	dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;

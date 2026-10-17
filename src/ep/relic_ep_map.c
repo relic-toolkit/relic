@@ -38,15 +38,6 @@
 /*============================================================================*/
 
 /**
- * Domain separation tag.
- */
-#ifndef RLC_DSTAG
-#define RLC_DSTAG		RLC_STRING
-#endif
-
-#ifdef EP_CTMAP
-
-/**
  * Evaluate a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  *
@@ -55,26 +46,24 @@
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
  * @param[in] deg 		- the degree of the polynomial.
  */
-TMPL_MAP_HORNER(fp, fp_st);
+TMPL_EP_MAP_HORNER(fp, fp_st);
 
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
-
-#endif /* EP_CTMAP */
+TMPL_EP_MAP_ISOGENY_MAP(ep, fp, iso);
 
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-TMPL_MAP_SSWU(ep, fp, dig_t);
+TMPL_EP_MAP_SSWU(ep, fp, dig_t);
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t);
+TMPL_EP_MAP_SVDW(ep, fp, dig_t);
 
 static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 	bn_t x;
@@ -96,7 +85,7 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 
 			if (fp_smb(t0) == 1) {
 				fp_srt(p->y, t0);
-				p->coord = BASIC;
+				p->coord = EC_AFFIN;
 				break;
 			}
 
@@ -125,6 +114,7 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
  * @param[in] len			- the array length in bytes.
  * @param[in] map_fn		- the mapping function.
  */
+
 static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		void (*const map_fn)(ep_t, const fp_t)) {
 	bn_t k;
@@ -133,6 +123,9 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+
+	/* The length is fixed by the hash-to-curve method. */
+	(void)len;
 
 	bn_null(k);
 	fp_null(t);
@@ -164,12 +157,12 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
 		EP_MAP_APPLY_MAP(p);
-		TMPL_MAP_CALL_ISOMAP(ep, p);
+		TMPL_EP_MAP_CALL_ISOMAP(ep, p);
 
 		/* second map invocation */
 		EP_MAP_CONVERT_BYTES(1);
 		EP_MAP_APPLY_MAP(q);
-		TMPL_MAP_CALL_ISOMAP(ep, q);
+		TMPL_EP_MAP_CALL_ISOMAP(ep, q);
 
 		/* XXX(rsw) could add p and q and then apply isomap,
 		 * but need ep_add to support addition on isogeny curves */
@@ -210,6 +203,9 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_null(d[0]);
 	fp_null(d[1]);
 	fp_null(d[2]);
+	for (size_t i = 0; i < 8; i++) {
+		fp_null(h[i]);
+	}
 
 	RLC_TRY {
 		bn_new(k);
@@ -225,7 +221,6 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		fp_new(d[1]);
 		fp_new(d[2]);
 		for (size_t i = 0; i < 8; i++) {
-			fp_null(h[i]);
 			fp_new(h[i]);
 		}
 
@@ -335,7 +330,8 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 					fp_set_dig(t2, 64);
 					fp_sqr(t2, t2);
 				} else {
-					fp_dbl(h[0], t1);
+					fp_mul(h[0], h[0], h[3]);
+					fp_dbl(h[0], h[0]);
 					fp_sqr(t2, h[3]);
 				}
 				fp_add(h[0], h[0], w);
@@ -409,7 +405,7 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		fp_neg(w, p->y);
 		fp_copy_sec(p->y, w, fp_is_even(p->y) ^ s);
 		fp_set_dig(p->z, 1);
-		p->coord = BASIC;
+		p->coord = EC_AFFIN;
 		/* Multiply by cofactor. */
 		ep_mul_cof(p, p);
 	}
@@ -439,8 +435,6 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_MAP == BASIC || !defined(STRIP)
-
 void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
@@ -463,11 +457,12 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	}
 }
 
-#endif
-
-#if EP_MAP == SSWUM || !defined(STRIP)
-
 void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
+	ep_map_dst(p, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
+}
+
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
@@ -482,8 +477,7 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)RLC_DSTAG,
-				sizeof(RLC_DSTAG));
+		md_xmd(r, 2 * elm, msg, len, dst, dst_len);
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
@@ -499,10 +493,6 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		RLC_FREE(r);
 	}
 }
-
-#endif
-
-#if EP_MAP == SWIFT || !defined(STRIP)
 
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
@@ -524,7 +514,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 	RLC_TRY {
 		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)RLC_DSTAG,
-				sizeof(RLC_DSTAG));
+				strlen(RLC_DSTAG));
 
 		ep_map_swift_impl(p, r, 2 * elm + 1);
 	}
@@ -536,16 +526,14 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 }
 
-#endif
-
 size_t ep_map_rnd_size(void) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 	return elm;
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 	return 2 * elm;
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 	return 2 * elm + 1;
 #endif
 }
@@ -558,11 +546,11 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 		return;
 	}
 
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 	ep_map_basic_impl(p, uniform_bytes, len);
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 	ep_map_swift_impl(p, uniform_bytes, len);
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 			(ep_curve_opt_b() != RLC_ZERO);

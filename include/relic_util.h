@@ -76,7 +76,7 @@
  * @param[in] A			- the dividend.
  * @param[in] B			- the divisor.
  */
-#define RLC_CEIL(A, B)			(((A) - 1) / (B) + 1)
+#define RLC_CEIL(A, B)			((A) / (B) + ((A) % (B) != 0))
 
 /**
  * Returns a bit mask to isolate the lowest part of a digit.
@@ -84,7 +84,7 @@
  * @param[in] B			- the number of bits to isolate.
  */
 #define RLC_MASK(B)															\
-	((-(dig_t)((B) >= WSIZE)) | (((dig_t)1 << ((B) % WSIZE)) - 1))
+	((-(dig_t)((B) >= RLC_WSIZE)) | (((dig_t)1 << ((B) % RLC_WSIZE)) - 1))
 
 /**
  * Returns a bit mask to isolate the lowest half of a digit.
@@ -111,21 +111,21 @@
  *
  * @param[in] D			- the digit.
  */
-#define RLC_LOW(D)				(D & RLC_LMASK)
+#define RLC_LOW(D)				((D) & RLC_LMASK)
 
 /**
  * Returns the highest half of a digit.
  *
  * @param[in] D			- the digit.
  */
-#define RLC_HIGH(D)				(D >> (RLC_DIG >> 1))
+#define RLC_HIGH(D)				((D) >> (RLC_DIG >> 1))
 
 /**
  * Returns the sign bit of a digit.
  *
  * @param[in] D			- the digit.
  */
-#define RLC_SIGN(D)				(((dig_t)D) >> (RLC_DIG - 1))
+#define RLC_SIGN(D)				(((dig_t)(D)) >> (RLC_DIG - 1))
 
 /**
  * Selects between two values based on the value of a given flag.
@@ -175,16 +175,44 @@
 /** @} */
 
 /**
+ * Applies a statement macro to each of up to sixteen arguments, in order.
+ */
+/** @{ */
+#define RLC_EACH(M, ...)													\
+	RLC_ECHO(RLC_CAT(_RLC_EACH, _RLC_NARGS(__VA_ARGS__))(M, __VA_ARGS__))
+#define _RLC_NARGS(...)														\
+	RLC_ECHO(__RLC_NARGS(__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7,	\
+		6, 5, 4, 3, 2, 1))
+#define __RLC_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13,	\
+		_14, _15, _16, N, ...)		N
+#define _RLC_EACH1(M, A)		M(A);
+#define _RLC_EACH2(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH1(M, __VA_ARGS__))
+#define _RLC_EACH3(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH2(M, __VA_ARGS__))
+#define _RLC_EACH4(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH3(M, __VA_ARGS__))
+#define _RLC_EACH5(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH4(M, __VA_ARGS__))
+#define _RLC_EACH6(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH5(M, __VA_ARGS__))
+#define _RLC_EACH7(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH6(M, __VA_ARGS__))
+#define _RLC_EACH8(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH7(M, __VA_ARGS__))
+#define _RLC_EACH9(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH8(M, __VA_ARGS__))
+#define _RLC_EACH10(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH9(M, __VA_ARGS__))
+#define _RLC_EACH11(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH10(M, __VA_ARGS__))
+#define _RLC_EACH12(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH11(M, __VA_ARGS__))
+#define _RLC_EACH13(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH12(M, __VA_ARGS__))
+#define _RLC_EACH14(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH13(M, __VA_ARGS__))
+#define _RLC_EACH15(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH14(M, __VA_ARGS__))
+#define _RLC_EACH16(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH15(M, __VA_ARGS__))
+/** @} */
+
+/**
  * Generic macro to initialize an object to NULL.
  *
  * @param[out] A			- the object to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define RLC_NULL(A)			/* empty */
 #else
 #define RLC_NULL(A)			A = NULL;
 #endif
-
 
 /**
  * Accumulates a double precision digit in a triple register variable.
@@ -241,7 +269,7 @@
  *
  * @param[in] F			- the format string.
  */
-#ifndef QUIET
+#ifndef RLC_QUIET
 #define util_print(F, ...)		util_printf(RLC_STR(F), ##__VA_ARGS__)
 #else
 #define util_print(F, ...)		/* empty */
@@ -265,24 +293,28 @@
 /*============================================================================*/
 
 /**
- * Toggle endianness of a digit.
- */
-uint32_t util_conv_endian(uint32_t i);
-
-/**
- * Convert a digit to big-endian.
- */
-uint32_t util_conv_big(uint32_t i);
-
-/**
- * Convert a digit to little-endian.
- */
-uint32_t util_conv_little(uint32_t i);
-
-/**
  * Converts a small digit to a character.
  */
 char util_conv_char(dig_t i);
+
+/**
+ * Writes an unsigned integer as four bytes in big-endian order, so that what
+ * is written does not depend on the endianness of the platform.
+ *
+ * @param[out] bin			- the resulting byte vector, of four bytes.
+ * @param[in] a				- the integer to write.
+ */
+void util_write_uint32(uint8_t *bin, uint32_t a);
+
+/**
+ * Writes an unsigned integer as eight bytes in big-endian order. The width is
+ * fixed, so that what is written depends neither on the endianness nor on the
+ * size of size_t on the platform.
+ *
+ * @param[out] bin			- the resulting byte vector, of eight bytes.
+ * @param[in] a				- the integer to write.
+ */
+void util_write_size(uint8_t *bin, size_t a);
 
 /**
  * Returns the highest bit set on a digit.
@@ -301,6 +333,14 @@ size_t util_bits_dig(dig_t a);
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
 int util_cmp_sec(const void *a, const void *b, size_t n);
+
+/**
+ * Overwrites a buffer with zeros, even when it is not read afterwards.
+ *
+ * @param[out] a			- the buffer.
+ * @param[in] n				- the length in bytes of the buffer.
+ */
+void util_zero(void *a, size_t n);
 
 /**
  * Computes a random permutation in [0, n-1].

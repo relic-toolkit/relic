@@ -55,6 +55,8 @@ static void dummy2(void) {
 	}
 }
 
+#if defined(WITH_BN)
+
 static void dummy3(void) {
 	bn_t a;
 
@@ -79,10 +81,13 @@ static void dummy4(void) {
 	}
 }
 
+#endif
 
 int main(void) {
-	err_t e = ERR_CAUGHT;
+	err_t e = 0;
+#ifdef RLC_CHECK
 	char *msg = NULL;
+#endif
 	int code = RLC_ERR;
 
 	if (core_init() != RLC_OK) {
@@ -93,76 +98,117 @@ int main(void) {
 	util_banner("Tests for the ERR module:\n", 0);
 
 	TEST_ONCE("not using try-catch is correct") {
+		counter = 0;
 		dummy();
-		if (err_get_code() == RLC_ERR) {
-			err_get_msg(&e, &msg);
-			TEST_ASSERT(msg == core_get()->reason[ERR_NO_MEMORY], end);
-			TEST_ASSERT(err_get_code() != RLC_ERR, end);
-		}
+#ifdef RLC_CHECK
+		err_get_msg(&e, &msg);
+		TEST_ASSERT(e == ERR_NO_MEMORY, end);
+		TEST_ASSERT(msg == core_get()->reason[ERR_NO_MEMORY], end);
+		/* Reading the message clears the pending error. */
+		err_get_msg(&e, &msg);
+		TEST_ASSERT(e == 0 && msg == NULL, end);
+#endif
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		TEST_ASSERT(err_get_code() == RLC_OK, end);
 	} TEST_END;
 
-	counter = 0;
-
-	TEST_ONCE("try-catch is correct and error message is printed") {
-		RLC_TRY {
-			dummy();
-		}
-		RLC_CATCH(e) {
-			switch (e) {
-				case ERR_NO_MEMORY:
-					TEST_END;
-					break;
-			}
-		}
-	}
-
-#ifdef WITH_BN
-	TEST_ONCE("throw in try-catch is correct and error message is printed") {
-		bn_t a;
-		bn_null(a);
-
-		RLC_TRY {
-			bn_new(a);
-			dummy3();
-		}
-		RLC_CATCH(e) {
-			bn_free(a);
-			switch (e) {
-				case ERR_NO_MEMORY:
-					TEST_END;
-					break;
-			}
-		}
-	}
-
-	TEST_ONCE("throw in deep try-catch is correct and functions are printed") {
-		bn_t a;
-		bn_null(a);
-
-		RLC_TRY {
-			bn_new(a);
-			dummy4();
-		}
-		RLC_CATCH(e) {
-			bn_free(a);
-			switch (e) {
-				case ERR_NO_MEMORY:
-					TEST_END;
-					RLC_ERROR(end);
-					break;
-			}
-		}
-	}
+#ifdef RLC_CHECK
+	TEST_ONCE("errors are reported again after reading the code") {
+		RLC_THROW(ERR_NO_VALID);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		RLC_THROW(ERR_NO_BUFFER);
+		err_get_msg(&e, &msg);
+		TEST_ASSERT(e == ERR_NO_BUFFER, end);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+	} TEST_END;
 #endif
 
+	TEST_ONCE("try-catch is correct and error message is printed") {
+		int caught = 0;
+		counter = 0;
+		e = 0;
+		RLC_TRY {
+			dummy();
+		} RLC_CATCH(e) {
+			caught = 1;
+		}
+		TEST_ASSERT(caught == 1 && e == ERR_NO_MEMORY, end);
+		/* Nothing is caught when nothing is thrown. */
+		caught = 0;
+		e = 0;
+		RLC_TRY {
+			counter = 0;
+		} RLC_CATCH(e) {
+			caught = 1;
+		}
+		TEST_ASSERT(caught == 0 && e == 0, end);
+		err_get_code();
+	} TEST_END;
+
+#ifdef WITH_BN
+	TEST_ONCE("rethrowing keeps the original error code") {
+		e = 0;
+		RLC_TRY {
+			dummy3();
+		} RLC_CATCH(e) {
+		}
+		TEST_ASSERT(e == ERR_NO_MEMORY, end);
+		e = 0;
+		RLC_TRY {
+			dummy4();
+		} RLC_CATCH(e) {
+		}
+		TEST_ASSERT(e == ERR_NO_MEMORY, end);
+		err_get_code();
+	} TEST_END;
+#endif
+
+	TEST_ONCE("a try-catch inside a finally clause keeps the error") {
+		int caught = 0;
+		e = 0;
+		RLC_TRY {
+			RLC_THROW(ERR_NO_VALID);
+		} RLC_CATCH(e) {
+			caught = 1;
+		} RLC_FINALLY {
+			RLC_TRY {
+				counter = 0;
+			} RLC_CATCH_ANY {
+				caught = 2;
+			}
+		}
+		TEST_ASSERT(caught == 1 && e == ERR_NO_VALID, end);
+		err_get_code();
+	} TEST_END;
+
+	TEST_ONCE("a recovered error is recorded but not caught again") {
+		int caught = 0;
+		RLC_TRY {
+			RLC_THROW(ERR_NO_VALID);
+		} RLC_CATCH_ANY {
+			caught++;
+		}
+		RLC_TRY {
+			counter = 0;
+		} RLC_CATCH_ANY {
+			caught++;
+		}
+		TEST_ASSERT(caught == 1, end);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		TEST_ASSERT(err_get_code() == RLC_OK, end);
+	} TEST_END;
+
+	TEST_ONCE("disabling error messages keeps errors recorded") {
+		err_set_quiet(1);
+		RLC_THROW(ERR_NO_VALID);
+		err_set_quiet(0);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+	} TEST_END;
+
+	util_banner("All tests have passed.\n", 0);
 	code = RLC_OK;
 
   end:
 	core_clean();
-	if (code == RLC_ERR) {
-		util_banner("All tests have passed.\n", 0);
-		return 0;
-	} else {
-		return 1;
-	}
+	return (code == RLC_OK ? 0 : 1);
 }

@@ -64,6 +64,12 @@ int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 	int l, result = RLC_OK;
 	uint8_t _x[RLC_FC_BYTES];
 
+	/* The peer's point must be in the curve, or invalid-curve points could
+	 * leak the private key. Its cofactor part is cleared below. */
+	if (ec_is_infty(q) || !ec_on_curve(q)) {
+		return RLC_ERR;
+	}
+
 	ec_null(p);
 	bn_null(x);
 	bn_null(h);
@@ -82,13 +88,15 @@ int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 		ec_mul(p, p, d);
 		if (ec_is_infty(p)) {
 			result = RLC_ERR;
+		} else {
+			ec_get_x(x, p);
+			l = bn_size_bin(x);
+			bn_write_bin(_x, l, x);
+			md_kdf(key, key_len, _x, l);
 		}
-		ec_get_x(x, p);
-		l = bn_size_bin(x);
-		bn_write_bin(_x, l, x);
-		md_kdf(key, key_len, _x, l);
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

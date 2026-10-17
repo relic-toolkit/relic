@@ -37,7 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_SMB == BINAR || !defined(STRIP)
 /**
  * Approach heavily inpired in the blst implementation of the algorithm.
  */
@@ -158,10 +157,6 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 	return k;
 }
 
-#endif
-
-#if FP_SMB == JMPDS || !defined(STRIP)
-
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
 		int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
@@ -228,13 +223,9 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 	return delta;
 }
 
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FP_SMB == BASIC || !defined(STRIP)
 
 int fp_smb_basic(const fp_t a) {
 	bn_t t;
@@ -258,6 +249,7 @@ int fp_smb_basic(const fp_t a) {
 		r = RLC_SEL(r, -(fp_cmp_dig(t->dp, 1) == RLC_EQ), !r);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -266,12 +258,11 @@ int fp_smb_basic(const fp_t a) {
 	return r;
 }
 
-#endif
-
-#if FP_SMB == BINAR || !defined(STRIP)
-
+/* Shifts the double digit H:L left by I bits, for 0 <= I <= RLC_DIG, keeping
+ * the high digit. Shifting by RLC_DIG is undefined in C, but H is zero then. */
 #define RLC_LSH(H, L, I)													\
-		(H << I) | (L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
+		(H << (I & (RLC_DIG - 1))) |										\
+		(L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
 
 int fp_smb_binar(const fp_t a) {
 	const size_t s = RLC_DIG - 2;
@@ -284,22 +275,14 @@ int fp_smb_binar(const fp_t a) {
 		return 0;
 	}
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
-	dv_null(t0);
-	dv_null(t1);
+	dv_null_all(f, g, t, t0, t1);
 
 	RLC_TRY {
-		dv_new(f);
-		dv_new(g);
-		dv_new(t);
-		dv_new(t0);
-		dv_new(t1);
+		dv_new_all(f, g, t, t0, t1);
 
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t, a);
 		fp_rdcn_low(g, t);
@@ -325,18 +308,18 @@ int fp_smb_binar(const fp_t a) {
 
 			k = porninstep(m, f_, g_, k, s);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, g, RLC_POS, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, f, RLC_POS, m[1], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[0], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[1], RLC_FP_DIGS);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
 			neg = RLC_SIGN(t0[RLC_FP_DIGS]);
 			bn_rshb_low(t, t0, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_negs_low(t, t, neg, RLC_FP_DIGS);
+			bn_sneg_low(t, t, neg, RLC_FP_DIGS);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, g, RLC_POS, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, f, RLC_POS, m[3], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[2], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[3], RLC_FP_DIGS);
 			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 			bn_rshb_low(f, t1, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_negs_low(f, f, RLC_SIGN(t1[RLC_FP_DIGS]), RLC_FP_DIGS);
+			bn_sneg_low(f, f, RLC_SIGN(t1[RLC_FP_DIGS]), RLC_FP_DIGS);
 
 			fp_copy(g, t);
 			k += (f[0] >> 1) & neg;
@@ -345,21 +328,13 @@ int fp_smb_binar(const fp_t a) {
 		k = porninstep(m, g, f, k, iterations % s);
 
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free(f);
-		dv_free(g);
-		dv_free(t);
-		dv_free(t0);
-		dv_free(t1);
+		dv_free_all(f, g, t, t0, t1);
 	}
 
 	return (k & 1 ? -1 : 1);
 }
-
-#endif
-
-#if FP_SMB == DIVST || !defined(STRIP)
 
 int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
@@ -374,17 +349,13 @@ int fp_smb_divst(const fp_t a) {
 	int r = 0;
 
 	bn_null(_t);
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
+	dv_null_all(f, g, t);
 
 	RLC_TRY {
 		bn_new(_t);
-		dv_new(f);
-		dv_new(g);
-		dv_new(t);
+		dv_new_all(f, g, t);
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);
 		bn_lsh(_t, _t, 8);
 		bn_add_dig(_t, _t, d & 0xFF);
@@ -394,7 +365,7 @@ int fp_smb_divst(const fp_t a) {
 
 		k = 0;
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
@@ -402,7 +373,7 @@ int fp_smb_divst(const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
-		r = dv_cmp(g, f, RLC_FP_DIGS);
+		r = dv_cmp_sec(g, f, RLC_FP_DIGS);
 		fp_subn_low(t, g, f);
 		fp_copy_sec(g, t, r != RLC_LT);
 
@@ -417,7 +388,7 @@ int fp_smb_divst(const fp_t a) {
 			s = (fs ^ gs) & mask;
 			fs ^= s;
 			gs ^= s ^ d0;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				s = (f[j] ^ g[j]) & mask;
 				f[j] ^= s;
 				g[j] ^= s ^ (-d0);
@@ -430,7 +401,7 @@ int fp_smb_divst(const fp_t a) {
 
 			delta++;
 			g0 = g[0] & 1;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				t[j] = f[j] & (-g0);
 			}
 
@@ -445,27 +416,22 @@ int fp_smb_divst(const fp_t a) {
 		k = (2*k) % 4;
 		fp_zero(t);
 		t[0] = 1;
-		bn_negs_low(f, f, fs, RLC_FP_DIGS);
+		bn_sneg_low(f, f, fs, RLC_FP_DIGS);
 		
-		r = RLC_SEL(r, 1 - k, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		bn_negs_low(t, t, 1, RLC_FP_DIGS);
-		r = RLC_SEL(r, 1 - k, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
+		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
 		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(_t);
-		dv_free(f);
-		dv_free(g);
-		dv_free(t);
+		dv_free_all(f, g, t);
 	}
 	return r;
 }
-
-#endif
-
-#if FP_SMB == JMPDS || !defined(STRIP)
 
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4], d = -1;
@@ -475,27 +441,17 @@ int fp_smb_jmpds(const fp_t a) {
 	dv_t f, g, t0, t1, u0, u1;
 	dig_t sf, sg, j, k;
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(u0);
-	dv_null(u1);
+	dv_null_all(f, g, t0, t1, u0, u1);
 
 	RLC_TRY {
-		dv_new(f);
-		dv_new(g);
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(u0);
-		dv_new(u1);
+		dv_new_all(f, g, t0, t1, u0, u1);
 
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		f[RLC_FP_DIGS] = 0;
 		dv_zero(g, RLC_FP_DIGS + 1);
 		dv_zero(t0 + RLC_FP_DIGS, RLC_FP_DIGS);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t0, a);
 		fp_rdcn_low(g, t0);
@@ -511,18 +467,18 @@ int fp_smb_jmpds(const fp_t a) {
 
 			sf = RLC_SIGN(f[precision]);
 			sg = RLC_SIGN(g[precision]);
-			bn_negs_low(u0, f, sf, precision);
-			bn_negs_low(u1, g, sg, precision);
+			bn_sneg_low(u0, f, sf, precision);
+			bn_sneg_low(u1, g, sg, precision);
 			
-			t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
+			t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
+			t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
 			bn_addn_low(t0, t0, t1, precision + 1);
-			bn_rshs_low(f, t0, precision + 1, s);
+			bn_srsh_low(f, t0, precision + 1, s);
 
-			t0[precision] = bn_muls_low(t0, u0, sf, m[1], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[0], precision);
+			t0[precision] = bn_smul_low(t0, u0, sf, m[1], precision);
+			t1[precision] = bn_smul_low(t1, u1, sg, m[0], precision);
 			bn_addn_low(t1, t1, t0, precision + 1);
-			bn_rshs_low(g, t1, precision + 1, s);
+			bn_srsh_low(g, t1, precision + 1, s);
 
 			j = (j + k) % 4;
 			j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
@@ -533,13 +489,13 @@ int fp_smb_jmpds(const fp_t a) {
 
 		sf = RLC_SIGN(f[precision]);
 		sg = RLC_SIGN(g[precision]);
-		bn_negs_low(u0, f, sf, precision);
-		bn_negs_low(u1, g, sg, precision);
+		bn_sneg_low(u0, f, sf, precision);
+		bn_sneg_low(u1, g, sg, precision);
 
-		t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
-		t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
+		t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
+		t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
 		bn_addn_low(t0, t0, t1, precision + 1);
-		bn_rshs_low(f, t0, precision + 1, s);
+		bn_srsh_low(f, t0, precision + 1, s);
 
 		j = (j + k) % 4;
 		j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
@@ -549,27 +505,21 @@ int fp_smb_jmpds(const fp_t a) {
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
 		t0[0] = 1;
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
-		bn_negs_low(t0, t0, 1, RLC_FP_DIGS);
+		bn_sneg_low(t0, t0, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(f);
-		dv_free(g);
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(u0);
-		dv_free(u1);
+		dv_free_all(f, g, t0, t1, u0, u1);
 	}
 
 	return r;
 }
 
-#endif
-
-#if FP_SMB == LOWER || !defined(STRIP)
+#if FP_SMB == FP_LOWER
 
 int fp_smb_lower(const fp_t a) {
 	return fp_smbm_low(a);

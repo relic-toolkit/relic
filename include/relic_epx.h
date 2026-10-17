@@ -50,14 +50,15 @@
 /*============================================================================*/
 
 /**
- * Size of a precomputation table using the binary method.
- */
-#define RLC_EPX_TABLE_BASIC		(2 * RLC_FP_BITS + 1)
-
-/**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EPX_TABLE_COMBS      (1 << RLC_DEPTH)
+#define RLC_EPX_TABLE_BASIC      (1 << RLC_DEPTH)
+
+/**
+ * Size of a precomputation table using the regular signed comb method: two
+ * combs and the point itself.
+ */
+#define RLC_EPX_TABLE_LWREG		((1 << RLC_DEPTH) + 1)
 
 /**
  * Size of a precomputation table using the double-table comb method.
@@ -65,31 +66,20 @@
 #define RLC_EPX_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
- * Size of a precomputation table using the w-(T)NAF method.
- */
-#define RLC_EPX_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
-
-/**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_BASIC
-#elif EP_FIX == COMBS
-#define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBS
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_LWREG
+#elif EP_FIX == EP_COMBD
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBD
-#elif EP_FIX == LWNAF
-#define RLC_EPX_TABLE			RLC_EPX_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
-#ifdef STRIP
-#define RLC_EPX_TABLE_MAX 	RLC_EPX_TABLE
-#else
 #define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
-#endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.
@@ -119,7 +109,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a quadratic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep2_st ep2_t[1];
 #else
 typedef ep2_st *ep2_t;
@@ -143,7 +133,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a cubic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep3_st ep3_t[1];
 #else
 typedef ep3_st *ep3_t;
@@ -167,7 +157,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep4_st ep4_t[1];
 #else
 typedef ep4_st *ep4_t;
@@ -191,10 +181,34 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep8_st ep8_t[1];
 #else
 typedef ep8_st *ep8_t;
+#endif
+
+/**
+ * Represents an elliptic curve point over a nonic extension over a prime
+ * field.
+ */
+typedef struct {
+	/** The first coordinate. */
+	fp9_t x;
+	/** The second coordinate. */
+	fp9_t y;
+	/** The third coordinate (projective representation). */
+	fp9_t z;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
+} ep9_st;
+
+/**
+ * Pointer to an elliptic curve point over a nonic extension field.
+ */
+#if RLC_ALLOC == RLC_AUTO
+typedef ep9_st ep9_t[1];
+#else
+typedef ep9_st *ep9_t;
 #endif
 
 /**
@@ -245,7 +259,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_new(A)															\
 	A = (ep2_t)calloc(1, sizeof(ep2_st));									\
 	if (A == NULL) {														\
@@ -258,7 +272,7 @@ typedef iso2_st *iso2_t;
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_new(A)				/* empty */
 
 #endif
@@ -268,7 +282,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_free(A)															\
 	if (A != NULL) {														\
 		fp2_free((A)->x);													\
@@ -278,9 +292,20 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep2_null_all(...)	RLC_EACH(ep2_null, __VA_ARGS__)
+#define ep2_new_all(...)		RLC_EACH(ep2_new, __VA_ARGS__)
+#define ep2_free_all(...)	RLC_EACH(ep2_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Initializes a point on an elliptic curve with a null value.
@@ -295,7 +320,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_new(A)															\
 	A = (ep3_t)calloc(1, sizeof(ep3_st));									\
 	if (A == NULL) {														\
@@ -308,7 +333,7 @@ typedef iso2_st *iso2_t;
 	fp3_new((A)->y);														\
 	fp3_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_new(A)				/* empty */
 
 #endif
@@ -318,7 +343,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_free(A)															\
 	if (A != NULL) {														\
 		fp3_free((A)->x);													\
@@ -328,9 +353,20 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep3_null_all(...)	RLC_EACH(ep3_null, __VA_ARGS__)
+#define ep3_new_all(...)		RLC_EACH(ep3_new, __VA_ARGS__)
+#define ep3_free_all(...)	RLC_EACH(ep3_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Initializes a point on an elliptic curve with a null value.
@@ -345,7 +381,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_new(A)															\
 	A = (ep4_t)calloc(1, sizeof(ep4_st));									\
 	if (A == NULL) {														\
@@ -358,7 +394,7 @@ typedef iso2_st *iso2_t;
 	fp4_new((A)->y);														\
 	fp4_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_new(A)				/* empty */
 
 #endif
@@ -368,7 +404,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_free(A)															\
 	if (A != NULL) {														\
 		fp4_free((A)->x);													\
@@ -378,9 +414,20 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep4_null_all(...)	RLC_EACH(ep4_null, __VA_ARGS__)
+#define ep4_new_all(...)		RLC_EACH(ep4_new, __VA_ARGS__)
+#define ep4_free_all(...)	RLC_EACH(ep4_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Initializes a point on an elliptic curve with a null value.
@@ -395,7 +442,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_new(A)															\
 	A = (ep8_t)calloc(1, sizeof(ep8_st));									\
 	if (A == NULL) {														\
@@ -408,7 +455,7 @@ typedef iso2_st *iso2_t;
 	fp8_new((A)->y);														\
 	fp8_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_new(A)				/* empty */
 
 #endif
@@ -418,7 +465,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_free(A)															\
 	if (A != NULL) {														\
 		fp8_free((A)->x);													\
@@ -428,9 +475,81 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_free(A)				/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep8_null_all(...)	RLC_EACH(ep8_null, __VA_ARGS__)
+#define ep8_new_all(...)		RLC_EACH(ep8_new, __VA_ARGS__)
+#define ep8_free_all(...)	RLC_EACH(ep8_free, __VA_ARGS__)
+/** @} */
+
+/**
+ * Initializes a point on an elliptic curve with a null value.
+ *
+ * @param[out] A				- the point to initialize.
+ */
+#define ep9_null(A)				RLC_NULL(A)
+
+/**
+ * Calls a function to allocate a point on an elliptic curve.
+ *
+ * @param[out] A				- the new point.
+ * @throw ERR_NO_MEMORY			- if there is no available memory.
+ */
+#if RLC_ALLOC == RLC_DYNAMIC
+#define ep9_new(A)															\
+	A = (ep9_t)calloc(1, sizeof(ep9_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	fp9_null((A)->x);														\
+	fp9_null((A)->y);														\
+	fp9_null((A)->z);														\
+	fp9_new((A)->x);														\
+	fp9_new((A)->y);														\
+	fp9_new((A)->z);														\
+
+#elif RLC_ALLOC == RLC_AUTO
+#define ep9_new(A)				/* empty */
+
+#endif
+
+/**
+ * Calls a function to clean and free a point on an elliptic curve.
+ *
+ * @param[out] A				- the point to free.
+ */
+#if RLC_ALLOC == RLC_DYNAMIC
+#define ep9_free(A)															\
+	if (A != NULL) {														\
+		fp9_free((A)->x);													\
+		fp9_free((A)->y);													\
+		fp9_free((A)->z);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif RLC_ALLOC == RLC_AUTO
+#define ep9_free(A)				/* empty */
+#endif
+
+/**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ep9_null_all(...)	RLC_EACH(ep9_null, __VA_ARGS__)
+#define ep9_new_all(...)		RLC_EACH(ep9_new, __VA_ARGS__)
+#define ep9_free_all(...)	RLC_EACH(ep9_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Adds two points in an elliptic curve over a quadratic extension field.
@@ -440,11 +559,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep2_add(R, P, Q)		ep2_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep2_add(R, P, Q)		ep2_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep2_add(R, P, Q)		ep2_add_jacob(R, P, Q)
 #endif
 
@@ -455,11 +574,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep2_dbl(R, P)			ep2_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep2_dbl(R, P)			ep2_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep2_dbl(R, P)			ep2_dbl_jacob(R, P)
 #endif
 
@@ -471,15 +590,13 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep2_mul(R, P, K)		ep2_mul_slide(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep2_mul(R, P, K)		ep2_mul_lwreg(R, P, K)
 #endif
 
@@ -490,15 +607,12 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep2_mul_pre(T, P)		ep2_mul_pre_basic(T, P)
-#elif EP_FIX == COMBS
-#define ep2_mul_pre(T, P)		ep2_mul_pre_combs(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep2_mul_pre(T, P)		ep2_mul_pre_lwreg(T, P)
+#elif EP_FIX == EP_COMBD
 #define ep2_mul_pre(T, P)		ep2_mul_pre_combd(T, P)
-#elif EP_FIX == LWNAF
-//TODO: implement ep2_mul_pre_glv
-#define ep2_mul_pre(T, P)		ep2_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -509,35 +623,12 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_basic(R, T, K)
-#elif EP_FIX == COMBS
-#define ep2_mul_fix(R, T, K)	ep2_mul_fix_combs(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwreg(R, T, K)
+#elif EP_FIX == EP_COMBD
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_combd(R, T, K)
-#elif EP_FIX == LWNAF
-//TODO: implement ep2_mul_fix_glv
-#define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = [k]P + [l]Q.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the first point to multiply.
- * @param[in] K					- the first integer.
- * @param[in] Q					- the second point to multiply.
- * @param[in] M					- the second integer,
- */
-#if EP_SIM == BASIC
-#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_basic(R, P, K, Q, M)
-#elif EP_SIM == TRICK
-#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_trick(R, P, K, Q, M)
-#elif EP_SIM == INTER
-#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_inter(R, P, K, Q, M)
-#elif EP_SIM == JOINT
-#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /**
@@ -558,11 +649,11 @@ typedef iso2_st *iso2_t;
  * @param[in] S					- the string to hash.
  * @param[in] L					- the string length.
  */
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 #define ep2_map(R, S, L)			ep2_map_basic(R, S, L)
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 #define ep2_map(R, S, L)			ep2_map_sswum(R, S, L)
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 #define ep2_map(R, S, L)			ep2_map_swift(R, S, L)
 #endif
 
@@ -574,11 +665,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep3_add(R, P, Q)		ep3_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep3_add(R, P, Q)		ep3_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep3_add(R, P, Q)		ep3_add_jacob(R, P, Q)
 #endif
 
@@ -589,11 +680,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep3_dbl(R, P)			ep3_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep3_dbl(R, P)			ep3_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep3_dbl(R, P)			ep3_dbl_jacob(R, P)
 #endif
 
@@ -605,15 +696,13 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep3_mul(R, P, K)		ep3_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep3_mul(R, P, K)		ep3_mul_slide(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep3_mul(R, P, K)		ep3_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep3_mul(R, P, K)		ep3_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep3_mul(R, P, K)		ep3_mul_lwreg(R, P, K)
 #endif
 
@@ -624,15 +713,12 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep3_mul_pre(T, P)		ep3_mul_pre_basic(T, P)
-#elif EP_FIX == COMBS
-#define ep3_mul_pre(T, P)		ep3_mul_pre_combs(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep3_mul_pre(T, P)		ep3_mul_pre_lwreg(T, P)
+#elif EP_FIX == EP_COMBD
 #define ep3_mul_pre(T, P)		ep3_mul_pre_combd(T, P)
-#elif EP_FIX == LWNAF
-//TODO: implement ep3_mul_pre_glv
-#define ep3_mul_pre(T, P)		ep3_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -643,35 +729,12 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_basic(R, T, K)
-#elif EP_FIX == COMBS
-#define ep3_mul_fix(R, T, K)	ep3_mul_fix_combs(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep3_mul_fix(R, T, K)	ep3_mul_fix_lwreg(R, T, K)
+#elif EP_FIX == EP_COMBD
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_combd(R, T, K)
-#elif EP_FIX == LWNAF
-//TODO: implement ep3_mul_fix_glv
-#define ep3_mul_fix(R, T, K)	ep3_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = [k]P + [l]Q.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the first point to multiply.
- * @param[in] K					- the first integer.
- * @param[in] Q					- the second point to multiply.
- * @param[in] M					- the second integer,
- */
-#if EP_SIM == BASIC
-#define ep3_mul_sim(R, P, K, Q, M)	ep3_mul_sim_basic(R, P, K, Q, M)
-#elif EP_SIM == TRICK
-#define ep3_mul_sim(R, P, K, Q, M)	ep3_mul_sim_trick(R, P, K, Q, M)
-#elif EP_SIM == INTER
-#define ep3_mul_sim(R, P, K, Q, M)	ep3_mul_sim_inter(R, P, K, Q, M)
-#elif EP_SIM == JOINT
-#define ep3_mul_sim(R, P, K, Q, M)	ep3_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /**
@@ -692,11 +755,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep4_add(R, P, Q)		ep4_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep4_add(R, P, Q)		ep4_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep4_add(R, P, Q)		ep4_add_jacob(R, P, Q)
 #endif
 
@@ -707,11 +770,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep4_dbl(R, P)			ep4_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep4_dbl(R, P)			ep4_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep4_dbl(R, P)			ep4_dbl_jacob(R, P)
 #endif
 
@@ -723,15 +786,13 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep4_mul(R, P, K)		ep4_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep4_mul(R, P, K)		ep4_mul_slide(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep4_mul(R, P, K)		ep4_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep4_mul(R, P, K)		ep4_mul_lwreg(R, P, K)
 #endif
 
@@ -742,15 +803,12 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep4_mul_pre(T, P)		ep4_mul_pre_basic(T, P)
-#elif EP_FIX == COMBS
-#define ep4_mul_pre(T, P)		ep4_mul_pre_combs(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep4_mul_pre(T, P)		ep4_mul_pre_lwreg(T, P)
+#elif EP_FIX == EP_COMBD
 #define ep4_mul_pre(T, P)		ep4_mul_pre_combd(T, P)
-#elif EP_FIX == LWNAF
-//TODO: implement ep4_mul_pre_glv
-#define ep4_mul_pre(T, P)		ep4_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -761,35 +819,12 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_basic(R, T, K)
-#elif EP_FIX == COMBS
-#define ep4_mul_fix(R, T, K)	ep4_mul_fix_combs(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep4_mul_fix(R, T, K)	ep4_mul_fix_lwreg(R, T, K)
+#elif EP_FIX == EP_COMBD
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_combd(R, T, K)
-#elif EP_FIX == LWNAF
-//TODO: implement ep4_mul_fix_glv
-#define ep4_mul_fix(R, T, K)	ep4_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = [k]P + [l]Q.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the first point to multiply.
- * @param[in] K					- the first integer.
- * @param[in] Q					- the second point to multiply.
- * @param[in] M					- the second integer,
- */
-#if EP_SIM == BASIC
-#define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_basic(R, P, K, Q, M)
-#elif EP_SIM == TRICK
-#define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_trick(R, P, K, Q, M)
-#elif EP_SIM == INTER
-#define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_inter(R, P, K, Q, M)
-#elif EP_SIM == JOINT
-#define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /**
@@ -810,11 +845,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep8_add(R, P, Q)		ep8_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep8_add(R, P, Q)		ep8_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep8_add(R, P, Q)		ep8_add_jacob(R, P, Q)
 #endif
 
@@ -825,11 +860,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep8_dbl(R, P)			ep8_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep8_dbl(R, P)			ep8_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep8_dbl(R, P)			ep8_dbl_jacob(R, P)
 #endif
 
@@ -841,15 +876,13 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
-#elif EP_MUL == SLIDE
-#define ep8_mul(R, P, K)		ep8_mul_slide(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep8_mul(R, P, K)		ep8_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep8_mul(R, P, K)		ep8_mul_lwreg(R, P, K)
 #endif
 
@@ -860,15 +893,12 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep8_mul_pre(T, P)		ep8_mul_pre_basic(T, P)
-#elif EP_FIX == COMBS
-#define ep8_mul_pre(T, P)		ep8_mul_pre_combs(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep8_mul_pre(T, P)		ep8_mul_pre_lwreg(T, P)
+#elif EP_FIX == EP_COMBD
 #define ep8_mul_pre(T, P)		ep8_mul_pre_combd(T, P)
-#elif EP_FIX == LWNAF
-//TODO: implement ep8_mul_pre_glv
-#define ep8_mul_pre(T, P)		ep8_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -879,35 +909,12 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_basic(R, T, K)
-#elif EP_FIX == COMBS
-#define ep8_mul_fix(R, T, K)	ep8_mul_fix_combs(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_LWREG
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_lwreg(R, T, K)
+#elif EP_FIX == EP_COMBD
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_combd(R, T, K)
-#elif EP_FIX == LWNAF
-//TODO: implement ep8_mul_fix_glv
-#define ep8_mul_fix(R, T, K)	ep8_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = [k]P + [l]Q.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the first point to multiply.
- * @param[in] K					- the first integer.
- * @param[in] Q					- the second point to multiply.
- * @param[in] M					- the second integer,
- */
-#if EP_SIM == BASIC
-#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_basic(R, P, K, Q, M)
-#elif EP_SIM == TRICK
-#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_trick(R, P, K, Q, M)
-#elif EP_SIM == INTER
-#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_inter(R, P, K, Q, M)
-#elif EP_SIM == JOINT
-#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /**
@@ -919,6 +926,96 @@ typedef iso2_st *iso2_t;
  * @param[in] K					- the integer.
  */
 #define ep8_mul_big(R, P, K)	ep8_mul_basic(R, P, K)
+
+/**
+ * Adds two points in an elliptic curve over a nonic extension field.
+ * Computes R = P + Q.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the first point to add.
+ * @param[in] Q					- the second point to add.
+ */
+#if EP_ADD == EP_BASIC
+#define ep9_add(R, P, Q)		ep9_add_basic(R, P, Q)
+#elif EP_ADD == EP_PROJC
+#define ep9_add(R, P, Q)		ep9_add_projc(R, P, Q)
+#elif EP_ADD == EP_JACOB
+#define ep9_add(R, P, Q)		ep9_add_jacob(R, P, Q)
+#endif
+
+/**
+ * Doubles a point in an elliptic curve over a nonic extension field.
+ * Computes R = 2P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to double.
+ */
+#if EP_ADD == EP_BASIC
+#define ep9_dbl(R, P)			ep9_dbl_basic(R, P)
+#elif EP_ADD == EP_PROJC
+#define ep9_dbl(R, P)			ep9_dbl_projc(R, P)
+#elif EP_ADD == EP_JACOB
+#define ep9_dbl(R, P)			ep9_dbl_jacob(R, P)
+#endif
+
+/**
+ * Multiplies a point in an elliptic curve over a nonic extension field.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#if EP_MUL == EP_BASIC
+#define ep9_mul(R, P, K)		ep9_mul_basic(R, P, K)
+#elif EP_MUL == EP_MONTY
+#define ep9_mul(R, P, K)		ep9_mul_monty(R, P, K)
+#elif EP_MUL == EP_LWNAF
+#define ep9_mul(R, P, K)		ep9_mul_lwnaf(R, P, K)
+#elif EP_MUL == EP_LWREG
+#define ep9_mul(R, P, K)		ep9_mul_lwreg(R, P, K)
+#endif
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * over a nonic extension.
+ *
+ * @param[out] T				- the precomputation table.
+ * @param[in] P					- the point to multiply.
+ */
+#if EP_FIX == EP_BASIC
+#define ep9_mul_pre(T, P)		ep9_mul_pre_basic(T, P)
+#elif EP_FIX == EP_LWREG
+#define ep9_mul_pre(T, P)		ep9_mul_pre_lwreg(T, P)
+#elif EP_FIX == EP_COMBD
+#define ep9_mul_pre(T, P)		ep9_mul_pre_combd(T, P)
+#endif
+
+/**
+ * Multiplies a fixed prime elliptic point over a nonic extension using a
+ * precomputation table. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] T					- the precomputation table.
+ * @param[in] K					- the integer.
+ */
+#if EP_FIX == EP_BASIC
+#define ep9_mul_fix(R, T, K)	ep9_mul_fix_basic(R, T, K)
+#elif EP_FIX == EP_LWREG
+#define ep9_mul_fix(R, T, K)	ep9_mul_fix_lwreg(R, T, K)
+#elif EP_FIX == EP_COMBD
+#define ep9_mul_fix(R, T, K)	ep9_mul_fix_combd(R, T, K)
+#endif
+
+/**
+ * Multiplies a point in an elliptic curve over a nonic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep9_mul_big(R, P, K)	ep9_mul_basic(R, P, K)
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -1040,7 +1137,7 @@ void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep2_curve_set_twist(int type);
 
@@ -1066,6 +1163,25 @@ void ep2_set_infty(ep2_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep2_copy(ep2_t r, const ep2_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep2_copy_sec(ep2_t r, const ep2_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep2_swap_sec(ep2_t p, ep2_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.
@@ -1140,10 +1256,11 @@ size_t ep2_size_bin(const ep2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
+int ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quadratic extension to a byte
@@ -1181,7 +1298,7 @@ void ep2_add_basic(ep2_t r, const ep2_t p, const ep2_t q);
  * quadratic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -1231,7 +1348,7 @@ void ep2_dbl_basic(ep2_t r, const ep2_t p);
  * a quadratic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep2_dbl_slp_basic(ep2_t r, fp2_t s, const ep2_t p);
@@ -1262,16 +1379,6 @@ void ep2_dbl_jacob(ep2_t r, const ep2_t p);
  * @param[in] k				- the integer.
  */
 void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -1318,7 +1425,6 @@ void ep2_mul_gen(ep2_t r, const bn_t k);
  */
 void ep2_mul_dig(ep2_t r, const ep2_t p, const dig_t k);
 
-
 /**
  * Multiplies a point in an elliptic curve over a quadratic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
@@ -1331,7 +1437,7 @@ void ep2_mul_cof(ep2_t r, const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the binary method.
+ * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -1340,30 +1446,12 @@ void ep2_mul_pre_basic(ep2_t *t, const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
+ * using the regular signed comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ep2_mul_pre_yaowi(ep2_t *t, const ep2_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep2_mul_pre_nafwi(ep2_t *t, const ep2_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the single-table comb method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep2_mul_pre_combs(ep2_t *t, const ep2_t p);
+void ep2_mul_pre_lwreg(ep2_t *t, const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
@@ -1375,17 +1463,8 @@ void ep2_mul_pre_combs(ep2_t *t, const ep2_t p);
 void ep2_mul_pre_combd(ep2_t *t, const ep2_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep2_mul_pre_lwnaf(ep2_t *t, const ep2_t p);
-
-/**
  * Multiplies a fixed prime elliptic point using a precomputation table and
- * the binary method.
+ * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
@@ -1394,34 +1473,14 @@ void ep2_mul_pre_lwnaf(ep2_t *t, const ep2_t p);
 void ep2_mul_fix_basic(ep2_t r, const ep2_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ep2_mul_fix_yaowi(ep2_t r, const ep2_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep2_mul_fix_nafwi(ep2_t r, const ep2_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the single-table comb method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep2_mul_fix_combs(ep2_t r, const ep2_t *t, const bn_t k);
+void ep2_mul_fix_lwreg(ep2_t r, const ep2_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -1434,18 +1493,8 @@ void ep2_mul_fix_combs(ep2_t r, const ep2_t *t, const bn_t k);
 void ep2_mul_fix_combd(ep2_t r, const ep2_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep2_mul_fix_lwnaf(ep2_t r, const ep2_t *t, const bn_t k);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -1453,44 +1502,7 @@ void ep2_mul_fix_lwnaf(ep2_t r, const ep2_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
-			const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep2_mul_sim_joint(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
+void ep2_mul_sim(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 			const bn_t m);
 
 /**
@@ -1573,18 +1585,40 @@ void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len);
 void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Maps a byte array to a point in an elliptic curve over a quadratic
+ * extension with an explicit domain separation tag, as hash_to_curve from
+ * RFC 9380 does.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
+
+/**
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quadratic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quadratic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quadratic exension. Computes Frob^i(P) = (p^i)P.
+ * quadratic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep2_frb(ep2_t r, const ep2_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a quadratic extension. The endomorphism acts as
+ * multiplication by p on BN curves and u otherwise, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep2_psi(ep2_t r, const ep2_t p);
 
 /**
  * Compresses a point in an elliptic curve over a quadratic extension.
@@ -1707,7 +1741,7 @@ void ep3_curve_set(const fp3_t a, const fp3_t b, const ep3_t g, const bn_t r,
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep3_curve_set_twist(int type);
 
@@ -1733,6 +1767,25 @@ void ep3_set_infty(ep3_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep3_copy(ep3_t r, const ep3_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep3_copy_sec(ep3_t r, const ep3_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep3_swap_sec(ep3_t p, ep3_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.
@@ -1807,10 +1860,11 @@ size_t ep3_size_bin(const ep3_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
+int ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a cubic extension to a byte
@@ -1848,7 +1902,7 @@ void ep3_add_basic(ep3_t r, const ep3_t p, const ep3_t q);
  * cubic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -1898,7 +1952,7 @@ void ep3_dbl_basic(ep3_t r, const ep3_t p);
  * a cubic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p);
@@ -1929,16 +1983,6 @@ void ep3_dbl_jacob(ep3_t r, const ep3_t p);
  * @param[in] k				- the integer.
  */
 void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -1997,7 +2041,7 @@ void ep3_mul_cof(ep3_t r, const ep3_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the binary method.
+ * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -2006,30 +2050,12 @@ void ep3_mul_pre_basic(ep3_t *t, const ep3_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
+ * using the regular signed comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ep3_mul_pre_yaowi(ep3_t *t, const ep3_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep3_mul_pre_nafwi(ep3_t *t, const ep3_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the single-table comb method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep3_mul_pre_combs(ep3_t *t, const ep3_t p);
+void ep3_mul_pre_lwreg(ep3_t *t, const ep3_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
@@ -2041,17 +2067,8 @@ void ep3_mul_pre_combs(ep3_t *t, const ep3_t p);
 void ep3_mul_pre_combd(ep3_t *t, const ep3_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep3_mul_pre_lwnaf(ep3_t *t, const ep3_t p);
-
-/**
  * Multiplies a fixed prime elliptic point using a precomputation table and
- * the binary method.
+ * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
@@ -2060,34 +2077,14 @@ void ep3_mul_pre_lwnaf(ep3_t *t, const ep3_t p);
 void ep3_mul_fix_basic(ep3_t r, const ep3_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ep3_mul_fix_yaowi(ep3_t r, const ep3_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep3_mul_fix_nafwi(ep3_t r, const ep3_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the single-table comb method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep3_mul_fix_combs(ep3_t r, const ep3_t *t, const bn_t k);
+void ep3_mul_fix_lwreg(ep3_t r, const ep3_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2100,18 +2097,8 @@ void ep3_mul_fix_combs(ep3_t r, const ep3_t *t, const bn_t k);
 void ep3_mul_fix_combd(ep3_t r, const ep3_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep3_mul_fix_lwnaf(ep3_t r, const ep3_t *t, const bn_t k);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -2119,43 +2106,7 @@ void ep3_mul_fix_lwnaf(ep3_t r, const ep3_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep3_mul_sim_basic(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep3_mul_sim_inter(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep3_mul_sim_joint(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, const bn_t m);
+void ep3_mul_sim(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, const bn_t m);
 
 /**
  * Multiplies simultaneously elements from a prime elliptic curve.
@@ -2166,7 +2117,7 @@ void ep3_mul_sim_joint(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, cons
  * @param[in] k			- the integer scalars.
  * @param[in] n			- the number of elements to multiply.
  */
-void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], int n);
+void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], size_t n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
@@ -2217,18 +2168,26 @@ void ep3_norm_sim(ep3_t *r, const ep3_t *t, int n);
 void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * cubic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a cubic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a cubic exension. Computes Frob^i(P) = (p^i)P.
+ * cubic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep3_frb(ep3_t r, const ep3_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a cubic extension. The endomorphism acts as
+ * multiplication by -3u on SG18 curves and u otherwise, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep3_psi(ep3_t r, const ep3_t p);
 
 /**
  * Compresses a point in an elliptic curve over a cubic extension.
@@ -2350,8 +2309,10 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
+ * It must be called once after configuring the base field, since it adjusts
+ * constants of the field in place.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep4_curve_set_twist(int type);
 
@@ -2377,6 +2338,25 @@ void ep4_set_infty(ep4_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep4_copy(ep4_t r, const ep4_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep4_copy_sec(ep4_t r, const ep4_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep4_swap_sec(ep4_t p, ep4_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.
@@ -2451,10 +2431,11 @@ size_t ep4_size_bin(const ep4_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
+int ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quartic extension to a byte
@@ -2492,7 +2473,7 @@ void ep4_add_basic(ep4_t r, const ep4_t p, const ep4_t q);
  * quartic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -2542,7 +2523,7 @@ void ep4_dbl_basic(ep4_t r, const ep4_t p);
  * a quartic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p);
@@ -2573,16 +2554,6 @@ void ep4_dbl_jacob(ep4_t r, const ep4_t p);
  * @param[in] k				- the integer.
  */
 void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -2629,7 +2600,6 @@ void ep4_mul_gen(ep4_t r, const bn_t k);
  */
 void ep4_mul_dig(ep4_t r, const ep4_t p, const dig_t k);
 
-
 /**
  * Multiplies a point in an elliptic curve over a quartic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
@@ -2642,7 +2612,7 @@ void ep4_mul_cof(ep4_t r, const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the binary method.
+ * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -2651,30 +2621,12 @@ void ep4_mul_pre_basic(ep4_t *t, const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
+ * using the regular signed comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ep4_mul_pre_yaowi(ep4_t *t, const ep4_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep4_mul_pre_nafwi(ep4_t *t, const ep4_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the single-table comb method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep4_mul_pre_combs(ep4_t *t, const ep4_t p);
+void ep4_mul_pre_lwreg(ep4_t *t, const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
@@ -2686,17 +2638,8 @@ void ep4_mul_pre_combs(ep4_t *t, const ep4_t p);
 void ep4_mul_pre_combd(ep4_t *t, const ep4_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep4_mul_pre_lwnaf(ep4_t *t, const ep4_t p);
-
-/**
  * Multiplies a fixed prime elliptic point using a precomputation table and
- * the binary method.
+ * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
@@ -2705,34 +2648,14 @@ void ep4_mul_pre_lwnaf(ep4_t *t, const ep4_t p);
 void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ep4_mul_fix_yaowi(ep4_t r, const ep4_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep4_mul_fix_nafwi(ep4_t r, const ep4_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the single-table comb method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k);
+void ep4_mul_fix_lwreg(ep4_t r, const ep4_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -2745,18 +2668,8 @@ void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k);
 void ep4_mul_fix_combd(ep4_t r, const ep4_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep4_mul_fix_lwnaf(ep4_t r, const ep4_t *t, const bn_t k);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -2764,43 +2677,7 @@ void ep4_mul_fix_lwnaf(ep4_t r, const ep4_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep4_mul_sim_inter(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep4_mul_sim_joint(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m);
+void ep4_mul_sim(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m);
 
 /**
  * Multiplies simultaneously elements from a prime elliptic curve.
@@ -2862,18 +2739,26 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n);
 void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quartic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quartic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quartic exension. Computes Frob^i(P) = (p^i)P.
+ * quartic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep4_frb(ep4_t r, const ep4_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a quartic extension. The endomorphism acts as
+ * multiplication by u, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep4_psi(ep4_t r, const ep4_t p);
 
 /**
  * Compresses a point in an elliptic curve over a quartic extension.
@@ -2995,8 +2880,10 @@ void ep8_curve_set(const fp8_t a, const fp8_t b, const ep8_t g, const bn_t r,
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
+ * It must be called once after configuring the base field, since it adjusts
+ * constants of the field in place.
  *
- *  @param				- the type of twist (multiplicative or divisive)
+ * @param[in] type			- the type of twist (multiplicative or divisive).
  */
 void ep8_curve_set_twist(int type);
 
@@ -3022,6 +2909,25 @@ void ep8_set_infty(ep8_t p);
  * @param[in] p				- the elliptic curve point to copy.
  */
 void ep8_copy(ep8_t r, const ep8_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep8_copy_sec(ep8_t r, const ep8_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep8_swap_sec(ep8_t p, ep8_t q, dig_t bit);
 
 /**
  * Compares two elliptic curve points.
@@ -3096,10 +3002,11 @@ size_t ep8_size_bin(const ep8_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
+int ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over an octic extension to a byte
@@ -3137,7 +3044,7 @@ void ep8_add_basic(ep8_t r, const ep8_t p, const ep8_t q);
  * octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
@@ -3187,7 +3094,7 @@ void ep8_dbl_basic(ep8_t r, const ep8_t p);
  * an octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the slope.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
  * @param[in] p				- the point to double.
  */
 void ep8_dbl_slp_basic(ep8_t r, fp8_t s, const ep8_t p);
@@ -3218,16 +3125,6 @@ void ep8_dbl_jacob(ep8_t r, const ep8_t p);
  * @param[in] k				- the integer.
  */
 void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k);
-
-/**
- * Multiplies a prime elliptic point by an integer using the sliding window
- * method.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
- */
-void ep8_mul_slide(ep8_t r, const ep8_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
@@ -3274,7 +3171,6 @@ void ep8_mul_gen(ep8_t r, const bn_t k);
  */
 void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k);
 
-
 /**
  * Multiplies a point in an elliptic curve over an octic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
@@ -3287,7 +3183,7 @@ void ep8_mul_cof(ep8_t r, const ep8_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the binary method.
+ * using the single-table comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -3296,30 +3192,12 @@ void ep8_mul_pre_basic(ep8_t *t, const ep8_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using Yao's windowing method.
+ * using the regular signed comb method.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
  */
-void ep8_mul_pre_yaowi(ep8_t *t, const ep8_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the NAF windowing method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep8_mul_pre_nafwi(ep8_t *t, const ep8_t p);
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the single-table comb method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep8_mul_pre_combs(ep8_t *t, const ep8_t p);
+void ep8_mul_pre_lwreg(ep8_t *t, const ep8_t p);
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
@@ -3331,17 +3209,8 @@ void ep8_mul_pre_combs(ep8_t *t, const ep8_t p);
 void ep8_mul_pre_combd(ep8_t *t, const ep8_t p);
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * using the w-(T)NAF method.
- *
- * @param[out] t			- the precomputation table.
- * @param[in] p				- the point to multiply.
- */
-void ep8_mul_pre_lwnaf(ep8_t *t, const ep8_t p);
-
-/**
  * Multiplies a fixed prime elliptic point using a precomputation table and
- * the binary method.
+ * the single-table comb method.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
@@ -3350,34 +3219,14 @@ void ep8_mul_pre_lwnaf(ep8_t *t, const ep8_t p);
 void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * Yao's windowing method
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
  *
  * @param[out] r			- the result.
  * @param[in] t				- the precomputation table.
  * @param[in] k				- the integer.
  */
-void ep8_mul_fix_yaowi(ep8_t r, const ep8_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep8_mul_fix_nafwi(ep8_t r, const ep8_t *t, const bn_t k);
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the single-table comb method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep8_mul_fix_combs(ep8_t r, const ep8_t *t, const bn_t k);
+void ep8_mul_fix_lwreg(ep8_t r, const ep8_t *t, const bn_t k);
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table and
@@ -3390,18 +3239,8 @@ void ep8_mul_fix_combs(ep8_t r, const ep8_t *t, const bn_t k);
 void ep8_mul_fix_combd(ep8_t r, const ep8_t *t, const bn_t k);
 
 /**
- * Multiplies a fixed prime elliptic point using a precomputation table and
- * the w-(T)NAF method.
- *
- * @param[out] r			- the result.
- * @param[in] t				- the precomputation table.
- * @param[in] k				- the integer.
- */
-void ep8_mul_fix_lwnaf(ep8_t r, const ep8_t *t, const bn_t k);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * scalar multiplication and point addition.
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to multiply.
@@ -3409,43 +3248,7 @@ void ep8_mul_fix_lwnaf(ep8_t r, const ep8_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep8_mul_sim_basic(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * shamir's trick.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep8_mul_sim_trick(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * interleaving of NAFs.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep8_mul_sim_inter(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
-
-/**
- * Multiplies and adds two prime elliptic curve points simultaneously using
- * Solinas' Joint Sparse Form.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point to multiply.
- * @param[in] k				- the first integer.
- * @param[in] q				- the second point to multiply.
- * @param[in] m				- the second integer,
- */
-void ep8_mul_sim_joint(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
+void ep8_mul_sim(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
 
 /**
  * Multiplies simultaneously elements from a prime elliptic curve.
@@ -3507,18 +3310,26 @@ void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n);
 void ep8_map(ep8_t p, const uint8_t *msg, size_t len);
 
 /**
- * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
- * represented in affine coordinates on a twisted elliptic curve over a
- * octic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of an octic twist, consists of a power of the
- * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over an octic exension. Computes Frob^i(P) = (p^i)P.
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
+ * represented in affine coordinates on a twisted elliptic curve over an
+ * octic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep8_frb(ep8_t r, const ep8_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over an octic extension. The endomorphism acts as
+ * multiplication by u, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep8_psi(ep8_t r, const ep8_t p);
 
 /**
  * Compresses a point in an elliptic curve over an octic extension.
@@ -3536,5 +3347,567 @@ void ep8_pck(ep8_t r, const ep8_t p);
  * @return if the decompression was successful
  */
 int ep8_upk(ep8_t r, const ep8_t p);
+
+/**
+ * Initializes the elliptic curve over nonic extension.
+ */
+void ep9_curve_init(void);
+
+/**
+ * Finalizes the elliptic curve over nonic extension.
+ */
+void ep9_curve_clean(void);
+
+/**
+ * Returns the 'a' coefficient of the currently configured elliptic curve.
+ *
+ * @return the 'a' coefficient of the elliptic curve.
+ */
+fp3_t *ep9_curve_get_a(void);
+
+/**
+ * Returns the 'b' coefficient of the currently configured elliptic curve.
+ *
+ * @param[out] b			- the 'b' coefficient of the elliptic curve.
+ */
+fp3_t *ep9_curve_get_b(void);
+
+/**
+ * Returns a optimization identifier based on the 'a' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep9_curve_opt_a(void);
+
+/**
+ * Returns b optimization identifier based on the 'b' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep9_curve_opt_b(void);
+
+/**
+ * Multiplies a field element by the a-coefficient of the curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ */
+void ep9_curve_mul_a(fp9_t c, const fp9_t a);
+
+/**
+ * Multiplies a field element by the b-coefficient of the curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ */
+void ep9_curve_mul_b(fp9_t c, const fp9_t a);
+
+/**
+ * Tests if the configured elliptic curve is a twist.
+ *
+ * @return the type of the elliptic curve twist, 0 if non-twisted curve.
+ */
+int ep9_curve_is_twist(void);
+
+/**
+ * Returns the generator of the group of points in the elliptic curve.
+ *
+ * @param[out] g			- the returned generator.
+ */
+void ep9_curve_get_gen(ep9_t g);
+
+/**
+ * Returns the precomputation table for the generator.
+ *
+ * @return the table.
+ */
+ep9_t *ep9_curve_get_tab(void);
+
+/**
+ * Returns the order of the group of points in the elliptic curve.
+ *
+ * @param[out] n			- the returned order.
+ */
+void ep9_curve_get_ord(bn_t n);
+
+/**
+ * Configures an elliptic curve over a nonic extension by its coefficients.
+ *
+ * @param[in] a			- the 'a' coefficient of the curve.
+ * @param[in] b			- the 'b' coefficient of the curve.
+ * @param[in] g			- the generator.
+ * @param[in] r			- the order of the group of points.
+ */
+void ep9_curve_set(const fp9_t a, const fp9_t b, const ep9_t g,
+		const bn_t r);
+
+/**
+ * Configures an elliptic curve by twisting the curve over the base prime field.
+ * The twist is sextic, so the curve over the base field must have a = 0.
+ *
+ * @param[in] type			- the type of twist (multiplicative or divisive).
+ */
+void ep9_curve_set_twist(int type);
+
+/**
+ * Tests if a point on an elliptic curve is at the infinity.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is at infinity, 0 otherise.
+ */
+int ep9_is_infty(const ep9_t p);
+
+/**
+ * Assigns an elliptic curve point to the point at infinity.
+ *
+ * @param[out] p			- the point to assign.
+ */
+void ep9_set_infty(ep9_t p);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] q			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ */
+void ep9_copy(ep9_t r, const ep9_t p);
+
+/**
+ * Copies the second argument to the first argument if a bit is set, in
+ * constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep9_copy_sec(ep9_t r, const ep9_t p, dig_t bit);
+
+/**
+ * Swaps two points if a bit is set, in constant time.
+ *
+ * @param[in,out] p			- the first point.
+ * @param[in,out] q			- the second point.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void ep9_swap_sec(ep9_t p, ep9_t q, dig_t bit);
+
+/**
+ * Compares two elliptic curve points.
+ *
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
+ */
+int ep9_cmp(const ep9_t p, const ep9_t q);
+
+/**
+ * Assigns a random value to an elliptic curve point.
+ *
+ * @param[out] p			- the elliptic curve point to assign.
+ */
+void ep9_rand(ep9_t p);
+
+/**
+ * Randomizes coordinates of an elliptic curve point.
+ *
+ * @param[out] r			- the blinded prime elliptic curve point.
+ * @param[in] p				- the prime elliptic curve point to blind.
+ */
+void ep9_blind(ep9_t r, const ep9_t p);
+
+/**
+ * Computes the right-hand side of the elliptic curve equation at the
+ * x-coordinate of a certain prime elliptic curve point.
+ *
+ * @param[out] rhs			- the result.
+ * @param[in] x				- the x-coordinate of the point.
+ */
+void ep9_rhs(fp9_t rhs, const fp9_t x);
+
+/**
+ * Tests if a point is in the curve.
+ *
+ * @param[in] p				- the point to test.
+ */
+int ep9_on_curve(const ep9_t p);
+
+/**
+ * Builds a precomputation table for multiplying a random prime elliptic point.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ * @param[in] w				- the window width.
+ */
+void ep9_tab(ep9_t *t, const ep9_t p, int w);
+
+/**
+ * Prints an elliptic curve point.
+ *
+ * @param[in] p				- the elliptic curve point to print.
+ */
+void ep9_print(const ep9_t p);
+
+/**
+ * Returns the number of bytes necessary to store a prime elliptic curve point
+ * over a nonic extension with optional point compression.
+ *
+ * @param[in] a				- the prime field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
+ */
+size_t ep9_size_bin(const ep9_t a, int pack);
+
+/**
+ * Reads a prime elliptic curve point over a nonic extension from a byte
+ * vector in big-endian format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
+ */
+int ep9_read_bin(ep9_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Writes a prime elliptic curve pointer over a nonic extension to a byte
+ * vector in big-endian format with optional point compression.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the prime elliptic curve point to write.
+ * @param[in] pack			- the flag to indicate compression.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
+ */
+void ep9_write_bin(uint8_t *bin, size_t len, const ep9_t a, int pack);
+
+/**
+ * Negates a point represented in affine coordinates in an elliptic curve over
+ * a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[out] p			- the point to negate.
+ */
+void ep9_neg(ep9_t r, const ep9_t p);
+
+/**
+ * Adds to points represented in affine coordinates in an elliptic curve over a
+ * nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep9_add_basic(ep9_t r, const ep9_t p, const ep9_t q);
+
+/**
+ * Adds to points represented in affine coordinates in an elliptic curve over a
+ * nonic extension and returns the computed slope.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep9_add_slp_basic(ep9_t r, fp9_t s, const ep9_t p, const ep9_t q);
+
+/**
+ * Adds two points represented in projective coordinates in an elliptic curve
+ * over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep9_add_projc(ep9_t r, const ep9_t p, const ep9_t q);
+
+/**
+ * Adds two points represented in Jacobian coordinates in an elliptic curve
+ * over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep9_add_jacob(ep9_t r, const ep9_t p, const ep9_t q);
+
+ /**
+  * Subtracts a point in an elliptic curve over a nonic extension from
+  * another.
+  *
+  * @param[out] r			- the result.
+  * @param[in] p			- the first point.
+  * @param[in] q			- the point to subtract.
+  */
+void ep9_sub(ep9_t r, const ep9_t p, const ep9_t q);
+
+/**
+ * Doubles a point represented in affine coordinates in an elliptic curve over
+ * a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[int] p			- the point to double.
+ */
+void ep9_dbl_basic(ep9_t r, const ep9_t p);
+
+/**
+ * Doubles a point represented in affine coordinates in an elliptic curve over
+ * a nonic extension and returns the computed slope.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope, unchanged if the result is infinity.
+ * @param[in] p				- the point to double.
+ */
+void ep9_dbl_slp_basic(ep9_t r, fp9_t s, const ep9_t p);
+
+/**
+ * Doubles a point represented in projective coordinates in an elliptic curve
+ * over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep9_dbl_projc(ep9_t r, const ep9_t p);
+
+/**
+ * Doubles a point represented in Jacobian coordinates in an elliptic curve
+ * over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep9_dbl_jacob(ep9_t r, const ep9_t p);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_basic(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the constant-time
+ * Montgomery ladder point multiplication method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_monty(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_lwnaf(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using a regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_lwreg(ep9_t r, const ep9_t p, const bn_t k);
+
+/**
+ * Multiplies the generator of an elliptic curve over a qaudratic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_gen(ep9_t r, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by a small integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_dig(ep9_t r, const ep9_t p, const dig_t k);
+
+/**
+ * Multiplies a point in an elliptic curve over a nonic extension field by
+ * the curve cofactor or a small multiple for which a short vector exists.
+ * In short, it takes a point in the curve to the large prime-order subgroup.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ */
+void ep9_mul_cof(ep9_t r, const ep9_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the single-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep9_mul_pre_basic(ep9_t *t, const ep9_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the regular signed comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep9_mul_pre_lwreg(ep9_t *t, const ep9_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the double-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep9_mul_pre_combd(ep9_t *t, const ep9_t p);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the single-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_fix_basic(ep9_t r, const ep9_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and the
+ * regular signed comb method, which runs in constant time.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_fix_lwreg(ep9_t r, const ep9_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the double-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep9_mul_fix_combd(ep9_t r, const ep9_t *t, const bn_t k);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously by
+ * interleaving w-NAFs. Computes R = [k]P + [m]Q.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep9_mul_sim(ep9_t r, const ep9_t p, const bn_t k, const ep9_t q, const bn_t m);
+
+/**
+ * Multiplies simultaneously elements from a prime elliptic curve.
+ * Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p			- the points to multiply.
+ * @param[in] k			- the integer scalars.
+ * @param[in] n			- the number of elements to multiply.
+ */
+void ep9_mul_sim_lot(ep9_t r, const ep9_t p[], const bn_t k[], size_t n);
+
+/**
+ * Multiplies and adds the generator and a prime elliptic curve point
+ * simultaneously. Computes R = [k]G + [l]Q.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep9_mul_sim_gen(ep9_t r, const bn_t k, const ep9_t q, const bn_t m);
+
+/**
+ * Multiplies prime elliptic curve points by small scalars.
+ * Computes R = \sum k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points to multiply.
+ * @param[in] k				- the small scalars.
+ * @param[in] len			- the number of points to multiply.
+ */
+void ep9_mul_sim_dig(ep9_t r, const ep9_t p[], const dig_t k[], size_t len);
+
+/**
+ * Converts a point to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to convert.
+ */
+void ep9_norm(ep9_t r, const ep9_t p);
+
+/**
+ * Converts multiple points to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the points to convert.
+ * @param[in] n				- the number of points.
+ */
+void ep9_norm_sim(ep9_t *r, const ep9_t *t, int n);
+
+/**
+ * Maps a byte array to a point in an elliptic curve over a nonic extension.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep9_map(ep9_t p, const uint8_t *msg, size_t len);
+
+/**
+ * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
+ * represented in affine coordinates on a twisted elliptic curve over a
+ * nonic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
+ * subgroup of prime order, it acts as multiplication by p^i.
+ *
+ * @param[out] r			- the result in affine coordinates.
+ * @param[in] p				- a point in affine coordinates.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void ep9_frb(ep9_t r, const ep9_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a nonic extension. The endomorphism acts as
+ * multiplication by 3u^2, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep9_psi(ep9_t r, const ep9_t p);
+
+/**
+ * Compresses a point in an elliptic curve over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep9_pck(ep9_t r, const ep9_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over a nonic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep9_upk(ep9_t r, const ep9_t p);
 
 #endif /* !RLC_EPX_H */

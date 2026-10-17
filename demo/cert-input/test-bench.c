@@ -121,20 +121,18 @@ static int test_mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[MSGS][2], _v[MSGS][2];
 	g1_t g, s[2];
 	g2_t h, x[2], y[2], _y[MSGS][2];
-	gt_t e;
-	mt_t tri[3][2];
+	gt_t e[2], f[2];
+	mt_t tri[3][2], btri[MSGS][2];
 	pt_t t[2];
 
 	bn_null(n);
 	g1_null(g);
 	g2_null(h);
-	gt_null(e);
 
 	RLC_TRY {
 		bn_new(n);
 		g1_new(g);
 		g2_new(h);
-		gt_new(e);
 		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
 			bn_null(m[i]);
@@ -146,6 +144,8 @@ static int test_mpss(void) {
 			mt_null(tri[0][i]);
 			mt_null(tri[1][i]);
 			mt_null(tri[2][i]);
+			gt_null(e[i]);
+			gt_null(f[i]);
 			pt_null(t[i]);
 			bn_new(m[i]);
 			bn_rand_mod(m[i], n);
@@ -157,11 +157,15 @@ static int test_mpss(void) {
 			mt_new(tri[0][i]);
 			mt_new(tri[1][i]);
 			mt_new(tri[2][i]);
+			gt_new(e[i]);
+			gt_new(f[i]);
 			pt_new(t[i]);
 			for (j = 0; j < MSGS; j++) {
 				bn_null(ms[j][i]);
 				bn_null(_v[j][i]);
 				g2_null(_y[j][i]);
+				mt_null(btri[j][i]);
+				mt_new(btri[j][i]);
 				bn_new(ms[j][i]);
 				bn_rand_mod(ms[j][i], n);
 				bn_new(_v[j][i]);
@@ -174,13 +178,23 @@ static int test_mpss(void) {
 			mpc_mt_gen(tri[0], n);
 			mpc_mt_gen(tri[1], n);
 			mpc_mt_gen(tri[2], n);
+			/* The share triple also carries its values in G_T. */
+			gt_exp_gen(e[0], tri[2][0]->b);
+			gt_exp_gen(e[1], tri[2][1]->b);
+			gt_exp_gen(f[0], tri[2][0]->c);
+			gt_exp_gen(f[1], tri[2][1]->c);
+			tri[2][0]->bt = &e[0];
+			tri[2][1]->bt = &e[1];
+			tri[2][0]->ct = &f[0];
+			tri[2][1]->ct = &f[1];
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0]) == RLC_OK, end);
 			/* Verify signature in MPC. */
-			cp_mpss_ver(e, g, s, m, h, x[0], y[0], tri[2], t);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
+			TEST_ASSERT(cp_mpss_ver(e[0], g, s, m, h, x[0], y[0], tri[2]) == 1,
+				end);
+			TEST_ASSERT(gt_is_unity(e[0]) == 1, end);
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
@@ -196,18 +210,41 @@ static int test_mpss(void) {
 			mpc_mt_gen(tri[0], n);
 			mpc_mt_gen(tri[1], n);
 			mpc_mt_gen(tri[2], n);
+			/* The share triple also carries its values in G_T. */
+			gt_exp_gen(e[0], tri[2][0]->b);
+			gt_exp_gen(e[1], tri[2][1]->b);
+			gt_exp_gen(f[0], tri[2][0]->c);
+			gt_exp_gen(f[1], tri[2][1]->c);
+			tri[2][0]->bt = &e[0];
+			tri[2][1]->bt = &e[1];
+			tri[2][0]->ct = &f[0];
+			tri[2][1]->ct = &f[1];
 			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, MSGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mpsb_bct(x, _y, MSGS) == RLC_OK, end);
 			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], MSGS) == RLC_OK, end);
-			/* Verify signature in MPC. */
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, NULL, tri[2], t, MSGS);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, MSGS);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
+			for (j = 0; j < MSGS; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, btri, MSGS) == RLC_OK, end);
+			/* Verify signature in MPC. The output e[1] is also an element of
+			 * the triple, so recompute that element after each call. */
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, NULL, NULL,
+				tri[2], MSGS) == 1, end);
+			gt_exp_gen(e[0], tri[2][0]->b);
+			gt_exp_gen(e[1], tri[2][1]->b);
+			for (j = 0; j < MSGS; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, btri,
+				tri[2], MSGS) == 1, end);
+			gt_exp_gen(e[0], tri[2][0]->b);
+			gt_exp_gen(e[1], tri[2][1]->b);
 			bn_sub_dig(ms[0][0], ms[0][0], 1);
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, MSGS);
-			TEST_ASSERT(gt_is_unity(e) == 0, end);
+			for (j = 0; j < MSGS; j++) {
+				mpc_mt_gen(btri[j], n);
+			}
+			TEST_ASSERT(cp_mpsb_ver(e[1], g, s, ms, h, x[0], _y, _v, btri,
+				tri[2], MSGS) == 0, end);
 		}
 		TEST_END;
 	}
@@ -220,7 +257,6 @@ static int test_mpss(void) {
   	bn_free(n);
 	g1_free(g);
 	g2_free(h);
-	gt_free(e);
 	for (i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);
@@ -231,11 +267,14 @@ static int test_mpss(void) {
 		mt_free(tri[0][i]);
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
+		gt_free(e[i]);
+		gt_free(f[i]);
 		pt_free(t[i]);
 		for (j = 0; j < MSGS; j++) {
 			bn_free(ms[j][i]);
 			bn_free(_v[j][i]);
 			g2_free(_y[j][i]);
+			mt_free(btri[j][i]);
 		}
 	}
   	return code;
@@ -316,19 +355,17 @@ static void bench_mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[MSGS][2], _v[MSGS][2];
 	g1_t g, s[2];
 	g2_t h, x[2], y[2], _y[MSGS][2];
-	gt_t r;
-	mt_t tri[3][2];
+	gt_t r[2];
+	mt_t tri[3][2], btri[MSGS][2];
 	pt_t t[2];
 
 	bn_null(n);
 	g1_null(g);
 	g2_null(h);
-	gt_null(r);
 
 	bn_new(n);
 	g1_new(g);
 	g2_new(h);
-	gt_new(r);
 	for (int i = 0; i < 2; i++) {
 		bn_null(m[i]);
 		bn_null(u[i]);
@@ -339,6 +376,7 @@ static void bench_mpss(void) {
 		mt_null(tri[0][i]);
 		mt_null(tri[1][i]);
 		mt_null(tri[2][i]);
+		gt_null(r[i]);
 		pt_null(t[i]);
 		bn_new(m[i]);
 		bn_new(u[i]);
@@ -349,6 +387,7 @@ static void bench_mpss(void) {
 		mt_new(tri[0][i]);
 		mt_new(tri[1][i]);
 		mt_new(tri[2][i]);
+		gt_new(r[i]);
 		pt_new(t[i]);
 
 		g1_get_ord(n);
@@ -356,6 +395,8 @@ static void bench_mpss(void) {
 			bn_null(ms[j][i]);
 			bn_null(_v[j][i]);
 			g2_null(_y[j][i]);
+			mt_null(btri[j][i]);
+			mt_new(btri[j][i]);
 			bn_new(ms[j][i]);
 			bn_rand_mod(ms[j][i], n);
 			bn_new(_v[j][i]);
@@ -367,6 +408,11 @@ static void bench_mpss(void) {
 	mpc_mt_gen(tri[0], n);
 	mpc_mt_gen(tri[1], n);
 	mpc_mt_gen(tri[2], n);
+	/* The share triple also carries its values in G_T. */
+	tri[2][0]->bt = &r[0];
+	tri[2][1]->bt = &r[1];
+	tri[2][0]->ct = &r[0];
+	tri[2][1]->ct = &r[1];
 
 	bn_rand_mod(m[0], n);
 	bn_rand_mod(m[1], n);
@@ -384,11 +430,11 @@ static void bench_mpss(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_mpss_sig") {
-		BENCH_ADD(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]));
+		BENCH_ADD(cp_mpss_sig(g, s, m, u, v, tri[0]));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpss_ver") {
-		BENCH_ADD(cp_mpss_ver(r, g, s, m, h, x[0], y[0], tri[2], t));
+		BENCH_ADD(cp_mpss_ver(r[0], g, s, m, h, x[0], y[0], tri[2]));
 	} BENCH_DIV(2);
 
 	g1_get_ord(n);
@@ -396,6 +442,9 @@ static void bench_mpss(void) {
 	mpc_mt_gen(tri[0], n);
 	mpc_mt_gen(tri[1], n);
 	mpc_mt_gen(tri[2], n);
+	for (int j = 0; j < MSGS; j++) {
+		mpc_mt_gen(btri[j], n);
+	}
 
 	BENCH_RUN("cp_mpsb_gen") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, MSGS));
@@ -406,21 +455,22 @@ static void bench_mpss(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_mpsb_sig") {
-		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], MSGS));
+		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, btri, MSGS));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, MSGS));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, NULL, NULL, tri[2],
+			MSGS));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver (sk)") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, MSGS));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, _v, btri, tri[2],
+			MSGS));
 	} BENCH_DIV(2);
 
   	bn_free(n);
 	g1_free(g);
 	g2_free(h);
-	gt_free(r);
 	for (int i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);
@@ -431,11 +481,13 @@ static void bench_mpss(void) {
 		mt_free(tri[0][i]);
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
+		gt_free(r[i]);
 		pt_free(t[i]);
 		for (int j = 0; j < MSGS; j++) {
 			bn_free(ms[j][i]);
 			bn_free(_v[j][i]);
 			g2_free(_y[j][i]);
+			mt_free(btri[j][i]);
 		}
 	}
 }

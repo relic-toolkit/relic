@@ -66,10 +66,12 @@ static void fp_prime_set(const bn_t p) {
 		bn_sub_dig(&(ctx->over3), p, 1);
 		bn_div_dig(&(ctx->over3), &(ctx->over3), 3);
 
-#if FP_RDC == MONTY || !defined(STRIP)
-
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
+
+		bn_set_2b(t, bn_bits(&(ctx->prime)) + RLC_DIG - 1);
+		bn_div(t, t, &(ctx->prime));
+		ctx->rdc1 = t->dp[0];
 
 		/* compute R mod p */
 		bn_set_2b(t, ctx->prime.used * RLC_DIG);
@@ -82,44 +84,10 @@ static void fp_prime_set(const bn_t p) {
 		bn_lsh(t, t, RLC_DIG_LOG);
 		fp_exp(ctx->conv, r, t);
 
-#endif /* FP_RDC == MONTY */
-
-#if FP_INV == JMPDS || !defined(STRIP)
-
-		int d = (45907 * FP_PRIME + 26313) / 19929;
-
-#if WSIZE == 8
-		bn_set_dig(t, d >> 8);
-		bn_lsh(t, t, 8);
-		bn_add_dig(t, t, d & 0xFF);
-#else
-		bn_set_dig(t, d);
+#if FP_RDC == FP_MONTY
+		/* Compute R^3 mod p for the inversion by jump division steps. */
+		fp_mul(ctx->inv, ctx->conv, ctx->conv);
 #endif
-		dv_copy(ctx->inv, fp_prime_get(), RLC_FP_DIGS);
-		fp_add_dig(ctx->inv, ctx->inv, 1);
-		fp_hlv(ctx->inv, ctx->inv);
-		fp_exp(ctx->inv, ctx->inv, t);
-
-#if FP_RDC == MONTY
-		/* Convert to Montgomery form by multiplying by R^2. */
-		fp_mul(ctx->inv, ctx->inv, ctx->conv);
-		fp_mul(ctx->inv, ctx->inv, ctx->conv);
-#ifdef RLC_FP_ROOM
-		for (int i = 1, j = 0; i < d / (RLC_DIG - 2); i++) {
-			j = i % RLC_FP_DIGS;
-			if (j == 0) {
-				fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
-			}
-		}
-#else
-		for (int i = 0; i < d / (RLC_DIG - 2) - 1; i++) {
-			fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
-		}
-#endif
-
-#endif /* FP_RDC == MONTY */
-
-#endif /* FP_INV */
 
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
@@ -239,20 +207,16 @@ void fp_prime_init(void) {
 	bn_make(&(ctx->prime), RLC_FP_DIGS);
 	bn_make(&(ctx->over3), RLC_FP_DIGS);
 	bn_make(&(ctx->par), RLC_FP_DIGS);
-#if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
-#endif
 }
 
 void fp_prime_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
 		ctx->fp_id = 0;
-#if FP_RDC == QUICK || !defined(STRIP)
 		ctx->sps_len = 0;
 		memset(ctx->sps, 0, sizeof(ctx->sps));
-#endif
 		bn_clean(&(ctx->prime));
 		bn_clean(&(ctx->over3));
 		bn_clean(&(ctx->par));
@@ -265,6 +229,10 @@ const dig_t *fp_prime_get(void) {
 
 const dig_t *fp_prime_get_rdc(void) {
 	return &(core_get()->u);
+}
+
+const dig_t *fp_prime_get_rdc1(void) {
+	return &(core_get()->rdc1);
 }
 
 void fp_prime_get_par(bn_t x) {
@@ -286,7 +254,6 @@ const int *fp_prime_get_par_sps(int *len) {
 }
 
 const int *fp_prime_get_sps(int *len) {
-#if FP_RDC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	if (ctx->sps_len > 0 && ctx->sps_len < RLC_TERMS) {
 		if (len != NULL) {
@@ -299,17 +266,10 @@ const int *fp_prime_get_sps(int *len) {
 		}
 		return NULL;
 	}
-#else
-	return NULL;
-#endif
 }
 
 const dig_t *fp_prime_get_conv(void) {
-#if FP_RDC == MONTY || !defined(STRIP)
 	return core_get()->conv;
-#else
-	return NULL;
-#endif
 }
 
 const dig_t *fp_prime_get_srt(void) {
@@ -342,7 +302,7 @@ int fp_prime_get_2ad(void) {
 
 void fp_prime_set_dense(const bn_t p) {
 	fp_prime_set(p);
-#if FP_RDC == QUICK
+#if FP_RDC == FP_QUICK || FP_RDC == FP_LOWER
 	RLC_THROW(ERR_NO_CONFIG);
 #endif
 }
@@ -353,14 +313,10 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	size_t len = bn_bits(x) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
-	bn_null(p);
-	bn_null(t0);
-	bn_null(t1);
+	bn_null_all(p, t0, t1);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(t0);
-		bn_new(t1);
+		bn_new_all(p, t0, t1);
 
 		bn_copy(&(ctx->par), x);
 		bn_copy(t0, x);
@@ -458,9 +414,9 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add_dig(p, p, 240);
 				bn_mul(p, p, t0);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 113);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 115);
 				bn_mul(p, p, t0);
 				bn_set_dig(t1, 9);
 				bn_lsh(t1, t1, 8);
@@ -488,11 +444,11 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_mul(p, p, t0);
 				bn_add_dig(p, p, 188);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 3);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 4);
 				bn_mul(p, p, t0);
-				bn_add_dig(p, p, 256);
-				bn_add_dig(p, p, 87);
+				bn_add_dig(p, p, 255);
+				bn_add_dig(p, p, 88);
 				bn_mul(p, p, t0);
 				bn_set_dig(t1, 6);
 				bn_lsh(t1, t1, 8);
@@ -633,7 +589,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 			s[0] = 1;
 			s[1] = -1;
 		}
-		for (int i = 0; i < len && ctx->par_len < RLC_TERMS; i++) {
+		for (int i = 0; i < (int)len && ctx->par_len < RLC_TERMS; i++) {
 			if (s[i] > 0) {
 				ctx->par_sps[ctx->par_len++] = i;
 			}
@@ -647,26 +603,22 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(p);
-		bn_free(t0);
-		bn_free(t1);
+		bn_free_all(p, t0, t1);
 	}
 }
 
 void fp_prime_set_pmers(const int *f, size_t len) {
 	bn_t p, t;
 
-	bn_null(p);
-	bn_null(t);
+	if (len == 0 || len >= RLC_TERMS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	bn_null_all(p, t);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(t);
-
-		if (len >= RLC_TERMS) {
-			RLC_THROW(ERR_NO_VALID);
-			return;
-		}
+		bn_new_all(p, t);
 
 		bn_set_2b(p, f[len - 1]);
 		for (int i = len - 2; i > 0; i--) {
@@ -678,20 +630,14 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 				bn_sub(p, p, t);
 			}
 		}
-		if (f[0] > 0) {
-			bn_add_dig(p, p, f[0]);
-		} else {
-			bn_sub_dig(p, p, -f[0]);
-		}
+		bn_add_dis(p, p, f[0]);
 
-#if FP_RDC == QUICK || !defined(STRIP)
 		ctx_t *ctx = core_get();
-		for (int i = 0; i < len; i++) {
+		for (size_t i = 0; i < len; i++) {
 			ctx->sps[i] = f[i];
 		}
 		ctx->sps[len] = 0;
 		ctx->sps_len = len;
-#endif /* FP_RDC == QUICK */
 
 		fp_prime_set(p);
 	}
@@ -699,8 +645,7 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(p);
-		bn_free(t);
+		bn_free_all(p, t);
 	}
 }
 
@@ -734,7 +679,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 			/* Copy used digits, fill the rest with zero. */
 			dv_copy(c, t->dp, t->used);
 			dv_zero(c + t->used, RLC_FP_DIGS - t->used);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_mul(c, c, core_get()->conv);
 #endif
 		}
@@ -748,34 +693,24 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 }
 
 void fp_prime_conv_dig(fp_t c, dig_t a) {
-	dv_t t;
+#if FP_RDC == FP_MONTY
 	ctx_t *ctx = core_get();
 
-	bn_null(t);
-
-	RLC_TRY {
-		dv_new(t);
-
-#if FP_RDC == MONTY
-		if (a != 1) {
-			dv_zero(t, 2 * RLC_FP_DIGS + 1);
-			t[RLC_FP_DIGS] = fp_mul1_low(t, ctx->conv, a);
-			fp_rdc(c, t);
-		} else {
-			fp_copy(c, ctx->one);
+	/* Compute a * R mod p from R mod p. */
+	if ((a >> (RLC_DIG - 1)) == 0) {
+		fp_mul1_low(c, ctx->one, a);
+	} else {
+		/* Halve digits too large for a single reduction. */
+		fp_mul1_low(c, ctx->one, a >> 1);
+		fp_dbl(c, c);
+		if (a & 1) {
+			fp_add(c, c, ctx->one);
 		}
+	}
 #else
-		(void)ctx;
-		fp_zero(c);
-		c[0] = a;
+	fp_zero(c);
+	c[0] = a;
 #endif
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv_free(t);
-	}
 }
 
 void fp_prime_back(bn_t c, const fp_t a) {
@@ -789,7 +724,7 @@ void fp_prime_back(bn_t c, const fp_t a) {
 		bn_grow(c, RLC_FP_DIGS);
 		fp_norm(c->dp, a);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		dv_zero(t, 2 * RLC_FP_DIGS + 1);
 		dv_copy(t, c->dp, RLC_FP_DIGS);
 		fp_rdc(c->dp, t);

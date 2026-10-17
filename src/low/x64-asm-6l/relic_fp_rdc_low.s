@@ -35,60 +35,20 @@
 
 .text
 
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
  */
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
 
-	movq	0(%rsi),%r8
-	movq	8(%rsi),%r9
-	movq	16(%rsi),%r10
-	movq	24(%rsi),%r11
-	movq	32(%rsi),%r12
-	movq	40(%rsi),%r13
-	movq	48(%rsi),%r14
-	xorq	%rax, %rax
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %rcx, %r14, %r15, p0(%rip)
 
-	movq	$U0, %rdx
-	mulx	%r8, %rdx, %rcx
-	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
-	movq	56(%rsi),%r8
-	adox	%rax, %r8
-	movq	$U0, %rdx
-	mulx	%r9, %rdx, %rcx
-    MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r8, %r15, %rbx, p0(%rip)
-	movq	64(%rsi),%r9
-	adox	%rax, %r9
-	movq	$U0, %rdx
-	mulx	%r10, %rdx, %rcx
-    MULADD	%r10, %r11, %r12, %r13, %r14, %r8, %r9, %r15, %rbx, p0(%rip)
-	movq	72(%rsi),%r10
-	adox	%rax, %r10
-	movq	$U0, %rdx
-	mulx	%r11, %rdx, %rcx
-    MULADD	%r11, %r12, %r13, %r14, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
-	movq	80(%rsi),%r11
-	adox	%rax, %r11
-	movq	$U0, %rdx
-	mulx	%r12, %rdx, %rcx
-    MULADD	%r12, %r13, %r14, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
-	movq	88(%rsi),%r12
-	adox	%rax, %r12
-	movq	$U0, %rdx
-	mulx	%r13, %rdx, %rcx
-    MULADD	%r13, %r14, %r8, %r9, %r10, %r11, %r12, %r15, %rbx, p0(%rip)
-	
-	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
-
-	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13

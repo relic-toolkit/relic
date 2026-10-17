@@ -36,48 +36,59 @@
 /*============================================================================*/
 
 /**
- * Statistical security determining collision probability.
+ * Domain separation tag for hashing set elements to primes.
  */
-#define STAT_SEC	(40)
+#define SHIPSI_TAG		"RELIC-SHIPSI"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits) {
-	/* Generate different primes p and q. */
-	do {
-		bn_gen_prime(crt->p, bits / 2);
-		bn_gen_prime(crt->q, bits / 2);
-	} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
+	int result = RLC_OK;
 
-	/* Swap p and q so that p is smaller. */
-	if (bn_cmp(crt->p, crt->q) != RLC_LT) {
-		bn_copy(g, crt->p);
-		bn_copy(crt->p, crt->q);
-		bn_copy(crt->q, g);
+	RLC_TRY {
+		/* Generate different primes p and q. */
+		do {
+			bn_gen_prime(crt->p, bits / 2);
+			bn_gen_prime(crt->q, bits / 2);
+		} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
+
+		/* Swap p and q so that p is smaller. */
+		if (bn_cmp(crt->p, crt->q) != RLC_LT) {
+			bn_swap(crt->p, crt->q);
+		}
+
+		/* n = pq. */
+		bn_mul(crt->n, crt->p, crt->q);
+
+		do {
+			bn_rand_mod(g, crt->n);
+			bn_gcd(crt->qi, g, crt->n);
+		} while (bn_cmp_dig(crt->qi, 1) != RLC_EQ);
+
+		/* phi(n) = (p - 1)(q - 1). */
+		bn_sub_dig(crt->dp, crt->p, 1);
+		bn_sub_dig(crt->dq, crt->q, 1);
+		bn_mod_inv(crt->qi, crt->q, crt->p);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
 	}
-
-	/* n = pq. */
-	bn_mul(crt->n, crt->p, crt->q);
-
-	do {
-		bn_rand_mod(g, crt->n);
-		bn_gcd(crt->qi, g, crt->n);
-	} while (bn_cmp_dig(crt->qi, 1) != RLC_EQ);
-
-	/* phi(n) = (p - 1)(q - 1). */
-	bn_sub_dig(crt->dp, crt->p, 1);
-	bn_sub_dig(crt->dq, crt->q, 1);
-	bn_mod_inv(crt->qi, crt->q, crt->p);
-
-	return RLC_OK;
+	return result;
 }
 
 int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
 		const bn_t x[], size_t m) {
-	int i, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
-	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
+	int result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	size_t i;
+	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
+
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (i = 0; i < m; i++) {
+		if (bn_sign(x[i]) == RLC_NEG || bn_bits(x[i]) > RLC_BN_BITS) {
+			return RLC_ERR;
+		}
+	}
 
 	/* Compute R = g^r mod N. */
 	bn_rand_mod(r, n);
@@ -86,14 +97,12 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
 	/* Now hash all x_i and accmulate on R. */
 	for (i = 0; i < m; i++) {
 		bn_write_bin(bin, len, x[i]);
-		md_map(h, bin, len);
-		bn_read_bin(p[i], h, 2 * STAT_SEC / 8);
-		if (bn_is_even(p[i])) {
-			bn_add_dig(p[i], p[i], 1);
+		/* Primes of 2 * CP_STAT_SEC bits avoid accidental collisions. */
+		if (bn_map_prime(p[i], NULL, bin, len, 2 * CP_STAT_SEC, 0,
+				(const uint8_t *)SHIPSI_TAG, strlen(SHIPSI_TAG)) != RLC_OK) {
+			result = RLC_ERR;
+			break;
 		}
-		do {
-			bn_add_dig(p[i], p[i], 2);
-		} while (!bn_is_prime(p[i]));
 		bn_mxp(d, d, p[i], n);
 	}
 
@@ -102,10 +111,24 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
 
 int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 		const bn_t y[], size_t n) {
-	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	int result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
+	size_t j;
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
 	bn_t p, q;
+
+	/* Elements are encoded as non-negative integers of RLC_BN_BITS bits. */
+	for (j = 0; j < n; j++) {
+		if (bn_sign(y[j]) == RLC_NEG || bn_bits(y[j]) > RLC_BN_BITS) {
+			RLC_FREE(shuffle);
+			return RLC_ERR;
+		}
+	}
+
+	if (shuffle == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(p);
 	bn_null(q);
@@ -113,31 +136,18 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 	RLC_TRY {
 		bn_new(p);
 		bn_new(q);
-		if (shuffle == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		util_perm(shuffle, n);
 
 		bn_rand_mod(u, crt->n);
 		for (j = 0; j < n; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
-			md_map(h, bin, len);
-			bn_read_bin(p, h, 2 * STAT_SEC / 8);
-			if (bn_is_even(p)) {
-				bn_add_dig(p, p, 1);
+			if (bn_map_prime(p, NULL, bin, len, 2 * CP_STAT_SEC, 0,
+					(const uint8_t *)SHIPSI_TAG, strlen(SHIPSI_TAG))
+					!= RLC_OK) {
+				RLC_THROW(ERR_NO_VALID);
 			}
-			do {
-				bn_add_dig(p, p, 2);
-			} while (!bn_is_prime(p));
 
-#if !defined(CP_CRT)
-			bn_mul(q, crt->dp, crt->dq);
-			bn_mod_inv(p, p, q);
-			bn_mul(p, p, u);
-			bn_mod(p, p, q);
-			bn_mxp(t[j], d, p, crt->n);
-#else
 			bn_mod_inv(q, p, crt->dq);
 			bn_mul(q, q, u);
 			bn_mod(q, q, crt->dq);
@@ -147,17 +157,17 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 			bn_mod(p, p, crt->dp);
 
 			bn_mxp_crt(t[j], d, p, q, crt, 0);
-#endif /* CP_CRT */
+			/* Send only a hash of the tag, or the receiver could test any
+			 * guess against it, and not only its own elements. */
+			bn_write_bin(bin, len, t[j]);
+			md_map(h, bin, len);
+			bn_read_bin(t[j], h, RLC_MD_LEN);
 		}
 
-#if !defined(CP_CRT)
-		bn_mxp(u, g, u, crt->n);
-#else
 		bn_mod(p, u, crt->dp);
 		bn_mod(q, u, crt->dq);
 
 		bn_mxp_crt(u, g, p, q, crt, 0);
-#endif
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -173,7 +183,9 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u,
 		size_t l) {
-	int i, j, k, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i, j, k;
+	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	bn_t e, f;
 
 	bn_null(e);
@@ -193,10 +205,16 @@ int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 						bn_mxp(e, e, p[i], n);
 					}
 				}
+				/* Compare with the hashes of the tags sent by the sender. */
+				bn_write_bin(bin, sizeof(bin), e);
+				md_map(h, bin, sizeof(bin));
+				bn_read_bin(e, h, RLC_MD_LEN);
 				for (j = 0; j < l; j++) {
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
+						/* Report each element once, so that len <= m. */
 						bn_copy(z[*len], x[k]);
 						(*len)++;
+						break;
 					}
 				}
 			}

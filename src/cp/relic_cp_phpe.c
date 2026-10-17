@@ -38,39 +38,41 @@
 int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 	int result = RLC_OK;
 
-	/* Generate primes p and q of equivalent length. */
-	do {
-		bn_gen_prime(prv->p, bits / 2);
-		bn_gen_prime(prv->q, bits / 2);
-	} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
+	RLC_TRY {
+		/* Generate primes p and q of equivalent length. */
+		do {
+			bn_gen_prime(prv->p, bits / 2);
+			bn_gen_prime(prv->q, bits / 2);
+		} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
 
-	/* Compute n = pq. */
-	bn_mul(prv->n, prv->p, prv->q);
+		/* Compute n = pq. */
+		bn_mul(prv->n, prv->p, prv->q);
 
-#ifdef CP_CRT
-	/* Fix g = n + 1. */
+		/* Fix g = n + 1. */
 
-	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p.
-	 * with g=1+n, this is also 1/((p-1)q) mod p.
-	 */
-	bn_sub_dig(prv->dp, prv->p, 1);	//p-1
-	bn_mul(prv->dp, prv->dp, prv->q);	//(p-1)q
-	bn_mod(prv->dp, prv->dp, prv->p);	//(p-1)q mod p
-	bn_mod_inv(prv->dp, prv->dp, prv->p);	//((p-1)q)^{-1} mod p
+		/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p.
+		 * with g=1+n, this is also 1/((p-1)q) mod p.
+		 */
+		bn_sub_dig(prv->dp, prv->p, 1);	//p-1
+		bn_mul(prv->dp, prv->dp, prv->q);	//(p-1)q
+		bn_mod(prv->dp, prv->dp, prv->p);	//(p-1)q mod p
+		bn_mod_inv(prv->dp, prv->dp, prv->p);	//((p-1)q)^{-1} mod p
 
-	/* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
-	 * with g=1+n, this is also 1/((q-1)p) mod q.
-	 */
-	bn_sub_dig(prv->dq, prv->q, 1);	//q-1
-	bn_mul(prv->dq, prv->dq, prv->p);	//(q-1)p
-	bn_mod(prv->dq, prv->dq, prv->q);	//(q-1)p mod q
-	bn_mod_inv(prv->dq, prv->dq, prv->q);	//((q-1)p)^{-1} mod q
+		/* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
+		 * with g=1+n, this is also 1/((q-1)p) mod q.
+		 */
+		bn_sub_dig(prv->dq, prv->q, 1);	//q-1
+		bn_mul(prv->dq, prv->dq, prv->p);	//(q-1)p
+		bn_mod(prv->dq, prv->dq, prv->q);	//(q-1)p mod q
+		bn_mod_inv(prv->dq, prv->dq, prv->q);	//((q-1)p)^{-1} mod q
 
-	/* qInv = q^(-1) mod p. */
-	bn_mod_inv(prv->qi, prv->q, prv->p);
-#endif
+		/* qInv = q^(-1) mod p. */
+		bn_mod_inv(prv->qi, prv->q, prv->p);
 
-	bn_copy(pub, prv->n);
+		bn_copy(pub, prv->n);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
 	return result;
 }
 
@@ -158,20 +160,7 @@ int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv) {
 		bn_sub_dig(t, prv->p, 1);
 		bn_sub_dig(u, prv->q, 1);
 
-#if !defined(CP_CRT)
-		bn_mul(t, t, u);
-		/* Compute (c^l mod n^2) * u mod n. */
-		bn_sqr(u, prv->n);
-		bn_mxp(m, c, t, u);
-
-		bn_sub_dig(m, m, 1);
-		bn_div(m, m, prv->n);
-		bn_mod_inv(u, t, prv->n);
-		bn_mul(m, m, u);
-		bn_mod(m, m, prv->n);
-#else
 		bn_mxp_crt(m, c, t, u, prv, 1);
-#endif /* CP_CRT */
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

@@ -43,7 +43,7 @@
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-static void pp_exp_kss(fp16_t c, fp16_t a) {
+static void pp_exp_kss16(fp16_t c, fp16_t a) {
 	fp16_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13;
 	bn_t x;
 
@@ -297,8 +297,14 @@ static void pp_exp_afg16(fp16_t c, fp16_t a) {
 		} else {
 			fp16_exp_cyc(t3, t2, x_);
 			fp16_exp_cyc(t3, t3, x_);
+			/* Compute (u^3 + 1)/2 with the sign of u, and drop the sign of the
+			 * result because it is applied twice. */
+			int neg = (bn_sign(x) == RLC_NEG);
 			bn_sqr(x, x_);
 			bn_mul(x, x, x_);
+			if (neg) {
+				bn_neg(x, x);
+			}
 			bn_add_dig(x, x, 1);
 			bn_hlv(x, x);
 			bn_abs(x, x);
@@ -425,9 +431,6 @@ static void pp_exp_fm16(fp16_t c, fp16_t a) {
 		fp16_free(t7);
 	}
 }
- 
-
-
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -436,7 +439,7 @@ static void pp_exp_fm16(fp16_t c, fp16_t a) {
 void pp_exp_k16(fp16_t c, fp16_t a) {
 	switch (ep_curve_is_pairf()) {
 		case EP_K16:
-			pp_exp_kss(c, a);
+			pp_exp_kss16(c, a);
 			break;
 		case EP_AFG16:
 			pp_exp_afg16(c, a);

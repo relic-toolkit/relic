@@ -74,6 +74,21 @@ static char get_bits(const bn_t a, size_t from, size_t to) {
 }
 
 /**
+ * Tau-adic halving step shared by the TNAF recoders: (r0, r1) <- (r1 + u *
+ * r0/2, -r0/2), using tmp as scratch for r0/2.
+ */
+static void tnaf_hlv(bn_t r0, bn_t r1, bn_t tmp, int8_t u) {
+	bn_hlv(tmp, r0);
+	if (u == -1) {
+		bn_sub(r0, r1, tmp);
+	} else {
+		bn_add(r0, r1, tmp);
+	}
+	bn_copy(r1, tmp);
+	r1->sign = tmp->sign ^ 1;
+}
+
+/**
  * Constant C for the partial reduction modulo (t^m - 1)/(t - 1).
  */
 #define MOD_C		8
@@ -97,7 +112,8 @@ void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 
 	l = bn_bits(k);
 
-	if (*len < RLC_CEIL(l, w)) {
+	/* Zero still takes one window. */
+	if (*len < (l == 0 ? 1 : RLC_CEIL(l, w))) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -106,10 +122,14 @@ void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 	memset(win, 0, *len);
 
 	j = 0;
-	for (i = 0; i < l - w; i += w) {
-		win[j++] = get_bits(k, i, i + w - 1);
+	if (l == 0) {
+		win[j++] = 0;
+	} else {
+		for (i = 0; i + w < l; i += w) {
+			win[j++] = get_bits(k, i, i + w - 1);
+		}
+		win[j++] = get_bits(k, i, l - 1);
 	}
-	win[j++] = get_bits(k, i, bn_bits(k) - 1);
 	*len = j;
 }
 
@@ -169,45 +189,21 @@ void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w) {
 		memset(naf, 0, *len);
 
 		i = 0;
-		if (w == 2) {
-			while (!bn_is_zero(t)) {
-				if (!bn_is_even(t)) {
-					bn_get_dig(&t0, t);
-					u_i = 2 - (t0 & mask);
-					if (u_i < 0) {
-						bn_add_dig(t, t, -u_i);
-					} else {
-						bn_sub_dig(t, t, u_i);
-					}
-					*naf = u_i;
-				} else {
-					*naf = 0;
+		while (!bn_is_zero(t)) {
+			if (!bn_is_even(t)) {
+				bn_get_dig(&t0, t);
+				u_i = t0 & mask;
+				if (u_i > l / 2) {
+					u_i = (int8_t)(u_i - l);
 				}
-				bn_hlv(t, t);
-				i++;
-				naf++;
+				bn_sub_dis(t, t, u_i);
+				*naf = u_i;
+			} else {
+				*naf = 0;
 			}
-		} else {
-			while (!bn_is_zero(t)) {
-				if (!bn_is_even(t)) {
-					bn_get_dig(&t0, t);
-					u_i = t0 & mask;
-					if (u_i > l / 2) {
-						u_i = (int8_t)(u_i - l);
-					}
-					if (u_i < 0) {
-						bn_add_dig(t, t, -u_i);
-					} else {
-						bn_sub_dig(t, t, u_i);
-					}
-					*naf = u_i;
-				} else {
-					*naf = 0;
-				}
-				bn_hlv(t, t);
-				i++;
-				naf++;
-			}
+			bn_hlv(t, t);
+			i++;
+			naf++;
 		}
 		*len = i;
 	}
@@ -355,18 +351,10 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 	bn_t t, t0, t1, t2, t3;
 
-	bn_null(t);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
+	bn_null_all(t, t0, t1, t2, t3);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
+		bn_new_all(t, t0, t1, t2, t3);
 
 		/* (a0, a1) = (1, 0). */
 		bn_set_dig(t0, 1);
@@ -378,7 +366,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 		bn_abs(r0, k);
 		bn_zero(r1);
 
-		for (int i = 0; i < m; i++) {
+		for (size_t i = 0; i < m; i++) {
 			if (!bn_is_even(r0)) {
 				/* r0 = r0 - 1. */
 				bn_sub_dig(r0, r0, 1);
@@ -416,11 +404,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
+		bn_free_all(t, t0, t1, t2, t3);
 	}
 }
 
@@ -433,10 +417,9 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
-	bn_null(r0);
-	bn_null(r1);
-	bn_null(tmp);
+	bn_null_all(r0, r1, tmp);
 
+	/* The expansion can be longer than k, so the writes are checked below. */
 	if (*len < (bn_bits(k) + 1)) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
@@ -444,9 +427,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	}
 
 	RLC_TRY {
-		bn_new(r0);
-		bn_new(r1);
-		bn_new(tmp);
+		bn_new_all(r0, r1, tmp);
 
 		memset(tnaf, 0, *len);
 
@@ -460,18 +441,11 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		i = 0;
 		while (!bn_is_zero(r0) || !bn_is_zero(r1)) {
 			while ((r0->dp[0] & 1) == 0) {
-				tnaf[i++] = 0;
-				/* tmp = r0. */
-				bn_hlv(tmp, r0);
-				/* r0 = r1 + mu * r0 / 2. */
-				if (u == -1) {
-					bn_sub(r0, r1, tmp);
-				} else {
-					bn_add(r0, r1, tmp);
+				if (i < (int)*len) {
+					tnaf[i] = 0;
 				}
-				/* r1 = - r0 / 2. */
-				bn_copy(r1, tmp);
-				r1->sign = tmp->sign ^ 1;
+				i++;
+				tnaf_hlv(r0, r1, tmp, u);
 			}
 			/* If r0 is odd. */
 			if (w == 2) {
@@ -484,12 +458,11 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 					t1 = l - t1;
 				}
 				u_i = 2 - ((t0 - 2 * t1) & mask);
-				tnaf[i++] = u_i;
-				if (u_i < 0) {
-					bn_add_dig(r0, r0, -u_i);
-				} else {
-					bn_sub_dig(r0, r0, u_i);
+				if (i < (int)*len) {
+					tnaf[i] = u_i;
 				}
+				i++;
+				bn_sub_dis(r0, r0, u_i);
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
@@ -507,51 +480,42 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				if (u_i >= (l / 2)) {
 					/* If u < 0, s = -1 and u = -u. */
 					u_i = (int8_t)(u_i - l);
-					tnaf[i++] = u_i;
+					if (i < (int)*len) {
+						tnaf[i] = u_i;
+					}
+					i++;
 					u_i = (int8_t)(-u_i >> 1);
 					t = -beta[u_i];
 					s = -gama[u_i];
 				} else {
 					/* If u > 0, s = 1. */
-					tnaf[i++] = u_i;
+					if (i < (int)*len) {
+						tnaf[i] = u_i;
+					}
+					i++;
 					u_i = (int8_t)(u_i >> 1);
 					t = beta[u_i];
 					s = gama[u_i];
 				}
 				/* r0 = r0 - s * beta_u. */
-				if (t > 0) {
-					bn_sub_dig(r0, r0, t);
-				} else {
-					bn_add_dig(r0, r0, -t);
-				}
+				bn_sub_dis(r0, r0, t);
 				/* r1 = r1 - s * gama_u. */
-				if (s > 0) {
-					bn_sub_dig(r1, r1, s);
-				} else {
-					bn_add_dig(r1, r1, -s);
-				}
+				bn_sub_dis(r1, r1, s);
 			}
-			/* tmp = r0. */
-			bn_hlv(tmp, r0);
-			/* r0 = r1 + mu * r0 / 2. */
-			if (u == -1) {
-				bn_sub(r0, r1, tmp);
-			} else {
-				bn_add(r0, r1, tmp);
-			}
-			/* r1 = - r0 / 2. */
-			bn_copy(r1, tmp);
-			r1->sign = tmp->sign ^ 1;
+			tnaf_hlv(r0, r1, tmp, u);
 		}
-		*len = i;
+		if (i > (int)*len) {
+			*len = 0;
+			RLC_THROW(ERR_NO_BUFFER);
+		} else {
+			*len = i;
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r0);
-		bn_free(r1);
-		bn_free(tmp);
+		bn_free_all(r0, r1, tmp);
 	}
 }
 
@@ -564,19 +528,18 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
-	bn_null(r0);
-	bn_null(r1);
-	bn_null(tmp);
+	bn_null_all(r0, r1, tmp);
 
-	if (*len < (bn_bits(k) + 1)) {
+	/* The expansion has l digits and at most two more for the remainder. */
+	l = RLC_CEIL(m + 2, (w - 1));
+	if (*len < (size_t)l + 2) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
 	RLC_TRY {
-		bn_new(r0);
-		bn_new(r1);
-		bn_new(tmp);
+		bn_new_all(r0, r1, tmp);
 
 		memset(tnaf, 0, *len);
 
@@ -584,9 +547,14 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		bn_abs(tmp, k);
 		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
 		mask = RLC_MASK(w);
-		l = RLC_CEIL(m + 2, (w - 1));
 
+		/* The regular recoding needs r0 odd, and also r1 odd if w = 2. */
 		i = 0;
+		if (bn_is_even(r0) || (w == 2 && bn_is_even(r1))) {
+			*len = 0;
+			RLC_THROW(ERR_NO_VALID);
+			l = -2;
+		}
 		while (i < l) {
 			/* If r0 is odd. */
 			if (w == 2) {
@@ -600,11 +568,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				}
 				u_i = ((t0 - 2 * t1) & mask) - 2;
 				tnaf[i++] = u_i;
-				if (u_i < 0) {
-					bn_add_dig(r0, r0, -u_i);
-				} else {
-					bn_sub_dig(r0, r0, u_i);
-				}
+				bn_sub_dis(r0, r0, u_i);
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
@@ -632,30 +596,12 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 					s = gama[u_i];
 				}
 				/* r0 = r0 - s * beta_u. */
-				if (t > 0) {
-					bn_sub_dig(r0, r0, t);
-				} else {
-					bn_add_dig(r0, r0, -t);
-				}
+				bn_sub_dis(r0, r0, t);
 				/* r1 = r1 - s * gama_u. */
-				if (s > 0) {
-					bn_sub_dig(r1, r1, s);
-				} else {
-					bn_add_dig(r1, r1, -s);
-				}
+				bn_sub_dis(r1, r1, s);
 			}
-			for (int j = 0; j < (w - 1); j++) {
-				/* tmp = r0. */
-				bn_hlv(tmp, r0);
-				/* r0 = r1 + mu * r0 / 2. */
-				if (u == -1) {
-					bn_sub(r0, r1, tmp);
-				} else {
-					bn_add(r0, r1, tmp);
-				}
-				/* r1 = - r0 / 2. */
-				bn_copy(r1, tmp);
-				r1->sign = tmp->sign ^ 1;
+			for (size_t j = 0; j < (w - 1); j++) {
+				tnaf_hlv(r0, r1, tmp, u);
 			}
 		}
 		s = r0->dp[0];
@@ -666,7 +612,9 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		if (bn_sign(r1) == RLC_NEG) {
 			t = -t;
 		}
-		if (s != 0 && t != 0) {
+		if (l < 0) {
+			/* Nothing was written for an invalid input. */
+		} else if (s != 0 && t != 0) {
 			for (int j = 0; j < (1 << (w - 2)); j++) {
 				if (beta[j] == s && gama[j] == t) {
 					tnaf[i++] = 2 * j + 1;
@@ -686,15 +634,15 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				tnaf[i++] = s;
 			}
 		}
-		*len = i;
+		if (l >= 0) {
+			*len = i;
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r0);
-		bn_free(r1);
-		bn_free(tmp);
+		bn_free_all(r0, r1, tmp);
 	}
 }
 
@@ -713,6 +661,14 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 		*len = 0;
 		RLC_FREE(t);
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
+	/* The l digits cover l * (w - 1) bits, so larger k cannot be recoded. */
+	if (bn_bits(k) > l * (w - 1)) {
+		*len = 0;
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
@@ -748,18 +704,17 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 	int8_t u0, u1, d0, d1;
 	int i, j, offset;
 
-	if (*len < (2 * bn_bits(k) + 1)) {
+	/* Both rows have max(bits(k), bits(l)) + 1 digits. */
+	if (*len < 2 * (RLC_MAX(bn_bits(k), bn_bits(l)) + 1)) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
-	bn_null(n0);
-	bn_null(n1);
+	bn_null_all(n0, n1);
 
 	RLC_TRY {
-		bn_new(n0);
-		bn_new(n1);
+		bn_new_all(n0, n1);
 
 		bn_abs(n0, k);
 		bn_abs(n1, l);
@@ -815,8 +770,7 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n0);
-		bn_free(n1);
+		bn_free_all(n0, n1);
 	}
 }
 
@@ -827,6 +781,10 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	dig_t _k[2 * RLC_FP_DIGS + 1] = { 0 }, _v[2 * RLC_FP_DIGS] = { 0 };
 
 	/* Constant-time, except for the first scalar copy. */
+
+	/* The subscalars are computed in full double precision. */
+	bn_grow(k0, 2 * RLC_FP_DIGS + 1);
+	bn_grow(k1, 2 * RLC_FP_DIGS + 1);
 
 	/* b1 = (k * v10) >> (bits + 1). */
 	dv_copy(_k, k->dp, k->used);
@@ -863,12 +821,12 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	k1->sign = v2[0].sign ^ v2[1].sign;
 
 	/* k0 = k - k0 - k1. */
-	bn_negs_low(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-	bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k0->dp, k0->dp, k1->dp, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k0->dp, k0->dp, _k, 2 * RLC_FP_DIGS + 1);
 	k0->sign = k0->dp[2 * RLC_FP_DIGS] & 1;
-	bn_negs_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
 	k0->used = 2 * RLC_FP_DIGS;
 	bn_trim(k0);
 
@@ -885,11 +843,11 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	_k[2 * RLC_FP_DIGS] = 0;
 	r = v2[0].sign ^ v2[2].sign;
 
-	bn_negs_low(_k, _k, r ^ 1, 2 * RLC_FP_DIGS + 1);
-	bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(_k, _k, r ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k1->dp, k1->dp, _k, 2 * RLC_FP_DIGS + 1);
 	k1->sign = k1->dp[2 * RLC_FP_DIGS] & 1;
-	bn_negs_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
+	bn_sneg_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
 	k1->used = 2 * RLC_FP_DIGS;
 	bn_trim(k1);
 }
@@ -912,10 +870,12 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
+	for (size_t i = 0; i < m; i++) {
+		bn_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (size_t i = 0; i < m; i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 
@@ -927,23 +887,28 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 				l = RLC_MAX(l, bn_bits(t[i]) + 1);
 			}
 		}
+		/* The rows may have grown past the capacity checked above. */
+		if (*len < l) {
+			*len = 0;
+			RLC_THROW(ERR_NO_BUFFER);
+		} else {
+			memset(b, 0, *len);
 
-		memset(b, 0, *len);
-
-		b[l - 1] = 0;
-		for (size_t i = 0; i < l - 1; i++) {
-			b[i] = 1 - bn_get_bit(k[0], i + 1);
-		}
-		for (size_t j = 1; j < m; j++) {
+			b[l - 1] = 0;
 			for (size_t i = 0; i < l - 1; i++) {
-				bji = bn_get_bit(t[j], 0);
-				b[j * l + i] = bji;
-				bn_hlv(t[j], t[j]);
-				bn_add_dig(t[j], t[j], bji & b[i]);
+				b[i] = 1 - bn_get_bit(k[0], i + 1);
 			}
-			b[j * l + l - 1] = bn_get_bit(t[j], 0);
+			for (size_t j = 1; j < m; j++) {
+				for (size_t i = 0; i < l - 1; i++) {
+					bji = bn_get_bit(t[j], 0);
+					b[j * l + i] = bji;
+					bn_hlv(t[j], t[j]);
+					bn_add_dig(t[j], t[j], bji & b[i]);
+				}
+				b[j * l + l - 1] = bn_get_bit(t[j], 0);
+			}
+			*len = l;
 		}
-		*len = l;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -956,13 +921,17 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		int cof) {
-	int i, l, sk, sx;
+	int i, sk, sx;
+	size_t l;
 	bn_t u[4], v[4];
+
+	for (i = 0; i < 4; i++) {
+		bn_null(u[i]);
+		bn_null(v[i]);
+	}
 
 	RLC_TRY {
 		for (i = 0; i < 4; i++) {
-			bn_null(u[i]);
-			bn_null(v[i]);
 			bn_new(u[i]);
 			bn_new(v[i]);
 		}

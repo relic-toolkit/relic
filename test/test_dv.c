@@ -80,7 +80,15 @@ static int copy(void) {
 					TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_GT, end);
 				}
 			}
+			if (dv_cmp_sec(a, b, RLC_DV_DIGS) != RLC_EQ) {
+				if (dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_GT) {
+					TEST_ASSERT(dv_cmp_sec(b, a, RLC_DV_DIGS) == RLC_LT, end);
+				} else {
+					TEST_ASSERT(dv_cmp_sec(b, a, RLC_DV_DIGS) == RLC_GT, end);
+				}
+			}
 			dv_copy(a, b, RLC_DV_DIGS);
+			TEST_ASSERT(dv_cmp(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -89,9 +97,38 @@ static int copy(void) {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy_sec(a, b, RLC_DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ(a, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) == RLC_NE, end);
+			dv_copy(a, b, RLC_DV_DIGS);
+			TEST_ASSERT(dv_equ(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 			dv_copy_sec(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("constant-time comparisons agree with the others") {
+			size_t j;
+
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) ==
+				dv_cmp(a, b, RLC_DV_DIGS), end);
+			TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) ==
+				dv_equ(a, b, RLC_DV_DIGS), end);
+			/* Make the vectors differ in a single digit, at either end. */
+			for (j = 0; j < RLC_DV_DIGS; j += RLC_DV_DIGS - 1) {
+				dv_copy(b, a, RLC_DV_DIGS);
+				b[j] ^= 1;
+				TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) ==
+					dv_cmp(a, b, RLC_DV_DIGS), end);
+				TEST_ASSERT(dv_cmp_sec(b, a, RLC_DV_DIGS) ==
+					dv_cmp(b, a, RLC_DV_DIGS), end);
+				TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) == RLC_NE, end);
+				TEST_ASSERT(dv_equ(a, b, RLC_DV_DIGS) == RLC_NE, end);
+				if (RLC_DV_DIGS == 1) {
+					break;
+				}
+			}
 		}
 		TEST_END;
 	} RLC_CATCH_ANY {
@@ -101,6 +138,49 @@ static int copy(void) {
   end:
 	dv_free(a);
 	dv_free(b);
+	return code;
+}
+
+static int zero(void) {
+	dv_t a;
+	int code = RLC_ERR;
+
+	dv_null(a);
+
+	RLC_TRY {
+		dv_new(a);
+
+		TEST_CASE("zero test is consistent") {
+			dv_zero(a, RLC_DV_DIGS);
+			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 1, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			a[0] |= 1;
+			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("zero test finds a digit set anywhere") {
+			for (size_t i = 0; i < RLC_DV_DIGS; i++) {
+				dv_zero(a, RLC_DV_DIGS);
+				a[i] = 1;
+				TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+				/* and the same digit is invisible to a shorter test */
+				TEST_ASSERT(dv_is_zero(a, i) == 1, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("zero test of no digits is trivially true") {
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			TEST_ASSERT(dv_is_zero(a, 0) == 1, end);
+		}
+		TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	dv_free(a);
 	return code;
 }
 
@@ -124,7 +204,7 @@ static int swap(void) {
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy(c, a, RLC_DV_DIGS);
 			dv_swap_sec(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -134,15 +214,23 @@ static int swap(void) {
 			dv_copy(c, a, RLC_DV_DIGS);
 			dv_copy(d, b, RLC_DV_DIGS);
 			dv_swap_sec(a, b, RLC_DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_sec(c, a, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_sec(d, b, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_NE, end);
-			TEST_ASSERT(dv_cmp_sec(d, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ(d, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ(c, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ(d, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ_sec(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(d, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(c, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ_sec(d, a, RLC_DV_DIGS) == RLC_NE, end);
 			dv_swap_sec(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_sec(d, a, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_sec(c, a, RLC_DV_DIGS) == RLC_NE, end);
-			TEST_ASSERT(dv_cmp_sec(d, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ(d, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ(c, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ(d, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(d, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_equ_sec(c, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_equ_sec(d, b, RLC_DV_DIGS) == RLC_NE, end);
 		}
 		TEST_END;
 	} RLC_CATCH_ANY {
@@ -170,12 +258,25 @@ static int shifting(void) {
 		dv_new(b);
 		dv_new(c);
 
-		TEST_CASE("shifting by  digit is consistent") {
+		TEST_CASE("shifting by 1 digit is consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			a[RLC_DV_DIGS - 1] = 0;
 			dv_lshd(b, a, RLC_DV_DIGS, 1);
 			dv_rshd(c, b, RLC_DV_DIGS, 1);
 			TEST_ASSERT(dv_cmp(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("shifting by no or all digits is consistent") {
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			dv_lshd(b, a, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_rshd(b, a, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_lshd(b, a, RLC_DV_DIGS, RLC_DV_DIGS);
+			TEST_ASSERT(dv_is_zero(b, RLC_DV_DIGS), end);
+			dv_copy(b, a, RLC_DV_DIGS);
+			dv_rshd(b, a, RLC_DV_DIGS, RLC_DV_DIGS + 1);
+			TEST_ASSERT(dv_is_zero(b, RLC_DV_DIGS), end);
 		} TEST_END;
 
 		if (RLC_DV_DIGS > 1) {
@@ -214,6 +315,11 @@ int main(void) {
 	}
 
 	if (copy() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (zero() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

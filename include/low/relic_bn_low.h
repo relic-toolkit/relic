@@ -44,19 +44,13 @@
 #include "relic_conf.h"
 #include "relic_label.h"
 
-#if (BN_PRECI % WSIZE) > 0
-#define RLC_BN_DIGS		(BN_PRECI/WSIZE + 1)
+#if (BN_PRECI % RLC_WSIZE) > 0
+#define RLC_BN_DIGS		(BN_PRECI/RLC_WSIZE + 1)
 #else
-#define RLC_BN_DIGS		(BN_PRECI/WSIZE)
+#define RLC_BN_DIGS		(BN_PRECI/RLC_WSIZE)
 #endif
 
-#if BN_MAGNI == DOUBLE
 #define RLC_BN_SIZE		(2 * RLC_BN_DIGS + 2)
-#elif BN_MAGNI == CARRY
-#define RLC_BN_SIZE		((RLC_BN_DIGS + 1)
-#elif BN_MAGNI == SINGLE
-#define RLC_BN_SIZE		(RLC_BN_DIGS)
-#endif
 
 #else
 
@@ -119,26 +113,18 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
  * @param[in] n			- the number of digits to conditionally negate.
  * @return the carry of the last digit negation.
  */
-dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
-
-/**
- * Compares two digits.
- *
- * @param[in] a				- the first digit to compare.
- * @param[in] b				- the second digit to compare.
- * @return BN_LT if a < b, BN_EQ if a == b and BN_GT if a > b.
- */
-int bn_cmp1_low(dig_t a, dig_t b);
+dig_t bn_sneg_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
 
 /**
  * Compares two digit vectors of the same size.
  *
  * @param[in] a				- the first digit vector to compare.
+ * @param[in] sa			- the number of digits in the first argument.
  * @param[in] b				- the second digit vector to compare.
- * @param[in] size			- the number of digits to compare.
- * @return BN_LT if a < b, BN_EQ if a == b and BN_GT if a > b.
+ * @param[in] sb			- the number of digits in the second argument.
+ * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
-int bn_cmpn_low(const dig_t *a, const dig_t *b, size_t size);
+int bn_cmpn_low(const dig_t *a, size_t sa, const dig_t *b, size_t sb);
 
 /**
  * Shifts a digit vector to the left by 1 bit. Computes c = a << 1.
@@ -194,7 +180,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
+dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
 
 /**
  * Multiplies a digit vector by a digit and adds this result to another digit
@@ -207,6 +193,18 @@ dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
  * @return the carry of the last addition.
  */
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
+
+/**
+ * Multiplies a digit vector by a digit and subtracts this result from another
+ * digit vector. Computes c = c - a * digit.
+ *
+ * @param[in,out] c			- the digit vector to subtract from, and the result.
+ * @param[in] a				- the digit vector to multiply.
+ * @param[in] digit			- the digit to multiply.
+ * @param[in] size			- the number of digits to multiply.
+ * @return the borrow of the last subtraction.
+ */
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Multiplies a digit vector by a digit and stores this result in another digit
@@ -231,7 +229,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
  * @param[in] size			- the number of digits to multiply.
  * @return the most significant digit.
  */
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size);
+dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size);
 
 /**
  * Multiplies two digit vectors of the same size. Computes c = a * b.
@@ -281,7 +279,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Divides a digit vector by another digit vector. Computes c = floor(a / b) and
- * d = a mod b. The dividend and divisor may be destroyed inside the function.
+ * d = a mod b.
  *
  * @param[out] c			- the quotient.
  * @param[out] d			- the remainder.
@@ -290,7 +288,21 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
  * @param[in,out] b			- the divisor.
  * @param[in] sb			- the size of the divisor.
  */
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb);
+void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb);
+
+/**
+ * Divides a digit vector by another, assuming the division is exact. Computes
+ * c = a / b where b divides a.
+ *
+ * @param[out] c			- the quotient of sa-sb+1 digits, no overlap with b.
+ * @param[in] a				- the dividend.
+ * @param[in] sa			- the size of the dividend in digits.
+ * @param[in] b				- the divisor, which must divide the dividend.
+ * @param[in] sb			- the size of the divisor in digits.
+ */
+void bn_dive_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb);
 
 /**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and
@@ -316,6 +328,71 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t digit, size_t size);
  */
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	dig_t u);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the standard Euclidean algorithm. One of the operands must be odd,
+ * both source operands are destroyed.
+ *
+ * @param[out] c			- the result;
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] sa			- the number of digits in the first argument.
+ * @param[in] b				- the second multiple precision integer.
+ * @param[in] sa			- the number of digits in the second argument.
+ */
+size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the standard Euclidean algorithm. One of the operands must be odd,
+ * both source operands are destroyed.
+ *
+ * @param[out] c			- the result;
+ * @param[out] d			- the first cofactor.
+ * @param[out] sd			- the number of digits in the cofactor.
+ * @param[in,out] a				- the first multiple precision integer.
+ * @param[in] sa			- the number of digits in the first argument.
+ * @param[in,out] b				- the second multiple precision integer.
+ * @param[in] sa			- the number of digits in the second argument.
+ * @return the size of the returned cofactor.
+ */
+size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
+		dig_t *b, size_t sb);
+
+/**
+ * Reduces both operands until they fit target digits, accumulating the
+ * transformation. Both source operands are destroyed, and a, b and the four
+ * matrix entries each need room for size + 1 digits.
+ *
+ * @param[out] u00			- the first entry of the matrix.
+ * @param[out] u01			- the second entry of the matrix.
+ * @param[out] u10			- the third entry of the matrix.
+ * @param[out] u11			- the fourth entry of the matrix.
+ * @param[out] sm			- the size of each matrix entry in digits.
+ * @param[in,out] a			- the first operand, and the first reduced value.
+ * @param[in,out] b			- the second operand, and the second reduced value.
+ * @param[in] size			- the size of both operands in digits.
+ * @param[in] target		- the digit count to reduce the operands to.
+ * @return the new size of the operands.
+ */
+size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size, size_t target);
+
+/**
+ * Computes a modular exponentiation. The modulus must be odd and the base
+ * already reduced by it. Computes c = a^b mod m.
+ *
+ * @param[out] c			- the result, of sm digits.
+ * @param[in] a				- the base.
+ * @param[in] sa			- the size in digits of the base.
+ * @param[in] b				- the exponent.
+ * @param[in] sb			- the size in digits of the exponent.
+ * @param[in] m				- the modulus.
+ * @param[in] sm			- the size in digits of the modulus.
+ * @param[in] u				- minus the inverse of the modulus modulo the radix.
+ */
+void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		const dig_t *m, size_t sm, dig_t u);
 
 #endif /* !ASM */
 

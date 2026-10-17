@@ -44,7 +44,14 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a) {
 }
 
 dig_t fb_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	return mpn_lshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
+	dig_t carry = 0;
+	/* RLC_GMP requires the shift count to be nonzero. */
+	if (bits > 0) {
+		carry = mpn_lshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
+	} else {
+		dv_copy(c, a, RLC_FB_DIGS);
+	}
+	return carry;
 }
 
 dig_t fb_rsh1_low(dig_t *c, const dig_t *a) {
@@ -52,11 +59,19 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a) {
 }
 
 dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	return mpn_rshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
+	dig_t carry = 0;
+	/* RLC_GMP requires the shift count to be nonzero. */
+	if (bits > 0) {
+		carry = mpn_rshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
+	} else {
+		dv_copy(c, a, RLC_FB_DIGS);
+	}
+	return carry;
 }
 
 dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size) {
-	int i, j;
+	size_t i;
+	int j;
 	dig_t b1, b2;
 
 	j = RLC_DIG - bits;

@@ -39,10 +39,122 @@
  */
 
 .text
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_mul1_low)
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
-fp_muln_low:
+/*
+ * Function: fp_mul1_low
+ * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
+ * Output: c = a * digit mod p, in constant time
+ */
+cdecl(fp_mul1_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	push	%rdi
+
+	/* d = a * digit in r8-r14. */
+	mulxq	0(%rsi), %r8, %rax
+	mulxq	8(%rsi), %r9, %rbx
+	addq	%rax, %r9
+	mulxq	16(%rsi), %r10, %rax
+	adcq	%rbx, %r10
+	mulxq	24(%rsi), %r11, %rbx
+	adcq	%rax, %r11
+	mulxq	32(%rsi), %r12, %rax
+	adcq	%rbx, %r12
+	mulxq	40(%rsi), %r13, %r14
+	adcq	%rax, %r13
+	adcq	$0, %r14
+
+	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
+	 * floor(d / p). */
+	movq	%r13, %rax
+	shrdq	$BARS, %r14, %rax
+	movq	$BAR, %rdx
+	mulxq	%rax, %rax, %rdx
+
+	/* Subtract the low halves of q * p, keeping the high halves. */
+	movq	$P0, %rax
+	mulxq	%rax, %rax, %rbx
+	subq	%rax, %r8
+	movq	$P1, %rax
+	mulxq	%rax, %rax, %rcx
+	sbbq	%rax, %r9
+	movq	$P2, %rax
+	mulxq	%rax, %rax, %rsi
+	sbbq	%rax, %r10
+	movq	$P3, %rax
+	mulxq	%rax, %rax, %rdi
+	sbbq	%rax, %r11
+	movq	$P4, %rax
+	mulxq	%rax, %rax, %rbp
+	sbbq	%rax, %r12
+	movq	$P5, %rax
+	mulxq	%rax, %rax, %r15
+	sbbq	%rax, %r13
+	sbbq	$0, %r14
+
+	/* Subtract the high halves, leaving d - q * p below 3p. */
+	subq	%rbx, %r9
+	sbbq	%rcx, %r10
+	sbbq	%rsi, %r11
+	sbbq	%rdi, %r12
+	sbbq	%rbp, %r13
+	sbbq	%r15, %r14
+
+	/* Subtract p twice, keeping the difference when there is no borrow. */
+	.rept 2
+	movq	%r8, %rax
+	movq	$P0, %rdx
+	subq	%rdx, %rax
+	movq	%r9, %rbx
+	movq	$P1, %rdx
+	sbbq	%rdx, %rbx
+	movq	%r10, %rcx
+	movq	$P2, %rdx
+	sbbq	%rdx, %rcx
+	movq	%r11, %rsi
+	movq	$P3, %rdx
+	sbbq	%rdx, %rsi
+	movq	%r12, %rdi
+	movq	$P4, %rdx
+	sbbq	%rdx, %rdi
+	movq	%r13, %rbp
+	movq	$P5, %rdx
+	sbbq	%rdx, %rbp
+	movq	%r14, %r15
+	sbbq	$0, %r15
+	cmovncq	%rax, %r8
+	cmovncq	%rbx, %r9
+	cmovncq	%rcx, %r10
+	cmovncq	%rsi, %r11
+	cmovncq	%rdi, %r12
+	cmovncq	%rbp, %r13
+	cmovncq	%r15, %r14
+	.endr
+
+	pop	%rdi
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+
+	pop	%rbp
+	pop	%rbx
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
+	ret
+
+cdecl(fp_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -52,7 +164,7 @@ fp_muln_low:
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
     popq	%rbx
     popq	%r15
@@ -61,7 +173,7 @@ fp_muln_low:
     popq	%r12
     ret
 
-fp_mulm_low:
+cdecl(fp_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -71,7 +183,7 @@ fp_mulm_low:
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
 
     popq	%rbx
     popq	%r15

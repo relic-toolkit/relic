@@ -81,7 +81,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DCORES=2 -DMULTI=OPENMP -G "NMake Makefiles" ..
+          cmake -DSEED=NONE -DBENCH=0 -DCORES=2 -DMULTI=OPENMP -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
@@ -89,7 +89,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DCORES=2 -DMULTI=OPENMP -G "MinGW Makefiles" ..
+          cmake -DSEED=NONE -DBENCH=0 -DCORES=2 -DMULTI=OPENMP -G "MinGW Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -DCORES=2 -DMULTI=OPENMP ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED=NONE -DBENCH=0 -DCORES=2 -DMULTI=OPENMP ..
 
       - name: CMake Build
         run: cmake --build build

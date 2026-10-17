@@ -37,21 +37,13 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FP_RDC == BASIC || !defined(STRIP)
-
 void fp_rdc_basic(fp_t c, dv_t a) {
 	dv_t t0, t1, t2, t3;
 
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(t2);
-	dv_null(t3);
+	dv_null_all(t0, t1, t2, t3);
 
 	RLC_TRY {
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(t2);
-		dv_new(t3);
+		dv_new_all(t0, t1, t2, t3);
 
 		dv_copy(t2, a, 2 * RLC_FP_DIGS);
 		dv_copy(t3, fp_prime_get(), RLC_FP_DIGS);
@@ -61,21 +53,12 @@ void fp_rdc_basic(fp_t c, dv_t a) {
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(t2);
-		dv_free(t3);
+		dv_free_all(t0, t1, t2, t3);
 	}
 }
 
-#endif
-
-#if FP_RDC == MONTY || !defined(STRIP)
-
-#if FP_MUL == BASIC || !defined(STRIP)
-
 void fp_rdc_monty_basic(fp_t c, dv_t a) {
-	int i;
+	size_t i;
 	dig_t r, u0;
 
 	u0 = *(fp_prime_get_rdc());
@@ -87,21 +70,55 @@ void fp_rdc_monty_basic(fp_t c, dv_t a) {
 	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }
 
-#endif
-
-#if FP_MUL == COMBA || FP_MUL == INTEG || !defined(STRIP)
-
 void fp_rdc_monty_comba(fp_t c, dv_t a) {
 	fp_rdcn_low(c, a);
 }
 
-#endif
-
-#endif
-
-#if FP_RDC == QUICK || !defined(STRIP)
-
 void fp_rdc_quick(fp_t c, dv_t a) {
+	const int *sform;
+	int len, i, n;
+	bn_t q, r, t;
+
+	bn_null_all(q, r, t);
+
+	RLC_TRY {
+		bn_new_all(q, r, t);
+
+		/* Write p = 2^n - s, with the sparse terms of p in sform. */
+		sform = fp_prime_get_sps(&len);
+		n = sform[len - 1];
+
+		/* Fold q = floor(r/2^n) into r mod 2^n since 2^n = s mod p. */
+		bn_read_raw(r, a, 2 * RLC_FP_DIGS);
+		bn_rsh(q, r, n);
+		while (!bn_is_zero(q)) {
+			bn_mod_2b(r, r, n);
+			for (i = 0; i < len - 1; i++) {
+				/* The first term is the constant +1 or -1, so its power is 0. */
+				bn_lsh(t, q, i == 0 ? 0 : (sform[i] < 0 ? -sform[i] : sform[i]));
+				if (sform[i] < 0) {
+					bn_add(r, r, t);
+				} else {
+					bn_sub(r, r, t);
+				}
+			}
+			bn_rsh(q, r, n);
+		}
+		fp_zero(c);
+		dv_copy(c, r->dp, r->used);
+		fp_norm(c, c);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(q, r, t);
+	}
+}
+
+#if FP_RDC == FP_LOWER
+
+void fp_rdc_lower(fp_t c, dv_t a) {
 	fp_rdcs_low(c, a, fp_prime_get());
 }
 

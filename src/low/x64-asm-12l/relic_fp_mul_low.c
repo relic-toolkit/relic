@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2023 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -29,7 +29,7 @@
  * @ingroup bn
  */
 
-#include "gmp.h"
+#include <gmp.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
@@ -40,8 +40,4 @@
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
-}
-
-dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
 }

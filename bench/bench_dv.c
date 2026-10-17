@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory(void) {
-	dv_t a[BENCH];
+	dv_t a[RLC_BENCH];
 
 	BENCH_FEW("dv_null", dv_null(a[i]), 1);
 
 	BENCH_FEW("dv_new", dv_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		dv_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		dv_new(a[i]);
 	}
 	BENCH_FEW("dv_free", dv_free(a[i]), 1);
@@ -77,6 +77,11 @@ static void copy(void) {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_swap_sec(a, b, RLC_DV_DIGS, 1));
+	} BENCH_END;
+
+	BENCH_RUN("dv_is_zero") {
+		dv_zero(a, RLC_DV_DIGS);
+		BENCH_ADD(dv_is_zero(a, RLC_DV_DIGS));
 	} BENCH_END;
 
 	BENCH_RUN("dv_cmp") {

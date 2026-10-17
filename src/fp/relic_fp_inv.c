@@ -37,66 +37,191 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_INV == JMPDS || !defined(STRIP)
+/*
+ * Number of division steps for any modulus p < 2^FP_PRIME, from the bound for
+ * half-delta divsteps in https://github.com/sipa/safegcd-bounds.
+ */
+#define JMPDS_ITERATIONS	((3787 * FP_PRIME + 2166) / 1644)
 
-#ifdef RLC_FP_ROOM
+/*
+ * Number of division steps in each jump, done in two halves so that each row
+ * of the transition matrix of a half fits in a digit.
+ */
+#define JMPDS_STEPS			(RLC_DIG - 4)
 
-static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, size_t size) {
-	int sd = digit >> (RLC_DIG - 1);
-	digit = (digit ^ sd) - sd;
-	c[size] = bn_mul1_low(c, a, digit, size);
-}
-
-#endif /* RLC_FP_ROOM */
-
-#if WSIZE == 8
-static int jumpdivstep(dis_t m[4], int delta, dig_t f, dig_t g, int s) {
+/**
+ * Performs s <= JMPDS_STEPS half-delta division steps (Bernstein and Yang,
+ * TCHES 2019) on the lowest digits of f and g, with zeta = -(delta + 1/2) as in
+ * libsecp256k1, and returns the transition matrix m = (u, v; q, r) scaled by
+ * 2^s. The rows are packed in single digits within each half.
+ *
+ * @param[out] m			- the transition matrix.
+ * @param[in] zeta			- the current value of zeta.
+ * @param[in] f				- the lowest digit of f, which must be odd.
+ * @param[in] g				- the lowest digit of g.
+ * @param[in] s				- the number of steps.
+ * @return the updated value of zeta.
+ */
+#if RLC_WSIZE == 8
+static int jmpds_steps(dis_t m[4], int zeta, dig_t f, dig_t g, int s) {
 #else
-static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
+static dis_t jmpds_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
 #endif
-	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
+	const int h = RLC_DIG / 2;
+	dig_t uv, qr, c0, c1;
+	dis_t u, v, q, r, t0, t1;
 
-	/* This is actually faster than my previous version, several tricks from
-	 * https://github.com/bitcoin-core/secp256k1/blob/master/src/modinv64_impl.h
-	 */
-	for (s--; s >= 0; s--) {
-		/* First handle the else part: if delta < 0, compute -(f,u,v). */
-		c0 = delta >> (8 * sizeof(delta) - 1);
-		c1 = -(g & 1);
-		c0 &= c1;
-		/* Conditionally add -(f,u,v) to (g,q,r) */
-		g += ((f ^ c0) - c0) & c1;
-		q += ((u ^ c0) - c0) & c1;
-		r += ((v ^ c0) - c0) & c1;
-		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
-		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
-		 * delta = - delta - 2 or delta - 1 */
-#if WSIZE == 8
-		delta = RLC_SEL(delta, -delta, c0 & 1) - 2;
-#else
-		delta = (delta ^ c0) - 1;
-#endif
-		f = f + (g & c0);
-		u = u + (q & c0);
-		v = v + (r & c0);
-		g >>= 1;
-		u += u;
-		v += v;
+	m[0] = m[3] = 1;
+	m[1] = m[2] = 0;
+	for (int k, half = 0; half < 2; half++) {
+		k = (half == 0 ? s / 2 : s - s / 2);
+		uv = 1;
+		qr = (dig_t)1 << h;
+		for (int j = 0; j < k; j++) {
+			/* c0 is all ones if zeta < 0, c1 if g is odd. */
+			c0 = zeta >> (8 * sizeof(zeta) - 1);
+			c1 = -(g & 1);
+			/* Add (f, u, v) to (g, q, r) if g is odd, negated if zeta < 0. */
+			g += ((f ^ c0) - c0) & c1;
+			qr += ((uv ^ c0) - c0) & c1;
+			/* Swap if zeta < 0 and g is odd, then update zeta. */
+			c0 &= c1;
+			zeta = (zeta ^ (dis_t)c0) - 1;
+			/* When swapping, (f, u, v) becomes the old (g, q, r). */
+			f += g & c0;
+			uv += qr & c0;
+			/* Halve g by doubling (u, v) instead, keeping integer entries. */
+			g >>= 1;
+			uv += uv;
+		}
+		/* Unpack the signed entries and accumulate the matrix product. */
+		u = (dis_t)(uv << h) >> h;
+		v = (dis_t)(uv - u) >> h;
+		q = (dis_t)(qr << h) >> h;
+		r = (dis_t)(qr - q) >> h;
+		t0 = u * m[0] + v * m[2];
+		t1 = u * m[1] + v * m[3];
+		m[2] = q * m[0] + r * m[2];
+		m[3] = q * m[1] + r * m[3];
+		m[0] = t0;
+		m[1] = t1;
 	}
-	m[0] = u;
-	m[1] = v;
-	m[2] = q;
-	m[3] = r;
-	return delta;
+	return zeta;
 }
 
+/**
+ * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
+ */
+static inline void jmpds_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
+		dig_t sb) {
+	dig_t h, l;
+#ifdef RLC_CONF_NODBL
+	RLC_MUL_DIG(h, l, (dig_t)a, b);
+#else
+	/* Multiply once to get both halves. */
+	dbl_t t = (dbl_t)(dig_t)a * b;
+	h = (dig_t)(t >> RLC_DIG);
+	l = (dig_t)t;
 #endif
+	/* Correct the unsigned high half for the signs of a and b. */
+	h -= (b & -RLC_SIGN(a)) + ((dig_t)a & sb);
+	*c0 += l;
+	*c1 += h + (*c0 < l);
+}
+
+/**
+ * Applies the transition matrix of s division steps to (f, g) and to (d, e),
+ * with f = d * a and g = e * a mod p, dividing by 2^s exactly by adding the
+ * right multiples of p to d and e, as in update_de of libsecp256k1. All values
+ * have RLC_FP_DIGS + 1 signed digits, and d, e stay in (-2p, p).
+ *
+ * @param[in,out] f			- the first entry of the column vector.
+ * @param[in,out] g			- the second entry of the column vector.
+ * @param[in,out] d			- the coefficient of f.
+ * @param[in,out] e			- the coefficient of g.
+ * @param[in] m				- the transition matrix.
+ * @param[in] s				- the number of division steps.
+ */
+static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
+		const dis_t m[4], int s) {
+	const dis_t u = m[0], v = m[1], q = m[2], r = m[3];
+	const dig_t *p = fp_prime_get(), rdc = *fp_prime_get_rdc();
+	const dig_t sd = -RLC_SIGN(d[RLC_FP_DIGS]), se = -RLC_SIGN(e[RLC_FP_DIGS]);
+	dig_t f1 = 0, f0 = 0, g1 = 0, g0 = 0, d1 = 0, d0 = 0, e1 = 0, e0 = 0;
+	dig_t fs = 0, gs = 0, ds = 0, es = 0, fi, gi, di, ei, cd, ce;
+	dis_t md, me;
+	size_t i;
+
+	/* Choose md and me to clear the low s bits of the sums. */
+	md = (u & sd) + (v & se);
+	me = (q & sd) + (r & se);
+	cd = RLC_MUL_LOW((dig_t)u, d[0]) + RLC_MUL_LOW((dig_t)v, e[0]);
+	ce = RLC_MUL_LOW((dig_t)q, d[0]) + RLC_MUL_LOW((dig_t)r, e[0]);
+	md -= (md - RLC_MUL_LOW(cd, rdc)) & RLC_MASK(s);
+	me -= (me - RLC_MUL_LOW(ce, rdc)) & RLC_MASK(s);
+
+	for (i = 0; i < RLC_FP_DIGS; i++) {
+		fi = f[i];
+		gi = g[i];
+		di = d[i];
+		ei = e[i];
+		jmpds_mac(&f1, &f0, u, fi, 0);
+		jmpds_mac(&f1, &f0, v, gi, 0);
+		jmpds_mac(&g1, &g0, q, fi, 0);
+		jmpds_mac(&g1, &g0, r, gi, 0);
+		jmpds_mac(&d1, &d0, u, di, 0);
+		jmpds_mac(&d1, &d0, v, ei, 0);
+		jmpds_mac(&d1, &d0, md, p[i], 0);
+		jmpds_mac(&e1, &e0, q, di, 0);
+		jmpds_mac(&e1, &e0, r, ei, 0);
+		jmpds_mac(&e1, &e0, me, p[i], 0);
+		/* Store the previous digits shifted right by s bits. */
+		if (i > 0) {
+			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
+			g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
+			d[i - 1] = (ds >> s) | (d0 << (RLC_DIG - s));
+			e[i - 1] = (es >> s) | (e0 << (RLC_DIG - s));
+		}
+		/* Keep the current digits and shift the accumulators by a digit. */
+		fs = f0;
+		gs = g0;
+		ds = d0;
+		es = e0;
+		f0 = f1;
+		g0 = g1;
+		d0 = d1;
+		e0 = e1;
+		f1 = -RLC_SIGN(f1);
+		g1 = -RLC_SIGN(g1);
+		d1 = -RLC_SIGN(d1);
+		e1 = -RLC_SIGN(e1);
+	}
+	/* Only the top digits are signed, and p has none. */
+	fi = f[i];
+	gi = g[i];
+	di = d[i];
+	ei = e[i];
+	jmpds_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
+	jmpds_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
+	jmpds_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
+	jmpds_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	jmpds_mac(&d1, &d0, u, di, -RLC_SIGN(di));
+	jmpds_mac(&d1, &d0, v, ei, -RLC_SIGN(ei));
+	jmpds_mac(&e1, &e0, q, di, -RLC_SIGN(di));
+	jmpds_mac(&e1, &e0, r, ei, -RLC_SIGN(ei));
+	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
+	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
+	d[i - 1] = (ds >> s) | (d0 << (RLC_DIG - s));
+	e[i - 1] = (es >> s) | (e0 << (RLC_DIG - s));
+	f[i] = (dis_t)f0 >> s;
+	g[i] = (dis_t)g0 >> s;
+	d[i] = (dis_t)d0 >> s;
+	e[i] = (dis_t)e0 >> s;
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if FP_INV == BASIC || !defined(STRIP)
 
 void fp_inv_basic(fp_t c, const fp_t a) {
 	bn_t e;
@@ -125,18 +250,10 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 	}
 }
 
-#endif
-
-#if FP_INV == BINAR || !defined(STRIP)
-
 void fp_inv_binar(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g1);
-	bn_null(g2);
-	bn_null(p);
+	bn_null_all(u, v, g1, g2, p);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -144,11 +261,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g1);
-		bn_new(g2);
-		bn_new(p);
+		bn_new_all(u, v, g1, g2, p);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
@@ -211,7 +324,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g1, p) != RLC_LT) {
 				bn_sub(g1, g1, p);
 			}
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g1);
 #else
 			dv_copy(c, g1->dp, RLC_FP_DIGS);
@@ -223,7 +336,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g2, p) != RLC_LT) {
 				bn_sub(g2, g2, p);
 			}
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g2);
 #else
 			dv_copy(c, g2->dp, RLC_FP_DIGS);
@@ -234,35 +347,25 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g1);
-		bn_free(g2);
-		bn_free(p);
+		bn_free_all(u, v, g1, g2, p);
 	}
 }
-
-#endif
-
-#if FP_INV == MONTY || !defined(STRIP)
 
 void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_t _a, _p, u, v, x1, x2;
 	const dig_t *p = NULL;
 	dig_t carry;
-	int i, k;
-#if ALLOC == AUTO
+	size_t i;
+	int k;
+#if FP_RDC == FP_MONTY
+#if RLC_ALLOC == RLC_AUTO
 	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
 #else
 	const fp_t conv = (fp_t)fp_prime_get_conv();
 #endif
+#endif
 
-	bn_null(_a);
-	bn_null(_p);
-	bn_null(u);
-	bn_null(v);
-	bn_null(x1);
-	bn_null(x2);
+	bn_null_all(_a, _p, u, v, x1, x2);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -270,12 +373,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(_a);
-		bn_new(_p);
-		bn_new(u);
-		bn_new(v);
-		bn_new(x1);
-		bn_new(x2);
+		bn_new_all(_a, _p, u, v, x1, x2);
 
 		p = fp_prime_get();
 
@@ -284,7 +382,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		bn_set_dig(x1, 1);
 		bn_zero(x2);
 
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		bn_read_raw(_a, a, RLC_FP_DIGS);
 		bn_read_raw(_p, p, RLC_FP_DIGS);
 		bn_mod_monty_conv(u, _a, _p);
@@ -339,15 +437,18 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 			fp_subn_low(x1->dp, x1->dp, fp_prime_get());
 		}
 
-		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
-		if (k <= RLC_FP_DIGS * RLC_DIG) {
+		/* If k < Wt then x1 = x1 * R mod p. */
+		if (k <= (int)(RLC_FP_DIGS * RLC_DIG)) {
 			k = k + RLC_FP_DIGS * RLC_DIG;
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
+			/* Multiply by R^2 * R^{-1}. */
 			fp_mul(x1->dp, x1->dp, conv);
+#else
+			fp_mul(x1->dp, x1->dp, core_get()->one);
 #endif
 		}
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
 		fp_mul(x1->dp, x1->dp, conv);
 #endif
@@ -357,7 +458,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		bn_set_2b(x1, 2 * RLC_FP_DIGS * RLC_DIG - k);
 		fp_mul(c, c, x1->dp);
 
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		/*
 		 * If we do not use Montgomery reduction, convert back.
 		 */
@@ -372,29 +473,14 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(_a);
-		bn_free(_p);
-		bn_free(u);
-		bn_free(v);
-		bn_free(x1);
-		bn_free(x2);
+		bn_free_all(_a, _p, u, v, x1, x2);
 	}
 }
-
-#endif
-
-#if FP_INV == EXGCD || !defined(STRIP)
 
 void fp_inv_exgcd(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p, q, r;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g1);
-	bn_null(g2);
-	bn_null(p);
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(u, v, g1, g2, p, q, r);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -402,13 +488,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g1);
-		bn_new(g2);
-		bn_new(p);
-		bn_new(q);
-		bn_new(r);
+		bn_new_all(u, v, g1, g2, p, q, r);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
@@ -442,19 +522,9 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g1);
-		bn_free(g2);
-		bn_free(p);
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(u, v, g1, g2, p, q, r);
 	}
 }
-
-#endif
-
-#if FP_INV == DIVST || !defined(STRIP)
 
 void fp_inv_divst(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
@@ -471,11 +541,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 	bn_null(_t);
 	dv_null(t);
-	fp_null(f);
-	fp_null(g);
-	fp_null(u);
-	fp_null(v);
-	fp_null(r);
+	fp_null_all(f, g, u, v, r);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -485,16 +551,12 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	RLC_TRY {
 		bn_new(_t);
 		dv_new(t);
-		fp_new(f);
-		fp_new(g);
-		fp_new(u);
-		fp_new(v);
-		fp_new(r);
+		fp_new_all(f, g, u, v, r);
 
 		fp_zero(v);
 		fp_set_dig(r, 1);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
@@ -515,7 +577,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 			fp_negm_low(t, r);
 			dv_swap_sec(f, g, RLC_FP_DIGS, d0);
 			dv_copy_sec(r, t, RLC_FP_DIGS, d0);
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				g[j] = RLC_SEL(g[j], ~g[j], d0);
 			}
 			fp_add1_low(g, g, d0);
@@ -525,7 +587,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 			delta++;
 			g0 = g[0] & 1;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				t[j] = v[j] & (-g0);
 				u[j] = f[j] & (-g0);
 			}
@@ -545,7 +607,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 		fp_add_dig(t, t, 1);
 		fp_hlv(t, t);
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);
 		bn_lsh(_t, _t, 8);
 		bn_add_dig(_t, _t, d & 0xFF);
@@ -556,35 +618,24 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 		fp_mul(c, v, t);
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free(t);
-		fp_free(f);
-		fp_free(g);
-		fp_free(u);
-		fp_free(v);
-		fp_free(r);
+		fp_free_all(f, g, u, v, r);
 	}
 }
 
-#endif
-
-#if FP_INV == JMPDS || !defined(STRIP)
-
 void fp_inv_jmpds(fp_t c, const fp_t a) {
+	const dig_t *p = fp_prime_get();
+	dig_t mask, carry;
 	dis_t m[4];
-	/* Compute number of iterations based on modulus size. */
-	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
-	int loops, i, j = 0, s = RLC_DIG - 2;
-	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
-	dig_t sf, sg;
-	fp_t pre;
-#if WSIZE == 8
-	int d = -1;
+	dv_t f, g, d, e, t;
+	int s;
+#if RLC_WSIZE == 8
+	int zeta = -1;
 #else
-	dis_t d = -1;
+	dis_t zeta = -1;
 #endif
 
 	if (fp_is_zero(a)) {
@@ -592,235 +643,59 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		return;
 	}
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
-	dv_null(p);
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(u0);
-	dv_null(u1);
-	dv_null(v0);
-	dv_null(v1);
-	dv_null(p01);
-	dv_null(p11);
-	fp_null(pre);
+	dv_null_all(f, g, d, e, t);
 
 	RLC_TRY {
-		dv_new(t0);
-		dv_new(f);
-		dv_new(t);
-		dv_new(p);
-		dv_new(g);
-		dv_new(t1);
-		dv_new(u0);
-		dv_new(u1);
-		dv_new(v0);
-		dv_new(v1);
-		dv_new(p01);
-		dv_new(p11);
-		fp_new(pre);
+		dv_new_all(f, g, d, e, t);
 
-		fp_copy(pre, core_get()->inv);
-		dv_zero(t, 2 * RLC_FP_DIGS);
-		dv_zero(p, 2 * RLC_FP_DIGS);
-		dv_zero(u0, 2 * RLC_FP_DIGS);
-		dv_zero(u1, 2 * RLC_FP_DIGS);
-		dv_zero(v0, 2 * RLC_FP_DIGS);
-		dv_zero(v1, 2 * RLC_FP_DIGS);
-		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
-		/* Convert a from Montgomery form. */
-		fp_copy(p, a);
-		fp_rdcn_low(g, p);
-#else
-		fp_copy(g, a);
-#endif
+		/* Start from (f, g) = (p, a) and (d, e) = (0, 1). */
+		dv_copy(f, p, RLC_FP_DIGS);
+		dv_copy(g, a, RLC_FP_DIGS);
+		dv_zero(d, RLC_FP_DIGS + 1);
+		dv_zero(e, RLC_FP_DIGS + 1);
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
-		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
+		e[0] = 1;
 
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, f, RLC_POS, m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_POS, m[1], RLC_FP_DIGS);
-		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-
-		f[RLC_FP_DIGS] = bn_muls_low(f, f, RLC_POS, m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_POS, m[3], RLC_FP_DIGS);
-		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
-
-		/* Update f and g. */
-		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
-
-		/* Update column vector below. */
-		v1[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
-		fp_negm_low(t1, v1);
-		fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
-		u1[0] = RLC_SEL(m[3], -m[3], RLC_SIGN(m[3]));
-		fp_negm_low(t1, u1);
-		fp_copy_sec(u1, t1, RLC_SIGN(m[3]));
-
-		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
-		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
-
-		loops = iterations / s;
-		loops = (iterations % s == 0 ? loops - 1 : loops);
-
-		for (i = 1; i < loops; i++) {
-			d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
-
-			sf = RLC_SIGN(f[RLC_FP_DIGS]);
-			sg = RLC_SIGN(g[RLC_FP_DIGS]);
-			bn_negs_low(u0, f, sf, RLC_FP_DIGS);
-			bn_negs_low(u1, g, sg, RLC_FP_DIGS);
-
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
-			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
-
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
-			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
-
-#ifdef RLC_FP_ROOM
-			p[j] = 0;
-			dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
-
-			/* Update column vector below. */
-			bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v0);
-			dv_copy_sec(v0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[0]));
-
-			bn_mul2_low(v1, p11, m[1], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v1);
-			dv_copy_sec(v1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[1]));
-
-			bn_mul2_low(u0, p01, m[2], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u0);
-			dv_copy_sec(u0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[2]));
-
-			bn_mul2_low(u1, p11, m[3], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u1);
-			dv_copy_sec(u1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[3]));
-
-			j = i % RLC_FP_DIGS;
-			if (j == 0) {
-				fp_addd_low(t, u0, u1);
-				fp_rdc(p11, t);
-				fp_addd_low(t, v0, v1);
-				fp_rdc(p01, t);
-				dv_zero(v0, 2 * RLC_FP_DIGS);
-				dv_zero(v1, 2 * RLC_FP_DIGS);
-			} else {
-				fp_addd_low(p11, u0, u1);
-				fp_addd_low(p01, v0, v1);
-			}
-#else
-			/* Update column vector below. */
-			t[0] = RLC_SEL(m[0], -m[0], RLC_SIGN(m[0]));
-			fp_mul(v0, p01, t);
-			fp_neg(t0, v0);
-			fp_copy_sec(v0, t0, RLC_SIGN(m[0]));
-
-			t[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
-			fp_mul(v1, p11, t);
-			fp_neg(t1, v1);
-			fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
-
-			t[0] = RLC_SEL(m[2], -m[2], RLC_SIGN(m[2]));
-			fp_mul(u0, p01, t);
-			fp_neg(t0, u0);
-			fp_copy_sec(u0, t0, RLC_SIGN(m[2]));
-
-			t[0] = RLC_SEL(m[3], -m[3], RLC_SIGN(m[3]));
-			fp_mul(u1, p11, t);
-			fp_neg(t1, u1);
-			fp_copy_sec(u1, t1, RLC_SIGN(m[3]));
-
-			fp_add(p11, u0, u1);
-			fp_add(p01, v0, v1);
-#endif
+		/* The number of steps only depends on the prime size. */
+		for (int i = 0; i < JMPDS_ITERATIONS; i += s) {
+			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERATIONS - i);
+			zeta = jmpds_steps(m, zeta, f[0], g[0], s);
+			jmpds_apply(f, g, d, e, m, s);
 		}
 
-		s = iterations - loops * s;
-		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
-
-		sf = RLC_SIGN(f[RLC_FP_DIGS]);
-		sg = RLC_SIGN(g[RLC_FP_DIGS]);
-		bn_negs_low(u0, f, sf, RLC_FP_DIGS);
-		bn_negs_low(u1, g, sg, RLC_FP_DIGS);
-
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
-		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
-
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
-		bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
-
-#ifdef RLC_FP_ROOM
-		p[j] = 0;
-		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
-
-		/* Update column vector below. */
-		bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v0);
-		dv_copy_sec(v0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[0]));
-
-		bn_mul2_low(v1, p11, m[1], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v1);
-		dv_copy_sec(v1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[1]));
-
-		fp_addd_low(t, v0, v1);
-		fp_rdc(p01, t);
+		/* Now f = 1 or -1, so 1/a = d * f; bring it from (-2p, p) to [0, p). */
+		mask = -RLC_SIGN(d[RLC_FP_DIGS]);
+		for (size_t j = 0; j < RLC_FP_DIGS; j++) {
+			t[j] = p[j] & mask;
+		}
+		d[RLC_FP_DIGS] += bn_addn_low(d, d, t, RLC_FP_DIGS);
+		mask = -RLC_SIGN(f[RLC_FP_DIGS]);
+		carry = mask & 1;
+		for (size_t j = 0; j <= RLC_FP_DIGS; j++) {
+			d[j] = (d[j] ^ mask) + carry;
+			carry = (d[j] < carry);
+		}
+		mask = -RLC_SIGN(d[RLC_FP_DIGS]);
+		for (size_t j = 0; j < RLC_FP_DIGS; j++) {
+			t[j] = p[j] & mask;
+		}
+		bn_addn_low(d, d, t, RLC_FP_DIGS);
+#if FP_RDC == FP_MONTY
+		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
+		fp_mul(c, d, core_get()->inv);
 #else
-		(void)j;
-
-		t[0] = RLC_SEL(m[0], -m[0], RLC_SIGN(m[0]));
-		fp_mul(v0, p01, t);
-		fp_neg(t0, v0);
-		fp_copy_sec(v0, t0, RLC_SIGN(m[0]));
-
-		t[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
-		fp_mul(v1, p11, t);
-		fp_neg(t1, v1);
-		fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
-
-		fp_add(p01, v0, v1);
+		fp_copy(c, d);
 #endif
-		/* Negate based on sign of f at the end. */
-		fp_negm_low(t, p01);
-		dv_copy_sec(p01, t, RLC_FP_DIGS, f[RLC_FP_DIGS] >> (RLC_DIG - 1));
-		/* Multiply by (precomp * R^j) % p, one for each iteration of the loop,
-		 * one for the constant, one more to be removed by reduction. */
-		fp_mul(c, p01, pre);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
-		dv_free(f);
-		dv_free(t);
-		dv_free(p);
-		dv_free(g);
-		dv_free(t1);
-		dv_free(u0);
-		dv_free(u1);
-		dv_free(v0);
-		dv_free(v1);
-		dv_free(p01);
-		dv_free(p11);
-		fp_free(pre);
+		dv_free_all(f, g, d, e, t);
 	}
 }
 
-#endif
-
-#if FP_INV == LOWER || !defined(STRIP)
+#if FP_INV == FP_LOWER
 
 void fp_inv_lower(fp_t c, const fp_t a) {
 	if (fp_is_zero(a)) {
@@ -835,16 +710,25 @@ void fp_inv_lower(fp_t c, const fp_t a) {
 
 void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	int i;
-	fp_t u, *t = RLC_ALLOCA(fp_t, n);
+	fp_t u, *t;
+
+	if (n <= 0) {
+		return;
+	}
+
+	t = RLC_ALLOCA(fp_t, n);
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
 	fp_null(u);
+	for (i = 0; i < n; i++) {
+		fp_null(t[i]);
+	}
 
 	RLC_TRY {
-		if (t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < n; i++) {
-			fp_null(t[i]);
 			fp_new(t[i]);
 		}
 		fp_new(u);

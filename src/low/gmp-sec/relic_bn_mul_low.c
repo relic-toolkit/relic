@@ -31,6 +31,7 @@
  */
 
 #include <gmp.h>
+#include <stdlib.h>
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
@@ -42,19 +43,30 @@
 /*============================================================================*/
 
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	dig_t u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
+	dig_t r, u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
 	mpn_sec_mul((mp_ptr)u, (mp_srcptr)a, size, (mp_srcptr)&digit, 1, (mp_ptr)t);
-	return u[size] + mpn_add_n((mp_ptr)c, (mp_srcptr)c, (mp_srcptr)u, size);
+	r = u[size] + mpn_add_n((mp_ptr)c, (mp_srcptr)c, (mp_srcptr)u, size);
+	RLC_FREE(t);
+	return r;
+}
+
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	dig_t r, u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
+	mpn_sec_mul((mp_ptr)u, (mp_srcptr)a, size, (mp_srcptr)&digit, 1, (mp_ptr)t);
+	r = u[size] + mpn_sub_n((mp_ptr)c, (mp_srcptr)c, (mp_srcptr)u, size);
+	RLC_FREE(t);
+	return r;
 }
 
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
 	mpn_sec_mul((mp_ptr)u, (mp_srcptr)a, size, (mp_srcptr)&digit, 1, (mp_ptr)t);
 	mpn_copyd((mp_ptr)c, (mp_srcptr)u, size);
+	RLC_FREE(t);
 	return u[size];
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size) {
+dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size) {
 	dig_t carry, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;

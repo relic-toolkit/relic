@@ -166,9 +166,14 @@ if (WITH_MPC)
 	list(APPEND RELIC_SRCS ${MPC_SRCS})
 endif()
 
+# A backend may take its own sources from elsewhere, such as generated code.
+if (NOT ARITH_SOURCE_DIR)
+	set(ARITH_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}")
+endif()
+
 foreach(SRC ${LOW_SRCS})
 	get_filename_component(SRC ${SRC} NAME_WE)
-	set(FILE "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/${SRC}")
+	set(FILE "${ARITH_SOURCE_DIR}/${SRC}")
 	if (EXISTS "${FILE}.c")
 		list(APPEND ARITH_SRCS "${FILE}.c")
 	endif(EXISTS "${FILE}.c")
@@ -189,56 +194,82 @@ list(APPEND RELIC_SRCS ${ARITH_SRCS})
 list(APPEND RELIC_SRCS ${ARITH_ASMS})
 set_source_files_properties(${ARITH_ASMS} PROPERTIES LANGUAGE C COMPILE_FLAGS "-DASM -x assembler-with-cpp")
 
-add_custom_target(arith_objs DEPENDS ${ARITH_OBJS})
-
 macro(LINK_LIBS LIBRARY)
-	if(OPSYS STREQUAL LINUX)
+	if(OPSYS STREQUAL "LINUX")
 		target_link_libraries(${LIBRARY} rt)
 	endif()
-	if (OPSYS STREQUAL MACOSX AND CMAKE_C_COMPILER_ID MATCHES "Clang")
-		if(MULTI STREQUAL PTHREAD)
+	if (OPSYS STREQUAL "MACOSX" AND CMAKE_C_COMPILER_ID MATCHES "Clang")
+		if(MULTI STREQUAL "PTHREAD")
 				target_link_libraries(${LIBRARY} pthread)
-		elseif(MULTI STREQUAL OPENMP)
-				target_link_libraries(${LIBRARY} omp)
+		elseif(MULTI STREQUAL "OPENMP")
+				target_link_libraries(${LIBRARY} ${OMP_LIBRARY})
 		endif()
 	endif()
 endmacro()
 
-function(AMALGAMATE output inputFiles)
-	file(WRITE "${output}" "// This file is an automatic amalgamation of all relic source files.\n" )
-	FOREACH(file ${inputFiles})
-		file(APPEND "${output}" "#include \"${file}\"\n")
-	ENDFOREACH()
+# Writes a file that includes every C source, in the build tree so that build
+# directories do not overwrite each other, and only when its contents change,
+# so that running CMake again does not rebuild everything.
+function(AMALGAMATE output)
+	set(TEXT "// An automatic amalgamation of all relic source files.\n")
+	foreach(file ${ARGN})
+		get_filename_component(file "${file}" ABSOLUTE
+			BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+		string(APPEND TEXT "#include \"${file}\"\n")
+	endforeach()
+	file(WRITE "${output}.tmp" "${TEXT}")
+	configure_file("${output}.tmp" "${output}" COPYONLY)
 endfunction()
 
 if(AMALG)
-	AMALGAMATE("relic-all.c" "${RELIC_SRCS}${ARITH_OBJS}")
+	# Assembly sources cannot be included in a C file, so they stay apart.
+	set(AMALG_SRCS ${RELIC_SRCS})
+	if(ARITH_ASMS)
+		list(REMOVE_ITEM AMALG_SRCS ${ARITH_ASMS})
+	endif()
+	AMALGAMATE("${CMAKE_CURRENT_BINARY_DIR}/relic-all.c" ${AMALG_SRCS})
+	set(LIB_SRCS "${CMAKE_CURRENT_BINARY_DIR}/relic-all.c" ${ARITH_ASMS})
+else()
+	set(LIB_SRCS ${RELIC_SRCS})
 endif(AMALG)
 
-if (SHLIB)
-	if (AMALG)
-		add_library(${RELIC} SHARED "relic-all.c")
-	else()
-		add_library(${RELIC} SHARED ${RELIC_SRCS} ${ARITH_OBJS})
+# Building both libraries compiles the sources only once, as position-
+# independent code, which costs the static library nothing measurable. GCC
+# then needs -fno-semantic-interposition to keep inlining exported functions.
+if (SHLIB AND STLIB)
+	add_library(${RELIC}_objs OBJECT ${LIB_SRCS})
+	set_target_properties(${RELIC}_objs PROPERTIES POSITION_INDEPENDENT_CODE ON)
+	if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+		target_compile_options(${RELIC}_objs PRIVATE -fno-semantic-interposition)
 	endif()
+	set(LIB_SRCS $<TARGET_OBJECTS:${RELIC}_objs>)
+endif()
+
+if (SHLIB)
+	add_library(${RELIC} SHARED ${LIB_SRCS})
 	add_library(${RELIC}::${RELIC} ALIAS ${RELIC})
-	add_dependencies(${RELIC} arith_objs)
 	target_link_libraries(${RELIC} ${ARITH_LIBS})
 	link_libs(${RELIC})
-	target_include_directories(${RELIC} PUBLIC ${INCLUDE})
-	install(TARGETS ${RELIC} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+	target_include_directories(${RELIC} PUBLIC
+		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+		"$<INSTALL_INTERFACE:include/${RELIC}>"
+		PRIVATE "${PROJECT_SOURCE_DIR}/include/low"
+		"${PROJECT_SOURCE_DIR}/src/tmpl")
+	install(TARGETS ${RELIC} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin)
 endif()
 
 if (STLIB)
-	if ()
-		add_library(${RELIC_S} STATIC "relic-all.c")
-	else()
-		add_library(${RELIC_S} STATIC ${RELIC_SRCS} ${ARITH_OBJS})
-	endif()
+	add_library(${RELIC_S} STATIC ${LIB_SRCS})
 	add_library(${RELIC_S}::${RELIC_S} ALIAS ${RELIC_S})
-	add_dependencies(${RELIC_S} arith_objs)
 	target_link_libraries(${RELIC_S} ${ARITH_LIBS})
 	link_libs(${RELIC_S})
-	target_include_directories(${RELIC_S} PUBLIC ${INCLUDE})
+	target_include_directories(${RELIC_S} PUBLIC
+		"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+		"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+		"$<INSTALL_INTERFACE:include/${RELIC}>"
+		PRIVATE "${PROJECT_SOURCE_DIR}/include/low"
+		"${PROJECT_SOURCE_DIR}/src/tmpl")
 	install(TARGETS ${RELIC_S} ARCHIVE DESTINATION lib)
 endif(STLIB)

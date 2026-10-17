@@ -1,6 +1,6 @@
 message(STATUS "Bilinear pairings arithmetic configuration (PP module):\n")
 
-message("   ** Available bilinear pairing methods (default = BASIC;OATEP):\n")
+message("   ** Available bilinear pairing methods (default = LAZYR;OATEP):\n")
 
 message("      Extension field arithmetic:")
 message("      PP_METHD=BASIC    Basic extension field arithmetic.")
@@ -16,9 +16,9 @@ if (NOT PP_METHD)
 	set(PP_METHD "LAZYR;OATEP")
 endif(NOT PP_METHD)
 list(LENGTH PP_METHD PP_LEN)
-if (PP_LEN LESS 1)
-	message(FATAL_ERROR "Incomplete PP_METHD specification: ${PP_METHD}")
-endif(PP_LEN LESS 1)
+if (NOT PP_LEN EQUAL 2)
+	message(FATAL_ERROR "PP_METHD needs 2 entries: ${PP_METHD}")
+endif()
 
 list(GET PP_METHD 0 PP_EXT)
 list(GET PP_METHD 1 PP_MAP)

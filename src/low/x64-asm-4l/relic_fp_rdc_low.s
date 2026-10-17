@@ -34,22 +34,13 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
  */
-
 cdecl(fp_rdcn_low):
-	push %r12
-	push %r13
-	push %r14
-
-	FP_RDCN_LOW %rdi, %rsi
-
-	pop %r14
-	pop %r13
-	pop %r12
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %rax, %rcx, %rdx, %rsi, p0(%rip)
 	ret

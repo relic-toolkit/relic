@@ -38,30 +38,43 @@
 /*============================================================================*/
 
 void bn_mod_2b(bn_t c, const bn_t a, int b) {
-	int i, first, d;
+	int first, d, e = b;
+	size_t i;
+	bn_t t;
 
 	if (b <= 0) {
 		bn_zero(c);
 		return;
 	}
 
-	if (b >= (int)(a->used * RLC_DIG)) {
-		bn_copy(c, a);
-		return;
-	}
-
 	bn_copy(c, a);
 
-	RLC_RIP(b, d, b);
+	if (b < (int)(a->used * RLC_DIG)) {
+		RLC_RIP(b, d, b);
 
-	first = (d) + (b == 0 ? 0 : 1);
-	for (i = first; i < c->used; i++) {
-		c->dp[i] = 0;
+		first = (d) + (b == 0 ? 0 : 1);
+		for (i = first; i < c->used; i++) {
+			c->dp[i] = 0;
+		}
+
+		c->dp[d] &= RLC_MASK(b);
+
+		bn_trim(c);
 	}
 
-	c->dp[d] &= RLC_MASK(b);
-
-	bn_trim(c);
+	if (bn_sign(c) == RLC_NEG) {
+		/* The magnitude was reduced, so add 2^b to make it nonnegative. */
+		bn_null(t);
+		RLC_TRY {
+			bn_new(t);
+			bn_set_2b(t, e);
+			bn_add(c, c, t);
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			bn_free(t);
+		}
+	}
 }
 
 void bn_mod_dig(dig_t *c, const bn_t a, dig_t b) {
@@ -71,8 +84,6 @@ void bn_mod_dig(dig_t *c, const bn_t a, dig_t b) {
 void bn_mod_basic(bn_t c, const bn_t a, const bn_t m) {
 	bn_div_rem(NULL, c, a, m);
 }
-
-#if BN_MOD == BARRT || !defined(STRIP)
 
 void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
@@ -86,10 +97,9 @@ void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 
 void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_t q, t;
-	int mu, neg;
+	int neg;
 
-	bn_null(q);
-	bn_null(t);
+	bn_null_all(q, t);
 
 	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
 		RLC_THROW(ERR_NO_VALID);
@@ -98,6 +108,9 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 	if (bn_cmp_abs(a, m) == RLC_LT) {
 		bn_copy(c, a);
+		if (bn_sign(c) == RLC_NEG) {
+			bn_add(c, c, m);
+		}
 		return;
 	}
 
@@ -107,8 +120,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 
 	RLC_TRY {
-		bn_new(q);
-		bn_new(t);
+		bn_new_all(q, t);
 		bn_zero(t);
 
 		neg = (bn_sign(a) == RLC_NEG);
@@ -121,12 +133,10 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		} else {
 			bn_grow(t, q->used + u->used);
 			t->used = q->used + u->used;
-			mu = u->used - q->used;
 			if (q->used > u->used) {
-				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, mu, t->used);
+				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, 0, t->used);
 			} else {
-				mu = (mu > u->used - q->used ? mu - (u->used - q->used) : 0);
-				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, mu, t->used);
+				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, 0, t->used);
 			}
 			bn_trim(t);
 		}
@@ -156,7 +166,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		}
 
 		bn_copy(c, t);
-		if (neg) {
+		if (neg && !bn_is_zero(c)) {
 			bn_sub(c, m, c);
 		}
 	}
@@ -164,14 +174,9 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		bn_free(t);
+		bn_free_all(q, t);
 	}
 }
-
-#endif /* BN_MOD == BARRT || !defined(STRIP) */
-
-#if BN_MOD == MONTY || (defined(WITH_FP) && FP_RDC == MONTY) || !defined(STRIP)
 
 void bn_mod_pre_monty(bn_t u, const bn_t m) {
 	dig_t x, b = m->dp[0];
@@ -182,14 +187,14 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 	}
 
 	x = (((b + 2) & 4) << 1) + b;				/* here x*a==1 mod 2**4 */
-	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**8 */
-#if WSIZE > 8
-	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**16 */
+	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**8 */
+#if RLC_WSIZE > 8
+	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**16 */
 #endif
-#if WSIZE > 16
-	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**32 */
+#if RLC_WSIZE > 16
+	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**32 */
 #endif
-#if WSIZE > 32
+#if RLC_WSIZE > 32
 	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**64 */
 #endif
 	/* u = -1/m0 (mod 2^RLC_DIG) */
@@ -228,10 +233,8 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m) {
 	}
 }
 
-#if BN_MUL == BASIC || !defined(STRIP)
-
 void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	int digits, i;
+	size_t digits, i;
 	dig_t r, u0, *tmp;
 	bn_t t;
 
@@ -246,13 +249,21 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	RLC_TRY {
 		bn_new_size(t, digits);
 		bn_zero(t);
-		bn_copy(t, a);
+		if (bn_sign(a) == RLC_NEG || a->used > digits || (a->used == digits &&
+				dv_cmp(a->dp + m->used, m->dp, m->used) != RLC_LT)) {
+			/* The reduction needs 0 <= a < m * R, so reduce modulo m. */
+			bn_mod_basic(t, a, m);
+			bn_grow(t, digits);
+			dv_zero(t->dp + t->used, digits - t->used);
+		} else {
+			bn_copy(t, a);
+		}
 
 		u0 = u->dp[0];
 		tmp = t->dp;
 
 		for (i = 0; i < m->used; i++, tmp++) {
-			r = (dig_t)(*tmp * u0);
+			r = RLC_MUL_LOW(*tmp, u0);
 			*tmp = bn_mula_low(tmp, m->dp, r, m->used);
 		}
 		if (bn_addn_low(t->dp, t->dp, tmp, m->used)) {
@@ -275,28 +286,36 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 }
 
-#endif /* BN_MUL == BASIC || !defined(STRIP) */
-
-#if BN_MUL == COMBA || !defined(STRIP)
-
 void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	int digits;
-	bn_t t;
+	const bn_st *in = a;
+	bn_t s, t;
 
 	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
-	bn_null(t);
+	bn_null_all(s, t);
 	digits = 2 * m->used;
 
 	RLC_TRY {
 		bn_new_size(t, digits);
-		bn_zero(t);
+		if (bn_sign(a) == RLC_NEG || a->used > (size_t)digits ||
+				(a->used == (size_t)digits &&
+				dv_cmp(a->dp + m->used, m->dp, m->used) != RLC_LT)) {
+			/* The reduction needs 0 <= a < m * R, so reduce modulo m. */
+			bn_new(s);
+			bn_mod_basic(s, a, m);
+			in = s;
+		}
+		if (in->used < (size_t)digits) {
+			dv_zero(t->dp + in->used, digits - in->used);
+		}
 
-		bn_modn_low(t->dp, a->dp, a->used, m->dp, m->used, u->dp[0]);
+		bn_modn_low(t->dp, in->dp, in->used, m->dp, m->used, u->dp[0]);
 		t->used = m->used;
+		t->sign = RLC_POS;
 
 		bn_trim(t);
 		if (bn_cmp_abs(t, m) != RLC_LT) {
@@ -308,79 +327,6 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
+		bn_free_all(s, t);
 	}
 }
-
-#endif /* BN_MUL == COMBA || !defined(STRIP) */
-
-#endif /* BN_MOD == MONTY || (WITH_FP && FP_RDC == MONTY) || !defined(STRIP) */
-
-#if BN_MOD == PMERS || !defined(STRIP)
-
-void bn_mod_pre_pmers(bn_t u, const bn_t m) {
-	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	bn_set_2b(u, bn_bits(m));
-	bn_sub(u, u, m);
-}
-
-void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	bn_t q, t;
-	int neg = 0, bits = bn_bits(m);
-
-	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	bn_null(q);
-	bn_null(t);
-
-	RLC_TRY {
-		/* Implement algorithm 10.25 from HEHC. */
-
-		bn_new(q);
-		bn_new(t);
-
-		bn_copy(c, a);
-		if (bn_sign(c) == RLC_NEG) {
-			neg = 1;
-			bn_sub(c, m, c);
-		}
-
-		bn_rsh(q, c, bits);
-		bn_mod_2b(c, c, bits);
-
-		while (bits > 0 && !bn_is_zero(q)) {
-			if (u -> used == 1) {
-				bn_mul_dig(t, q, u->dp[0]);
-			} else {
-				bn_mul(t, q, u);
-			}
-			bn_rsh(q, t, bits);
-			bn_mod_2b(t, t, bits);
-
-			bn_add(c, c, t);
-		}
-		while (bits > 0 && bn_cmp_abs(c, m) != RLC_LT) {
-			bn_sub(c, c, m);
-		}
-
-		if (neg) {
-			bn_sub(c, m, c);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(t);
-		bn_free(q);
-	}
-}
-
-#endif /* BN_MOD == PMERS || !defined(STRIP) */

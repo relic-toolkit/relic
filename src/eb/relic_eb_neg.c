@@ -38,8 +38,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 void eb_neg_basic(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
 		eb_set_infty(r);
@@ -53,12 +51,8 @@ void eb_neg_basic(eb_t r, const eb_t p) {
 
 	fb_add(r->y, p->x, p->y);
 
-	r->coord = BASIC;
+	r->coord = EC_AFFIN;
 }
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
 
 void eb_neg_projc(eb_t r, const eb_t p) {
 	fb_t t;
@@ -70,14 +64,14 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 		return;
 	}
 
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		if (r != p) {
 			fb_copy(r->x, p->x);
 			fb_copy(r->z, p->z);
 		}
 
 		fb_add(r->y, p->x, p->y);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 		return;
 	}
 
@@ -91,7 +85,7 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 			fb_copy(r->x, p->x);
 		}
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -100,5 +94,3 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 		fb_free(t);
 	}
 }
-
-#endif

@@ -58,7 +58,7 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	return mpn_sub_n(c, a, b, size);
 }
 
-dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
+dig_t bn_sneg_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
 	mpn_com(t, a, size);
 	carry = bn_add1_low(t, t, sa, size);

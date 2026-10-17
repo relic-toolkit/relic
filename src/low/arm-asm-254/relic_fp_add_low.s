@@ -28,7 +28,6 @@
 #define RLC_GT	1
 
 .syntax unified
-.arch armv7e-m
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -37,11 +36,17 @@
 .text
 
 .global fp_addn_low
+.type fp_addn_low, %function
 .global fp_subn_low
+.type fp_subn_low, %function
 .global fp_addm_low
+.type fp_addm_low, %function
 .global fp_addd_low
+.type fp_addd_low, %function
 .global fp_subd_low
+.type fp_subd_low, %function
 .global fp_subm_low
+.type fp_subm_low, %function
 
 /********************************************************** FP_ADDN_LOW ***********************************************************************/
 
@@ -100,7 +105,7 @@ fp_addn_low:
 	ADC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
-	MOV pc, lr		/* return carry*/
+	BX lr		/* return carry*/
 
 /********************************************************** FP_SUBN_LOW ***********************************************************************/
 fp_subn_low:
@@ -158,7 +163,7 @@ fp_subn_low:
 	SBC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
-	MOV pc, lr		/* return carry*/
+	BX lr		/* return carry*/
 
 /********************************************************** FP_ADDM_LOW ***********************************************************************/
 
@@ -182,7 +187,7 @@ fp_addd_low:
 	ADC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
-	MOV pc, lr		/* return carry*/
+	BX lr		/* return carry*/
 
 fp_subd_low:
 	STMDB sp!, {r4}
@@ -204,142 +209,8 @@ fp_subd_low:
 	SBCS r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
-	MOV pc, lr		/* return carry*/
+	BX lr		/* return carry*/
 
-fp_addm_low2:
-	STMDB sp!, {r4-r12}
-
-/* ADD_STEP: */
-
-/* Manter os resultados em registradores {r5-r12} */
-
-	/**** Primeira iteracao ****/
-	LDR r3, [r1, #0]	/* r3 = *a */
-	LDR r4, [r2, #0]	/* r4 = *b */
-	ADDS r5, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Segunda iteracao ****/
-	LDR r3, [r1, #4]	/* r3 = *a */
-	LDR r4, [r2, #4]	/* r4 = *b */
-	ADCS r6, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Terceira iteracao ****/
-	LDR r3, [r1, #8]	/* r3 = *a */
-	LDR r4, [r2, #8]	/* r4 = *b */
-	ADCS r7, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Quarta iteracao ****/
-	LDR r3, [r1, #12]	/* r3 = *a */
-	LDR r4, [r2, #12]	/* r4 = *b */
-	ADCS r8, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Quinta iteracao ****/
-	LDR r3, [r1, #16]	/* r3 = *a */
-	LDR r4, [r2, #16]	/* r4 = *b */
-	ADCS r9, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Sexta iteracao ****/
-	LDR r3, [r1, #20]	/* r3 = *a */
-	LDR r4, [r2, #20]	/* r4 = *b */
-	ADCS r10, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Setima iteracao ****/
-	LDR r3, [r1, #24]	/* r3 = *a */
-	LDR r4, [r2, #24]	/* r4 = *b */
-	ADCS r11, r3, r4		/* r3 = (*a) + (*b) */
-
-	/**** Oitava iteracao ****/
-	LDR r3, [r1, #28]	/* r3 = *a */
-	LDR r4, [r2, #28]	/* r4 = *b */
-	ADC r12, r3, r4		/* r3 = (*a) + (*b) */
-
-/* SUB_STEP: */
-	/**** Primeira iteracao ****/
-	SUBS r5, r5, #0x13
-
-	/**** Segunda iteracao ****/
-	SBCS r6, r6, #0xA7000000
-
-	/**** Terceira iteracao ****/
-	SBCS r7, r7, #0x13
-
-	/**** Quarta iteracao ****/
-	MOVW r3, #0x6121
-	SBCS r8, r8, r3, LSL#16
-
-	/**** Quinta iteracao ****/
-	SBCS r9, r9, #0x8
-
-	/**** Sexta iteracao ****/
-	MOVW r3, #0x4D80
-	MOVT r3, #0xBA34
-	SBCS r10, r10, r3
-
-	/**** Setima iteracao ****/
-	MOVW r3, #0x0001
-	MOVT r3, #0x4000
-	SBCS r11, r11, r3
-
-	/**** Oitava iteracao ****/
-	MOVW r3, #0x6482
-	MOVT r3, #0x2523
-	SBCS r12, r12, r3
-
-	MOV r3, #0		/* r3 = carry = 0 */
-	SBCS r3, r3, r3 /* Armazenando o resultado do carry no r3*/
-
-/* Se houver carry, entao o resultado ficou menor, deve-se adicionar o primo 'p' novamente */
-	/**** Primeira iteracao ****/
-	AND  r4, r3, #0x13
-	ADDS r5, r5, r4
-
-	/**** Segunda iteracao ****/
-	AND  r4, r3, #0xA7000000
-	ADCS r6, r6, r4
-
-	/**** Terceira iteracao ****/
-	AND  r4, r3, #0x13
-	ADCS r7, r7, r4
-
-	/**** Quarta iteracao ****/
-	MOVW r4, #0x6121
-	AND  r4, r4, r3
-	ADCS r8, r8, r4, LSL#16
-
-	/**** Quinta iteracao ****/
-	AND  r4, r3, #0x8
-	ADCS r9, r9, r4
-
-	/**** Sexta iteracao ****/
-	MOVW r4, #0x4D80
-	MOVT r4, #0xBA34
-	AND  r4, r4, r3
-	ADCS r10, r10, r4
-
-	/**** Setima iteracao ****/
-	MOVW r4, #0x0001
-	MOVT r4, #0x4000
-	AND  r4, r4, r3
-	ADCS r11, r11, r4
-
-	/**** Oitava iteracao ****/
-	MOVW r4, #0x6482
-	MOVT r4, #0x2523
-	AND  r4, r4, r3
-	ADCS r12, r12, r4
-
-/* Senao, escreve o  resultado em memoria */
-	STR r5, [r0, #0]	/* (*c) = r5*/
-	STR r6, [r0, #4]	/* (*c) = r6*/
-	STR r7, [r0, #8]	/* (*c) = r7*/
-	STR r8, [r0, #12]	/* (*c) = r8*/
-	STR r9, [r0, #16]	/* (*c) = r9*/
-	STR r10, [r0, #20]	/* (*c) = r10*/
-	STR r11, [r0, #24]	/* (*c) = r11*/
-	STR r12, [r0, #28]	/* (*c) = r12*/
-
-	LDMIA sp!, {r4-r12}
-	MOV pc, lr		/* return r*/
 
 fp_addm_low:
 	STMDB sp!, {r4-r12}
@@ -482,7 +353,7 @@ GREATER_THAN_OR_EQUAL:
 	STR r12, [r0, #28]
 
 	LDMIA sp!, {r4-r12}
-	MOV pc, lr
+	BX lr
 
 LESS_THAN:
 
@@ -498,7 +369,7 @@ LESS_THAN:
 	STR r12, [r0, #28]	/* (*c) = r12*/
 
 	LDMIA sp!, {r4-r12}
-	MOV pc, lr		/* return r*/
+	BX lr		/* return r*/
 
 /********************************************************** FP_SUBM_LOW ***********************************************************************/
 /*
@@ -519,101 +390,6 @@ void fp_subm_low(dig_t *c, dig_t *a, dig_t *b) {
 }
 */
 
-fp_subm_low2:
-	STMDB sp!, {r4-r12}
-
-/* SUB_STEP: */
-	/**** Primeira iteracao ****/
-	LDR r3, [r1, #0]	/* r3 = *a */
-	LDR r4, [r2, #0]	/* r4 = *b */
-	SUBS r5, r3, r4
-
-	/**** Segunda iteracao ****/
-	LDR r3, [r1, #4]	/* r3 = *a */
-	LDR r4, [r2, #4]	/* r4 = *b */
-	SBCS r6, r3, r4
-
-	/**** Terceira iteracao ****/
-	LDR r3, [r1, #8]	/* r3 = *a */
-	LDR r4, [r2, #8]	/* r4 = *b */
-	SBCS r7, r3, r4
-
-	/**** Quarta iteracao ****/
-	LDR r3, [r1, #12]	/* r3 = *a */
-	LDR r4, [r2, #12]	/* r4 = *b */
-	SBCS r8, r3, r4
-
-	/**** Quinta iteracao ****/
-	LDR r3, [r1, #16]	/* r3 = *a */
-	LDR r4, [r2, #16]	/* r4 = *b */
-	SBCS r9, r3, r4
-
-	/**** Sexta iteracao ****/
-	LDR r3, [r1, #20]	/* r3 = *a */
-	LDR r4, [r2, #20]	/* r4 = *b */
-	SBCS r10, r3, r4
-
-	/**** Setima iteracao ****/
-	LDR r3, [r1, #24]	/* r3 = *a */
-	LDR r4, [r2, #24]	/* r4 = *b */
-	SBCS r11, r3, r4
-
-	/**** Oitava iteracao ****/
-	LDR r3, [r1, #28]	/* r3 = *a */
-	LDR r4, [r2, #28]	/* r4 = *b */
-	SBCS r12, r3, r4
-
-	MOV r3, #0		/* r3 = carry = 0 */
-	SBCS r3, r3, r3 	/* Armazenando o resultado do carry no r3*/
-
-	CMP r3, #0   		/* Verifica se o carry = 0 */
-
-/* Se houver carry adicionar o primo 'p' e escrever em memória */
-
-	/**** Primeira iteracao ****/
-	ADDNES r5, r5, #0x13
-
-	/**** Segunda iteracao ****/
-	ADCNES r6, r6, #0xA7000000
-
-	/**** Terceira iteracao ****/
-	ADCNES r7, r7, #0x13
-
-	/**** Quarta iteracao ****/
-	MOVW r3, #0x6121
-	ADCNES r8, r8, r3, LSL#16
-
-	/**** Quinta iteracao ****/
-	ADCNES r9, r9, #0x8
-
-	/**** Sexta iteracao ****/
-	MOVW r3, #0x4D80
-	MOVT r3, #0xBA34
-	ADCNES r10, r10, r3
-
-	/**** Setima iteracao ****/
-	MOVW r3, #0x0001
-	MOVT r3, #0x4000
-	ADCNES r11, r11, r3
-
-	/**** Oitava iteracao ****/
-	MOVW r3, #0x6482
-	MOVT r3, #0x2523
-	ADCNES r12, r12, r3
-
-/* Se nao houver carry escrever em memória */
-
-	STR r5, [r0, #0]	/* (*c) = r5*/
-	STR r6, [r0, #4]	/* (*c) = r6*/
-	STR r7, [r0, #8]	/* (*c) = r7*/
-	STR r8, [r0, #12]	/* (*c) = r8*/
-	STR r9, [r0, #16]	/* (*c) = r9*/
-	STR r10, [r0, #20]	/* (*c) = r10*/
-	STR r11, [r0, #24]	/* (*c) = r11*/
-	STR r12, [r0, #28]	/* (*c) = r12*/
-
-	LDMIA sp!, {r4-r12}
-	MOV pc, lr
 
 fp_subm_low:
 	STMDB sp!, {r4-r12}
@@ -680,7 +456,7 @@ IS_ZERO:
 	STR r12, [r0, #28]	/* (*c) = r12*/
 
 	LDMIA sp!, {r4-r12}
-	MOV pc, lr
+	BX lr
 
 IS_ONE:
 
@@ -726,4 +502,4 @@ IS_ONE:
 	STR r12, [r0, #28]
 
 	LDMIA sp!, {r4-r12}
-	MOV pc, lr
+	BX lr

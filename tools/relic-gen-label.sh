@@ -37,7 +37,7 @@ cat << PREAMBLE
 
 #include "relic_conf.h"
 
-#define RLC_PREFIX(F)			_RLC_PREFIX(LABEL, F)
+#define RLC_PREFIX(F)			_RLC_PREFIX(RLC_LABEL, F)
 #define _RLC_PREFIX(A, B)		__RLC_PREFIX(A, B)
 #define __RLC_PREFIX(A, B)		A ## _ ## B
 
@@ -45,36 +45,40 @@ cat << PREAMBLE
 /* Macro definitions                                                          */
 /*============================================================================*/
 
-#ifdef LABEL
+#ifdef RLC_LABEL
 
 PREAMBLE
 
 REDEF() {
-	cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
-	echo
-	cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
-	echo
+	U=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "relic_$1.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	if [ -n "$U" ]; then
+		printf '%s\n\n%s\n\n' "$U" "$D"
+	fi
 }
 
 REDEF2() {
-	cat "relic_$1.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
-	echo
-	cat "relic_$1.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep '(' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
-	echo
+	U=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_0-9]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "relic_$1.h" | grep -E "(^|[ *])$2_[a-z_0-9]*\(" | grep -v define | grep -v typedef | grep -v "^static" | grep -v '\\' | grep '(' | grep -v '^ \*' | sed 's/\*//' | sed 's/const //' | sed -r 's/[a-z,_,0-9]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	if [ -n "$U" ]; then
+		printf '%s\n\n%s\n\n' "$U" "$D"
+	fi
 }
 
 REDEF_LOW() {
-	cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
-	echo
-	cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
-	echo
+	U=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	if [ -n "$U" ]; then
+		printf '%s\n\n%s\n\n' "$U" "$D"
+	fi
 }
 
 REDEF2_LOW() {
-	cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/'
-	echo
-	cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/'
-	echo
+	U=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	if [ -n "$U" ]; then
+		printf '%s\n\n%s\n\n' "$U" "$D"
+	fi
 }
 
 echo "#undef first_ctx"
@@ -104,7 +108,6 @@ echo "#undef dv_t"
 echo "#define dv_t			RLC_PREFIX(dv_t)"
 echo
 REDEF dv
-REDEF_LOW dv
 
 echo "#undef bn_st"
 echo "#undef bn_t"
@@ -179,6 +182,13 @@ echo "#define ep8_t         RLC_PREFIX(ep8_t)"
 echo
 REDEF2 epx ep8
 
+echo "#undef ep9_st"
+echo "#undef ep9_t"
+echo "#define ep9_st		RLC_PREFIX(ep9_st)"
+echo "#define ep9_t			RLC_PREFIX(ep9_t)"
+echo
+REDEF2 epx ep9
+
 echo "#undef fp2_st"
 echo "#undef fp2_t"
 echo "#undef dv2_t"
@@ -249,6 +259,7 @@ REDEF2 fpx fp6
 REDEF2 fpx fp8
 REDEF2 fpx fp9
 REDEF2 fpx fp12
+REDEF2 fpx fp16
 REDEF2 fpx fp18
 REDEF2 fpx fp24
 REDEF2 fpx fp48
@@ -259,7 +270,14 @@ REDEF2 fbx fb4
 
 REDEF pp
 REDEF pc
+REDEF2 pc g1
+REDEF2 pc g2
+REDEF2 pc gt
 REDEF mpc
+REDEF2 mpc g1
+REDEF2 mpc g2
+REDEF2 mpc gt
+REDEF2 mpc pc
 
 echo "#undef crt_t"
 echo "#undef rsa_t"
@@ -278,6 +296,6 @@ REDEF cp
 
 REDEF md
 
-echo "#endif /* LABEL */"
+echo "#endif /* RLC_LABEL */"
 echo
 echo "#endif /* !RLC_LABEL_H */"

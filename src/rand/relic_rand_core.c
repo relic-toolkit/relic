@@ -40,40 +40,35 @@
 #include "relic_md.h"
 #include "relic_err.h"
 
-#if RAND == UDEV || SEED == UDEV
+#if RLC_RAND == RLC_UDEV || RLC_SEED == RLC_UDEV
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#elif SEED == WCGR
+#elif RLC_SEED == RLC_WCGR
 
 /* Avoid redefinition warning. */
 #undef ERROR
-#undef WSIZE
-#undef DOUBLE
+#undef RLC_WSIZE
 
 #include <windows.h>
 #include <wincrypt.h>
 
-#elif SEED == RDRND
+#elif RLC_SEED == RLC_RDRND
 
 #include <immintrin.h>
 
 #endif
 
+#ifdef RLC_RAND_FORK
+#include <unistd.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
-
-/**
- * The path to the char device that supplies entropy.
- */
-#if SEED == DEV
-#define RLC_RAND_PATH		"/dev/random"
-#else
-#define RLC_RAND_PATH		"/dev/urandom"
-#endif
 
 /** The maximum number of bytes that can be repeated in the output. */
 #define RAND_REP			6
@@ -85,22 +80,17 @@
 void rand_init(void) {
 	uint8_t buf[RLC_RAND_SEED];
 
-#if RAND == UDEV
-	int *fd = (int *)&(core_get()->rand);
+	/* The device generator opens its file when seeded and needs no seed. */
+#if RLC_RAND != RLC_UDEV
 
-	*fd = open(RLC_RAND_PATH, O_RDONLY);
-	if (*fd == -1) {
-		RLC_THROW(ERR_NO_FILE);
-		return;
-	}
-#else
-
-#if !defined(SEED)
+#if RLC_SEED == RLC_NONE
 
 	memset(buf, 0, RLC_RAND_SEED);
 
-#elif SEED == DEV || SEED == UDEV
-	int fd, c, l;
+#elif RLC_SEED == RLC_UDEV
+	int fd;
+	ssize_t c;
+	size_t l;
 
 	fd = open(RLC_RAND_PATH, O_RDONLY);
 	if (fd == -1) {
@@ -108,36 +98,21 @@ void rand_init(void) {
 		return;
 	}
 
-	l = 0;
-	do {
+	for (l = 0; l < RLC_RAND_SEED; l += c) {
 		c = read(fd, buf + l, RLC_RAND_SEED - l);
-		l += c;
-		if (c == -1) {
+		if (c == -1 && errno == EINTR) {
+			c = 0;
+			continue;
+		}
+		/* An error or the end of the file leaves the seed incomplete. */
+		if (c <= 0) {
+			close(fd);
 			RLC_THROW(ERR_NO_READ);
 			return;
 		}
-	} while (l < RLC_RAND_SEED);
-
-	if (fd != -1) {
-		close(fd);
 	}
-#elif SEED == LIBC
-
-#if OPSYS == FREEBSD || OPSYS == NETBSD
-	/* This is better than using a fixed value. */
-	srandomdev();
-	for (int i = 0; i < RLC_RAND_SEED; i++) {
-		buf[i] = (uint8_t)random();
-	}
-#else
-	/* This is horribly insecure, serves only for benchmarking. */
-	srand(1);
-	for (int i = 0; i < RLC_RAND_SEED; i++) {
-		buf[i] = (uint8_t)rand();
-	}
-#endif
-
-#elif SEED == WCGR
+	close(fd);
+#elif RLC_SEED == RLC_WCGR
 
 	HCRYPTPROV hCryptProv;
 
@@ -155,29 +130,44 @@ void rand_init(void) {
 		return;
 	}
 
-#elif SEED == RDRND
+#elif RLC_SEED == RLC_RDRND
 
-	int i, j;
+	size_t i = 0, j;
 	ull_t r;
+	int tries;
 
 	while (i < RLC_RAND_SEED) {
 #ifdef __RDRND__
-		while (_rdrand64_step(&r) == 0);
+		/* Intel recommends giving up after 10 consecutive failures. */
+		for (tries = 0; tries < 10 && _rdrand64_step(&r) == 0; tries++);
+		if (tries == 10) {
+			RLC_THROW(ERR_NO_RAND);
+			return;
+		}
 #else
 #error "RdRand not available, check your compiler settings."
 #endif
 		for (j = 0; i < RLC_RAND_SEED && j < sizeof(ull_t); i++, j++) {
 			buf[i] = r & 0xFF;
+			r >>= 8;
 		}
 	}
 
+#else
+#error "Unknown seeder, check the SEED option."
 #endif
 
-#endif /* RAND == UDEV */
+#endif /* RLC_RAND != RLC_UDEV */
 
-#if RAND != CALL
+#if RLC_RAND != RLC_CALL
 	core_get()->seeded = 0;
 	rand_seed(buf, RLC_RAND_SEED);
+	util_zero(buf, RLC_RAND_SEED);
+#ifdef RLC_RAND_FORK
+	if (core_get()->seeded) {
+		core_get()->pid = (long)getpid();
+	}
+#endif
 #else
 	rand_seed(NULL, NULL);
 #endif
@@ -186,7 +176,7 @@ void rand_init(void) {
 int rand_check(uint8_t *buf, size_t size) {
 	int count = 0;
 
-	for (int i = 1; i < size; i++) {
+	for (size_t i = 1; i < size; i++) {
 		if (buf[i] == buf[i - 1]) {
 			count++;
 		} else {
@@ -203,12 +193,19 @@ int rand_check(uint8_t *buf, size_t size) {
 void rand_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-#if RAND == UDEV
+#if RLC_RAND != RLC_CALL
+#if RLC_RAND == RLC_UDEV
 		int *fd = (int *)&(ctx->rand);
-		close(*fd);
+		/* The descriptor is only open while seeded. */
+		if (ctx->seeded) {
+			close(*fd);
+		}
 #endif
-#if RAND != CALL
 		memset(ctx->rand, 0, sizeof(ctx->rand));
+#if RLC_RAND == RLC_UDEV
+		/* A zero descriptor would read from the standard input. */
+		*fd = -1;
+#endif
 #else
 		ctx->rand_call = NULL;
 		ctx->rand_args = NULL;

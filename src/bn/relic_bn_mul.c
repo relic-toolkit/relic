@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if BN_KARAT > 0 || !defined(STRIP)
-
 /**
  * Multiplies two multiple precision integers using recursive Karatsuba
  * multiplication.
@@ -53,13 +51,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 	/* Compute half the digits of a or b. */
 	int h = RLC_MIN(a->used, b->used) >> 1;
 
-	bn_null(a0);
-	bn_null(a1);
-	bn_null(b0);
-	bn_null(b1);
-	bn_null(a0b0);
-	bn_null(a1b1);
-	bn_null(t);
+	bn_null_all(a0, a1, b0, b1, a0b0, a1b1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
@@ -67,9 +59,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		bn_new_size(b0, h);
 		bn_new_size(a1, a->used - h);
 		bn_new_size(b1, b->used - h);
-		bn_new(a0b0);
-		bn_new(a1b1);
-		bn_new(t);
+		bn_new_all(a0b0, a1b1, t);
 
 		/* a = a1 || a0, b = b1 || b0 */
 		a0->used = b0->used = h;
@@ -86,10 +76,10 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(a0b0, a0, b0);
 			bn_mul_basic(a1b1, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(a0b0, a0, b0);
 			bn_mul_comba(a1b1, a1, b1);
 #endif
@@ -105,9 +95,9 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* t = (a1 + a0)*(b1 + b0) */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(t, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(t, a1, b1);
 #endif
 		} else {
@@ -139,17 +129,105 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(a0);
-		bn_free(a1);
-		bn_free(b0);
-		bn_free(b1);
-		bn_free(a0b0);
-		bn_free(a1b1);
-		bn_free(t);
+		bn_free_all(a0, a1, b0, b1, a0b0, a1b1, t);
 	}
 }
 
-#endif
+/*
+ * c = c + a * b when sub is zero, c = c - a * b otherwise, computed in place.
+ *
+ * A single-digit multiplier takes the fast path, where bn_mula_low and
+ * bn_muls_low do the work in one pass and need no temporary. A longer one falls
+ * back to a multiplication followed by an addition or a subtraction. The
+ * multiplier b must be the shorter operand, which the callers arrange.
+ *
+ * With s the sign of the product entering the accumulation, the magnitudes add
+ * when s matches the sign of c and subtract when it does not. A subtraction can
+ * borrow past the top digit, meaning the product was the larger in magnitude,
+ * so the result is complemented and its sign flipped.
+ */
+static void bn_muladd_imp(bn_t d, const bn_t c, const bn_t a, const bn_t b,
+		int sub) {
+	int s;
+	size_t n;
+	dig_t carry;
+
+	/* The accumulation below is in place, so a separate result starts as a
+	 * copy. The value is needed even when the product turns out to be zero. */
+	if (d != c) {
+		bn_copy(d, c);
+	}
+
+	if (bn_is_zero(a) || bn_is_zero(b)) {
+		return;
+	}
+	if (bn_is_zero(d)) {
+		bn_mul(d, a, b);
+		if (sub) {
+			bn_neg(d, d);
+		}
+		return;
+	}
+
+	/* The sign of the product as it enters the accumulation. */
+	s = (a->sign == b->sign ? RLC_POS : RLC_NEG) ^ sub;
+
+	if (b->used > 1) {
+		/* general case: no in-place primitive, so fall back */
+		bn_t t;
+		bn_null(t);
+		RLC_TRY {
+			bn_new(t);
+			bn_mul(t, a, b);
+			if (sub) {
+				bn_sub(d, d, t);
+			} else {
+				bn_add(d, d, t);
+			}
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			bn_free(t);
+		}
+		return;
+	}
+
+	RLC_TRY {
+		n = RLC_MAX(d->used, a->used + 1);
+		bn_grow(d, n + 1);
+		while (d->used < n) {
+			d->dp[d->used++] = 0;
+		}
+
+		if (s == d->sign) {
+			/* magnitudes add, sign of c is unchanged */
+			carry = bn_mula_low(d->dp, a->dp, b->dp[0], a->used);
+			if (a->used < d->used) {
+				carry = bn_add1_low(d->dp + a->used, d->dp + a->used, carry,
+						d->used - a->used);
+			}
+			d->dp[d->used] = carry;
+			d->used += (carry != 0);
+		} else {
+			/* magnitudes subtract */
+			carry = bn_muls_low(d->dp, a->dp, b->dp[0], a->used);
+			if (a->used < d->used) {
+				carry = bn_sub1_low(d->dp + a->used, d->dp + a->used, carry,
+						d->used - a->used);
+			}
+			if (carry) {
+				/* the product exceeded |c|: complement it and flip the sign */
+				/* bn_sneg_low negates when its sign argument is 1, and
+				 * already folds in the +1 of the two's complement. */
+				bn_sneg_low(d->dp, d->dp, 1, d->used);
+				d->sign = (d->sign == RLC_POS ? RLC_NEG : RLC_POS);
+			}
+		}
+		bn_trim(d);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -167,10 +245,33 @@ void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 }
 
-#if BN_MUL == BASIC || !defined(STRIP)
+void bn_mul_add(bn_t d, const bn_t c, const bn_t a, const bn_t b) {
+	if (a->used < b->used) {
+		bn_muladd_imp(d, c, b, a, 0);
+	} else {
+		bn_muladd_imp(d, c, a, b, 0);
+	}
+}
+
+void bn_mul_sub(bn_t d, const bn_t c, const bn_t a, const bn_t b) {
+	if (a->used < b->used) {
+		bn_muladd_imp(d, c, b, a, 1);
+	} else {
+		bn_muladd_imp(d, c, a, b, 1);
+	}
+}
+
+void bn_mul_dis(bn_t t, const bn_t x, dis_t b) {
+	if (b < 0) {
+		bn_mul_dig(t, x, (dig_t)(-b));
+		bn_neg(t, t);
+	} else {
+		bn_mul_dig(t, x, (dig_t)b);
+	}
+}
 
 void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
-	int i;
+	size_t i;
 	bn_t t;
 	dig_t carry;
 
@@ -200,33 +301,42 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if BN_MUL == COMBA || !defined(STRIP)
-
 void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t;
+	bn_st *r;
 
 	bn_null(t);
 
 	RLC_TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		bn_new_size(t, a->used + b->used);
-		t->used = a->used + b->used;
+		/*
+		 * The columns are written as they are computed, so a destination that
+		 * is also an operand would be overwritten while still being read. Only
+		 * that case needs somewhere else to build the product.
+		 */
+		if (c->dp == a->dp || c->dp == b->dp) {
+			bn_new_size(t, a->used + b->used);
+			r = t;
+		} else {
+			bn_grow(c, a->used + b->used);
+			r = c;
+		}
+		r->used = a->used + b->used;
 
 		if (a->used == b->used) {
-			bn_muln_low(t->dp, a->dp, b->dp, a->used);
+			bn_muln_low(r->dp, a->dp, b->dp, a->used);
 		} else {
 			if (a->used > b->used) {
-				bn_muld_low(t->dp, a->dp, a->used, b->dp, b->used, 0, t->used);
+				bn_muld_low(r->dp, a->dp, a->used, b->dp, b->used, 0, r->used);
 			} else {
-				bn_muld_low(t->dp, b->dp, b->used, a->dp, a->used, 0, t->used);
+				bn_muld_low(r->dp, b->dp, b->used, a->dp, a->used, 0, r->used);
 			}
 		}
 
-		t->sign = a->sign ^ b->sign;
-		bn_trim(t);
-		bn_copy(c, t);
+		r->sign = a->sign ^ b->sign;
+		bn_trim(r);
+		if (r != (bn_st *)c) {
+			bn_copy(c, t);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -236,12 +346,6 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if BN_KARAT > 0 || !defined(STRIP)
-
 void bn_mul_karat(bn_t c, const bn_t a, const bn_t b) {
 	bn_mul_karat_imp(c, a, b, BN_KARAT);
 }
-
-#endif

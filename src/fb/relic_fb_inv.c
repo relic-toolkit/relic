@@ -40,15 +40,11 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_INV == BASIC || !defined(STRIP)
-
 void fb_inv_basic(fb_t c, const fb_t a) {
 	fb_t t, u, v;
 	int i, x;
 
-	fb_null(t);
-	fb_null(u);
-	fb_null(v);
+	fb_null_all(t, u, v);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -56,9 +52,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		fb_new(t);
-		fb_new(u);
-		fb_new(v);
+		fb_new_all(t, u, v);
 
 #if (FB_POLYN % 2) == 0
 		fb_sqr(v, a);
@@ -69,7 +63,6 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 			}
 			fb_mul(v, v, u);
 		}
-		fb_copy(c, v);
 #else
 		/* u = a^2, v = 1, x = (m - 1)/2. */
 		fb_sqr(u, a);
@@ -99,24 +92,15 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t);
-		fb_free(u);
-		fb_free(v);
+		fb_free_all(t, u, v);
 	}
 }
-
-#endif
-
-#if FB_INV == BINAR || !defined(STRIP)
 
 void fb_inv_binar(fb_t c, const fb_t a) {
 	int lu, lv;
 	dv_t u, v, g1, g2;
 
-	dv_null(u);
-	dv_null(v);
-	dv_null(g1);
-	dv_null(g2);
+	dv_null_all(u, v, g1, g2);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -124,10 +108,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		dv_new(u);
-		dv_new(v);
-		dv_new(g1);
-		dv_new(g2);
+		dv_new_all(u, v, g1, g2);
 
 		/* u = a, v = f, g1 = 1, g2 = 0. */
 		fb_copy(u, a);
@@ -204,26 +185,16 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(u);
-		dv_free(v);
-		dv_free(g1);
-		dv_free(g2);
+		dv_free_all(u, v, g1, g2);
 	}
 }
-
-#endif
-
-#if FB_INV == EXGCD || !defined(STRIP)
 
 void fb_inv_exgcd(fb_t c, const fb_t a) {
 	int j, d, lu, lv, lt, l1, l2, bu, bv;
 	dv_t _u, _v, _g1, _g2;
 	dig_t *t = NULL, *u = NULL, *v = NULL, *g1 = NULL, *g2 = NULL, carry;
 
-	fb_null(_u);
-	fb_null(_v);
-	fb_null(_g1);
-	fb_null(_g2);
+	fb_null_all(_u, _v, _g1, _g2);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -231,10 +202,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		dv_new(_u);
-		dv_new(_v);
-		dv_new(_g1);
-		dv_new(_g2);
+		dv_new_all(_u, _v, _g1, _g2);
 
 		dv_zero(_g1, RLC_FB_DIGS + 1);
 		dv_zero(_g2, RLC_FB_DIGS + 1);
@@ -325,136 +293,40 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(_u);
-		dv_free(_v);
-		dv_free(_g1);
-		dv_free(_g2);
+		dv_free_all(_u, _v, _g1, _g2);
 	}
 }
-
-#endif
-
-#if FB_INV == ALMOS || !defined(STRIP)
-
-void fb_inv_almos(fb_t c, const fb_t a) {
-	int lu, lv, lt;
-	dv_t _b, _d, _u, _v;
-	dig_t *t = NULL, *u = NULL, *v = NULL, *b = NULL, *d = NULL;
-
-	dv_null(_b);
-	dv_null(_d);
-	dv_null(_u);
-	dv_null(_v);
-
-	if (fb_is_zero(a)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	/* This is actually the binary version of the Extended Euclidean algorithm
- 	 * discussed in the Almost Inverse paper, so a rename is needed. */
-
-	RLC_TRY {
-		dv_new(_b);
-		dv_new(_d);
-		dv_new(_u);
-		dv_new(_v);
-
-		b = _b;
-		d = _d;
-		u = _u;
-		v = _v;
-
-		/* b = 1, d = 0, u = a, v = f. */
-		dv_zero(b, 2 * RLC_FB_DIGS);
-		fb_set_dig(b, 1);
-		dv_zero(d, 2 * RLC_FB_DIGS);
-		fb_copy(u, a);
-		fb_copy(v, fb_poly_get());
-
-		if (RLC_FB_BITS % RLC_DIG == 0) {
-			v[RLC_FB_DIGS] = 1;
-		}
-
-		lu = RLC_FB_DIGS;
-		lv = RLC_FB_DIGS + (RLC_FB_BITS % RLC_DIG == 0);
-
-		while (1) {
-			/* While z divides u do. */
-			while ((u[0] & 0x01) == 0) {
-				/* u = u/z. */
-				bn_rsh1_low(u, u, lu);
-				/* If z divide v then b = b/z; else b = (b + f)/z. */
-				if ((b[0] & 0x01) == 1) {
-					fb_poly_add(b, b);
-					if (RLC_FB_BITS % RLC_DIG == 0) {
-						b[RLC_FB_DIGS] ^= 1;
-					}
-				}
-				/* b often has RLC_FB_DIGS digits. */
-				bn_rsh1_low(b, b, RLC_FB_DIGS + 1);
-			}
-			/* If u = 1, return b. */
-			while (u[lu - 1] == 0)
-				lu--;
-			if (lu == 1 && u[0] == 1) {
-				break;
-			}
-			/* If deg(u) < deg(v) then swap(u, v), swap(b, d). */
-			if ((lu < lv) || ((lu == lv) && (u[lu - 1] < v[lv - 1]))) {
-				t = u;
-				u = v;
-				v = t;
-
-				/* Swap lu and lv too. */
-				lt = lu;
-				lu = lv;
-				lv = lt;
-
-				t = b;
-				b = d;
-				d = t;
-			}
-			/* u = u + v, b = b + d. */
-			fb_addd_low(u, u, v, lv);
-			fb_addn_low(b, b, d);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fb_copy(c, b);
-		dv_free(_b);
-		dv_free(_d);
-		dv_free(_u);
-		dv_free(_v);
-	}
-}
-
-#endif
-
-#if FB_INV == ITOHT || !defined(STRIP)
 
 void fb_inv_itoht(fb_t c, const fb_t a) {
 	int i, x, y, len;
 	const int *chain = fb_poly_get_chain(&len);
-	int *u = RLC_ALLOCA(int, len + 1);
-	fb_t *table = RLC_ALLOCA(fb_t, len + 1);
-
-	for (i = 0; i <= len; i++) {
-		fb_null(table[i]);
-	}
+	int *u = NULL;
+	fb_t *table = NULL;
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
+	/* The table needs at least two entries, also for even degrees. */
+	if (chain == NULL && (FB_POLYN % 2) != 0) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	len = RLC_MAX(len, 1);
+
+	u = RLC_ALLOCA(int, len + 1);
+	table = RLC_ALLOCA(fb_t, len + 1);
+	if (u == NULL || table == NULL) {
+		RLC_FREE(u);
+		RLC_FREE(table);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+	for (i = 0; i <= len; i++) {
+		fb_null(table[i]);
+	}
 
 	RLC_TRY {
-		if (u == NULL || table == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i <= len; i++) {
 			fb_new(table[i]);
 		}
@@ -483,7 +355,12 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 			} else {
 				u[i] = u[x] + u[y];
 			}
-			fb_itr(table[i], table[x], u[y], fb_poly_tab_sqr(y));
+			if (fb_poly_tab_sqr(y) == NULL) {
+				/* The tables are only kept when this method is selected. */
+				fb_itr_basic(table[i], table[x], u[y]);
+			} else {
+				fb_itr(table[i], table[x], u[y], fb_poly_tab_sqr(y));
+			}
 			fb_mul(table[i], table[i], table[y]);
 		}
 		fb_sqr(c, table[len]);
@@ -501,91 +378,12 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_INV == BRUCH || !defined(STRIP)
-
-void fb_inv_bruch(fb_t c, const fb_t a) {
-	fb_t _r, _s, _u, _v;
-	dig_t *r = NULL, *s = NULL, *t = NULL, *u = NULL, *v = NULL;
-	int delta = 0;
-
-	fb_null(_r);
-	fb_null(_s);
-	fb_null(_u);
-	fb_null(_v);
-
-	if (fb_is_zero(a)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	RLC_TRY {
-		fb_new(_r);
-		fb_new(_s);
-		fb_new(_u);
-		fb_new(_v);
-
-		fb_copy(_r, a);
-		fb_copy(_s, fb_poly_get());
-		fb_zero(_v);
-		fb_set_dig(_u, 1);
-
-		r = _r;
-		s = _s;
-		u = _u;
-		v = _v;
-
-		for (int i = 1; i <= 2 * RLC_FB_BITS; i++) {
-			if ((r[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG))) == 0) {
-				fb_lsh(r, r, 1);
-				fb_lsh(u, u, 1);
-				delta++;
-			} else {
-				if ((s[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG)))) {
-					fb_add(s, s, r);
-					fb_add(v, v, u);
-				}
-				fb_lsh(s, s, 1);
-				if (delta == 0) {
-					t = r;
-					r = s;
-					s = t;
-					t = u;
-					u = v;
-					v = t;
-					fb_lsh(u, u, 1);
-					delta++;
-				} else {
-					fb_rsh(u, u, 1);
-					delta--;
-				}
-			}
-		}
-		fb_copy(c, u);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fb_free(_r);
-		fb_free(_s);
-		fb_free(_u);
-		fb_free(_v);
-	}
-}
-
-#endif
-
-#if FB_INV == CTAIA || !defined(STRIP)
-
 void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_t r, s, t, u, v;
-	int i, k, d, r0, d0;
+	size_t i, k;
+	int d, r0, d0;
 
-	fb_null(r);
-	fb_null(s);
-	fb_null(t);
-	fb_null(u);
-	fb_null(v);
+	fb_null_all(r, s, t, u, v);
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -593,11 +391,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	}
 
 	RLC_TRY {
-		fb_new(r);
-		fb_new(s);
-		fb_new(t);
-		fb_new(u);
-		fb_new(v);
+		fb_new_all(r, s, t, u, v);
 
 		fb_copy(r, a);
 		fb_copy(t, fb_poly_get());
@@ -634,17 +428,11 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fb_free(r);
-		fb_free(s);
-		fb_free(t);
-		fb_free(u);
-		fb_free(v);
+		fb_free_all(r, s, t, u, v);
 	}
 }
 
-#endif
-
-#if FB_INV == LOWER || !defined(STRIP)
+#if FB_INV == FB_LOWER
 
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {
@@ -654,21 +442,30 @@ void fb_inv_lower(fb_t c, const fb_t a) {
 
 	fb_invn_low(c, a);
 }
+
 #endif
 
 void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	int i;
-	fb_t u, *t = RLC_ALLOCA(fb_t, n);
+	fb_t u, *t;
 
+	if (n <= 0) {
+		return;
+	}
+
+	t = RLC_ALLOCA(fb_t, n);
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 
 	fb_null(u);
+	for (i = 0; i < n; i++) {
+		fb_null(t[i]);
+	}
 
 	RLC_TRY {
 		for (i = 0; i < n; i++) {
-			fb_null(t[i]);
 			fb_new(t[i]);
 		}
 		fb_new(u);

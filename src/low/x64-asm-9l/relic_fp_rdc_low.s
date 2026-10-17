@@ -35,81 +35,22 @@
 
 .text
 
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
  */
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	push	%rdi
-	movq	%rsi, %rdi
 
-	movq	0(%rdi),%r8
-	movq	8(%rdi),%r9
-	movq	16(%rdi),%r10
-	movq	24(%rdi),%r11
-	movq	32(%rdi),%r12
-	movq	40(%rdi),%r13
-	movq	48(%rdi),%r14
-	movq	56(%rdi),%r15
-	movq	64(%rdi),%rbx
-	movq	72(%rdi),%rbp
-	xorq	%rax, %rax
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rsi, p0(%rip)
 
-	movq	$U0, %rdx
-	mulx	%r8, %rdx, %rcx
-	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip)
-	movq	80(%rdi),%r8
-	adox	%rax, %r8
-	movq	$U0, %rdx
-	mulx	%r9, %rdx, %rcx
-    MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %r8, %rsi, %rax, p0(%rip)
-	movq	88(%rdi),%r9
-	adox	%rax, %r9
-	movq	$U0, %rdx
-	mulx	%r10, %rdx, %rcx
-    MULADD	%r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %r8, %r9, %rsi, %rax, p0(%rip)
-	movq	96(%rdi),%r10
-	adox	%rax, %r10
-	movq	$U0, %rdx
-	mulx	%r11, %rdx, %rcx
-    MULADD	%r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %r8, %r9, %r10, %rsi, %rax, p0(%rip)
-	movq	104(%rdi),%r11
-	adox	%rax, %r11
-	movq	$U0, %rdx
-	mulx	%r12, %rdx, %rcx
-    MULADD	%r12, %r13, %r14, %r15, %rbx, %rbp, %r8, %r9, %r10, %r11, %rsi, %rax, p0(%rip)
-	movq	112(%rdi),%r12
-	adox	%rax, %r12
-	movq	$U0, %rdx
-	mulx	%r13, %rdx, %rcx
-    MULADD	%r13, %r14, %r15, %rbx, %rbp, %r8, %r9, %r10, %r11, %r12, %rsi, %rax, p0(%rip)
-	movq	120(%rdi),%r13
-	adox	%rax, %r13
-	movq	$U0, %rdx
-	mulx	%r14, %rdx, %rcx
-    MULADD	%r14, %r15, %rbx, %rbp, %r8, %r9, %r10, %r11, %r12, %r13, %rsi, %rax, p0(%rip)
-	movq	128(%rdi),%r14
-	adox	%rax, %r14
-	movq	$U0, %rdx
-	mulx	%r15, %rdx, %rcx
-    MULADD	%r15, %rbx, %rbp, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rsi, %rax, p0(%rip)
-	movq	136(%rdi),%r15
-	adox	%rax, %r15
-	movq	$U0, %rdx
-	mulx	%rbx, %rdx, %rcx
-    MULADD	%rbx, %rbp, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rsi, %rax, p0(%rip)
-	popq	%rdi
-
-	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax
-	
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

@@ -30,8 +30,6 @@
  * @ingroup dv
  */
 
-#include <inttypes.h>
-
 #include "relic_core.h"
 
 /*============================================================================*/
@@ -39,8 +37,6 @@
 /*============================================================================*/
 
 void dv_print(const dig_t *a, size_t digits) {
-	/* Suppress possible unused parameter warning. */
-	(void)a;
 	for (size_t i = digits; i > 0; i--) {
 		util_print_dig(a[i-1], 1);
 	}
@@ -50,20 +46,16 @@ void dv_print(const dig_t *a, size_t digits) {
 }
 
 void dv_zero(dig_t *a, size_t digits) {
-	int i;
+	memset(a, 0, digits * sizeof(dig_t));
+}
 
-#if ALLOC != DYNAMIC
-	if (digits > RLC_DV_DIGS) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
+int dv_is_zero(const dig_t *a, size_t digits) {
+	for (size_t i = 0; i < digits; i++) {
+		if (a[i] != 0) {
+			return 0;
+		}
 	}
-#endif
-
-	for (i = 0; i < digits; i++, a++) {
-		(*a) = 0;
-	}
-
-	return;
+	return 1;
 }
 
 void dv_copy(dig_t *c, const dig_t *a, size_t digits) {
@@ -92,21 +84,35 @@ void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 }
 
 int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
-	int r;
-
-	a += (size - 1);
-	b += (size - 1);
-
-	r = RLC_EQ;
-	for (size_t i = 0; i < size; i++, --a, --b) {
-		if (*a != *b && r == RLC_EQ) {
-			r = (*a > *b ? RLC_GT : RLC_LT);
+	for (size_t i = size; i > 0; i--) {
+		if (a[i - 1] != b[i - 1]) {
+			return (a[i - 1] > b[i - 1] ? RLC_GT : RLC_LT);
 		}
 	}
-	return r;
+	return RLC_EQ;
 }
 
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
+	dig_t borrow = 0, diff = 0;
+
+	for (size_t i = 0; i < size; i++) {
+		borrow = (dig_t)(a[i] < b[i]) | ((dig_t)(a[i] == b[i]) & borrow);
+		diff |= a[i] ^ b[i];
+	}
+	return (borrow ? RLC_LT : (diff == 0 ? RLC_EQ : RLC_GT));
+}
+
+int dv_equ(const dig_t *a, const dig_t *b, size_t size) {
+	for (size_t i = 0; i < size; i++) {
+		if (a[i] != b[i]) {
+			return RLC_NE;
+		}
+	}
+
+	return RLC_EQ;
+}
+
+int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size) {
 	dig_t r = 0;
 
 	for (size_t i = 0; i < size; i++) {
@@ -120,6 +126,11 @@ void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	const dig_t *top;
 	dig_t *bot;
 	size_t i;
+
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
 
 	top = a + digits;
 	bot = c;
@@ -136,6 +147,11 @@ void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	dig_t *top;
 	const dig_t *bot;
 	size_t i;
+
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
 
 	top = c + size - 1;
 	bot = a + size - 1 - digits;
