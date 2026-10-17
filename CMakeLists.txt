@@ -342,11 +342,11 @@ string(STRIP "${RLC_FLAGS}" RLC_FLAGS)
 string(REPLACE "\\" "\\\\" RLC_FLAGS "${RLC_FLAGS}")
 string(REPLACE "\"" "\\\"" RLC_FLAGS "${RLC_FLAGS}")
 
-# The header names these options with a prefix.
-set(RLC_ARCH "${ARCH}")
-set(RLC_SEED "${SEED}")
-set(RLC_MULTI "${MULTI}")
-set(RLC_TIMER "${TIMER}")
+# The header names these options and switches with a prefix.
+foreach(OPT ARCH SEED MULTI TIMER OPSYS LABEL DEBUG CHECK VERBS DOCUM STRIP
+		QUIET COLOR SHLIB STLIB)
+	set(RLC_${OPT} "${${OPT}}")
+endforeach()
 
 set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)

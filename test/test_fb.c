@@ -293,7 +293,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fb_is_zero(c), end);
 		} TEST_END;
 
-#if FB_MUL == BASIC || !defined(STRIP)
+#if FB_MUL == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
@@ -304,7 +304,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FB_MUL == LODAH || !defined(STRIP)
+#if FB_MUL == FB_LODAH || !defined(RLC_STRIP)
 		TEST_CASE("lopez-dahab multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
@@ -315,7 +315,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FB_MUL == INTEG || !defined(STRIP)
+#if FB_MUL == FB_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
@@ -326,7 +326,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FB_KARAT > 0 || !defined(STRIP)
+#if FB_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
@@ -369,7 +369,7 @@ static int squaring(void) {
 			TEST_ASSERT(fb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_SQR == BASIC || !defined(STRIP)
+#if FB_SQR == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
@@ -378,7 +378,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FB_SQR == QUICK || !defined(STRIP)
+#if FB_SQR == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("table squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
@@ -387,7 +387,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FB_SQR == INTEG || !defined(STRIP)
+#if FB_SQR == FB_INTEG || !defined(RLC_STRIP)
 		TEST_CASE("integrated squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
@@ -428,7 +428,7 @@ static int square_root(void) {
 			TEST_ASSERT(fb_cmp(b, a) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_SRT == BASIC || !defined(STRIP)
+#if FB_SRT == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic square root extraction is correct") {
 			fb_rand(a);
 			fb_srt(b, a);
@@ -437,7 +437,7 @@ static int square_root(void) {
 		} TEST_END;
 #endif
 
-#if FB_SRT == QUICK || !defined(STRIP)
+#if FB_SRT == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("fast square root extraction is correct") {
 			fb_rand(a);
 			fb_srt(b, a);
@@ -573,7 +573,7 @@ static int reduction(void) {
 		}
 		TEST_END;
 
-#if FB_RDC == BASIC || !defined(STRIP)
+#if FB_RDC == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic modular reduction is correct") {
 			dv_zero(t0, 2 * RLC_FB_DIGS);
 			dv_zero(t1, 2 * RLC_FB_DIGS);
@@ -587,7 +587,7 @@ static int reduction(void) {
 		TEST_END;
 #endif
 
-#if FB_RDC == QUICK || !defined(STRIP)
+#if FB_RDC == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("fast modular reduction is correct") {
 			dv_zero(t0, 2 * RLC_FB_DIGS);
 			dv_zero(t1, 2 * RLC_FB_DIGS);
@@ -634,14 +634,14 @@ static int trace(void) {
 			TEST_ASSERT(fb_trc(c) == (fb_trc(a) ^ fb_trc(b)), end);
 		} TEST_END;
 
-#if FB_TRC == BASIC || !defined(STRIP)
+#if FB_TRC == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic trace is correct") {
 			fb_rand(a);
 			TEST_ASSERT(fb_trc(a) == fb_trc_basic(a), end);
 		} TEST_END;
 #endif
 
-#if FB_TRC == QUICK || !defined(STRIP)
+#if FB_TRC == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("fast trace is correct") {
 			fb_rand(a);
 			TEST_ASSERT(fb_trc(a) == fb_trc_quick(a), end);
@@ -684,7 +684,7 @@ static int solve(void) {
 			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_SLV == BASIC || !defined(STRIP)
+#if FB_SLV == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic solve is correct") {
 			fb_rand(a);
 			/* Make Tr(a) = 0. */
@@ -695,7 +695,7 @@ static int solve(void) {
 		} TEST_END;
 #endif
 
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("fast solve is correct") {
 			fb_rand(a);
 			/* Make Tr(a) = 0. */
@@ -743,7 +743,7 @@ static int inversion(void) {
 			TEST_ASSERT(fb_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_INV == BASIC || !defined(STRIP)
+#if FB_INV == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic inversion is correct") {
 			do {
 				fb_rand(a);
@@ -754,7 +754,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == BINAR || !defined(STRIP)
+#if FB_INV == FB_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary inversion is correct") {
 			do {
 				fb_rand(a);
@@ -765,7 +765,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == EXGCD || !defined(STRIP)
+#if FB_INV == FB_EXGCD || !defined(RLC_STRIP)
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fb_rand(a);
@@ -776,7 +776,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == ITOHT || !defined(STRIP)
+#if FB_INV == FB_ITOHT || !defined(RLC_STRIP)
 		TEST_CASE("itoh-tsuji inversion is correct") {
 			do {
 				fb_rand(a);
@@ -787,7 +787,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == CTAIA || !defined(STRIP)
+#if FB_INV == FB_CTAIA || !defined(RLC_STRIP)
 		TEST_CASE("constant-time almost inversion is correct") {
 			do {
 				fb_rand(a);
@@ -798,7 +798,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FB_INV == LOWER
+#if FB_INV == FB_LOWER
 		TEST_CASE("lower inversion is correct") {
 			do {
 				fb_rand(a);
@@ -872,7 +872,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_EXP == BASIC || !defined(STRIP)
+#if FB_EXP == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
@@ -882,7 +882,7 @@ static int exponentiation(void) {
 		} TEST_END;
 #endif
 
-#if FB_EXP == SLIDE || !defined(STRIP)
+#if FB_EXP == FB_SLIDE || !defined(RLC_STRIP)
 		TEST_CASE("sliding window exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
@@ -892,7 +892,7 @@ static int exponentiation(void) {
 		} TEST_END;
 #endif
 
-#if FB_EXP == MONTY || !defined(STRIP)
+#if FB_EXP == FB_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("constant-time exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
@@ -924,7 +924,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if FB_ITR == BASIC || !defined(STRIP)
+#if FB_ITR == FB_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
@@ -946,7 +946,7 @@ static int exponentiation(void) {
 		} TEST_END;
 #endif
 
-#if FB_ITR == QUICK || !defined(STRIP)
+#if FB_ITR == FB_QUICK || !defined(RLC_STRIP)
 		TEST_CASE("fast iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);

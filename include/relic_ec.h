@@ -51,66 +51,66 @@
 /**
  * Prefix for mappings of functions.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_LOWER			ep_
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_LOWER			eb_
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_LOWER      		ed_
 #endif
 
 /**
  * Prefix for mappings of constant definitions.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_UPPER			EP_
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_UPPER			EB_
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_UPPER      		ED_
 #endif
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_TABLE			RLC_EP_TABLE
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_TABLE			RLC_EB_TABLE
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_TABLE			RLC_ED_TABLE
 #endif
 
 /**
  * Size of a field element in words.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_DIGS				RLC_FP_DIGS
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_DIGS				RLC_FB_DIGS
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_DIGS				RLC_FP_DIGS
 #endif
 
 /**
  * Size of a field element in bits.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_BITS				RLC_FP_BITS
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_BITS				RLC_FB_BITS
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_BITS				RLC_FP_BITS
 #endif
 
 /**
  * Size of a field element in bytes.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_BYTES			RLC_FP_BYTES
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_BYTES			RLC_FB_BYTES
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_BYTES			RLC_FP_BYTES
 #endif
 
@@ -191,19 +191,19 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #if defined(EC_ENDOM)
 #define ec_param_set_any()		ep_param_set_any_endom()
 #else
 #define ec_param_set_any()		ep_param_set_any()
 #endif
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #if defined(EC_ENDOM)
 #define ec_param_set_any()		eb_param_set_any_kbltz()
 #else
 #define ec_param_set_any()		eb_param_set_any()
 #endif
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define ec_param_set_any()  	ed_param_set_any()
 #endif
 
@@ -373,7 +373,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the secret integer.
  */
-#if EC_CUR == CHAR2
+#if EC_CUR == EC_CHAR2
 #define ec_mul_sec(R, P, K)		eb_mul_lodah(R, P, K)
 #else
 #define ec_mul_sec(R, P, K)		RLC_CAT(RLC_EC_LOWER, mul_lwreg)(R, P, K)
@@ -488,7 +488,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[out] X				- the x-coordinate.
  * @param[in] P					- the point to read.
  */
-#if EC_CUR == PRIME || EC_CUR == EDDIE
+#if EC_CUR == EC_PRIME || EC_CUR == EC_EDDIE
 #define ec_get_x(X, P)			fp_prime_back(X, P->x)
 #else
 #define ec_get_x(X, P)			bn_read_raw(X, P->x, RLC_FC_DIGS)
@@ -501,7 +501,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 * @param[out] Y					- the y-coordinate.
 * @param[in] P					- the point to read.
 */
-#if EC_CUR == PRIME || EC_CUR == EDDIE
+#if EC_CUR == EC_PRIME || EC_CUR == EC_EDDIE
 #define ec_get_y(Y, P)			fp_prime_back(Y, (P)->y)
 #else
 #define ec_get_y(Y, P)			bn_read_raw(Y, (P)->y, RLC_FC_DIGS)

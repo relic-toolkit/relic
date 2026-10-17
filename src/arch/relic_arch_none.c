@@ -46,7 +46,7 @@ ull_t arch_cycles(void) {
 }
 
 uint_t arch_lzcnt(dig_t a) {
-#if WSIZE == 8 || WSIZE == 16
+#if RLC_WSIZE == 8 || RLC_WSIZE == 16
 	/* Leading zeros of a nibble. */
 	static const uint8_t table[16] = {
 		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
@@ -57,13 +57,13 @@ uint_t arch_lzcnt(dig_t a) {
 	 * Zero is handled explicitly so that every width agrees on the result. The
 	 * compiler builtins used below for the wider digits are undefined at zero,
 	 * and so is the MSVC fallback on processors without LZCNT, whereas the
-	 * nibble table would naturally return WSIZE.
+	 * nibble table would naturally return RLC_WSIZE.
 	 */
 	if (a == 0) {
-		return WSIZE;
+		return RLC_WSIZE;
 	}
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 	/*
 	 * The leading zeros are those of the most significant non-zero nibble. If
 	 * the high nibble is zero the count is four plus those of the low nibble;
@@ -74,7 +74,7 @@ uint_t arch_lzcnt(dig_t a) {
 	} else {
 		return table[a >> 4];
 	}
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 	/*
 	 * Same idea one level up: isolate the most significant non-zero byte, then
 	 * apply the nibble table to it. The offset counts the zeros already known
@@ -99,13 +99,13 @@ uint_t arch_lzcnt(dig_t a) {
 			return table[t >> 4] + offset;
 		}
 	}
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 #ifdef _MSC_VER
 	return __lzcnt(a);
 #else
 	return __builtin_clz(a);
 #endif
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 #ifdef _MSC_VER
 	return __lzcnt64(a);
 #else
@@ -121,7 +121,7 @@ uint_t arch_lzcnt(dig_t a) {
 }
 
 uint_t arch_tzcnt(dig_t a) {
-#if WSIZE == 8 || WSIZE == 16
+#if RLC_WSIZE == 8 || RLC_WSIZE == 16
 	/* Trailing zeros of a nibble. */
 	static const uint8_t table[16] = {
 		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
@@ -130,10 +130,10 @@ uint_t arch_tzcnt(dig_t a) {
 
 	/* As above: pin down zero rather than let it differ by width. */
 	if (a == 0) {
-		return WSIZE;
+		return RLC_WSIZE;
 	}
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 	/*
 	 * Mirror image of the leading-zero case: the trailing zeros are those of
 	 * the least significant non-zero nibble, so it is the *low* nibble that
@@ -144,7 +144,7 @@ uint_t arch_tzcnt(dig_t a) {
 	} else {
 		return table[a >> 4] + 4;
 	}
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 	{
 		uint_t offset;
 		dig_t t;
@@ -167,13 +167,13 @@ uint_t arch_tzcnt(dig_t a) {
 			return table[t >> 4] + 4 + offset;
 		}
 	}
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 #ifdef _MSC_VER
 	return _tzcnt_u32(a);
 #else
 	return __builtin_ctz(a);
 #endif
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 #ifdef _MSC_VER
 	return _tzcnt_u64(a);
 #else

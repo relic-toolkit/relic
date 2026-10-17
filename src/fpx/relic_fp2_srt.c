@@ -209,7 +209,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	bn_t d, e;
 	fp_t w, x;
 	fp2_t t, u;
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	const dig_t *crt = (const dig_t *)fp_prime_get_crt();
 #else
 	const fp_t crt = (fp_t)fp_prime_get_crt();

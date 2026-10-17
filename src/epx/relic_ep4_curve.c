@@ -313,7 +313,7 @@ void ep4_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep4_new(ctx->ep4_g);
 	fp4_new(ctx->ep4_a);
 	fp4_new(ctx->ep4_b);
@@ -322,7 +322,7 @@ void ep4_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp4_new(ctx->ep4_pre[i].x);
 		fp4_new(ctx->ep4_pre[i].y);
@@ -391,7 +391,7 @@ void ep4_curve_mul_a(fp4_t c, const fp4_t a) {
 			case RLC_TWO:
 				fp4_dbl(c, a);
 				break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 			case RLC_TINY:
 				fp4_mul_dig(c, a, ctx->ep4_a[0][0][0]);
 				break;
@@ -412,7 +412,7 @@ void ep4_curve_mul_b(fp4_t c, const fp4_t a) {
 		case RLC_ONE:
 			fp4_copy(c, a);
 			break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		case RLC_TINY:
 			fp4_mul_dig(c, a, ctx->ep4_b[0][0][0]);
 			break;
@@ -455,7 +455,7 @@ void ep4_curve_get_cof(bn_t h) {
 #if defined(EP_PRECO)
 
 ep4_t *ep4_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep4_t *)*(core_get()->ep4_ptr);
 #else
 	return core_get()->ep4_ptr;
@@ -532,7 +532,7 @@ void ep4_curve_set_twist(int type) {
 
 		fp4_zero(g->z);
 		fp4_set_dig(g->z, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		ep4_copy(ctx->ep4_g, g);
 		fp4_copy(ctx->ep4_a, a);

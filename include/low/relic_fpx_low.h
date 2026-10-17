@@ -71,7 +71,7 @@ void fp2_addd_low(dv2_t c, dv2_t a, dv2_t b);
 
 /**
  * Adds two double-precision quadratic extension field elements of the same size
- * and corrects the result by conditionally adding 2^(RLC_FP_DIGS * WSIZE) * p.
+ * and corrects the result by conditionally adding 2^(RLC_FP_DIGS * RLC_WSIZE) * p.
  * Computes c = a + b.
  *
  * @param[out] c			- the result.
@@ -113,7 +113,7 @@ void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b);
 /**
  * Subtracts a double-precision quadratic extension field element from another
  * of the same size and  corrects the result by conditionally adding
- * 2^(RLC_FP_DIGS * WSIZE) * p. Computes c = a - b.
+ * 2^(RLC_FP_DIGS * RLC_WSIZE) * p. Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to add.
@@ -234,7 +234,7 @@ void fp3_addd_low(dv3_t c, dv3_t a, dv3_t b);
 
 /**
  * Adds two double-precision cubic extension field elements of the same size
- * and corrects the result by conditionally adding 3^(RLC_FP_DIGS * WSIZE) * p.
+ * and corrects the result by conditionally adding 3^(RLC_FP_DIGS * RLC_WSIZE) * p.
  * Computes c = a + b.
  *
  * @param[out] c			- the result.
@@ -276,7 +276,7 @@ void fp3_subd_low(dv3_t c, dv3_t a, dv3_t b);
 /**
  * Subtracts a double-precision cubic extension field element from another
  * of the same size and  corrects the result by conditionally adding
- * 3^(RLC_FP_DIGS * WSIZE) * p. Computes c = a - b.
+ * 3^(RLC_FP_DIGS * RLC_WSIZE) * p. Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to add.
@@ -322,7 +322,7 @@ void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Multiplies two cubic extension elements of the same size and corrects
- * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should
+ * the result by adding (2^(RLC_FP_DIGS * RLC_WSIZE) * p)/4. This function should
  * be used when the RLC_FP_ROOM optimization is detected. Computes c = a * b.
  *
  * @param[out] c			- the result.

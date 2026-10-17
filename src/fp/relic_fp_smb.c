@@ -282,7 +282,7 @@ int fp_smb_binar(const fp_t a) {
 
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t, a);
 		fp_rdcn_low(g, t);
@@ -355,7 +355,7 @@ int fp_smb_divst(const fp_t a) {
 		bn_new(_t);
 		dv_new_all(f, g, t);
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);
 		bn_lsh(_t, _t, 8);
 		bn_add_dig(_t, _t, d & 0xFF);
@@ -365,7 +365,7 @@ int fp_smb_divst(const fp_t a) {
 
 		k = 0;
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
@@ -451,7 +451,7 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_zero(g, RLC_FP_DIGS + 1);
 		dv_zero(t0 + RLC_FP_DIGS, RLC_FP_DIGS);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t0, a);
 		fp_rdcn_low(g, t0);
@@ -519,7 +519,7 @@ int fp_smb_jmpds(const fp_t a) {
 	return r;
 }
 
-#if FP_SMB == LOWER
+#if FP_SMB == FP_LOWER
 
 int fp_smb_lower(const fp_t a) {
 	return fp_smbm_low(a);

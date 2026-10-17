@@ -341,7 +341,7 @@ void eb_param_set(int param) {
 		}
 		fb_zero(g->z);
 		fb_set_bit(g->z, 0, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		eb_curve_set(a, b, g, r, h);
 		core_get()->eb_id = param;

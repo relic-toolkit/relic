@@ -45,7 +45,7 @@ void eb_set_infty(eb_t p) {
 	fb_zero(p->x);
 	fb_zero(p->y);
 	fb_zero(p->z);
-	p->coord = BASIC;
+	p->coord = EC_AFFIN;
 }
 
 void eb_copy(eb_t r, const eb_t p) {
@@ -152,7 +152,7 @@ void eb_blind(eb_t r, const eb_t p) {
 		fb_mul(r->x, p->x, rand);
 		fb_sqr(rand, rand);
 		fb_mul(r->y, p->y, rand);
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -254,7 +254,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		for (int i = 0; i < 1 << (w - 2); i++) {
 			eb_set_infty(t[i]);
 			fb_set_dig(t[i]->z, 1);
-			t[i]->coord = BASIC;
+			t[i]->coord = EC_AFFIN;
 		}
 
 		switch (w) {
@@ -554,7 +554,7 @@ int eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 		return RLC_ERR;
 	}
 
-	a->coord = BASIC;
+	a->coord = EC_AFFIN;
 	fb_set_dig(a->z, 1);
 	if (fb_read_bin(a->x, bin + 1, RLC_FB_BYTES) != RLC_OK) {
 		return RLC_ERR;

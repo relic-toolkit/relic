@@ -156,7 +156,7 @@ void fp_print(const fp_t a) {
 	RLC_TRY {
 		bn_new(t);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		if (a != fp_prime_get()) {
 			fp_prime_back(t, a);
 		} else {

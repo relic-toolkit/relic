@@ -70,7 +70,7 @@ uint8_t expected[] = {
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
 	fp_read_str(q_b->y, str, strlen(str), 16);								\
 	fp_set_dig(q_b->z, 1);													\
-	qa->coord = q_b->coord = BASIC;											\
+	qa->coord = q_b->coord = EC_AFFIN;											\
 
 #define ASSIGNK(CURVE)														\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
@@ -87,7 +87,7 @@ uint8_t expected[] = {
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
 	fb_read_str(q_b->y, str, strlen(str), 16);								\
 	fb_set_dig(q_b->z, 1);													\
-	qa->coord = q_b->coord = BASIC;											\
+	qa->coord = q_b->coord = EC_AFFIN;											\
 
 static int ecdh(void) {
 	int code = RLC_ERR;
@@ -224,13 +224,13 @@ static int ecies(void) {
 			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
 		}
 		TEST_END;
-#if MD_MAP == SH256
+#if MD_MAP == MD_SH256
 		uint8_t msg[RLC_BC_LEN + RLC_MD_LEN];
 		char str[2 * RLC_FC_BYTES + 1];
 
 		switch (ec_param_get()) {
 
-#if FP_PRIME == 256 && EC_CUR == PRIME
+#if FP_PRIME == 256 && EC_CUR == EC_PRIME
 			case NIST_P256:
 				ASSIGNP(NIST_P256);
 				memcpy(msg, expected, sizeof(expected));

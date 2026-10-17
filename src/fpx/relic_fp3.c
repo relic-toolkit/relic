@@ -293,7 +293,7 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 				break;
 		}
 	} else {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 		switch (i) {
 			case 1:
 				fp3_mul(c, c, ctx->fp3_p1[j - 1]);

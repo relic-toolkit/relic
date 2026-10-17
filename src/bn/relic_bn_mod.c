@@ -188,13 +188,13 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 
 	x = (((b + 2) & 4) << 1) + b;				/* here x*a==1 mod 2**4 */
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**8 */
-#if WSIZE > 8
+#if RLC_WSIZE > 8
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**16 */
 #endif
-#if WSIZE > 16
+#if RLC_WSIZE > 16
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**32 */
 #endif
-#if WSIZE > 32
+#if RLC_WSIZE > 32
 	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**64 */
 #endif
 	/* u = -1/m0 (mod 2^RLC_DIG) */

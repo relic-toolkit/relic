@@ -79,7 +79,7 @@
 #endif
 
 /* The Fp2 functions read both coordinates from one contiguous vector. */
-#if defined(FP_QNRES) && ALLOC == AUTO
+#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

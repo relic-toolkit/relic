@@ -80,7 +80,7 @@ fp_rdcn_low:
     mov r11,r14
 
 /* The sparse reductions hardcode the words of the BN-158 and BN-254 primes. */
-#if FP_RDC == MONTY && FP_PRIME != 158 && FP_PRIME != 254
+#if FP_RDC == FP_MONTY && FP_PRIME != 158 && FP_PRIME != 254
 #error "Montgomery reduction in assembly only supports BN-158 and BN-254"
 #endif
 

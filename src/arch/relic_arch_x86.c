@@ -65,7 +65,7 @@ ull_t arch_cycles(void) {
 }
 
 uint_t arch_lzcnt(dig_t x) {
-	return core_get()->lzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - WSIZE);
+	return core_get()->lzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - RLC_WSIZE);
 }
 
 uint_t arch_tzcnt(dig_t x) {

@@ -462,7 +462,7 @@ static int addition(void) {
 			TEST_ASSERT(bn_is_zero(e) && bn_sign(e) == RLC_POS, end);
 		} TEST_END;
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 		TEST_CASE("addition of a digit grows the result") {
 			/* The input is longer than a fresh result. */
 			bn_set_dig(d, 1);
@@ -651,7 +651,7 @@ static int multiplication(void) {
 		}
 		TEST_END;
 
-#if BN_MUL == BASIC || !defined(STRIP)
+#if BN_MUL == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -662,7 +662,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if BN_MUL == COMBA || !defined(STRIP)
+#if BN_MUL == BN_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -673,7 +673,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if BN_KARAT > 0 || !defined(STRIP)
+#if BN_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -710,7 +710,7 @@ static int squaring(void) {
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if BN_SQR == BASIC || !defined(STRIP)
+#if BN_SQR == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -719,7 +719,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if BN_SQR == COMBA || !defined(STRIP)
+#if BN_SQR == BN_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -728,7 +728,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if BN_KARAT > 0 || !defined(STRIP)
+#if BN_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -1155,7 +1155,7 @@ static int reduction(void) {
 	RLC_TRY {
 		bn_new_all(a, b, c, d, e);
 
-#if BN_MOD == BASIC || !defined(STRIP)
+#if BN_MOD == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1173,7 +1173,7 @@ static int reduction(void) {
 		TEST_END;
 #endif
 
-#if BN_MOD == BARRT || !defined(STRIP)
+#if BN_MOD == BN_BARRT || !defined(RLC_STRIP)
 		TEST_CASE("barrett reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1223,7 +1223,7 @@ static int reduction(void) {
 		}
 		TEST_END;
 
-#if BN_MOD == MONTY || !defined(STRIP)
+#if BN_MOD == BN_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("conversion from montgomery form is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1392,7 +1392,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-#if BN_MXP == BASIC || !defined(STRIP)
+#if BN_MXP == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1402,7 +1402,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == SLIDE || !defined(STRIP)
+#if BN_MXP == BN_SLIDE || !defined(RLC_STRIP)
 		TEST_CASE("sliding window modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1412,7 +1412,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == MONTY || !defined(STRIP)
+#if BN_MXP == BN_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("powering ladder modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1422,7 +1422,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == LOWER
+#if BN_MXP == BN_LOWER
 		TEST_CASE("low-level modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1729,7 +1729,7 @@ static int gcd(void) {
 		TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 		} TEST_END;
 
-#if BN_GCD == BASIC || !defined(STRIP)
+#if BN_GCD == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1772,7 +1772,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == BINAR || !defined(STRIP)
+#if BN_GCD == BN_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1815,7 +1815,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == LEHME || !defined(STRIP)
+#if BN_GCD == BN_LEHME || !defined(RLC_STRIP)
 		TEST_CASE("lehmer greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1858,7 +1858,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == LOWER
+#if BN_GCD == BN_LOWER
 		TEST_CASE("lower greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1901,7 +1901,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if !defined(STRIP)
+#if !defined(RLC_STRIP)
 		TEST_CASE("extended greatest common divisor handles edge cases") {
 			void (*ext[])(bn_t, bn_t, bn_t, const bn_t, const bn_t) = {
 				bn_gcd_ext_basic, bn_gcd_ext_binar, bn_gcd_ext_lehme

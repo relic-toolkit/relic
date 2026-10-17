@@ -135,10 +135,10 @@ void ed_param_set(int param) {
 		fp_set_dig(g->z, 1);
 		fp_neg(g->z, g->z);
 		fp_neg(g->z, g->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(g->t, g->x, g->y);
 #endif
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		bn_copy(&ctx->ed_h, h);
 		bn_copy(&ctx->ed_r, r);

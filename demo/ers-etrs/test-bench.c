@@ -65,10 +65,10 @@ static void ers(void) {
 
 	util_banner("Signature time:\n", 0);
 	bench_reset();
-	for (int j = 0; j < BENCH; j++)	{
+	for (int j = 0; j < RLC_BENCH; j++)	{
 		BENCH_ADD(cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp));
 	}
-	bench_compute(BENCH * BENCH);
+	bench_compute(RLC_BENCH * RLC_BENCH);
 	util_print("{\"1\": {\"time\": %lf, \"size\": null}", bench_total()/(double)1000000);
 
 	for (int j = 1; j < MAX_KEYS; j = j << 1) {
@@ -88,10 +88,10 @@ static void ers(void) {
 	/* Recompute the signature for verification. */
 	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
 	bench_reset();
-	for (int j = 0; j < BENCH; j++)	{
+	for (int j = 0; j < RLC_BENCH; j++)	{
 		BENCH_ADD(assert(cp_ers_ver(td, ring, 1, m, 5, pp)));
 	}
-	bench_compute(BENCH * BENCH);
+	bench_compute(RLC_BENCH * RLC_BENCH);
 	util_print("{\"1\": {\"time\": %lf, \"size\": %d}", bench_total()/(double)1000000, 10 * RLC_FP_BYTES);
 
 	for (int j = 1; j < MAX_KEYS; j = j << 1) {
@@ -102,10 +102,10 @@ static void ers(void) {
 		}
 		assert(cp_ers_ver(td, ring, size, m, 5, pp));
 		bench_reset();
-		for (int i = 0; i < BENCH; i++)	{
+		for (int i = 0; i < RLC_BENCH; i++)	{
 			BENCH_ADD(cp_ers_ver(td, ring, size, m, 5, pp));
 		}
-		bench_compute(BENCH * BENCH);
+		bench_compute(RLC_BENCH * RLC_BENCH);
 		/* nonce and td are shared, the rest varies per signature. */
 		util_print(", \"%d\": {\"time\": %lf, \"size\": %d}", size, bench_total()/(double)1000000, 2 * RLC_FP_BYTES + size * 8 * RLC_FP_BYTES);
 	}
@@ -180,13 +180,13 @@ static void smlers(void) {
 			}
 			bench_reset();
 			bench_before();
-			for (int i = 0; i < BENCH; i++)	{
+			for (int i = 0; i < RLC_BENCH; i++)	{
 				for (int k = 0; k < l; k++) {
 					cp_smlers_ver(td[0], ring, size, m, 5, pp);
 				}
 			}
 			bench_after();
-			bench_compute(BENCH);
+			bench_compute(RLC_BENCH);
 			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, bench_total()/(double)1000000, l * (2 * RLC_FP_BYTES + size * 10 * RLC_FP_BYTES));
 			if (j < MAX_KEYS) {
 				util_print(", ");
@@ -232,21 +232,21 @@ static void etrs(void) {
 
 	util_print("- Threshold 1:\n {");
 	bench_reset();
-	for (int i = 0; i < BENCH; i++)	{
+	for (int i = 0; i < RLC_BENCH; i++)	{
 		BENCH_ADD(cp_etrs_sig(td, y, 1, ring[0], com, m, 5, sk[0], pk[0], pp));
 	}
-	bench_compute(BENCH * BENCH);
+	bench_compute(RLC_BENCH * RLC_BENCH);
 	util_print("\"1\": {\"time\": %lf, \"size\": null}", bench_total()/(double)1000000);
 	assert(cp_etrs_ver(1, td, y, 1, ring, 1, com, m, 5, pp));
 
 	for (int j = 2; j <= MAX_KEYS; j = j << 1) {
 		bench_reset();
 		bench_before();
-		for (int i = 0; i < BENCH; i++)	{
+		for (int i = 0; i < RLC_BENCH; i++)	{
 			cp_etrs_sig(td, y, j, ring[0], com, m, 5, sk[0], pk[0], pp);
 		}
 		bench_after();
-		bench_compute(BENCH);
+		bench_compute(RLC_BENCH);
 		util_print(", \"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
 		assert(cp_etrs_ver(1, td, y, j, ring, 1, com, m, 5, pp));
 	}
@@ -290,11 +290,11 @@ static void etrs(void) {
 			}
 			bench_reset();
 			bench_before();
-			for (int i = 0; i < BENCH; i++)	{
+			for (int i = 0; i < RLC_BENCH; i++)	{
 				cp_etrs_ver(l, td, y, j, ring, size, com, m, 5, pp);
 			}
 			bench_after();
-			bench_compute(BENCH);
+			bench_compute(RLC_BENCH);
 			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, bench_total()/(double)1000000, size * 13 * RLC_FP_BYTES + j * 2 * RLC_FP_BYTES);
 			if (j < MAX_KEYS) {
 				util_print(", ");

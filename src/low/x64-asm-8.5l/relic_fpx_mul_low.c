@@ -82,7 +82,7 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
  * The assembly reads both coordinates from one contiguous vector, which only
  * automatic allocation without padding between coordinates guarantees.
  */
-#if ALLOC != AUTO || ALIGN >= 16
+#if RLC_ALLOC != RLC_AUTO || RLC_ALIGN >= 16
 
 void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dv2_t u;

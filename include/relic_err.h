@@ -42,7 +42,7 @@
 #include "relic_util.h"
 #include "relic_label.h"
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 #include <setjmp.h>
 #endif
 
@@ -81,10 +81,10 @@ enum errors {
 };
 
 /**
- * Truncate file name if verbosity is turned off. On AVR the name is kept in
+ * Truncate file name if verbosity is turned off. On RLC_AVR the name is kept in
  * program memory, where it cannot be searched with strrchr().
  */
-#if defined(VERBS) || RLC_ARCH == AVR
+#if defined(RLC_VERBS) || RLC_ARCH == RLC_AVR
 #define RLC_FILE	RLC_STR(__FILE__)
 #else
 #define RLC_FILE														\
@@ -101,7 +101,7 @@ enum errors {
  */
 typedef int err_t;
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 
 /**
  * Type that describes an error status, including the error code and the program
@@ -226,7 +226,7 @@ typedef struct _sts_t {
 		}																\
 	} while (0)															\
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a TRY clause.
  */
@@ -240,7 +240,7 @@ typedef struct _sts_t {
 #define RLC_TRY					if ((core_get()->depth++, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a CATCH clause.
  */
@@ -255,7 +255,7 @@ typedef struct _sts_t {
 			(core_get()->pending = 0, (E) = core_get()->number, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a CATCH clause for any possible error.
  *
@@ -273,7 +273,7 @@ typedef struct _sts_t {
 			(core_get()->pending = 0, 1))
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements the RLC_FINALLY clause.
  */
@@ -282,7 +282,7 @@ typedef struct _sts_t {
 #define RLC_FINALLY				if (1)
 #endif
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 /**
  * Implements a THROW clause.
  */
@@ -295,7 +295,7 @@ typedef struct _sts_t {
  *
  * @param[in] E		- the exception being thrown.
  */
-#ifdef QUIET
+#ifdef RLC_QUIET
 #define RLC_ERR_PRINT_OFF(E)	/* empty */
 #else
 #define RLC_ERR_PRINT_OFF(E)												\
@@ -324,7 +324,7 @@ typedef struct _sts_t {
  */
 #define RLC_ERROR(LABEL)		goto LABEL
 
-#ifdef QUIET
+#ifdef RLC_QUIET
 
 /**
  * Stub for the error printing function.
@@ -335,7 +335,7 @@ typedef struct _sts_t {
 
 #else
 
-#ifdef VERBS
+#ifdef RLC_VERBS
 
 /**
  * Prints the current error message in a complete format.
@@ -345,7 +345,7 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_full_msg(__func__, RLC_FILE, __LINE__, ERROR)						\
 
-#else /* VERBS */
+#else /* RLC_VERBS */
 
 /**
  * Prints the current error message.
@@ -355,14 +355,14 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_simple_msg(ERROR)													\
 
-#endif /* VERBS */
-#endif /* QUIET */
+#endif /* RLC_VERBS */
+#endif /* RLC_QUIET */
 
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 
 /**
  * Prints the error message with little information.

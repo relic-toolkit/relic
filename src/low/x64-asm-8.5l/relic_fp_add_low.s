@@ -81,7 +81,7 @@ _p8: .quad _P8
 .global _p7
 .global _p8
 
-#if OPSYS != WINDOWS
+#if RLC_OPSYS != RLC_WINDOWS
 
 .hidden p0
 .hidden p1

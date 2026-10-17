@@ -49,7 +49,7 @@ int fp_smbm_low(const dig_t *a) {
 	e.used = RLC_FP_DIGS;
 	dv_copy(e.dp, fp_prime_get(), RLC_FP_DIGS);
 	bn_rsh1_low(e.dp, e.dp, RLC_FP_DIGS);
-#if AUTO == ALLOC
+#if RLC_AUTO == RLC_ALLOC
 	fp_exp(t, a, &e);
 #else
 	fp_exp(t, (const fp_t)a, &e);

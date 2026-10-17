@@ -230,11 +230,11 @@ enum {
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define RLC_EP_TABLE			RLC_EP_TABLE_BASIC
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define RLC_EP_TABLE			RLC_EP_TABLE_LWREG
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define RLC_EP_TABLE			RLC_EP_TABLE_COMBD
 #endif
 
@@ -242,7 +242,7 @@ enum {
  * Maximum size of a precomputation table, which only needs to fit the
  * chosen method when unused methods are stripped.
  */
-#ifdef STRIP
+#ifdef RLC_STRIP
 #define RLC_EP_TABLE_MAX 		RLC_EP_TABLE
 #else
 #define RLC_EP_TABLE_MAX 		RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
@@ -275,10 +275,10 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep_st ep_t[1];
 #else
-#ifdef CHECK
+#ifdef RLC_CHECK
 typedef ep_st *volatile ep_t;
 #else
 typedef ep_st *ep_t;
@@ -325,7 +325,7 @@ typedef iso_st *iso_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define ep_null(A)				/* empty */
 #else
 #define ep_null(A)			A = NULL;
@@ -337,14 +337,14 @@ typedef iso_st *iso_t;
  * @param[out] A			- the new point.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep_new(A)															\
 	A = (ep_t)calloc(1, sizeof(ep_st));										\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep_new(A)				/* empty */
 
 #endif
@@ -354,14 +354,14 @@ typedef iso_st *iso_t;
  *
  * @param[out] A			- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep_free(A)				/* empty */
 
 #endif
@@ -384,11 +384,11 @@ typedef iso_st *iso_t;
  * @param[in] P				- the first point to add.
  * @param[in] Q				- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep_add(R, P, Q)		ep_add_jacob(R, P, Q)
 #endif
 
@@ -398,11 +398,11 @@ typedef iso_st *iso_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep_dbl(R, P)		ep_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep_dbl(R, P)		ep_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep_dbl(R, P)		ep_dbl_jacob(R, P)
 #endif
 
@@ -412,11 +412,11 @@ typedef iso_st *iso_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep_tpl(R, P)		ep_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep_tpl(R, P)		ep_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep_tpl(R, P)		ep_tpl_jacob(R, P)
 #endif
 
@@ -427,13 +427,13 @@ typedef iso_st *iso_t;
  * @param[in] P				- the point to multiply.
  * @param[in] K				- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep_mul(R, P, K)		ep_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep_mul(R, P, K)		ep_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep_mul(R, P, K)		ep_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep_mul(R, P, K)		ep_mul_lwreg(R, P, K)
 #endif
 
@@ -443,11 +443,11 @@ typedef iso_st *iso_t;
  * @param[out] T			- the precomputation table.
  * @param[in] P				- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep_mul_pre(T, P)	ep_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep_mul_pre(T, P)	ep_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep_mul_pre(T, P)	ep_mul_pre_combd(T, P)
 #endif
 
@@ -459,11 +459,11 @@ typedef iso_st *iso_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep_mul_fix(R, T, K)		ep_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep_mul_fix(R, T, K)		ep_mul_fix_combd(R, T, K)
 #endif
 
@@ -485,11 +485,11 @@ typedef iso_st *iso_t;
  * @param[in] S					- the string to hash.
  * @param[in] L					- the string length.
  */
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 #define ep_map(R, S, L)			ep_map_basic(R, S, L)
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 #define ep_map(R, S, L)			ep_map_sswum(R, S, L)
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 #define ep_map(R, S, L)			ep_map_swift(R, S, L)
 #endif
 

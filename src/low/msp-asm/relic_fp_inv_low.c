@@ -57,7 +57,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 
 	p = fp_prime_get();
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	fp_prime_back(bna, a);
 #else
 	bna->used = RLC_FP_DIGS;
@@ -77,7 +77,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 		bn_sub(bnc, bnc, bnp);
 	}
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	fp_prime_conv(c, bnc);
 #else
 	dv_copy(c, bnc->dp, bnc->used);

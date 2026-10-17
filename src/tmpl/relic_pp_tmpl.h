@@ -198,7 +198,7 @@
 			/* l00 = B * yp. */												\
 			F##_mul_fp(TMPL_PP_LY_##K(l), t0, p->y);						\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -319,7 +319,7 @@
 			/* l00 = F * (-yp). */											\
 			F##_mul_fp(TMPL_PP_LY_##K(l), t5, p->y);						\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -487,7 +487,7 @@
 			/* l00 = B * yp. */												\
 			F##_mul_fp(TMPL_PP_LY_##K(l), t0, p->y);						\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -572,7 +572,7 @@
 			/* l00 = F * (-yp). */											\
 			F##_mul_fp(TMPL_PP_LY_##K(l), t5, p->y);						\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -664,7 +664,7 @@
 			F##_dbl(r->z, r->z);											\
 			F##_copy(r->x, t5);												\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -749,7 +749,7 @@
 			F##_dbl(r->z, r->z);											\
 			F##_copy(r->x, t5);												\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -824,7 +824,7 @@
 			F##_dbl(r->z, t1);												\
 			F##_dbl(r->z, r->z);											\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -850,7 +850,7 @@
 			return;															\
 		}																	\
 																			\
-		if (p->coord == BASIC) {											\
+		if (p->coord == EC_AFFIN) {											\
 			/* If the point is in affine coordinates, just copy it. */		\
 			C##_copy(r, p);													\
 			return;															\
@@ -862,7 +862,7 @@
 			F##_mul(r->y, r->y, r->z);										\
 		}																	\
 		F##_set_dig(r->z, 1);												\
-		r->coord = BASIC;													\
+		r->coord = EC_AFFIN;													\
 	}
 
 /**
@@ -875,7 +875,7 @@
  * @param[in] P			- the point of G_1.
  */
 /** @{ */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define TMPL_PP_MIL_P6(R, P)	ep_neg(R, P);
 #define TMPL_PP_MIL_P4(R, P)	ep_neg(R, P);
 #else
@@ -1178,7 +1178,7 @@
 			fp_mul(r->z, t1, t5);											\
 			fp_dbl(r->z, r->z);												\
 			fp_dbl(r->z, r->z);												\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 																			\
 			F##_dbl(TMPL_PP_LIT_X_##K(l), q->x);							\
 			F##_add(TMPL_PP_LIT_X_##K(l), TMPL_PP_LIT_X_##K(l), q->x);		\
@@ -1274,7 +1274,7 @@
 			fp_mul(t1, r->z, p->y);											\
 			fp_sub(t1, r->y, t1);											\
 			fp_mul(t2, p->x, t1);											\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 																			\
 			F##_zero(TMPL_PP_LIT_J_##K(l));									\
 			fp_mul(TMPL_PP_LIT_J0_##K(l), t0, p->y);						\

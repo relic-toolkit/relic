@@ -95,7 +95,7 @@ static void cache_default_color(void) {
  */
 static void fail_font(void) {
     cache_default_color();
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, FAIL_COLOR);
@@ -110,7 +110,7 @@ static void fail_font(void) {
  */
 static void pass_font(void) {
     cache_default_color();
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, PASS_COLOR);
@@ -124,7 +124,7 @@ static void pass_font(void) {
  * Resets font to default.
  */
 static void reset_font(void) {
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, default_color);

@@ -43,18 +43,18 @@
  * arithmetic only so that assembly can use it as an offset.
  */
 #if defined(WITH_FB) && FB_POLYN > FP_PRIME
-#define RLC_DV_STRIDE_D	((2 * FB_POLYN - 1) / WSIZE + 2)
+#define RLC_DV_STRIDE_D	((2 * FB_POLYN - 1) / RLC_WSIZE + 2)
 #else
-#define RLC_DV_STRIDE_D	((2 * FP_PRIME - 1) / WSIZE + 2)
+#define RLC_DV_STRIDE_D	((2 * FP_PRIME - 1) / RLC_WSIZE + 2)
 #endif
-#define RLC_DV_STRIDE_B	(2 * ((BN_PRECI - 1) / WSIZE + 1) + 2)
+#define RLC_DV_STRIDE_B	(2 * ((BN_PRECI - 1) / RLC_WSIZE + 1) + 2)
 #if RLC_DV_STRIDE_D > RLC_DV_STRIDE_B
-#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_D * (WSIZE / 8))
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_D * (RLC_WSIZE / 8))
 #else
-#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_B * (WSIZE / 8))
+#define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_B * (RLC_WSIZE / 8))
 #endif
-#if ALIGN > 1 && (RLC_DV_STRIDE_N % ALIGN) > 0
-#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N + ((ALIGN - RLC_DV_STRIDE_N % ALIGN) / (WSIZE / 8)) * (WSIZE / 8))
+#if RLC_ALIGN > 1 && (RLC_DV_STRIDE_N % RLC_ALIGN) > 0
+#define RLC_DV_STRIDE	(RLC_DV_STRIDE_N + ((RLC_ALIGN - RLC_DV_STRIDE_N % RLC_ALIGN) / (RLC_WSIZE / 8)) * (RLC_WSIZE / 8))
 #else
 #define RLC_DV_STRIDE	(RLC_DV_STRIDE_N)
 #endif
@@ -64,10 +64,10 @@
 #include "relic_conf.h"
 #include "relic_label.h"
 
-#if (FP_PRIME % WSIZE) > 0
-#define RLC_FP_DIGS		(FP_PRIME/WSIZE + 1)
+#if (FP_PRIME % RLC_WSIZE) > 0
+#define RLC_FP_DIGS		(FP_PRIME/RLC_WSIZE + 1)
 #else
-#define RLC_FP_DIGS		(FP_PRIME/WSIZE)
+#define RLC_FP_DIGS		(FP_PRIME/RLC_WSIZE)
 #endif
 #else
 
@@ -319,7 +319,7 @@ void fp_sqrm_low(dig_t *c, const dig_t *a);
 
 /**
  * Reduces a digit vector modulo m represented in special form.
- * Computes c = a mod m. Only arithmetic backends that support FP_RDC = LOWER
+ * Computes c = a mod m. Only arithmetic backends that support FP_RDC = FP_LOWER
  * provide it.
  *
  * @param[out] c			- the result.

@@ -250,7 +250,7 @@
 							q[l + i * (S / T)]);							\
 				}															\
 				/* The endomorphism may return projective points. */		\
-				l = (t[i][0]->coord == BASIC);								\
+				l = (t[i][0]->coord == EC_AFFIN);								\
 				C##_norm_sim(t[i] + l, (const C##_t *)t[i] + l,				\
 						(1 << (S / T - 1)) - l);							\
 				l = RLC_FP_BITS + 1;										\
@@ -259,7 +259,7 @@
 			}																\
 																			\
 			F##_set_dig(q[1]->z, 1);										\
-			q[1]->coord = BASIC;											\
+			q[1]->coord = EC_AFFIN;											\
 			C##_set_infty(r);												\
 			for (int j = l - 1; j >= 0; j--) {								\
 				C##_dbl(r, r);												\
@@ -406,7 +406,7 @@
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
 			}																\
 			/* Normalize if the endomorphism returns projective points. */	\
-			if (_p[e]->coord != BASIC) {									\
+			if (_p[e]->coord != EC_AFFIN) {									\
 				C##_norm_sim(_p + e, (const C##_t *)_p + e, (S - 1) * e);	\
 				C##_norm_sim(_q + e, (const C##_t *)_q + e, (S - 1) * e);	\
 			}																\

@@ -38,11 +38,11 @@
 
 #if defined(RLC_MULTI)
 #include <math.h>
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 #include <omp.h>
-#elif RLC_MULTI == PTHREAD
+#elif RLC_MULTI == RLC_PTHREAD
 #include <pthread.h>
-#endif /* OPENMP */
+#endif /* RLC_OPENMP */
 #endif /* RLC_MULTI */
 
 /*============================================================================*/
@@ -54,7 +54,7 @@
 /**
  * If multi-threading is enabled, assigns each thread a local copy of the data.
  */
-#if RLC_MULTI == PTHREAD
+#if RLC_MULTI == RLC_PTHREAD
 #define rlc_thread 	__thread
 #else
 #if defined(_MSC_VER)
@@ -67,7 +67,7 @@
 /**
  * Make library context private to each thread.
  */
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 /**
  * Active library context, only visible inside the library.
  */

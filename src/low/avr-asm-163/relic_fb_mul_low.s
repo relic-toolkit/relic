@@ -71,10 +71,10 @@
 /*
  * Size in bytes of a precomputation table line.
  */
-#if (POLY_M4 % WSIZE) > 0
-#define T_LINE	(POLY_M4/WSIZE + 1)
+#if (POLY_M4 % RLC_WSIZE) > 0
+#define T_LINE	(POLY_M4/RLC_WSIZE + 1)
 #else
-#define T_LINE	(POLY_M4/WSIZE)
+#define T_LINE	(POLY_M4/RLC_WSIZE)
 #endif
 
 /*
@@ -423,7 +423,7 @@ fb_sqrm_table2:
 	.endr
 .endm
 
-#if FB_MUL == LODAH || !defined(STRIP)
+#if FB_MUL == FB_LODAH || !defined(RLC_STRIP)
 
 fb_muln_low:
 	PROLOGUE
@@ -519,7 +519,7 @@ fb_muln_low:
 	std		z + \d2, RT
 .endm
 
-#if FB_MUL == INTEG || !defined(STRIP)
+#if FB_MUL == FB_INTEG || !defined(RLC_STRIP)
 
 fb_muli_low:
 	PROLOGUE

@@ -65,7 +65,7 @@ extern "C" {
  */
 #define TEST_CASE(P)														\
 	util_print("Testing if " P "...%*c", (int)(64 - strlen(P)), ' ');		\
-	for (int i = 0; i < TESTS; i++)											\
+	for (int i = 0; i < RLC_TESTS; i++)											\
 
 /**
  * Asserts a condition.

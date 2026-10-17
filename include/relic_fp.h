@@ -188,8 +188,8 @@ enum {
  * Constant used to indicate that there's some room left in the storage of
  * prime field elements. This can be used to avoid carries.
  */
-#if ((FP_PRIME % WSIZE) != 0) && ((FP_PRIME % WSIZE) <= (WSIZE - 2))
-#if ((2 * FP_PRIME % WSIZE) != 0) && ((2 * FP_PRIME % WSIZE) <= (WSIZE - 2))
+#if ((FP_PRIME % RLC_WSIZE) != 0) && ((FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
+#if ((2 * FP_PRIME % RLC_WSIZE) != 0) && ((2 * FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
 #define RLC_FP_ROOM
 #else
 #undef RLC_FP_ROOM
@@ -209,7 +209,7 @@ enum {
  * in little-endian format, that is, the least significant digits are
  * stored in the first positions of the vector.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t fp_t[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *fp_t;
@@ -229,7 +229,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define fp_null(A)			/* empty */
 #else
 #define fp_null(A)			A = NULL;
@@ -240,9 +240,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the new prime field element.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_new(A)			/* empty */
 #endif
 
@@ -251,9 +251,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the prime field element to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_free(A)			/* empty */
 #endif
 
@@ -276,9 +276,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the first prime field element.
  * @param[in] B				- the second prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_add(C, A, B)		fp_add_basic(C, A, B)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_add(C, A, B)		fp_add_integ(C, A, B)
 #endif
 
@@ -289,9 +289,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the first prime field element.
  * @param[in] B				- the second prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_sub(C, A, B)		fp_sub_basic(C, A, B)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_sub(C, A, B)		fp_sub_integ(C, A, B)
 #endif
 
@@ -301,9 +301,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the prime field element to negate.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_neg(C, A)		fp_neg_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_neg(C, A)		fp_neg_integ(C, A)
 #endif
 
@@ -313,9 +313,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the first prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_dbl(C, A)		fp_dbl_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_dbl(C, A)		fp_dbl_integ(C, A)
 #endif
 
@@ -325,9 +325,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the first prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_hlv(C, A)		fp_hlv_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_hlv(C, A)		fp_hlv_integ(C, A)
 #endif
 
@@ -340,11 +340,11 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_KARAT > 0
 #define fp_mul(C, A, B)		fp_mul_karat(C, A, B)
-#elif FP_MUL == BASIC
+#elif FP_MUL == FP_BASIC
 #define fp_mul(C, A, B)		fp_mul_basic(C, A, B)
-#elif FP_MUL == COMBA
+#elif FP_MUL == FP_COMBA
 #define fp_mul(C, A, B)		fp_mul_comba(C, A, B)
-#elif FP_MUL == INTEG
+#elif FP_MUL == FP_INTEG
 #define fp_mul(C, A, B)		fp_mul_integ(C, A, B)
 #endif
 
@@ -356,13 +356,13 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_KARAT > 0
 #define fp_sqr(C, A)		fp_sqr_karat(C, A)
-#elif FP_SQR == BASIC
+#elif FP_SQR == FP_BASIC
 #define fp_sqr(C, A)		fp_sqr_basic(C, A)
-#elif FP_SQR == COMBA
+#elif FP_SQR == FP_COMBA
 #define fp_sqr(C, A)		fp_sqr_comba(C, A)
-#elif FP_SQR == MULTP
+#elif FP_SQR == FP_MULTP
 #define fp_sqr(C, A)		fp_mul(C, A, A)
-#elif FP_SQR == INTEG
+#elif FP_SQR == FP_INTEG
 #define fp_sqr(C, A)		fp_sqr_integ(C, A)
 #endif
 
@@ -373,13 +373,13 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the multiplication result to reduce.
  */
-#if FP_RDC == BASIC
+#if FP_RDC == FP_BASIC
 #define fp_rdc(C, A)		fp_rdc_basic(C, A)
-#elif FP_RDC == MONTY
+#elif FP_RDC == FP_MONTY
 #define fp_rdc(C, A)		fp_rdc_monty(C, A)
-#elif FP_RDC == QUICK
+#elif FP_RDC == FP_QUICK
 #define fp_rdc(C, A)		fp_rdc_quick(C, A)
-#elif FP_RDC == LOWER
+#elif FP_RDC == FP_LOWER
 #define fp_rdc(C, A)		fp_rdc_lower(C, A)
 #endif
 
@@ -390,7 +390,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the multiplication result to reduce.
  */
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 #define fp_rdc_monty(C, A)	fp_rdc_monty_basic(C, A)
 #else
 #define fp_rdc_monty(C, A)	fp_rdc_monty_comba(C, A)
@@ -402,19 +402,19 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the prime field element to invert.
  */
-#if FP_INV == BASIC
+#if FP_INV == FP_BASIC
 #define fp_inv(C, A)	fp_inv_basic(C, A)
-#elif FP_INV == BINAR
+#elif FP_INV == FP_BINAR
 #define fp_inv(C, A)	fp_inv_binar(C, A)
-#elif FP_INV == MONTY
+#elif FP_INV == FP_MONTY
 #define fp_inv(C, A)	fp_inv_monty(C, A)
-#elif FP_INV == EXGCD
+#elif FP_INV == FP_EXGCD
 #define fp_inv(C, A)	fp_inv_exgcd(C, A)
-#elif FP_INV == DIVST
+#elif FP_INV == FP_DIVST
 #define fp_inv(C, A)	fp_inv_divst(C, A)
-#elif FP_INV == JMPDS
+#elif FP_INV == FP_JMPDS
 #define fp_inv(C, A)	fp_inv_jmpds(C, A)
-#elif FP_INV == LOWER
+#elif FP_INV == FP_LOWER
 #define fp_inv(C, A)	fp_inv_lower(C, A)
 #endif
 
@@ -424,15 +424,15 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the prime field element to compute.
  */
-#if FP_SMB == BASIC
+#if FP_SMB == FP_BASIC
 #define fp_smb(A)		fp_smb_basic(A)
-#elif FP_SMB == BINAR
+#elif FP_SMB == FP_BINAR
 #define fp_smb(A)		fp_smb_binar(A)
-#elif FP_SMB == DIVST
+#elif FP_SMB == FP_DIVST
 #define fp_smb(A)		fp_smb_divst(A)
-#elif FP_SMB == JMPDS
+#elif FP_SMB == FP_JMPDS
 #define fp_smb(A)		fp_smb_jmpds(A)
-#elif FP_SMB == LOWER
+#elif FP_SMB == FP_LOWER
 #define fp_smb(A)		fp_smb_lower(A)
 #endif
 
@@ -443,11 +443,11 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the basis.
  * @param[in] B				- the exponent.
  */
-#if FP_EXP == BASIC
+#if FP_EXP == FP_BASIC
 #define fp_exp(C, A, B)		fp_exp_basic(C, A, B)
-#elif FP_EXP == SLIDE
+#elif FP_EXP == FP_SLIDE
 #define fp_exp(C, A, B)		fp_exp_slide(C, A, B)
-#elif FP_EXP == MONTY
+#elif FP_EXP == FP_MONTY
 #define fp_exp(C, A, B)		fp_exp_monty(C, A, B)
 #endif
 

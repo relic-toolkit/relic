@@ -163,7 +163,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		fp_set_dig(u->z, 1);
 		fp_set_dig(w->z, 1);
-		u->coord = w->coord = BASIC;
+		u->coord = w->coord = EC_AFFIN;
 		ep_set_infty(r);
 		for (int i = l - 1; i >= 0; i--) {
 			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {

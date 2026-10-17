@@ -307,7 +307,7 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 
 	fp2_copy(c, a);
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	switch(i) {
 		case 1:
 			fp2_mul(c, c, ctx->fp2_p1[j - 1]);

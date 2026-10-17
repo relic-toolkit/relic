@@ -68,7 +68,7 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 
 		if (level <= 1) {
 			/* a0a0 = a0 * a0 and a1a1 = a1 * a1 */
-#if FP_SQR == BASIC
+#if FP_SQR == FP_BASIC
 			for (i = 0; i < h - 1; i++) {
 				a0a0[h + i + 1] = bn_sqra_low(a0a0 + 2 * i, a + i, h - i);
 			}
@@ -77,10 +77,10 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 				a1a1[h1 + i + 1] = bn_sqra_low(a1a1 + 2 * i, a + h + i, h1 - i);
 			}
 			bn_sqra_low(a1a1 + 2 * i, a + h + i, 1);
-#elif FP_SQR == COMBA || FP_SQR == INTEG
+#elif FP_SQR == FP_COMBA || FP_SQR == FP_INTEG
 			bn_sqrn_low(a0a0, a, h);
 			bn_sqrn_low(a1a1, a + h, h1);
-#elif FP_SQR == MULTP
+#elif FP_SQR == FP_MULTP
 			bn_muln_low(a0a0, a, a, h);
 			bn_muln_low(a1a1, a + h, a + h, h1);
 #endif
@@ -106,14 +106,14 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 
 		if (level <= 1) {
 			/* a1a1 = (a1 + a0)*(a1 + a0) */
-#if FP_SQR == BASIC
+#if FP_SQR == FP_BASIC
 			for (i = 0; i < h1; i++) {
 				t1[h1 + i + 2] = bn_sqra_low(t1 + (2 * i), t0 + i, h1 + 1 - i);
 			}
 			bn_sqra_low(t1 + (2 * i), t0 + i, 1);
-#elif FP_SQR == COMBA || FP_SQR == INTEG
+#elif FP_SQR == FP_COMBA || FP_SQR == FP_INTEG
 			bn_sqrn_low(t1, t0, h1 + 1);
-#elif FP_SQR == MULTP
+#elif FP_SQR == FP_MULTP
 			bn_muln_low(t1, t0, t0, h1 + 1);
 #endif
 		} else {

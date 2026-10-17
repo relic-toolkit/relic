@@ -58,7 +58,7 @@ p7: .quad P7
 .global p6
 .global p7
 
-#if OPSYS != WINDOWS
+#if RLC_OPSYS != RLC_WINDOWS
 
 .hidden p0
 .hidden p1

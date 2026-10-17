@@ -176,7 +176,7 @@ void ep8_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep8_new(ctx->ep8_g);
 	fp8_new(ctx->ep8_a);
 	fp8_new(ctx->ep8_b);
@@ -185,7 +185,7 @@ void ep8_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp8_new(ctx->ep8_pre[i].x);
 		fp8_new(ctx->ep8_pre[i].y);
@@ -237,7 +237,7 @@ void ep8_curve_mul_a(fp8_t c, const fp8_t a) {
 		case RLC_TWO:
 			fp8_dbl(c, a);
 			break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		case RLC_TINY:
 			fp8_mul_dig(c, a, ctx->ep8_a[0][0][0][0]);
 			break;
@@ -257,7 +257,7 @@ void ep8_curve_mul_b(fp8_t c, const fp8_t a) {
 		case RLC_ONE:
 			fp8_copy(c, a);
 			break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		case RLC_TINY:
 			fp8_mul_dig(c, a, ctx->ep8_b[0][0][0][0]);
 			break;
@@ -300,7 +300,7 @@ void ep8_curve_get_cof(bn_t h) {
 #if defined(EP_PRECO)
 
 ep8_t *ep8_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep8_t *)*(core_get()->ep8_ptr);
 #else
 	return core_get()->ep8_ptr;
@@ -351,7 +351,7 @@ void ep8_curve_set_twist(int type) {
 
 		fp8_zero(g->z);
 		fp8_set_dig(g->z, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		ep8_copy(ctx->ep8_g, g);
 		fp8_copy(ctx->ep8_a, a);

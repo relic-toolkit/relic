@@ -31,7 +31,7 @@
 
 #include "relic_conf.h"
 
-#if RLC_TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 #define _GNU_SOURCE
 #include <sys/syscall.h>      /* Definition of SYS_* constants */
 #include <unistd.h>
@@ -42,7 +42,7 @@
 
 #include "relic_core.h"
 
-#if OPSYS == DUINO && RLC_TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 /*
  * Prototype for Arduino timing function.
  *
@@ -58,11 +58,11 @@ uint32_t micros();
 /**
  * Shared parameter for these timer.
  */
-#if RLC_TIMER == HREAL
+#if RLC_TIMER == RLC_HREAL
 #define CLOCK			CLOCK_MONOTONIC
-#elif RLC_TIMER == HPROC
+#elif RLC_TIMER == RLC_HPROC
 #define CLOCK			CLOCK_PROCESS_CPUTIME_ID
-#elif RLC_TIMER == HTHRD
+#elif RLC_TIMER == RLC_HTHRD
 #define CLOCK			CLOCK_THREAD_CPUTIME_ID
 #else
 #define CLOCK			NULL
@@ -75,7 +75,7 @@ uint32_t micros();
 void bench_init(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-#if RLC_TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 		static struct perf_event_attr attr;
 		attr.type = PERF_TYPE_HARDWARE;
 		attr.config = PERF_COUNT_HW_CPU_CYCLES;
@@ -100,13 +100,13 @@ void bench_reset(void) {
 }
 
 void bench_before(void) {
-#if OPSYS == DUINO && RLC_TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 	core_get()->before = micros();
-#elif RLC_TIMER == HREAL || RLC_TIMER == HPROC || RLC_TIMER == HTHRD
+#elif RLC_TIMER == RLC_HREAL || RLC_TIMER == RLC_HPROC || RLC_TIMER == RLC_HTHRD
 	clock_gettime(CLOCK, &(core_get()->before));
-#elif RLC_TIMER == ANSI
+#elif RLC_TIMER == RLC_ANSI
 	core_get()->before = clock();
-#elif RLC_TIMER == CYCLE || RLC_TIMER == PERF
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	core_get()->before = arch_cycles();
 #endif
 }
@@ -115,17 +115,17 @@ void bench_after(void) {
 	ctx_t *ctx = core_get();
 	long long result;
 
-#if OPSYS == DUINO && RLC_TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 	core_get()->after = micros();
 	result = (ctx->after - ctx->before);
-#elif RLC_TIMER == HREAL || RLC_TIMER == HPROC || RLC_TIMER == HTHRD
+#elif RLC_TIMER == RLC_HREAL || RLC_TIMER == RLC_HPROC || RLC_TIMER == RLC_HTHRD
 	clock_gettime(CLOCK, &(ctx->after));
 	result = ((long long)ctx->after.tv_sec - ctx->before.tv_sec) * 1000000000;
 	result += (ctx->after.tv_nsec - ctx->before.tv_nsec);
-#elif RLC_TIMER == ANSI
+#elif RLC_TIMER == RLC_ANSI
 	ctx->after = clock();
 	result = (long long)(ctx->after - ctx->before) * 1000000 / CLOCKS_PER_SEC;
-#elif RLC_TIMER == CYCLE || RLC_TIMER == PERF
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	ctx->after = arch_cycles();
   	result = (ctx->after - ctx->before);
 #endif
@@ -151,9 +151,9 @@ void bench_compute(int benches) {
 void bench_print(void) {
 	ctx_t *ctx = core_get();
 
-#if RLC_TIMER == ANSI || (OPSYS == DUINO && RLC_TIMER == HREAL)
+#if RLC_TIMER == RLC_ANSI || (RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL)
 	util_print("%lld microsec", ctx->total);
-#elif RLC_TIMER == CYCLE || RLC_TIMER == PERF
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	util_print("%lld cycles", ctx->total);
 #else
 	util_print("%lld nanosec", ctx->total);
@@ -170,7 +170,7 @@ ull_t bench_total(void) {
 }
 
 void bench_clean(void) {
-#if RLC_TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 	ctx_t *ctx = core_get();
 	if (ctx != NULL && ctx->perf_fd != -1) {
 		close(ctx->perf_fd);

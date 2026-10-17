@@ -6,7 +6,7 @@ message("   RAND=CALL      Override the generator with a callback.\n")
 
 message(STATUS "Available random number generator seeders (default = UDEV):\n")
 
-message("   SEED=ZERO      Use a zero seed. (horribly insecure!)")
+message("   SEED=NONE      Use a zero seed. (horribly insecure!)")
 message("   SEED=RDRND     Use Intel RdRand instruction directly.")
 message("   SEED=UDEV      Use non-blocking /dev/urandom. (recommended)")
 message("   SEED=WCGR      Use Windows' CryptGenRandom. (recommended)\n")
@@ -31,9 +31,9 @@ if(RAND STREQUAL "RDRND")
 		"SEED=RDRND to seed it from RdRand.")
 endif()
 if(SEED STREQUAL "")
-	message(FATAL_ERROR "SEED is empty, use SEED=ZERO for a fixed seed.")
+	message(FATAL_ERROR "SEED is empty, use SEED=NONE for a fixed seed.")
 endif()
 if(SEED STREQUAL "LIBC")
-	message(FATAL_ERROR "SEED=LIBC was removed, use SEED=ZERO for a fixed "
+	message(FATAL_ERROR "SEED=LIBC was removed, use SEED=NONE for a fixed "
 		"seed or a real seeder such as UDEV.")
 endif()

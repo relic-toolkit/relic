@@ -63,17 +63,17 @@ enum {
 /**
  * Length in bytes of default hash function output.
  */
-#if MD_MAP == SH224
+#if MD_MAP == MD_SH224
 #define RLC_MD_LEN					RLC_MD_LEN_SH224
-#elif MD_MAP == SH256
+#elif MD_MAP == MD_SH256
 #define RLC_MD_LEN					RLC_MD_LEN_SH256
-#elif MD_MAP == SH384
+#elif MD_MAP == MD_SH384
 #define RLC_MD_LEN					RLC_MD_LEN_SH384
-#elif MD_MAP == SH512
+#elif MD_MAP == MD_SH512
 #define RLC_MD_LEN					RLC_MD_LEN_SH512
-#elif MD_MAP == B2S160
+#elif MD_MAP == MD_B2S160
 #define RLC_MD_LEN					RLC_MD_LEN_B2S160
-#elif MD_MAP == B2S256
+#elif MD_MAP == MD_B2S256
 #define RLC_MD_LEN					RLC_MD_LEN_B2S256
 #endif
 
@@ -97,17 +97,17 @@ enum {
  * @param[in] M					- the message to hash.
  * @param[in] L					- the message length in bytes.
  */
-#if MD_MAP == SH224
+#if MD_MAP == MD_SH224
 #define md_map(H, M, L)			md_map_sh224(H, M, L)
-#elif MD_MAP == SH256
+#elif MD_MAP == MD_SH256
 #define md_map(H, M, L)			md_map_sh256(H, M, L)
-#elif MD_MAP == SH384
+#elif MD_MAP == MD_SH384
 #define md_map(H, M, L)			md_map_sh384(H, M, L)
-#elif MD_MAP == SH512
+#elif MD_MAP == MD_SH512
 #define md_map(H, M, L)			md_map_sh512(H, M, L)
-#elif MD_MAP == B2S160
+#elif MD_MAP == MD_B2S160
 #define md_map(H, M, L)			md_map_b2s160(H, M, L)
-#elif MD_MAP == B2S256
+#elif MD_MAP == MD_B2S256
 #define md_map(H, M, L)			md_map_b2s256(H, M, L)
 #endif
 
@@ -122,17 +122,17 @@ enum {
  * @param[in] D						- the domain separation tag.
  * @param[in] DL					- the domain separation tag length in bytes.
  */
-#if MD_MAP == SH224
+#if MD_MAP == MD_SH224
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh224(B, BL, I, IL, D, DL)
-#elif MD_MAP == SH256
+#elif MD_MAP == MD_SH256
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh256(B, BL, I, IL, D, DL)
-#elif MD_MAP == SH384
+#elif MD_MAP == MD_SH384
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh384(B, BL, I, IL, D, DL)
-#elif MD_MAP == SH512
+#elif MD_MAP == MD_SH512
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh512(B, BL, I, IL, D, DL)
-#elif MD_MAP == B2S160
+#elif MD_MAP == MD_B2S160
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_b2s160(B, BL, I, IL, D, DL)
-#elif MD_MAP == B2S256
+#elif MD_MAP == MD_B2S256
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_b2s256(B, BL, I, IL, D, DL)
 #endif
 

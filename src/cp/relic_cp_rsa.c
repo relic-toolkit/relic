@@ -178,22 +178,22 @@ static const uint8_t b2s256_id[] = {
  */
 static const uint8_t *hash_id(size_t *len) {
 	switch (MD_MAP) {
-		case SH224:
+		case MD_SH224:
 			*len = sizeof(sh224_id);
 			return sh224_id;
-		case SH256:
+		case MD_SH256:
 			*len = sizeof(sh256_id);
 			return sh256_id;
-		case SH384:
+		case MD_SH384:
 			*len = sizeof(sh384_id);
 			return sh384_id;
-		case SH512:
+		case MD_SH512:
 			*len = sizeof(sh512_id);
 			return sh512_id;
-		case B2S160:
+		case MD_B2S160:
 			*len = sizeof(b2s160_id);
 			return b2s160_id;
-		case B2S256:
+		case MD_B2S256:
 			*len = sizeof(b2s256_id);
 			return b2s256_id;
 		default:

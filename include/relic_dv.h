@@ -88,7 +88,7 @@
 /**
  * Represents a temporary double-precision digit vector.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t dv_t[RLC_DV_DIGS + RLC_PAD(RLC_DV_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *dv_t;
@@ -103,7 +103,7 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the digit vector to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define dv_null(A)			/* empty */
 #else
 #define dv_null(A)			A = NULL;
@@ -114,9 +114,9 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the double-precision result.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define dv_new(A)			dv_new_dynam(&(A), RLC_DV_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define dv_new(A)			/* empty */
 #endif
 
@@ -125,9 +125,9 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the temporary digit vector to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define dv_free(A)			dv_free_dynam(&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define dv_free(A)			(void)A
 #endif
 
@@ -250,7 +250,7 @@ int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size);
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  * 							by the library.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 void dv_new_dynam(dv_t *a, size_t digits);
 #endif
 
@@ -259,7 +259,7 @@ void dv_new_dynam(dv_t *a, size_t digits);
  *
  * @param[out] a			- the temporary digit vector to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 void dv_free_dynam(dv_t *a);
 #endif
 

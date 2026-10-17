@@ -65,7 +65,7 @@ void arch_clean(void) {
 	}
 }
 
-#if RLC_TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
 ull_t arch_cycles(void) {
 	uint32_t hi, lo;
@@ -79,7 +79,7 @@ ull_t arch_cycles(void) {
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
 }
 
-#elif RLC_TIMER == PERF
+#elif RLC_TIMER == RLC_PERF
 
 ull_t arch_cycles(void) {
 	uint_t seq;
@@ -105,7 +105,7 @@ ull_t arch_cycles(void) {
 #endif
 
 uint_t arch_lzcnt(dig_t x) {
-	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
+	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - RLC_WSIZE);
 }
 
 uint_t arch_tzcnt(dig_t x) {

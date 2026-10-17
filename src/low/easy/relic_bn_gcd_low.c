@@ -241,7 +241,7 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	 * the Handbook of Applied Cryptography.
 	 *
 	 * Unlike bn_gcdn_low this cannot require an operand to be odd, and that is
-	 * not an oversight but the same asymmetry GMP has: mpn_gcd demands that one
+	 * not an oversight but the same asymmetry RLC_GMP has: mpn_gcd demands that one
 	 * operand be odd while mpn_gcdext does not. Demanding it would let the
 	 * cofactors be carried as unsigned residues modulo the odd operand, which is
 	 * far cheaper, but only yields the cofactor of the *other* one. A routine

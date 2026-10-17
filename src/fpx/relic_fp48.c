@@ -94,7 +94,7 @@ void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 		/* t0 = a_0 * b_0. */
 		fp24_mul_dxs(t0, a[0], b[0]);
 		/* t1 = a_1 * b_1. */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < 2; k++) {
@@ -112,7 +112,7 @@ void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 		fp24_mul_art(t1, t1);
 		/* t2 = b_0 + b_1. */
 		fp8_copy(t2[0], b[0][0]);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 		fp8_copy(t2[1], b[0][1]);
 		fp_add(t2[1][0][0][0], t2[1][0][0][0], b[1][1][0][0][0]);
 #else
