@@ -270,8 +270,6 @@
 #undef bn_mod_monty_back
 #undef bn_mod_monty_basic
 #undef bn_mod_monty_comba
-#undef bn_mod_pre_pmers
-#undef bn_mod_pmers
 #undef bn_mxp_basic
 #undef bn_mxp_slide
 #undef bn_mxp_monty
@@ -406,8 +404,6 @@
 #define bn_mod_monty_back 	RLC_PREFIX(bn_mod_monty_back)
 #define bn_mod_monty_basic 	RLC_PREFIX(bn_mod_monty_basic)
 #define bn_mod_monty_comba 	RLC_PREFIX(bn_mod_monty_comba)
-#define bn_mod_pre_pmers 	RLC_PREFIX(bn_mod_pre_pmers)
-#define bn_mod_pmers 	RLC_PREFIX(bn_mod_pmers)
 #define bn_mxp_basic 	RLC_PREFIX(bn_mxp_basic)
 #define bn_mxp_slide 	RLC_PREFIX(bn_mxp_slide)
 #define bn_mxp_monty 	RLC_PREFIX(bn_mxp_monty)
