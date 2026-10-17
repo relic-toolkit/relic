@@ -149,7 +149,7 @@ enum {
 	/** 510-bit prime for new family with embedding degree 16. */
 	AFG16_510,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
-	GMT8_544,
+	CP8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */
 	SG54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
@@ -162,6 +162,8 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
+	/** Random 672-bit prime for Cocks-Pinch curve with embedding degree 6. */
+	CP6_672,
 	/** 765-bit prime for FM curve with embedding degree 16. */
 	FM16_765,
 	/** 766-bit prime for KSS curve with embedding degree 16. */

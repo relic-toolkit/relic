@@ -41,7 +41,7 @@
  * Number of division steps for any modulus p < 2^FP_PRIME, from the bound for
  * half-delta divsteps in https://github.com/sipa/safegcd-bounds.
  */
-#define JMPDS_ITERATIONS	((3787 * FP_PRIME + 2166) / 1644)
+#define JMPDS_ITERS	((3787 * FP_PRIME + 2166) / 1644)
 
 /*
  * Number of division steps in each jump, done in two halves so that each row
@@ -63,9 +63,9 @@
  * @return the updated value of zeta.
  */
 #if RLC_WSIZE == 8
-static int jmpds_steps(dis_t m[4], int zeta, dig_t f, dig_t g, int s) {
+static int inv_steps(dis_t m[4], int zeta, dig_t f, dig_t g, int s) {
 #else
-static dis_t jmpds_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
+static dis_t inv_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
 #endif
 	const int h = RLC_DIG / 2;
 	dig_t uv, qr, c0, c1;
@@ -112,7 +112,7 @@ static dis_t jmpds_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
 /**
  * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
  */
-static inline void jmpds_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
+static inline void inv_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
 		dig_t sb) {
 	dig_t h, l;
 #ifdef RLC_CONF_NODBL
@@ -142,7 +142,7 @@ static inline void jmpds_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
  * @param[in] m				- the transition matrix.
  * @param[in] s				- the number of division steps.
  */
-static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
+static void inv_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 		const dis_t m[4], int s) {
 	const dis_t u = m[0], v = m[1], q = m[2], r = m[3];
 	const dig_t *p = fp_prime_get(), rdc = *fp_prime_get_rdc();
@@ -165,16 +165,16 @@ static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 		gi = g[i];
 		di = d[i];
 		ei = e[i];
-		jmpds_mac(&f1, &f0, u, fi, 0);
-		jmpds_mac(&f1, &f0, v, gi, 0);
-		jmpds_mac(&g1, &g0, q, fi, 0);
-		jmpds_mac(&g1, &g0, r, gi, 0);
-		jmpds_mac(&d1, &d0, u, di, 0);
-		jmpds_mac(&d1, &d0, v, ei, 0);
-		jmpds_mac(&d1, &d0, md, p[i], 0);
-		jmpds_mac(&e1, &e0, q, di, 0);
-		jmpds_mac(&e1, &e0, r, ei, 0);
-		jmpds_mac(&e1, &e0, me, p[i], 0);
+		inv_mac(&f1, &f0, u, fi, 0);
+		inv_mac(&f1, &f0, v, gi, 0);
+		inv_mac(&g1, &g0, q, fi, 0);
+		inv_mac(&g1, &g0, r, gi, 0);
+		inv_mac(&d1, &d0, u, di, 0);
+		inv_mac(&d1, &d0, v, ei, 0);
+		inv_mac(&d1, &d0, md, p[i], 0);
+		inv_mac(&e1, &e0, q, di, 0);
+		inv_mac(&e1, &e0, r, ei, 0);
+		inv_mac(&e1, &e0, me, p[i], 0);
 		/* Store the previous digits shifted right by s bits. */
 		if (i > 0) {
 			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
@@ -201,14 +201,14 @@ static void jmpds_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	gi = g[i];
 	di = d[i];
 	ei = e[i];
-	jmpds_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
-	jmpds_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
-	jmpds_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
-	jmpds_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
-	jmpds_mac(&d1, &d0, u, di, -RLC_SIGN(di));
-	jmpds_mac(&d1, &d0, v, ei, -RLC_SIGN(ei));
-	jmpds_mac(&e1, &e0, q, di, -RLC_SIGN(di));
-	jmpds_mac(&e1, &e0, r, ei, -RLC_SIGN(ei));
+	inv_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
+	inv_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
+	inv_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
+	inv_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	inv_mac(&d1, &d0, u, di, -RLC_SIGN(di));
+	inv_mac(&d1, &d0, v, ei, -RLC_SIGN(ei));
+	inv_mac(&e1, &e0, q, di, -RLC_SIGN(di));
+	inv_mac(&e1, &e0, r, ei, -RLC_SIGN(ei));
 	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
 	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
 	d[i - 1] = (ds >> s) | (d0 << (RLC_DIG - s));
@@ -657,10 +657,10 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		e[0] = 1;
 
 		/* The number of steps only depends on the prime size. */
-		for (int i = 0; i < JMPDS_ITERATIONS; i += s) {
-			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERATIONS - i);
-			zeta = jmpds_steps(m, zeta, f[0], g[0], s);
-			jmpds_apply(f, g, d, e, m, s);
+		for (int i = 0; i < JMPDS_ITERS; i += s) {
+			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
+			zeta = inv_steps(m, zeta, f[0], g[0], s);
+			inv_apply(f, g, d, e, m, s);
 		}
 
 		/* Now f = 1 or -1, so 1/a = d * f; bring it from (-2p, p) to [0, p). */

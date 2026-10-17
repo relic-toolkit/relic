@@ -183,9 +183,7 @@ endif()
 
 # Linker flags, by default from LDFLAGS in the environment.
 set(${FLAGS_PREFIX}LDFLAGS "$ENV{LDFLAGS}" CACHE STRING "Linker flags.")
-string(TOLOWER ${ARITH} LFLAGS)
-set(LFLAGS "-L${CMAKE_CURRENT_SOURCE_DIR}/src/low/${LFLAGS}/")
-set(LFLAGS "${LFLAGS} ${${FLAGS_PREFIX}LDFLAGS}")
+set(LFLAGS "${${FLAGS_PREFIX}LDFLAGS}")
 
 if(STBIN)
 	set(LFLAGS "${LFLAGS} -static")
