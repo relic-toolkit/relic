@@ -1197,7 +1197,7 @@ void ep_param_set(int param) {
 #endif
 #if FP_PRIME == 544
 			case CP8_P544:
-				ASSIGNK(CP8_P544, CP8_544);
+				EP_ASSIGNK(CP8_P544, CP8_544);
 				endom = 1;
 				pairf = EP_CP8;
 				twist = RLC_EP_MTYPE;
@@ -1438,7 +1438,7 @@ void ep_param_set(int param) {
 		switch (pairf) {
 			case EP_BN:
 			case EP_B12:
-			case EP_GMT8:
+			case EP_CP8:
 				ep2_curve_set_twist(twist);
 				break;
 			case EP_K18:
@@ -1873,8 +1873,8 @@ int ep_param_level(void) {
 		case BN_P446:
 		case B12_P446:
 		case AFG16_P510:
-		case CP8_P544:
 		case OT8_P511:
+		case CP8_P544:
 		case SS_P1536:
 		case K1_P3072:
 			return 128;

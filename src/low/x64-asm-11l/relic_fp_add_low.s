@@ -21,8 +21,6 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_fp_low.h"
-
 /**
  * @file
  *
@@ -32,10 +30,16 @@
  * @ingroup fp
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
-.data
+#if defined(__APPLE__)
+.section __TEXT,__const
+#else
+.section .rodata
+#endif
 
+.p2align 3
 p0: .quad P0
 p1: .quad P1
 p2: .quad P2
@@ -46,7 +50,7 @@ p6: .quad P6
 p7: .quad P7
 p8: .quad P8
 p9: .quad P9
-p10:.quad P10
+p10: .quad P10
 
 .global p0
 .global p1
@@ -60,6 +64,8 @@ p10:.quad P10
 .global p9
 .global p10
 
+#if RLC_OPSYS != RLC_WINDOWS
+
 .hidden p0
 .hidden p1
 .hidden p2
@@ -70,7 +76,9 @@ p10:.quad P10
 .hidden p7
 .hidden p8
 .hidden p9
-.global p10
+.hidden p10
+
+#endif
 
 .text
 
@@ -93,20 +101,23 @@ p10:.quad P10
 cdecl(fp_add1_low):
 	xorq	%rax, %rax
 	movq	0(%rsi), %r10
-	addq	%rdx   , %r10
-	movq	%r10   , 0(%rdi)
+	addq	%rdx, %r10
+	movq	%r10, 0(%rdi)
 
-	ADD1	1, (RLC_FP_DIGS - 1)
+	ADD1 1 (RLC_FP_DIGS - 1)
+	adcq	$0, %rax
 
 	ret
 
 cdecl(fp_addn_low):
 	xorq	%rax, %rax
-	movq	0(%rdx), %r10
-	addq	0(%rsi), %r10
-	movq	%r10   , 0(%rdi)
+	movq	0(%rdx), %r11
+	addq	0(%rsi), %r11
+	movq	%r11, 0(%rdi)
 
-	ADDN 	1, (RLC_FP_DIGS - 1)
+	ADDN	1 (RLC_FP_DIGS - 1)
+
+	adcq	$0, %rax
 
 	ret
 
@@ -117,12 +128,11 @@ cdecl(fp_addm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push	%rdi
 
-	movq	 0(%rdx), %r8
-	addq	 0(%rsi), %r8
-	movq	 8(%rdx), %r9
-	adcq	 8(%rsi), %r9
+	movq	0(%rdx), %r8
+	addq	0(%rsi), %r8
+	movq	8(%rdx), %r9
+	adcq	8(%rsi), %r9
 	movq	16(%rdx), %r10
 	adcq	16(%rsi), %r10
 	movq	24(%rdx), %r11
@@ -135,77 +145,15 @@ cdecl(fp_addm_low):
 	adcq	48(%rsi), %r14
 	movq	56(%rdx), %r15
 	adcq	56(%rsi), %r15
-	movq	%r15    , 0(%rdi)
-	movq	%r15    , 8(%rdi)
 	movq	64(%rdx), %rax
 	adcq	64(%rsi), %rax
-	movq	%rax    , 16(%rdi)
-	movq	%rax    , 24(%rdi)
-	movq	72(%rdx), %rcx
-	adcq	72(%rsi), %rcx
-	movq	%rcx    , 32(%rdi)
-	movq	%rcx    , 40(%rdi)
-	movq	80(%rdx), %rax
-	adcq	80(%rsi), %rax
-	movq	%rax    , 48(%rdi)
-	movq	%rax    , 56(%rdi)
+	movq	72(%rdx), %rbx
+	adcq	72(%rsi), %rbx
+	movq	80(%rdx), %rbp
+	adcq	80(%rsi), %rbp
 
-	movq	%rdi, %r15
-
-	movq 	%r8 , %rax
-	movq 	%r9 , %rcx
-	movq 	%r10, %rdx
-	movq 	%r11, %rsi
-	movq	%r12, %rbx
-	movq	%r13, %rbp
-	movq	%r14, %rdi
-
-	subq	p0(%rip), %rax
-	sbbq	p1(%rip), %rcx
-	sbbq	p2(%rip), %rdx
-	sbbq	p3(%rip), %rsi
-	sbbq	p4(%rip), %rbx
-	sbbq	p5(%rip), %rbp
-	sbbq	p6(%rip), %rdi
-
-	push	%rdi
-
-	movq	%r15, %rdi
-	movq	8(%rdi), %r15
-	sbbq	p7(%rip), %r15
-	movq	%r15, 8(%rdi)
-	movq	24(%rdi), %r15
-	sbbq	p8(%rip), %r15
-	movq	%r15, 24(%rdi)
-	movq	40(%rdi), %r15
-	sbbq	p9(%rip), %r15
-	movq	%r15, 40(%rdi)
-	movq	56(%rdi) , %r15
-	sbbq	p10(%rip), %r15
-	movq	%r15, 56(%rdi)
-
-	pop		%rdi
-	cmovnc	%rax, %r8
-	cmovnc	%rcx, %r9
-	cmovnc	%rdx, %r10
-	cmovnc	%rsi, %r11
-	cmovnc	%rbx, %r12
-	cmovnc	%rbp, %r13
-	cmovnc	%rdi, %r14
-	pop		%rdi
-	movq	0(%rdi) , %r15
-	movq	16(%rdi), %rax
-	movq	32(%rdi), %rcx
-	movq	48(%rdi), %rbx
-	movq	64(%rdi), %rbp
-	cmovnc	8(%rdi) , %r15
-	cmovnc  24(%rdi), %rax
-	cmovnc  40(%rdi), %rcx
-	cmovnc  56(%rdi), %rbx
-	cmovnc  72(%rdi), %rbp
-
-	movq	%r8 ,  0(%rdi)
-	movq	%r9 ,  8(%rdi)
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
 	movq	%r10, 16(%rdi)
 	movq	%r11, 24(%rdi)
 	movq	%r12, 32(%rdi)
@@ -213,9 +161,41 @@ cdecl(fp_addm_low):
 	movq	%r14, 48(%rdi)
 	movq	%r15, 56(%rdi)
 	movq	%rax, 64(%rdi)
-	movq	%rcx, 72(%rdi)
-	movq	%rbx, 80(%rdi)
-	xorq	%rax, %rax
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
+	subq	p0(%rip), %r8
+	sbbq	p1(%rip), %r9
+	sbbq	p2(%rip), %r10
+	sbbq	p3(%rip), %r11
+	sbbq	p4(%rip), %r12
+	sbbq	p5(%rip), %r13
+	sbbq	p6(%rip), %r14
+	sbbq	p7(%rip), %r15
+	sbbq	p8(%rip), %rax
+	sbbq	p9(%rip), %rbx
+	sbbq	p10(%rip), %rbp
+	cmovc	0(%rdi), %r8
+	cmovc	8(%rdi), %r9
+	cmovc	16(%rdi), %r10
+	cmovc	24(%rdi), %r11
+	cmovc	32(%rdi), %r12
+	cmovc	40(%rdi), %r13
+	cmovc	48(%rdi), %r14
+	cmovc	56(%rdi), %r15
+	cmovc	64(%rdi), %rax
+	cmovc	72(%rdi), %rbx
+	cmovc	80(%rdi), %rbp
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+	movq	%r15, 56(%rdi)
+	movq	%rax, 64(%rdi)
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
 
 	pop		%r15
 	pop		%r14
@@ -226,14 +206,14 @@ cdecl(fp_addm_low):
 	ret
 
 cdecl(fp_addd_low):
+	xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
-	movq	%r11   , 0(%rdi)
+	movq	%r11, 0(%rdi)
 
-	ADDN 	1, (2 * RLC_FP_DIGS - 1)
-	
-	xorq	%rax, %rax
+	ADDN	1 (2 * RLC_FP_DIGS - 1)
 
+	adcq	$0, %rax
 	ret
 
 cdecl(fp_addc_low):
@@ -243,101 +223,38 @@ cdecl(fp_addc_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push	%rdi
 
-	movq	0(%rsi), %r8
-	addq	0(%rdx), %r8
-	movq	%r8    , 0(%rdi)
+	movq	0(%rdx), %r11
+	addq	0(%rsi), %r11
+	movq	%r11, 0(%rdi)
 
-	ADDN	1, (RLC_FP_DIGS - 1)
+	ADDN	1 (RLC_FP_DIGS - 1)
 
-	movq     88(%rsi), %r8
-	adcq     88(%rdx), %r8
-	movq     96(%rsi), %r9
-	adcq     96(%rdx), %r9
-	movq    104(%rsi), %r10
-	adcq    104(%rdx), %r10
-	movq    112(%rsi), %r11
-	adcq    112(%rdx), %r11
-	movq    120(%rsi), %r12
-	adcq    120(%rdx), %r12
-	movq    128(%rsi), %r13
-	adcq    128(%rdx), %r13
-	movq    136(%rsi), %r14
-	adcq    136(%rdx), %r14
-	movq    144(%rsi), %r15
-	adcq    144(%rdx), %r15
-	movq	%r15    , 88(%rdi)
-	movq	%r15    , 96(%rdi)
+	movq	88(%rdx), %r8
+	adcq	88(%rsi), %r8
+	movq	96(%rdx), %r9
+	adcq	96(%rsi), %r9
+	movq	104(%rdx), %r10
+	adcq	104(%rsi), %r10
+	movq	112(%rdx), %r11
+	adcq	112(%rsi), %r11
+	movq	120(%rdx), %r12
+	adcq	120(%rsi), %r12
+	movq	128(%rdx), %r13
+	adcq	128(%rsi), %r13
+	movq	136(%rdx), %r14
+	adcq	136(%rsi), %r14
+	movq	144(%rdx), %r15
+	adcq	144(%rsi), %r15
 	movq	152(%rdx), %rax
 	adcq	152(%rsi), %rax
-	movq	%rax    , 104(%rdi)
-	movq	%rax    , 112(%rdi)
-	movq	160(%rdx), %rcx
-	adcq	160(%rsi), %rcx
-	movq	%rcx    , 120(%rdi)
-	movq	%rcx    , 128(%rdi)
-	movq	168(%rdx), %rax
-	adcq	168(%rsi), %rax
-	movq	%rax    , 136(%rdi)
-	movq	%rax    , 144(%rdi)
-	movq	%rdi, %r15
+	movq	160(%rdx), %rbx
+	adcq	160(%rsi), %rbx
+	movq	168(%rdx), %rbp
+	adcq	168(%rsi), %rbp
 
-	movq 	%r8 , %rax
-	movq 	%r9 , %rcx
-	movq 	%r10, %rdx
-	movq 	%r11, %rsi
-	movq	%r12, %rbx
-	movq	%r13, %rbp
-	movq	%r14, %rdi
-
-	subq	p0(%rip), %rax
-	sbbq	p1(%rip), %rcx
-	sbbq	p2(%rip), %rdx
-	sbbq	p3(%rip), %rsi
-	sbbq	p4(%rip), %rbx
-	sbbq	p5(%rip), %rbp
-	sbbq	p6(%rip), %rdi
-
-	push	%rdi
-
-	movq	%r15, %rdi
-	movq	104(%rdi), %r15
-	sbbq	p7(%rip), %r15
-	movq	%r15, 104(%rdi)
-	movq	120(%rdi), %r15
-	sbbq	p8(%rip), %r15
-	movq	%r15, 120(%rdi)
-	movq	136(%rdi), %r15
-	sbbq	p9(%rip), %r15
-	movq	%r15, 136(%rdi)
-	movq	152(%rdi), %r15
-	sbbq	p10(%rip), %r15
-	movq	%r15, 152(%rdi)
-
-	pop		%rdi
-
-	cmovnc	%rax, %r8
-	cmovnc	%rcx, %r9
-	cmovnc	%rdx, %r10
-	cmovnc	%rsi, %r11
-	cmovnc	%rbx, %r12
-	cmovnc	%rbp, %r13
-	cmovnc	%rdi, %r14
-
-	pop		%rdi
-	movq	88(%rdi), %r15
-	movq	104(%rdi), %rax
-	movq	120(%rdi), %rcx
-	movq	136(%rdi), %rbx
-	movq	152(%rdi), %rbp
-	cmovnc	 96(%rdi), %r15
-	cmovnc  112(%rdi), %rax
-	cmovnc  128(%rdi), %rcx
-	cmovnc  144(%rdi), %rbx
-
-	movq	%r8 , 88(%rdi)
-	movq	%r9 , 96(%rdi)
+	movq	%r8, 88(%rdi)
+	movq	%r9, 96(%rdi)
 	movq	%r10, 104(%rdi)
 	movq	%r11, 112(%rdi)
 	movq	%r12, 120(%rdi)
@@ -345,9 +262,41 @@ cdecl(fp_addc_low):
 	movq	%r14, 136(%rdi)
 	movq	%r15, 144(%rdi)
 	movq	%rax, 152(%rdi)
-	movq	%rcx, 160(%rdi)
-	movq	%rbx, 168(%rdi)
-	xorq	%rax, %rax
+	movq	%rbx, 160(%rdi)
+	movq	%rbp, 168(%rdi)
+	subq	p0(%rip), %r8
+	sbbq	p1(%rip), %r9
+	sbbq	p2(%rip), %r10
+	sbbq	p3(%rip), %r11
+	sbbq	p4(%rip), %r12
+	sbbq	p5(%rip), %r13
+	sbbq	p6(%rip), %r14
+	sbbq	p7(%rip), %r15
+	sbbq	p8(%rip), %rax
+	sbbq	p9(%rip), %rbx
+	sbbq	p10(%rip), %rbp
+	cmovc	88(%rdi), %r8
+	cmovc	96(%rdi), %r9
+	cmovc	104(%rdi), %r10
+	cmovc	112(%rdi), %r11
+	cmovc	120(%rdi), %r12
+	cmovc	128(%rdi), %r13
+	cmovc	136(%rdi), %r14
+	cmovc	144(%rdi), %r15
+	cmovc	152(%rdi), %rax
+	cmovc	160(%rdi), %rbx
+	cmovc	168(%rdi), %rbp
+	movq	%r8, 88(%rdi)
+	movq	%r9, 96(%rdi)
+	movq	%r10, 104(%rdi)
+	movq	%r11, 112(%rdi)
+	movq	%r12, 120(%rdi)
+	movq	%r13, 128(%rdi)
+	movq	%r14, 136(%rdi)
+	movq	%r15, 144(%rdi)
+	movq	%rax, 152(%rdi)
+	movq	%rbx, 160(%rdi)
+	movq	%rbp, 168(%rdi)
 
 	pop		%r15
 	pop		%r14
@@ -358,141 +307,240 @@ cdecl(fp_addc_low):
 	ret
 
 cdecl(fp_sub1_low):
+	xorq	%rax, %rax
 	movq	0(%rsi), %r10
-	subq	%rdx   , %r10
-	movq	%r10   , 0(%rdi)
+	subq	%rdx, %r10
+	movq	%r10, 0(%rdi)
 
-	SUB1 	1, (RLC_FP_DIGS - 1)
+	SUB1	1 (RLC_FP_DIGS - 1)
+	adcq	$0, %rax
 
 	ret
 
 cdecl(fp_subn_low):
-	xorq	%rax   , %rax
+	xorq	%rax, %rax
 	movq	0(%rsi), %r11
 	subq	0(%rdx), %r11
-	movq	%r11   , 0(%rdi)
+	movq	%r11, 0(%rdi)
 
-	SUBN 	1, (RLC_FP_DIGS - 1)
+	SUBN	1 (RLC_FP_DIGS - 1)
 
 	adcq	$0, %rax
 
 	ret
 
 cdecl(fp_subm_low):
-	pushq	%r12
-	pushq	%r13
-	pushq	%r14
-	xorq	%rax, %rax
-	xorq	%rcx, %rcx
+	push	%rbx
+	push	%rbp
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
-	movq	%r8    , 0(%rdi)
+	movq	8(%rsi), %r9
+	sbbq	8(%rdx), %r9
+	movq	16(%rsi), %r10
+	sbbq	16(%rdx), %r10
+	movq	24(%rsi), %r11
+	sbbq	24(%rdx), %r11
+	movq	32(%rsi), %r12
+	sbbq	32(%rdx), %r12
+	movq	40(%rsi), %r13
+	sbbq	40(%rdx), %r13
+	movq	48(%rsi), %r14
+	sbbq	48(%rdx), %r14
+	movq	56(%rsi), %r15
+	sbbq	56(%rdx), %r15
+	movq	64(%rsi), %rax
+	sbbq	64(%rdx), %rax
+	movq	72(%rsi), %rbx
+	sbbq	72(%rdx), %rbx
+	movq	80(%rsi), %rbp
+	sbbq	80(%rdx), %rbp
 
-	SUBN	1, (RLC_FP_DIGS - 1)
+	sbbq	%rsi, %rsi
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+	movq	%r15, 56(%rdi)
+	movq	%rax, 64(%rdi)
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
+	movq	p0(%rip), %r8
+	andq	%rsi, %r8
+	movq	p1(%rip), %r9
+	andq	%rsi, %r9
+	movq	p2(%rip), %r10
+	andq	%rsi, %r10
+	movq	p3(%rip), %r11
+	andq	%rsi, %r11
+	movq	p4(%rip), %r12
+	andq	%rsi, %r12
+	movq	p5(%rip), %r13
+	andq	%rsi, %r13
+	movq	p6(%rip), %r14
+	andq	%rsi, %r14
+	movq	p7(%rip), %r15
+	andq	%rsi, %r15
+	movq	p8(%rip), %rax
+	andq	%rsi, %rax
+	movq	p9(%rip), %rbx
+	andq	%rsi, %rbx
+	movq	p10(%rip), %rbp
+	andq	%rsi, %rbp
+	addq	0(%rdi), %r8
+	adcq	8(%rdi), %r9
+	adcq	16(%rdi), %r10
+	adcq	24(%rdi), %r11
+	adcq	32(%rdi), %r12
+	adcq	40(%rdi), %r13
+	adcq	48(%rdi), %r14
+	adcq	56(%rdi), %r15
+	adcq	64(%rdi), %rax
+	adcq	72(%rdi), %rbx
+	adcq	80(%rdi), %rbp
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+	movq	%r15, 56(%rdi)
+	movq	%rax, 64(%rdi)
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
 
-	movq	$0, %r8
-	movq	$0, %r9
-	movq	$0, %r10
-	movq	$0, %r11
-	movq	$0, %rdx
-	movq	$0, %rsi
-	movq	$0, %r12
-	movq	$0, %r13
-	movq	$0, %r14
-
-	cmovc	p0(%rip), %rax
-	cmovc	p1(%rip), %rcx
-	cmovc	p2(%rip), %r8
-	cmovc	p3(%rip), %r9
-	cmovc	p4(%rip), %r10
-	cmovc	p5(%rip), %r11
-	cmovc	p6(%rip), %rdx
-	cmovc	p7(%rip), %rsi
-	cmovc	p8(%rip), %r12
-	cmovc	p9(%rip), %r13
-	cmovc	p10(%rip), %r14
-
-	addq	%rax,  0(%rdi)
-	adcq	%rcx,  8(%rdi)
-	adcq	%r8,  16(%rdi)
-	adcq	%r9,  24(%rdi)
-	adcq	%r10, 32(%rdi)
-	adcq	%r11, 40(%rdi)
-	adcq	%rdx, 48(%rdi)
-	adcq	%rsi, 56(%rdi)
-	adcq	%r12, 64(%rdi)
-	adcq	%r13, 72(%rdi)
-	adcq	%r14, 80(%rdi)
-
+	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
+	pop		%rbp
+	pop		%rbx
 	ret
 
 cdecl(fp_subd_low):
+	xorq	%rax, %rax
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN 	1, (2 * RLC_FP_DIGS - 1)
+	SUBN	1 (2 * RLC_FP_DIGS - 1)
 
+	adcq	$0, %rax
 	ret
 
 cdecl(fp_subc_low):
+	push	%rbx
+	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
-	xorq    %rax,%rax
-	xorq    %rcx,%rcx
+	push	%r15
 
-	movq    0(%rsi), %r8
-	subq    0(%rdx), %r8
-	movq    %r8,     0(%rdi)
+	movq	0(%rsi), %r8
+	subq	0(%rdx), %r8
+	movq	%r8, 0(%rdi)
 
-	SUBN 	1, (2 * RLC_FP_DIGS - 1)
+	SUBN	1 (RLC_FP_DIGS - 1)
 
-	movq	$0, %r8
-	movq	$0, %r9
-	movq	$0, %r10
-	movq	$0, %r11
-	movq	$0, %rsi
-	movq	$0, %rdx
-	movq	$0, %r12
-	movq	$0, %r13
-	movq	$0, %r14
+	movq	88(%rsi), %r8
+	sbbq	88(%rdx), %r8
+	movq	96(%rsi), %r9
+	sbbq	96(%rdx), %r9
+	movq	104(%rsi), %r10
+	sbbq	104(%rdx), %r10
+	movq	112(%rsi), %r11
+	sbbq	112(%rdx), %r11
+	movq	120(%rsi), %r12
+	sbbq	120(%rdx), %r12
+	movq	128(%rsi), %r13
+	sbbq	128(%rdx), %r13
+	movq	136(%rsi), %r14
+	sbbq	136(%rdx), %r14
+	movq	144(%rsi), %r15
+	sbbq	144(%rdx), %r15
+	movq	152(%rsi), %rax
+	sbbq	152(%rdx), %rax
+	movq	160(%rsi), %rbx
+	sbbq	160(%rdx), %rbx
+	movq	168(%rsi), %rbp
+	sbbq	168(%rdx), %rbp
 
-	cmovc	p0(%rip), %rax
-	cmovc	p1(%rip), %rcx
-	cmovc	p2(%rip), %r8
-	cmovc	p3(%rip), %r9
-	cmovc	p4(%rip), %r10
-	cmovc	p5(%rip), %r11
-	cmovc	p6(%rip), %rsi
-	cmovc	p7(%rip), %rdx
-	cmovc	p8(%rip), %r12
-	cmovc	p9(%rip), %r13
-	cmovc	p10(%rip), %r14
+	sbbq	%rsi, %rsi
+	movq	%r8, 88(%rdi)
+	movq	%r9, 96(%rdi)
+	movq	%r10, 104(%rdi)
+	movq	%r11, 112(%rdi)
+	movq	%r12, 120(%rdi)
+	movq	%r13, 128(%rdi)
+	movq	%r14, 136(%rdi)
+	movq	%r15, 144(%rdi)
+	movq	%rax, 152(%rdi)
+	movq	%rbx, 160(%rdi)
+	movq	%rbp, 168(%rdi)
+	movq	p0(%rip), %r8
+	andq	%rsi, %r8
+	movq	p1(%rip), %r9
+	andq	%rsi, %r9
+	movq	p2(%rip), %r10
+	andq	%rsi, %r10
+	movq	p3(%rip), %r11
+	andq	%rsi, %r11
+	movq	p4(%rip), %r12
+	andq	%rsi, %r12
+	movq	p5(%rip), %r13
+	andq	%rsi, %r13
+	movq	p6(%rip), %r14
+	andq	%rsi, %r14
+	movq	p7(%rip), %r15
+	andq	%rsi, %r15
+	movq	p8(%rip), %rax
+	andq	%rsi, %rax
+	movq	p9(%rip), %rbx
+	andq	%rsi, %rbx
+	movq	p10(%rip), %rbp
+	andq	%rsi, %rbp
+	addq	88(%rdi), %r8
+	adcq	96(%rdi), %r9
+	adcq	104(%rdi), %r10
+	adcq	112(%rdi), %r11
+	adcq	120(%rdi), %r12
+	adcq	128(%rdi), %r13
+	adcq	136(%rdi), %r14
+	adcq	144(%rdi), %r15
+	adcq	152(%rdi), %rax
+	adcq	160(%rdi), %rbx
+	adcq	168(%rdi), %rbp
+	movq	%r8, 88(%rdi)
+	movq	%r9, 96(%rdi)
+	movq	%r10, 104(%rdi)
+	movq	%r11, 112(%rdi)
+	movq	%r12, 120(%rdi)
+	movq	%r13, 128(%rdi)
+	movq	%r14, 136(%rdi)
+	movq	%r15, 144(%rdi)
+	movq	%rax, 152(%rdi)
+	movq	%rbx, 160(%rdi)
+	movq	%rbp, 168(%rdi)
 
-	addq	%rax,  88(%rdi)
-	adcq	%rcx,  96(%rdi)
-	adcq	%r8,  104(%rdi)
-	adcq	%r9,  108(%rdi)
-	adcq	%r10, 120(%rdi)
-	adcq	%r11, 128(%rdi)
-	adcq	%rsi, 136(%rdi)
-	adcq	%rdx, 144(%rdi)
-	adcq	%r12, 152(%rdi)
-	adcq	%r13, 160(%rdi)
-	adcq	%r14, 168(%rdi)
-
+	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
+	pop		%rbp
+	pop		%rbx
 	ret
 
 cdecl(fp_negm_low):
 	push	%rbx
+	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
@@ -505,72 +553,72 @@ cdecl(fp_negm_low):
 	xorq	%r13, %r13
 	xorq	%r14, %r14
 	xorq	%r15, %r15
-	xorq	%rbx, %rbx
 	xorq	%rax, %rax
-	xorq	%rcx, %rcx
-
-    movq    0(%rsi) , %r8
-    or 	    8(%rsi) , %r8
-    or 	    16(%rsi), %r8
-    or 	    24(%rsi), %r8
-    or 	    32(%rsi), %r8
-    or 	    40(%rsi), %r8
-    or 	    48(%rsi), %r8
-    or 	    56(%rsi), %r8
-    or 	    64(%rsi), %r8
-	or 	    72(%rsi), %r8
-	or 	    80(%rsi), %r8
-    test    %r8, %r8
-	cmovnz 	p0(%rip), %r8
-	cmovnz 	p1(%rip), %r9
-	cmovnz 	p2(%rip), %r10
-	cmovnz 	p3(%rip), %r11
-	cmovnz 	p4(%rip), %rbx
-	cmovnz 	p5(%rip), %rcx
-	cmovnz 	p6(%rip), %r12
-	cmovnz 	p7(%rip), %r13
-	cmovnz 	p8(%rip), %r14
-	cmovnz 	p9(%rip), %r15
-	cmovnz 	p10(%rip),%rax
-	subq 	0(%rsi) , %r8
-	movq 	%r8     , 0(%rdi)
-	sbbq 	8(%rsi) , %r9
-	movq 	%r9     , 8(%rdi)
-	sbbq 	16(%rsi), %r10
-	movq 	%r10    , 16(%rdi)
-	sbbq 	24(%rsi), %r11
-	movq 	%r11    , 24(%rdi)
-	sbbq 	32(%rsi), %rbx
-	movq 	%rbx    , 32(%rdi)
-	sbbq 	40(%rsi), %rcx
-	movq 	%rcx    , 40(%rdi)
-	sbbq 	48(%rsi), %r12
-	movq 	%r12    , 48(%rdi)
-	sbbq 	56(%rsi), %r13
-	movq 	%r13    , 56(%rdi)
-	sbbq 	64(%rsi), %r14
-	movq 	%r14    , 64(%rdi)
-	sbbq 	72(%rsi), %r15
-	movq 	%r15    , 72(%rdi)
-	sbbq 	80(%rsi), %rax
-	movq 	%rax    , 80(%rdi)
+	xorq	%rbx, %rbx
+	xorq	%rbp, %rbp
+	movq	0(%rsi), %r8
+	orq	8(%rsi), %r8
+	orq	16(%rsi), %r8
+	orq	24(%rsi), %r8
+	orq	32(%rsi), %r8
+	orq	40(%rsi), %r8
+	orq	48(%rsi), %r8
+	orq	56(%rsi), %r8
+	orq	64(%rsi), %r8
+	orq	72(%rsi), %r8
+	orq	80(%rsi), %r8
+	testq	%r8, %r8
+	cmovnz	p0(%rip), %r8
+	cmovnz	p1(%rip), %r9
+	cmovnz	p2(%rip), %r10
+	cmovnz	p3(%rip), %r11
+	cmovnz	p4(%rip), %r12
+	cmovnz	p5(%rip), %r13
+	cmovnz	p6(%rip), %r14
+	cmovnz	p7(%rip), %r15
+	cmovnz	p8(%rip), %rax
+	cmovnz	p9(%rip), %rbx
+	cmovnz	p10(%rip), %rbp
+	subq	0(%rsi), %r8
+	movq	%r8, 0(%rdi)
+	sbbq	8(%rsi), %r9
+	movq	%r9, 8(%rdi)
+	sbbq	16(%rsi), %r10
+	movq	%r10, 16(%rdi)
+	sbbq	24(%rsi), %r11
+	movq	%r11, 24(%rdi)
+	sbbq	32(%rsi), %r12
+	movq	%r12, 32(%rdi)
+	sbbq	40(%rsi), %r13
+	movq	%r13, 40(%rdi)
+	sbbq	48(%rsi), %r14
+	movq	%r14, 48(%rdi)
+	sbbq	56(%rsi), %r15
+	movq	%r15, 56(%rdi)
+	sbbq	64(%rsi), %rax
+	movq	%rax, 64(%rdi)
+	sbbq	72(%rsi), %rbx
+	movq	%rbx, 72(%rdi)
+	sbbq	80(%rsi), %rbp
+	movq	%rbp, 80(%rdi)
 
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
+	pop		%rbp
 	pop		%rbx
-  	ret
+	ret
 
 cdecl(fp_dbln_low):
+	xorq	%rax, %rax
 	movq	0(%rsi), %r8
-	addq	%r8    , %r8
-	movq	%r8    , 0(%rdi)
+	addq	%r8, %r8
+	movq	%r8, 0(%rdi)
 
-	DBLN 	1, (RLC_FP_DIGS - 1)
+	DBLN 1 (RLC_FP_DIGS - 1)
 
-	xorq	%rax,%rax
-
+	adcq	$0, %rax
 	ret
 
 cdecl(fp_dblm_low):
@@ -580,107 +628,32 @@ cdecl(fp_dblm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push	%rdi
 
-	xorq	%rax, %rax
-	xorq	%rcx, %rcx
-	xorq	%rdx, %rdx
-
-	movq	0(%rsi) , %r8
-	addq	%r8     , %r8
-	movq	8(%rsi) , %r9
-	adcq	%r9     , %r9
+	movq	0(%rsi), %r8
+	addq	%r8, %r8
+	movq	8(%rsi), %r9
+	adcq	%r9, %r9
 	movq	16(%rsi), %r10
-	adcq	%r10    , %r10
+	adcq	%r10, %r10
 	movq	24(%rsi), %r11
-	adcq	%r11    , %r11
+	adcq	%r11, %r11
 	movq	32(%rsi), %r12
-	adcq	%r12    , %r12
+	adcq	%r12, %r12
 	movq	40(%rsi), %r13
-	adcq	%r13    , %r13
+	adcq	%r13, %r13
 	movq	48(%rsi), %r14
-	adcq	%r14    , %r14
+	adcq	%r14, %r14
 	movq	56(%rsi), %r15
-	adcq	%r15    , %r15
-	movq	%r15    , 0(%rdi)
-	movq	%r15    , 8(%rdi)
+	adcq	%r15, %r15
 	movq	64(%rsi), %rax
-	adcq	%rax    , %rax
-	movq	%rax    , 16(%rdi)
-	movq	%rax    , 24(%rdi)
-	movq	72(%rsi), %rcx
-	adcq	%rcx    , %rcx
-	movq	%rcx    , 32(%rdi)
-	movq	%rcx    , 40(%rdi)
-	movq	80(%rsi), %rax
-	adcq	%rax    , %rax
-	movq	%rax    , 48(%rdi)
-	movq	%rax    , 56(%rdi)
-	movq	88(%rsi), %rcx
-	adcq	%rcx    , %rcx
-	movq	%rcx    , 64(%rdi)
-	movq	%rcx    , 72(%rdi)
+	adcq	%rax, %rax
+	movq	72(%rsi), %rbx
+	adcq	%rbx, %rbx
+	movq	80(%rsi), %rbp
+	adcq	%rbp, %rbp
 
-	movq	%rdi, %r15
-
-	movq 	%r8 , %rax
-	movq 	%r9 , %rcx
-	movq 	%r10, %rdx
-	movq 	%r11, %rsi
-	movq	%r12, %rbx
-	movq	%r13, %rbp
-	movq	%r14, %rdi
-
-	subq	p0(%rip), %rax
-	sbbq	p1(%rip), %rcx
-	sbbq	p2(%rip), %rdx
-	sbbq	p3(%rip), %rsi
-	sbbq	p4(%rip), %rbx
-	sbbq	p5(%rip), %rbp
-	sbbq	p6(%rip), %rdi
-
-	push	%rdi
-	movq	%r15, %rdi
-
-	movq	8(%rdi), %r15
-	sbbq	p7(%rip), %r15
-	movq	%r15, 8(%rdi)
-	movq	24(%rdi), %r15
-	sbbq	p8(%rip), %r15
-	movq	%r15, 24(%rdi)
-	movq	40(%rdi), %r15
-	sbbq	p9(%rip), %r15
-	movq	%r15, 40(%rdi)
-	movq	56(%rdi), %r15
-	sbbq	p10(%rip), %r15
-	movq	%r15, 56(%rdi)
-
-	pop		%rdi
-
-	cmovnc	%rax, %r8
-	cmovnc	%rcx, %r9
-	cmovnc	%rdx, %r10
-	cmovnc	%rsi, %r11
-	cmovnc	%rbx, %r12
-	cmovnc	%rbp, %r13
-	cmovnc	%rdi, %r14
-
-	pop		%rdi
-
-	movq	0(%rdi), %r15
-	movq	16(%rdi), %rax
-	movq	32(%rdi), %rcx
-	movq	48(%rdi), %rbx
-	movq	64(%rdi), %rbp
-
-	cmovnc	8(%rdi), %r15
-	cmovnc  24(%rdi), %rax
-	cmovnc  40(%rdi), %rcx
-	cmovnc  56(%rdi), %rbx
-	cmovnc  72(%rdi), %rbp
-
-	movq	%r8 ,  0(%rdi)
-	movq	%r9 ,  8(%rdi)
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
 	movq	%r10, 16(%rdi)
 	movq	%r11, 24(%rdi)
 	movq	%r12, 32(%rdi)
@@ -688,9 +661,41 @@ cdecl(fp_dblm_low):
 	movq	%r14, 48(%rdi)
 	movq	%r15, 56(%rdi)
 	movq	%rax, 64(%rdi)
-	movq	%rcx, 72(%rdi)
-	movq	%rbx, 80(%rdi)
-	xorq	%rax, %rax
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
+	subq	p0(%rip), %r8
+	sbbq	p1(%rip), %r9
+	sbbq	p2(%rip), %r10
+	sbbq	p3(%rip), %r11
+	sbbq	p4(%rip), %r12
+	sbbq	p5(%rip), %r13
+	sbbq	p6(%rip), %r14
+	sbbq	p7(%rip), %r15
+	sbbq	p8(%rip), %rax
+	sbbq	p9(%rip), %rbx
+	sbbq	p10(%rip), %rbp
+	cmovc	0(%rdi), %r8
+	cmovc	8(%rdi), %r9
+	cmovc	16(%rdi), %r10
+	cmovc	24(%rdi), %r11
+	cmovc	32(%rdi), %r12
+	cmovc	40(%rdi), %r13
+	cmovc	48(%rdi), %r14
+	cmovc	56(%rdi), %r15
+	cmovc	64(%rdi), %rax
+	cmovc	72(%rdi), %rbx
+	cmovc	80(%rdi), %rbp
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+	movq	%r15, 56(%rdi)
+	movq	%rax, 64(%rdi)
+	movq	%rbx, 72(%rdi)
+	movq	%rbp, 80(%rdi)
 
 	pop		%r15
 	pop		%r14
@@ -705,14 +710,12 @@ cdecl(fp_hlvm_low):
 	push	%r13
 	push	%r14
 	push	%r15
-	push	%rbp
 	push	%rbx
+	push	%rbp
 
-	xorq	%rdx, %rdx
-
-  	movq 	$1     ,%rax
-  	andq 	0(%rsi),%rax
-
+	movq	$1, %rdx
+	andq	0(%rsi), %rdx
+	movq	$0, %rdx
 	movq	$P0, %r8
 	movq	$P1, %r9
 	movq	$P2, %r10
@@ -724,7 +727,6 @@ cdecl(fp_hlvm_low):
 	movq	$P8, %rbp
 	movq	$P9, %rbx
 	movq	$P10, %rcx
-
 	cmovz	%rdx, %r8
 	cmovz	%rdx, %r9
 	cmovz	%rdx, %r10
@@ -737,42 +739,32 @@ cdecl(fp_hlvm_low):
 	cmovz	%rdx, %rbx
 	cmovz	%rdx, %rcx
 
-	addq	0(%rsi) , %r8
-	movq	8(%rsi) , %rdx
-	adcq	%rdx    , %r9
-	movq	16(%rsi), %rdx
-	adcq	%rdx    , %r10
-	movq	24(%rsi), %rdx
-	adcq	%rdx    , %r11
-	movq	32(%rsi), %rdx
-	adcq	%rdx    , %r12
-	movq	40(%rsi), %rdx
-	adcq	%rdx    , %r13
-	movq	48(%rsi), %rdx
-	adcq	%rdx    , %r14
-	movq	56(%rsi), %rdx
-	adcq	%rdx    , %r15
-	movq	64(%rsi), %rdx
-	adcq	%rdx    , %rbp
-	movq	72(%rsi), %rdx
-	adcq	%rdx    , %rbx
-	movq	80(%rsi), %rdx
-	adcq	%rdx    , %rcx
+	addq	0(%rsi), %r8
+	adcq	8(%rsi), %r9
+	adcq	16(%rsi), %r10
+	adcq	24(%rsi), %r11
+	adcq	32(%rsi), %r12
+	adcq	40(%rsi), %r13
+	adcq	48(%rsi), %r14
+	adcq	56(%rsi), %r15
+	adcq	64(%rsi), %rbp
+	adcq	72(%rsi), %rbx
+	adcq	80(%rsi), %rcx
 
 	rcrq	$1, %rcx
 	rcrq	$1, %rbx
-	rcrq    $1, %rbp
-	rcrq 	$1, %r15
-	rcrq 	$1, %r14
-	rcrq 	$1, %r13
-	rcrq 	$1, %r12
-  	rcrq 	$1, %r11
-  	rcrq 	$1, %r10
-  	rcrq 	$1, %r9
-  	rcrq 	$1, %r8
+	rcrq	$1, %rbp
+	rcrq	$1, %r15
+	rcrq	$1, %r14
+	rcrq	$1, %r13
+	rcrq	$1, %r12
+	rcrq	$1, %r11
+	rcrq	$1, %r10
+	rcrq	$1, %r9
+	rcrq	$1, %r8
 
-	movq	%r8 ,  0(%rdi)
-	movq	%r9 ,  8(%rdi)
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
 	movq	%r10, 16(%rdi)
 	movq	%r11, 24(%rdi)
 	movq	%r12, 32(%rdi)
@@ -784,8 +776,8 @@ cdecl(fp_hlvm_low):
 	movq	%rcx, 80(%rdi)
 	xorq	%rax, %rax
 
-	pop     %rbx
 	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
@@ -793,17 +785,16 @@ cdecl(fp_hlvm_low):
 	ret
 
 cdecl(fp_hlvd_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
-	xorq	%rbp, %rbp
-  	movq 	$1     ,%rdx
-  	andq 	0(%rsi),%rdx
-
+	movq	$1, %rdx
+	andq	0(%rsi), %rdx
+	movq	$0, %rdx
 	movq	$P0, %r8
 	movq	$P1, %r9
 	movq	$P2, %r10
@@ -812,66 +803,65 @@ cdecl(fp_hlvd_low):
 	movq	$P5, %r13
 	movq	$P6, %r14
 	movq	$P7, %r15
-	movq	$P8, %rax
+	movq	$P8, %rbp
 	movq	$P9, %rbx
 	movq	$P10, %rcx
+	cmovz	%rdx, %r8
+	cmovz	%rdx, %r9
+	cmovz	%rdx, %r10
+	cmovz	%rdx, %r11
+	cmovz	%rdx, %r12
+	cmovz	%rdx, %r13
+	cmovz	%rdx, %r14
+	cmovz	%rdx, %r15
+	cmovz	%rdx, %rbp
+	cmovz	%rdx, %rbx
+	cmovz	%rdx, %rcx
 
-	cmovz	%rbp, %r8
-	cmovz	%rbp, %r9
-	cmovz	%rbp, %r10
-	cmovz	%rbp, %r11
-	cmovz	%rbp, %r12
-	cmovz	%rbp, %r13
-	cmovz	%rbp, %r14
-	cmovz	%rbp, %r15
-	cmovz	%rbp, %rax
-	cmovz	%rbp, %rbx
-	cmovz	%rbp, %rcx
-
-	addq	0(%rsi)  , %r8
-	adcq	8(%rsi)  , %r9
-	adcq	16(%rsi) , %r10
-	adcq	24(%rsi) , %r11
-	adcq	32(%rsi) , %r12
-	adcq	40(%rsi) , %r13
-	adcq	48(%rsi) , %r14
-	adcq	56(%rsi) , %r15
-	adcq	64(%rsi) , %rax
-	adcq	72(%rsi) , %rbx
-	adcq	80(%rsi) , %rcx
-	movq	88(%rsi) , %rdx
-	adcq	$0       , %rdx
-
-	movq	96(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 96(%rdi)
-	movq	104(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 104(%rdi)
-	movq	112(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 112(%rdi)
-	movq	120(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 120(%rdi)
-	movq	128(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 128(%rdi)
-	movq	136(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 136(%rdi)
-	movq	144(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 144(%rdi)
-	movq	152(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 152(%rdi)
-	movq	160(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 160(%rdi)
-	movq	168(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 168(%rdi)
+	addq	0(%rsi), %r8
+	adcq	8(%rsi), %r9
+	adcq	16(%rsi), %r10
+	adcq	24(%rsi), %r11
+	adcq	32(%rsi), %r12
+	adcq	40(%rsi), %r13
+	adcq	48(%rsi), %r14
+	adcq	56(%rsi), %r15
+	adcq	64(%rsi), %rbp
+	adcq	72(%rsi), %rbx
+	adcq	80(%rsi), %rcx
+	movq	88(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 88(%rdi)
+	movq	96(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 96(%rdi)
+	movq	104(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 104(%rdi)
+	movq	112(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 112(%rdi)
+	movq	120(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 120(%rdi)
+	movq	128(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 128(%rdi)
+	movq	136(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 136(%rdi)
+	movq	144(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 144(%rdi)
+	movq	152(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 152(%rdi)
+	movq	160(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 160(%rdi)
+	movq	168(%rsi), %rdx
+	adcq	$0, %rdx
+	movq	%rdx, 168(%rdi)
 
 	rcrq	$1, 168(%rdi)
 	rcrq	$1, 160(%rdi)
@@ -883,35 +873,35 @@ cdecl(fp_hlvd_low):
 	rcrq	$1, 112(%rdi)
 	rcrq	$1, 104(%rdi)
 	rcrq	$1, 96(%rdi)
-  	rcrq	$1, %rdx
-  	rcrq 	$1, %rcx
-  	rcrq 	$1, %rbx
-  	rcrq 	$1, %rax
-	rcrq 	$1, %r15
-	rcrq 	$1, %r14
-	rcrq 	$1, %r13
-	rcrq 	$1, %r12
-  	rcrq 	$1, %r11
-  	rcrq 	$1, %r10
-  	rcrq 	$1, %r9
-  	rcrq 	$1, %r8
+	rcrq	$1, 88(%rdi)
+	rcrq	$1, %rcx
+	rcrq	$1, %rbx
+	rcrq	$1, %rbp
+	rcrq	$1, %r15
+	rcrq	$1, %r14
+	rcrq	$1, %r13
+	rcrq	$1, %r12
+	rcrq	$1, %r11
+	rcrq	$1, %r10
+	rcrq	$1, %r9
+	rcrq	$1, %r8
 
-  	movq 	%rcx, 80(%rdi)
-  	movq 	%rbx, 72(%rdi)
-  	movq 	%rax, 64(%rdi)
-  	movq 	%r15, 56(%rdi)
-  	movq 	%r14, 48(%rdi)
-  	movq 	%r13, 40(%rdi)
-  	movq 	%r12, 32(%rdi)
-  	movq 	%r11, 24(%rdi)
-  	movq 	%r10, 16(%rdi)
-  	movq 	%r9 ,  8(%rdi)
-  	movq 	%r8 ,  0(%rdi)
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
+	movq	%r12, 32(%rdi)
+	movq	%r13, 40(%rdi)
+	movq	%r14, 48(%rdi)
+	movq	%r15, 56(%rdi)
+	movq	%rbp, 64(%rdi)
+	movq	%rbx, 72(%rdi)
+	movq	%rcx, 80(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret

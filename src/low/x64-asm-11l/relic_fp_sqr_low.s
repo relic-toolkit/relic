@@ -24,38 +24,78 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of the low-level prime field squaring functions.
  *
  * @ingroup fp
  */
 
-#include "relic_dv_low.h"
-
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
-
-.global cdecl(fp2_rdcn_low)
+.global cdecl(fp_sqrn_low)
+.global cdecl(fp_sqrm_low)
 
 /*
- * Function: fp_rdcn_low
+ * Function: fp_sqrn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
+ * Output: c = a^2
  */
-cdecl(fp2_rdcn_low):
+cdecl(fp_sqrn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	leaq 	p0(%rip), %rbx
+	subq	$SFRAME, %rsp
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*RLC_DV_DIGS), %rsi
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+	movq	%rdi, CPTR
+	.set	k, 0
+	.rept	RLC_FP_DIGS
+	movq	8*k(%rsi), %rax
+	movq	%rax, 8*k+BCPY
+	.set	k, k + 1
+	.endr
 
+	FP_SQR_LOW	BCPY, SBUF, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rax, p0(%rip), 0
+
+	addq	$SFRAME, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+/*
+ * Function: fp_sqrm_low
+ * Inputs: rdi = c, rsi = a
+ * Output: c = a^2/R mod p
+ */
+cdecl(fp_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$SFRAME, %rsp
+
+	movq	%rdi, CPTR
+	movq	$0, ZEROS
+	movq	$-1, ONES
+	.set	k, 0
+	.rept	RLC_FP_DIGS
+	movq	8*k(%rsi), %rax
+	movq	%rax, 8*k+BCPY
+	.set	k, k + 1
+	.endr
+
+	FP_SQR_LOW	BCPY, SBUF, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rax, p0(%rip), 1
+
+	addq	$SFRAME, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
