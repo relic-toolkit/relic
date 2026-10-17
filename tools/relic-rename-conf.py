@@ -17,14 +17,16 @@ The CMake options and their values keep their old names, so only C code needs
 changes. Identifiers inside string and character literals are left alone, and
 running the script twice changes nothing more.
 
-Usage: tools/relic-rename-conf.py [FILE...]
-Without arguments, it rewrites the C sources, headers and assembly files that
-git tracks in the current directory.
+Usage: tools/relic-rename-conf.py [-v VALUE[,VALUE...]] [FILE...]
+Without files, it rewrites the C sources, headers and assembly files that git
+tracks in the current directory. The -v option adds method values that the
+script does not know, such as those of a branch adding a new method, so that
+they get the prefix of their module too.
 """
 
+import argparse
 import re
 import subprocess
-import sys
 
 # Global options, switches and their values, which become RLC_ names.
 GLOBAL = '''
@@ -51,10 +53,17 @@ COORD = {'BASIC': 'EC_AFFIN', 'PROJC': 'EC_PROJC', 'JACOB': 'EC_JACOB',
 		'EXTND': 'EC_EXTND', 'HALVE': 'EC_HALVE'}
 
 MODS = 'BN|FPX|FP|FBX|FB|EPX|EP|EB|ED|EC|PP|PC|MD|BC|CP|MPC'
-VALS = '|'.join(sorted(METHODS, key=len, reverse=True))
-PAIR = re.compile(r'(\b(%s)_[A-Z0-9]+\s*(?:==|!=)\s*)(%s)\b' % (MODS, VALS))
-PAIR_CMT = re.compile(r'(\b(%s)_[A-Z0-9]+\s*(?:==|!=|=)\s*)(%s)\b' %
-		(MODS, VALS))
+PAIR = PAIR_CMT = None
+
+
+def compile_pairs(values):
+	"""Builds the patterns that pair method values with their options."""
+	global PAIR, PAIR_CMT
+	vals = '|'.join(sorted(values, key=len, reverse=True))
+	PAIR = re.compile(r'(\b(%s)_[A-Z0-9]+\s*(?:==|!=)\s*)(%s)\b' %
+			(MODS, vals))
+	PAIR_CMT = re.compile(r'(\b(%s)_[A-Z0-9]+\s*(?:==|!=|=)\s*)(%s)\b' %
+			(MODS, vals))
 CRD = re.compile(r'(\bcoord\s*(?:==|!=|=)\s*)(%s)\b' % '|'.join(COORD))
 CASE_CRD = re.compile(r'(\bcase\s+)(%s)(\s*:)' % '|'.join(COORD))
 SWITCH_CRD = re.compile(r'switch\s*\([^)]*\bcoord\s*\)')
@@ -150,7 +159,18 @@ def migrate(text):
 
 
 def main():
-	files = sys.argv[1:]
+	parser = argparse.ArgumentParser(description='Migrates C code to the '
+			'prefixed configuration names of RELIC.')
+	parser.add_argument('-v', '--values', default='',
+			help='extra method values, separated by commas')
+	parser.add_argument('files', nargs='*', help='files to rewrite')
+	args = parser.parse_args()
+	extra = [v for v in args.values.split(',') if v]
+	bad = [v for v in extra if not re.fullmatch(r'[A-Z][A-Z0-9]*', v)]
+	if bad:
+		parser.error('method values must be upper case: ' + ', '.join(bad))
+	compile_pairs(METHODS + extra)
+	files = args.files
 	if not files:
 		files = subprocess.run(['git', 'ls-files', '*.c', '*.h', '*.s', '*.S'],
 				capture_output=True, text=True, check=True).stdout.split()
