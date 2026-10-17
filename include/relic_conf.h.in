@@ -572,6 +572,8 @@
 
 /** NIST HASH-DRBG generator. */
 #define RLC_HASHD    1
+/** NIST HMAC-DRBG generator. */
+#define RLC_HMACD    2
 /** Operating system underlying generator. */
 #define RLC_UDEV     3
 /** Override library generator with the callback. */

@@ -38,6 +38,7 @@
 
 #include "relic_conf.h"
 #include "relic_types.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -56,6 +57,8 @@
 #define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 
+#elif RLC_RAND == RLC_HMACD
+#define RLC_RAND_SIZE		(2 * RLC_MD_LEN)
 #elif RLC_RAND == RLC_UDEV
 #define RLC_RAND_SIZE		(sizeof(int))
 #elif RLC_RAND == RLC_CALL
@@ -86,8 +89,10 @@
  * Flag to reseed the PRNG when its process forks, for generators with state
  * on systems where the process identifier is available.
  */
-#if RLC_RAND == RLC_HASHD && (RLC_OPSYS == RLC_LINUX || RLC_OPSYS == RLC_MACOSX || \
-		RLC_OPSYS == RLC_FREEBSD || RLC_OPSYS == RLC_NETBSD || RLC_OPSYS == RLC_DROID)
+#if (RLC_RAND == RLC_HASHD || RLC_RAND == RLC_HMACD) && \
+		(RLC_OPSYS == RLC_LINUX || RLC_OPSYS == RLC_MACOSX || \
+		RLC_OPSYS == RLC_FREEBSD || RLC_OPSYS == RLC_NETBSD || \
+		RLC_OPSYS == RLC_DROID)
 #define RLC_RAND_FORK
 #endif
 

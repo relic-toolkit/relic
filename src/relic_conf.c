@@ -95,6 +95,8 @@
  */
 #if RLC_RAND == RLC_HASHD
 #define CONF_RAND			"HASHD"
+#elif RLC_RAND == RLC_HMACD
+#define CONF_RAND			"HMACD"
 #elif RLC_RAND == RLC_UDEV
 #define CONF_RAND			"UDEV"
 #elif RLC_RAND == RLC_CALL
