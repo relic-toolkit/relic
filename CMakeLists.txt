@@ -1,7 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
-	cmake_policy(SET CMP0054 NEW)
-endif()
 
 project(RELIC C)
 set(PROJECT_VERSION_MAJOR "0")
@@ -20,7 +17,7 @@ set(WFLAGS "-Wall")
 
 message("\n-- Configuring ${PROJECT_NAME} ${PROJECT_VERSION}...\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
+message(STATUS "Available switches (default = CHECK, VERBS, DOCUM, COLOR, SHLIB, STLIB):\n")
 
 message("   DEBUG=[off|on] Build with debugging support.")
 message("   CHECK=[off|on] Build with error-checking support.")
@@ -48,7 +45,7 @@ option(STBIN "Build static binaries" off)
 option(AMALG "Build amalgamation" off)
 option(AUSAN "Build with ASan and UBSan (gcc/clang only)" off)
 
-message(STATUS "Number of times each test or benchmark is ran (default = 50, 1000):\n")
+message(STATUS "Number of times each test or benchmark is run (default = 100, 100):\n")
 
 message("   TESTS=n        If n > 0, build automated tests and run them n times.")
 message("   BENCH=n        If n > 0, build automated benchmarks and run them n * n times.\n")
@@ -69,9 +66,9 @@ message("   WITH=EP       Elliptic curves over prime fields.")
 message("   WITH=EPX      Elliptic curves over extensions of prime fields.")
 message("   WITH=EB       Elliptic curves over binary fields.")
 message("   WITH=ED       Elliptic Edwards curves over prime fields.")
-message("   WTTH=EC       Elliptic curve cryptography.")
+message("   WITH=EC       Elliptic curve cryptography.")
 message("   WITH=PP       Pairings over prime elliptic curves.")
-message("   WTTH=PC       Pairing-based cryptography.")
+message("   WITH=PC       Pairing-based cryptography.")
 message("   WITH=BC       Block ciphers (symmetric encryption).")
 message("   WITH=MD       Message digests (hash functions).")
 message("   WITH=CP       Cryptographic protocols.")
@@ -83,7 +80,7 @@ message(STATUS "Available arithmetic backends (default = easy):\n")
 
 message("   ARITH=easy     Easy-to-understand and portable, but slow backend.")
 message("   ARITH=fiat     Backend based on code generated from Fiat-Crypto.")
-message("   ARITH=gmp      Backend based on GNU Multiple Precision library.\n")
+message("   ARITH=gmp      Backend based on GNU Multiple Precision library.")
 message("   ARITH=gmp-sec  Same as above, but using constant-time code.\n")
 
 message(STATUS "Available memory-allocation policies (default = AUTO):\n")
@@ -122,7 +119,7 @@ message(STATUS "Prefix to identify this build of the library (default = \"\"):\n
 
 message("   LABEL=relic\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
+message(STATUS "Widths of precomputation tables (default = 5, 4):\n")
 
 message("   RLC_DEPTH=w    Width w in [2,8] of table for fixed exponentiation.")
 message("   RLC_WIDTH=w    Width w in [2,6] of table for exponentiation.\n")
@@ -188,19 +185,19 @@ if(STBIN)
 endif()
 
 # Discover the operating system.
-if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(OPSYS "LINUX" CACHE STRING "Operating system")
 else()
-	if(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
+	if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 		set(OPSYS "FREEBSD" CACHE STRING "Operating system")
 	else()
-		if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+		if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 			set(OPSYS "MACOSX" CACHE STRING "Operating system")
 		else()
-			if(CMAKE_SYSTEM_NAME STREQUAL NetBSD)
+			if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 				set(OPSYS "NETBSD" CACHE STRING "Operating system")
 			else()
-				if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+				if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 					set(OPSYS "WINDOWS" CACHE STRING "Operating system")
 				endif()
 			endif()
@@ -395,7 +392,7 @@ else()
 	set(RELIC_S "relic_s")
 endif()
 
-# Choose the arithmetic backend.
+# Choose the label that prefixes the symbols of this build.
 set(LABEL "" CACHE STRING "Build label")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
