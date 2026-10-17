@@ -157,70 +157,158 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 	return k;
 }
 
-static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
+/**
+ * Number of division steps for any modulus p < 2^FP_PRIME, from the bound for
+ * half-delta divsteps in https://github.com/sipa/safegcd-bounds.
+ */
+#define JMPDS_ITERS	((3787 * FP_PRIME + 2166) / 1644)
+
+/**
+ * Number of division steps in each jump, done in two halves so that each row
+ * of the transition matrix of a half fits in a digit.
+ */
+#define JMPDS_STEPS			(RLC_DIG - 4)
+
+/**
+ * Performs s <= JMPDS_STEPS half-delta division steps on the lowest digits of
+ * f and g, and returns the transition matrix m = (u, v; q, r) scaled by 2^s,
+ * with the rows packed in single digits within each half. The count k tracks
+ * the Jacobi symbol: modulo 4, the sign changes of v plus two for each flip.
+ *
+ * @param[out] m			- the transition matrix.
+ * @param[out] k			- the count of sign changes and flips.
+ * @param[in] zeta			- the current value of zeta.
+ * @param[in] f				- the lowest digit of f, which must be odd.
+ * @param[in] g				- the lowest digit of g.
+ * @param[in] s				- the number of steps.
+ * @return the updated value of zeta.
+ */
+#if RLC_WSIZE == 8
+static int smb_steps(dis_t m[4], dig_t *k, int zeta, dig_t f, dig_t g,
 		int s) {
-	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
+#else
+static dis_t smb_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
+		int s) {
+#endif
+	const int h = RLC_DIG / 2;
+	dig_t uv, qr, c0, c1, fi, w, c, n = 0;
+	dis_t u, v, q, r, t0, t1;
 
-	/* Unrolling twice makes it faster. */
-	for (s -= 2; s >= 0; s -= 2) {
-		yi = y;
-
-		c0 = delta >> (RLC_DIG - 1);
-		c1 = -(x & 1);
-		c0 &= c1;
-
-		t0 = (y ^ c0) - c0;
-		t1 = (ci ^ c0) - c0;
-		t2 = (di ^ c0) - c0;
-		x  += t0 & c1;
-		ai += t1 & c1;
-		bi += t2 & c1;
-
-		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
-		y  += x  & c0;
-		ci += ai & c0;
-		di += bi & c0;
-
-		x  >>= 1;
-		ci <<= 1;
-		di <<= 1;
-		delta = (delta ^ c0) - 1;
-
-		u += ((yi & y) ^ (y >> 1)) & 2;
-		u += (u & 1) ^ RLC_SIGN(ci);
-
-		yi = y;
-
-		c0 = delta >> (RLC_DIG - 1);
-		c1 = -(x & 1);
-		c0 &= c1;
-
-		t0 = (y ^ c0) - c0;
-		t1 = (ci ^ c0) - c0;
-		t2 = (di ^ c0) - c0;
-		x  += t0 & c1;
-		ai += t1 & c1;
-		bi += t2 & c1;
-
-		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
-		y  += x  & c0;
-		ci += ai & c0;
-		di += bi & c0;
-
-		x  >>= 1;
-		ci <<= 1;
-		di <<= 1;
-		delta = (delta ^ c0) - 1;
-
-		u += ((yi & y) ^ (y >> 1)) & 2;
-		u += (u & 1) ^ RLC_SIGN(ci);
+	m[0] = m[3] = 1;
+	m[1] = m[2] = 0;
+	for (int l, half = 0; half < 2; half++) {
+		l = (half == 0 ? s / 2 : s - s / 2);
+		uv = 1;
+		qr = (dig_t)1 << h;
+		c = 0;
+		for (int j = 0; j < l; j++) {
+			fi = f;
+			/* c0 is all ones if zeta < 0, c1 if g is odd. */
+			c0 = zeta >> (8 * sizeof(zeta) - 1);
+			c1 = -(g & 1);
+			/* Add (f, u, v) to (g, q, r) if g is odd, negated if zeta < 0. */
+			g += ((f ^ c0) - c0) & c1;
+			qr += ((uv ^ c0) - c0) & c1;
+			/* Swap if zeta < 0 and g is odd, then update zeta. */
+			c0 &= c1;
+			zeta = (zeta ^ (dis_t)c0) - 1;
+			/* When swapping, (f, u, v) becomes the old (g, q, r). */
+			f += g & c0;
+			uv += qr & c0;
+			/* Halve g by doubling (u, v) instead, keeping integer entries. */
+			g >>= 1;
+			uv += uv;
+			/* Flip for the rotation and the halving, from f mod 8. */
+			c += ((fi & f) ^ (f >> 1)) & 2;
+			/* Count the sign changes of v, the high half of uv. */
+			w = uv - (dig_t)((dis_t)(uv << h) >> h);
+			c += (c & 1) ^ (w >> (RLC_DIG - 1));
+		}
+		/* Unpack the signed entries and accumulate the matrix product. */
+		u = (dis_t)(uv << h) >> h;
+		v = (dis_t)(uv - u) >> h;
+		q = (dis_t)(qr << h) >> h;
+		r = (dis_t)(qr - q) >> h;
+		t0 = u * m[0] + v * m[2];
+		t1 = u * m[1] + v * m[3];
+		m[2] = q * m[0] + r * m[2];
+		m[3] = q * m[1] + r * m[3];
+		m[0] = t0;
+		m[1] = t1;
+		/* Correct the count with the sign of v in the product. */
+		n += c;
+		n += (n & 1) ^ RLC_SIGN(m[1]);
 	}
-	m[0] = ai;
-	m[1] = bi;
-	m[2] = ci;
-	m[3] = di;
-	*k = u;
-	return delta;
+	*k = n & 3;
+	return zeta;
+}
+
+/**
+ * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
+ */
+static inline void smb_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
+		dig_t sb) {
+	dig_t h, l;
+#ifdef RLC_CONF_NODBL
+	RLC_MUL_DIG(h, l, (dig_t)a, b);
+#else
+	/* Multiply once to get both halves. */
+	dbl_t t = (dbl_t)(dig_t)a * b;
+	h = (dig_t)(t >> RLC_DIG);
+	l = (dig_t)t;
+#endif
+	/* Correct the unsigned high half for the signs of a and b. */
+	h -= (b & -RLC_SIGN(a)) + ((dig_t)a & sb);
+	*c0 += l;
+	*c1 += h + (*c0 < l);
+}
+
+/**
+ * Applies the transition matrix m = (u, v; q, r) of s division steps to
+ * (f, g), computing (u * f + v * g, q * f + r * g) / 2^s in a single pass,
+ * where the division is exact. Both values have RLC_FP_DIGS + 1 signed digits.
+ *
+ * @param[in,out] f			- the first entry of the column vector.
+ * @param[in,out] g			- the second entry of the column vector.
+ * @param[in] m				- the transition matrix.
+ * @param[in] s				- the number of division steps.
+ */
+static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
+	const dis_t u = m[0], v = m[1], q = m[2], r = m[3];
+	dig_t f1 = 0, f0 = 0, g1 = 0, g0 = 0, fs = 0, gs = 0, fi, gi;
+	size_t i;
+
+	for (i = 0; i < RLC_FP_DIGS; i++) {
+		fi = f[i];
+		gi = g[i];
+		smb_mac(&f1, &f0, u, fi, 0);
+		smb_mac(&f1, &f0, v, gi, 0);
+		smb_mac(&g1, &g0, q, fi, 0);
+		smb_mac(&g1, &g0, r, gi, 0);
+		/* Store the previous digits shifted right by s bits. */
+		if (i > 0) {
+			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
+			g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
+		}
+		/* Keep the current digits and shift the accumulators by a digit. */
+		fs = f0;
+		gs = g0;
+		f0 = f1;
+		g0 = g1;
+		f1 = -RLC_SIGN(f1);
+		g1 = -RLC_SIGN(g1);
+	}
+	/* Only the top digits are signed. */
+	fi = f[i];
+	gi = g[i];
+	smb_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
+	smb_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
+	smb_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
+	smb_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
+	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
+	f[i] = (dis_t)f0 >> s;
+	g[i] = (dis_t)g0 >> s;
 }
 
 /*============================================================================*/
@@ -434,86 +522,59 @@ int fp_smb_divst(const fp_t a) {
 }
 
 int fp_smb_jmpds(const fp_t a) {
-	dis_t m[4], d = -1;
-	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
-	int loops, precision, i, r = 0, s = RLC_DIG - 2;
-	dv_t f, g, t0, t1, u0, u1;
-	dig_t sf, sg, j, k;
+	dis_t m[4];
+	dv_t f, g, t;
+	dig_t j = 0, k;
+	int r = 0, s;
+#if RLC_WSIZE == 8
+	int zeta = -1;
+#else
+	dis_t zeta = -1;
+#endif
 
-	dv_null_all(f, g, t0, t1, u0, u1);
+	dv_null_all(f, g, t);
 
 	RLC_TRY {
-		dv_new_all(f, g, t0, t1, u0, u1);
+		dv_new_all(f, g, t);
 
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		f[RLC_FP_DIGS] = 0;
 		dv_zero(g, RLC_FP_DIGS + 1);
-		dv_zero(t0 + RLC_FP_DIGS, RLC_FP_DIGS);
+		dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
 
 #if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
-		fp_copy(t0, a);
-		fp_rdcn_low(g, t0);
+		fp_copy(t, a);
+		fp_rdcn_low(g, t);
 #else
 		fp_copy(g, a);
 #endif
-		precision = RLC_FP_DIGS;
-		loops = iterations / s;
-		loops = (iterations % s == 0 ? loops - 1 : loops);
 
-		for (i = j = k = 0; i < loops; i++) {
-			d = jumpdivstep(m, &k, d, f[0], g[0], s);
-
-			sf = RLC_SIGN(f[precision]);
-			sg = RLC_SIGN(g[precision]);
-			bn_sneg_low(u0, f, sf, precision);
-			bn_sneg_low(u1, g, sg, precision);
-			
-			t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
-			t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
-			bn_addn_low(t0, t0, t1, precision + 1);
-			bn_srsh_low(f, t0, precision + 1, s);
-
-			t0[precision] = bn_smul_low(t0, u0, sf, m[1], precision);
-			t1[precision] = bn_smul_low(t1, u1, sg, m[0], precision);
-			bn_addn_low(t1, t1, t0, precision + 1);
-			bn_srsh_low(g, t1, precision + 1, s);
-
+		/* The number of steps only depends on the prime size. */
+		for (int i = 0; i < JMPDS_ITERS; i += s) {
+			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
+			zeta = smb_steps(m, &k, zeta, f[0], g[0], s);
+			smb_apply(f, g, m, s);
+			/* Count the sign changes of f, whose parity is its sign. */
 			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
+			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;
 		}
-
-		s = iterations - loops * s;
-		d = jumpdivstep(m, &k, d, f[0], g[0], s);
-
-		sf = RLC_SIGN(f[precision]);
-		sg = RLC_SIGN(g[precision]);
-		bn_sneg_low(u0, f, sf, precision);
-		bn_sneg_low(u1, g, sg, precision);
-
-		t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
-		t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
-		bn_addn_low(t0, t0, t1, precision + 1);
-		bn_srsh_low(f, t0, precision + 1, s);
-
-		j = (j + k) % 4;
-		j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
+		/* Each flip of the symbol added two to the count. */
 		j = (j + (j & 1)) % 4;
 
-		fp_zero(t0);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
-		t0[0] = 1;
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
-		bn_sneg_low(t0, t0, 1, RLC_FP_DIGS);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
+		fp_zero(t);
+		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		t[0] = 1;
+		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
+		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
 		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free_all(f, g, t0, t1, u0, u1);
+		dv_free_all(f, g, t);
 	}
 
 	return r;

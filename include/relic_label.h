@@ -48,7 +48,7 @@
 #define first_ctx					RLC_PREFIX(first_ctx)
 #undef core_ctx
 #define core_ctx					RLC_PREFIX(core_ctx)
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 #undef core_thread_initializer
 #define core_thread_initializer	RLC_PREFIX(core_thread_initializer)
 #undef core_init_ptr
