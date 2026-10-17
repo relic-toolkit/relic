@@ -64,6 +64,7 @@ message("   WITH=DV       Temporary double-precision digit vectors.")
 message("   WITH=FP       Prime field arithmetic.")
 message("   WITH=FPX      Prime extension field arithmetic.")
 message("   WITH=FB       Binary field arithmetic.")
+message("   WITH=FBX      Binary extension field arithmetic.")
 message("   WITH=EP       Elliptic curves over prime fields.")
 message("   WITH=EPX      Elliptic curves over extensions of prime fields.")
 message("   WITH=EB       Elliptic curves over binary fields.")
@@ -156,8 +157,16 @@ if(NOT CORES STREQUAL "1" AND NOT MULTI)
 	set(MULTI OPENMP)
 endif()
 
-# Choose the arithmetic backend.
+# Choose the arithmetic backend, which must be one of the folders of src/low.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
+string(TOLOWER "${ARITH}" ARITH_DIR)
+if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/low/${ARITH_DIR}")
+	file(GLOB BACKENDS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src/low"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/low/*")
+	string(REPLACE ";" " " BACKENDS "${BACKENDS}")
+	message(FATAL_ERROR "Unknown arithmetic backend ARITH=${ARITH}, choose "
+		"one of: ${BACKENDS}")
+endif()
 
 # Choose the memory-allocation policy.
 set(ALLOC "AUTO" CACHE STRING "Allocation policy")
@@ -376,7 +385,7 @@ file(GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/low/*.h")
 install(FILES ${includes} DESTINATION include/${RELIC}/low)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/" DESTINATION include/${RELIC})
 
-install(FILES cmake/relic-config.cmake DESTINATION cmake/)
+install(FILES cmake/relic-config.cmake DESTINATION lib/cmake/relic)
 
 if(DOCUM)
 	include(cmake/doxygen.cmake)

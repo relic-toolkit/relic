@@ -1,5 +1,14 @@
 # Default modules.
 set(WITH "ALL" CACHE STRING "Selected modules")
+set(MODULES ALL BN DV FP FPX FB FBX EP EPX EB ED EC PP PC BC MD CP MPC)
+foreach(MODULE ${WITH})
+	list(FIND MODULES "${MODULE}" TEMP)
+	if(TEMP EQUAL -1)
+		string(REPLACE ";" " " MODULES "${MODULES}")
+		message(FATAL_ERROR "Unknown module WITH=${MODULE}, choose from: "
+			"${MODULES}")
+	endif()
+endforeach()
 LIST(FIND WITH "ALL" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_BN 1)

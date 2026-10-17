@@ -61,7 +61,9 @@ endif()
 if(GMP_FOUND)
 	message(STATUS "Configured GMP: -I${GMP_INCLUDE_DIR} -L${GMP_LIBRARIES}")
 else(GMP_FOUND)
-	message(STATUS "Could NOT find GMP!")
+	# Only the backends that need GMP include this file.
+	message(FATAL_ERROR "Could not find GMP, which ARITH=${ARITH} needs. "
+		"Install it, or point GMP_ROOT to where it lives.")
 endif(GMP_FOUND)
 
 mark_as_advanced(GMP_INCLUDE_DIR GMP_LIBRARIES)
