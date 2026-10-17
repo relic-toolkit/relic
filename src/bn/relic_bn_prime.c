@@ -896,7 +896,9 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		bn_new_all(lo, hi, u);
 
 		while (!found) {
-			bn_gen_prime(a, abits);
+			/* An ordinary prime keeps the residues of a varied, so that some
+			 * b = a * u + 1 is prime even when u has a single value. */
+			bn_gen_prime_basic(a, abits);
 			/* b = a * u + 1 has bbits bits for u in [lo, hi]. */
 			bn_set_2b(lo, bbits - 1);
 			bn_div_rem_rup(lo, NULL, lo, a);

@@ -2557,16 +2557,11 @@ static int prime(void) {
 		} TEST_END;
 
 		TEST_ONCE("prime generation with a close prime factor terminates") {
-#if BN_GEN == STRON
-			/* Strong primes need a few bits more than a digit. */
-			const int b = RLC_DIG + 6;
-#else
-			const int b = 30;
-#endif
 			for (int k = 1; k <= 2; k++) {
-				TEST_ASSERT(bn_gen_prime_factor(q, p, b, b + k) == RLC_OK, end);
+				TEST_ASSERT(bn_gen_prime_factor(q, p, 30, 30 + k) == RLC_OK,
+						end);
 				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
-				TEST_ASSERT(bn_bits(p) == (size_t)(b + k), end);
+				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
 				bn_sub_dig(p, p, 1);
 				bn_mod(p, p, q);
 				TEST_ASSERT(bn_is_zero(p), end);

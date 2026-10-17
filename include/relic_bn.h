@@ -1640,12 +1640,14 @@ int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
 
 /**
  * Generates a probable prime number b, with (b-1) divisible by a probable large
- * prime a.
+ * prime a. The factor a comes from the basic method, whatever the configured
+ * prime generation method is.
  *
  * @param[out] a			- the prime factor of (b-1).
  * @param[out] b			- the prime result b.
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
