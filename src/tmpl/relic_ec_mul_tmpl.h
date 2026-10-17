@@ -436,7 +436,8 @@
 						}													\
 						/* A negative top tooth flips all the signs. */		\
 						e ^= (top - 1) & (h - 1);							\
-						for (int z = 0; z < h; z++) {						\
+						C##_copy(q, t[c * h]);								\
+						for (int z = 1; z < h; z++) {						\
 							C##_copy_sec(q, t[c * h + z], z == e);			\
 						}													\
 						C##_neg(v, q);										\
