@@ -560,6 +560,15 @@
 /** Chosen hash function. */
 #define MD_MAP   MD_@MD_MAP@
 
+/** BLAKE2s-based extendable-output function. */
+#define MD_B2XS           12
+/** SHAKE128 extendable-output function. */
+#define MD_SK128          13
+/** SHAKE256 extendable-output function. */
+#define MD_SK256          14
+/** Chosen extendable-output function. */
+#define MD_XOF   MD_@MD_XOF@
+
 /** Choice of hash function. */
 #define MD_METHD "@MD_METHD@"
 

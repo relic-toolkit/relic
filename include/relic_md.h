@@ -168,6 +168,25 @@ enum {
 #define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_s3512(B, BL, I, IL, D, DL)
 #endif
 
+/**
+ * Expands a message to pseudorandom bytes with the chosen extendable-output
+ * function, as expand_message_xof of RFC 9380.
+ *
+ * @param[out] B			- the buffer to write.
+ * @param[in] BL			- the number of bytes to write, at most 65535.
+ * @param[in] I				- the input message.
+ * @param[in] IL			- the length of the input in bytes.
+ * @param[in] D				- the domain separation tag.
+ * @param[in] DL			- the length of the tag in bytes, at most 255.
+ */
+#if MD_XOF == MD_SK128
+#define md_xof(B, BL, I, IL, D, DL) 	md_xof_sk128(B, BL, I, IL, D, DL)
+#elif MD_XOF == MD_SK256
+#define md_xof(B, BL, I, IL, D, DL) 	md_xof_sk256(B, BL, I, IL, D, DL)
+#else
+#define md_xof(B, BL, I, IL, D, DL) 	md_xof_b2xs(B, BL, I, IL, D, DL)
+#endif
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -285,6 +304,48 @@ void md_shake128(uint8_t *out, size_t out_len, const uint8_t *in,
  */
 void md_shake256(uint8_t *out, size_t out_len, const uint8_t *in,
 		size_t in_len);
+
+/**
+ * Expands a message to pseudorandom bytes with SHAKE128, as
+ * expand_message_xof of RFC 9380.
+ *
+ * @param[out] buf			- the buffer to write.
+ * @param[in] buf_len		- the number of bytes to write, at most 65535.
+ * @param[in] in			- the input message.
+ * @param[in] in_len		- the length of the input in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the length of the tag in bytes, at most 255.
+ */
+void md_xof_sk128(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len);
+
+/**
+ * Expands a message to pseudorandom bytes with SHAKE256, as
+ * expand_message_xof of RFC 9380.
+ *
+ * @param[out] buf			- the buffer to write.
+ * @param[in] buf_len		- the number of bytes to write, at most 65535.
+ * @param[in] in			- the input message.
+ * @param[in] in_len		- the length of the input in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the length of the tag in bytes, at most 255.
+ */
+void md_xof_sk256(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len);
+
+/**
+ * Expands a message to pseudorandom bytes with the BLAKE2s-based XOF, as
+ * expand_message_xof of RFC 9380.
+ *
+ * @param[out] buf			- the buffer to write.
+ * @param[in] buf_len		- the number of bytes to write, at most 65535.
+ * @param[in] in			- the input message.
+ * @param[in] in_len		- the length of the input in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the length of the tag in bytes, at most 255.
+ */
+void md_xof_b2xs(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len);
 
 /**
  * Derives a key from shared secret material through the standardized KDF2
@@ -460,11 +521,30 @@ void md_xmd_s3384(uint8_t *buf, size_t buf_len, const uint8_t *in,
 void md_xmd_s3512(uint8_t *buf, size_t buf_len, const uint8_t *in,
 		size_t in_len, const uint8_t *dst, size_t dst_len);
 
+/**
+ * State of a Keccak-f[1600] sponge that absorbs a message and then squeezes
+ * any number of bytes.
+ */
+typedef struct {
+	/** The 25 lanes of the permutation. */
+	uint64_t a[25];
+	/** The number of bytes absorbed or squeezed per permutation. */
+	size_t rate;
+	/** The position inside the current block. */
+	size_t pos;
+	/** The domain separation byte appended to the message. */
+	uint8_t pad;
+	/** Whether the message was padded and squeezing started. */
+	int squeezing;
+} keccak_state;
+
+#if MD_XOF == MD_B2XS
+
 /** Size in bytes of a block produced by the BLAKE2s-based XOF. */
 #define RLC_XOF_LEN			32
 
 /**
- * A BLAKE2s-based extensible-output function context. A message is absorbed
+ * A BLAKE2s-based extendable-output function context. A message is absorbed
  * once at initialization, and pseudorandom bytes can then be squeezed out
  * incrementally, with no bound on the total output length fixed in advance,
  * unlike md_xmd.
@@ -479,6 +559,18 @@ typedef struct {
 	/** index of the next block to derive from the root. */
 	uint32_t ctr;
 } xof_t;
+
+#else
+
+/**
+ * A SHAKE extendable-output function context. A message is absorbed once at
+ * initialization, and pseudorandom bytes can then be squeezed out
+ * incrementally, with no bound on the total output length fixed in advance,
+ * unlike md_xmd.
+ */
+typedef keccak_state xof_t;
+
+#endif
 
 /**
  * Initializes an XOF by absorbing a message, so that an unbounded number of

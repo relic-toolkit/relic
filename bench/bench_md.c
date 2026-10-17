@@ -53,6 +53,11 @@ static void hash(void) {
 		BENCH_ADD(md_map_s3256(out, buf, sizeof(buf)));
 	} BENCH_END;
 
+	BENCH_RUN("md_xof (256)") {
+		rand_bytes(buf, sizeof(buf));
+		BENCH_ADD(md_xof(buf, sizeof(buf), buf, sizeof(buf), dst, 5));
+	} BENCH_END;
+
 	BENCH_RUN("md_shake128 (256, 32)") {
 		rand_bytes(buf, sizeof(buf));
 		BENCH_ADD(md_shake128(out, 32, buf, sizeof(buf)));

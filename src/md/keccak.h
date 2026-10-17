@@ -35,27 +35,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "relic_md.h"
+
 /** Domain separation byte of the SHA-3 hash functions. */
 #define KECCAK_SHA3		0x06
 /** Domain separation byte of the SHAKE extendable-output functions. */
 #define KECCAK_SHAKE	0x1F
-
-/**
- * State of a Keccak-f[1600] sponge that absorbs a message and then squeezes
- * any number of bytes.
- */
-typedef struct {
-	/** The 25 lanes of the permutation. */
-	uint64_t a[25];
-	/** The number of bytes absorbed or squeezed per permutation. */
-	size_t rate;
-	/** The position inside the current block. */
-	size_t pos;
-	/** The domain separation byte appended to the message. */
-	uint8_t pad;
-	/** Whether the message was padded and squeezing started. */
-	int squeezing;
-} keccak_state;
 
 /**
  * Starts a sponge with a given rate and domain separation byte.

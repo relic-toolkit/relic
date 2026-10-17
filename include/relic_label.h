@@ -4050,6 +4050,9 @@
 #undef md_map_s3512
 #undef md_shake128
 #undef md_shake256
+#undef md_xof_sk128
+#undef md_xof_sk256
+#undef md_xof_b2xs
 #undef md_kdf
 #undef md_mgf
 #undef md_hmac
@@ -4081,6 +4084,9 @@
 #define md_map_s3512 	RLC_PREFIX(md_map_s3512)
 #define md_shake128 	RLC_PREFIX(md_shake128)
 #define md_shake256 	RLC_PREFIX(md_shake256)
+#define md_xof_sk128 	RLC_PREFIX(md_xof_sk128)
+#define md_xof_sk256 	RLC_PREFIX(md_xof_sk256)
+#define md_xof_b2xs 	RLC_PREFIX(md_xof_b2xs)
 #define md_kdf 	RLC_PREFIX(md_kdf)
 #define md_mgf 	RLC_PREFIX(md_mgf)
 #define md_hmac 	RLC_PREFIX(md_hmac)

@@ -148,6 +148,42 @@ static void md_shake(uint8_t *out, size_t out_len, const uint8_t *in,
 	}
 }
 
+/**
+ * Expands a message with SHAKE, as expand_message_xof of RFC 9380.
+ *
+ * @param[out] buf			- the buffer to write.
+ * @param[in] buf_len		- the number of bytes to write.
+ * @param[in] in			- the input message.
+ * @param[in] in_len		- the length of the input in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the length of the tag in bytes.
+ * @param[in] rate			- the rate of the sponge in bytes.
+ */
+static void md_shake_xof(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len, size_t rate) {
+	keccak_state s;
+	uint8_t len[2], tag;
+
+	/* Longer tags would have to be hashed first, which is not supported. */
+	if (buf_len > 65535 || dst_len > 255) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	len[0] = (uint8_t)(buf_len >> 8);
+	len[1] = (uint8_t)buf_len;
+	tag = (uint8_t)dst_len;
+
+	/* Squeeze H(msg || I2OSP(len, 2) || DST || I2OSP(len(DST), 1)). */
+	if (md_keccak_init(&s, rate, KECCAK_SHAKE) != 0 ||
+			md_keccak_absorb(&s, in, in_len) != 0 ||
+			md_keccak_absorb(&s, len, sizeof(len)) != 0 ||
+			md_keccak_absorb(&s, dst, dst_len) != 0 ||
+			md_keccak_absorb(&s, &tag, 1) != 0 ||
+			md_keccak_squeeze(&s, buf, buf_len) != 0) {
+		RLC_THROW(ERR_NO_VALID);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -226,4 +262,14 @@ void md_shake128(uint8_t *out, size_t out_len, const uint8_t *in,
 void md_shake256(uint8_t *out, size_t out_len, const uint8_t *in,
 		size_t in_len) {
 	md_shake(out, out_len, in, in_len, 136);
+}
+
+void md_xof_sk128(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len) {
+	md_shake_xof(buf, buf_len, in, in_len, dst, dst_len, 168);
+}
+
+void md_xof_sk256(uint8_t *buf, size_t buf_len, const uint8_t *in,
+		size_t in_len, const uint8_t *dst, size_t dst_len) {
+	md_shake_xof(buf, buf_len, in, in_len, dst, dst_len, 136);
 }

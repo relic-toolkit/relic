@@ -12,14 +12,24 @@ message("      MD_METHD=S3256        SHA3-256 hash function.")
 message("      MD_METHD=S3384        SHA3-384 hash function.")
 message("      MD_METHD=S3512        SHA3-512 hash function.\n")
 
+message("   ** Available extendable-output functions (default = B2XS):\n")
+message("      MD_METHD=B2XS         BLAKE2s-based XOF (BLAKE2Xs).")
+message("      MD_METHD=SK128        SHAKE128 XOF.")
+message("      MD_METHD=SK256        SHAKE256 XOF.\n")
+
 # Choose the arithmetic methods.
 if (NOT MD_METHD)
-	set(MD_METHD "SH256")
+	set(MD_METHD "SH256;B2XS")
 endif(NOT MD_METHD)
 list(LENGTH MD_METHD MD_LEN)
-if (NOT MD_LEN EQUAL 1)
-	message(FATAL_ERROR "MD_METHD needs 1 entries: ${MD_METHD}")
+if (NOT MD_LEN EQUAL 2)
+	message(FATAL_ERROR "MD_METHD needs 2 entries: ${MD_METHD}")
 endif()
 
 list(GET MD_METHD 0 MD_MAP)
+list(GET MD_METHD 1 MD_XOF)
+if (NOT MD_XOF MATCHES "^(B2XS|SK128|SK256)$")
+	message(FATAL_ERROR "Unknown extendable-output function ${MD_XOF}, "
+		"choose one of: B2XS SK128 SK256")
+endif()
 set(MD_METHD ${MD_METHD} CACHE STRING "Method for hash functions.")
