@@ -5,7 +5,7 @@ message("   ** Options for the multiple precision module (default = 2048,0):\n")
 message("      BN_PRECI=n        The base precision in bits. Let w be n in words.")
 message("      BN_KARAT=n        The number of Karatsuba steps.\n")
 
-message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;BASIC;BASIC):\n")
+message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;LEHME):\n")
 
 message("      Integer multiplication:")
 message("      BN_METHD=BASIC    Schoolbook multiplication.")
@@ -48,7 +48,7 @@ set(BN_KARAT ${BN_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
 # Choose the arithmetic methods.
 if (NOT BN_METHD)
-	set(BN_METHD "COMBA;COMBA;MONTY;SLIDE;BASIC")
+	set(BN_METHD "COMBA;COMBA;MONTY;SLIDE;LEHME")
 endif(NOT BN_METHD)
 list(LENGTH BN_METHD BN_LEN)
 if (BN_LEN LESS 5)
