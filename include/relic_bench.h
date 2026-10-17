@@ -44,7 +44,7 @@ extern "C" {
 #include "relic_label.h"
 #include "relic_util.h"
 
-#if OPSYS == LINUX && TIMER == PERF
+#if OPSYS == LINUX && RLC_TIMER == PERF
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -139,22 +139,22 @@ extern "C" {
 /**
  * Timer type.
  */
-#if OPSYS == DUINO && TIMER == HREAL
+#if OPSYS == DUINO && RLC_TIMER == HREAL
 
 typedef uint32_t ben_t;
 
-#elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
+#elif RLC_TIMER == HREAL || RLC_TIMER == HPROC || RLC_TIMER == HTHRD
 
 #include <sys/time.h>
 #include <time.h>
 typedef struct timespec ben_t;
 
-#elif TIMER == ANSI
+#elif RLC_TIMER == ANSI
 
 #include <time.h>
 typedef clock_t ben_t;
 
-#else /* TIMER == CYCLE || TIMER == PERF */
+#else /* RLC_TIMER == CYCLE || RLC_TIMER == PERF */
 
 typedef ull_t ben_t;
 

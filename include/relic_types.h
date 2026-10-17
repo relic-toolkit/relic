@@ -205,11 +205,11 @@ typedef unsigned long uint_t;
  * @param[in,out] A		- the pointer to align.
  */
 #if ALIGN > 1
-#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
+#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == X86 || RLC_ARCH == ARM
 #define RLC_ALIGN(A)														\
 	((unsigned int)(A) + RLC_PAD((unsigned int)(A)));						\
 
-#elif ARCH  == X64
+#elif RLC_ARCH  == X64
 #define RLC_ALIGN(A)														\
 	((unsigned long)(A) + RLC_PAD((unsigned long)(A)));						\
 

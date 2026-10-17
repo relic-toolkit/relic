@@ -332,8 +332,6 @@ typedef crt_st *crt_t;
 #define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
 #elif BN_MOD == MONTY
 #define bn_mod_pre(U, M)	bn_mod_pre_monty(U, M)
-#elif BN_MOD == PMERS
-#define bn_mod_pre(U, M)	bn_mod_pre_pmers(U, M)
 #endif
 
 /**
@@ -365,8 +363,6 @@ typedef crt_st *crt_t;
 #define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
 #elif BN_MOD == MONTY
 #define bn_mod_imp(C, A, M, U)	bn_mod_monty(C, A, M, U)
-#elif BN_MOD == PMERS
-#define bn_mod_imp(C, A, M, U)	bn_mod_pmers(C, A, M, U)
 #endif
 
 /**
@@ -1190,25 +1186,6 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u);
  * @param[in] u				- the reciprocal of the modulus.
  */
 void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u);
-
-/**
- * Computes u if the modulus has the form 2^b - u.
- *
- * @param[out] u			- the result.
- * @param[in] m				- the modulus.
- */
-void bn_mod_pre_pmers(bn_t u, const bn_t m);
-
-/**
- * Reduces a multiple precision integer modulo a positive integer using
- * pseudo-Mersenne modular reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the multiple precision integer to reduce.
- * @param[in] m				- the modulus.
- * @param[in] u				- the auxiliar value derived from the modulus.
- */
-void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using

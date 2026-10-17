@@ -527,20 +527,12 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_RUN("bn_mod") {
-#if BN_MOD == PMERS
-		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
-		bn_set_2b(b, RLC_BN_BITS);
-		bn_rand(c, RLC_POS, RLC_DIG);
-		bn_sub(b, b, c);
-		bn_mod_pre(d[0], b);
-#else
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
 		}
 		bn_mod_pre(d[0], b);
-#endif
 		BENCH_ADD(bn_mod(c, a, b, d[0]));
 	}
 	BENCH_END;
@@ -640,39 +632,12 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if BN_MOD == PMERS || !defined(STRIP)
-	BENCH_RUN("bn_mod_pre_pmers") {
-		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
-		bn_set_2b(b, RLC_BN_BITS);
-		bn_rand(c, RLC_POS, RLC_DIG);
-		bn_sub(b, b, c);
-		BENCH_ADD(bn_mod_pre_pmers(d[0], b));
-	}
-	BENCH_END;
-
-	BENCH_RUN("bn_mod_pmers") {
-		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
-		bn_set_2b(b, RLC_BN_BITS);
-		bn_rand(c, RLC_POS, RLC_DIG);
-		bn_sub(b, b, c);
-		bn_mod_pre_pmers(d[0], b);
-		BENCH_ADD(bn_mod_pmers(c, a, b, d[0]));
-	}
-	BENCH_END;
-#endif
-
 	BENCH_RUN("bn_mxp") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-#if BN_MOD != PMERS
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
 		}
-#else
-		bn_set_2b(b, RLC_BN_BITS);
-		bn_rand(c, RLC_POS, RLC_DIG);
-		bn_sub(b, b, c);
-#endif
 		bn_mod(a, a, b);
 		BENCH_ADD(bn_mxp(c, a, b, b));
 	}

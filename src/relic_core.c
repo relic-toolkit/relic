@@ -79,13 +79,13 @@
 /**
  * Default library context.
  */
-#if MULTI
+#if RLC_MULTI
 rlc_thread ctx_t first_ctx;
 #else
 static ctx_t first_ctx;
 #endif
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 /*
  * Initializer function to call for every thread's context
  */
@@ -93,7 +93,7 @@ void (*core_thread_initializer)(void* init_ptr) = NULL;
 void* core_init_ptr = NULL;
 #endif
 
-#if MULTI
+#if RLC_MULTI
 rlc_thread ctx_t *core_ctx = NULL;
 #else
 ctx_t *core_ctx = NULL;
@@ -205,7 +205,7 @@ int core_clean(void) {
 	return RLC_OK;
 }
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 ctx_t *core_get(void) {
     if (core_ctx == NULL && core_thread_initializer != NULL) {
         core_thread_initializer(core_init_ptr);
@@ -218,7 +218,7 @@ void core_set(ctx_t *ctx) {
 	core_ctx = ctx;
 }
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
     core_thread_initializer = init;
     core_init_ptr = init_ptr;

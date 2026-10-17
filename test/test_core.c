@@ -34,8 +34,8 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if defined(MULTI)
-#if MULTI == PTHREAD
+#if defined(RLC_MULTI)
+#if RLC_MULTI == PTHREAD
 
 void *master(void *ptr) {
 	int *code = (int *)ptr;
@@ -104,8 +104,8 @@ int main(void) {
 
 	code = RLC_OK;
 
-#if defined(MULTI)
-#if MULTI == OPENMP
+#if defined(RLC_MULTI)
+#if RLC_MULTI == OPENMP
 	TEST_ONCE("library context is thread-safe") {
 		omp_set_num_threads(CORES);
 #pragma omp parallel shared(code)
@@ -138,7 +138,7 @@ int main(void) {
 	} TEST_END;
 #endif
 
-#if MULTI == PTHREAD
+#if RLC_MULTI == PTHREAD
 	TEST_ONCE("library context is thread-safe") {
 		pthread_t thread[CORES];
 		int result[CORES] = { RLC_OK };

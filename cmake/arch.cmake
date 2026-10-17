@@ -41,13 +41,14 @@ if(WORD AND NOT WSIZE)
 endif()
 
 if(NOT WSIZE)
-	# Default is 64 bits.
+	# Default is 64 bits. The flags are cached together with the word size,
+	# so that later runs of CMake keep them.
 	set(WSIZE 64)
 	if(ARCH STREQUAL "X64" OR ARCH STREQUAL "A64")
-		set(AFLAGS "-m64")
+		set(AFLAGS "-m64" CACHE STRING "Architecture flags")
 		set(WSIZE 64)
 	elseif(ARCH STREQUAL "X86" OR ARCH STREQUAL "ARM")
-		set(AFLAGS "-m32")
+		set(AFLAGS "-m32" CACHE STRING "Architecture flags")
 		set(WSIZE 32)
 	elseif(ARCH STREQUAL "MSP")
 		set(WSIZE 16)

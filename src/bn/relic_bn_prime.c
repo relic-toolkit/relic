@@ -143,62 +143,6 @@ static const dig_t primes[] = {
 #endif
 };
 
-#if BN_MOD == PMERS
-
-/**
- * Computes c = a ^ b mod m.
- *
- * @param c				- the result.
- * @param a				- the basis.
- * @param b				- the exponent.
- * @param m				- the modulus.
- */
-static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	int i, l;
-	bn_t t;
-
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-
-		l = bn_bits(b);
-
-		bn_copy(t, a);
-
-		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(t, t);
-			bn_mod(t, t, m);
-			if (bn_get_bit(b, i)) {
-				bn_mul(t, t, a);
-				bn_mod(t, t, m);
-			}
-		}
-
-		bn_copy(c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(t);
-	}
-}
-
-#endif
-
-/**
- * Computes c = a^b mod m, falling back to the pseudo-Mersenne exponentiation
- * above when the active reduction does not support general exponentiation.
- */
-static void bn_prime_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-#if BN_MOD != PMERS
-	bn_mxp(c, a, b, m);
-#else
-	bn_exp(c, a, b, m);
-#endif
-}
-
 /**
  * Tests if 2^(a - 1) = 1 mod a for an odd a > 2, the Fermat test to base 2,
  * with temporaries given by the caller and without error handling of its own.
@@ -211,7 +155,7 @@ static void bn_prime_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 static int bn_prime_fermt(const bn_t a, bn_t t, bn_t u) {
 	bn_sub_dig(u, a, 1);
 	bn_set_dig(t, 2);
-	bn_prime_exp(t, t, u, a);
+	bn_mxp(t, t, u, a);
 	return (bn_cmp_dig(t, 1) == RLC_EQ);
 }
 
@@ -519,7 +463,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			}
 
 			/* y = b^r mod a. */
-			bn_prime_exp(y, t, r, a);
+			bn_mxp(y, t, r, a);
 
 			if (bn_cmp_dig(y, 1) != RLC_EQ && bn_cmp(y, n1) != RLC_EQ) {
 				j = 1;
@@ -576,7 +520,7 @@ int bn_is_prime_solov(const bn_t a) {
 			/* t1 = (a - 1)/2. */
 			bn_rsh(t1, t2, 1);
 			/* t1 = t0^(a - 1)/2 mod a. */
-			bn_prime_exp(t1, t0, t1, a);
+			bn_mxp(t1, t0, t1, a);
 			/* If t1 != 1 and t1 != n - 1 return 0 */
 			if (bn_cmp_dig(t1, 1) != RLC_EQ && bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
@@ -852,7 +796,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 			}
 			/* Compute t = 2 * (s^(r-2) mod r) * s - 1. */
 			bn_sub_dig(t, r, 2);
-			bn_prime_exp(t, s, t, r);
+			bn_mxp(t, s, t, r);
 
 			bn_mul(t, t, s);
 			bn_dbl(t, t);

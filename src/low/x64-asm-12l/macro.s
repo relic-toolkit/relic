@@ -108,7 +108,7 @@
 #define BCPY	0(%rsp)
 #define APTR	96(%rsp)
 #define CPTR	104(%rsp)
-#define ZERO	112(%rsp)
+#define ZEROS	112(%rsp)
 #define ONES	120(%rsp)
 #define CARRY	128(%rsp)
 #define FRAME	136
@@ -191,7 +191,7 @@
 	adox	\T, \Z10
 	mulx	88+\B, \T, \Z12
 	adox	\T, \Z11
-	adox	ZERO, \Z12
+	adox	ZEROS, \Z12
 .endm
 
 // [Z0:Z11, X] <- [Z0:Z11, CARRY] + rdx x M, where the free register X turns into
@@ -233,7 +233,7 @@
 	adox	\X, \Z11
 	mulx	88+\M, \T, \X
 	adcx	\T, \Z11
-	adox	ZERO, \X
+	adox	ZEROS, \X
 	adcx	CARRY, \X
 .endm
 
@@ -280,11 +280,11 @@
 	mulx	88+\M, \T, \Z0
 	adcx	\T, \Z11
 .ifb \Z12
-	adox	ZERO, \Z0
-	adcx	ZERO, \Z0
+	adox	ZEROS, \Z0
+	adcx	ZEROS, \Z0
 .else
 	adox	\Z0, \Z12
-	adcx	ZERO, \Z12
+	adcx	ZEROS, \Z12
 .endif
 .endm
 
@@ -943,8 +943,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z0
-	adox	ZERO, \Z0
-	adcx	ZERO, \Z0
+	adox	ZEROS, \Z0
+	adcx	ZEROS, \Z0
 	movq	\Z0, CARRY
 #endif
 .endif
@@ -964,8 +964,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z1
-	adox	ZERO, \Z1
-	adcx	ZERO, \Z1
+	adox	ZEROS, \Z1
+	adcx	ZEROS, \Z1
 	movq	\Z1, CARRY
 #endif
 .endif
@@ -985,8 +985,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z2
-	adox	ZERO, \Z2
-	adcx	ZERO, \Z2
+	adox	ZEROS, \Z2
+	adcx	ZEROS, \Z2
 	movq	\Z2, CARRY
 #endif
 .endif
@@ -1006,8 +1006,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z3
-	adox	ZERO, \Z3
-	adcx	ZERO, \Z3
+	adox	ZEROS, \Z3
+	adcx	ZEROS, \Z3
 	movq	\Z3, CARRY
 #endif
 .endif
@@ -1027,8 +1027,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z4
-	adox	ZERO, \Z4
-	adcx	ZERO, \Z4
+	adox	ZEROS, \Z4
+	adcx	ZEROS, \Z4
 	movq	\Z4, CARRY
 #endif
 .endif
@@ -1048,8 +1048,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z5
-	adox	ZERO, \Z5
-	adcx	ZERO, \Z5
+	adox	ZEROS, \Z5
+	adcx	ZEROS, \Z5
 	movq	\Z5, CARRY
 #endif
 .endif
@@ -1069,8 +1069,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z6
-	adox	ZERO, \Z6
-	adcx	ZERO, \Z6
+	adox	ZEROS, \Z6
+	adcx	ZEROS, \Z6
 	movq	\Z6, CARRY
 #endif
 .endif
@@ -1090,8 +1090,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z7
-	adox	ZERO, \Z7
-	adcx	ZERO, \Z7
+	adox	ZEROS, \Z7
+	adcx	ZEROS, \Z7
 	movq	\Z7, CARRY
 #endif
 .endif
@@ -1111,8 +1111,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z8
-	adox	ZERO, \Z8
-	adcx	ZERO, \Z8
+	adox	ZEROS, \Z8
+	adcx	ZEROS, \Z8
 	movq	\Z8, CARRY
 #endif
 .endif
@@ -1132,8 +1132,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z9
-	adox	ZERO, \Z9
-	adcx	ZERO, \Z9
+	adox	ZEROS, \Z9
+	adcx	ZEROS, \Z9
 	movq	\Z9, CARRY
 #endif
 .endif
@@ -1153,8 +1153,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z10
-	adox	ZERO, \Z10
-	adcx	ZERO, \Z10
+	adox	ZEROS, \Z10
+	adcx	ZEROS, \Z10
 	movq	\Z10, CARRY
 #endif
 .endif
@@ -1174,8 +1174,8 @@
 #if FP_PRIME == 768
 	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z11
-	adox	ZERO, \Z11
-	adcx	ZERO, \Z11
+	adox	ZEROS, \Z11
+	adcx	ZEROS, \Z11
 #endif
 .endif
 

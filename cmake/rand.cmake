@@ -1,14 +1,12 @@
 message(STATUS "Available pseudo-random number generators (default = HASHD):\n")
 
 message("   RAND=HASHD     Use the HASH-DRBG generator. (recommended)")
-message("   RAND=RDRND     Use Intel RdRand instruction directly.")
 message("   RAND=UDEV      Use the operating system underlying generator.")
 message("   RAND=CALL      Override the generator with a callback.\n")
 
 message(STATUS "Available random number generator seeders (default = UDEV):\n")
 
-message("   SEED=          Use a zero seed. (horribly insecure!)")
-message("   SEED=LIBC      Use rand()/random() functions. (insecure!)")
+message("   SEED=ZERO      Use a zero seed. (horribly insecure!)")
 message("   SEED=RDRND     Use Intel RdRand instruction directly.")
 message("   SEED=UDEV      Use non-blocking /dev/urandom. (recommended)")
 message("   SEED=WCGR      Use Windows' CryptGenRandom. (recommended)\n")
@@ -26,4 +24,16 @@ else()
     # Choose the pseudo-random number generator.
     set(SEED "UDEV" CACHE STRING "Random number generator seeder")
 
+endif()
+
+if(RAND STREQUAL "RDRND")
+	message(FATAL_ERROR "RAND=RDRND was removed, use RAND=HASHD with "
+		"SEED=RDRND to seed it from RdRand.")
+endif()
+if(SEED STREQUAL "")
+	message(FATAL_ERROR "SEED is empty, use SEED=ZERO for a fixed seed.")
+endif()
+if(SEED STREQUAL "LIBC")
+	message(FATAL_ERROR "SEED=LIBC was removed, use SEED=ZERO for a fixed "
+		"seed or a real seeder such as UDEV.")
 endif()

@@ -331,8 +331,22 @@ endif()
 set(CMAKE_C_FLAGS "${AFLAGS} ${WFLAGS} ${DFLAGS} ${CFLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${LFLAGS}")
 
+message(STATUS "Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} (${CMAKE_C_COMPILER})")
 message(STATUS "Compiler flags: ${CMAKE_C_FLAGS}")
 message(STATUS "Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
+
+# Keep the final flags as a C string for conf_print(), escaping backslashes
+# and quotes and squeezing the spaces left by empty flag groups.
+string(REGEX REPLACE " +" " " RLC_FLAGS "${CMAKE_C_FLAGS}")
+string(STRIP "${RLC_FLAGS}" RLC_FLAGS)
+string(REPLACE "\\" "\\\\" RLC_FLAGS "${RLC_FLAGS}")
+string(REPLACE "\"" "\\\"" RLC_FLAGS "${RLC_FLAGS}")
+
+# The header names these options with a prefix.
+set(RLC_ARCH "${ARCH}")
+set(RLC_SEED "${SEED}")
+set(RLC_MULTI "${MULTI}")
+set(RLC_TIMER "${TIMER}")
 
 set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)

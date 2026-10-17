@@ -37,6 +37,11 @@
 /** Project version. */
 #define RLC_VERSION "@VERSION@"
 
+/** Compiler used to build the library. */
+#define RLC_CC "@CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@"
+/** Compiler flags used to build the library. */
+#define RLC_FLAGS "@RLC_FLAGS@"
+
 /** Debugging support. */
 #cmakedefine DEBUG
 /** Error handling support. */
@@ -79,8 +84,8 @@
 #define X86      5
 /** AMD64-compatible 64-bit architecture. */
 #define X64      6
-/** Architecture. */
-#cmakedefine ARCH	 @ARCH@
+/** Chosen architecture. */
+#cmakedefine RLC_ARCH	 @ARCH@
 
 /** Size of word in this architecture. */
 #define WSIZE    @WSIZE@
@@ -559,17 +564,15 @@
 
 /** NIST HASH-DRBG generator. */
 #define HASHD    1
-/** Intel RdRand instruction. */
-#define RDRND    2
 /** Operating system underlying generator. */
 #define UDEV     3
 /** Override library generator with the callback. */
 #define CALL     4
 /** Chosen random generator. */
-#define RAND     @RAND@
+#define RLC_RAND	 @RAND@
 
-/** Standard C library generator. */
-#define LIBC     1
+/** Fixed zero seed. */
+#define ZERO     1
 /** Intel RdRand instruction. */
 #define RDRND    2
 /** Device node generator. */
@@ -577,7 +580,7 @@
 /** Use Windows' CryptGenRandom. */
 #define WCGR     4
 /** Chosen random generator seeder. */
-#cmakedefine SEED     @SEED@
+#define RLC_SEED	 @SEED@
 
 /** GNU/Linux operating system. */
 #define LINUX    1
@@ -601,7 +604,7 @@
 /** POSIX multithreading support. */
 #define PTHREAD  2
 /** Chosen multithreading API. */
-#cmakedefine MULTI    @MULTI@
+#cmakedefine RLC_MULTI	 @MULTI@
 
 /** Monotonic high-resolution timer. */
 #define HREAL    1
@@ -616,7 +619,7 @@
 /** Performance monitoring framework. */
 #define PERF     7
 /** Chosen timer. */
-#cmakedefine TIMER    @TIMER@
+#cmakedefine RLC_TIMER	 @TIMER@
 
 /** Prefix to identity this build of the library. */
 #cmakedefine LABEL    @LABEL@
