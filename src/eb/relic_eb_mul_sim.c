@@ -203,7 +203,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-#if EB_FIX == LWNAF && defined(EB_PRECO)
+#if EB_FIX == EB_LWNAF && defined(EB_PRECO)
 		eb_mul_sim_imp(r, g, _k, q, _m, eb_curve_get_tab());
 #else
 		eb_mul_sim(r, g, _k, q, _m);

@@ -182,7 +182,7 @@ void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len) {
 
 			if (fp2_is_sqr(t0) == 1) {
 				fp2_srt(p->y, t0);
-				p->coord = BASIC;
+				p->coord = EC_AFFIN;
 				break;
 			}
 

@@ -327,7 +327,7 @@ void ep_curve_mul_a(fp_t c, const fp_t a) {
 				fp_add(c, t, a);
 				fp_neg(c, c);
 				break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 			case RLC_TINY:
 				fp_mul_dig(c, a, ctx->ep_a[0]);
 				break;

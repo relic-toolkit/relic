@@ -116,7 +116,7 @@ void fp_rdc_quick(fp_t c, dv_t a) {
 	}
 }
 
-#if FP_RDC == LOWER
+#if FP_RDC == FP_LOWER
 
 void fp_rdc_lower(fp_t c, dv_t a) {
 	fp_rdcs_low(c, a, fp_prime_get());

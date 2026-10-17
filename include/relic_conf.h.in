@@ -139,49 +139,49 @@
 #define BN_KARAT @BN_KARAT@
 
 /** Schoolbook multiplication. */
-#define BASIC    1
+#define BN_BASIC    1
 /** Comba multiplication. */
-#define COMBA    2
+#define BN_COMBA    2
 /** Chosen multiple precision multiplication method. */
-#define BN_MUL   @BN_MUL@
+#define BN_MUL   BN_@BN_MUL@
 
 /** Schoolbook squaring. */
-#define BASIC    1
+#define BN_BASIC    1
 /** Comba squaring. */
-#define COMBA    2
+#define BN_COMBA    2
 /** Reuse multiplication for squaring. */
-#define MULTP    4
+#define BN_MULTP    4
 /** Chosen multiple precision multiplication method. */
-#define BN_SQR   @BN_SQR@
+#define BN_SQR   BN_@BN_SQR@
 
 /** Division modular reduction. */
-#define BASIC    1
+#define BN_BASIC    1
 /** Barrett modular reduction. */
-#define BARRT    2
+#define BN_BARRT    2
 /** Montgomery modular reduction. */
-#define MONTY    3
+#define BN_MONTY    3
 /** Pseudo-Mersenne modular reduction. */
-#define PMERS    4
+#define BN_PMERS    4
 /** Chosen multiple precision modular reduction method. */
-#define BN_MOD   @BN_MOD@
+#define BN_MOD   BN_@BN_MOD@
 
 /** Binary modular exponentiation. */
-#define BASIC    1
+#define BN_BASIC    1
 /** Sliding window modular exponentiation. */
-#define SLIDE    2
+#define BN_SLIDE    2
 /** Montgomery powering ladder. */
-#define MONTY    3
+#define BN_MONTY    3
 /** Chosen multiple precision modular exponentiation method. */
-#define BN_MXP   @BN_MXP@
+#define BN_MXP   BN_@BN_MXP@
 
 /** Basic Euclidean GCD Algorithm. */
-#define BASIC    1
+#define BN_BASIC    1
 /** Binary GCD Algorithm. */
-#define BINAR    2
+#define BN_BINAR    2
 /** Lehmer's fast GCD Algorithm. */
-#define LEHME    3
+#define BN_LEHME    3
 /** Chosen multiple precision greatest common divisor method. */
-#define BN_GCD   @BN_GCD@
+#define BN_GCD   BN_@BN_GCD@
 
 /** Multiple precision arithmetic method */
 #define BN_METHD "@BN_METHD@"
@@ -194,105 +194,105 @@
 #cmakedefine FP_QNRES
 
 /** Schoolbook addition. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Integrated modular addtion. */
-#define INTEG    3
+#define FP_INTEG    3
 /** Chosen prime field multiplication method. */
-#define FP_ADD   @FP_ADD@
+#define FP_ADD   FP_@FP_ADD@
 
 /** Schoolbook multiplication. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Comba multiplication. */
-#define COMBA    2
+#define FP_COMBA    2
 /** Integrated modular multiplication. */
-#define INTEG    3
+#define FP_INTEG    3
 /** Chosen prime field multiplication method. */
-#define FP_MUL   @FP_MUL@
+#define FP_MUL   FP_@FP_MUL@
 
 /** Schoolbook squaring. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Comba squaring. */
-#define COMBA    2
+#define FP_COMBA    2
 /** Integrated modular squaring. */
-#define INTEG    3
+#define FP_INTEG    3
 /** Reuse multiplication for squaring. */
-#define MULTP    4
+#define FP_MULTP    4
 /** Chosen prime field multiplication method. */
-#define FP_SQR   @FP_SQR@
+#define FP_SQR   FP_@FP_SQR@
 
 /** Division-based reduction. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Fast reduction modulo special form prime. */
-#define QUICK    2
+#define FP_QUICK    2
 /** Montgomery modular reduction. */
-#define MONTY    3
+#define FP_MONTY    3
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define FP_LOWER    7
 /** Chosen prime field reduction method. */
-#define FP_RDC   @FP_RDC@
+#define FP_RDC   FP_@FP_RDC@
 
 /** Inversion by Fermat's Little Theorem. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Binary inversion. */
-#define BINAR    2
+#define FP_BINAR    2
 /** Integrated modular multiplication. */
-#define MONTY    3
+#define FP_MONTY    3
 /** Extended Euclidean algorithm. */
-#define EXGCD    4
+#define FP_EXGCD    4
 /** Constant-time inversion by Bernstein-Yang division steps. */
-#define DIVST    5
+#define FP_DIVST    5
 /** Constant-time inversion by Bernstein-Yang jump division steps. */
-#define JMPDS    6
+#define FP_JMPDS    6
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define FP_LOWER    7
 /** Chosen prime field inversion method. */
-#define FP_INV   @FP_INV@
+#define FP_INV   FP_@FP_INV@
 
 /** Legendre by Fermat's Little Theorem. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Binary method. */
-#define BINAR    2
+#define FP_BINAR    2
 /** Constant-time inversion by Bernstein-Yang division steps. */
-#define DIVST    5
+#define FP_DIVST    5
 /** Constant-time inversion by Bernstein-Yang jump division steps. */
-#define JMPDS    6
+#define FP_JMPDS    6
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define FP_LOWER    7
 /** Chosen prime field inversion method. */
-#define FP_SMB   @FP_SMB@
+#define FP_SMB   FP_@FP_SMB@
 
 /** Binary modular exponentiation. */
-#define BASIC    1
+#define FP_BASIC    1
 /** Sliding window modular exponentiation. */
-#define SLIDE    2
+#define FP_SLIDE    2
 /** Constant-time Montgomery powering ladder. */
-#define MONTY    3
+#define FP_MONTY    3
 /** Chosen multiple precision modular exponentiation method. */
-#define FP_EXP   @FP_EXP@
+#define FP_EXP   FP_@FP_EXP@
 
 /** Prime field arithmetic method */
 #define FP_METHD "@FP_METHD@"
 
 /** Basic quadratic extension field arithmetic. */
-#define BASIC    1
+#define FPX_BASIC    1
 /** Integrated extension field arithmetic. */
-#define INTEG    3
+#define FPX_INTEG    3
 /* Chosen extension field arithmetic method. */
-#define FPX_QDR   @FPX_QDR@
+#define FPX_QDR   FPX_@FPX_QDR@
 
 /** Basic cubic extension field arithmetic. */
-#define BASIC    1
+#define FPX_BASIC    1
 /** Integrated extension field arithmetic. */
-#define INTEG    3
+#define FPX_INTEG    3
 /* Chosen extension field arithmetic method. */
-#define FPX_CBC   @FPX_CBC@
+#define FPX_CBC   FPX_@FPX_CBC@
 
 /** Basic quadratic extension field arithmetic. */
-#define BASIC    1
+#define FPX_BASIC    1
 /** Lazy-reduced extension field arithmetic. */
-#define LAZYR    2
+#define FPX_LAZYR    2
 /* Chosen extension field arithmetic method. */
-#define FPX_RDC   @FPX_RDC@
+#define FPX_RDC   FPX_@FPX_RDC@
 
 /** Prime extension field arithmetic method */
 #define FPX_METHD "@FPX_METHD@"
@@ -309,81 +309,81 @@
 #cmakedefine FB_PRECO
 
 /** Shift-and-add multiplication. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Lopez-Dahab multiplication. */
-#define LODAH	 2
+#define FB_LODAH	 2
 /** Integrated modular multiplication. */
-#define INTEG	 3
+#define FB_INTEG	 3
 /** Chosen binary field multiplication method. */
-#define FB_MUL   @FB_MUL@
+#define FB_MUL   FB_@FB_MUL@
 
 /** Basic squaring. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Table-based squaring. */
-#define QUICK    2
+#define FB_QUICK    2
 /** Integrated modular squaring. */
-#define INTEG	 3
+#define FB_INTEG	 3
 /** Chosen binary field squaring method. */
-#define FB_SQR   @FB_SQR@
+#define FB_SQR   FB_@FB_SQR@
 
 /** Shift-and-add modular reduction. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Fast reduction modulo a trinomial or pentanomial. */
-#define QUICK	 2
+#define FB_QUICK	 2
 /** Chosen binary field modular reduction method. */
-#define FB_RDC   @FB_RDC@
+#define FB_RDC   FB_@FB_RDC@
 
 /** Square root by repeated squaring. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Fast square root extraction. */
-#define QUICK	 2
+#define FB_QUICK	 2
 /** Chosen binary field modular reduction method. */
-#define FB_SRT   @FB_SRT@
+#define FB_SRT   FB_@FB_SRT@
 
 /** Trace by repeated squaring. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Fast trace computation. */
-#define QUICK	 2
+#define FB_QUICK	 2
 /** Chosen trace computation method. */
-#define FB_TRC   @FB_TRC@
+#define FB_TRC   FB_@FB_TRC@
 
 /** Solve by half-trace computation. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Solve with precomputed half-traces. */
-#define QUICK	 2
+#define FB_QUICK	 2
 /** Chosen method to solve a quadratic equation. */
-#define FB_SLV   @FB_SLV@
+#define FB_SLV   FB_@FB_SLV@
 
 /** Inversion by Fermat's Little Theorem. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Binary inversion. */
-#define BINAR    2
+#define FB_BINAR    2
 /** Constant-time version of almost inverse. */
-#define CTAIA    3
+#define FB_CTAIA    3
 /** Extended Euclidean algorithm. */
-#define EXGCD    4
+#define FB_EXGCD    4
 /** Itoh-Tsuji inversion. */
-#define ITOHT    5
+#define FB_ITOHT    5
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define FB_LOWER    7
 /** Chosen binary field inversion method. */
-#define FB_INV   @FB_INV@
+#define FB_INV   FB_@FB_INV@
 
 /** Binary modular exponentiation. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Sliding window modular exponentiation. */
-#define SLIDE    2
+#define FB_SLIDE    2
 /** Constant-time Montgomery powering ladder. */
-#define MONTY    3
+#define FB_MONTY    3
 /** Chosen multiple precision modular exponentiation method. */
-#define FB_EXP   @FB_EXP@
+#define FB_EXP   FB_@FB_EXP@
 
 /** Iterated squaring/square-root by consecutive squaring/square-root. */
-#define BASIC    1
+#define FB_BASIC    1
 /** Iterated squaring/square-root by table-based method. */
-#define QUICK	 2
+#define FB_QUICK	 2
 /** Chosen method to solve a quadratic equation. */
-#define FB_ITR   @FB_ITR@
+#define FB_ITR   FB_@FB_ITR@
 
 /** Binary field arithmetic method */
 #define FB_METHD "@FB_METHD@"
@@ -392,42 +392,42 @@
 #cmakedefine EP_PRECO
 
 /** Affine coordinates. */
-#define BASIC	 1
+#define EP_BASIC	 1
 /** Projective coordinates. */
-#define PROJC	 2
+#define EP_PROJC	 2
 /** Jacobian coordinates. */
-#define JACOB	 3
+#define EP_JACOB	 3
 /** Chosen prime elliptic curve coordinate method. */
-#define EP_ADD	 @EP_ADD@
+#define EP_ADD	 EP_@EP_ADD@
 
 /** Binary point multiplication. */
-#define BASIC	 1
+#define EP_BASIC	 1
 /** Left-to-right regular recoding. */
-#define LWREG	 2
+#define EP_LWREG	 2
 /** Montgomery powering ladder. */
-#define MONTY	 3
+#define EP_MONTY	 3
 /** Left-to-right Width-w NAF. */
-#define LWNAF	 4
+#define EP_LWNAF	 4
 /** Chosen prime elliptic curve point multiplication method. */
-#define EP_MUL	 @EP_MUL@
+#define EP_MUL	 EP_@EP_MUL@
 
 /** Single-table comb method. */
-#define BASIC	 1
+#define EP_BASIC	 1
 /** Regular signed comb method. */
-#define LWREG	 2
+#define EP_LWREG	 2
 /** Double-table comb method. */
-#define COMBD    3
+#define EP_COMBD    3
 /** Chosen prime elliptic curve fixed point multiplication method. */
-#define EP_FIX	 @EP_FIX@
+#define EP_FIX	 EP_@EP_FIX@
 
 /** Basic hash to x-coordinate and increment. */
-#define BASIC    1
+#define EP_BASIC    1
 /** (Simplified) Shallue-van de Woestijne-Ulas map. */
-#define SSWUM    2
+#define EP_SSWUM    2
 /** SwiftEC method. */
-#define SWIFT    3
+#define EP_SWIFT    3
 /** Chosen prime elliptic curve hashing method. */
-#define EP_MAP   @EP_MAP@
+#define EP_MAP   EP_@EP_MAP@
 
 /** Prime elliptic curve arithmetic method. */
 #define EP_METHD "@EP_METHD@"
@@ -439,35 +439,35 @@
 #define EB_METHD "@EB_METHD@"
 
 /** Affine coordinates. */
-#define BASIC	 1
+#define EB_BASIC	 1
 /** López-Dahab Projective coordinates. */
-#define PROJC	 2
+#define EB_PROJC	 2
 /** Chosen binary elliptic curve coordinate method. */
-#define EB_ADD	 @EB_ADD@
+#define EB_ADD	 EB_@EB_ADD@
 
 /** Binary point multiplication. */
-#define BASIC	 1
+#define EB_BASIC	 1
 /** L�pez-Dahab point multiplication. */
-#define LODAH	 2
+#define EB_LODAH	 2
 /** Halving. */
-#define HALVE    3
+#define EB_HALVE    3
 /** Left-to-right width-w (T)NAF. */
-#define LWNAF	 4
+#define EB_LWNAF	 4
 /** Right-to-left width-w (T)NAF. */
-#define RWNAF	 5
+#define EB_RWNAF	 5
 /** Chosen binary elliptic curve point multiplication method. */
-#define EB_MUL	 @EB_MUL@
+#define EB_MUL	 EB_@EB_MUL@
 
 /** Single-table comb method. */
-#define BASIC	 1
+#define EB_BASIC	 1
 /** Regular signed comb method. */
-#define LWREG	 2
+#define EB_LWREG	 2
 /** Double-table comb method. */
-#define COMBD    3
+#define EB_COMBD    3
 /** Left-to-right Width-w NAF. */
-#define LWNAF	 4
+#define EB_LWNAF	 4
 /** Chosen binary elliptic curve fixed point multiplication method. */
-#define EB_FIX	 @EB_FIX@
+#define EB_FIX	 EB_@EB_FIX@
 
 /** Build precomputation table for generator. */
 #cmakedefine ED_PRECO
@@ -476,42 +476,42 @@
 #define ED_METHD "@ED_METHD@"
 
 /** Affine coordinates. */
-#define BASIC    1
+#define ED_BASIC    1
 /** Simple projective twisted Edwards coordinates */
-#define PROJC	 2
+#define ED_PROJC	 2
 /** Extended projective twisted Edwards coordinates */
-#define EXTND	 3
+#define ED_EXTND	 3
 /** Chosen binary elliptic curve coordinate method. */
-#define ED_ADD	 @ED_ADD@
+#define ED_ADD	 ED_@ED_ADD@
 
 /** Binary point multiplication. */
-#define BASIC	 1
+#define ED_BASIC	 1
 /** Left-to-right regular recoding. */
-#define LWREG	 2
+#define ED_LWREG	 2
 /** Montgomery powering ladder. */
-#define MONTY	 3
+#define ED_MONTY	 3
 /** Left-to-right Width-w NAF. */
-#define LWNAF	 4
+#define ED_LWNAF	 4
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
-#define ED_MUL	 @ED_MUL@
+#define ED_MUL	 ED_@ED_MUL@
 
 /** Single-table comb method. */
-#define BASIC	 1
+#define ED_BASIC	 1
 /** Regular signed comb method. */
-#define LWREG	 2
+#define ED_LWREG	 2
 /** Double-table comb method. */
-#define COMBD    3
+#define ED_COMBD    3
 /** Chosen prime elliptic twisted Edwards curve fixed point multiplication method. */
-#define ED_FIX	 @ED_FIX@
+#define ED_FIX	 ED_@ED_FIX@
 
 /** Prime curves. */
-#define PRIME    1
+#define EC_PRIME    1
 /** Binary curves. */
-#define CHAR2    2
+#define EC_CHAR2    2
 /** Edwards curves */
-#define EDDIE    3
+#define EC_EDDIE    3
 /** Chosen elliptic curve type. */
-#define EC_CUR	 @EC_CUR@
+#define EC_CUR	 EC_@EC_CUR@
 
 /** Chosen elliptic curve cryptography method. */
 #define EC_METHD "@EC_METHD@"
@@ -519,38 +519,38 @@
 #cmakedefine EC_ENDOM
 
 /** Basic quadratic extension field arithmetic. */
-#define BASIC    1
+#define PP_BASIC    1
 /** Lazy-reduced extension field arithmetic. */
-#define LAZYR    2
+#define PP_LAZYR    2
 /* Chosen extension field arithmetic method. */
-#define PP_EXT   @PP_EXT@
+#define PP_EXT   PP_@PP_EXT@
 
 /** Bilinear pairing method. */
 #define PP_METHD "@PP_METHD@"
 
 /** Tate pairing. */
-#define TATEP    1
+#define PP_TATEP    1
 /** Weil pairing. */
-#define WEILP    2
+#define PP_WEILP    2
 /** Optimal ate pairing. */
-#define OATEP    3
+#define PP_OATEP    3
 /** Chosen pairing method over prime elliptic curves. */
-#define PP_MAP   @PP_MAP@
+#define PP_MAP   PP_@PP_MAP@
 
 /** SHA-224 hash function. */
-#define SH224          2
+#define MD_SH224          2
 /** SHA-256 hash function. */
-#define SH256          3
+#define MD_SH256          3
 /** SHA-384 hash function. */
-#define SH384          4
+#define MD_SH384          4
 /** SHA-512 hash function. */
-#define SH512          5
+#define MD_SH512          5
 /** BLAKE2s-160 hash function. */
-#define B2S160         6
+#define MD_B2S160         6
 /** BLAKE2s-256 hash function. */
-#define B2S256         7
+#define MD_B2S256         7
 /** Chosen hash function. */
-#define MD_MAP   @MD_MAP@
+#define MD_MAP   MD_@MD_MAP@
 
 /** Choice of hash function. */
 #define MD_METHD "@MD_METHD@"

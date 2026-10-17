@@ -204,7 +204,7 @@ static void arith(void) {
 		BENCH_ADD(eb_add(r, p, q));
 	} BENCH_END;
 
-#if EB_ADD == BASIC || !defined(RLC_STRIP)
+#if EB_ADD == EB_BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_add_basic") {
 		eb_rand(p);
 		eb_rand(q);
@@ -212,7 +212,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EB_ADD == PROJC || !defined(RLC_STRIP)
+#if EB_ADD == EB_PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_add_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -257,7 +257,7 @@ static void arith(void) {
 		BENCH_ADD(eb_sub_basic(r, p, q));
 	} BENCH_END;
 
-#if EB_ADD == PROJC || !defined(RLC_STRIP)
+#if EB_ADD == EB_PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_sub_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -293,14 +293,14 @@ static void arith(void) {
 		BENCH_ADD(eb_dbl(r, p));
 	} BENCH_END;
 
-#if EB_ADD == BASIC || !defined(RLC_STRIP)
+#if EB_ADD == EB_BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_dbl_basic") {
 		eb_rand(p);
 		BENCH_ADD(eb_dbl_basic(r, p));
 	} BENCH_END;
 #endif
 
-#if EB_ADD == PROJC || !defined(RLC_STRIP)
+#if EB_ADD == EB_PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_dbl_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -321,7 +321,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 	if (eb_curve_is_kbltz()) {
-#if EB_ADD == PROJC || !defined(RLC_STRIP)
+#if EB_ADD == EB_PROJC || !defined(RLC_STRIP)
 		BENCH_RUN("eb_frb") {
 			eb_rand(p);
 			eb_rand(q);
@@ -354,7 +354,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if EB_ADD == PROJC || !defined(RLC_STRIP)
+#if EB_ADD == EB_PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_neg_projc") {
 		eb_rand(p);
 		eb_rand(q);
@@ -372,7 +372,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if EB_MUL == BASIC || !defined(RLC_STRIP)
+#if EB_MUL == EB_BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("eb_mul_basic") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
@@ -381,7 +381,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if EB_MUL == LODAH || !defined(RLC_STRIP)
+#if EB_MUL == EB_LODAH || !defined(RLC_STRIP)
 	BENCH_RUN("eb_mul_lodah") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
@@ -390,7 +390,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if EB_MUL == LWNAF || !defined(RLC_STRIP)
+#if EB_MUL == EB_LWNAF || !defined(RLC_STRIP)
 	BENCH_RUN("eb_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
@@ -399,7 +399,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if EB_MUL == RWNAF || !defined(RLC_STRIP)
+#if EB_MUL == EB_RWNAF || !defined(RLC_STRIP)
 	BENCH_RUN("eb_mul_rwnaf") {
 		bn_rand_mod(k, n);
 		eb_rand(p);
@@ -408,7 +408,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if EB_MUL == HALVE || !defined(RLC_STRIP)
+#if EB_MUL == EB_HALVE || !defined(RLC_STRIP)
 		BENCH_RUN("eb_mul_halve") {
 			bn_rand_mod(k, n);
 			eb_rand(p);
@@ -450,7 +450,7 @@ static void arith(void) {
 		eb_free(t[i]);
 	}
 
-#if EB_FIX == BASIC || !defined(RLC_STRIP)
+#if EB_FIX == EB_BASIC || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 		eb_new(t[i]);
 	}
@@ -470,7 +470,7 @@ static void arith(void) {
 	}
 #endif
 
-#if EB_FIX == LWREG || !defined(RLC_STRIP)
+#if EB_FIX == EB_LWREG || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_LWREG; i++) {
 		eb_new(t[i]);
 	}
@@ -490,7 +490,7 @@ static void arith(void) {
 	}
 #endif
 
-#if EB_FIX == COMBD || !defined(RLC_STRIP)
+#if EB_FIX == EB_COMBD || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 		eb_new(t[i]);
 	}
@@ -510,7 +510,7 @@ static void arith(void) {
 	}
 #endif
 
-#if EB_FIX == LWNAF || !defined(RLC_STRIP)
+#if EB_FIX == EB_LWNAF || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 		eb_new(t[i]);
 	}

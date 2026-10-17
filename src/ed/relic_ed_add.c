@@ -74,7 +74,7 @@ void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 		fp_copy(r->x, t0);
 		fp_copy(r->z, p->z);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -99,7 +99,7 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q) {
 
 		ed_neg_basic(t, q);
 		ed_add_basic(r, p, t);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -118,9 +118,9 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 		fp_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 		/* A = z1 * z2, B = A^2, saving 1M if z1 = 1 or z2 = 1. */
-		if (q->coord == BASIC) {
+		if (q->coord == EC_AFFIN) {
 			fp_copy(t0, p->z);
-		} else if (p->coord == BASIC) {
+		} else if (p->coord == EC_AFFIN) {
 			fp_copy(t0, q->z);
 		} else {
 			fp_mul(t0, p->z, q->z);
@@ -159,7 +159,7 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 		/* z3 = F * G */
 		fp_mul(r->z, t5, t6);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -212,9 +212,9 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->t, t2, q->t);
 
 		/* D = z1 * z2, saving 1M if z1 = 1 or z2 = 1. */
-		if (q->coord == BASIC) {
+		if (q->coord == EC_AFFIN) {
 			fp_copy(r->z, p->z);
-		} else if (p->coord == BASIC) {
+		} else if (p->coord == EC_AFFIN) {
 			fp_copy(r->z, q->z);
 		} else {
 			fp_mul(r->z, p->z, q->z);
@@ -243,7 +243,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->t, t2, r->z);
 		fp_mul(r->z, t3, t4);
 
-		r->coord = EXTND;
+		r->coord = EC_EXTND;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

@@ -67,13 +67,13 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 
 		if (level <= 1) {
 			/* a0a0 = a0 * a0 and a1a1 = a1 * a1 */
-#if BN_SQR == BASIC
+#if BN_SQR == BN_BASIC
 			bn_sqr_basic(a0a0, a0);
 			bn_sqr_basic(a1a1, a1);
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 			bn_sqr_comba(a0a0, a0);
 			bn_sqr_comba(a1a1, a1);
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 			bn_mul_comba(a0a0, a0, a0);
 			bn_mul_comba(a1a1, a1, a1);
 #endif
@@ -87,11 +87,11 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 
 		if (level <= 1) {
 			/* t = (a1 + a0)*(a1 + a0) */
-#if BN_SQR == BASIC
+#if BN_SQR == BN_BASIC
 			bn_sqr_basic(t, t);
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 			bn_sqr_comba(t, t);
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 			bn_mul_comba(t, t, t);
 #endif
 		} else {

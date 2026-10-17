@@ -90,7 +90,7 @@
 			F##_copy(r->x, t0);												\
 			F##_copy(r->z, p->z);											\
 																			\
-			r->coord = BASIC;												\
+			r->coord = EC_AFFIN;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -130,7 +130,7 @@
 				F##_sqr(t0, p->y);											\
 				F##_mul(t3, p->x, p->y);									\
 																			\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					/* Save 1M + 1S + 1m_b3 if z1 = 1. */					\
 					F##_copy(t1, p->y);										\
 					F##_dbl(t2, C##_curve_get_b());							\
@@ -164,7 +164,7 @@
 																			\
 				if (C##_curve_opt_a() == RLC_MIN3) {						\
 					/* Cost of 8M + 3S + 2mb + 21a. */						\
-					if (p->coord == BASIC) {								\
+					if (p->coord == EC_AFFIN) {								\
 						/* Save 1S + 1m_b + 2a if z1 = 1. */				\
 						F##_set_dig(t2, 3);									\
 						F##_copy(r->y, C##_curve_get_b());					\
@@ -193,7 +193,7 @@
 					F##_sub(t0, t0, t2);									\
 				} else {													\
 					/* Common cost of 8M + 3S + 3m_a + 2m_3b + 15a. */		\
-					if (p->coord == BASIC) {								\
+					if (p->coord == EC_AFFIN) {								\
 						/* Save 1S + 1m_b + 1m_a if z1 = 1. */				\
 						F##_dbl(r->y, C##_curve_get_b());					\
 						F##_add(r->y, r->y, C##_curve_get_b());				\
@@ -233,7 +233,7 @@
 				F##_dbl(r->z, r->z);										\
 				F##_dbl(r->z, r->z);										\
 			}																\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -263,7 +263,7 @@
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
-			if (p->coord != BASIC && C##_curve_opt_a() == RLC_MIN3) {		\
+			if (p->coord != EC_AFFIN && C##_curve_opt_a() == RLC_MIN3) {		\
 				/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */	\
 																			\
 				/* t0 = delta = z1^2. */									\
@@ -351,7 +351,7 @@
 				F##_sqr(t1, p->y);											\
 				F##_sqr(t2, t1);											\
 																			\
-				if (p->coord != BASIC) {									\
+				if (p->coord != EC_AFFIN) {									\
 					/* t3 = z1^2. */										\
 					F##_sqr(t3, p->z);										\
 																			\
@@ -381,7 +381,7 @@
 				/* t5 = M = 3 * x1^2 + a * z1^4. */							\
 				F##_dbl(t5, t0);											\
 				F##_add(t5, t5, t0);										\
-				if (p->coord != BASIC) {									\
+				if (p->coord != EC_AFFIN) {									\
 					F##_sqr(t3, t3);										\
 					C##_curve_mul_a(t1, t3);								\
 					F##_add(t5, t5, t1);									\
@@ -402,7 +402,7 @@
 				F##_sub(r->y, t5, t2);										\
 			}																\
 																			\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\

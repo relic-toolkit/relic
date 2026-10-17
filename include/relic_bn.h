@@ -297,9 +297,9 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_mul(C, A, B)		bn_mul_karat(C, A, B)
-#elif BN_MUL == BASIC
+#elif BN_MUL == BN_BASIC
 #define bn_mul(C, A, B)		bn_mul_basic(C, A, B)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mul(C, A, B)		bn_mul_comba(C, A, B)
 #endif
 
@@ -311,11 +311,11 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_sqr(C, A)		bn_sqr_karat(C, A)
-#elif BN_SQR == BASIC
+#elif BN_SQR == BN_BASIC
 #define bn_sqr(C, A)		bn_sqr_basic(C, A)
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 #define bn_sqr(C, A)		bn_sqr_comba(C, A)
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 #define bn_sqr(C, A)		bn_mul(C, A, A)
 #endif
 
@@ -326,11 +326,11 @@ typedef crt_st *crt_t;
  * @param[out] U			- the result.
  * @param[in] M				- the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_pre(U, M)	(void)(U), (void)(M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_pre(U, M)	bn_mod_pre_monty(U, M)
 #endif
 
@@ -357,11 +357,11 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the auxiliar value derived from the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_imp(C, A, M, U)	bn_mod_basic(C, A, M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_imp(C, A, M, U)	bn_mod_monty(C, A, M, U)
 #endif
 
@@ -374,9 +374,9 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the reciprocal of the modulus.
  */
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_basic(C, A, M, U)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_comba(C, A, M, U)
 #endif
 
@@ -390,13 +390,13 @@ typedef crt_st *crt_t;
  * @param[in] B				- the exponent.
  * @param[in] M				- the modulus.
  */
-#if BN_MXP == BASIC
+#if BN_MXP == BN_BASIC
 #define bn_mxp(C, A, B, M)	bn_mxp_basic(C, A, B, M)
-#elif BN_MXP == SLIDE
+#elif BN_MXP == BN_SLIDE
 #define bn_mxp(C, A, B, M)	bn_mxp_slide(C, A, B, M)
-#elif BN_MXP == MONTY
+#elif BN_MXP == BN_MONTY
 #define bn_mxp(C, A, B, M)	bn_mxp_monty(C, A, B, M)
-#elif BN_MXP == LOWER
+#elif BN_MXP == BN_LOWER
 #define bn_mxp(C, A, B, M)	bn_mxp_lower(C, A, B, M)
 #endif
 
@@ -408,13 +408,13 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd(C, A, B)		bn_gcd_basic(C, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd(C, A, B)		bn_gcd_lower(C, A, B)
 #endif
 
@@ -429,13 +429,13 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_basic(C, D, E, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lower(C, D, E, A, B)
 #endif
 

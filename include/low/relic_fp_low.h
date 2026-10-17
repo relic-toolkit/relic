@@ -319,7 +319,7 @@ void fp_sqrm_low(dig_t *c, const dig_t *a);
 
 /**
  * Reduces a digit vector modulo m represented in special form.
- * Computes c = a mod m. Only arithmetic backends that support FP_RDC = LOWER
+ * Computes c = a mod m. Only arithmetic backends that support FP_RDC = FP_LOWER
  * provide it.
  *
  * @param[out] c			- the result.

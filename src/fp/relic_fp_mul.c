@@ -64,7 +64,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 			dv_zero(a0b0, h + 1);
 			dv_zero(a1b1, h + 1);
 			for (int i = 0; i < h; i++) {
@@ -75,7 +75,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 				carry = bn_mula_low(a1b1 + i, a + h, *(b + h + i), h1);
 				*(a1b1 + i + h1) = carry;
 			}
-#elif FP_MUL == COMBA || FP_MUL == INTEG
+#elif FP_MUL == FP_COMBA || FP_MUL == FP_INTEG
 			bn_muln_low(a0b0, a, b, h);
 			bn_muln_low(a1b1, a + h, b + h, h1);
 #endif
@@ -103,13 +103,13 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 
 		if (level <= 1) {
 			/* t = (a1 + a0)*(b1 + b0) */
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 			dv_zero(t, h1 + 1);
 			for (int i = 0; i < h1 + 1; i++) {
 				carry = bn_mula_low(t + i, a1, *(b1 + i), h1 + 1);
 				*(t + i + h1 + 1) = carry;
 			}
-#elif FP_MUL == COMBA || FP_MUL == INTEG
+#elif FP_MUL == FP_COMBA || FP_MUL == FP_INTEG
 			bn_muln_low(t, a1, b1, h1 + 1);
 #endif
 		} else {

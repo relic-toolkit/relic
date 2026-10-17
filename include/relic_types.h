@@ -67,6 +67,18 @@
 #define RLC_DIG_LOG		6
 #endif
 
+/**
+ * Coordinate systems of elliptic curve points. Jacobian, extended and halving
+ * coordinates belong to different families of curves, so they share a value.
+ */
+/** @{ */
+#define EC_AFFIN		1
+#define EC_PROJC		2
+#define EC_JACOB		3
+#define EC_EXTND		3
+#define EC_HALVE		3
+/** @} */
+
 /*============================================================================*/
 /* Type definitions                                                           */
 /*============================================================================*/

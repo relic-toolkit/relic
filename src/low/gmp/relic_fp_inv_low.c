@@ -45,7 +45,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	/* RLC_GMP needs one more limb than the modulus for the cofactor. */
 	rlc_align dig_t w[RLC_FP_DIGS + 1];
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
 	dv_copy(t, a, RLC_FP_DIGS);
 	fp_rdcn_low(u, t);
@@ -64,7 +64,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 		dv_copy(c, w, RLC_FP_DIGS);
 	}
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	dv_zero(t, RLC_FP_DIGS);
 	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
 	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);

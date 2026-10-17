@@ -1000,7 +1000,7 @@ static int doubling8(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k8_basic(e2, r, q, p);
 			pp_exp_k8(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_neg(p->y, p->y);
 			fp_neg(p->x, p->x);
@@ -1020,7 +1020,7 @@ static int doubling8(void) {
 			fp_neg(p->x, p->x);
 			pp_dbl_k8_projc(e2, r, q, p);
 			pp_exp_k8(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert and fix precomputing. */
 			fp_neg(p->x, p->x);
 			fp_neg(p->y, p->y);
@@ -1402,7 +1402,7 @@ static int doubling12(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k12_basic(e2, r, q, p);
 			pp_exp_k12(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -1424,7 +1424,7 @@ static int doubling12(void) {
 			fp_add(p->x, p->z, p->x);
 			pp_dbl_k12_projc(e2, r, q, p);
 			pp_exp_k12(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert precomputing. */
 			fp_hlv(p->x, p->z);
 #endif
@@ -1951,7 +1951,7 @@ static int doubling16(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k16_basic(e2, r, q, p);
 			pp_exp_k16(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_neg(p->y, p->y);
 			fp_neg(p->x, p->x);
@@ -1971,7 +1971,7 @@ static int doubling16(void) {
 			fp_neg(p->x, p->x);
 			pp_dbl_k16_projc(e2, r, q, p);
 			pp_exp_k16(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert and fix precomputing. */
 			fp_neg(p->x, p->x);
 			fp_neg(p->y, p->y);
@@ -2438,7 +2438,7 @@ static int doubling18(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k18_basic(e2, r, q, p);
 			pp_exp_k18(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -2460,7 +2460,7 @@ static int doubling18(void) {
 			fp_add(p->x, p->z, p->x);
 			pp_dbl_k18_projc(e2, r, q, p);
 			pp_exp_k18(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert precomputing. */
 			fp_hlv(p->x, p->z);
 #endif
@@ -2970,7 +2970,7 @@ static int doubling24(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k24_basic(e2, r, q, p);
 			pp_exp_k24(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -2991,7 +2991,7 @@ static int doubling24(void) {
 			fp_add(p->x, p->z, p->x);
 			pp_dbl_k24_projc(e2, r, q, p);
 			pp_exp_k24(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert precomputing. */
 			fp_hlv(p->x, p->z);
 #endif
@@ -3481,7 +3481,7 @@ static int doubling48(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k48_basic(e2, r, q, p);
 			pp_exp_k48(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -3502,7 +3502,7 @@ static int doubling48(void) {
 			fp_add(p->x, p->z, p->x);
 			pp_dbl_k48_projc(e2, r, q, p);
 			pp_exp_k48(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert precomputing. */
 			fp_hlv(p->x, p->z);
 #endif
@@ -3992,7 +3992,7 @@ static int doubling54(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k54_basic(e2, r, q, p);
 			pp_exp_k54(e2, e2);
-#if EP_ADD == PROJC || EP_ADD == JACOB
+#if EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -4013,7 +4013,7 @@ static int doubling54(void) {
 			fp_add(p->x, p->z, p->x);
 			pp_dbl_k54_projc(e2, r, q, p);
 			pp_exp_k54(e2, e2);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* Revert precomputing. */
 			fp_hlv(p->x, p->z);
 #endif

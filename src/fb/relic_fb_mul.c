@@ -42,7 +42,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 /**
  * Multiplies two binary field elements using shift-and-add multiplication.
  *
@@ -83,7 +83,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
 		dv_free(s);
 	}
 }
-#endif /* FB_MUL == BASIC */
+#endif /* FB_MUL == FB_BASIC */
 
 /**
  * Multiplies two binary field elements using recursive Karatsuba
@@ -116,10 +116,10 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 			fb_mul_basic_imp(a0b0, a, b, h);
 			fb_mul_basic_imp(a1b1, a + h, b + h, h1);
-#elif FB_MUL == INTEG || FB_MUL == LODAH
+#elif FB_MUL == FB_INTEG || FB_MUL == FB_LODAH
 			fb_muld_low(a0b0, a, b, h);
 			fb_muld_low(a1b1, a + h, b + h, h1);
 #endif
@@ -151,9 +151,9 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 
 		if (level <= 1) {
 			/* a1b1 = (a1 + a0)*(b1 + b0) */
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 			fb_mul_basic_imp(a1b1, a1, b1, h1);
-#elif FB_MUL == INTEG || FB_MUL == LODAH
+#elif FB_MUL == FB_INTEG || FB_MUL == FB_LODAH
 			fb_muld_low(a1b1, a1, b1, h1);
 #endif
 		} else {

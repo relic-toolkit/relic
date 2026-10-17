@@ -223,7 +223,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp_mul(l[zero][zero][0], t5[0], p->y);
 		fp_mul(l[zero][zero][1], t5[1], p->y);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -375,7 +375,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 		fp_mul(l[one][zero][0], p->x, t0[0]);
 		fp_mul(l[one][zero][1], p->x, t0[1]);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

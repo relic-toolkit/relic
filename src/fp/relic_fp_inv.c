@@ -324,7 +324,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g1, p) != RLC_LT) {
 				bn_sub(g1, g1, p);
 			}
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g1);
 #else
 			dv_copy(c, g1->dp, RLC_FP_DIGS);
@@ -336,7 +336,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g2, p) != RLC_LT) {
 				bn_sub(g2, g2, p);
 			}
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g2);
 #else
 			dv_copy(c, g2->dp, RLC_FP_DIGS);
@@ -357,7 +357,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	dig_t carry;
 	size_t i;
 	int k;
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 #if RLC_ALLOC == RLC_AUTO
 	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
 #else
@@ -382,7 +382,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		bn_set_dig(x1, 1);
 		bn_zero(x2);
 
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		bn_read_raw(_a, a, RLC_FP_DIGS);
 		bn_read_raw(_p, p, RLC_FP_DIGS);
 		bn_mod_monty_conv(u, _a, _p);
@@ -440,7 +440,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		/* If k < Wt then x1 = x1 * R mod p. */
 		if (k <= (int)(RLC_FP_DIGS * RLC_DIG)) {
 			k = k + RLC_FP_DIGS * RLC_DIG;
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			/* Multiply by R^2 * R^{-1}. */
 			fp_mul(x1->dp, x1->dp, conv);
 #else
@@ -448,7 +448,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 #endif
 		}
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
 		fp_mul(x1->dp, x1->dp, conv);
 #endif
@@ -458,7 +458,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		bn_set_2b(x1, 2 * RLC_FP_DIGS * RLC_DIG - k);
 		fp_mul(c, c, x1->dp);
 
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		/*
 		 * If we do not use Montgomery reduction, convert back.
 		 */
@@ -556,7 +556,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_zero(v);
 		fp_set_dig(r, 1);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Convert a from Montgomery form. */
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
@@ -680,7 +680,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			t[j] = p[j] & mask;
 		}
 		bn_addn_low(d, d, t, RLC_FP_DIGS);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
 		fp_mul(c, d, core_get()->inv);
 #else
@@ -695,7 +695,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	}
 }
 
-#if FP_INV == LOWER
+#if FP_INV == FP_LOWER
 
 void fp_inv_lower(fp_t c, const fp_t a) {
 	if (fp_is_zero(a)) {

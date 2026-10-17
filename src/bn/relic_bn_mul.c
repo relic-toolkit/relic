@@ -76,10 +76,10 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(a0b0, a0, b0);
 			bn_mul_basic(a1b1, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(a0b0, a0, b0);
 			bn_mul_comba(a1b1, a1, b1);
 #endif
@@ -95,9 +95,9 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* t = (a1 + a0)*(b1 + b0) */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(t, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(t, a1, b1);
 #endif
 		} else {

@@ -77,7 +77,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		l = bn_bits(b);
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		if (even) {
 			bn_mod_basic(t, a, m);
 		} else {
@@ -106,7 +106,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			}
 		}
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		if (!even) {
 			bn_mod_monty_back(r, r, m);
 		}
@@ -192,9 +192,9 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_new_all(t, u);
 		bn_mod_pre(u, m);
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_mod_monty_conv(t, a, m);
-#else /* BN_MOD == BARRT || BN_MOD == RADIX */
+#else /* BN_MOD == BN_BARRT || BN_MOD == RADIX */
 		/* The reductions below expect an operand in [0, m). */
 		bn_mod_basic(t, a, m);
 #endif
@@ -209,7 +209,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		}
 
 		bn_set_dig(t, 1);
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_mod_monty_conv(t, t, m);
 #endif
 
@@ -228,7 +228,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			}
 		}
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_mod_monty_back(t, t, m);
 #endif
 
@@ -254,7 +254,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t tab[2], t, u;
 	int i, j;
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 	size_t sm = m->used;
 #endif
 
@@ -283,7 +283,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		bn_new_all(tab[0], tab[1], t);
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_grow(t, 2 * sm);
 
 		bn_set_dig(tab[0], 1);
@@ -352,7 +352,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 }
 
-#if BN_MXP == LOWER
+#if BN_MXP == BN_LOWER
 
 void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t t, u;
@@ -525,7 +525,7 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 
 		l = util_bits_dig(b);
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		if (even) {
 			bn_mod_basic(t, a, m);
 		} else {
@@ -553,7 +553,7 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 			}
 		}
 
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		if (!even) {
 			bn_mod_monty_back(r, r, m);
 		}

@@ -1412,7 +1412,7 @@ void ep_param_set(int param) {
 		(void)ctmap;
 
 		fp_set_dig(g->z, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		core_get()->ep_id = param;
 		core_get()->ep_is_pairf = pairf;

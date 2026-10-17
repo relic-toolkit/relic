@@ -237,7 +237,7 @@ void ep8_curve_mul_a(fp8_t c, const fp8_t a) {
 		case RLC_TWO:
 			fp8_dbl(c, a);
 			break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		case RLC_TINY:
 			fp8_mul_dig(c, a, ctx->ep8_a[0][0][0][0]);
 			break;
@@ -257,7 +257,7 @@ void ep8_curve_mul_b(fp8_t c, const fp8_t a) {
 		case RLC_ONE:
 			fp8_copy(c, a);
 			break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 		case RLC_TINY:
 			fp8_mul_dig(c, a, ctx->ep8_b[0][0][0][0]);
 			break;
@@ -351,7 +351,7 @@ void ep8_curve_set_twist(int type) {
 
 		fp8_zero(g->z);
 		fp8_set_dig(g->z, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 
 		ep8_copy(ctx->ep8_g, g);
 		fp8_copy(ctx->ep8_a, a);

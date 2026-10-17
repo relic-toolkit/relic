@@ -46,7 +46,7 @@
  * - http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/Hash_DRBG.pdf
  */
 
-#if MD_MAP == SH224
+#if MD_MAP == MD_SH224
 
 #define FUNCTION "sha-224"
 
@@ -82,7 +82,7 @@ uint8_t result2[] = {
 	0x92, 0xE0
 };
 
-#elif MD_MAP == SH256
+#elif MD_MAP == MD_SH256
 
 uint8_t seed1[63];
 
@@ -131,7 +131,7 @@ uint8_t result2[] = {
 	0x6D, 0xCA, 0x26, 0x2E, 0xCD, 0x77, 0xC5, 0x42
 };
 
-#elif MD_MAP == SH384
+#elif MD_MAP == MD_SH384
 
 #define FUNCTION "sha-384"
 
@@ -183,7 +183,7 @@ uint8_t result2[] = {
 	0x3F, 0xEA
 };
 
-#elif MD_MAP == SH512
+#elif MD_MAP == MD_SH512
 
 #define FUNCTION "sha-512"
 
@@ -247,7 +247,7 @@ uint8_t result2[] = {
 	0x2C, 0xE4, 0xAD, 0x78, 0x2E, 0x7B
 };
 
-#elif MD_MAP == B2S160
+#elif MD_MAP == MD_B2S160
 
 #define FUNCTION "blake2s-160"
 
@@ -275,7 +275,7 @@ uint8_t result2[] = {
 	0x98, 0x7B, 0x11, 0x8D, 0x9F, 0x97, 0xA1, 0x4E, 0x67, 0x82
 };
 
-#elif MD_MAP == B2S256
+#elif MD_MAP == MD_B2S256
 
 uint8_t seed1[63];
 

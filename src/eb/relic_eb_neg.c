@@ -51,7 +51,7 @@ void eb_neg_basic(eb_t r, const eb_t p) {
 
 	fb_add(r->y, p->x, p->y);
 
-	r->coord = BASIC;
+	r->coord = EC_AFFIN;
 }
 
 void eb_neg_projc(eb_t r, const eb_t p) {
@@ -64,14 +64,14 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 		return;
 	}
 
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		if (r != p) {
 			fb_copy(r->x, p->x);
 			fb_copy(r->z, p->z);
 		}
 
 		fb_add(r->y, p->x, p->y);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 		return;
 	}
 
@@ -85,7 +85,7 @@ void eb_neg_projc(eb_t r, const eb_t p) {
 			fb_copy(r->x, p->x);
 		}
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -99,7 +99,7 @@ static void find_trace(void) {
 	}
 }
 
-#if FB_SLV == QUICK || !defined(RLC_STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 
 /**
  * Precomputes half-traces for z^i with odd i.
@@ -272,7 +272,7 @@ static void find_chain(void) {
 		}
 	}
 
-#if FB_INV == ITOHT || FB_INV == LOWER || !defined(RLC_STRIP)
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
 	if (ctx->chain_len >= (int)RLC_FB_CHAIN) {
 		/* The tables have one row per element of the chain. */
 		RLC_THROW(ERR_NO_VALID);
@@ -294,7 +294,7 @@ static void find_chain(void) {
 static void fb_poly_set(const fb_t f) {
 	fb_copy(core_get()->fb_poly, f);
 	find_trace();
-#if FB_SLV == QUICK || !defined(RLC_STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	find_solve();
 #endif
 	find_srz();
@@ -421,7 +421,7 @@ dig_t *fb_poly_get_srz(void) {
 }
 
 const fb_st *fb_poly_tab_sqr(int i) {
-#if FB_INV == ITOHT || FB_INV == LOWER || !defined(RLC_STRIP)
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
 	/* If ITOHT inversion is used and tables are precomputed, return them. */
 	return (const fb_st *)core_get()->fb_tab_sqr[i];
 #else
@@ -455,7 +455,7 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 }
 
 const dig_t *fb_poly_get_slv(void) {
-#if FB_SLV == QUICK || !defined(RLC_STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	return (dig_t *)&(core_get()->fb_half);
 #else
 	return NULL;

@@ -120,7 +120,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 
         // Precompute all 2^n combinations
 		bn_set_dig(t[0], 1);
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_mod_monty_conv(t[0], t[0], m);
 #endif
         for (size_t i = 0; i < n; i++) {
@@ -132,7 +132,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 				} else {
 					bn_mod_basic(t[star], a[i], m);
 				}
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 				bn_mod_monty_conv(t[star], t[star], m);
 #endif
                 for(size_t j = star + 1; j < (star << 1); j++) {
@@ -164,7 +164,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		        bn_mod(r, r, m, u);
 		    }
 		}
-#if BN_MOD == MONTY
+#if BN_MOD == BN_MONTY
 		bn_mod_monty_back(r, r, m);
 #endif
 		bn_copy(c, r);

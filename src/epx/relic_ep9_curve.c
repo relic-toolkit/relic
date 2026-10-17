@@ -315,7 +315,7 @@ void ep9_curve_set_twist(int type) {
 		}
 
 		fp9_set_dig(g->z, 1);
-		g->coord = BASIC;
+		g->coord = EC_AFFIN;
 		ep9_copy(ctx->ep9_g, g);
 
 		/* Sextic twists only exist for a = 0, so b' = b * j^(+-1). */

@@ -659,7 +659,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	}
 }
 
-#if BN_GCD == LOWER
+#if BN_GCD == BN_LOWER
 
 void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, g;

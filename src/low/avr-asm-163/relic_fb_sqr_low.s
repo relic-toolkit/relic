@@ -39,7 +39,7 @@
 
 .text
 
-#if FB_SQR == INTEG || !defined(RLC_STRIP)
+#if FB_SQR == FB_INTEG || !defined(RLC_STRIP)
 
 #if FB_POLYN == 163
 

@@ -85,7 +85,7 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 
 			if (fp_smb(t0) == 1) {
 				fp_srt(p->y, t0);
-				p->coord = BASIC;
+				p->coord = EC_AFFIN;
 				break;
 			}
 
@@ -405,7 +405,7 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		fp_neg(w, p->y);
 		fp_copy_sec(p->y, w, fp_is_even(p->y) ^ s);
 		fp_set_dig(p->z, 1);
-		p->coord = BASIC;
+		p->coord = EC_AFFIN;
 		/* Multiply by cofactor. */
 		ep_mul_cof(p, p);
 	}
@@ -529,11 +529,11 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 size_t ep_map_rnd_size(void) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 	return elm;
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 	return 2 * elm;
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 	return 2 * elm + 1;
 #endif
 }
@@ -546,11 +546,11 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 		return;
 	}
 
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 	ep_map_basic_impl(p, uniform_bytes, len);
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 	ep_map_swift_impl(p, uniform_bytes, len);
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 			(ep_curve_opt_b() != RLC_ZERO);

@@ -97,7 +97,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 		fp6_new_all(t0, t1, t2);
 
 		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* t0 = a_0 * b_0 */
 			fp_mul(t0[0][0], a[0][0][0], b[0][0][0]);
 			fp_mul(t0[0][1], a[0][0][1], b[0][0][0]);
@@ -109,7 +109,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 			fp_add(t2[0][0], b[0][0][0], b[1][0][0]);
 			fp_copy(t2[0][1], b[1][0][1]);
 			fp2_copy(t2[1], b[1][1]);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
+#elif EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* t0 = a_0 * b_0 */
 			fp2_mul(t0[0], a[0][0], b[0][0]);
 			fp2_mul(t0[1], a[0][1], b[0][0]);
@@ -123,7 +123,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 		} else {
 			/* t0 = a_0 * b_0. */
 			fp6_mul_dxs(t0, a[0], b[0]);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* t1 = a_1 * b_1. */
 			fp_mul(t2[0][0], a[1][2][0], b[1][1][0]);
 			fp_mul(t2[0][1], a[1][2][1], b[1][1][0]);
@@ -136,7 +136,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 			fp2_copy(t2[0], b[0][0]);
 			fp_add(t2[1][0], b[0][1][0], b[1][1][0]);
 			fp_copy(t2[1][1], b[0][1][1]);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
+#elif EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* t1 = a_1 * b_1. */
 			fp2_mul(t2[0], a[1][2], b[1][1]);
 			fp2_mul_nor(t1[0], t2[0]);
@@ -181,7 +181,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 		dv6_new_all(u0, u1, u2);
 
 		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* t0 = a_0 * b_0. */
 			fp_muln_low(u0[0][0], a[0][0][0], b[0][0][0]);
 			fp_muln_low(u0[0][1], a[0][0][1], b[0][0][0]);
@@ -193,7 +193,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 			fp_add(t0[0][0], b[0][0][0], b[1][0][0]);
 			fp_copy(t0[0][1], b[1][0][1]);
 			fp2_copy(t0[1], b[1][1]);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
+#elif EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* t0 = a_0 * b_0. */
 			fp2_muln_low(u0[0], a[0][0], b[0][0]);
 			fp2_muln_low(u0[1], a[0][1], b[0][0]);
@@ -208,7 +208,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 		} else {
 			/* t0 = a_0 * b_0. */
 			fp6_mul_dxs_unr_lazyr(u0, a[0], b[0]);
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 			/* t0 = a_0 * b_0. */
 			fp_muln_low(u1[1][0], a[1][2][0], b[1][1][0]);
 			fp_muln_low(u1[1][1], a[1][2][1], b[1][1][0]);
@@ -221,7 +221,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 			fp2_copy(t0[0], b[0][0]);
 			fp_add(t0[1][0], b[0][1][0], b[1][1][0]);
 			fp_copy(t0[1][1], b[0][1][1]);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
+#elif EP_ADD == EP_PROJC || EP_ADD == EP_JACOB
 			/* t1 = a_1 * b_1. */
 			fp2_muln_low(u1[1], a[1][2], b[1][1]);
 			fp2_nord_low(u1[0], u1[1]);

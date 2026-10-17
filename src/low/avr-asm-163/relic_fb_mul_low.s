@@ -423,7 +423,7 @@ fb_sqrm_table2:
 	.endr
 .endm
 
-#if FB_MUL == LODAH || !defined(RLC_STRIP)
+#if FB_MUL == FB_LODAH || !defined(RLC_STRIP)
 
 fb_muln_low:
 	PROLOGUE
@@ -519,7 +519,7 @@ fb_muln_low:
 	std		z + \d2, RT
 .endm
 
-#if FB_MUL == INTEG || !defined(RLC_STRIP)
+#if FB_MUL == FB_INTEG || !defined(RLC_STRIP)
 
 fb_muli_low:
 	PROLOGUE

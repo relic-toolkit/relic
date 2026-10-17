@@ -277,7 +277,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define pc_param_set_any()	ep_param_set_any_pairf()
 #else
 #define pc_param_set_any()	RLC_ERR

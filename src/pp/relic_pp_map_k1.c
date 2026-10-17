@@ -246,7 +246,7 @@ void pp_add_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 			fp_mul(m, m, q->x);
 			fp_sub(m, m, r->x);
 
-			r->coord = JACOB;
+			r->coord = EC_JACOB;
 		}
 	}
 	RLC_CATCH_ANY {
@@ -365,7 +365,7 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 			fp_set_dig(l, 1);
 		}
 
-		r->coord = JACOB;
+		r->coord = EC_JACOB;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

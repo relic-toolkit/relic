@@ -50,7 +50,7 @@ void fp_add_integ(fp_t c, const fp_t a, const fp_t b) {
 }
 
 void fp_add_dig(fp_t c, const fp_t a, dig_t b) {
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	if (b == 1) {
 		fp_add(c, a, core_get()->one);
 	} else {
@@ -93,7 +93,7 @@ void fp_sub_integ(fp_t c, const fp_t a, const fp_t b) {
 }
 
 void fp_sub_dig(fp_t c, const fp_t a, dig_t b) {
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	if (b == 1) {
 		fp_sub(c, a, core_get()->one);
 	} else {

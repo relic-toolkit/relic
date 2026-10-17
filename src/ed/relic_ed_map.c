@@ -144,21 +144,21 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		} /* e4 goes out of scope */
 
 		/* clear denominator / compute extended coordinates if necessary */
-#if ED_ADD == EXTND || ED_ADD == PROJC
-		p->coord = PROJC;
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND || ED_ADD == ED_PROJC
+		p->coord = EC_PROJC;
+#if ED_ADD == ED_EXTND
 		/* extended coordinates: T * Z == X * Y */
 		fp_mul(p->t, p->x, p->y);
 		fp_mul(p->x, p->x, p->z);
 		fp_mul(p->y, p->y, p->z);
 		fp_sqr(p->z, p->z);
-#endif /* ED_ADD == EXTND */
-#else  /* ED_ADD == BASIC */
+#endif /* ED_ADD == ED_EXTND */
+#else  /* ED_ADD == ED_BASIC */
 		fp_inv(tv1, p->z);
 		fp_mul(p->x, p->x, tv1);
 		fp_mul(p->y, p->y, tv1);
 		fp_set_dig(p->z, 1);
-		p->coord = BASIC;
+		p->coord = EC_AFFIN;
 #endif /* ED_ADD */
 	}
 	RLC_CATCH_ANY {
@@ -260,9 +260,9 @@ static void ed_map_ell2_3mod4(ed_t p, const fp_t u) {
 			fp_copy_sec(p->z, tv1, e4);
 		}
 
-#if ED_ADD == EXTND || ED_ADD == PROJC
-		p->coord = PROJC;
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND || ED_ADD == ED_PROJC
+		p->coord = EC_PROJC;
+#if ED_ADD == ED_EXTND
 		/* Extended coordinates: T * Z == X * Y. */
 		fp_mul(p->t, p->x, p->y);
 		fp_mul(p->x, p->x, p->z);
@@ -274,7 +274,7 @@ static void ed_map_ell2_3mod4(ed_t p, const fp_t u) {
 		fp_mul(p->x, p->x, tv1);
 		fp_mul(p->y, p->y, tv1);
 		fp_set_dig(p->z, 1);
-		p->coord = BASIC;
+		p->coord = EC_AFFIN;
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -349,10 +349,10 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 		}
 
 		ed_norm(p, p);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(p->t, p->x, p->y);
 #endif
-		p->coord = BASIC;
+		p->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

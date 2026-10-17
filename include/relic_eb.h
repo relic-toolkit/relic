@@ -102,13 +102,13 @@ enum {
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EB_FIX == BASIC
+#if EB_FIX == EB_BASIC
 #define RLC_EB_TABLE			RLC_EB_TABLE_BASIC
-#elif EB_FIX == LWREG
+#elif EB_FIX == EB_LWREG
 #define RLC_EB_TABLE			RLC_EB_TABLE_LWREG
-#elif EB_FIX == COMBD
+#elif EB_FIX == EB_COMBD
 #define RLC_EB_TABLE			RLC_EB_TABLE_COMBD
-#elif EB_FIX == LWNAF
+#elif EB_FIX == EB_LWNAF
 #define RLC_EB_TABLE			RLC_EB_TABLE_LWNAF
 #endif
 
@@ -220,9 +220,9 @@ typedef eb_st *eb_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to negate.
  */
-#if EB_ADD == BASIC
+#if EB_ADD == EB_BASIC
 #define eb_neg(R, P)		eb_neg_basic(R, P)
-#elif EB_ADD == PROJC
+#elif EB_ADD == EB_PROJC
 #define eb_neg(R, P)		eb_neg_projc(R, P)
 #endif
 
@@ -233,9 +233,9 @@ typedef eb_st *eb_t;
  * @param[in] P				- the first point to add.
  * @param[in] Q				- the second point to add.
  */
-#if EB_ADD == BASIC
+#if EB_ADD == EB_BASIC
 #define eb_add(R, P, Q)		eb_add_basic(R, P, Q);
-#elif EB_ADD == PROJC
+#elif EB_ADD == EB_PROJC
 #define eb_add(R, P, Q)		eb_add_projc(R, P, Q);
 #endif
 
@@ -246,9 +246,9 @@ typedef eb_st *eb_t;
  * @param[in] P				- the first point.
  * @param[in] Q				- the second point.
  */
-#if EB_ADD == BASIC
+#if EB_ADD == EB_BASIC
 #define eb_sub(R, P, Q)		eb_sub_basic(R, P, Q)
-#elif EB_ADD == PROJC
+#elif EB_ADD == EB_PROJC
 #define eb_sub(R, P, Q)		eb_sub_projc(R, P, Q)
 #endif
 
@@ -258,9 +258,9 @@ typedef eb_st *eb_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to double.
  */
-#if EB_ADD == BASIC
+#if EB_ADD == EB_BASIC
 #define eb_dbl(R, P)		eb_dbl_basic(R, P);
-#elif EB_ADD == PROJC
+#elif EB_ADD == EB_PROJC
 #define eb_dbl(R, P)		eb_dbl_projc(R, P);
 #endif
 
@@ -271,15 +271,15 @@ typedef eb_st *eb_t;
  * @param[in] P				- the point to multiply.
  * @param[in] K				- the integer.
  */
-#if EB_MUL == BASIC
+#if EB_MUL == EB_BASIC
 #define eb_mul(R, P, K)		eb_mul_basic(R, P, K)
-#elif EB_MUL == LODAH
+#elif EB_MUL == EB_LODAH
 #define eb_mul(R, P, K)		eb_mul_lodah(R, P, K)
-#elif EB_MUL == HALVE
+#elif EB_MUL == EB_HALVE
 #define eb_mul(R, P, K)		eb_mul_halve(R, P, K)
-#elif EB_MUL == LWNAF
+#elif EB_MUL == EB_LWNAF
 #define eb_mul(R, P, K)		eb_mul_lwnaf(R, P, K)
-#elif EB_MUL == RWNAF
+#elif EB_MUL == EB_RWNAF
 #define eb_mul(R, P, K)		eb_mul_rwnaf(R, P, K)
 #endif
 
@@ -290,13 +290,13 @@ typedef eb_st *eb_t;
  * @param[out] T			- the precomputation table.
  * @param[in] P				- the point to multiply.
  */
-#if EB_FIX == BASIC
+#if EB_FIX == EB_BASIC
 #define eb_mul_pre(T, P)	eb_mul_pre_basic(T, P)
-#elif EB_FIX == LWREG
+#elif EB_FIX == EB_LWREG
 #define eb_mul_pre(T, P)	eb_mul_pre_lwreg(T, P)
-#elif EB_FIX == COMBD
+#elif EB_FIX == EB_COMBD
 #define eb_mul_pre(T, P)	eb_mul_pre_combd(T, P)
-#elif EB_FIX == LWNAF
+#elif EB_FIX == EB_LWNAF
 #define eb_mul_pre(T, P)	eb_mul_pre_lwnaf(T, P)
 #endif
 
@@ -308,13 +308,13 @@ typedef eb_st *eb_t;
  * @param[in] T				- the precomputation table.
  * @param[in] K				- the integer.
  */
-#if EB_FIX == BASIC
+#if EB_FIX == EB_BASIC
 #define eb_mul_fix(R, T, K)	eb_mul_fix_basic(R, T, K)
-#elif EB_FIX == LWREG
+#elif EB_FIX == EB_LWREG
 #define eb_mul_fix(R, T, K)	eb_mul_fix_lwreg(R, T, K)
-#elif EB_FIX == COMBD
+#elif EB_FIX == EB_COMBD
 #define eb_mul_fix(R, T, K)	eb_mul_fix_combd(R, T, K)
-#elif EB_FIX == LWNAF
+#elif EB_FIX == EB_LWNAF
 #define eb_mul_fix(R, T, K)	eb_mul_fix_lwnaf(R, T, K)
 #endif
 

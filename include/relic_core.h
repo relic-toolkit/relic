@@ -177,10 +177,10 @@ typedef struct _ctx_t {
 	int fb_na, fb_nb, fb_nc;
 	/** Powers of z with non-zero traces. */
 	int fb_ta, fb_tb, fb_tc;
-#if FB_SLV == QUICK || !defined(RLC_STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	/** Table of precomputed half-traces. */
 	fb_st fb_half[(RLC_DIG / 8 + 1) * RLC_FB_DIGS][16];
-#endif /* FB_SLV == QUICK */
+#endif /* FB_SLV == FB_QUICK */
 	/** Square root of z. */
 	fb_st fb_srz;
 #ifdef FB_PRECO
@@ -191,10 +191,10 @@ typedef struct _ctx_t {
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
 	int chain_len;
-#if FB_INV == ITOHT || FB_INV == LOWER || !defined(RLC_STRIP)
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
 	/** Tables for repeated squarings, one per element of the chain. */
 	fb_st fb_tab_sqr[RLC_FB_CHAIN][RLC_FB_TABLE];
-#endif /* FB_INV == ITOHT */
+#endif /* FB_INV == FB_ITOHT */
 #endif /* WITH_FB */
 
 #ifdef WITH_EB

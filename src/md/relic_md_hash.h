@@ -62,17 +62,17 @@
  * Incremental interface of the chosen hash function. Every call returns zero
  * on success.
  */
-#if MD_MAP == SH224
+#if MD_MAP == MD_SH224
 #define MD_HASH(X)				SHA224 ## X
-#elif MD_MAP == SH256
+#elif MD_MAP == MD_SH256
 #define MD_HASH(X)				SHA256 ## X
-#elif MD_MAP == SH384
+#elif MD_MAP == MD_SH384
 #define MD_HASH(X)				SHA384 ## X
-#elif MD_MAP == SH512
+#elif MD_MAP == MD_SH512
 #define MD_HASH(X)				SHA512 ## X
-#elif MD_MAP == B2S160
+#elif MD_MAP == MD_B2S160
 #define MD_HASH(X)				B2S160 ## X
-#elif MD_MAP == B2S256
+#elif MD_MAP == MD_B2S256
 #define MD_HASH(X)				B2S256 ## X
 #endif
 
