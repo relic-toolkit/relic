@@ -140,7 +140,7 @@ has_tzcnt_hard
     #endif
 #endif
 
-inline unsigned int tzcnt32_generic(unsigned int x)
+inline static unsigned int tzcnt32_generic(unsigned int x)
 {
     unsigned int n;
 
@@ -163,7 +163,7 @@ inline unsigned int tzcnt32_generic(unsigned int x)
     return n;
 }
 
-inline unsigned int tzcnt64_generic(unsigned long long x)
+inline static unsigned int tzcnt64_generic(unsigned long long x)
 {
     unsigned int n;
 
