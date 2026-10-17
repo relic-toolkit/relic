@@ -34,7 +34,7 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == ARM
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_ARM
 #define SIM_LOT		4
 #else
 /* Enough points to reach the bucket method. */
@@ -329,7 +329,7 @@ static int addition(void) {
 			TEST_ASSERT(ep_is_infty(e), end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
@@ -339,7 +339,7 @@ static int addition(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
@@ -425,7 +425,7 @@ static int addition(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
@@ -554,7 +554,7 @@ static int doubling(void) {
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ep_rand(a);
 			ep_dbl(b, a);
@@ -569,7 +569,7 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 		TEST_CASE("point doubling in projective coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -589,7 +589,7 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -645,7 +645,7 @@ static int tripling(void) {
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point tripling in affine coordinates is correct") {
 			ep_rand(a);
 			ep_tpl(b, a);
@@ -655,7 +655,7 @@ static int tripling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 		TEST_CASE("point tripling in projective coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -680,7 +680,7 @@ static int tripling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 		TEST_CASE("point tripling in jacobian coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -779,7 +779,7 @@ static int endomorphism(void) {
 			}
 			TEST_END;
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
@@ -791,7 +791,7 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 			TEST_CASE("endomorphism in jacobian coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_jacob(a, a);
@@ -889,7 +889,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
+#if EP_MUL == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_basic(r, p, k);
@@ -919,7 +919,7 @@ static int multiplication(void) {
 		} TEST_END;
 #endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
+#if EP_MUL == MONTY || !defined(RLC_STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_monty(r, p, k);
@@ -950,7 +950,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
+#if EP_MUL == LWNAF || !defined(RLC_STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_lwnaf(r, p, k);
@@ -981,7 +981,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
+#if EP_MUL == LWREG || !defined(RLC_STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_lwreg(r, p, k);
@@ -1099,7 +1099,7 @@ static int fixed(void) {
 			ep_free(t[i]);
 		}
 
-#if EP_FIX == BASIC || !defined(STRIP)
+#if EP_FIX == BASIC || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 			ep_new(t[i]);
 		}
@@ -1136,7 +1136,7 @@ static int fixed(void) {
 		}
 #endif
 
-#if EP_FIX == LWREG || !defined(STRIP)
+#if EP_FIX == LWREG || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {
 			ep_new(t[i]);
 		}
@@ -1173,7 +1173,7 @@ static int fixed(void) {
 		}
 #endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
+#if EP_FIX == COMBD || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep_new(t[i]);
 		}
@@ -1452,7 +1452,7 @@ static int hashing(void) {
 		}
 		TEST_END;
 
-#if EP_MAP == BASIC || !defined(STRIP)
+#if EP_MAP == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic point hashing is correct") {
 			rand_bytes(msg, ep_map_rnd_size());
 			ep_map_basic(a, msg, ep_map_rnd_size());
@@ -1463,7 +1463,7 @@ static int hashing(void) {
 		TEST_END;
 #endif
 
-#if EP_MAP == SSWUM || !defined(STRIP)
+#if EP_MAP == SSWUM || !defined(RLC_STRIP)
 		TEST_CASE("simplified SWU point hashing is correct") {
 			rand_bytes(msg, ep_map_rnd_size());
 			ep_map_sswum(a, msg, ep_map_rnd_size());
@@ -1552,7 +1552,7 @@ static int hashing(void) {
 
 		if (!ep_curve_is_super()) {
 			if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
-#if EP_MAP == SWIFT || !defined(STRIP)
+#if EP_MAP == SWIFT || !defined(RLC_STRIP)
 				TEST_CASE("swift point hashing is correct") {
 					rand_bytes(msg, ep_map_rnd_size());
 					ep_map_swift(a, msg, ep_map_rnd_size());

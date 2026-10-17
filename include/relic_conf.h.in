@@ -43,55 +43,55 @@
 #define RLC_FLAGS "@RLC_FLAGS@"
 
 /** Debugging support. */
-#cmakedefine DEBUG
+#cmakedefine RLC_DEBUG
 /** Error handling support. */
-#cmakedefine CHECK
+#cmakedefine RLC_CHECK
 /** Verbose error messages. */
-#cmakedefine VERBS
+#cmakedefine RLC_VERBS
 /** Build documentation. */
-#cmakedefine DOCUM
+#cmakedefine RLC_DOCUM
 /** Remove unused code and tables of unselected algorithms. */
-#cmakedefine STRIP
+#cmakedefine RLC_STRIP
 /** Build with printing disabled. */
-#cmakedefine QUIET
+#cmakedefine RLC_QUIET
 /** Build with colored output. */
-#cmakedefine COLOR
+#cmakedefine RLC_COLOR
 /** Build shared library. */
-#cmakedefine SHLIB
+#cmakedefine RLC_SHLIB
 /** Build static library. */
-#cmakedefine STLIB
+#cmakedefine RLC_STLIB
 /** Width of window processing for exponentiation methods. */
 #define RLC_WIDTH @RLC_WIDTH@
 /** Width of precomputation table for fixed base exponentiation methods. */
 #define RLC_DEPTH @RLC_DEPTH@
 
 /** Number of times each test is ran. */
-#define TESTS    @TESTS@
+#define RLC_TESTS    @TESTS@
 /** Number of times each benchmark is ran. */
-#define BENCH    @BENCH@
+#define RLC_BENCH    @BENCH@
 /** Number of available cores. */
-#define CORES    @CORES@
+#define RLC_CORES    @CORES@
 
-/** Atmel AVR ATMega128 8-bit architecture. */
-#define AVR      1
+/** Atmel RLC_AVR ATMega128 8-bit architecture. */
+#define RLC_AVR      1
 /** MSP430 16-bit architecture. */
-#define MSP      2
-/** ARM 32-bit architecture. */
-#define ARM      3
-/** ARM 64-bit architecture. */
-#define A64      4
+#define RLC_MSP      2
+/** RLC_ARM 32-bit architecture. */
+#define RLC_ARM      3
+/** RLC_ARM 64-bit architecture. */
+#define RLC_A64      4
 /** Intel x86-compatible 32-bit architecture. */
-#define X86      5
+#define RLC_X86      5
 /** AMD64-compatible 64-bit architecture. */
-#define X64      6
+#define RLC_X64      6
 /** Chosen architecture. */
-#cmakedefine RLC_ARCH	 @ARCH@
+#cmakedefine RLC_ARCH	 RLC_@ARCH@
 
 /** Size of word in this architecture. */
-#define WSIZE    @WSIZE@
+#define RLC_WSIZE    @WSIZE@
 
 /** Byte boundary to align digit vectors. */
-#define ALIGN    @ALIGN@
+#define RLC_ALIGN    @ALIGN@
 
 /** Build multiple precision integer module. */
 #cmakedefine WITH_BN
@@ -125,13 +125,13 @@
 #cmakedefine WITH_MPC
 
 /** Easy C-only backend. */
-#define EASY	 1
-/** GMP backend. */
-#define GMP      2
-/** GMP constant-time backend. */
-#define GMP_SEC  3
+#define RLC_EASY	 1
+/** RLC_GMP backend. */
+#define RLC_GMP      2
+/** RLC_GMP constant-time backend. */
+#define RLC_GMP_SEC  3
 /** Arithmetic backend. */
-#define ARITH    @ARITH@
+#define RLC_ARITH    RLC_@ARITH@
 
 /** Required precision in bits. */
 #define BN_PRECI @BN_PRECI@
@@ -556,73 +556,73 @@
 #define MD_METHD "@MD_METHD@"
 
 /** Automatic memory allocation. */
-#define AUTO     1
+#define RLC_AUTO     1
 /** Dynamic memory allocation. */
-#define DYNAMIC  2
+#define RLC_DYNAMIC  2
 /** Chosen memory allocation policy. */
-#define ALLOC    @ALLOC@
+#define RLC_ALLOC    RLC_@ALLOC@
 
 /** NIST HASH-DRBG generator. */
-#define HASHD    1
+#define RLC_HASHD    1
 /** Operating system underlying generator. */
-#define UDEV     3
+#define RLC_UDEV     3
 /** Override library generator with the callback. */
-#define CALL     4
+#define RLC_CALL     4
 /** Chosen random generator. */
-#define RLC_RAND	 @RAND@
+#define RLC_RAND	 RLC_@RAND@
 
-/** Fixed zero seed. */
-#define ZERO     1
+/** No seeding, a fixed zero seed. */
+#define RLC_NONE     1
 /** Intel RdRand instruction. */
-#define RDRND    2
+#define RLC_RDRND    2
 /** Device node generator. */
-#define UDEV     3
+#define RLC_UDEV     3
 /** Use Windows' CryptGenRandom. */
-#define WCGR     4
+#define RLC_WCGR     4
 /** Chosen random generator seeder. */
-#define RLC_SEED	 @SEED@
+#define RLC_SEED	 RLC_@SEED@
 
 /** GNU/Linux operating system. */
-#define LINUX    1
+#define RLC_LINUX    1
 /** FreeBSD operating system. */
-#define FREEBSD  2
+#define RLC_FREEBSD  2
 /** Windows operating system. */
-#define MACOSX   3
+#define RLC_MACOSX   3
 /** Windows operating system. */
-#define WINDOWS  4
+#define RLC_WINDOWS  4
 /** Android operating system. */
-#define DROID    5
+#define RLC_DROID    5
 /** Arduino platform. */
-#define DUINO    6
+#define RLC_DUINO    6
 /** NetBSD operating system. */
-#define NETBSD  7
+#define RLC_NETBSD  7
 /** Detected operation system. */
-#cmakedefine OPSYS    @OPSYS@
+#cmakedefine RLC_OPSYS    RLC_@OPSYS@
 
 /** OpenMP multithreading support. */
-#define OPENMP   1
+#define RLC_OPENMP   1
 /** POSIX multithreading support. */
-#define PTHREAD  2
+#define RLC_PTHREAD  2
 /** Chosen multithreading API. */
-#cmakedefine RLC_MULTI	 @MULTI@
+#cmakedefine RLC_MULTI	 RLC_@MULTI@
 
 /** Monotonic high-resolution timer. */
-#define HREAL    1
+#define RLC_HREAL    1
 /** Per-process high-resolution timer. */
-#define HPROC    2
+#define RLC_HPROC    2
 /** Per-thread high-resolution timer. */
-#define HTHRD    3
-/** ANSI-compatible timer. */
-#define ANSI     5
+#define RLC_HTHRD    3
+/** RLC_ANSI-compatible timer. */
+#define RLC_ANSI     5
 /** Cycle-counting timer. */
-#define CYCLE    6
+#define RLC_CYCLE    6
 /** Performance monitoring framework. */
-#define PERF     7
+#define RLC_PERF     7
 /** Chosen timer. */
-#cmakedefine RLC_TIMER	 @TIMER@
+#cmakedefine RLC_TIMER	 RLC_@TIMER@
 
 /** Prefix to identity this build of the library. */
-#cmakedefine LABEL    @LABEL@
+#cmakedefine RLC_LABEL    @LABEL@
 
 #ifndef ASM
 

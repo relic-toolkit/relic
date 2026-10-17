@@ -34,7 +34,7 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == ARM
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_ARM
 #define SIM_LOT		4
 #else
 /* Enough points to reach the bucket method. */
@@ -316,7 +316,7 @@ int addition(void) {
 			TEST_ASSERT(ed_is_infty(e), end);
 		} TEST_END;
 
-#if ED_ADD == BASIC || !defined(STRIP)
+#if ED_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point addition in affine coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
@@ -465,7 +465,7 @@ int subtraction(void) {
 		}
 		TEST_END;
 
-#if ED_ADD == BASIC || !defined(STRIP)
+#if ED_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point subtraction in affine coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
@@ -545,7 +545,7 @@ int doubling(void) {
 			TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if ED_ADD == BASIC || !defined(STRIP)
+#if ED_ADD == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("point doubling in affine coordinates is correct") {
 			ed_rand(a);
 			ed_dbl(b, a);
@@ -664,7 +664,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-#if ED_MUL == BASIC || !defined(STRIP)
+#if ED_MUL == BASIC || !defined(RLC_STRIP)
 		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_basic(r, p, k);
@@ -694,7 +694,7 @@ static int multiplication(void) {
 		} TEST_END;
 #endif
 
-#if ED_MUL == MONTY || !defined(STRIP)
+#if ED_MUL == MONTY || !defined(RLC_STRIP)
 		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_monty(r, p, k);
@@ -725,7 +725,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if ED_MUL == LWNAF || !defined(STRIP)
+#if ED_MUL == LWNAF || !defined(RLC_STRIP)
 		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_lwnaf(r, p, k);
@@ -756,7 +756,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if ED_MUL == LWREG || !defined(STRIP)
+#if ED_MUL == LWREG || !defined(RLC_STRIP)
 		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_lwreg(r, p, k);
@@ -874,7 +874,7 @@ static int fixed(void) {
 			ed_free(t[i]);
 		}
 
-#if ED_FIX == BASIC || !defined(STRIP)
+#if ED_FIX == BASIC || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_ED_TABLE_BASIC; i++) {
 			ed_new(t[i]);
 		}
@@ -911,7 +911,7 @@ static int fixed(void) {
 		}
 #endif
 
-#if ED_FIX == LWREG || !defined(STRIP)
+#if ED_FIX == LWREG || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_ED_TABLE_LWREG; i++) {
 			ed_new(t[i]);
 		}
@@ -948,7 +948,7 @@ static int fixed(void) {
 		}
 #endif
 
-#if ED_FIX == COMBD || !defined(STRIP)
+#if ED_FIX == COMBD || !defined(RLC_STRIP)
 		for (int i = 0; i < RLC_ED_TABLE_COMBD; i++) {
 			ed_new(t[i]);
 		}

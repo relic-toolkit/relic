@@ -58,7 +58,7 @@ int bn_factor(bn_t c, const bn_t a) {
 
 		bn_set_dig(t0, 2);
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		tests = 255;
 #else
 		tests = 65535;

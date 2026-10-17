@@ -43,8 +43,8 @@
  */
 #define asm					__asm__ volatile
 
-#if RLC_TIMER == CYCLE
-#if OPSYS == MACOSX
+#if RLC_TIMER == RLC_CYCLE
+#if RLC_OPSYS == RLC_MACOSX
 /*
  * Adapted from work by D. Lemire, Duc Tri Nguyen (CERG GMU), Dougall Johnson
  * https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155
@@ -182,9 +182,9 @@ void arch_init(void) {
 			(has_lzcnt_hard() ? tzcnt64_hard : tzcnt64_soft);
 	}
 
-#if RLC_TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
-#if OPSYS == MACOSX
+#if RLC_OPSYS == RLC_MACOSX
 	int test_high_perf_cores = 1;
 	if (test_high_perf_cores) {
 		pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
@@ -194,7 +194,7 @@ void arch_init(void) {
 	init_rdtsc();
 #endif
 
-#endif /* RLC_TIMER = CYCLE */
+#endif /* RLC_TIMER = RLC_CYCLE */
 }
 
 void arch_clean(void) {
@@ -208,9 +208,9 @@ void arch_clean(void) {
 ull_t arch_cycles(void) {
 	uint_t value = 0;
 
-#if RLC_TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
-#if OPSYS == MACOSX
+#if RLC_OPSYS == RLC_MACOSX
 	static bool warned = false;
 	if (kpc_get_thread_counters(0, COUNTERS_COUNT, g_counters)) {
 		if (!warned) {
@@ -228,13 +228,13 @@ ull_t arch_cycles(void) {
 
 #endif
 
-#endif /* RLC_TIMER = CYCLE */
+#endif /* RLC_TIMER = RLC_CYCLE */
 
 	return value;
 }
 
 uint_t arch_lzcnt(dig_t x) {
-	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
+	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - RLC_WSIZE);
 }
 
 uint_t arch_tzcnt(dig_t x) {

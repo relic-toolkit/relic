@@ -104,7 +104,7 @@ int core_init(void) {
 		core_ctx = &(first_ctx);
 	}
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 	core_ctx->reason[ERR_NO_MEMORY] = MSG_NO_MEMORY;
 	core_ctx->reason[ERR_NO_PRECI] = MSG_NO_PRECI;
 	core_ctx->reason[ERR_NO_FILE] = MSG_NO_FILE;
@@ -116,12 +116,12 @@ int core_init(void) {
 	core_ctx->reason[ERR_NO_CONFIG] = MSG_NO_CONFIG;
 	core_ctx->reason[ERR_NO_RAND] = MSG_NO_RAND;
 	core_ctx->last = NULL;
-#endif /* CHECK */
+#endif /* RLC_CHECK */
 
 	core_ctx->code = RLC_OK;
 	core_ctx->number = 0;
 	core_ctx->quiet = 0;
-#ifndef CHECK
+#ifndef RLC_CHECK
 	core_ctx->depth = 0;
 	core_ctx->pending = 0;
 #endif
@@ -130,7 +130,7 @@ int core_init(void) {
 		arch_init();
 		rand_init();
 
-#if BENCH > 0
+#if RLC_BENCH > 0
 		bench_init();
 #endif
 
@@ -159,7 +159,7 @@ int core_init(void) {
 		return RLC_ERR;
 	}
 
-#ifndef CHECK
+#ifndef RLC_CHECK
 	/* Without error checking, failures are only recorded in the code. */
 	return core_ctx->code;
 #else
@@ -190,7 +190,7 @@ int core_clean(void) {
 	pc_core_clean();
 #endif
 
-#if BENCH > 0
+#if RLC_BENCH > 0
 		bench_clean();
 #endif
 

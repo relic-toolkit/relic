@@ -150,7 +150,7 @@ void ep9_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep9_new(ctx->ep9_g);
 	fp9_new(ctx->ep9_a);
 	fp9_new(ctx->ep9_b);
@@ -160,7 +160,7 @@ void ep9_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp9_new(ctx->ep9_pre[i].x);
 		fp9_new(ctx->ep9_pre[i].y);
@@ -270,7 +270,7 @@ void ep9_curve_get_ord(bn_t n) {
 #if defined(EP_PRECO)
 
 ep9_t *ep9_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep9_t *)*(core_get()->ep9_ptr);
 #else
 	return core_get()->ep9_ptr;

@@ -109,7 +109,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a quadratic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep2_st ep2_t[1];
 #else
 typedef ep2_st *ep2_t;
@@ -133,7 +133,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a cubic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep3_st ep3_t[1];
 #else
 typedef ep3_st *ep3_t;
@@ -157,7 +157,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep4_st ep4_t[1];
 #else
 typedef ep4_st *ep4_t;
@@ -181,7 +181,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep8_st ep8_t[1];
 #else
 typedef ep8_st *ep8_t;
@@ -205,7 +205,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a nonic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep9_st ep9_t[1];
 #else
 typedef ep9_st *ep9_t;
@@ -259,7 +259,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_new(A)															\
 	A = (ep2_t)calloc(1, sizeof(ep2_st));									\
 	if (A == NULL) {														\
@@ -272,7 +272,7 @@ typedef iso2_st *iso2_t;
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_new(A)				/* empty */
 
 #endif
@@ -282,7 +282,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_free(A)															\
 	if (A != NULL) {														\
 		fp2_free((A)->x);													\
@@ -292,7 +292,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_free(A)				/* empty */
 #endif
 
@@ -320,7 +320,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_new(A)															\
 	A = (ep3_t)calloc(1, sizeof(ep3_st));									\
 	if (A == NULL) {														\
@@ -333,7 +333,7 @@ typedef iso2_st *iso2_t;
 	fp3_new((A)->y);														\
 	fp3_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_new(A)				/* empty */
 
 #endif
@@ -343,7 +343,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_free(A)															\
 	if (A != NULL) {														\
 		fp3_free((A)->x);													\
@@ -353,7 +353,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_free(A)				/* empty */
 #endif
 
@@ -381,7 +381,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_new(A)															\
 	A = (ep4_t)calloc(1, sizeof(ep4_st));									\
 	if (A == NULL) {														\
@@ -394,7 +394,7 @@ typedef iso2_st *iso2_t;
 	fp4_new((A)->y);														\
 	fp4_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_new(A)				/* empty */
 
 #endif
@@ -404,7 +404,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_free(A)															\
 	if (A != NULL) {														\
 		fp4_free((A)->x);													\
@@ -414,7 +414,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_free(A)				/* empty */
 #endif
 
@@ -442,7 +442,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_new(A)															\
 	A = (ep8_t)calloc(1, sizeof(ep8_st));									\
 	if (A == NULL) {														\
@@ -455,7 +455,7 @@ typedef iso2_st *iso2_t;
 	fp8_new((A)->y);														\
 	fp8_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_new(A)				/* empty */
 
 #endif
@@ -465,7 +465,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_free(A)															\
 	if (A != NULL) {														\
 		fp8_free((A)->x);													\
@@ -475,7 +475,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_free(A)				/* empty */
 #endif
 
@@ -503,7 +503,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep9_new(A)															\
 	A = (ep9_t)calloc(1, sizeof(ep9_st));									\
 	if (A == NULL) {														\
@@ -516,7 +516,7 @@ typedef iso2_st *iso2_t;
 	fp9_new((A)->y);														\
 	fp9_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep9_new(A)				/* empty */
 
 #endif
@@ -526,7 +526,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep9_free(A)															\
 	if (A != NULL) {														\
 		fp9_free((A)->x);													\
@@ -536,7 +536,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep9_free(A)				/* empty */
 #endif
 

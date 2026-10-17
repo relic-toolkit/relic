@@ -82,7 +82,7 @@
  * @param[in] P			- the point to copy.
  * @param[in] B			- the condition bit.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 
 #define TMPL_EP_COPY_SEC(C, F, R, P, B)										\
 	dv_copy_sec((dig_t *)R, (const dig_t *)P,								\

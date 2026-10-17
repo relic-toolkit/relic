@@ -116,7 +116,7 @@ enum {
  * Maximum size of a precomputation table, which only needs to fit the
  * chosen method when unused methods are stripped.
  */
-#ifdef STRIP
+#ifdef RLC_STRIP
 #define RLC_EB_TABLE_MAX 		RLC_EB_TABLE
 #else
 #define RLC_EB_TABLE_MAX 		RLC_MAX(RLC_EB_TABLE_BASIC, RLC_EB_TABLE_COMBD)
@@ -143,10 +143,10 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef eb_st eb_t[1];
 #else
-#ifdef CHECK
+#ifdef RLC_CHECK
 typedef eb_st *volatile eb_t;
 #else
 typedef eb_st *eb_t;
@@ -162,7 +162,7 @@ typedef eb_st *eb_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define eb_null(A)			/* empty */
 #else
 #define eb_null(A)			A = NULL;
@@ -174,14 +174,14 @@ typedef eb_st *eb_t;
  * @param[out] A			- the new point.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define eb_new(A)															\
 	A = (eb_t)calloc(1, sizeof(eb_st));										\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define eb_new(A)			/* empty */
 
 #endif
@@ -191,14 +191,14 @@ typedef eb_st *eb_t;
  *
  * @param[out] A			- the point to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define eb_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define eb_free(A)			/* empty */
 
 #endif

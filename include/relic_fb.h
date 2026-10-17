@@ -185,7 +185,7 @@ enum {
 /**
  * Represents a binary field element.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t fb_t[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8)];
 #else
 typedef dig_t *fb_t;
@@ -205,7 +205,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define fb_null(A)			/* empty */
 #else
 #define fb_null(A)			A = NULL;
@@ -217,9 +217,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] A			- the new binary field element.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fb_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FB_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fb_new(A)			/* empty */
 #endif
 
@@ -228,9 +228,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  *
  * @param[out] A			- the binary field element to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fb_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fb_free(A)			/* empty */
 #endif
 

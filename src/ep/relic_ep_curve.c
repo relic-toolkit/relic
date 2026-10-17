@@ -404,7 +404,7 @@ const ep_t *ep_curve_get_tab(void) {
 #if defined(EP_PRECO)
 
 	/* Return a meaningful pointer. */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (const ep_t *)*core_get()->ep_ptr;
 #else
 	return (const ep_t *)core_get()->ep_ptr;

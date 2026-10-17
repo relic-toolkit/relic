@@ -77,7 +77,7 @@
  * The Fp2 functions read both coordinates from one contiguous vector, which
  * only automatic allocation without padding between coordinates guarantees.
  */
-#if ALLOC == AUTO && ALIGN < 16
+#if RLC_ALLOC == RLC_AUTO && RLC_ALIGN < 16
 #define FP2_ASM
 #endif
 

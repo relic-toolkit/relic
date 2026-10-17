@@ -36,16 +36,16 @@
 #include "relic_bench.h"
 
 static void memory(void) {
-	fb_t a[BENCH];
+	fb_t a[RLC_BENCH];
 
 	BENCH_FEW("fb_null", fb_null(a[i]), 1);
 
 	BENCH_FEW("fb_new", fb_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fb_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fb_new(a[i]);
 	}
 	BENCH_FEW("fb_free", fb_free(a[i]), 1);
@@ -221,7 +221,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_MUL == BASIC || !defined(STRIP)
+#if FB_MUL == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_mul_basic") {
 		fb_rand(a);
 		fb_rand(b);
@@ -230,7 +230,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_MUL == INTEG || !defined(STRIP)
+#if FB_MUL == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fb_mul_integ") {
 		fb_rand(a);
 		fb_rand(b);
@@ -239,7 +239,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_MUL == LODAH || !defined(STRIP)
+#if FB_MUL == LODAH || !defined(RLC_STRIP)
 	BENCH_RUN("fb_mul_lodah") {
 		fb_rand(a);
 		fb_rand(b);
@@ -248,7 +248,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_KARAT > 0 || !defined(STRIP)
+#if FB_KARAT > 0 || !defined(RLC_STRIP)
 	BENCH_RUN("fb_mul_karat") {
 		fb_rand(a);
 		fb_rand(b);
@@ -263,7 +263,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_SQR == BASIC || !defined(STRIP)
+#if FB_SQR == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_sqr_basic") {
 		fb_rand(a);
 		BENCH_ADD(fb_sqr_basic(c, a));
@@ -271,7 +271,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SQR == INTEG || !defined(STRIP)
+#if FB_SQR == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fb_sqr_integ") {
 		fb_rand(a);
 		BENCH_ADD(fb_sqr_integ(c, a));
@@ -279,7 +279,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SQR == QUICK || !defined(STRIP)
+#if FB_SQR == QUICK || !defined(RLC_STRIP)
 	BENCH_RUN("fb_sqr_quick") {
 		fb_rand(a);
 		BENCH_ADD(fb_sqr_quick(c, a));
@@ -314,7 +314,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_RDC == BASIC || !defined(STRIP)
+#if FB_RDC == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_rdc_basic") {
 		fb_rand(a);
 		fb_rand(b);
@@ -324,7 +324,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_RDC == QUICK || !defined(STRIP)
+#if FB_RDC == QUICK || !defined(RLC_STRIP)
 	BENCH_RUN("fb_rdc_quick") {
 		fb_rand(a);
 		fb_rand(b);
@@ -341,7 +341,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_SRT == BASIC || !defined(STRIP)
+#if FB_SRT == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_srt_basic") {
 		fb_rand(a);
 		fb_sqr(e, a);
@@ -350,7 +350,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SRT == QUICK || !defined(STRIP)
+#if FB_SRT == QUICK || !defined(RLC_STRIP)
 	BENCH_RUN("fb_srt_quick") {
 		fb_rand(a);
 		fb_sqr(e, a);
@@ -365,7 +365,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_TRC == BASIC || !defined(STRIP)
+#if FB_TRC == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_trc_basic") {
 		fb_rand(a);
 		BENCH_ADD(fb_trc_basic(a));
@@ -373,7 +373,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_TRC == QUICK || !defined(STRIP)
+#if FB_TRC == QUICK || !defined(RLC_STRIP)
 	BENCH_RUN("fb_trc_quick") {
 		fb_rand(a);
 		BENCH_ADD(fb_trc_quick(a));
@@ -388,7 +388,7 @@ static void arith(void) {
 		}
 		BENCH_END;
 
-#if FB_SLV == BASIC || !defined(STRIP)
+#if FB_SLV == BASIC || !defined(RLC_STRIP)
 		BENCH_RUN("fb_slv_basic") {
 			fb_rand(a);
 			BENCH_ADD(fb_slv_basic(c, a));
@@ -396,7 +396,7 @@ static void arith(void) {
 		BENCH_END;
 #endif
 
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == QUICK || !defined(RLC_STRIP)
 		BENCH_RUN("fb_slv_quick") {
 			fb_rand(a);
 			BENCH_ADD(fb_slv_quick(c, a));
@@ -411,7 +411,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_INV == BASIC || !defined(STRIP)
+#if FB_INV == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_inv_basic") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_basic(c, a));
@@ -419,7 +419,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == BINAR || !defined(STRIP)
+#if FB_INV == BINAR || !defined(RLC_STRIP)
 	BENCH_RUN("fb_inv_binar") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_binar(c, a));
@@ -427,7 +427,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == EXGCD || !defined(STRIP)
+#if FB_INV == EXGCD || !defined(RLC_STRIP)
 	BENCH_RUN("fb_inv_exgcd") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_exgcd(c, a));
@@ -435,7 +435,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == ITOHT || !defined(STRIP)
+#if FB_INV == ITOHT || !defined(RLC_STRIP)
 	BENCH_RUN("fb_inv_itoht") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_itoht(c, a));
@@ -443,7 +443,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == CTAIA || !defined(STRIP)
+#if FB_INV == CTAIA || !defined(RLC_STRIP)
 	BENCH_RUN("fb_inv_ctaia") {
 		fb_rand(a);
 		BENCH_ADD(fb_inv_ctaia(c, a));
@@ -473,7 +473,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_EXP == BASIC || !defined(STRIP)
+#if FB_EXP == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_exp_basic") {
 		fb_rand(a);
 		bn_rand(f, RLC_POS, RLC_FB_BITS);
@@ -482,7 +482,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_EXP == SLIDE || !defined(STRIP)
+#if FB_EXP == SLIDE || !defined(RLC_STRIP)
 	BENCH_RUN("fb_exp_slide") {
 		fb_rand(a);
 		bn_rand(f, RLC_POS, RLC_FB_BITS);
@@ -491,7 +491,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_EXP == MONTY || !defined(STRIP)
+#if FB_EXP == MONTY || !defined(RLC_STRIP)
 	BENCH_RUN("fb_exp_monty") {
 		fb_rand(a);
 		bn_rand(f, RLC_POS, RLC_FB_BITS);
@@ -508,7 +508,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FB_ITR == BASIC || !defined(STRIP)
+#if FB_ITR == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fb_itr_basic") {
 		fb_rand(a);
 		bn_rand(f, RLC_POS, 8);
@@ -517,7 +517,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_ITR == QUICK || !defined(STRIP)
+#if FB_ITR == QUICK || !defined(RLC_STRIP)
 	BENCH_RUN("fb_itr_quick") {
 		fb_rand(a);
 		bn_rand(f, RLC_POS, 8);

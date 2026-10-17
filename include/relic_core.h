@@ -150,7 +150,7 @@ typedef struct _ctx_t {
 	/** A flag to indicate if error messages are printed. */
 	int quiet;
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 	/** The state of the last error caught. */
 	sts_t *last;
 	/** Error state to be used outside try-catch blocks. */
@@ -164,7 +164,7 @@ typedef struct _ctx_t {
 	int depth;
 	/** A flag to indicate if an error thrown inside a try-catch is pending. */
 	int pending;
-#endif /* CHECK */
+#endif /* RLC_CHECK */
 
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
@@ -177,7 +177,7 @@ typedef struct _ctx_t {
 	int fb_na, fb_nb, fb_nc;
 	/** Powers of z with non-zero traces. */
 	int fb_ta, fb_tb, fb_tc;
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == QUICK || !defined(RLC_STRIP)
 	/** Table of precomputed half-traces. */
 	fb_st fb_half[(RLC_DIG / 8 + 1) * RLC_FB_DIGS][16];
 #endif /* FB_SLV == QUICK */
@@ -191,7 +191,7 @@ typedef struct _ctx_t {
 	int chain[RLC_TERMS + 1];
 	/** Stores the length of the addition chain. */
 	int chain_len;
-#if FB_INV == ITOHT || FB_INV == LOWER || !defined(STRIP)
+#if FB_INV == ITOHT || FB_INV == LOWER || !defined(RLC_STRIP)
 	/** Tables for repeated squarings, one per element of the chain. */
 	fb_st fb_tab_sqr[RLC_FB_CHAIN][RLC_FB_TABLE];
 #endif /* FB_INV == ITOHT */
@@ -492,7 +492,7 @@ typedef struct _ctx_t {
 	gt_t gt_g;
 #endif
 
-#if BENCH > 0
+#if RLC_BENCH > 0
 	/** Stores the time measured before the execution of the benchmark. */
 	ben_t before;
 	/** Stores the time measured after the execution of the benchmark. */
@@ -501,7 +501,7 @@ typedef struct _ctx_t {
 	ull_t total;
 #endif
 
-#if RLC_RAND != CALL
+#if RLC_RAND != RLC_CALL
 	/** Internal state of the PRNG. */
 	uint8_t rand[RLC_RAND_SIZE];
 #else
@@ -517,7 +517,7 @@ typedef struct _ctx_t {
 	long pid;
 #endif
 
-#if RLC_TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 	/** File descriptor for perf system call. */
 	int perf_fd;
 	/** Buffer for storing perf data, */
@@ -525,10 +525,10 @@ typedef struct _ctx_t {
 #endif
 
 	/** Function pointer to underlying lznct implementation. */
-#if RLC_ARCH == X86
+#if RLC_ARCH == RLC_X86
 	unsigned int (*lzcnt_ptr)(dig_t);
 	unsigned int (*tzcnt_ptr)(dig_t);
-#elif RLC_ARCH == X64 || RLC_ARCH == A64
+#elif RLC_ARCH == RLC_X64 || RLC_ARCH == RLC_A64
 	unsigned int (*lzcnt_ptr)(ull_t);
 	unsigned int (*tzcnt_ptr)(ull_t);
 #endif
@@ -540,7 +540,7 @@ typedef struct _ctx_t {
 
 /**
  * Initializes the library. Calling it again without calling core_clean() first
- * leaks the state allocated by the previous call when ALLOC = DYNAMIC.
+ * leaks the state allocated by the previous call when RLC_ALLOC = RLC_DYNAMIC.
  *
  * @return RLC_OK if no error occurs, RLC_ERR otherwise.
  */

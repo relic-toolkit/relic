@@ -44,7 +44,7 @@
  * @param[in] T                 - the type of each object.
  * @param[in] S                 - the number of obecs to allocate.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define RLC_ALLOCA(T, S)		(T*) calloc((S), sizeof(T))
 #else
 #define RLC_ALLOCA(T, S)		(T*) _alloca((S) * sizeof(T))
@@ -52,7 +52,7 @@
 
 #else /* _MSC_VER */
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #include <stdlib.h>
 #else
 #include <alloca.h>
@@ -67,7 +67,7 @@
  * @param[in] T                 - the type of each object.
  * @param[in] S                 - the number of obecs to allocate.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
 #elif defined(__GNUC__)
 /* The builtin does not depend on the C library providing alloca(). */
@@ -83,7 +83,7 @@
  *
  * @param[in] A					- the variable to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define RLC_FREE(A)															\
 	if (A != NULL) {														\
 		free((void *)A);													\

@@ -313,7 +313,7 @@ void ep4_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep4_new(ctx->ep4_g);
 	fp4_new(ctx->ep4_a);
 	fp4_new(ctx->ep4_b);
@@ -322,7 +322,7 @@ void ep4_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp4_new(ctx->ep4_pre[i].x);
 		fp4_new(ctx->ep4_pre[i].y);
@@ -455,7 +455,7 @@ void ep4_curve_get_cof(bn_t h) {
 #if defined(EP_PRECO)
 
 ep4_t *ep4_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep4_t *)*(core_get()->ep4_ptr);
 #else
 	return core_get()->ep4_ptr;

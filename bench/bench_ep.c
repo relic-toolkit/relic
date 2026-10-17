@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory(void) {
-	ep_t a[BENCH];
+	ep_t a[RLC_BENCH];
 
 	BENCH_FEW("ep_null", ep_null(a[i]), 1);
 
 	BENCH_FEW("ep_new", ep_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		ep_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		ep_new(a[i]);
 	}
 	BENCH_FEW("ep_free", ep_free(a[i]), 1);
@@ -217,7 +217,7 @@ static void arith(void) {
 		BENCH_ADD(ep_add(r, p, q));
 	} BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_add_basic") {
 		ep_rand(p);
 		ep_rand(q);
@@ -225,7 +225,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_add_projc") {
 		ep_rand(p);
 		ep_rand(q);
@@ -254,7 +254,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 	BENCH_RUN("ep_add_jacob") {
 		ep_rand(p);
 		ep_rand(q);
@@ -300,14 +300,14 @@ static void arith(void) {
 		BENCH_ADD(ep_dbl(r, p));
 	} BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_dbl_basic") {
 		ep_rand(p);
 		BENCH_ADD(ep_dbl_basic(r, p));
 	} BENCH_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_dbl_projc") {
 		ep_rand(p);
 		ep_rand(q);
@@ -322,7 +322,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 	BENCH_RUN("ep_dbl_jacob") {
 		ep_rand(p);
 		ep_rand(q);
@@ -344,14 +344,14 @@ static void arith(void) {
 		BENCH_ADD(ep_tpl(r, p));
 	} BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_tpl_basic") {
 		ep_rand(p);
 		BENCH_ADD(ep_tpl_basic(r, p));
 	} BENCH_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_tpl_projc") {
 		ep_rand(p);
 		ep_rand(q);
@@ -366,7 +366,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(RLC_STRIP)
 	BENCH_RUN("ep_tpl_jacob") {
 		ep_rand(p);
 		ep_rand(q);
@@ -394,14 +394,14 @@ static void arith(void) {
 		BENCH_ADD(ep_mul(q, p, k));
 	} BENCH_END;
 
-#if EP_MUL == BASIC || !defined(STRIP)
+#if EP_MUL == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_basic(q, p, k));
 	} BENCH_END;
 #endif
 
-#if EP_MUL == MONTY || !defined(STRIP)
+#if EP_MUL == MONTY || !defined(RLC_STRIP)
 	BENCH_RUN("ep_mul_monty") {
 		bn_rand_mod(k, n);
 		ep_rand(p);
@@ -409,7 +409,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_MUL == LWNAF || !defined(STRIP)
+#if EP_MUL == LWNAF || !defined(RLC_STRIP)
 	BENCH_RUN("ep_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ep_rand(p);
@@ -417,7 +417,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
+#if EP_MUL == LWREG || !defined(RLC_STRIP)
 	BENCH_RUN("ep_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ep_rand(p);
@@ -462,7 +462,7 @@ static void arith(void) {
 		ep_free(t[i]);
 	}
 
-#if EP_FIX == BASIC || !defined(STRIP)
+#if EP_FIX == BASIC || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 		ep_new(t[i]);
 	}
@@ -482,7 +482,7 @@ static void arith(void) {
 	}
 #endif
 
-#if EP_FIX == LWREG || !defined(STRIP)
+#if EP_FIX == LWREG || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EP_TABLE_LWREG; i++) {
 		ep_new(t[i]);
 	}
@@ -502,7 +502,7 @@ static void arith(void) {
 	}
 #endif
 
-#if EP_FIX == COMBD || !defined(STRIP)
+#if EP_FIX == COMBD || !defined(RLC_STRIP)
 	for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 		ep_new(t[i]);
 	}
@@ -563,7 +563,7 @@ static void arith(void) {
 		BENCH_ADD(ep_map_rnd(p, msg, ep_map_rnd_size()));
 	} BENCH_END;
 
-#if EP_MAP == BASIC || !defined(STRIP)
+#if EP_MAP == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("ep_map_basic") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
@@ -571,7 +571,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if EP_MAP == SSWUM || !defined(STRIP)
+#if EP_MAP == SSWUM || !defined(RLC_STRIP)
 	BENCH_RUN("ep_map_sswum") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
@@ -580,7 +580,7 @@ static void arith(void) {
 #endif
 
 	if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
-#if EP_MAP == SWIFT || !defined(STRIP)
+#if EP_MAP == SWIFT || !defined(RLC_STRIP)
 		BENCH_RUN("ep_map_swift") {
 			uint8_t msg[5];
 			rand_bytes(msg, 5);

@@ -34,7 +34,7 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == ARM
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_ARM
 #define MSG_SIZE	112
 #define TEST_MAX	2
 #else
@@ -560,7 +560,7 @@ static int blake2(void) {
 
 #if MD_MAP == SH256
 
-/* Test vector #1, ANSI X9.63 */
+/* Test vector #1, RLC_ANSI X9.63 */
 
 uint8_t key2[] = {
 	0x44, 0x30, 0x24, 0xC3, 0xDA, 0xE6, 0x6B, 0x95, 0xE6, 0xF5, 0x67, 0x06,

@@ -121,7 +121,7 @@ const eb_t *eb_curve_get_tab(void) {
 #if defined(EB_PRECO)
 
 	/* Return a meaningful pointer. */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (const eb_t *)*(core_get()->eb_ptr);
 #else
 	return (const eb_t *)core_get()->eb_ptr;

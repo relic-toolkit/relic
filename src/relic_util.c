@@ -40,7 +40,7 @@
 #include "relic_util.h"
 #include "relic_types.h"
 
-#if RLC_ARCH == ARM && OPSYS == DROID
+#if RLC_ARCH == RLC_ARM && RLC_OPSYS == RLC_DROID
 #include <android/log.h>
 #endif
 
@@ -51,13 +51,13 @@
 /**
  * Buffer to hold printed messages.
  */
-#if RLC_ARCH == AVR
+#if RLC_ARCH == RLC_AVR
 
-#ifndef QUIET
+#ifndef RLC_QUIET
 volatile char print_buf[128 + 1];
 volatile char *util_print_ptr;
 
-#if OPSYS == DUINO
+#if RLC_OPSYS == RLC_DUINO
 /**
  * Send byte to serial port.
  */
@@ -77,7 +77,7 @@ FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 #endif
 #endif
 
-#endif /* QUIET */
+#endif /* RLC_QUIET */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -97,7 +97,7 @@ void util_write_size(uint8_t *bin, size_t a) {
 }
 
 char util_conv_char(dig_t i) {
-#if WSIZE == 8 || WSIZE == 16
+#if RLC_WSIZE == 8 || RLC_WSIZE == 16
 	/* Avoid tables to save up some memory. This is not performance-critical. */
 	if (i < 10) {
 		return i + '0';
@@ -157,28 +157,28 @@ void util_perm(uint_t p[], size_t n) {
 	}
 }
 
-#ifndef QUIET
+#ifndef RLC_QUIET
 void util_printf(const char *format, ...) {
-#if RLC_ARCH == AVR && !defined(OPSYS)
+#if RLC_ARCH == RLC_AVR && !defined(RLC_OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;
 	va_start(list, format);
 	vsnprintf_P((char *)util_print_ptr, sizeof(print_buf) - 1, format, list);
 	va_end(list);
 	print_buf[0] = (uint8_t)2;
-#elif RLC_ARCH == AVR && OPSYS == DUINO
+#elif RLC_ARCH == RLC_AVR && RLC_OPSYS == RLC_DUINO
 	stdout = &uart_output;
 	va_list list;
 	va_start(list, format);
 	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
 	printf("%s", (char *)print_buf);
 	va_end(list);
-#elif RLC_ARCH == MSP && !defined(OPSYS)
+#elif RLC_ARCH == RLC_MSP && !defined(RLC_OPSYS)
 	va_list list;
 	va_start(list, format);
 	vprintf(format, list);
 	va_end(list);
-#elif RLC_ARCH == ARM && OPSYS == DROID
+#elif RLC_ARCH == RLC_ARM && RLC_OPSYS == RLC_DROID
 	va_list list;
 	va_start(list, format);
 	__android_log_vprint(ANDROID_LOG_INFO, "relic-toolkit", format, list);

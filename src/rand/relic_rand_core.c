@@ -40,23 +40,23 @@
 #include "relic_md.h"
 #include "relic_err.h"
 
-#if RLC_RAND == UDEV || RLC_SEED == UDEV
+#if RLC_RAND == RLC_UDEV || RLC_SEED == RLC_UDEV
 
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#elif RLC_SEED == WCGR
+#elif RLC_SEED == RLC_WCGR
 
 /* Avoid redefinition warning. */
 #undef ERROR
-#undef WSIZE
+#undef RLC_WSIZE
 
 #include <windows.h>
 #include <wincrypt.h>
 
-#elif RLC_SEED == RDRND
+#elif RLC_SEED == RLC_RDRND
 
 #include <immintrin.h>
 
@@ -81,13 +81,13 @@ void rand_init(void) {
 	uint8_t buf[RLC_RAND_SEED];
 
 	/* The device generator opens its file when seeded and needs no seed. */
-#if RLC_RAND != UDEV
+#if RLC_RAND != RLC_UDEV
 
-#if RLC_SEED == ZERO
+#if RLC_SEED == RLC_NONE
 
 	memset(buf, 0, RLC_RAND_SEED);
 
-#elif RLC_SEED == UDEV
+#elif RLC_SEED == RLC_UDEV
 	int fd;
 	ssize_t c;
 	size_t l;
@@ -112,7 +112,7 @@ void rand_init(void) {
 		}
 	}
 	close(fd);
-#elif RLC_SEED == WCGR
+#elif RLC_SEED == RLC_WCGR
 
 	HCRYPTPROV hCryptProv;
 
@@ -130,7 +130,7 @@ void rand_init(void) {
 		return;
 	}
 
-#elif RLC_SEED == RDRND
+#elif RLC_SEED == RLC_RDRND
 
 	size_t i = 0, j;
 	ull_t r;
@@ -157,9 +157,9 @@ void rand_init(void) {
 #error "Unknown seeder, check the SEED option."
 #endif
 
-#endif /* RLC_RAND != UDEV */
+#endif /* RLC_RAND != RLC_UDEV */
 
-#if RLC_RAND != CALL
+#if RLC_RAND != RLC_CALL
 	core_get()->seeded = 0;
 	rand_seed(buf, RLC_RAND_SEED);
 	util_zero(buf, RLC_RAND_SEED);
@@ -193,8 +193,8 @@ int rand_check(uint8_t *buf, size_t size) {
 void rand_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-#if RLC_RAND != CALL
-#if RLC_RAND == UDEV
+#if RLC_RAND != RLC_CALL
+#if RLC_RAND == RLC_UDEV
 		int *fd = (int *)&(ctx->rand);
 		/* The descriptor is only open while seeded. */
 		if (ctx->seeded) {
@@ -202,7 +202,7 @@ void rand_clean(void) {
 		}
 #endif
 		memset(ctx->rand, 0, sizeof(ctx->rand));
-#if RLC_RAND == UDEV
+#if RLC_RAND == RLC_UDEV
 		/* A zero descriptor would read from the standard input. */
 		*fd = -1;
 #endif

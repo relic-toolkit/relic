@@ -37,11 +37,11 @@
 
 #include "relic_conf.h"
 
-#if ARITH == GMP || ARITH == GMP_SEC
+#if RLC_ARITH == RLC_GMP || RLC_ARITH == RLC_GMP_SEC
 #include <gmp.h>
 #endif
 
-#if defined(_MSC_VER) && WSIZE == 64
+#if defined(_MSC_VER) && RLC_WSIZE == 64
 #include <intrin.h>
 #endif
 
@@ -52,7 +52,7 @@
 /**
  * Size in bits of a digit.
  */
-#define RLC_DIG			(WSIZE)
+#define RLC_DIG			(RLC_WSIZE)
 
 /**
  * Logarithm of the digit size in bits in base two.
@@ -77,28 +77,28 @@
  * Each digit is represented as an unsigned long to use the biggest native
  * type that potentially supports native instructions.
  */
-#if ARITH == GMP
+#if RLC_ARITH == RLC_GMP
 typedef mp_limb_t dig_t;
-#elif WSIZE == 8
+#elif RLC_WSIZE == 8
 typedef uint8_t dig_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef uint16_t dig_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef uint32_t dig_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 typedef uint64_t dig_t;
 #endif
 
 /**
  * Represents a signed digit.
  */
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 typedef int8_t dis_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef int16_t dis_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef int32_t dis_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 typedef int64_t dis_t;
 #endif
 
@@ -107,13 +107,13 @@ typedef int64_t dis_t;
  *
  * This is useful to store a result from a multiplication of two digits.
  */
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 typedef uint16_t dbl_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef uint32_t dbl_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef uint64_t dbl_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 #ifdef _MSC_VER
 /** MSVS does not support 128-bit type. */
 #define RLC_CONF_NODBL
@@ -184,8 +184,8 @@ typedef unsigned long uint_t;
 /**
  * Specification for aligned variables.
  */
-#if ALIGN > 1
-#define rlc_align 		__attribute__ ((aligned (ALIGN)))
+#if RLC_ALIGN > 1
+#define rlc_align 		__attribute__ ((aligned (RLC_ALIGN)))
 #else
 #define rlc_align 		/* empty */
 #endif
@@ -193,8 +193,8 @@ typedef unsigned long uint_t;
 /**
  * Size of padding to be added so that digit vectors are aligned.
  */
-#if ALIGN > 1
-#define RLC_PAD(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
+#if RLC_ALIGN > 1
+#define RLC_PAD(A)		((A) % RLC_ALIGN == 0 ? 0 : RLC_ALIGN - ((A) % RLC_ALIGN))
 #else
 #define RLC_PAD(A)		(0)
 #endif
@@ -204,18 +204,18 @@ typedef unsigned long uint_t;
  *
  * @param[in,out] A		- the pointer to align.
  */
-#if ALIGN > 1
-#if RLC_ARCH == AVR || RLC_ARCH == MSP || RLC_ARCH == X86 || RLC_ARCH == ARM
-#define RLC_ALIGN(A)														\
+#if RLC_ALIGN > 1
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_X86 || RLC_ARCH == RLC_ARM
+#define RLC_ALIGN_UP(A)														\
 	((unsigned int)(A) + RLC_PAD((unsigned int)(A)));						\
 
-#elif RLC_ARCH  == X64
-#define RLC_ALIGN(A)														\
+#elif RLC_ARCH  == RLC_X64
+#define RLC_ALIGN_UP(A)														\
 	((unsigned long)(A) + RLC_PAD((unsigned long)(A)));						\
 
 #endif
 #else
-#define RLC_ALIGN(A)		(A)
+#define RLC_ALIGN_UP(A)		(A)
 #endif
 
 #endif /* !RLC_TYPES_H */

@@ -34,7 +34,7 @@
 
 #include "relic_conf.h"
 
-#define RLC_PREFIX(F)			_RLC_PREFIX(LABEL, F)
+#define RLC_PREFIX(F)			_RLC_PREFIX(RLC_LABEL, F)
 #define _RLC_PREFIX(A, B)		__RLC_PREFIX(A, B)
 #define __RLC_PREFIX(A, B)		A ## _ ## B
 
@@ -42,7 +42,7 @@
 /* Macro definitions                                                          */
 /*============================================================================*/
 
-#ifdef LABEL
+#ifdef RLC_LABEL
 
 #undef first_ctx
 #define first_ctx					RLC_PREFIX(first_ctx)
@@ -4078,6 +4078,6 @@
 #define md_xof_int 	RLC_PREFIX(md_xof_int)
 #define md_xof_bits 	RLC_PREFIX(md_xof_bits)
 
-#endif /* LABEL */
+#endif /* RLC_LABEL */
 
 #endif /* !RLC_LABEL_H */

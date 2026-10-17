@@ -62,7 +62,7 @@
  * @param[in] s				- the number of steps.
  * @return the updated value of zeta.
  */
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 static int jmpds_steps(dis_t m[4], int zeta, dig_t f, dig_t g, int s) {
 #else
 static dis_t jmpds_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
@@ -358,7 +358,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	size_t i;
 	int k;
 #if FP_RDC == MONTY
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
 #else
 	const fp_t conv = (fp_t)fp_prime_get_conv();
@@ -607,7 +607,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 		fp_add_dig(t, t, 1);
 		fp_hlv(t, t);
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);
 		bn_lsh(_t, _t, 8);
 		bn_add_dig(_t, _t, d & 0xFF);
@@ -632,7 +632,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dis_t m[4];
 	dv_t f, g, d, e, t;
 	int s;
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 	int zeta = -1;
 #else
 	dis_t zeta = -1;

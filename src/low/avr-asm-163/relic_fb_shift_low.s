@@ -88,7 +88,7 @@ fb_lsh1_low:
 	adc		r24, r1
 	ret
 
-#if FB_INV == EXGCD || !defined(STRIP)
+#if FB_INV == EXGCD || !defined(RLC_STRIP)
 
 .global fb_lsha1_low
 .global fb_lsha2_low

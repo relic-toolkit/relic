@@ -176,7 +176,7 @@ void ep8_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep8_new(ctx->ep8_g);
 	fp8_new(ctx->ep8_a);
 	fp8_new(ctx->ep8_b);
@@ -185,7 +185,7 @@ void ep8_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp8_new(ctx->ep8_pre[i].x);
 		fp8_new(ctx->ep8_pre[i].y);
@@ -300,7 +300,7 @@ void ep8_curve_get_cof(bn_t h) {
 #if defined(EP_PRECO)
 
 ep8_t *ep8_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep8_t *)*(core_get()->ep8_ptr);
 #else
 	return core_get()->ep8_ptr;

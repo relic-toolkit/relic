@@ -91,7 +91,7 @@ enum {
  * Maximum size of a precomputation table, which only needs to fit the
  * chosen method when unused methods are stripped.
  */
-#ifdef STRIP
+#ifdef RLC_STRIP
 #define RLC_ED_TABLE_MAX		RLC_ED_TABLE
 #else
 #define RLC_ED_TABLE_MAX		RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
@@ -120,10 +120,10 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ed_st ed_t[1];
 #else
-#ifdef CHECK
+#ifdef RLC_CHECK
 typedef ed_st *volatile ed_t;
 #else
 typedef ed_st *ed_t;
@@ -139,7 +139,7 @@ typedef ed_st *ed_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define ed_null(A)			/* empty */
 #else
 #define ed_null(A)			A = NULL;
@@ -151,14 +151,14 @@ typedef ed_st *ed_t;
  * @param[out] A			- the new point.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ed_new(A)															\
 	A = (ed_t)calloc(1, sizeof(ed_st));										\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ed_new(A)			/* empty */
 
 #endif
@@ -168,14 +168,14 @@ typedef ed_st *ed_t;
  *
  * @param[out] A			- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ed_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ed_free(A)			/* empty */
 
 #endif

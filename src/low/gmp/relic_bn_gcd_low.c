@@ -51,8 +51,8 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 
 	/*
 	 * Not (mp_size_t *)sd: mpn_gcdext writes an mp_size_t, which is a long,
-	 * while dis_t tracks WSIZE. The two coincide only for a 64-bit WSIZE on
-	 * LP64. With a 32-bit WSIZE the callee writes eight bytes into a four-byte
+	 * while dis_t tracks RLC_WSIZE. The two coincide only for a 64-bit RLC_WSIZE on
+	 * LP64. With a 32-bit RLC_WSIZE the callee writes eight bytes into a four-byte
 	 * object, and under LLP64 it writes four into eight and leaves the rest
 	 * indeterminate, which breaks the sign of the cofactor.
 	 */

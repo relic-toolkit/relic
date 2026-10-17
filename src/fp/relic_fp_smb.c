@@ -355,7 +355,7 @@ int fp_smb_divst(const fp_t a) {
 		bn_new(_t);
 		dv_new_all(f, g, t);
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);
 		bn_lsh(_t, _t, 8);
 		bn_add_dig(_t, _t, d & 0xFF);

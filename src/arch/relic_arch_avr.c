@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of AVR-dependent routines.
+ * Implementation of RLC_AVR-dependent routines.
  *
  * @ingroup arch
  */
@@ -59,7 +59,7 @@ uint_t arch_lzcnt(dig_t a) {
 		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
 	};
 
-	/* The high nibble decides, unless it is zero. Zero gives WSIZE. */
+	/* The high nibble decides, unless it is zero. Zero gives RLC_WSIZE. */
 	if (a >> 4 == 0) {
 		return table[a & 0xF] + 4;
 	}
@@ -72,7 +72,7 @@ uint_t arch_tzcnt(dig_t a) {
 		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
 	};
 
-	/* The low nibble decides, unless it is zero. Zero gives WSIZE. */
+	/* The low nibble decides, unless it is zero. Zero gives RLC_WSIZE. */
 	if ((a & 0xF) == 0) {
 		return table[a >> 4] + 4;
 	}

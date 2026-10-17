@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory(void) {
-	fp_t a[BENCH];
+	fp_t a[RLC_BENCH];
 
 	BENCH_FEW("fp_null", fp_null(a[i]), 1);
 
 	BENCH_FEW("fp_new", fp_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fp_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fp_new(a[i]);
 	}
 	BENCH_FEW("fp_free", fp_free(a[i]), 1);
@@ -204,7 +204,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_add_basic") {
 		fp_rand(a);
 		fp_rand(b);
@@ -213,7 +213,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_add_integ") {
 		fp_rand(a);
 		fp_rand(b);
@@ -243,7 +243,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_sub_basic") {
 		fp_rand(a);
 		fp_rand(b);
@@ -252,7 +252,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_sub_integ") {
 		fp_rand(a);
 		fp_rand(b);
@@ -281,7 +281,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_neg_basic") {
 		fp_rand(a);
 		BENCH_ADD(fp_neg_basic(c, a));
@@ -289,7 +289,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_neg_integ") {
 		fp_rand(a);
 		BENCH_ADD(fp_neg_integ(c, a));
@@ -304,7 +304,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_MUL == BASIC || !defined(STRIP)
+#if FP_MUL == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_mul_basic") {
 		fp_rand(a);
 		fp_rand(b);
@@ -313,7 +313,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_MUL == INTEG || !defined(STRIP)
+#if FP_MUL == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_mul_integ") {
 		fp_rand(a);
 		fp_rand(b);
@@ -322,7 +322,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_MUL == COMBA || !defined(STRIP)
+#if FP_MUL == COMBA || !defined(RLC_STRIP)
 	BENCH_RUN("fp_mul_comba") {
 		fp_rand(a);
 		fp_rand(b);
@@ -331,7 +331,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_KARAT > 0 || !defined(STRIP)
+#if FP_KARAT > 0 || !defined(RLC_STRIP)
 	BENCH_RUN("fp_mul_karat") {
 		fp_rand(a);
 		fp_rand(b);
@@ -353,7 +353,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_SQR == BASIC || !defined(STRIP)
+#if FP_SQR == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_sqr_basic") {
 		fp_rand(a);
 		BENCH_ADD(fp_sqr_basic(c, a));
@@ -361,7 +361,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_SQR == INTEG || !defined(STRIP)
+#if FP_SQR == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_sqr_integ") {
 		fp_rand(a);
 		BENCH_ADD(fp_sqr_integ(c, a));
@@ -369,7 +369,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_SQR == COMBA || !defined(STRIP)
+#if FP_SQR == COMBA || !defined(RLC_STRIP)
 	BENCH_RUN("fp_sqr_comba") {
 		fp_rand(a);
 		BENCH_ADD(fp_sqr_comba(c, a));
@@ -383,7 +383,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_dbl_basic") {
 		fp_rand(a);
 		BENCH_ADD(fp_dbl_basic(c, a));
@@ -391,7 +391,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_dbl_integ") {
 		fp_rand(a);
 		BENCH_ADD(fp_dbl_integ(c, a));
@@ -405,7 +405,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_ADD == BASIC || !defined(STRIP)
+#if FP_ADD == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_hlv_basic") {
 		fp_rand(a);
 		BENCH_ADD(fp_hlv_basic(c, a));
@@ -413,7 +413,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_ADD == INTEG || !defined(STRIP)
+#if FP_ADD == INTEG || !defined(RLC_STRIP)
 	BENCH_RUN("fp_hlv_integ") {
 		fp_rand(a);
 		BENCH_ADD(fp_hlv_integ(c, a));
@@ -448,7 +448,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_RDC == BASIC || !defined(STRIP)
+#if FP_RDC == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_rdc_basic") {
 		fp_rand(a);
 		fp_lsh(d, a, RLC_FP_BITS);
@@ -457,7 +457,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_RDC == MONTY || !defined(STRIP)
+#if FP_RDC == MONTY || !defined(RLC_STRIP)
 	BENCH_RUN("fp_rdc_monty") {
 		fp_rand(a);
 		fp_lsh(d, a, RLC_FP_BITS);
@@ -481,7 +481,7 @@ static void arith(void) {
 #endif
 
 	if (fp_prime_get_sps(NULL) != NULL) {
-#if FP_RDC == QUICK || !defined(STRIP)
+#if FP_RDC == QUICK || !defined(RLC_STRIP)
 		BENCH_RUN("fp_rdc_quick") {
 			fp_rand(a);
 			fp_lsh(d, a, RLC_FP_BITS);
@@ -508,7 +508,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_INV == BASIC || !defined(STRIP)
+#if FP_INV == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_basic") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_basic(c, a));
@@ -516,7 +516,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_INV == BINAR || !defined(STRIP)
+#if FP_INV == BINAR || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_binar") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_binar(c, a));
@@ -524,7 +524,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_INV == MONTY || !defined(STRIP)
+#if FP_INV == MONTY || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_monty") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_monty(c, a));
@@ -532,7 +532,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_INV == EXGCD || !defined(STRIP)
+#if FP_INV == EXGCD || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_exgcd") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_exgcd(c, a));
@@ -540,7 +540,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_INV == DIVST || !defined(STRIP)
+#if FP_INV == DIVST || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_divst") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_divst(c, a));
@@ -548,7 +548,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_INV == JMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(RLC_STRIP)
 	BENCH_RUN("fp_inv_jmpds") {
 		fp_rand(a);
 		BENCH_ADD(fp_inv_jmpds(c, a));
@@ -582,7 +582,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_SMB == BASIC || !defined(STRIP)
+#if FP_SMB == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb_basic") {
 		fp_rand(a);
 		fp_sqr(a, a);
@@ -591,7 +591,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_SMB == BINAR || !defined(STRIP)
+#if FP_SMB == BINAR || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb_binar") {
 		fp_rand(a);
 		fp_sqr(a, a);
@@ -600,7 +600,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_SMB == DIVST || !defined(STRIP)
+#if FP_SMB == DIVST || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb_divst") {
 		fp_rand(a);
 		fp_sqr(a, a);
@@ -609,7 +609,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_SMB == JMPDS || !defined(STRIP)
+#if FP_SMB == JMPDS || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb_jmpds") {
 		fp_rand(a);
 		fp_sqr(a, a);
@@ -636,7 +636,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if FP_EXP == BASIC || !defined(STRIP)
+#if FP_EXP == BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_exp_basic") {
 		fp_rand(a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
@@ -645,7 +645,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_EXP == SLIDE || !defined(STRIP)
+#if FP_EXP == SLIDE || !defined(RLC_STRIP)
 	BENCH_RUN("fp_exp_slide") {
 		fp_rand(a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
@@ -654,7 +654,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FP_EXP == MONTY || !defined(STRIP)
+#if FP_EXP == MONTY || !defined(RLC_STRIP)
 	BENCH_RUN("fp_exp_monty") {
 		fp_rand(a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);

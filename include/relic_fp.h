@@ -188,8 +188,8 @@ enum {
  * Constant used to indicate that there's some room left in the storage of
  * prime field elements. This can be used to avoid carries.
  */
-#if ((FP_PRIME % WSIZE) != 0) && ((FP_PRIME % WSIZE) <= (WSIZE - 2))
-#if ((2 * FP_PRIME % WSIZE) != 0) && ((2 * FP_PRIME % WSIZE) <= (WSIZE - 2))
+#if ((FP_PRIME % RLC_WSIZE) != 0) && ((FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
+#if ((2 * FP_PRIME % RLC_WSIZE) != 0) && ((2 * FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
 #define RLC_FP_ROOM
 #else
 #undef RLC_FP_ROOM
@@ -209,7 +209,7 @@ enum {
  * in little-endian format, that is, the least significant digits are
  * stored in the first positions of the vector.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t fp_t[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *fp_t;
@@ -229,7 +229,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define fp_null(A)			/* empty */
 #else
 #define fp_null(A)			A = NULL;
@@ -240,9 +240,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the new prime field element.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_new(A)			/* empty */
 #endif
 
@@ -251,9 +251,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the prime field element to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_free(A)			/* empty */
 #endif
 

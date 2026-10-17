@@ -44,10 +44,10 @@
 #include "relic_conf.h"
 #include "relic_label.h"
 
-#if (BN_PRECI % WSIZE) > 0
-#define RLC_BN_DIGS		(BN_PRECI/WSIZE + 1)
+#if (BN_PRECI % RLC_WSIZE) > 0
+#define RLC_BN_DIGS		(BN_PRECI/RLC_WSIZE + 1)
 #else
-#define RLC_BN_DIGS		(BN_PRECI/WSIZE)
+#define RLC_BN_DIGS		(BN_PRECI/RLC_WSIZE)
 #endif
 
 #define RLC_BN_SIZE		(2 * RLC_BN_DIGS + 2)

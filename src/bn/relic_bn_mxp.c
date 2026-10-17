@@ -421,8 +421,8 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 		bn_new_all(t, u);
 
 		if (!sqr) {
-#if RLC_MULTI == OPENMP
-			omp_set_num_threads(CORES);
+#if RLC_MULTI == RLC_OPENMP
+			omp_set_num_threads(RLC_CORES);
 			#pragma omp parallel copyin(core_ctx) firstprivate(crt)
 			{
 				#pragma omp sections
@@ -432,21 +432,21 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 #endif
 						/* m1 = a^dP mod p. */
 						bn_mxp(t, a, b, crt->p);
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 					}
 #pragma omp section
 					{
 #endif
 						/* m2 = a^dQ mod q. */
 						bn_mxp(u, a, c, crt->q);
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 					}
 				}
 			}
 #endif
 		} else {
-#if RLC_MULTI == OPENMP
-			omp_set_num_threads(CORES);
+#if RLC_MULTI == RLC_OPENMP
+			omp_set_num_threads(RLC_CORES);
 			#pragma omp parallel copyin(core_ctx) firstprivate(crt)
 			{
 				#pragma omp sections
@@ -461,7 +461,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 						bn_div(t, t, crt->p);
 						bn_mul(t, t, crt->dp);
 						bn_mod(t, t, crt->p);
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 					}
 					#pragma omp section
 					{
@@ -473,7 +473,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 						bn_div(u, u, crt->q);
 						bn_mul(u, u, crt->dq);
 						bn_mod(u, u, crt->q);
-#if RLC_MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 					}
 				}
 			}

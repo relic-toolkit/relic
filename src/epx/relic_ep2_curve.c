@@ -559,7 +559,7 @@ void ep2_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	ep2_new(ctx->ep2_g);
 	fp2_new(ctx->ep2_a);
 	fp2_new(ctx->ep2_b);
@@ -572,7 +572,7 @@ void ep2_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp2_new(ctx->ep2_pre[i].x);
 		fp2_new(ctx->ep2_pre[i].y);
@@ -584,7 +584,7 @@ void ep2_curve_init(void) {
 	bn_make(&(ctx->ep2_h), RLC_FP_DIGS);
 
 	iso2_t iso = ep2_curve_get_iso();
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	fp2_new(iso->a);
 	fp2_new(iso->b);
 	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
@@ -596,8 +596,8 @@ void ep2_curve_init(void) {
 		fp2_new(iso->yd[i]);
 	}
 #else
-	(void)iso; /* suppress unused warning when ALLOC == AUTO */
-#endif /* ALLOC */
+	(void)iso; /* suppress unused warning when RLC_ALLOC == RLC_AUTO */
+#endif /* RLC_ALLOC */
 #undef EP_CURVE_INIT_FP2
 }
 
@@ -615,7 +615,7 @@ void ep2_curve_clean(void) {
 		bn_clean(&(ctx->ep2_h));
 
 		iso2_t iso = ep2_curve_get_iso();
-		(void)iso; /* suppress unused warning when ALLOC == AUTO */
+		(void)iso; /* suppress unused warning when RLC_ALLOC == RLC_AUTO */
 		fp2_free(iso->a);
 		fp2_free(iso->b);
 		for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
@@ -743,7 +743,7 @@ iso2_t ep2_curve_get_iso() {
 #if defined(EP_PRECO)
 
 ep2_t *ep2_curve_get_tab(void) {
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (ep2_t *)*(core_get()->ep2_ptr);
 #else
 	return core_get()->ep2_ptr;

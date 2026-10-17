@@ -94,10 +94,10 @@ typedef struct {
 	size_t used;
 	/** The sign of this multiple precision integer. */
 	int sign;
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 	/** The sequence of contiguous digits that forms this integer. */
 	rlc_align dig_t dp[RLC_BN_SIZE];
 #endif
@@ -106,10 +106,10 @@ typedef struct {
 /**
  * Pointer to a multiple precision integer structure.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef bn_st bn_t[1];
-#elif ALLOC == DYNAMIC
-#ifdef CHECK
+#elif RLC_ALLOC == RLC_DYNAMIC
+#ifdef RLC_CHECK
 typedef bn_st *volatile bn_t;
 #else
 typedef bn_st *bn_t;
@@ -134,7 +134,7 @@ typedef struct {
 	bn_t qi;
 } crt_st;
 
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef crt_st crt_t[1];
 #else
 typedef crt_st *crt_t;
@@ -149,9 +149,9 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define bn_null(A)			/* empty */
-#elif ALLOC == DYNAMIC
+#elif RLC_ALLOC == RLC_DYNAMIC
 #define bn_null(A)			A = NULL;
 #endif
 
@@ -161,7 +161,7 @@ typedef crt_st *crt_t;
  * @param[in,out] A			- the multiple precision integer to initialize.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new(A)															\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if ((A) == NULL) {														\
@@ -169,7 +169,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, RLC_BN_SIZE);												\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new(A)															\
 	bn_make(A, RLC_BN_SIZE);												\
 
@@ -185,7 +185,7 @@ typedef crt_st *crt_t;
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  *							by the library.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new_size(A, D)													\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if (A == NULL) {														\
@@ -193,7 +193,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, D);															\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new_size(A, D)													\
 	bn_make(A, D);															\
 
@@ -204,7 +204,7 @@ typedef crt_st *crt_t;
  *
  * @param[in,out] A			- the multiple precision integer to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_free(A)															\
 	if (A != NULL) {														\
 		bn_clean(A);														\
@@ -212,7 +212,7 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_free(A)			/* empty */										\
 
 #endif
@@ -241,7 +241,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the new CRT moduli set.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_new(A)															\
 	A = (crt_t)calloc(1, sizeof(crt_st));									\
 	if (A == NULL) {														\
@@ -254,7 +254,7 @@ typedef crt_st *crt_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_new(A)															\
 	bn_new((A)->n);															\
 	bn_new((A)->dp);														\
@@ -270,7 +270,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the CRT moduli set to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->n);													\
@@ -283,7 +283,7 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_free(A)				/* empty */
 
 #endif

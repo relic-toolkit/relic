@@ -48,7 +48,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	e.used = RLC_FP_DIGS;
 	dv_copy(e.dp, fp_prime_get(), RLC_FP_DIGS);
 	bn_sub1_low(e.dp, e.dp, 2, RLC_FP_DIGS);
-#if AUTO == ALLOC
+#if RLC_AUTO == RLC_ALLOC
 	fp_exp(c, a, &e);
 #else
 	fp_exp(c, (const fp_t)a, &e);
