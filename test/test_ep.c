@@ -567,6 +567,10 @@ static int doubling(void) {
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 			TEST_ASSERT(fp_cmp(s0, s1) == RLC_EQ, end);
 		} TEST_END;
+#else
+		/* Only the test in affine coordinates needs the slopes. */
+		(void)s0;
+		(void)s1;
 #endif
 
 #if EP_ADD == PROJC || !defined(RLC_STRIP)
