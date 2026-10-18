@@ -369,7 +369,7 @@ cdecl(fp_hlvm_low):
 	ret
 
 cdecl(fp_hlvd_low):
-	push	%rbx
+	push	%r12
 
 	movq	$1, %rdx
 	andq	0(%rsi), %rdx
@@ -393,10 +393,10 @@ cdecl(fp_hlvd_low):
 	adcq	$0, %rax
 	movq	48(%rsi), %rcx
 	adcq	$0, %rcx
-	movq	56(%rsi), %rbx
-	adcq	$0, %rbx
+	movq	56(%rsi), %r12
+	adcq	$0, %r12
 
-	rcrq	$1, %rbx
+	rcrq	$1, %r12
 	rcrq	$1, %rcx
 	rcrq	$1, %rax
 	rcrq	$1, %rdx
@@ -412,7 +412,7 @@ cdecl(fp_hlvd_low):
 	movq	%rdx, 32(%rdi)
 	movq	%rax, 40(%rdi)
 	movq	%rcx, 48(%rdi)
-	movq	%rbx, 56(%rdi)
+	movq	%r12, 56(%rdi)
 
-	pop		%rbx
+	pop		%r12
 	ret

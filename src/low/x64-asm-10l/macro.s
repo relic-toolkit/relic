@@ -46,7 +46,6 @@
 #define U0	0xFAD7AB621D14745D
 #define BAR	0x86E9E19FD94C0210
 #define BARS	61
-#define BARJ	9
 #elif FP_PRIME == 638
 #define P0	0xB0BE48934E64EB1D
 #define P1	0xFB8F59E264FB7A71
@@ -61,7 +60,6 @@
 #define U0	0x92071B32EE1AD0CB
 #define BAR	0xA9F1AC5D7ED6C221
 #define BARS	61
-#define BARJ	9
 #else
 #error "x64-asm-10l supports only FP_PRIME = 638."
 #endif

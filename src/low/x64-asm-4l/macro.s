@@ -39,7 +39,6 @@
 #define U0	0x08435E50D79435E5
 #define BAR	0xDC94C9081275E672
 #define BARS	61
-#define BARJ	3
 #elif FP_PRIME == 255
 #define P0	0xFFFFFFFFFFFFFFED
 #define P1	0xFFFFFFFFFFFFFFFF
@@ -48,7 +47,6 @@
 #define U0	0x86BCA1AF286BCA1B
 #define BAR	0x8000000000000000
 #define BARS	62
-#define BARJ	3
 #else
 #error "x64-asm-4l supports only FP_PRIME = 254 or 255."
 #endif

@@ -40,7 +40,6 @@
 #define U0	0x702FF9FF402FFFFF
 #define BAR	0xD72F573970571ED0
 #define BARS	58
-#define BARJ	4
 #elif FP_PRIME == 317
 #define P0	0x8D512E565DAB2AAB
 #define P1	0xD6F339E43424BF7E
@@ -50,7 +49,6 @@
 #define U0	0x55B5E0028B047FFD
 #define BAR	0xFA91822BBE91B750
 #define BARS	60
-#define BARJ	4
 #elif FP_PRIME == 318
 #define P0	0xFFFFFFFFFFFFFFFF
 #define P1	0x5F3217911EB1657B
@@ -60,7 +58,6 @@
 #define U0	0x0000000000000001
 #define BAR	0x87263B55416BC6A7
 #define BARS	61
-#define BARJ	4
 #define U0_ONE
 #else
 #error "x64-asm-5l supports only FP_PRIME = 315, 317 or 318."

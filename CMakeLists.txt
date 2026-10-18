@@ -54,6 +54,11 @@ message(STATUS "Number of available processor cores (default = 1):\n")
 
 message("   CORES=n        If n > 1, enable multithreading support.\n")
 
+message(STATUS "Widths of precomputation tables (default = 5, 4):\n")
+
+message("   DEPTH=w        Width w in [2,8] of table for fixed exponentiation.")
+message("   WIDTH=w        Width w in [2,6] of table for exponentiation.\n")
+
 message(STATUS "Available modules (default = ALL)\n")
 
 message("   WITH=BN       Multiple precision arithmetic.")
@@ -119,15 +124,6 @@ message(STATUS "Prefix to identify this build of the library (default = \"\"):\n
 
 message("   LABEL=relic\n")
 
-message(STATUS "Widths of precomputation tables (default = 5, 4):\n")
-
-message("   RLC_DEPTH=w    Width w in [2,8] of table for fixed exponentiation.")
-message("   RLC_WIDTH=w    Width w in [2,6] of table for exponentiation.\n")
-
-# Table sizes for exponentiation methods
-set(RLC_DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
-set(RLC_WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
-
 include(cmake/arch.cmake)
 include(cmake/err.cmake)
 include(cmake/bn.cmake)
@@ -153,6 +149,10 @@ set(CORES "1" CACHE STRING "Number of processor cores available to the library."
 if(NOT CORES STREQUAL "1" AND NOT MULTI)
 	set(MULTI OPENMP)
 endif()
+
+# Table sizes for exponentiation methods
+set(DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
+set(WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
 
 # Choose the arithmetic backend, which must be one of the folders of src/low.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
@@ -397,7 +397,6 @@ endforeach()
 set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)
 string(REPLACE "-" "_" ARITH ${ARITH})
-string(REPLACE "." "_" ARITH ${ARITH})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/relic_conf.h @ONLY)
 message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in with backend " ${ARITH_COPY})

@@ -27,7 +27,8 @@
  * Differential test of the low-level prime field functions against GMP, for
  * checking a new arithmetic backend. Every function of relic_fp_low.h that an
  * x64-asm-Nl backend exports is compared on random and edge-case inputs, and
- * so are the Fp2 functions when FP_QNRES is defined, as u^2 = -1 then.
+ * so are the Fp2 functions, with u^2 = -1 when FP_QNRES is defined and with
+ * the quadratic non-residue of the prime otherwise.
  *
  * Build it against a static library of the backend, for example:
  *   cmake -B build -DARITH=x64-asm-12l -DFP_PRIME=768 -DBN_PRECI=2048 \
@@ -113,9 +114,9 @@ static void elem(mpz_t z, const mpz_t bound, int k) {
 }
 
 int main(void) {
-	dig_t a[2 * N], b[2 * N], c[2 * N], d, w;
+	dig_t a[2 * N], b[2 * N], c[2 * N], e[2 * N], d, w;
 	mpz_t x, y, z, B1, B2, PR;
-	int iters = 20000;
+	int iters = 20000, q;
 
 	core_init();
 	if (fp_param_set_any() != RLC_OK) {
@@ -131,6 +132,12 @@ int main(void) {
 	mpz_set(R, B1);
 	mpz_mul(PR, P, R);
 	mpz_invert(U, R, P);
+	/* FP_QNRES assumes u^2 = -1, which only fits primes 3 mod 4. */
+#if defined(FP_QNRES)
+	q = (mpz_fdiv_ui(P, 4) == 3 ? 1 : 0);
+#else
+	q = -fp_prime_get_qnr();
+#endif
 
 	for (int k = 0; k < iters; k++) {
 		/* Unreduced operations on N and 2N digits. */
@@ -201,10 +208,9 @@ int main(void) {
 		mpz_mul(T, x, x); mpz_mul(T, T, U); mpz_mod(T, T, P);
 		fp_sqrm_low(c, a); check("sqrm", c, T, N);
 
-#if defined(FP_QNRES)
-		/* Quadratic extension with u^2 = -1, whose functions the Fp2 assembly
-		 * of a backend replaces. FP_QNRES only fits primes 3 mod 4. */
-		if (mpz_fdiv_ui(P, 4) == 3) {
+		/* Quadratic extension with u^2 = -q, whose functions the Fp2 assembly
+		 * of a backend replaces. */
+		if (q > 0) {
 			fp2_t a2, b2, c2;
 			dv2_t d2;
 			mpz_t x1, y1, re, im;
@@ -213,8 +219,9 @@ int main(void) {
 			elem(x1, P, k / 3); elem(y1, P, k / 5);
 			put(a2[0], x, N); put(a2[1], x1, N);
 			put(b2[0], y, N); put(b2[1], y1, N);
-			/* (x + x1 u)(y + y1 u) = (x y - x1 y1) + (x y1 + x1 y) u. */
-			mpz_mul(re, x, y); mpz_submul(re, x1, y1);
+			/* (x + x1 u)(y + y1 u) = (x y - q x1 y1) + (x y1 + x1 y) u. */
+			mpz_mul(re, x1, y1); mpz_mul_ui(re, re, q);
+			mpz_neg(re, re); mpz_addmul(re, x, y);
 			mpz_mul(im, x, y1); mpz_addmul(im, x1, y);
 			fp2_muln_low(d2, a2, b2);
 			checkc("fp2_muln[0]", d2[0], re, PR);
@@ -224,8 +231,9 @@ int main(void) {
 			check("fp2_mulm[0]", c2[0], T, N);
 			mpz_mul(T, im, U); mpz_mod(T, T, P);
 			check("fp2_mulm[1]", c2[1], T, N);
-			/* (x + x1 u)^2 = (x^2 - x1^2) + 2 x x1 u. */
-			mpz_mul(re, x, x); mpz_submul(re, x1, x1);
+			/* (x + x1 u)^2 = (x^2 - q x1^2) + 2 x x1 u. */
+			mpz_mul(re, x1, x1); mpz_mul_ui(re, re, q);
+			mpz_neg(re, re); mpz_addmul(re, x, x);
 			mpz_mul(im, x, x1); mpz_mul_2exp(im, im, 1);
 			fp2_sqrn_low(d2, a2);
 			checkc("fp2_sqrn[0]", d2[0], re, PR);
@@ -237,14 +245,16 @@ int main(void) {
 			check("fp2_sqrm[1]", c2[1], T, N);
 			mpz_clears(x1, y1, re, im, NULL);
 		}
-#endif
 
 		/* Operations on double-precision values below pR. */
 		elem(x, PR, k); elem(y, PR, k / 8);
 		put(a, x, 2 * N); put(b, y, 2 * N);
 		mpz_mul(T, x, U); mpz_mod(T, T, P);
+		/* Out of place, on a copy that it may overwrite, and in place. */
+		memcpy(e, a, sizeof(dig_t) * 2 * N);
+		fp_rdcn_low(c, e); check("rdcn", c, T, N);
 		memcpy(c, a, sizeof(dig_t) * 2 * N);
-		fp_rdcn_low(c, c); check("rdcn", c, T, N);
+		fp_rdcn_low(c, c); check("rdcn in place", c, T, N);
 		mpz_add(T, x, y);
 		if (mpz_cmp(T, PR) >= 0) {
 			mpz_sub(T, T, PR);
@@ -263,11 +273,9 @@ int main(void) {
 		mpz_fdiv_q_2exp(T, z, 1);
 		fp_hlvd_low(c, a); check("hlvd", c, T, 2 * N);
 	}
-#if defined(FP_QNRES)
-	if (mpz_fdiv_ui(P, 4) != 3) {
+	if (q == 0) {
 		printf("FP_QNRES is set but p is not 3 mod 4: Fp2 not checked.\n");
 	}
-#endif
 	printf("FP_PRIME=%d N=%d: %d iterations, %d failures\n", FP_PRIME,
 			(int)N, iters, fails);
 	core_clean();

@@ -43,7 +43,6 @@
 #define U0	0x4B3EF8137F4017FD
 #define BAR	0xBFFFF700001AFFFE
 #define BARS	6
-#define BARJ	7
 #elif FP_PRIME == 508
 #define P0	0xCD1CCCF628BC1B1D
 #define P1	0x6B5CC3A8F69C137A
@@ -56,7 +55,6 @@
 #define U0	0x71AA8793EFE880CB
 #define BAR	0xA7D7558A6ADB59D0
 #define BARS	59
-#define BARJ	7
 #elif FP_PRIME == 509
 #define P0	0xA13D118DB8BFD2AB
 #define P1	0xEE63BD076E8D9300
@@ -69,7 +67,6 @@
 #define U0	0x6EFA1180A5FE67FD
 #define BAR	0xBFFFF1000823DF55
 #define BARS	60
-#define BARJ	7
 #elif FP_PRIME == 510
 #define P0	0xDD5F62C1A3044101
 #define P1	0x393DDECB1D3C5517
@@ -82,7 +79,6 @@
 #define U0	0x766D29254B8340FF
 #define BAR	0xA4ADE6F58CE7791A
 #define BARS	61
-#define BARJ	7
 #elif FP_PRIME == 511
 #define P0	0x1B81B90533C6C87B
 #define P1	0xC2721BF457ACA835
@@ -95,7 +91,6 @@
 #define U0	0x66C1301F632E294D
 #define BAR	0xA117C7275007EB1F
 #define BARS	62
-#define BARJ	7
 #else
 #error "x64-asm-8l supports only FP_PRIME = 455, 508, 509, 510 or 511."
 #endif

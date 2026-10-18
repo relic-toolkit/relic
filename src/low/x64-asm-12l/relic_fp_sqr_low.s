@@ -44,19 +44,9 @@ cdecl(fp_sqrn_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$SFRAME, %rsp
 
-	movq	%rdi, CPTR
-	.set	k, 0
-	.rept	RLC_FP_DIGS
-	movq	8*k(%rsi), %rax
-	movq	%rax, 8*k+BCPY
-	.set	k, k + 1
-	.endr
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 0, 0(%rsp), 0(%rsp)
 
-	FP_SQR_LOW	BCPY, SBUF, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 0
-
-	addq	$SFRAME, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -72,21 +62,12 @@ cdecl(fp_sqrm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$SFRAME, %rsp
+	subq	$200, %rsp
 
-	movq	%rdi, CPTR
-	movq	$0, ZEROS
-	movq	$-1, ONES
-	.set	k, 0
-	.rept	RLC_FP_DIGS
-	movq	8*k(%rsi), %rax
-	movq	%rax, 8*k+BCPY
-	.set	k, k + 1
-	.endr
+	movq	%rdi, 192(%rsp)
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 1, 0(%rsp), 192(%rsp)
 
-	FP_SQR_LOW	BCPY, SBUF, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 1
-
-	addq	$SFRAME, %rsp
+	addq	$200, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

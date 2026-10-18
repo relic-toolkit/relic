@@ -2,7 +2,6 @@ message(STATUS "Elliptic Edwards curve over prime fields arithmetic configuratio
 
 message("   ** Options for the prime elliptic Edwards curve module (default = all on):")
 message("      ED_PRECO=[off|on] Build precomputation table for generator.")
-message("      RLC_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.")
 
 message("   ** Available prime elliptic Edwards curve methods (default = PROJC;LWNAF;BASIC):")
 message("      ED_METHD=BASIC    Affine coordinates.")

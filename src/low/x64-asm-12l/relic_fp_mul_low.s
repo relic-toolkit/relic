@@ -212,24 +212,62 @@ cdecl(fp_muln_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$FRAME, %rsp
+	subq	$208, %rsp
 
-	movq	%rdi, CPTR
-	movq	%rsi, APTR
-	movq	$0, ZEROS
-	movq	$-1, ONES
-	movq	$0, CARRY
-	.set	k, 0
-	.rept	RLC_FP_DIGS
-	movq	8*k(%rdx), %rax
-	movq	%rax, 8*k+BCPY
-	.set	k, k + 1
-	.endr
+	movq	0(%rdx), %r8
+	movq	8(%rdx), %r9
+	movq	16(%rdx), %r10
+	movq	24(%rdx), %r11
+	movq	32(%rdx), %r12
+	movq	40(%rdx), %r13
+	movq	48(%rdx), %r14
+	movq	56(%rdx), %r15
+	movq	64(%rdx), %rax
+	movq	72(%rdx), %rbx
+	movq	80(%rdx), %rbp
+	movq	88(%rdx), %rcx
+	movq	%r8, 96(%rsp)
+	movq	%r9, 104(%rsp)
+	movq	%r10, 112(%rsp)
+	movq	%r11, 120(%rsp)
+	movq	%r12, 128(%rsp)
+	movq	%r13, 136(%rsp)
+	movq	%r14, 144(%rsp)
+	movq	%r15, 152(%rsp)
+	movq	%rax, 160(%rsp)
+	movq	%rbx, 168(%rsp)
+	movq	%rbp, 176(%rsp)
+	movq	%rcx, 184(%rsp)
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rax
+	movq	72(%rsi), %rbx
+	movq	80(%rsi), %rbp
+	movq	88(%rsi), %rcx
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10, 16(%rsp)
+	movq	%r11, 24(%rsp)
+	movq	%r12, 32(%rsp)
+	movq	%r13, 40(%rsp)
+	movq	%r14, 48(%rsp)
+	movq	%r15, 56(%rsp)
+	movq	%rax, 64(%rsp)
+	movq	%rbx, 72(%rsp)
+	movq	%rbp, 80(%rsp)
+	movq	%rcx, 88(%rsp)
+	movq	%rdi, 192(%rsp)
 
-	MULM	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax
-	FP_MUL_LOW	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 0
+	MULM	0(%rsp), 96(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rcx, %rdi, %rsi
+	FP_MUL_LOW	0(%rsp), 96(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rcx, %rdi, %rsi, p0(%rip), 0, 192(%rsp), 200(%rsp)
 
-	addq	$FRAME, %rsp
+	addq	$208, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -245,24 +283,62 @@ cdecl(fp_mulm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$FRAME, %rsp
+	subq	$208, %rsp
 
-	movq	%rdi, CPTR
-	movq	%rsi, APTR
-	movq	$0, ZEROS
-	movq	$-1, ONES
-	movq	$0, CARRY
-	.set	k, 0
-	.rept	RLC_FP_DIGS
-	movq	8*k(%rdx), %rax
-	movq	%rax, 8*k+BCPY
-	.set	k, k + 1
-	.endr
+	movq	0(%rdx), %r8
+	movq	8(%rdx), %r9
+	movq	16(%rdx), %r10
+	movq	24(%rdx), %r11
+	movq	32(%rdx), %r12
+	movq	40(%rdx), %r13
+	movq	48(%rdx), %r14
+	movq	56(%rdx), %r15
+	movq	64(%rdx), %rax
+	movq	72(%rdx), %rbx
+	movq	80(%rdx), %rbp
+	movq	88(%rdx), %rcx
+	movq	%r8, 96(%rsp)
+	movq	%r9, 104(%rsp)
+	movq	%r10, 112(%rsp)
+	movq	%r11, 120(%rsp)
+	movq	%r12, 128(%rsp)
+	movq	%r13, 136(%rsp)
+	movq	%r14, 144(%rsp)
+	movq	%r15, 152(%rsp)
+	movq	%rax, 160(%rsp)
+	movq	%rbx, 168(%rsp)
+	movq	%rbp, 176(%rsp)
+	movq	%rcx, 184(%rsp)
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rax
+	movq	72(%rsi), %rbx
+	movq	80(%rsi), %rbp
+	movq	88(%rsi), %rcx
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10, 16(%rsp)
+	movq	%r11, 24(%rsp)
+	movq	%r12, 32(%rsp)
+	movq	%r13, 40(%rsp)
+	movq	%r14, 48(%rsp)
+	movq	%r15, 56(%rsp)
+	movq	%rax, 64(%rsp)
+	movq	%rbx, 72(%rsp)
+	movq	%rbp, 80(%rsp)
+	movq	%rcx, 88(%rsp)
+	movq	%rdi, 192(%rsp)
 
-	MULM	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax
-	FP_MUL_LOW	APTR, BCPY, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rcx, %rsi, %rdi, %rax, p0(%rip), 1
+	MULM	0(%rsp), 96(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rcx, %rdi, %rsi
+	FP_MUL_LOW	0(%rsp), 96(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rcx, %rdi, %rsi, p0(%rip), 1, 192(%rsp), 200(%rsp)
 
-	addq	$FRAME, %rsp
+	addq	$208, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

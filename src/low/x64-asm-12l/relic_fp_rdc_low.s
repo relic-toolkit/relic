@@ -43,14 +43,12 @@ cdecl(fp_rdcn_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$FRAME, %rsp
+	subq	$8, %rsp
 
-	movq	%rdi, CPTR
-	movq	$0, ZEROS
-	movq	$-1, ONES
-	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, %rdi, p0(%rip)
+	movq	%rdi, 0(%rsp)
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, %rbp, %rdi, p0(%rip), %rdx, 0(%rsp), %rsi
 
-	addq	$FRAME, %rsp
+	addq	$8, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
