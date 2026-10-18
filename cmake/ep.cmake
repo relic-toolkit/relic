@@ -3,7 +3,6 @@ message(STATUS "Prime elliptic curve arithmetic configuration (EP module):\n")
 message("   ** Options for the prime elliptic curve module (default = all on):\n")
 
 message("      EP_PRECO=[off|on] Build precomputation table for generator.")
-message("      RLC_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 
 message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;BASIC;SSWUM):\n")
 

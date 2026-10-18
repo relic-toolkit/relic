@@ -6,8 +6,7 @@ message("      FB_POLYN=n        The irreducible polynomial size in bits.")
 message("      FB_KARAT=n        The number of Karatsuba levels.")
 message("      FB_TRINO=[off|on] Prefer trinomials.")
 message("      FB_SQRTF=[off|on] Prefer square-root friendly polynomials.")
-message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).")
-message("      RLC_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
+message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).\n")
 
 message("   ** Available binary field arithmetic methods (default = LODAH;QUICK;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):\n")
 
