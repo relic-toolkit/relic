@@ -110,6 +110,117 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
     }
 }
 
+TMPL_PP_LIN(18, fp3);
+
+/**
+ * Records the final lines of the optimal ate pairing over KSS and SG curves
+ * at the point (1, 1), as pp_fin_k18_oatep() computes them: for KSS curves,
+ * the lines through Q and Q and through 2Q and Q, and then the one through T
+ * and Frob(3Q); for SG curves, the line through Frob^3(T) and Frob^2(Q).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k18(fp3_t *t, fp3_t *y, int *j, fp18_t l, ep3_t r,
+		const ep3_t q, const ep_t e) {
+	ep3_t s;
+
+	ep3_null(s);
+
+	RLC_TRY {
+		ep3_new(s);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				fp18_zero(l);
+				pp_dbl_k18(l, s, q, e);
+				pp_rec_k18(t, y, j, l);
+				fp18_zero(l);
+				pp_add_k18(l, s, q, e);
+				pp_rec_k18(t, y, j, l);
+				pp_norm_k18(s, s);
+				ep3_frb(s, s, 1);
+				fp18_zero(l);
+				pp_add_k18(l, r, s, e);
+				pp_rec_k18(t, y, j, l);
+				break;
+			case EP_SG18:
+				ep3_frb(r, r, 3);
+				ep3_frb(s, q, 2);
+				fp18_zero(l);
+				pp_add_k18(l, r, s, e);
+				pp_rec_k18(t, y, j, l);
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep3_free(s);
+	}
+}
+
+/**
+ * Multiplies by the final lines of the optimal ate pairing over KSS and SG
+ * curves, stored by pp_pre_fin_k18(), as pp_fin_k18_oatep() does.
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ * @param[in] d				- the point of G_1 prepared for doubling lines.
+ */
+static void pp_fix_fin_k18(fp18_t r, fp18_t l, const fp3_t *t, int *j,
+		const ep_t p, const ep_t d) {
+	fp18_t u;
+
+	fp18_null(u);
+
+	RLC_TRY {
+		fp18_new(u);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				pp_lin_k18(l, t, j, d);
+				fp18_copy(u, l);
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(u, u, l);
+				fp18_frb(u, u, 1);
+				fp18_mul(r, r, u);
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(r, r, l);
+				break;
+			case EP_SG18:
+				fp18_frb(u, r, 3);
+				fp18_mul(r, r, u);
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(r, r, l);
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp18_free(u);
+	}
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, followed by the final lines of KSS and SG curves.
+ */
+/** @{ */
+#define TMPL_PP_PAR_18(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_18(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k18(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_18(R, L, T, J, P, D)								\
+	pp_fix_fin_k18(R, L, T, J, P, D);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -277,3 +388,7 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
+
+TMPL_PP_MAP_PRE(18, ep3, fp3);
+
+TMPL_PP_MAP_FIX(18, fp3);

@@ -496,6 +496,7 @@ static void pairing12(void) {
 	ep2_t p[2], r;
 	ep_t q[2];
 	fp12_t e;
+	fp2_t t[RLC_PP_TABLE_K12];
 	int j;
 
 	bn_null(k);
@@ -515,6 +516,10 @@ static void pairing12(void) {
 		ep_null(q[j]);
 		ep2_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K12; j++) {
+		fp2_null(t[j]);
+		fp2_new(t[j]);
 	}
 
 	ep2_curve_get_ord(n);
@@ -669,6 +674,20 @@ static void pairing12(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k12") {
+		ep2_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k12(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k12") {
+		ep2_rand(p[0]);
+		pp_map_pre_k12(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k12(e, q[0], (const fp2_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -677,6 +696,9 @@ static void pairing12(void) {
 	for (j = 0; j < 2; j++) {
 		ep2_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K12; j++) {
+		fp2_free(t[j]);
 	}
 }
 
@@ -860,6 +882,7 @@ static void pairing18(void) {
 	ep3_t p[2], r;
 	ep_t q[2];
 	fp18_t e;
+	fp3_t t[RLC_PP_TABLE_K18];
 	int j;
 
 	bn_null(k);
@@ -879,6 +902,10 @@ static void pairing18(void) {
 		ep_null(q[j]);
 		ep3_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K18; j++) {
+		fp3_null(t[j]);
+		fp3_new(t[j]);
 	}
 
 	ep3_curve_get_ord(n);
@@ -1033,6 +1060,20 @@ static void pairing18(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k18") {
+		ep3_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k18(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k18") {
+		ep3_rand(p[0]);
+		pp_map_pre_k18(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k18(e, q[0], (const fp3_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -1042,6 +1083,9 @@ static void pairing18(void) {
 		ep3_free(p[j]);
 		ep_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K18; j++) {
+		fp3_free(t[j]);
+	}
 }
 
 static void pairing24(void) {
@@ -1049,6 +1093,7 @@ static void pairing24(void) {
 	ep4_t p[2], r;
 	ep_t q[2];
 	fp24_t e;
+	fp4_t t[RLC_PP_TABLE_K24];
 	int j;
 
 	bn_null(k);
@@ -1068,6 +1113,10 @@ static void pairing24(void) {
 		ep_null(q[j]);
 		ep4_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K24; j++) {
+		fp4_null(t[j]);
+		fp4_new(t[j]);
 	}
 
 	ep4_curve_get_ord(n);
@@ -1222,6 +1271,20 @@ static void pairing24(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k24") {
+		ep4_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k24(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k24") {
+		ep4_rand(p[0]);
+		pp_map_pre_k24(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k24(e, q[0], (const fp4_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -1231,6 +1294,9 @@ static void pairing24(void) {
 		ep4_free(p[j]);
 		ep_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K24; j++) {
+		fp4_free(t[j]);
+	}
 }
 
 static void pairing48(void) {
@@ -1238,6 +1304,7 @@ static void pairing48(void) {
 	ep8_t p[2], r;
 	ep_t q[2];
 	fp48_t e;
+	fp8_t t[RLC_PP_TABLE_K48];
 	int j;
 
 	bn_null(k);
@@ -1257,6 +1324,10 @@ static void pairing48(void) {
 		ep_null(q[j]);
 		ep8_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K48; j++) {
+		fp8_null(t[j]);
+		fp8_new(t[j]);
 	}
 
 	ep8_curve_get_ord(n);
@@ -1411,6 +1482,20 @@ static void pairing48(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k48") {
+		ep8_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k48(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k48") {
+		ep8_rand(p[0]);
+		pp_map_pre_k48(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k48(e, q[0], (const fp8_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -1420,6 +1505,9 @@ static void pairing48(void) {
 		ep8_free(p[j]);
 		ep_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K48; j++) {
+		fp8_free(t[j]);
+	}
 }
 
 static void pairing54(void) {
@@ -1427,6 +1515,7 @@ static void pairing54(void) {
 	ep9_t p[2], r;
 	ep_t q[2];
 	fp54_t e;
+	fp9_t t[RLC_PP_TABLE_K54];
 	int j;
 
 	bn_null(k);
@@ -1446,6 +1535,10 @@ static void pairing54(void) {
 		ep_null(q[j]);
 		ep9_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K54; j++) {
+		fp9_null(t[j]);
+		fp9_new(t[j]);
 	}
 
 	ep9_curve_get_ord(n);
@@ -1600,6 +1693,20 @@ static void pairing54(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k54") {
+		ep9_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k54(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k54") {
+		ep9_rand(p[0]);
+		pp_map_pre_k54(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k54(e, q[0], (const fp9_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -1608,6 +1715,9 @@ static void pairing54(void) {
 	for (j = 0; j < 2; j++) {
 		ep9_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K54; j++) {
+		fp9_free(t[j]);
 	}
 }
 

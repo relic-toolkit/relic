@@ -87,6 +87,88 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, const ep2_t q, const ep_t p) {
 	}
 }
 
+TMPL_PP_LIN(12, fp2);
+
+/**
+ * Records the final lines of the optimal ate pairing over BN curves, through
+ * T and Frob(Q) and then -Frob^2(Q), at the point (1, 1).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k12(fp2_t *t, fp2_t *y, int *j, fp12_t l, ep2_t r,
+		const ep2_t q, const ep_t e) {
+	ep2_t q1, q2;
+
+	if (ep_curve_is_pairf() != EP_BN) {
+		return;
+	}
+
+	ep2_null_all(q1, q2);
+
+	RLC_TRY {
+		ep2_new_all(q1, q2);
+
+		fp2_set_dig(q1->z, 1);
+		fp2_set_dig(q2->z, 1);
+		ep2_frb(q1, q, 1);
+		ep2_frb(q2, q, 2);
+		ep2_neg(q2, q2);
+
+		fp12_zero(l);
+		pp_add_k12(l, r, q1, e);
+		pp_rec_k12(t, y, j, l);
+		fp12_zero(l);
+		pp_add_k12(l, r, q2, e);
+		pp_rec_k12(t, y, j, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep2_free_all(q1, q2);
+	}
+}
+
+/**
+ * Multiplies by the final lines of the optimal ate pairing over BN curves,
+ * stored by pp_pre_fin_k12().
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ */
+static void pp_fix_fin_k12(fp12_t r, fp12_t l, const fp2_t *t, int *j,
+		const ep_t p) {
+	if (ep_curve_is_pairf() == EP_BN) {
+		pp_lin_k12(l, t, j, p);
+		fp12_mul_dxs(r, r, l);
+		pp_lin_k12(l, t, j, p);
+		fp12_mul_dxs(r, r, l);
+	}
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop parameter 6x + 2 and
+ * the final lines of BN curves.
+ */
+/** @{ */
+#define TMPL_PP_PAR_12(A)													\
+	if (ep_curve_is_pairf() == EP_BN) {										\
+		bn_mul_dig(A, A, 6);												\
+		bn_add_dig(A, A, 2);												\
+	}
+#define TMPL_PP_PRE_FIN_12(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k12(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_12(R, L, T, J, P, D)								\
+	pp_fix_fin_k12(R, L, T, J, P);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -531,3 +613,7 @@ void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
+
+TMPL_PP_MAP_PRE(12, ep2, fp2);
+
+TMPL_PP_MAP_FIX(12, fp2);

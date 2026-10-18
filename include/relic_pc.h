@@ -148,6 +148,36 @@
  */
 #define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, RLC_G2_UPPER), _TABLE)
 
+/**
+ * Indicates that the optimal ate pairing supports a fixed argument of G_2,
+ * which the curves with sextic twists do when it is the pairing computed.
+ */
+#if PP_MAP == PP_OATEP && !(FP_PRIME == 318 || (FP_PRIME == 381 &&		\
+	defined(EC_SUPER))) && (RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 ||	\
+	RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48 || RLC_GT_EMBED == 54)
+#define RLC_PC_FIX
+#endif
+
+#ifdef RLC_PC_FIX
+/**
+ * Represents the field of the coordinates of G_2, for each embedding degree.
+ */
+/** @{ */
+#define RLC_PC_FIELD_12			fp2_
+#define RLC_PC_FIELD_18			fp3_
+#define RLC_PC_FIELD_24			fp4_
+#define RLC_PC_FIELD_48			fp8_
+#define RLC_PC_FIELD_54			fp9_
+#define RLC_PC_FIELD			RLC_CAT(RLC_PC_FIELD_, RLC_GT_EMBED)
+/** @} */
+
+/**
+ * Represents the number of field elements in the table of a fixed argument
+ * of G_2.
+ */
+#define RLC_PC_TABLE			RLC_CAT(RLC_PP_TABLE_K, RLC_GT_EMBED)
+#endif
+
 /*============================================================================*/
 /* Type definitions                                                           */
 /*============================================================================*/
@@ -1020,6 +1050,28 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define pc_map_sim(R, P, Q, M)  pp_map_sim_k3(R, P, Q, M)
 #else
 #define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
+#endif
+
+#ifdef RLC_PC_FIX
+/**
+ * Precomputes the lines of a fixed argument of G_2 for pc_map_fix().
+ *
+ * @param[out] T			- the table of RLC_PC_TABLE field elements.
+ * @param[in] Q				- the fixed element of G_2.
+ */
+#define pc_map_pre(T, Q)	RLC_CAT(pp_map_pre_k, RLC_GT_EMBED)(T, Q)
+
+/**
+ * Computes the bilinear pairing of a G_1 element and a fixed G_2 element,
+ * given by the table of pc_map_pre(). Computes R = e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element of G_1.
+ * @param[in] T				- the table of the fixed element of G_2.
+ */
+#define pc_map_fix(R, P, T)													\
+	RLC_CAT(pp_map_fix_k, RLC_GT_EMBED)(R, P, (const RLC_CAT(RLC_PC_FIELD,	\
+		t) *)T)
 #endif
 
 /**

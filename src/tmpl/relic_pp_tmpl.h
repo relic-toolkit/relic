@@ -1448,6 +1448,211 @@
 	}
 
 /**
+ * Defines the helpers of the pairing with a fixed point of G_2. A table keeps
+ * two elements of the twist field per line, the coefficients of x_P and of
+ * the constant term, both divided by the coefficient of y_P, which the final
+ * exponentiation then removes. A table whose first two elements are zero
+ * stands for the point at infinity, as the constant term of a real line is
+ * not zero.
+ *
+ * The lines are linear in the coordinates of the point they are evaluated
+ * at, so a line function evaluated at the point (1, 1) gives its three
+ * coefficients, which pp_rec_kK() stores in the next entry of the table,
+ * keeping the coefficient of y_P in Y. pp_lin_kK() evaluates the next stored
+ * line at P into L, which must have been zero outside the slots of a line.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_LIN(K, F)													\
+	static void pp_rec_k##K(F##_t *t, F##_t *y, int *j,						\
+			const fp##K##_t l) {											\
+		if (*j >= RLC_PP_TABLE_K##K / 2) {									\
+			RLC_THROW(ERR_NO_BUFFER);										\
+			return;															\
+		}																	\
+		F##_copy(t[2 * *j], TMPL_PP_LX_##K(l));								\
+		F##_copy(t[2 * *j + 1], TMPL_PP_LJ_##K(l));							\
+		F##_copy(y[*j], TMPL_PP_LY_##K(l));									\
+		(*j)++;																\
+	}																		\
+																			\
+	static void pp_lin_k##K(fp##K##_t l, const F##_t *t, int *j,			\
+			const ep_t p) {													\
+		F##_mul_fp(TMPL_PP_LX_##K(l), t[2 * *j], p->x);						\
+		fp_copy(TMPL_PP_LY0_##K(l), p->y);									\
+		F##_copy(TMPL_PP_LJ_##K(l), t[2 * *j + 1]);							\
+		(*j)++;																\
+	}
+
+/**
+ * Defines a template for precomputing the lines of the optimal ate pairing
+ * with a fixed point of G_2. It runs the Miller loop of TMPL_PP_MIL on Q
+ * alone, recording each line at the point (1, 1), and then the final lines
+ * of TMPL_PP_PRE_FIN_K, before normalizing all lines with a simultaneous
+ * inversion. TMPL_PP_PAR_K adjusts the loop parameter of the family.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_PRE(K, C, F)											\
+	void pp_map_pre_k##K(F##_t *t, const C##_t q) {							\
+		F##_t *y = RLC_ALLOCA(F##_t, RLC_PP_TABLE_K##K / 2);				\
+		C##_t r, _q, n;														\
+		fp##K##_t l;														\
+		ep_t e;																\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t s[RLC_FP_BITS + 1];											\
+		int i, j = 0;														\
+																			\
+		if (y == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+																			\
+		C##_null_all(r, _q, n);												\
+		fp##K##_null(l);													\
+		ep_null(e);															\
+		bn_null(a);															\
+		for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {						\
+			F##_null(y[i]);													\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new_all(r, _q, n);											\
+			fp##K##_new(l);													\
+			ep_new(e);														\
+			bn_new(a);														\
+			for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {					\
+				F##_new(y[i]);												\
+			}																\
+																			\
+			C##_norm(_q, q);												\
+			F##_zero(t[0]);													\
+			F##_zero(t[1]);													\
+			if (!C##_is_infty(_q)) {										\
+				fp_set_dig(e->x, 1);										\
+				fp_set_dig(e->y, 1);										\
+				fp_set_dig(e->z, 1);										\
+				e->coord = EC_AFFIN;										\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(s, &len, a, 2);									\
+				C##_copy(r, _q);											\
+				C##_neg(n, _q);												\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					fp##K##_zero(l);										\
+					pp_dbl_k##K(l, r, r, e);								\
+					pp_rec_k##K(t, y, &j, l);								\
+					if (s[i] != 0) {										\
+						fp##K##_zero(l);									\
+						pp_add_k##K(l, r, s[i] > 0 ? _q : n, e);			\
+						pp_rec_k##K(t, y, &j, l);							\
+					}														\
+				}															\
+				/* For a negative parameter, T = aQ. */						\
+				if (bn_sign(a) == RLC_NEG) {								\
+					C##_neg(r, r);											\
+				}															\
+				TMPL_PP_PRE_FIN_##K(t, y, &j, l, r, _q, e)					\
+																			\
+				/* Divide each line by its coefficient of y_P. */			\
+				F##_inv_sim(y, (const F##_t *)y, j);						\
+				for (i = 0; i < j; i++) {									\
+					F##_mul(t[2 * i], t[2 * i], y[i]);						\
+					F##_mul(t[2 * i + 1], t[2 * i + 1], y[i]);				\
+				}															\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free_all(r, _q, n);											\
+			fp##K##_free(l);												\
+			ep_free(e);														\
+			bn_free(a);														\
+			for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {					\
+				F##_free(y[i]);												\
+			}																\
+			RLC_FREE(y);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for the optimal ate pairing with a fixed point of G_2,
+ * given by the table of TMPL_PP_MAP_PRE. It replays the Miller loop over the
+ * same parameter, evaluating the stored lines at P, and then the final lines
+ * of TMPL_PP_FIX_FIN_K, before the final exponentiation. The doubling lines
+ * are evaluated at the point that TMPL_PP_MIL_P_K prepares, and the others
+ * at P.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_FIX(K, F)												\
+	void pp_map_fix_k##K(fp##K##_t r, const ep_t p, const F##_t *t) {		\
+		fp##K##_t l;														\
+		ep_t _p, d;															\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t s[RLC_FP_BITS + 1];											\
+		int i, j = 0;														\
+																			\
+		fp##K##_null(l);													\
+		ep_null_all(_p, d);													\
+		bn_null(a);															\
+																			\
+		RLC_TRY {															\
+			fp##K##_new(l);													\
+			ep_new_all(_p, d);												\
+			bn_new(a);														\
+																			\
+			fp##K##_set_dig(r, 1);											\
+			ep_norm(_p, p);													\
+			if (!ep_is_infty(_p) &&											\
+					!(F##_is_zero(t[0]) && F##_is_zero(t[1]))) {			\
+				TMPL_PP_MIL_P_##K(d, _p)									\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(s, &len, a, 2);									\
+				fp##K##_zero(l);											\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					pp_lin_k##K(l, t, &j, d);								\
+					if (j == 1) {											\
+						fp##K##_copy(r, l);									\
+					} else {												\
+						fp##K##_sqr(r, r);									\
+						fp##K##_mul_dxs(r, r, l);							\
+					}														\
+					if (s[i] != 0) {										\
+						pp_lin_k##K(l, t, &j, _p);							\
+						fp##K##_mul_dxs(r, r, l);							\
+					}														\
+				}															\
+				/* For a negative parameter, f_{a,Q} = 1/f_{|a|,Q}. */		\
+				if (bn_sign(a) == RLC_NEG) {								\
+					fp##K##_inv_cyc(r, r);									\
+				}															\
+				TMPL_PP_FIX_FIN_##K(r, l, t, &j, _p, d)						\
+				pp_exp_k##K(r, r);											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			fp##K##_free(l);												\
+			ep_free_all(_p, d);												\
+			bn_free(a);														\
+		}																	\
+	}
+
+/**
  * Defines a template for the Tate pairing.
  *
  * @param[in] K			- the embedding degree.

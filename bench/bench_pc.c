@@ -766,6 +766,14 @@ static void pairing(void) {
 	g1_t p[AGGS];
 	g2_t q[AGGS];
 	gt_t r;
+#ifdef RLC_PC_FIX
+	RLC_CAT(RLC_PC_FIELD, t) t[RLC_PC_TABLE];
+
+	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, null)(t[i]);
+		RLC_CAT(RLC_PC_FIELD, new)(t[i]);
+	}
+#endif
 
 	for (size_t i = 0; i < AGGS; i++) {
 		g1_null(p[i]);
@@ -796,6 +804,26 @@ static void pairing(void) {
 		BENCH_ADD(pc_map_sim(r, p, q, AGGS));
 	}
 	BENCH_END;
+
+#ifdef RLC_PC_FIX
+	BENCH_RUN("pc_map_pre") {
+		g2_rand(q[0]);
+		BENCH_ADD(pc_map_pre(t, q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_fix") {
+		g2_rand(q[0]);
+		pc_map_pre(t, q[0]);
+		g1_rand(p[0]);
+		BENCH_ADD(pc_map_fix(r, p[0], t));
+	}
+	BENCH_END;
+
+	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, free)(t[i]);
+	}
+#endif
 
 	for (size_t i = 0; i < AGGS; i++) {
 		g1_free(p[i]);
