@@ -48,11 +48,13 @@
 /**
  * Bounds the length in bits of the parameter of the optimal ate Miller loop
  * for each embedding degree, as the parameters of the supported families
- * have about 1/4 (the 6x + 2 of BN curves), 1/8, 1/10, 1/18 and 1/20 of the
- * bits of the prime for K = 12, 18, 24, 48 and 54.
+ * have about 1/8, 1/4 (the 6x + 2 of BN curves), 1/10, 1/8, 1/10, 1/18 and
+ * 1/20 of the bits of the prime for K = 8, 12, 16, 18, 24, 48 and 54.
  */
 /** @{ */
+#define RLC_PP_BITS_K8		(RLC_FP_BITS / 8 + 4)
 #define RLC_PP_BITS_K12		(RLC_FP_BITS / 4 + 4)
+#define RLC_PP_BITS_K16		(RLC_FP_BITS / 10 + 4)
 #define RLC_PP_BITS_K18		(RLC_FP_BITS / 8 + 4)
 #define RLC_PP_BITS_K24		(RLC_FP_BITS / 10 + 4)
 #define RLC_PP_BITS_K48		(RLC_FP_BITS / 18 + 4)
@@ -73,12 +75,55 @@
  * embedding degree.
  */
 /** @{ */
+#define RLC_PP_TABLE_K8		RLC_PP_TABLE(RLC_PP_BITS_K8)
 #define RLC_PP_TABLE_K12	RLC_PP_TABLE(RLC_PP_BITS_K12)
+#define RLC_PP_TABLE_K16	RLC_PP_TABLE(RLC_PP_BITS_K16)
 #define RLC_PP_TABLE_K18	RLC_PP_TABLE(RLC_PP_BITS_K18)
 #define RLC_PP_TABLE_K24	RLC_PP_TABLE(RLC_PP_BITS_K24)
 #define RLC_PP_TABLE_K48	RLC_PP_TABLE(RLC_PP_BITS_K48)
 #define RLC_PP_TABLE_K54	RLC_PP_TABLE(RLC_PP_BITS_K54)
 /** @} */
+
+/**
+ * Bounds the length in bits of the order of the curve with embedding degree 1,
+ * the loop parameter of its Tate pairing, which has about 1/12 of the bits of
+ * the prime.
+ */
+#define RLC_PP_BITS_K1		(RLC_FP_BITS / 12 + 4)
+
+/**
+ * Number of prime field elements in the table of a fixed argument for
+ * embedding degree 1: the three coefficients of the numerator and the two of
+ * the denominator of each line, and the point itself.
+ */
+#define RLC_PP_TABLE_K1														\
+	(5 * (RLC_PP_BITS_K1 + (RLC_PP_BITS_K1 + 1) / 2) + 2)
+
+/**
+ * Bounds the length in bits of the order of the supersingular curve with
+ * embedding degree 2, the loop parameter of its Tate pairing, which has about
+ * 1/6 of the bits of the prime.
+ */
+#define RLC_PP_BITS_K2		(RLC_FP_BITS / 6 + 4)
+
+/**
+ * Number of prime field elements in the table of a fixed argument for
+ * embedding degree 2: two per line.
+ */
+#define RLC_PP_TABLE_K2		RLC_PP_TABLE(RLC_PP_BITS_K2)
+
+/**
+ * Bounds the length in bits of the loop parameter of the eta_d pairing for
+ * embedding degree 3 over Fp^4, which has about 1/5 of the bits of the prime.
+ */
+#define RLC_PP_BITS_K3		(RLC_FP_BITS / 5 + 4)
+
+/**
+ * Number of elements of Fp^4 in the table of a fixed argument for embedding
+ * degree 3: three per doubling and addition, and the point itself.
+ */
+#define RLC_PP_TABLE_K3														\
+	(3 * (RLC_PP_BITS_K3 + (RLC_PP_BITS_K3 + 1) / 2) + 2)
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -1909,6 +1954,27 @@ void pp_map_oatep_k3(fp12_t r, const ep4_t p, const ep4_t q);
 void pp_map_sim_oatep_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m);
 
 /**
+ * Precomputes the Miller loop of the eta_d pairing for a fixed point in a
+ * supersingular curve with embedding degree 3 over Fp^4. As the pairing is
+ * symmetric, the loop runs over the fixed point, keeping three values per
+ * step that the lines need.
+ *
+ * @param[out] t			- the table of RLC_PP_TABLE_K3 elements.
+ * @param[in] q				- the fixed point.
+ */
+void pp_map_pre_k3(fp4_t *t, const ep4_t q);
+
+/**
+ * Computes the eta_d pairing in a supersingular curve with embedding degree 3
+ * over Fp^4, with the second argument fixed by pp_map_pre_k3().
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first argument.
+ * @param[in] t				- the table of the fixed argument.
+ */
+void pp_map_fix_k3(fp12_t r, const ep4_t p, const fp4_t *t);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 1.
  *
@@ -1930,6 +1996,27 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q);
 void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m);
 
 /**
+ * Precomputes the Miller loop of the Tate pairing for a fixed point in a
+ * curve with embedding degree 1. As the pairing is symmetric, the loop runs
+ * over the fixed point, keeping the exact numerator and denominator of each
+ * line, since the final exponentiation does not remove factors in Fp.
+ *
+ * @param[out] t			- the table of RLC_PP_TABLE_K1 elements.
+ * @param[in] q				- the fixed point.
+ */
+void pp_map_pre_k1(fp_t *t, const ep_t q);
+
+/**
+ * Computes the Tate pairing in a curve with embedding degree 1, with the
+ * second argument fixed by pp_map_pre_k1().
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first argument.
+ * @param[in] t				- the table of the fixed argument.
+ */
+void pp_map_fix_k1(fp_t r, const ep_t p, const fp_t *t);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 2.
  *
@@ -1949,6 +2036,26 @@ void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
+ * Precomputes the Miller loop of the Tate pairing for a fixed point in a
+ * supersingular curve with embedding degree 2. As the pairing is symmetric,
+ * the loop runs over the fixed point, keeping two values per line.
+ *
+ * @param[out] t			- the table of RLC_PP_TABLE_K2 elements.
+ * @param[in] q				- the fixed point.
+ */
+void pp_map_pre_k2(fp_t *t, const ep_t q);
+
+/**
+ * Computes the Tate pairing in a supersingular curve with embedding degree 2,
+ * with the second argument fixed by pp_map_pre_k2().
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first argument.
+ * @param[in] t				- the table of the fixed argument.
+ */
+void pp_map_fix_k2(fp2_t r, const ep_t p, const fp_t *t);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -2012,6 +2119,27 @@ void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m);
+
+/**
+ * Precomputes the lines of the optimal ate pairing for a fixed point of G_2 in
+ * a parameterized elliptic curve with embedding degree 8, normalized so that
+ * evaluating each at a point of G_1 takes a single multiplication in the twist
+ * field.
+ *
+ * @param[out] t			- the table of RLC_PP_TABLE_K8 elements.
+ * @param[in] q				- the fixed point.
+ */
+void pp_map_pre_k8(fp2_t *t, const ep2_t q);
+
+/**
+ * Computes the optimal ate pairing in a parameterized elliptic curve with
+ * embedding degree 8, with the first argument fixed by pp_map_pre_k8().
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point of G_1.
+ * @param[in] t				- the table of the fixed point of G_2.
+ */
+void pp_map_fix_k8(fp8_t r, const ep_t p, const fp2_t *t);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -2159,6 +2287,27 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Precomputes the lines of the optimal ate pairing for a fixed point of G_2 in
+ * a parameterized elliptic curve with embedding degree 16, normalized so that
+ * evaluating each at a point of G_1 takes a single multiplication in the twist
+ * field.
+ *
+ * @param[out] t			- the table of RLC_PP_TABLE_K16 elements.
+ * @param[in] q				- the fixed point.
+ */
+void pp_map_pre_k16(fp4_t *t, const ep4_t q);
+
+/**
+ * Computes the optimal ate pairing in a parameterized elliptic curve with
+ * embedding degree 16, with the first argument fixed by pp_map_pre_k16().
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point of G_1.
+ * @param[in] t				- the table of the fixed point of G_2.
+ */
+void pp_map_fix_k16(fp16_t r, const ep_t p, const fp4_t *t);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve

@@ -840,3 +840,158 @@ void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 		RLC_FREE(t1);
 	}
 }
+
+void pp_map_pre_k2(fp_t *t, const ep_t q) {
+	fp_t *y = RLC_ALLOCA(fp_t, RLC_PP_TABLE_K2 / 2);
+	fp2_t l;
+	ep_t r, s, _q, n, e0, e1;
+	bn_t a;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t b[RLC_FP_BITS + 1];
+
+	if (y == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < RLC_PP_TABLE_K2 / 2; i++) {
+		fp_null(y[i]);
+	}
+	fp2_null(l);
+	ep_null_all(r, s, _q, n, e0, e1);
+	bn_null(a);
+
+	RLC_TRY {
+		for (i = 0; i < RLC_PP_TABLE_K2 / 2; i++) {
+			fp_new(y[i]);
+		}
+		fp2_new(l);
+		ep_new_all(r, s, _q, n, e0, e1);
+		bn_new(a);
+
+		/* A table starting with two zeros stands for the point at infinity,
+		 * as the constant term of a real line is not zero. */
+		fp_zero(t[0]);
+		fp_zero(t[1]);
+		if (!ep_is_infty(q)) {
+			/* The pairing is symmetric, so the loop runs over Q instead. The
+			 * lines are c_j + c_x * x + c_y * y * i, evaluated at (0, 1) and
+			 * at (1, 1) from the same point to separate c_j from c_x. */
+			ep_norm(_q, q);
+			ep_neg(n, _q);
+			ep_copy(r, _q);
+			fp_zero(e0->x);
+			fp_set_dig(e0->y, 1);
+			fp_set_dig(e0->z, 1);
+			e0->coord = EC_AFFIN;
+			fp_set_dig(e1->x, 1);
+			fp_set_dig(e1->y, 1);
+			fp_set_dig(e1->z, 1);
+			e1->coord = EC_AFFIN;
+
+			ep_curve_get_ord(a);
+			bn_sub_dig(a, a, 1);
+			bn_rec_naf(b, &len, a, 2);
+			for (i = len - 2; i >= 0; i--) {
+				for (int k = 0; k < 2; k++) {
+					if (k == 1 && b[i] == 0) {
+						break;
+					}
+					if (2 * j + 2 > RLC_PP_TABLE_K2) {
+						RLC_THROW(ERR_NO_BUFFER);
+						break;
+					}
+					ep_copy(s, r);
+					if (k == 0) {
+						pp_dbl_k2(l, s, s, e0);
+					} else {
+						pp_add_k2(l, s, b[i] > 0 ? _q : n, e0);
+					}
+					fp_copy(t[2 * j + 1], l[0]);
+					fp_copy(y[j], l[1]);
+					if (k == 0) {
+						pp_dbl_k2(l, r, r, e1);
+					} else {
+						pp_add_k2(l, r, b[i] > 0 ? _q : n, e1);
+					}
+					fp_sub(t[2 * j], l[0], t[2 * j + 1]);
+					j++;
+				}
+			}
+
+			/* Divide each line by its coefficient of y. */
+			fp_inv_sim(y, (const fp_t *)y, j);
+			for (i = 0; i < j; i++) {
+				fp_mul(t[2 * i], t[2 * i], y[i]);
+				fp_mul(t[2 * i + 1], t[2 * i + 1], y[i]);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < RLC_PP_TABLE_K2 / 2; i++) {
+			fp_free(y[i]);
+		}
+		fp2_free(l);
+		ep_free_all(r, s, _q, n, e0, e1);
+		bn_free(a);
+		RLC_FREE(y);
+	}
+}
+
+void pp_map_fix_k2(fp2_t r, const ep_t p, const fp_t *t) {
+	fp2_t l;
+	ep_t _p, d;
+	bn_t a;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t b[RLC_FP_BITS + 1];
+
+	fp2_null(l);
+	ep_null_all(_p, d);
+	bn_null(a);
+
+	RLC_TRY {
+		fp2_new(l);
+		ep_new_all(_p, d);
+		bn_new(a);
+
+		fp2_set_dig(r, 1);
+		if (!ep_is_infty(p) && !(fp_is_zero(t[0]) && fp_is_zero(t[1]))) {
+			/* By symmetry, P takes the place of the second argument, with the
+			 * doubling lines evaluated at -P as in pp_mil_k2(). */
+			ep_norm(_p, p);
+			ep_neg(d, _p);
+			ep_curve_get_ord(a);
+			bn_sub_dig(a, a, 1);
+			bn_rec_naf(b, &len, a, 2);
+			for (i = len - 2; i >= 0; i--) {
+				fp2_sqr(r, r);
+				for (int k = 0; k < 2; k++) {
+					const dig_t *x = (k == 0 ? d->x : _p->x);
+					const dig_t *y = (k == 0 ? d->y : _p->y);
+					if (k == 1 && b[i] == 0) {
+						break;
+					}
+					fp_mul(l[0], t[2 * j], x);
+					fp_add(l[0], l[0], t[2 * j + 1]);
+					fp_copy(l[1], y);
+					fp2_mul(r, r, l);
+					j++;
+				}
+			}
+			pp_exp_k2(r, r);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp2_free(l);
+		ep_free_all(_p, d);
+		bn_free(a);
+	}
+}

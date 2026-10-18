@@ -91,6 +91,98 @@ static void pp_fin_k16_oatep(fp16_t r, ep4_t t, const ep4_t q, const ep_t p) {
 	}
 }
 
+TMPL_PP_LIN(16, fp4);
+
+/**
+ * Records the final lines of the optimal ate pairing over KSS16 curves at the
+ * point (1, 1), as pp_fin_k16_oatep() computes them: the line through T and
+ * Frob(Q), and then the one through Q and Q.
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k16(fp4_t *t, fp4_t *y, int *j, fp16_t l, ep4_t r,
+		const ep4_t q, const ep_t e) {
+	ep4_t s;
+
+	if (ep_curve_is_pairf() != EP_K16) {
+		return;
+	}
+
+	ep4_null(s);
+
+	RLC_TRY {
+		ep4_new(s);
+
+		ep4_frb(s, q, 1);
+		fp16_zero(l);
+		pp_add_k16(l, r, s, e);
+		pp_rec_k16(t, y, j, l);
+		fp16_zero(l);
+		pp_dbl_k16(l, s, q, e);
+		pp_rec_k16(t, y, j, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep4_free(s);
+	}
+}
+
+/**
+ * Multiplies by the final lines of the optimal ate pairing over KSS16 curves,
+ * stored by pp_pre_fin_k16(), as pp_map_oatep_k16() and pp_fin_k16_oatep() do
+ * after the Miller loop.
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ * @param[in] d				- the point of G_1 prepared for doubling lines.
+ */
+static void pp_fix_fin_k16(fp16_t r, fp16_t l, const fp4_t *t, int *j,
+		const ep_t p, const ep_t d) {
+	fp16_t u;
+
+	if (ep_curve_is_pairf() != EP_K16) {
+		return;
+	}
+
+	fp16_null(u);
+
+	RLC_TRY {
+		fp16_new(u);
+
+		fp16_frb(r, r, 3);
+		pp_lin_k16(l, t, j, p);
+		fp16_frb(u, l, 3);
+		fp16_mul_dxs(r, r, u);
+		pp_lin_k16(l, t, j, d);
+		fp16_mul_dxs(r, r, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp16_free(u);
+	}
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, followed by the final lines of KSS16 curves.
+ */
+/** @{ */
+#define TMPL_PP_PAR_16(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_16(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k16(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_16(R, L, T, J, P, D)								\
+	pp_fix_fin_k16(R, L, T, J, P, D);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -245,3 +337,7 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 		RLC_FREE(t);
 	}
 }
+
+TMPL_PP_MAP_PRE(16, ep4, fp4);
+
+TMPL_PP_MAP_FIX(16, fp4);

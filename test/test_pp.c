@@ -229,6 +229,7 @@ static int pairing1(void) {
 	bn_t k, n;
 	ep_t p[2], q[2], r;
 	fp_t e1, e2;
+	fp_t t[RLC_PP_TABLE_K1];
 
 	bn_null(k);
 	bn_null(n);
@@ -238,6 +239,9 @@ static int pairing1(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K1; j++) {
+		fp_null(t[j]);
 	}
 
 	RLC_TRY {
@@ -250,6 +254,9 @@ static int pairing1(void) {
 		for (j = 0; j < 2; j++) {
 			ep_new(p[j]);
 			ep_new(q[j]);
+		}
+		for (j = 0; j < RLC_PP_TABLE_K1; j++) {
+			fp_new(t[j]);
 		}
 
 		ep_curve_get_ord(n);
@@ -475,6 +482,26 @@ static int pairing1(void) {
 			pp_map_sim_weilp_k1(e2, p, q, 2);
 			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("tate pairing with fixed argument is correct") {
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_tatep_k1(e1, p[0], q[0]);
+			pp_map_pre_k1(t, q[0]);
+			pp_map_fix_k1(e2, p[0], (const fp_t *)t);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
+			ep_rand(p[1]);
+			pp_map_tatep_k1(e1, p[1], q[0]);
+			pp_map_fix_k1(e2, p[1], (const fp_t *)t);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1]);
+			pp_map_fix_k1(e2, p[1], (const fp_t *)t);
+			TEST_ASSERT(fp_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_set_infty(q[1]);
+			pp_map_pre_k1(t, q[1]);
+			pp_map_fix_k1(e2, p[0], (const fp_t *)t);
+			TEST_ASSERT(fp_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -491,6 +518,9 @@ static int pairing1(void) {
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K1; j++) {
+		fp_free(t[j]);
 	}
 
     return code;
@@ -748,6 +778,7 @@ static int pairing3(void) {
 	bn_t k, n;
 	ep4_t p[2], q[2], r;
 	fp12_t e1, e2;
+	fp4_t t[RLC_PP_TABLE_K3];
 
 	bn_null(k);
 	bn_null(n);
@@ -757,6 +788,9 @@ static int pairing3(void) {
 	for (j = 0; j < 2; j++) {
 		ep4_null(p[j]);
 		ep4_null(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K3; j++) {
+		fp4_null(t[j]);
 	}
 
 	RLC_TRY {
@@ -768,6 +802,9 @@ static int pairing3(void) {
 		for (j = 0; j < 2; j++) {
 			ep4_new(p[j]);
 			ep4_new(q[j]);
+		}
+		for (j = 0; j < RLC_PP_TABLE_K3; j++) {
+			fp4_new(t[j]);
 		}
 
 		ep4_curve_get_ord(n);
@@ -862,6 +899,26 @@ static int pairing3(void) {
 			pp_map_sim_k3(e2, p, q, 2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("pairing with fixed argument is correct") {
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			pp_map_pre_k3(t, q[0]);
+			pp_map_fix_k3(e2, p[0], (const fp4_t *)t);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_rand(p[1]);
+			pp_map_k3(e1, p[1], q[0]);
+			pp_map_fix_k3(e2, p[1], (const fp4_t *)t);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_set_infty(p[1]);
+			pp_map_fix_k3(e2, p[1], (const fp4_t *)t);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep4_set_infty(q[1]);
+			pp_map_pre_k3(t, q[1]);
+			pp_map_fix_k3(e2, p[0], (const fp4_t *)t);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -878,6 +935,9 @@ static int pairing3(void) {
 		ep4_free(p[j]);
 		ep4_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K3; j++) {
+		fp4_free(t[j]);
+	}
 	return code;
 }
 
@@ -886,6 +946,7 @@ static int pairing2(void) {
 	bn_t k, n;
 	ep_t p[2], q[2], r;
 	fp2_t e1, e2;
+	fp_t t[RLC_PP_TABLE_K2];
 
 	bn_null(k);
 	bn_null(n);
@@ -895,6 +956,9 @@ static int pairing2(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep_null(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K2; j++) {
+		fp_null(t[j]);
 	}
 
 	RLC_TRY {
@@ -907,6 +971,9 @@ static int pairing2(void) {
 		for (j = 0; j < 2; j++) {
 			ep_new(p[j]);
 			ep_new(q[j]);
+		}
+		for (j = 0; j < RLC_PP_TABLE_K2; j++) {
+			fp_new(t[j]);
 		}
 
 		ep_curve_get_ord(n);
@@ -1105,6 +1172,26 @@ static int pairing2(void) {
 			pp_map_sim_weilp_k2(e2, p, q, 2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("tate pairing with fixed argument is correct") {
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_tatep_k2(e1, p[0], q[0]);
+			pp_map_pre_k2(t, q[0]);
+			pp_map_fix_k2(e2, p[0], (const fp_t *)t);
+			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
+			ep_rand(p[1]);
+			pp_map_tatep_k2(e1, p[1], q[0]);
+			pp_map_fix_k2(e2, p[1], (const fp_t *)t);
+			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1]);
+			pp_map_fix_k2(e2, p[1], (const fp_t *)t);
+			TEST_ASSERT(fp2_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_set_infty(q[1]);
+			pp_map_pre_k2(t, q[1]);
+			pp_map_fix_k2(e2, p[0], (const fp_t *)t);
+			TEST_ASSERT(fp2_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1121,6 +1208,9 @@ static int pairing2(void) {
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K2; j++) {
+		fp_free(t[j]);
 	}
 
     return code;
@@ -1315,6 +1405,7 @@ static int pairing8(void) {
 	ep_t p[2];
 	ep2_t q[2], r;
 	fp8_t e1, e2;
+	fp2_t t[RLC_PP_TABLE_K8];
 
 	bn_null(k);
 	bn_null(n);
@@ -1324,6 +1415,9 @@ static int pairing8(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep2_null(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K8; j++) {
+		fp2_null(t[j]);
 	}
 
 	RLC_TRY {
@@ -1336,6 +1430,9 @@ static int pairing8(void) {
 		for (j = 0; j < 2; j++) {
 			ep_new(p[j]);
 			ep2_new(q[j]);
+		}
+		for (j = 0; j < RLC_PP_TABLE_K8; j++) {
+			fp2_new(t[j]);
 		}
 
 		ep_curve_get_ord(n);
@@ -1508,6 +1605,26 @@ static int pairing8(void) {
 			pp_map_sim_weilp_k8(e2, p, q, 2);
 			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("optimal ate pairing with fixed argument is correct") {
+			ep_rand(p[0]);
+			ep2_rand(q[0]);
+			pp_map_oatep_k8(e1, p[0], q[0]);
+			pp_map_pre_k8(t, q[0]);
+			pp_map_fix_k8(e2, p[0], (const fp2_t *)t);
+			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
+			ep_rand(p[1]);
+			pp_map_oatep_k8(e1, p[1], q[0]);
+			pp_map_fix_k8(e2, p[1], (const fp2_t *)t);
+			TEST_ASSERT(fp8_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1]);
+			pp_map_fix_k8(e2, p[1], (const fp2_t *)t);
+			TEST_ASSERT(fp8_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep2_set_infty(q[1]);
+			pp_map_pre_k8(t, q[1]);
+			pp_map_fix_k8(e2, p[0], (const fp2_t *)t);
+			TEST_ASSERT(fp8_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1524,6 +1641,9 @@ static int pairing8(void) {
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
 		ep2_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K8; j++) {
+		fp2_free(t[j]);
 	}
 	return code;
 }
@@ -2296,6 +2416,7 @@ static int pairing16(void) {
 	ep_t p[2];
 	ep4_t q[2], r;
 	fp16_t e1, e2;
+	fp4_t t[RLC_PP_TABLE_K16];
 
 	bn_null(k);
 	bn_null(n);
@@ -2305,6 +2426,9 @@ static int pairing16(void) {
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
 		ep4_null(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K16; j++) {
+		fp4_null(t[j]);
 	}
 
 	RLC_TRY {
@@ -2317,6 +2441,9 @@ static int pairing16(void) {
 		for (j = 0; j < 2; j++) {
 			ep_new(p[j]);
 			ep4_new(q[j]);
+		}
+		for (j = 0; j < RLC_PP_TABLE_K16; j++) {
+			fp4_new(t[j]);
 		}
 
 		ep_curve_get_ord(n);
@@ -2574,6 +2701,26 @@ static int pairing16(void) {
 			pp_map_sim_oatep_k16(e2, p, q, 2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("optimal ate pairing with fixed argument is correct") {
+			ep_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_oatep_k16(e1, p[0], q[0]);
+			pp_map_pre_k16(t, q[0]);
+			pp_map_fix_k16(e2, p[0], (const fp4_t *)t);
+			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
+			ep_rand(p[1]);
+			pp_map_oatep_k16(e1, p[1], q[0]);
+			pp_map_fix_k16(e2, p[1], (const fp4_t *)t);
+			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1]);
+			pp_map_fix_k16(e2, p[1], (const fp4_t *)t);
+			TEST_ASSERT(fp16_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep4_set_infty(q[1]);
+			pp_map_pre_k16(t, q[1]);
+			pp_map_fix_k16(e2, p[0], (const fp4_t *)t);
+			TEST_ASSERT(fp16_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2590,6 +2737,9 @@ static int pairing16(void) {
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
 		ep4_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K16; j++) {
+		fp4_free(t[j]);
 	}
 	return code;
 }

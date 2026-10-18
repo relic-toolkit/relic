@@ -149,21 +149,40 @@
 #define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, RLC_G2_UPPER), _TABLE)
 
 /**
- * Indicates that the optimal ate pairing supports a fixed argument of G_2,
- * which the curves with sextic twists do when it is the pairing computed.
+ * Indicates that the pairing supports a fixed argument of G_2, which the SS3
+ * curves do, the curves with embedding degree 1 and 2 unless the Weil pairing
+ * is computed, and the curves with quartic and sextic twists when the
+ * optimal ate pairing is the one computed.
  */
-#if PP_MAP == PP_OATEP && !(FP_PRIME == 318 || (FP_PRIME == 381 &&		\
-	defined(EC_SUPER))) && (RLC_GT_EMBED == 12 || RLC_GT_EMBED == 18 ||	\
-	RLC_GT_EMBED == 24 || RLC_GT_EMBED == 48 || RLC_GT_EMBED == 54)
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define RLC_PC_FIX
+#elif PP_MAP != PP_WEILP && (RLC_GT_EMBED == 1 || RLC_GT_EMBED == 2)
+#define RLC_PC_FIX
+#elif PP_MAP == PP_OATEP && (RLC_GT_EMBED == 8 || RLC_GT_EMBED == 12 ||	\
+	RLC_GT_EMBED == 16 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 ||		\
+	RLC_GT_EMBED == 48 || RLC_GT_EMBED == 54)
 #define RLC_PC_FIX
 #endif
 
-#ifdef RLC_PC_FIX
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+/**
+ * Represents the field of the coordinates of G_2 and the number of its
+ * elements in the table of a fixed argument of G_2, for the SS3 curves.
+ */
+/** @{ */
+#define RLC_PC_FIELD			fp4_
+#define RLC_PC_TABLE			RLC_PP_TABLE_K3
+/** @} */
+#elif defined(RLC_PC_FIX)
 /**
  * Represents the field of the coordinates of G_2, for each embedding degree.
  */
 /** @{ */
+#define RLC_PC_FIELD_1			fp_
+#define RLC_PC_FIELD_2			fp_
+#define RLC_PC_FIELD_8			fp2_
 #define RLC_PC_FIELD_12			fp2_
+#define RLC_PC_FIELD_16			fp4_
 #define RLC_PC_FIELD_18			fp3_
 #define RLC_PC_FIELD_24			fp4_
 #define RLC_PC_FIELD_48			fp8_
@@ -1059,7 +1078,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] T			- the table of RLC_PC_TABLE field elements.
  * @param[in] Q				- the fixed element of G_2.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_pre(T, Q)	pp_map_pre_k3(T, Q)
+#else
 #define pc_map_pre(T, Q)	RLC_CAT(pp_map_pre_k, RLC_GT_EMBED)(T, Q)
+#endif
 
 /**
  * Computes the bilinear pairing of a G_1 element and a fixed G_2 element,
@@ -1069,9 +1092,13 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P				- the element of G_1.
  * @param[in] T				- the table of the fixed element of G_2.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_fix(R, P, T)	pp_map_fix_k3(R, P, (const fp4_t *)T)
+#else
 #define pc_map_fix(R, P, T)													\
 	RLC_CAT(pp_map_fix_k, RLC_GT_EMBED)(R, P, (const RLC_CAT(RLC_PC_FIELD,	\
 		t) *)T)
+#endif
 #endif
 
 /**

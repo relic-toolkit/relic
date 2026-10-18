@@ -38,6 +38,7 @@ static void pairing1(void) {
 	bn_t k, n, l;
 	ep_t p[2], q[2];
 	fp_t e1, e2, e3;
+	fp_t t[RLC_PP_TABLE_K1];
 	int j;
 
 	bn_null(k);
@@ -59,6 +60,10 @@ static void pairing1(void) {
 		ep_null(q[j]);
 		ep_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K1; j++) {
+		fp_null(t[j]);
+		fp_new(t[j]);
 	}
 
 	ep_curve_get_ord(n);
@@ -153,6 +158,20 @@ static void pairing1(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k1") {
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_pre_k1(t, q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k1") {
+		ep_rand(q[0]);
+		pp_map_pre_k1(t, q[0]);
+		ep_rand(p[0]);
+		BENCH_ADD(pp_map_fix_k1(e1, p[0], (const fp_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -163,11 +182,15 @@ static void pairing1(void) {
 		ep_free(p[j]);
 		ep_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K1; j++) {
+		fp_free(t[j]);
+	}
 }
 
 static void pairing3(void) {
 	ep4_t p[2], q[2];
 	fp12_t e;
+	fp4_t t[RLC_PP_TABLE_K3];
 	int j;
 
 	fp12_null(e);
@@ -178,6 +201,10 @@ static void pairing3(void) {
 		ep4_null(q[j]);
 		ep4_new(p[j]);
 		ep4_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K3; j++) {
+		fp4_null(t[j]);
+		fp4_new(t[j]);
 	}
 
 	BENCH_RUN("pp_exp_k3") {
@@ -202,10 +229,27 @@ static void pairing3(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k3") {
+		ep4_rand(q[0]);
+		BENCH_ADD(pp_map_pre_k3(t, q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k3") {
+		ep4_rand(q[0]);
+		pp_map_pre_k3(t, q[0]);
+		ep4_rand(p[0]);
+		BENCH_ADD(pp_map_fix_k3(e, p[0], (const fp4_t *)t));
+	}
+	BENCH_END;
+
 	fp12_free(e);
 	for (j = 0; j < 2; j++) {
 		ep4_free(p[j]);
 		ep4_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K3; j++) {
+		fp4_free(t[j]);
 	}
 }
 
@@ -213,6 +257,7 @@ static void pairing2(void) {
 	bn_t k, n, l;
 	ep_t p[2], q[2];
 	fp2_t e;
+	fp_t t[RLC_PP_TABLE_K2];
 	int j;
 
 	bn_null(k);
@@ -230,6 +275,10 @@ static void pairing2(void) {
 		ep_null(q[j]);
 		ep_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K2; j++) {
+		fp_null(t[j]);
+		fp_new(t[j]);
 	}
 
 	ep_curve_get_ord(n);
@@ -349,6 +398,20 @@ static void pairing2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k2") {
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_pre_k2(t, q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k2") {
+		ep_rand(q[0]);
+		pp_map_pre_k2(t, q[0]);
+		ep_rand(p[0]);
+		BENCH_ADD(pp_map_fix_k2(e, p[0], (const fp_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -357,6 +420,9 @@ static void pairing2(void) {
 		ep_free(p[j]);
 		ep_free(q[j]);
 	}
+	for (j = 0; j < RLC_PP_TABLE_K2; j++) {
+		fp_free(t[j]);
+	}
 }
 
 static void pairing8(void) {
@@ -364,6 +430,7 @@ static void pairing8(void) {
 	ep2_t p[2], r;
 	ep_t q[2];
 	fp8_t e;
+	fp2_t t[RLC_PP_TABLE_K8];
 	int j;
 
 	bn_null(k);
@@ -381,8 +448,12 @@ static void pairing8(void) {
 	for (j = 0; j < 2; j++) {
 		ep2_null(p[j]);
 		ep_null(q[j]);
-		ep2_new(p[0]);
-		ep_new(q[0]);
+		ep2_new(p[j]);
+		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K8; j++) {
+		fp2_null(t[j]);
+		fp2_new(t[j]);
 	}
 
 	ep2_curve_get_ord(n);
@@ -480,6 +551,20 @@ static void pairing8(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k8") {
+		ep2_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k8(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k8") {
+		ep2_rand(p[0]);
+		pp_map_pre_k8(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k8(e, q[0], (const fp2_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -488,6 +573,9 @@ static void pairing8(void) {
 	for (j = 0; j < 2; j++) {
 		ep2_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K8; j++) {
+		fp2_free(t[j]);
 	}
 }
 
@@ -707,6 +795,7 @@ static void pairing16(void) {
 	ep4_t p[2], r;
 	ep_t q[2];
 	fp16_t e;
+	fp4_t t[RLC_PP_TABLE_K16];
 	int j;
 
 	bn_null(k);
@@ -726,6 +815,10 @@ static void pairing16(void) {
 		ep_null(q[j]);
 		ep4_new(p[j]);
 		ep_new(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K16; j++) {
+		fp4_null(t[j]);
+		fp4_new(t[j]);
 	}
 
 	ep4_curve_get_ord(n);
@@ -866,6 +959,20 @@ static void pairing16(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("pp_map_pre_k16") {
+		ep4_rand(p[0]);
+		BENCH_ADD(pp_map_pre_k16(t, p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_fix_k16") {
+		ep4_rand(p[0]);
+		pp_map_pre_k16(t, p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_fix_k16(e, q[0], (const fp4_t *)t));
+	}
+	BENCH_END;
+
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
@@ -874,6 +981,9 @@ static void pairing16(void) {
 	for (j = 0; j < 2; j++) {
 		ep4_free(p[j]);
 		ep_free(q[j]);
+	}
+	for (j = 0; j < RLC_PP_TABLE_K16; j++) {
+		fp4_free(t[j]);
 	}
 }
 

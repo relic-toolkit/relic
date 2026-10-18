@@ -45,6 +45,18 @@ TMPL_PP_MIL(8, ep2);
 
 TMPL_PP_MIL_LIT(8, ep2);
 
+TMPL_PP_LIN(8, fp2);
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, and there are no final lines.
+ */
+/** @{ */
+#define TMPL_PP_PAR_8(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_8(T, Y, J, L, R, Q, E)	/* No final lines. */
+#define TMPL_PP_FIX_FIN_8(R, L, T, J, P, D)		/* No final lines. */
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -76,3 +88,7 @@ TMPL_PP_MAP_SIM_WEILP(8, ep2);
 TMPL_PP_MAP_OATEP(8, ep2, EP_CP8);
 
 TMPL_PP_MAP_SIM_OATEP(8, ep2, EP_CP8);
+
+TMPL_PP_MAP_PRE(8, ep2, fp2);
+
+TMPL_PP_MAP_FIX(8, fp2);

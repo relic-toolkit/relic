@@ -629,3 +629,180 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		RLC_FREE(t1);
 	}
 }
+
+void pp_map_pre_k1(fp_t *t, const ep_t q) {
+	fp_t l[3], m[3], w, ws;
+	ep_t r, s, _q, n, e[3];
+	bn_t a;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t b[RLC_FP_BITS + 1];
+
+	for (i = 0; i < 3; i++) {
+		fp_null(l[i]);
+		fp_null(m[i]);
+		ep_null(e[i]);
+	}
+	fp_null_all(w, ws);
+	ep_null_all(r, s, _q, n);
+	bn_null(a);
+
+	RLC_TRY {
+		for (i = 0; i < 3; i++) {
+			fp_new(l[i]);
+			fp_new(m[i]);
+			ep_new(e[i]);
+		}
+		fp_new_all(w, ws);
+		ep_new_all(r, s, _q, n);
+		bn_new(a);
+
+		/* A table whose first line has no y term stands for the point at
+		 * infinity, as the y coefficient of a real line is a power of z. */
+		for (i = 0; i < 7; i++) {
+			fp_zero(t[i]);
+		}
+		if (!ep_is_infty(q)) {
+			/* The pairing is symmetric, so the loop runs over Q instead. As
+			 * the final exponentiation does not remove factors in Fp, the
+			 * lines keep their exact numerators c_j + c_x * x + c_y * y and
+			 * denominators d_j + d_x * x, which come out of evaluations at
+			 * (0, 0), (1, 0) and (0, 1) from the same point. */
+			ep_norm(_q, q);
+			ep_neg(n, _q);
+			fp_copy(t[0], _q->x);
+			fp_copy(t[1], _q->y);
+			ep_copy(r, _q);
+			fp_set_dig(w, 1);
+			for (i = 0; i < 3; i++) {
+				fp_set_dig(e[i]->x, i == 1);
+				fp_set_dig(e[i]->y, i == 2);
+				fp_set_dig(e[i]->z, 1);
+				e[i]->coord = EC_AFFIN;
+			}
+
+			ep_curve_get_ord(a);
+			bn_rec_naf(b, &len, a, 2);
+			for (i = len - 2; i >= 0; i--) {
+				for (int k = 0; k < 2; k++) {
+					if (k == 1 && b[i] == 0) {
+						break;
+					}
+					if (5 * j + 7 > RLC_PP_TABLE_K1) {
+						RLC_THROW(ERR_NO_BUFFER);
+						break;
+					}
+					for (int h = 0; h < 3; h++) {
+						ep_copy(s, r);
+						fp_copy(ws, w);
+						if (k == 0) {
+							pp_dbl_k1(l[h], m[h], s, ws, s, ws, e[h]);
+						} else {
+							pp_add_k1(l[h], m[h], s, b[i] > 0 ? _q : n, e[h]);
+							fp_sqr(ws, s->z);
+						}
+					}
+					ep_copy(r, s);
+					fp_copy(w, ws);
+					fp_copy(t[5 * j + 2], l[0]);
+					fp_sub(t[5 * j + 3], l[1], l[0]);
+					fp_sub(t[5 * j + 4], l[2], l[0]);
+					fp_copy(t[5 * j + 5], m[0]);
+					fp_sub(t[5 * j + 6], m[1], m[0]);
+					j++;
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < 3; i++) {
+			fp_free(l[i]);
+			fp_free(m[i]);
+			ep_free(e[i]);
+		}
+		fp_free_all(w, ws);
+		ep_free_all(r, s, _q, n);
+		bn_free(a);
+	}
+}
+
+void pp_map_fix_k1(fp_t r, const ep_t p, const fp_t *t) {
+	fp_t l, m, s;
+	ep_t e, q;
+	bn_t a;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t b[RLC_FP_BITS + 1];
+
+	fp_null_all(l, m, s);
+	ep_null_all(e, q);
+	bn_null(a);
+
+	RLC_TRY {
+		fp_new_all(l, m, s);
+		ep_new_all(e, q);
+		bn_new(a);
+
+		fp_set_dig(r, 1);
+		if (!ep_is_infty(p) && !fp_is_zero(t[4])) {
+			/* By symmetry, evaluate at P + psi(Q), as pp_map_tatep_k1() does
+			 * at Q + psi(P) with the arguments swapped. */
+			fp_copy(q->x, t[0]);
+			fp_copy(q->y, t[1]);
+			fp_set_dig(q->z, 1);
+			q->coord = EC_AFFIN;
+			ep_psi(e, q);
+			ep_add(e, e, p);
+			ep_norm(e, e);
+
+			fp_set_dig(s, 1);
+			ep_curve_get_ord(a);
+			bn_rec_naf(b, &len, a, 2);
+			for (i = len - 2; i >= 0; i--) {
+				fp_sqr(r, r);
+				fp_sqr(s, s);
+				for (int k = 0; k < 2; k++) {
+					if (k == 1 && b[i] == 0) {
+						break;
+					}
+					fp_mul(l, t[5 * j + 3], e->x);
+					fp_add(l, l, t[5 * j + 2]);
+					fp_mul(m, t[5 * j + 4], e->y);
+					fp_add(l, l, m);
+					if (fp_is_zero(l)) {
+						fp_set_dig(l, 1);
+					}
+					fp_mul(m, t[5 * j + 6], e->x);
+					fp_add(m, m, t[5 * j + 5]);
+					fp_mul(r, r, l);
+					fp_mul(s, s, m);
+					j++;
+				}
+				if (b[i] < 0) {
+					/* Subtracting Q also divides by the vertical through Q. */
+					fp_sub(l, e->x, q->x);
+					fp_mul(s, s, l);
+				}
+			}
+
+			if (!fp_is_zero(s)) {
+				fp_inv(s, s);
+				fp_mul(r, r, s);
+			} else {
+				fp_set_dig(r, 1);
+			}
+			pp_exp_k1(r, r);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free_all(l, m, s);
+		ep_free_all(e, q);
+		bn_free(a);
+	}
+}

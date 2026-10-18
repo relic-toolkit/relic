@@ -614,6 +614,46 @@ static void pp_mil_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m) {
 	}
 }
 
+/**
+ * Evaluates the two lines of a Miller step from the values of a table built by
+ * pp_map_pre_k3(), as pp_lns_k3() does from the running point: with the lines
+ * divided by beta = e * Z, which the final exponentiation removes, they only
+ * need (e * Y + T) / beta, U / beta and g / beta.
+ *
+ * @param[out] la			- the line evaluated at psi([p]P).
+ * @param[out] lb			- the line evaluated at psi(P), raised to p.
+ * @param[in] t				- the three values of the step.
+ * @param[in] c				- the precomputed values of P.
+ */
+static void pp_lfx_k3(fp12_t la, fp12_t lb, const fp4_t *t, const fp4_t *c) {
+	fp4_t c0, c1, c2;
+
+	fp4_null_all(c0, c1, c2);
+
+	RLC_TRY {
+		fp4_new_all(c0, c1, c2);
+
+		fp4_sub(c0, t[0], c[1]);
+		fp4_mul(c1, t[1], c[2]);
+		fp4_mul(c2, t[2], c[3]);
+		pp_lin_k3(la, c0, c1, c2);
+
+		fp4_sub(c0, t[0], c[4]);
+		fp4_mul(c1, t[1], c[5]);
+		fp4_mul(c2, t[2], c[6]);
+		fp4_frb(c0, c0, 1);
+		fp4_frb(c1, c1, 1);
+		fp4_frb(c2, c2, 1);
+		pp_lin_k3(lb, c0, c2, c1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp4_free_all(c0, c1, c2);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -691,5 +731,181 @@ void pp_map_sim_oatep_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m) {
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);
+	}
+}
+
+void pp_map_pre_k3(fp4_t *t, const ep4_t q) {
+	fp4_t *y = RLC_ALLOCA(fp4_t, RLC_PP_TABLE_K3 / 3);
+	fp4_t s[PP_K3_PTS], g, e, u;
+	ep4_t _q, n;
+	bn_t d;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t naf[RLC_FP_BITS + 1];
+
+	if (y == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < PP_K3_PTS; i++) {
+		fp4_null(s[i]);
+	}
+	for (i = 0; i < RLC_PP_TABLE_K3 / 3; i++) {
+		fp4_null(y[i]);
+	}
+	fp4_null_all(g, e, u);
+	ep4_null_all(_q, n);
+	bn_null(d);
+
+	RLC_TRY {
+		for (i = 0; i < PP_K3_PTS; i++) {
+			fp4_new(s[i]);
+		}
+		for (i = 0; i < RLC_PP_TABLE_K3 / 3; i++) {
+			fp4_new(y[i]);
+		}
+		fp4_new_all(g, e, u);
+		ep4_new_all(_q, n);
+		bn_new(d);
+
+		/* A table with Q at zero stands for the point at infinity. */
+		fp4_zero(t[0]);
+		fp4_zero(t[1]);
+		if (!ep4_is_infty(q)) {
+			/* The pairing is symmetric, so the loop runs over Q instead. */
+			ep4_norm(_q, q);
+			ep4_neg(n, _q);
+			fp4_copy(t[0], _q->x);
+			fp4_copy(t[1], _q->y);
+			fp4_copy(s[0], _q->x);
+			fp4_copy(s[1], _q->y);
+			fp4_set_dig(s[2], 1);
+			fp4_sqr(s[3], _q->x);
+			fp4_set_dig(s[4], 1);
+
+			fp_prime_get_par(d);
+			bn_rec_naf(naf, &len, d, 2);
+			for (i = len - 2; i >= 0; i--) {
+				for (int k = 0; k < 2; k++) {
+					if (k == 0) {
+						pp_dbl_k3(s, g, e);
+					} else if (naf[i] != 0) {
+						pp_add_k3(s, g, e, naf[i] > 0 ? _q : n);
+					} else {
+						break;
+					}
+					if (3 * j + 5 > RLC_PP_TABLE_K3) {
+						RLC_THROW(ERR_NO_BUFFER);
+						break;
+					}
+					/* Store e * Y + T, U and g, and keep beta = e * Z. */
+					fp4_mul(u, e, s[1]);
+					fp4_add(t[3 * j + 2], u, s[3]);
+					fp4_copy(t[3 * j + 3], s[4]);
+					fp4_copy(t[3 * j + 4], g);
+					fp4_mul(y[j], e, s[2]);
+					j++;
+				}
+			}
+
+			/* Divide the values of each step by its beta. */
+			fp4_inv_sim(y, (const fp4_t *)y, j);
+			for (i = 0; i < j; i++) {
+				for (int k = 2; k < 5; k++) {
+					fp4_mul(t[3 * i + k], t[3 * i + k], y[i]);
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < PP_K3_PTS; i++) {
+			fp4_free(s[i]);
+		}
+		for (i = 0; i < RLC_PP_TABLE_K3 / 3; i++) {
+			fp4_free(y[i]);
+		}
+		fp4_free_all(g, e, u);
+		ep4_free_all(_q, n);
+		bn_free(d);
+		RLC_FREE(y);
+	}
+}
+
+void pp_map_fix_k3(fp12_t r, const ep4_t p, const fp4_t *t) {
+	fp4_t c[PP_K3_PRE];
+	fp12_t la, lb;
+	ep4_t _p, q;
+	bn_t d;
+	int i, j = 0;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t naf[RLC_FP_BITS + 1];
+
+	for (i = 0; i < PP_K3_PRE; i++) {
+		fp4_null(c[i]);
+	}
+	fp12_null_all(la, lb);
+	ep4_null_all(_p, q);
+	bn_null(d);
+
+	RLC_TRY {
+		for (i = 0; i < PP_K3_PRE; i++) {
+			fp4_new(c[i]);
+		}
+		fp12_new_all(la, lb);
+		ep4_new_all(_p, q);
+		bn_new(d);
+
+		fp12_set_dig(r, 1);
+		if (!ep4_is_infty(p) && !(fp4_is_zero(t[0]) && fp4_is_zero(t[1]))) {
+			/* By symmetry, P takes the place of the second argument. */
+			ep4_norm(_p, p);
+			pp_pre_k3(c, _p);
+			fp4_copy(q->x, t[0]);
+			fp4_copy(q->y, t[1]);
+			fp4_set_dig(q->z, 1);
+			q->coord = EC_AFFIN;
+
+			fp_prime_get_par(d);
+			bn_rec_naf(naf, &len, d, 2);
+			for (i = len - 2; i >= 0; i--) {
+				pp_lfx_k3(la, lb, t + 3 * j + 2, (const fp4_t *)c);
+				if (j++ == 0) {
+					fp12_copy(r, la);
+				} else {
+					fp12_sqr(r, r);
+					fp12_mul(r, r, la);
+				}
+				fp12_mul(r, r, lb);
+				if (naf[i] != 0) {
+					pp_lfx_k3(la, lb, t + 3 * j++ + 2, (const fp4_t *)c);
+					fp12_mul(r, r, la);
+					fp12_mul(r, r, lb);
+					if (naf[i] < 0) {
+						pp_ver_k3(la, lb, q, (const fp4_t *)c);
+						fp12_mul(r, r, la);
+						fp12_mul(r, r, lb);
+					}
+				}
+			}
+			fp12_frb(r, r, 1);
+			pp_fin_k3(la, q, (const fp4_t *)c);
+			fp12_mul(r, r, la);
+			pp_exp_k3(r, r);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < PP_K3_PRE; i++) {
+			fp4_free(c[i]);
+		}
+		fp12_free_all(la, lb);
+		ep4_free_all(_p, q);
+		bn_free(d);
 	}
 }
