@@ -228,6 +228,8 @@ void md_xof_bits(bn_t r, size_t bits, xof_t *ctx) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
+	/* Keep the output defined even if squeezing fails. */
+	memset(b, 0, n);
 	md_xof_bytes(b, n, ctx);
 	bn_read_bin(r, b, n);
 	for (i = bits; i < 8 * n; i++) {
