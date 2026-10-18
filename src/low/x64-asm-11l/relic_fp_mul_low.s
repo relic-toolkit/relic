@@ -29,6 +29,7 @@
  * @ingroup bn
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
@@ -37,16 +38,10 @@
 .global cdecl(fp_muln_low)
 .global cdecl(fp_mulm_low)
 
-/*
- * Function: fp_mul1_low
- * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
- * Output: c = a * digit mod p, in constant time
- */
 cdecl(fp_mul1_low):
 	push	%rbx
 	subq	$192, %rsp
 
-	/* d = a * digit. */
 	mulxq	0(%rsi), %rax, %r8
 	movq	%rax, 0(%rsp)
 	mulxq	8(%rsi), %rax, %r9
@@ -82,15 +77,12 @@ cdecl(fp_mul1_low):
 	adcq	$0, %r8
 	movq	%r8, 88(%rsp)
 
-	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
-	 * floor(d / p). */
 	movq	(8 * BARJ)(%rsp), %rax
 	movq	(8 * BARJ + 8)(%rsp), %rdx
 	shrdq	$BARS, %rdx, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	/* Subtract the low halves of q * p, keeping the high halves in t. */
 	movq	$P0, %rax
 	mulxq	%rax, %rax, %rcx
 	subq	%rax, 0(%rsp)
@@ -137,7 +129,6 @@ cdecl(fp_mul1_low):
 	movq	%rcx, 176(%rsp)
 	sbbq	$0, 88(%rsp)
 
-	/* Subtract the high halves, leaving d - q * p below 3p. */
 	movq	96(%rsp), %rax
 	subq	%rax, 8(%rsp)
 	movq	104(%rsp), %rax
@@ -161,7 +152,6 @@ cdecl(fp_mul1_low):
 	movq	176(%rsp), %rax
 	sbbq	%rax, 88(%rsp)
 
-	/* Subtract p twice, keeping the difference when there is no borrow. */
 	.rept 2
 	movq	0(%rsp), %rax
 	movq	$P0, %rdx
@@ -308,8 +298,9 @@ cdecl(fp_mul1_low):
 	movq	%rax, 72(%rdi)
 	movq	80(%rsp), %rax
 	movq	%rax, 80(%rdi)
+
 	addq	$192, %rsp
-	pop	%rbx
+	pop		%rbx
 	ret
 
 cdecl(fp_muln_low):

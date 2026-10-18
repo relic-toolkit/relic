@@ -32,7 +32,6 @@
  */
 
 #if FP_PRIME == 672
-/* CP6-672, the Cocks-Pinch prime with embedding degree 6. */
 #define P0	0xAAAAAAAAB69E6DCB
 #define P1	0xAAAAAAAD47EDE1A6
 #define P2	0x155555CD7FA7A5F8
@@ -63,12 +62,6 @@
 .section .note.GNU-stack, "", %progbits
 #endif
 
-/*
- * Stack frame of the multiplication and reduction functions. With 11 digits,
- * the accumulator takes 12 registers, the multiplier takes rdx and one more
- * register is left for the partial products, so the operand b, the pointers
- * and the constants live on the stack.
- */
 #define BCPY	0(%rsp)
 #define APTR	88(%rsp)
 #define CPTR	96(%rsp)
@@ -76,7 +69,6 @@
 #define ONES	112(%rsp)
 #define CARRY	120(%rsp)
 #define FRAME	128
-/* The squaring functions also keep the 22 words of a^2 on the stack. */
 #define SBUF	128(%rsp)
 #define SFRAME	304
 
@@ -127,7 +119,6 @@
 	.endif
 .endm
 
-// [Z0:Z11] <- a0 x b, with a pointer to a in A.
 .macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T
 	movq	\A, %rdx
 	movq	0(%rdx), %rdx
@@ -156,9 +147,6 @@
 	adox	ZEROS, \Z11
 .endm
 
-// [Z0:Z10, X] <- [Z0:Z10, CARRY] + rdx x M, where the free register X turns into
-// the top word and CARRY is zero unless the prime fills the top bit.
-// Needs CF = OF = 0 on entry.
 .macro MULADD Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, X, T, M
 	mulx	0+\M, \T, \X
 	adox	\T, \Z0
@@ -196,10 +184,6 @@
 	adcx	CARRY, \X
 .endm
 
-// [Z1:Z11] <- ([Z0:Z11] + (Z0 x U0 mod 2^64) x M) / 2^64, freeing Z0. The low
-// word cancels, so its carry is Z0 != 0, which adding all-ones to Z0 yields.
-// With Z11 blank, the top word is zero on entry and is left in Z0.
-// Needs CF = OF = 0 on entry.
 .macro MULRDC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, M
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T
@@ -244,8 +228,6 @@
 .endif
 .endm
 
-// Final correction: stores [C:Z0:Z10] - p if it does not borrow and [Z0:Z10]
-// otherwise at the pointer in CPTR. C is blank when the input is below 2^704.
 .macro FINALC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, C
 	movq	CPTR, %rdx
 	movq	\Z0, 0(%rdx)
@@ -297,8 +279,6 @@
 	movq	\Z10, 80(%rdx)
 .endm
 
-// [Z0:Z10] <- [Z0:Z10]/2^704 mod p, at most p, by eleven Montgomery steps.
-// Needs CF = OF = 0 on entry.
 .macro RDCN Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T, P
 	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, , \T, \P
 	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z0, , \T, \P
@@ -313,7 +293,6 @@
 	MULRDC	\Z10, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, , \T, \P
 .endm
 
-// [Z0:Z10] += [0+H:80+H].
 .macro ADDH Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, H
 	addq	0+\H, \Z0
 	adcq	8+\H, \Z1
@@ -328,11 +307,6 @@
 	adcq	80+\H, \Z10
 .endm
 
-// c <- a/2^704 mod p for a = 0+A < pR, with c at the pointer in CPTR: reduce
-// the low half to at most p, add the high half, which is below p, and subtract
-// p once. The low half stays below 2^704 at each step, so no carry leaves the
-// accumulator.
-// A must not be based on Z0..Z10 or T.
 .macro FP_RDCN_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T, P
 	xorq	\T, \T
 	movq	0+\A, \Z0
@@ -351,14 +325,7 @@
 	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10
 .endm
 
-// a^2 for a = 0+A, computing each cross product once, with A and O based on
-// %rsp. With RDC = 0, the 22 words of a^2 go to the pointer in CPTR. With
-// RDC = 1, the low eleven words stay in [Z0:Z10] and the high eleven go to
-// 88+O. O is 22 words of scratch.
 .macro SQRN A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, RDC
-	// The cross products a_i x a_j for i < j go to words 1..20 of O. Word w
-	// accumulates in Z(w mod 11) and is stored once no later row adds to it.
-	// [Z1:Z10, Z0] <- a0 x [a1:a10]
 	movq	0+\A, %rdx
 	mulx	8+\A, \Z1, \Z2
 	mulx	16+\A, \T0, \Z3
@@ -383,7 +350,6 @@
 	movq	\Z1, 8+\O
 	movq	\Z2, 16+\O
 
-	// words 3..12 += a1 x [a2:a10]
 	movq	8+\A, %rdx
 	xorq	\Z1, \Z1
 	mulx	16+\A, \T0, \T1
@@ -417,7 +383,6 @@
 	movq	\Z3, 24+\O
 	movq	\Z4, 32+\O
 
-	// words 5..13 += a2 x [a3:a10]
 	movq	16+\A, %rdx
 	xorq	\Z2, \Z2
 	mulx	24+\A, \T0, \T1
@@ -448,7 +413,6 @@
 	movq	\Z5, 40+\O
 	movq	\Z6, 48+\O
 
-	// words 7..14 += a3 x [a4:a10]
 	movq	24+\A, %rdx
 	xorq	\Z3, \Z3
 	mulx	32+\A, \T0, \T1
@@ -476,7 +440,6 @@
 	movq	\Z7, 56+\O
 	movq	\Z8, 64+\O
 
-	// words 9..15 += a4 x [a5:a10]
 	movq	32+\A, %rdx
 	xorq	\Z4, \Z4
 	mulx	40+\A, \T0, \T1
@@ -501,7 +464,6 @@
 	movq	\Z9, 72+\O
 	movq	\Z10, 80+\O
 
-	// words 11..16 += a5 x [a6:a10]
 	movq	40+\A, %rdx
 	xorq	\Z5, \Z5
 	mulx	48+\A, \T0, \T1
@@ -523,7 +485,6 @@
 	movq	\Z0, 88+\O
 	movq	\Z1, 96+\O
 
-	// words 13..17 += a6 x [a7:a10]
 	movq	48+\A, %rdx
 	xorq	\Z6, \Z6
 	mulx	56+\A, \T0, \T1
@@ -542,7 +503,6 @@
 	movq	\Z2, 104+\O
 	movq	\Z3, 112+\O
 
-	// words 15..18 += a7 x [a8:a10]
 	movq	56+\A, %rdx
 	xorq	\Z7, \Z7
 	mulx	64+\A, \T0, \T1
@@ -558,7 +518,6 @@
 	movq	\Z4, 120+\O
 	movq	\Z5, 128+\O
 
-	// words 17..19 += a8 x [a9:a10]
 	movq	64+\A, %rdx
 	xorq	\Z8, \Z8
 	mulx	72+\A, \T0, \T1
@@ -571,7 +530,6 @@
 	movq	\Z6, 136+\O
 	movq	\Z7, 144+\O
 
-	// words 19..20 += a9 x [a10:a10]
 	movq	72+\A, %rdx
 	xorq	\Z9, \Z9
 	mulx	80+\A, \T0, \T1
@@ -581,9 +539,6 @@
 	movq	\Z8, 152+\O
 	movq	\Z9, 160+\O
 
-	// Doubles the cross products and adds the squares a_k^2 at word 2k, word by
-	// word, with CF carrying the doubling and OF the squares. %rdx takes each
-	// word that is stored.
 	movq	0+\A, %rdx
 	mulx	%rdx, \T0, \T1
 .if \RDC != 1
@@ -797,12 +752,9 @@
 
 .endm
 
-// c <- a^2 (RDC = 0) or a^2/2^704 mod p (RDC = 1) for a = 0+A, with c at the
-// pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in SQRN.
 .macro FP_SQR_LOW A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, T0, T1, P, RDC
 	SQRN	\A, \O, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \T1, \RDC
 .if \RDC == 1
-	// The low half reduces to at most p and the high half is below p.
 	xorq	\T0, \T0
 	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, \P
 	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, 88+\O
@@ -810,18 +762,14 @@
 .endif
 .endm
 
-// Interleaved Montgomery multiplication after MULM, rotating the accumulator
-// over Z0..Z11. With RDC = 0, it stores the double-precision product instead.
 .macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, P, RDC
 .if \RDC != 1
 	movq	CPTR, %rdx
 	movq	\Z0, 0(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T, \P
 .endif
 
-	// z += a1 x b
 	movq	\A, %rdx
 	movq	8(%rdx), %rdx
 	xorq	\T, \T
@@ -831,11 +779,9 @@
 	movq	CPTR, %rdx
 	movq	\Z1, 8(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \T, \P
 .endif
 
-	// z += a2 x b
 	movq	\A, %rdx
 	movq	16(%rdx), %rdx
 	xorq	\T, \T
@@ -845,11 +791,9 @@
 	movq	CPTR, %rdx
 	movq	\Z2, 16(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \T, \P
 .endif
 
-	// z += a3 x b
 	movq	\A, %rdx
 	movq	24(%rdx), %rdx
 	xorq	\T, \T
@@ -859,11 +803,9 @@
 	movq	CPTR, %rdx
 	movq	\Z3, 24(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \T, \P
 .endif
 
-	// z += a4 x b
 	movq	\A, %rdx
 	movq	32(%rdx), %rdx
 	xorq	\T, \T
@@ -873,11 +815,9 @@
 	movq	CPTR, %rdx
 	movq	\Z4, 32(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \T, \P
 .endif
 
-	// z += a5 x b
 	movq	\A, %rdx
 	movq	40(%rdx), %rdx
 	xorq	\T, \T
@@ -887,11 +827,9 @@
 	movq	CPTR, %rdx
 	movq	\Z5, 40(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \T, \P
 .endif
 
-	// z += a6 x b
 	movq	\A, %rdx
 	movq	48(%rdx), %rdx
 	xorq	\T, \T
@@ -901,11 +839,9 @@
 	movq	CPTR, %rdx
 	movq	\Z6, 48(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T, \P
 .endif
 
-	// z += a7 x b
 	movq	\A, %rdx
 	movq	56(%rdx), %rdx
 	xorq	\T, \T
@@ -915,11 +851,9 @@
 	movq	CPTR, %rdx
 	movq	\Z7, 56(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T, \P
 .endif
 
-	// z += a8 x b
 	movq	\A, %rdx
 	movq	64(%rdx), %rdx
 	xorq	\T, \T
@@ -929,11 +863,9 @@
 	movq	CPTR, %rdx
 	movq	\Z8, 64(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T, \P
 .endif
 
-	// z += a9 x b
 	movq	\A, %rdx
 	movq	72(%rdx), %rdx
 	xorq	\T, \T
@@ -943,11 +875,9 @@
 	movq	CPTR, %rdx
 	movq	\Z9, 72(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T, \P
 .endif
 
-	// z += a10 x b
 	movq	\A, %rdx
 	movq	80(%rdx), %rdx
 	xorq	\T, \T
@@ -957,7 +887,6 @@
 	movq	CPTR, %rdx
 	movq	\Z10, 80(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T, \P
 .endif
 
