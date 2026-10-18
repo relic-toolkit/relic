@@ -86,6 +86,14 @@
 .section .note.GNU-stack, "", %progbits
 #endif
 
+#if defined(__APPLE__)
+.section __TEXT,__const
+#else
+.section .rodata
+#endif
+.p2align 3
+ones:	.quad	-1
+
 .text
 
 .macro ADD1 i j
@@ -186,6 +194,70 @@
 	adox	\T0, \Z9
 	movq	$0, \T1
 	adcx	\T1, \Z9
+.endm
+
+.macro MULADD1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, X, T, ZR, M
+	mulx	0+\M, \T, \X
+	adox	\T, \Z0
+	adox	\X, \Z1
+	mulx	8+\M, \T, \X
+	adcx	\T, \Z1
+	adox	\X, \Z2
+	mulx	16+\M, \T, \X
+	adcx	\T, \Z2
+	adox	\X, \Z3
+	mulx	24+\M, \T, \X
+	adcx	\T, \Z3
+	adox	\X, \Z4
+	mulx	32+\M, \T, \X
+	adcx	\T, \Z4
+	adox	\X, \Z5
+	mulx	40+\M, \T, \X
+	adcx	\T, \Z5
+	adox	\X, \Z6
+	mulx	48+\M, \T, \X
+	adcx	\T, \Z6
+	adox	\X, \Z7
+	mulx	56+\M, \T, \X
+	adcx	\T, \Z7
+	adox	\X, \Z8
+	mulx	64+\M, \T, \X
+	adcx	\T, \Z8
+	adox	\ZR, \X
+	adcx	\ZR, \X
+.endm
+
+.macro MULRDC1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T, ZR, P
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T
+	mulx	0+\P, \T, \T
+	adcx	ones(%rip), \Z0
+	adox	\T, \Z1
+	mulx	8+\P, \T, \Z0
+	adcx	\T, \Z1
+	adox	\Z0, \Z2
+	mulx	16+\P, \T, \Z0
+	adcx	\T, \Z2
+	adox	\Z0, \Z3
+	mulx	24+\P, \T, \Z0
+	adcx	\T, \Z3
+	adox	\Z0, \Z4
+	mulx	32+\P, \T, \Z0
+	adcx	\T, \Z4
+	adox	\Z0, \Z5
+	mulx	40+\P, \T, \Z0
+	adcx	\T, \Z5
+	adox	\Z0, \Z6
+	mulx	48+\P, \T, \Z0
+	adcx	\T, \Z6
+	adox	\Z0, \Z7
+	mulx	56+\P, \T, \Z0
+	adcx	\T, \Z7
+	adox	\Z0, \Z8
+	mulx	64+\P, \T, \Z0
+	adcx	\T, \Z8
+	adox	\Z0, \Z9
+	adcx	\ZR, \Z9
 .endm
 
 .macro MULSUB Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1, M
@@ -556,100 +628,83 @@
 .endm
 
 .macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1, P, RDC
+	xorq	\T1, \T1
 .if \RDC != 1
 	movq	\Z0, 0(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z0, %rdx, \T1
-	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
+	MULRDC1	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
 .endif
 
-	xorq	\Z0, \Z0
+	xorq	\T0, \T0
 	movq	8+\A, %rdx
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \B
+	MULADD1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z1, 8(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z1, %rdx, \T1
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
+	MULRDC1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
 .endif
 
-	xorq	\Z1, \Z1
+	xorq	\T0, \T0
 	movq	16+\A, %rdx
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \B
+	MULADD1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z2, 16(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z2, %rdx, \T1
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
+	MULRDC1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
 .endif
 
-	xorq	\Z2, \Z2
+	xorq	\T0, \T0
 	movq	24+\A, %rdx
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \B
+	MULADD1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z3, 24(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z3, %rdx, \T1
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
+	MULRDC1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 
-	xorq	\Z3, \Z3
+	xorq	\T0, \T0
 	movq	32+\A, %rdx
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+	MULADD1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z4, 32(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z4, %rdx, \T1
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+	MULRDC1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 
-	xorq	\Z4, \Z4
+	xorq	\T0, \T0
 	movq	40+\A, %rdx
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+	MULADD1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z5, 40(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z5, %rdx, \T1
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+	MULRDC1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
 
-	xorq	\Z5, \Z5
+	xorq	\T0, \T0
 	movq	48+\A, %rdx
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
+	MULADD1	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z6, 48(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z6, %rdx, \T1
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+	MULRDC1	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
 .endif
 
-	xorq	\Z6, \Z6
+	xorq	\T0, \T0
 	movq	56+\A, %rdx
-	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
+	MULADD1	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z7, 56(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z7, %rdx, \T1
-	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+	MULRDC1	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 
-	xorq	\Z7, \Z7
+	xorq	\T0, \T0
 	movq	64+\A, %rdx
-	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
+	MULADD1	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z8, 64(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z8, %rdx, \T1
-	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+	MULRDC1	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
 .endif
 
 .if \RDC != 1
@@ -674,9 +729,7 @@
 	movq	\Z0, 0(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z0, %rdx, \T1
-	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
+	MULRDC1	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
 .endif
 	xorq	\Z0, \Z0
 	btq		$63, \Z9
@@ -691,9 +744,7 @@
 	movq	\Z1, 8(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z1, %rdx, \T1
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
+	MULRDC1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
 .endif
 	xorq	\Z1, \Z1
 	btq		$63, \Z0
@@ -708,9 +759,7 @@
 	movq	\Z2, 16(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z2, %rdx, \T1
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
+	MULRDC1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
 .endif
 	xorq	\Z2, \Z2
 	btq		$63, \Z1
@@ -725,9 +774,7 @@
 	movq	\Z3, 24(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z3, %rdx, \T1
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
+	MULRDC1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 	xorq	\Z3, \Z3
 	btq		$63, \Z2
@@ -742,9 +789,7 @@
 	movq	\Z4, 32(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z4, %rdx, \T1
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+	MULRDC1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 	xorq	\Z4, \Z4
 	btq		$63, \Z3
@@ -759,9 +804,7 @@
 	movq	\Z5, 40(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z5, %rdx, \T1
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+	MULRDC1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
 	xorq	\Z5, \Z5
 	btq		$63, \Z4
@@ -776,9 +819,7 @@
 	movq	\Z6, 48(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z6, %rdx, \T1
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+	MULRDC1	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
 .endif
 	xorq	\Z6, \Z6
 	btq		$63, \Z5
@@ -793,9 +834,7 @@
 	movq	\Z7, 56(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z7, %rdx, \T1
-	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+	MULRDC1	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 	xorq	\Z7, \Z7
 	btq		$63, \Z6
@@ -810,9 +849,7 @@
 	movq	\Z8, 64(%rdi)
 .else
 	xorq	\T1, \T1
-	movq	$U0, %rdx
-	mulx	\Z8, %rdx, \T1
-	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+	MULRDC1	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
 .endif
 	testq	\Z7, \Z7
 
@@ -864,113 +901,95 @@
 .if \RDC != 1
 	movq	\Z0, 0(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z0, %rdx, \T1
-	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
+	MULRDC1	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P
 .endif
 
-	xorq	\Z0, \Z0
+	xorq	\T0, \T0
 	movq	8+\A, %rdx
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, 72+\B
+	MULADD1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, 72+\B
 	movq	80+\A, %rdx
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z1, 8(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z1, %rdx, \T1
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
+	MULRDC1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \T0, \T1, \P
 .endif
 
-	xorq	\Z1, \Z1
+	xorq	\T0, \T0
 	movq	16+\A, %rdx
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, 72+\B
+	MULADD1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, 72+\B
 	movq	88+\A, %rdx
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z2, 16(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z2, %rdx, \T1
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
+	MULRDC1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \T0, \T1, \P
 .endif
 
-	xorq	\Z2, \Z2
+	xorq	\T0, \T0
 	movq	24+\A, %rdx
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, 72+\B
+	MULADD1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, 72+\B
 	movq	96+\A, %rdx
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z3, 24(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z3, %rdx, \T1
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
+	MULRDC1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 
-	xorq	\Z3, \Z3
+	xorq	\T0, \T0
 	movq	32+\A, %rdx
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 72+\B
+	MULADD1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 72+\B
 	movq	104+\A, %rdx
 	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z4, 32(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z4, %rdx, \T1
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+	MULRDC1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 
-	xorq	\Z4, \Z4
+	xorq	\T0, \T0
 	movq	40+\A, %rdx
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 72+\B
+	MULADD1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 72+\B
 	movq	112+\A, %rdx
 	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z5, 40(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z5, %rdx, \T1
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+	MULRDC1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
 
-	xorq	\Z5, \Z5
+	xorq	\T0, \T0
 	movq	48+\A, %rdx
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, 72+\B
+	MULADD1	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, 72+\B
 	movq	120+\A, %rdx
 	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z6, 48(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z6, %rdx, \T1
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+	MULRDC1	\Z6, \Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
 .endif
 
-	xorq	\Z6, \Z6
+	xorq	\T0, \T0
 	movq	56+\A, %rdx
-	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 72+\B
+	MULADD1	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 72+\B
 	movq	128+\A, %rdx
 	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z7, 56(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z7, %rdx, \T1
-	MULADD	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+	MULRDC1	\Z7, \Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 
-	xorq	\Z7, \Z7
+	xorq	\T0, \T0
 	movq	64+\A, %rdx
-	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, 72+\B
+	MULADD1	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, 72+\B
 	movq	136+\A, %rdx
 	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \B
 .if \RDC != 1
 	movq	\Z8, 64(%rdi)
 .else
-	movq	$U0, %rdx
-	mulx	\Z8, %rdx, \T1
-	MULADD	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
+	MULRDC1	\Z8, \Z9, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, \T1, \P
 .endif
 
 .if \RDC != 1
