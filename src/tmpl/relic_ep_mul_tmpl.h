@@ -208,7 +208,7 @@
 		const int flag = (ep_curve_is_pairf() == EP_BN);					\
 		size_t l;															\
 		bn_t n, _k[S], u;													\
-		int8_t even[T], col, sac[T][(S / T) * (RLC_FP_BITS + 1)];			\
+		int8_t even[T] = { 0 }, col, sac[T][(S / T) * (RLC_FP_BITS + 1)];	\
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
 		/* Fewer dimensions if the order has fewer digits in base u, kept in\
 		 * groups of S / T and thus in fewer groups, c = s / g. */			\
