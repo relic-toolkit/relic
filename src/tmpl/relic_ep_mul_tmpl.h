@@ -74,6 +74,16 @@
 	C##_mul_sim_plain(R, P, K, Q, M)
 
 /**
+ * Returns the dimension of the GLS decomposition, which is lower for the
+ * supersingular curve over Fp^4, as its order has fewer digits in base u.
+ *
+ * @param[in] S			- the dimension of the GLS decomposition.
+ */
+#define TMPL_EP_MUL_DIM(S)													\
+	(ep_curve_is_pairf() == EP_SS3 ?										\
+		RLC_MIN((size_t)S, (size_t)ep_curve_frdim()) : (size_t)S)
+
+/**
  * Defines a template for point multiplication using the GLS endomorphism. The
  * scalar is decomposed in S subscalars, each recoded in w-NAF form and
  * processed by interleaving.
@@ -84,8 +94,7 @@
 #define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		size_t l, _l[S], w = RLC_WIDTH;										\
-		/* Fewer dimensions if the order has fewer digits in base u. */		\
-		size_t s = RLC_MIN((size_t)S, (size_t)ep_curve_frdim());			\
+		size_t s = TMPL_EP_MUL_DIM(S);										\
 		bn_t n, _k[S], u;													\
 		int8_t naf[S][RLC_FP_BITS + 1];										\
 		C##_t q, t[S][1 << (RLC_WIDTH - 2)];								\
@@ -203,7 +212,7 @@
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
 		/* Fewer dimensions if the order has fewer digits in base u, kept in\
 		 * groups of S / T and thus in fewer groups, c = s / g. */			\
-		size_t s = RLC_MIN((size_t)S, (size_t)ep_curve_frdim());			\
+		size_t s = TMPL_EP_MUL_DIM(S);										\
 		size_t g = RLC_MIN((size_t)S / T, s), c = s / g;					\
 																			\
 		bn_null_all(n, u);													\

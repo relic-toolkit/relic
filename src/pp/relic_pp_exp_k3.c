@@ -41,7 +41,10 @@
 void pp_exp_k3(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2;
 	bn_t d, e, n;
+	int8_t naf[RLC_FP_BITS + 1];
+	int s[RLC_FP_BITS + 1];
 	const int *b;
+	size_t j, k, w;
 	int l;
 
 	fp12_null(t0);
@@ -71,8 +74,26 @@ void pp_exp_k3(fp12_t c, fp12_t a) {
 		/* First, compute m = f^(p^6 - 1)(p^2 + 1). */
 		fp12_conv_cyc(t0, a);
 
-		/* t1 = m^e. */
-		fp12_exp_cyc(t1, t0, e);
+		/* t1 = m^e, with compressed squarings when e has a sparse NAF. The
+		 * digit in position zero cannot be signed, so it is applied apart. */
+		k = RLC_FP_BITS + 1;
+		bn_rec_naf(naf, &k, e, 2);
+		for (w = 0, j = 1; j < k; j++) {
+			if (naf[j] != 0) {
+				s[w++] = (naf[j] > 0 ? (int)j : -(int)j);
+			}
+		}
+		if ((w << 2) < k) {
+			fp12_exp_cyc_sps(t1, t0, s, w, RLC_POS);
+			if (naf[0] > 0) {
+				fp12_mul(t1, t1, t0);
+			} else if (naf[0] < 0) {
+				fp12_inv_cyc(t2, t0);
+				fp12_mul(t1, t1, t2);
+			}
+		} else {
+			fp12_exp_cyc(t1, t0, e);
+		}
 		/* t1 = t1^(p^2 + d^2 - 1). */
 		fp12_exp_cyc_sps(t2, t1, b, l, RLC_POS);
 		fp12_exp_cyc_sps(t2, t2, b, l, RLC_POS);
