@@ -51,8 +51,18 @@
 #define BAR	0xFA91822BBE91B750
 #define BARS	60
 #define BARJ	4
+#elif FP_PRIME == 318
+#define P0	0xFFFFFFFFFFFFFFFF
+#define P1	0x5F3217911EB1657B
+#define P2	0x762BCF6C704AABA7
+#define P3	0xE79844EFF67BCD12
+#define P4	0x3C9D4B197042868E
+#define U0	0x0000000000000001
+#define BAR	0x87263B55416BC6A7
+#define BARS	61
+#define BARJ	4
 #else
-#error "x64-asm-5l supports only FP_PRIME = 315 or 317."
+#error "x64-asm-5l supports only FP_PRIME = 315, 317 or 318."
 #endif
 
 #if defined(__APPLE__)
@@ -70,7 +80,7 @@
 #define FP2_SQR_RDC
 #endif
 
-#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
+#if (defined(FP_QNRES) || FP_PRIME == 318) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

@@ -2317,6 +2317,13 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 void ep4_curve_set_twist(int type);
 
 /**
+ * Configures a supersingular elliptic curve over a quartic extension, on which
+ * the groups of a symmetric pairing lie, for the currently configured prime
+ * curve parameters.
+ */
+void ep4_curve_set_super(void);
+
+/**
  * Tests if a point on an elliptic curve is at the infinity.
  *
  * @param[in] p				- the point to test.
@@ -2742,7 +2749,9 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
  * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
  * quartic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
- * subgroup of prime order, it acts as multiplication by p^i.
+ * subgroup of prime order, it acts as multiplication by p^i. On a curve that
+ * is not a twist, it computes the endomorphism [p]^i built from the
+ * p^2-power Frobenius.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.

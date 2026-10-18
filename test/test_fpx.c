@@ -8948,7 +8948,9 @@ int main(void) {
 	}
 
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_curve_embed() >= 6)) {
+	/* The sextic towers are built over Fp^2, as for the SS3 curve. */
+	if (fp_prime_get_qnr() && (fp_prime_get_cnr() ||
+			ep_curve_is_pairf() == EP_SS3) && (ep_curve_embed() >= 6)) {
 		util_print("\n-- Sextic extension: (i + %d) as CNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
@@ -9122,7 +9124,8 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() &&
+	if (fp_prime_get_qnr() && (fp_prime_get_cnr() ||
+			ep_curve_is_pairf() == EP_SS3) &&
 			(ep_curve_embed() >= 12) && (ep_curve_embed() != 16)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);

@@ -16,6 +16,9 @@ import datetime
 import os
 import sys
 
+# The SS3 primes also have u^2 = -1 in Fp^2, as FP_QNRES ensures for others.
+SS3 = {5: "FP_PRIME == 318", 6: "(FP_PRIME == 381 && defined(EC_SUPER))"}
+
 # Primes per limb count: (FP_PRIME, hex of p, comment or None), with an
 # optional condition that selects among primes of the same FP_PRIME.
 PRIMES = {
@@ -30,6 +33,8 @@ PRIMES = {
 			"2BDE5026FE802FF40300001"), None),
 		(317, ("1058CA226F60892CF28FC5A0B7F9D039169A61E684C73446D6F339E4"
 			"3424BF7E8D512E565DAB2AAB"), None),
+		(318, ("3C9D4B197042868EE79844EFF67BCD12762BCF6C704AABA75F321791"
+			"1EB1657BFFFFFFFFFFFFFFFF"), "M318b, the SS3 prime"),
 	],
 	6: [
 		(330, ("24C0832E1406555615B5BF00BAF1EE31FECF12A1C4947A0784F27BBE"
@@ -38,6 +43,9 @@ PRIMES = {
 			"E5DA80FED8491B9470948C8C6AAAB1D"), None),
 		(377, ("1AE3A4617C510EAC63B05C06CA1493B1A22D9F300F5138F1EF3622FB"
 			"A094800170B5D44300000008508C00000000001"), None),
+		(381, ("10D3D10D00EE5D72BD99C96E04729F8F08A88098F51FEBEFAE328A41"
+			"F46782B7000000000080000000000000FFFFFFFF"), "SS3_381",
+			"defined(EC_SUPER)"),
 		(381, ("1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0"
 			"F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAAAB"), None),
 		(382, ("24009015183F94892D996CC179C6D1666F82CEFBE47879BBA6E58DBE"
@@ -1872,7 +1880,8 @@ def write_small(n, out):
 	guard = "#if %s\n#define %s\n#endif\n"
 	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
 		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
-		guard % ("defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
+		guard % ("(defined(FP_QNRES)%s) && RLC_ALLOC == RLC_AUTO" %
+			(" || " + SS3[n] if n in SS3 else ""), "FP2_ASM")]
 	# MULRDC1 reads an all-ones word, and at 12 digits a zero word, local to
 	# each object.
 	ones = ["#if defined(__APPLE__)\n.section __TEXT,__const\n#else\n"

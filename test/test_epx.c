@@ -1397,7 +1397,8 @@ int main(void) {
 		}
 	}
 
-	if ((r2 = ep4_curve_is_twist())) {
+	r2 = ep4_curve_is_twist() || ep_curve_is_pairf() == EP_SS3;
+	if (r2) {
 		ep_param_print();
 
 		util_banner("Utilities:", 1);

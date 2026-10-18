@@ -56,6 +56,46 @@ void gt_get_gen(gt_t g) {
     gt_copy(g, core_get()->gt_g);
 }
 
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+
+int g1_is_valid(const g1_t a) {
+	g1_t u, v;
+	bn_t d;
+	int r = 0;
+
+	if (g1_is_infty(a)) {
+		return 0;
+	}
+
+	g1_null(u);
+	g1_null(v);
+	bn_null(d);
+
+	RLC_TRY {
+		g1_new(u);
+		g1_new(v);
+		bn_new(d);
+
+		/* Check [p]P == [d]P, which implies [c * r]P = O and thus [r]P = O,
+		 * because the cofactor is coprime to c in p = d + c * r. */
+		fp_prime_get_par(d);
+		ep4_mul_dig(u, a, d->dp[0]);
+		ep4_psi(v, a);
+		r = g1_on_curve(a) && (g1_cmp(u, v) == RLC_EQ);
+	} RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		g1_free(u);
+		g1_free(v);
+		bn_free(d);
+	}
+
+	return r;
+}
+
+#else
+
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
 	g1_t u, v, w;
@@ -245,8 +285,11 @@ int g1_is_valid(const g1_t a) {
 	return r;
 }
 
+#endif
+
 int g2_is_valid(const g2_t a) {
-#if FP_PRIME >= 1536
+#if FP_PRIME >= 1536 || FP_PRIME == 318 || \
+	(FP_PRIME == 381 && defined(EC_SUPER))
 	return g1_is_valid(a);
 #else
 	g2_t s, t, u, v, w;

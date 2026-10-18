@@ -119,14 +119,17 @@ void fp2_norm_low(fp2_t c, const fp2_t a) {
 				}
 				/* Fall through - otherwise use the next one. */
 			case 7:
-				/* If p = 7 mod 8, we choose (2^k + i) as QNR/CNR. */
-				fp2_mul_art(t, a);
-				fp2_copy(c, a);
-				while (qnr > 1) {
-					fp2_dbl(c, c);
-					qnr = qnr >> 1;
+				/* If p = 7 mod 8, we choose (2^k + i) as QNR/CNR, and
+				 * (a_0 + a_1 * i) * (2^k + i) = (2^k * a_0 - a_1) +
+				 * (2^k * a_1 + a_0) * i, for k >= 1. */
+				fp_dbl(t[0], a[0]);
+				fp_dbl(t[1], a[1]);
+				for (qnr = qnr >> 1; qnr > 1; qnr = qnr >> 1) {
+					fp2_dbl(t, t);
 				}
-				fp2_add(c, c, t);
+				fp_sub(t[0], t[0], a[1]);
+				fp_add(c[1], t[1], a[0]);
+				fp_copy(c[0], t[0]);
 				break;
 		}
 #endif
@@ -180,12 +183,11 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 				}
 				/* Fall through - otherwise use the next one. */
 			case 7:
-				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR.   */
-				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_copy(t[1], a[1], 2 * RLC_FP_DIGS);
-				while (qnr > 1) {
+				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR, for k >= 1. */
+				fp_addc_low(t[0], a[0], a[0]);
+				fp_addc_low(t[1], a[1], a[1]);
+				for (qnr = qnr >> 1; qnr > 1; qnr = qnr >> 1) {
 					fp2_addc_low(t, t, t);
-					qnr = qnr >> 1;
 				}
 				/* Read a before writing c, as c may alias a. */
 				fp_addc_low(t[1], t[1], a[0]);

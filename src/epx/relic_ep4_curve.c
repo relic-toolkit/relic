@@ -107,6 +107,52 @@
 /** @} */
 #endif
 
+#if FP_PRIME == 318
+/** @{ */
+#define SS3_P318_A0		"0"
+#define SS3_P318_A1		"0"
+#define SS3_P318_A2		"0"
+#define SS3_P318_A3		"0"
+#define SS3_P318_B0		"0"
+#define SS3_P318_B1		"0"
+#define SS3_P318_B2		"1"
+#define SS3_P318_B3		"0"
+#define SS3_P318_X0		"19F1A53812298E3C772E160D727E3605F4C006D740E4325323D8D49627E4BD0E7D04CD55CEB90579"
+#define SS3_P318_X1		"3AE9DE3000D78398101E807EAA07A2741B5E44B0A96687D99959E66BE6CC4910B3F012A1B75ED56D"
+#define SS3_P318_X2		"43A7EFC826A6837F11841DC75A60E35275706D460E5140A36A40B8EE0E2E76AD7DA62CD52379BD5"
+#define SS3_P318_X3		"17BAD2A76B950E36055CD17D1DAB601A1FDB7E9C5CA42CA0911DBB0F402A6E4839E9EDF75C313DB8"
+#define SS3_P318_Y0		"3BE83209B6173B446E90346549CDAFD23BBC90529D61BD312C1ACFFA1CF7964C4270C5F648337B04"
+#define SS3_P318_Y1		"6BD3D9C69E289ED9B1C795EF19DFF21E1F9E4165EFE10284F3861CADD65CC56E959D6AD56505EDC"
+#define SS3_P318_Y2		"2961FDA3580F126724EED2979A215143EC78E6ADFA26A2629548ECD0022368D4CF50ED8C713616EE"
+#define SS3_P318_Y3		"28BCE3141CDA3C1D5686754C0B351AB802F11A0630D0EDF123FAA2ADB9FDB64837E73892EDDBC574"
+#define SS3_P318_R		"14640FFFFFFFFFB33C00000000006C5FB7BFFFFFFFBC0088000000000FFFC001"
+#define SS3_P318_H2		"A19FFB119D597FA5DC7C0C25F6A380AE5CA1486D254154759BCF2B030F0181CBEA9FD1DD6F49078113B2B9600A10FD42846C6C7866388B64C176B99CF83DC5521852B03203DC7723679CB9F71809617FF2C3CA874D337D25A9C774B56B25381DC1BFCB1B17D6A785781ED0687E340E8C147A1A28FEF347FFEFFFC0000004001"
+/** @} */
+#endif
+
+#if FP_PRIME == 381
+/** @{ */
+#define SS3_P381_A0		"0"
+#define SS3_P381_A1		"0"
+#define SS3_P381_A2		"0"
+#define SS3_P381_A3		"0"
+#define SS3_P381_B0		"0"
+#define SS3_P381_B1		"0"
+#define SS3_P381_B2		"1"
+#define SS3_P381_B3		"0"
+#define SS3_P381_X0		"AE0239066BA55B8799A4D5563376FEA9B320C29AB2AD434173EA10FD9DB0B42D3E02B6890EBCB040A2F818898D111CA"
+#define SS3_P381_X1		"CAA01B68A53CD02C705E09DC91F82990DB1F1BF296103E2CA70BA9BE6180B32355DCF5438E4879A0D849D96ADFB1305"
+#define SS3_P381_X2		"2FAF16F2A88677217E636032F139ED8AE716F762C5A7A926675E491A65254B93CDB944C915F6E5C8661E6CD7B1A2E80"
+#define SS3_P381_X3		"3674FFA6F4F0A7D36D713AD85EE88405657C69FF5473FAC37C745B60BD63C81E5D1C9F332B02B3E3B47866FFB053A72"
+#define SS3_P381_Y0		"4ADC825CBB9D6AAB0CF5542FF64F68397B25B634E241FA17D0F42C4E77D7F30423C07C922400392D3DF961B337DB1C5"
+#define SS3_P381_Y1		"2BB254240FE5520CE35E3700EB4753063F0CE7400FC742460321A8D21AAC756BA6D9901D766114EEDC62469F07AEF52"
+#define SS3_P381_Y2		"65D3F0F16D5A3A30B88BF226FA5683C8B5FEA174F4CC8BC67FE59E0BA45C2BE9D718F20DFB11C3E9914268F68426561"
+#define SS3_P381_Y3		"ABCE48239B0AFA22714D9D6340AAFE6D8CE2AE281F3C5628F4BC10F7A789893FCC741AFFAEB6E73578D3E18C632B797"
+#define SS3_P381_R		"100004000060002400061000600019FFC2FFF817FFC7FFC07FFC000000FFF001"
+#define SS3_P381_H2		"139343B4329F7A53E842F83226CF9D43EDE5207A065B199076C062DCD7FC82B84C2D29A65A9ADAF01E4B238E832268C1D784DB83A221F051B9DE282F2C3949F162E057BBEC47C16A064C8B222DF0830431F8B93A20E3210AC267F5425820680BA3B730326583354A9BAF3729BC9299843517F7E85A9566A99D284D2CD80180465E80590E534D1B255E719443DB6204816C7D1B3E4A45650002DFEE00001001"
+/** @} */
+#endif
+
 #if FP_PRIME == 509
 /** @{ */
 #define B24_P509_A0		"0"
@@ -319,6 +365,9 @@ void ep4_curve_init(void) {
 	fp4_new(ctx->ep4_b);
 	fp4_new(ctx->ep4_frb[0]);
 	fp4_new(ctx->ep4_frb[1]);
+	for (int i = 0; i < 7; i++) {
+		fp4_new(ctx->ep4_ss3[i]);
+	}
 #endif
 
 #ifdef EP_PRECO
@@ -351,6 +400,9 @@ void ep4_curve_clean(void) {
 		fp4_free(ctx->ep4_b);
 		fp4_free(ctx->ep4_frb[0]);
 		fp4_free(ctx->ep4_frb[1]);
+		for (int i = 0; i < 7; i++) {
+			fp4_free(ctx->ep4_ss3[i]);
+		}
 	}
 }
 
@@ -615,4 +667,101 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, co
 #if defined(EP_PRECO)
 	ep4_mul_pre((ep4_t *)ep4_curve_get_tab(), ctx->ep4_g);
 #endif
+}
+
+void ep4_curve_set_super(void) {
+	char str[8 * RLC_FP_BYTES + 1];
+	ctx_t *ctx = core_get();
+	ep4_t g;
+	fp4_t a, b;
+	bn_t r, h;
+
+	ep4_null(g);
+	fp4_null(a);
+	fp4_null(b);
+	bn_null(r);
+	bn_null(h);
+
+	RLC_TRY {
+		ep4_new(g);
+		fp4_new(a);
+		fp4_new(b);
+		bn_new(r);
+		bn_new(h);
+
+		switch (ep_param_get()) {
+#if FP_PRIME == 318
+			case SS3_P318:
+				EP4_ASSIGN(SS3_P318);
+				break;
+#elif FP_PRIME == 381
+			case SS3_P381:
+				EP4_ASSIGN(SS3_P381);
+				break;
+#endif
+			default:
+				(void)str;
+				RLC_THROW(ERR_NO_VALID);
+				break;
+		}
+
+		fp4_zero(g->z);
+		fp4_set_dig(g->z, 1);
+		g->coord = EC_AFFIN;
+
+		ep4_curve_set(a, b, g, r, h);
+
+		/* The endomorphism [p] maps (x, y) to (x^(p^2) / B^((p^2 - 1) / 3),
+		 * -y^(p^2) / B^((p^2 - 1) / 2)), so store the inverted constants. */
+		bn_read_raw(r, fp_prime_get(), RLC_FP_DIGS);
+		bn_sqr(h, r);
+		bn_sub_dig(h, h, 1);
+		bn_div_dig(h, h, 3);
+		fp4_exp(ctx->ep4_ss3[2], ctx->ep4_b, h);
+		fp4_inv(ctx->ep4_frb[0], ctx->ep4_ss3[2]);
+		/* 1/N3 = 1/(C3 * C3^(p^2)), with C3 = B^((p^2 - 1) / 3). */
+		fp4_frb(a, ctx->ep4_ss3[2], 2);
+		fp4_mul(a, a, ctx->ep4_ss3[2]);
+		fp4_inv(ctx->ep4_ss3[5], a);
+		bn_sqr(h, r);
+		bn_sub_dig(h, h, 1);
+		bn_hlv(h, h);
+		fp4_exp(b, ctx->ep4_b, h);
+		fp4_inv(a, b);
+		fp4_neg(ctx->ep4_frb[1], a);
+		/* -1/N2 = -1/(C2 * C2^(p^2)), with C2 = B^((p^2 - 1) / 2). */
+		fp4_frb(a, b, 2);
+		fp4_mul(a, a, b);
+		fp4_inv(a, a);
+		fp4_neg(ctx->ep4_ss3[6], a);
+		/* B^-((p + 1) / 3) and B^-((p - 1) / 2). */
+		bn_add_dig(h, r, 1);
+		bn_div_dig(h, h, 3);
+		fp4_exp(a, ctx->ep4_b, h);
+		fp4_inv(ctx->ep4_ss3[0], a);
+		bn_sub_dig(h, r, 1);
+		bn_hlv(h, h);
+		fp4_exp(a, ctx->ep4_b, h);
+		fp4_inv(ctx->ep4_ss3[1], a);
+		/* B^((p - 2) / 3) and B^((2p - 1) / 3), raised to p^3. */
+		bn_sub_dig(h, r, 2);
+		bn_div_dig(h, h, 3);
+		fp4_exp(a, ctx->ep4_b, h);
+		fp4_frb(ctx->ep4_ss3[3], a, 3);
+		bn_dbl(h, r);
+		bn_sub_dig(h, h, 1);
+		bn_div_dig(h, h, 3);
+		fp4_exp(a, ctx->ep4_b, h);
+		fp4_frb(ctx->ep4_ss3[4], a, 3);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(g);
+		fp4_free(a);
+		fp4_free(b);
+		bn_free(r);
+		bn_free(h);
+	}
 }
