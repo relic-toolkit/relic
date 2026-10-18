@@ -83,6 +83,7 @@ static void checkd(const char *name, dig_t got, dig_t want) {
 	}
 }
 
+#if defined(FP_QNRES)
 /* Checks an unreduced result: congruent to want mod p and below pR. */
 static void checkc(const char *name, const dig_t *got, const mpz_t want,
 		const mpz_t pr) {
@@ -100,6 +101,7 @@ static void checkc(const char *name, const dig_t *got, const mpz_t want,
 	}
 	mpz_clears(g, w, NULL);
 }
+#endif
 
 /* Random element in [0, bound), or an edge case depending on k. */
 static void elem(mpz_t z, const mpz_t bound, int k) {
@@ -113,7 +115,7 @@ static void elem(mpz_t z, const mpz_t bound, int k) {
 }
 
 int main(void) {
-	dig_t a[2 * N], b[2 * N], c[2 * N], d, w;
+	dig_t a[2 * N], b[2 * N], c[2 * N], e[2 * N], d, w;
 	mpz_t x, y, z, B1, B2, PR;
 	int iters = 20000;
 
@@ -243,8 +245,11 @@ int main(void) {
 		elem(x, PR, k); elem(y, PR, k / 8);
 		put(a, x, 2 * N); put(b, y, 2 * N);
 		mpz_mul(T, x, U); mpz_mod(T, T, P);
+		/* Out of place, on a copy that it may overwrite, and in place. */
+		memcpy(e, a, sizeof(dig_t) * 2 * N);
+		fp_rdcn_low(c, e); check("rdcn", c, T, N);
 		memcpy(c, a, sizeof(dig_t) * 2 * N);
-		fp_rdcn_low(c, c); check("rdcn", c, T, N);
+		fp_rdcn_low(c, c); check("rdcn in place", c, T, N);
 		mpz_add(T, x, y);
 		if (mpz_cmp(T, PR) >= 0) {
 			mpz_sub(T, T, PR);
