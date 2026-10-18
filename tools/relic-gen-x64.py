@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 """Generates the x64-asm-Nl backend sources.
 
-Usage: tools/relic-gen-x64.py --large N DIR
-       tools/relic-gen-x64.py --small N DIR
+Usage: tools/relic-gen-x64.py --small N DIR
        tools/relic-gen-x64.py --uniform N DIR
 
---large writes macro.s and the assembly files of the backend for N limbs in
-the design of x64-asm-12l, for 10 to 12 limbs; 12 reproduces x64-asm-12l. The
-C files and CMakeLists.txt are generic and can be copied from x64-asm-12l.
---small does the same in the design of x64-asm-6l, for 4 to 11 limbs, Fp2
-included, for a backend whose C files are in DIR. --uniform rewrites only the
-addition and shift files, which both designs share. The supported primes come
-from PRIMES below. Existing files keep their license headers, and new files
-get the current year. Check a backend with tools/relic-check-fp.c.
+--small writes macro.s and the multiplication, reduction and squaring files,
+Fp2 included up to 11 limbs, of the backend for N limbs in the design of
+x64-asm-6l, for 4 to 12 limbs, where DIR holds the C files and CMakeLists.txt
+of the backend. --uniform writes the addition and shift files. The supported
+primes come from PRIMES below. Existing files keep their license headers, and
+new files get the current year. Check a backend with tools/relic-check-fp.c.
 """
 
 import datetime
@@ -568,7 +565,7 @@ def add_low(g):
 	# registers come first, so fewer need saving.
 	add_reg = 2 * n + full <= 14
 	sub_reg = 2 * n <= 14
-	# The order of x64-asm-12l is kept for the large fields it reproduces.
+	# Beyond 10 digits, the order puts %rax among the first registers.
 	r = POOL[:n] if n <= 10 else ACC[:n]
 	spare = ["%rdx", "%rsi"] + [x for x in POOL if x not in r]
 	add_extra = spare[:n + full] if add_reg else []
@@ -872,378 +869,21 @@ def write_uniform(n, out):
 	write_files(Field(n, "FP_PRIME == %d" % (64 * n) in macro), out,
 		UNIFORM_FILES)
 
-REGS = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-	"%rbx", "%rbp", "%rcx", "%rsi", "%rdi"]
-
-
-
-
-class Large(Field):
-	"""The design of x64-asm-12l: an accumulator of n + 1 registers, one
-	temporary, and the operand b, the pointers and the constants on the
-	stack."""
-
-	# ---------------------------------------------------------------- macro.s
-	def mulm(self):
-		"""[Z0:Zn] <- a0 x b, with a pointer to a in A."""
-		n = self.n
-		o = ["\tmovq\t\\A, %rdx",
-			"\tmovq\t0(%rdx), %rdx",
-			"\tmulx\t0+\\B, \\Z0, \\Z1",
-			"\txorq\t\\T, \\T"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\B, \\T, \\Z%d" % (8 * i, i + 1))
-			o.append("\tadox\t\\T, \\Z%d" % i)
-		o.append("\tadox\tZEROS, \\Z%d" % n)
-		return macro("MULM", ["A", "B"] + names(n + 1) + ["T"], o)
-
-	def muladd(self):
-		"""[Z0:Zn-1, X] <- [Z0:Zn-1, CARRY] + rdx x M, where the free register
-		X turns into the top word and CARRY is zero unless the prime fills the
-		top bit. Needs CF = OF = 0 on entry."""
-		n = self.n
-		o = ["\tmulx\t0+\\M, \\T, \\X",
-			"\tadox\t\\T, \\Z0",
-			"\tadox\t\\X, \\Z1"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\M, \\T, \\X" % (8 * i))
-			o.append("\tadcx\t\\T, \\Z%d" % i)
-			if i < n - 1:
-				o.append("\tadox\t\\X, \\Z%d" % (i + 1))
-		o.append("\tadox\tZEROS, \\X")
-		o.append("\tadcx\tCARRY, \\X")
-		return macro("MULADD", names(n) + ["X", "T", "M"], o)
-
-	def mulrdc(self):
-		"""[Z1:Zn] <- ([Z0:Zn] + (Z0 x U0 mod 2^64) x M) / 2^64, freeing Z0.
-		The low word cancels, so its carry is Z0 != 0, which adding all-ones
-		to Z0 yields. With Zn blank, the top word is zero on entry and is left
-		in Z0. Needs CF = OF = 0 on entry."""
-		n = self.n
-		o = ["\tmovq\t$U0, %rdx",
-			"\tmulx\t\\Z0, %rdx, \\T",
-			"\tmulx\t0+\\M, \\T, \\T",
-			"\tadcx\tONES, \\Z0",
-			"\tadox\t\\T, \\Z1"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\M, \\T, \\Z0" % (8 * i))
-			o.append("\tadcx\t\\T, \\Z%d" % i)
-			if i < n - 1:
-				o.append("\tadox\t\\Z0, \\Z%d" % (i + 1))
-		o += [".ifb \\Z%d" % n,
-			"\tadox\tZEROS, \\Z0",
-			"\tadcx\tZEROS, \\Z0",
-			".else",
-			"\tadox\t\\Z0, \\Z%d" % n,
-			"\tadcx\tZEROS, \\Z%d" % n,
-			".endif"]
-		return macro("MULRDC", names(n + 1) + ["T", "M"], o)
-
-	def finalc(self):
-		"""Final correction: stores [C:Z0:Zn-1] - p if it does not borrow and
-		[Z0:Zn-1] otherwise at the pointer in CPTR. C is blank when the input
-		is below 2^(64n)."""
-		n = self.n
-		o = ["\tmovq\tCPTR, %rdx"]
-		for i in range(n):
-			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
-		o.append("\tsubq\tp0(%rip), \\Z0")
-		for i in range(1, n):
-			o.append("\tsbbq\tp%d(%%rip), \\Z%d" % (i, i))
-		o += [".ifnb \\C", "\tsbbq\t$0, \\C", ".endif"]
-		for i in range(n):
-			o.append("\tcmovc\t%d(%%rdx), \\Z%d" % (8 * i, i))
-		for i in range(n):
-			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
-		return macro("FINALC", names(n) + ["C"], o)
-
-	def rdcn(self):
-		"""[Z0:Zn-1] <- [Z0:Zn-1]/2^(64n) mod p, at most p, by n Montgomery
-		steps. Needs CF = OF = 0 on entry."""
-		n = self.n
-		o = []
-		for k in range(n):
-			rot = ["Z%d" % ((k + i) % n) for i in range(n)]
-			o.append("\tMULRDC\t%s, , \\T, \\P" % args(refs(rot)))
-		return macro("RDCN", names(n) + ["T", "P"], o)
-
-	def addh(self):
-		"""[Z0:Zn-1] += [0+H:8(n-1)+H]."""
-		n = self.n
-		o = ["\taddq\t0+\\H, \\Z0"]
-		for i in range(1, n):
-			o.append("\tadcq\t%d+\\H, \\Z%d" % (8 * i, i))
-		return macro("ADDH", names(n) + ["H"], o)
-
-	def fp_rdcn_low(self):
-		"""c <- a/2^(64n) mod p for a = 0+A < pR, with c at the pointer in
-		CPTR: reduce the low half to at most p, add the high half, which is
-		below p, and subtract p once. The low half stays below 2^(64n) at each
-		step, so no carry leaves the accumulator. When the prime fills the top
-		bit, the sum can reach 2^(64n) and its carry goes to T. A must not be
-		based on Z0..Zn-1 or T."""
-		n = self.n
-		z = args(refs(names(n)))
-		o = ["\txorq\t\\T, \\T"]
-		o.append("\tmovq\t0+\\A, \\Z0")
-		for i in range(1, n):
-			o.append("\tmovq\t%d+\\A, \\Z%d" % (8 * i, i))
-		o.append("\tRDCN\t%s, \\T, \\P" % z)
-		o.append("\tADDH\t%s, %d+\\A" % (z, 8 * n))
-		if self.full:
-			o += [self.iffull(), "\tmovq\t$0, \\T", "\tadcq\t$0, \\T",
-				"\tFINALC\t%s, \\T" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
-		else:
-			o.append("\tFINALC\t%s" % z)
-		return macro("FP_RDCN_LOW", ["A"] + names(n) + ["T", "P"], o)
-
-	def sqrn(self):
-		"""a^2 for a = 0+A, computing each cross product once, with A and O
-		based on %rsp. With RDC = 0, the 2n words of a^2 go to the pointer in
-		CPTR. With RDC = 1, the low n words stay in [Z0:Zn-1] and the high n
-		go to 8n+O. O is 2n words of scratch."""
-		n = self.n
-		# The cross products a_i x a_j for i < j go to words 1..2n-2 of O.
-		# Word w accumulates in Z(w mod n) and is stored once no later row
-		# adds to it. Row 0 is [Z1:Zn-1, Z0] <- a0 x [a1:an-1].
-		o = ["\tmovq\t0+\\A, %rdx",
-			"\tmulx\t8+\\A, \\Z1, \\Z2"]
-		for j in range(2, n):
-			o.append("\tmulx\t%d+\\A, \\T0, \\Z%d" % (8 * j, (j + 1) % n))
-			o.append("\t%s\t\\T0, \\Z%d" % ("addq" if j == 2 else "adcq", j))
-		o.append("\tadcq\t$0, \\Z0")
-		o.append("\tmovq\t\\Z1, 8+\\O")
-		o.append("\tmovq\t\\Z2, 16+\\O")
-		for i in range(1, n - 1):
-			# Words 2i+1..n+i += ai x [ai+1:an-1].
-			o.append("")
-			o.append("\tmovq\t%d+\\A, %%rdx" % (8 * i))
-			o.append("\txorq\t\\Z%d, \\Z%d" % (i, i))
-			for j in range(i + 1, n):
-				o.append("\tmulx\t%d+\\A, \\T0, \\T1" % (8 * j))
-				o.append("\tadcx\t\\T0, \\Z%d" % ((i + j) % n))
-				o.append("\tadox\t\\T1, \\Z%d" % ((i + j + 1) % n))
-			o.append("\tadcq\t$0, \\Z%d" % i)
-			o.append("\tmovq\t\\Z%d, "
-				"%d+\\O" % ((2 * i + 1) % n, 8 * (2 * i + 1)))
-			o.append("\tmovq\t\\Z%d, "
-				"%d+\\O" % ((2 * i + 2) % n, 8 * (2 * i + 2)))
-		# Doubles the cross products and adds the squares a_k^2 at word 2k,
-		# word by word, with CF carrying the doubling and OF the squares. %rdx
-		# takes each word that is stored.
-		o += ["",
-			"\tmovq\t0+\\A, %rdx",
-			"\tmulx\t%rdx, \\T0, \\T1",
-			".if \\RDC != 1",
-			"\tmovq\tCPTR, \\Z0",
-			"\tmovq\t\\T0, 0(\\Z0)",
-			".else",
-			"\tmovq\t\\T0, \\Z0",
-			".endif",
-			"\txorq\t%rdx, %rdx",
-			".if \\RDC != 1"]
-		o += self.sqr_double(False)
-		o.append(".else")
-		o += self.sqr_double(True)
-		o += [".endif", ""]
-		return macro("SQRN", ["A", "O"] + names(n) + ["T0", "T1", "RDC"], o)
-
-	def sqr_double(self, rdc):
-		n = self.n
-		o = []
-		for w in range(1, 2 * n):
-			if w % 2 == 0:
-				o.append("\tmovq\t%d+\\A, %%rdx" % (4 * w))
-				o.append("\tmulx\t%rdx, \\T0, \\T1")
-			t = "\\T0" if w % 2 == 0 else "\\T1"
-			if rdc and w < n:
-				o.append("\tmovq\t%d+\\O, \\Z%d" % (8 * w, w))
-				o.append("\tadcx\t\\Z%d, \\Z%d" % (w, w))
-				o.append("\tadox\t%s, \\Z%d" % (t, w))
-				continue
-			if w == 2 * n - 1:
-				o.append("\tmovq\t$0, %rdx")
-			else:
-				o.append("\tmovq\t%d+\\O, %%rdx" % (8 * w))
-			o.append("\tadcx\t%rdx, %rdx")
-			o.append("\tadox\t%s, %%rdx" % t)
-			if rdc:
-				o.append("\tmovq\t%%rdx, %d+\\O" % (8 * w))
-			else:
-				o.append("\tmovq\t%%rdx, %d(\\Z0)" % (8 * w))
-		return o
-
-	def fp_sqr_low(self):
-		"""c <- a^2 (RDC = 0) or a^2/2^(64n) mod p (RDC = 1) for a = 0+A, with
-		c at the pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in
-		SQRN. With RDC = 1, the low half reduces to at most p and the high
-		half is below p."""
-		n = self.n
-		z = args(refs(names(n)))
-		o = ["\tSQRN\t\\A, \\O, %s, \\T0, \\T1, \\RDC" % z,
-			".if \\RDC == 1",
-			"\txorq\t\\T0, \\T0",
-			"\tRDCN\t%s, \\T0, \\P" % z,
-			"\tADDH\t%s, %d+\\O" % (z, 8 * n)]
-		if self.full:
-			o += [self.iffull(), "\tmovq\t$0, \\T0", "\tadcq\t$0, \\T0",
-				"\tFINALC\t%s, \\T0" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
-		else:
-			o.append("\tFINALC\t%s" % z)
-		o += [".endif"]
-		return macro("FP_SQR_LOW", ["A", "O"] + names(n) + ["T0", "T1", "P",
-			"RDC"], o)
-
-	def fp_mul_low(self):
-		"""Interleaved Montgomery multiplication after MULM, rotating the
-		accumulator over Z0..Zn. With RDC = 0, it stores the double-precision
-		product instead."""
-		n = self.n
-		o = []
-		for i in range(n):
-			rot = ["Z%d" % ((i + k) % (n + 1)) for k in range(n + 1)]
-			if i > 0:
-				# z += ai x b
-				o.append("")
-				o.append("\tmovq\t\\A, %rdx")
-				o.append("\tmovq\t%d(%%rdx), %%rdx" % (8 * i))
-				o.append("\txorq\t\\T, \\T")
-				o.append("\tMULADD\t%s, \\T, \\B" % args(refs(rot)))
-				o.append("")
-			# z = (z + (z0 x u0 mod 2^64) x p) / 2^64 when RDC = 1.
-			o.append(".if \\RDC != 1")
-			o.append("\tmovq\tCPTR, %rdx")
-			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[0], 8 * i))
-			o.append(".else")
-			o.append("\tMULRDC\t%s, \\T, \\P" % args(refs(rot)))
-			if self.full:
-				# The sum can reach 2^(64(n + 1)), so keep its carry.
-				o.append(self.iffull())
-				o.append("\tmovq\t$0, \\%s" % rot[0])
-				o.append("\tadox\tZEROS, \\%s" % rot[0])
-				o.append("\tadcx\tZEROS, \\%s" % rot[0])
-				if i < n - 1:
-					o.append("\tmovq\t\\%s, CARRY" % rot[0])
-				o.append("#endif")
-			o.append(".endif")
-		# The product ends with the accumulator rotated by n.
-		rot = ["Z%d" % ((n + k) % (n + 1)) for k in range(n + 1)]
-		o.append("")
-		o.append(".if \\RDC != 1")
-		for k in range(n):
-			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[k], 8 * (n + k)))
-		o.append(".else")
-		if self.full:
-			o.append(self.iffull())
-			o.append("\tFINALC\t%s" % args(refs(rot)))
-			o.append("#else")
-			o.append("\tFINALC\t%s" % args(refs(rot[:n])))
-			o.append("#endif")
-		else:
-			o.append("\tFINALC\t%s" % args(refs(rot[:n])))
-		o += [".endif"]
-		return macro("FP_MUL_LOW", ["A", "B"] + names(n + 1) + ["T", "P",
-			"RDC"], o)
-
-	def parts(self):
-		return [self.mulm(), self.muladd(), self.mulrdc(), self.finalc(),
-			self.rdcn(), self.addh(), self.fp_rdcn_low(), self.sqrn(),
-			self.fp_sqr_low(), self.fp_mul_low()]
-
-
-def large_mul_low(g):
-	n = g.n
-	o = file_head(g) + [".global cdecl(fp_mul1_low)",
-		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
-	o += mul1(n) + [""]
-	regs = ", ".join(REGS[:n + 1] + ["%rax"])
-	for name, rdc in (("muln", 0), ("mulm", 1)):
-		o += function("fp_%s_low" % name, CALLEE, ["\tmovq\t%rdi, CPTR",
-			"\tmovq\t%rsi, APTR", "\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES",
-			"\tmovq\t$0, CARRY", "\t.set\tk, 0", "\t.rept\tRLC_FP_DIGS",
-			"\tmovq\t8*k(%rdx), %rax", "\tmovq\t%rax, 8*k+BCPY",
-			"\t.set\tk, k + 1", "\t.endr", "", "\tMULM\tAPTR, BCPY, %s" % regs,
-			"\tFP_MUL_LOW\tAPTR, BCPY, %s, p0(%%rip), %d" % (regs, rdc)],
-			frame="FRAME")
-		if name == "muln":
-			o.append("")
-	return o
-
-
-def large_rdc_low(g):
-	n = g.n
-	regs = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-		"%rbx", "%rbp", "%rax", "%rcx"][:n]
-	return file_head(g) + [".global cdecl(fp_rdcn_low)", ""] + function(
-		"fp_rdcn_low", CALLEE, ["\tmovq\t%rdi, CPTR", "\tmovq\t$0, ZEROS",
-		"\tmovq\t$-1, ONES",
-		"\tFP_RDCN_LOW\t0(%%rsi), %s, %%rdi, p0(%%rip)" % ", ".join(regs)],
-		frame="FRAME")
-
-
-def large_sqr_low(g):
-	n = g.n
-	z = REGS[:n]
-	t0 = REGS[n]
-	o = file_head(g) + [".global cdecl(fp_sqrn_low)",
-		".global cdecl(fp_sqrm_low)", ""]
-	# fp_sqrn_low(c, a): c = a^2. fp_sqrm_low(c, a): c = a^2/R mod p.
-	for name, rdc in (("sqrn", 0), ("sqrm", 1)):
-		b = ["\tmovq\t%rdi, CPTR"]
-		if rdc:
-			b += ["\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES"]
-		b += ["\t.set\tk, 0", "\t.rept\tRLC_FP_DIGS", "\tmovq\t8*k(%rsi), %rax",
-			"\tmovq\t%rax, 8*k+BCPY", "\t.set\tk, k + 1", "\t.endr", "",
-			"\tFP_SQR_LOW\tBCPY, SBUF, %s, %s, %%rax, p0(%%rip), "
-				"%d" % (", ".join(z), t0, rdc)]
-		o += function("fp_%s_low" % name, CALLEE, b, frame="SFRAME")
-		if name == "sqrn":
-			o.append("")
-	return o
-
-LARGE_FILES = UNIFORM_FILES + [("relic_fp_mul_low.s", large_mul_low),
-	("relic_fp_rdc_low.s", large_rdc_low), ("relic_fp_sqr_low.s",
-		large_sqr_low)]
-
-
-def write_large(n, out):
-	g = Large(n, any(e[0] == 64 * n for e in PRIMES[n]))
-	# Stack frame of the multiplication and reduction functions. With n
-	# digits, the accumulator takes n + 1 registers, the multiplier takes rdx
-	# and one more register is left for the partial products, so the operand
-	# b, the pointers and the constants live on the stack. The squaring
-	# functions also keep the 2n words of a^2 there, at SBUF.
-	f = 8 * n
-	defines = ["""#define BCPY	0(%rsp)
-#define APTR	{a}(%rsp)
-#define CPTR	{c}(%rsp)
-#define ZEROS	{z}(%rsp)
-#define ONES	{o}(%rsp)
-#define CARRY	{k}(%rsp)
-#define FRAME	{f}
-#define SBUF	{f}(%rsp)
-#define SFRAME	{sf}
-""".format(a=f, c=f + 8, z=f + 16, o=f + 24, k=f + 32, f=f + 40,
-		sf=f + 40 + 16 * n)]
-	os.makedirs(out, exist_ok=True)
-	macro_s(g, out, [], defines, g.parts())
-	write_files(g, out, LARGE_FILES)
-
 # ------------------------------------------------------ design of x64-asm-6l
-# Backends from 4 to 11 limbs keep the accumulator and two temporaries in
-# registers, with the macros below taking registers as arguments. The
-# pointers stay in registers too up to 8 limbs.
+# Backends from 4 to 12 limbs keep the accumulator and two temporaries, one
+# at 12, in registers, with the macros below taking registers as arguments.
+# The pointers stay in registers too up to 8 limbs.
 # Accumulator and temporaries of the multiplication, in order.
 SMALL_ACC = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
 	"%rbx", "%rbp"]
 
 
 class Small(Field):
-	"""The design of x64-asm-6l, for 4 to 11 digits: an accumulator of n + 1
-	registers and two temporaries, with the pointers in registers up to 8
-	digits."""
-	def __init__(self, n):
-		Field.__init__(self, n, False)
+	"""The design of x64-asm-6l, for 4 to 12 digits: an accumulator of n + 1
+	registers and two temporaries, one at 12, with the pointers in registers
+	up to 8 digits."""
+	def __init__(self, n, full=False):
+		Field.__init__(self, n, full)
 		# Squaring keeps a^2 in registers while it fits beside rdx and the
 		# two temporaries, and writes c through %rdi while that leaves it free.
 		self.sqreg = 2 * n + 3 <= 15
@@ -1267,6 +907,15 @@ class Small(Field):
 		# becomes its top word, and a Montgomery step reuses the cancelled
 		# low word, taking its carry from an all-ones constant.
 		self.onet = n >= 8
+		# At 12, T1 goes too: the zero is in memory, Montgomery steps of the
+		# reduction reuse the cancelled low word as well, and there is no Fp2,
+		# whose primes are not 3 mod 8. The final subtractions take the top
+		# word too, since a value below 2p reaches 2^(64n) when p fills the
+		# top bit.
+		self.zmem = n >= 12
+		self.rone = n >= 12
+		self.fp2 = n <= 11
+		self.hw = n >= 12
 		if n <= 7:
 			z, t0, t1 = SMALL_ACC[:n + 1], SMALL_ACC[n + 1], SMALL_ACC[n + 2]
 		elif n == 8:
@@ -1275,16 +924,33 @@ class Small(Field):
 			z, t0, t1 = SMALL_ACC, "%rsi", "%rax"
 		elif n == 10:
 			z, t0, t1 = SMALL_ACC[:8] + ["%rax", "%rbx", "%rbp"], "%rsi", "%rdi"
-		else:
+		elif n == 11:
 			z = SMALL_ACC[:8] + ["%rax", "%rbx", "%rbp", "%rcx"]
 			t0, t1 = "%rsi", "%rdi"
+		else:
+			z = SMALL_ACC[:8] + ["%rax", "%rbx", "%rbp", "%rcx", "%rdi"]
+			t0, t1 = "%rsi", None
 		self.z, self.t0, self.t1 = z, t0, t1
 		# Registers free at the end of a product, besides the accumulator.
 		self.fixed = [x for x in ("%rax", "%rdx", "%rsi", "%rcx")
 			if x not in z + [t0, t1]]
 		# Register copies of the final subtraction; FINALC keeps the other
 		# words at the destination.
-		self.m = min(n, 14 - n)
+		self.m = 1 if self.zmem else min(n, 14 - n)
+		# The temporaries of a product.
+		self.t = [x for x in (t0, t1) if x]
+
+	def full_only(self, yes, no=()):
+		"""Lines for the prime that fills the top bit, and the others."""
+		return [self.iffull()] + yes + (["#else"] + list(no) if no else []) + [
+			"#endif"]
+
+	def zr(self):
+		"""The zero of MULADD1 and MULRDC1."""
+		return "zero(%rip)" if self.zmem else "\\T1"
+
+	def tparams(self):
+		return ["T0"] if self.zmem else ["T0", "T1"]
 
 	def window(self, i):
 		"""The n + 1 accumulator registers at step i of a product."""
@@ -1295,6 +961,8 @@ class Small(Field):
 	def copies(self):
 		"""Registers free at the end of a product, for FINALC."""
 		n = self.n
+		if self.zmem:
+			return ["%rdx"]
 		c = ["\\Z%d" % (n - 1)] + ([] if self.cslot else ["\\T0"]) + ["\\T1"]
 		return (c + self.fixed)[:self.m]
 
@@ -1309,11 +977,14 @@ class Small(Field):
 
 	def clear(self):
 		"""Clears the flags, keeping %rax = 0 when MULADD needs it."""
+		if self.zmem:
+			return "\txorq\t\\T0, \\T0"
 		return "\txorq\t\\T1, \\T1" if self.zt1 else "\txorq\t%rax, %rax"
 
-	def finalc_call(self, values, copies, dest="0(%rdi)"):
+	def finalc_call(self, values, copies, dest="0(%rdi)", top=None):
 		assert len(copies) == self.m
-		return "\tFINALC\t%s" % args(values, copies, dest)
+		assert (top is not None) == self.hw
+		return "\tFINALC\t%s" % args(values, copies, dest, [top] if top else [])
 
 	def mulm(self):
 		"""[Z0:Zn] <- a0 x b for a = 0+A and b = 0+B, with Zn+1 as scratch.
@@ -1382,11 +1053,14 @@ class Small(Field):
 		b = ["\tmovq\t%s, %s" % (v[k], x(k)) for k in range(n)]
 		b += ["\t%s\tp%d(%%rip), %s" % ("subq" if k == 0 else "sbbq", k,
 			v[k] if k < h else c[k - h]) for k in range(n)]
+		if self.hw:
+			b += self.full_only(["\tsbbq\t$0, \\H"])
 		b += ["\tcmovc\t%s, %s" % (at(k), v[k]) if k < h else
 			"\tcmovc\t%s, %s" % (v[k], c[k - h]) for k in range(n)]
 		b += ["\tmovq\t%s, %s" % (v[k] if k < h else c[k - h], at(k))
 			for k in range(n)]
-		return macro("FINALC", names(n, "V") + names(m, "C") + ["D"], b)
+		return macro("FINALC", names(n, "V") + names(m, "C") + ["D"] +
+			(["H"] if self.hw else []), b)
 
 	def rdcstep(self):
 		"""Montgomery step on a window with no word above it:
@@ -1406,14 +1080,32 @@ class Small(Field):
 		b += ["\tadox\t\\T1, \\Z0", "\tadcq\t$0, \\Z0"]
 		return macro("RDCSTEP", names(n) + ["T0", "T1", "P"], b)
 
+	def rdcstep1(self):
+		"""RDCSTEP with one temporary: the low word cancels, so its carry is
+		Z0 != 0, which adding all-ones to Z0 yields, and Z0 then takes the
+		high halves until it becomes the top word. Needs the flags clear."""
+		n = self.n
+		z = refs(names(n))
+		b = ["\tmovq\t$U0, %rdx", "\tmulx\t\\Z0, %rdx, \\T",
+			"\tmulx\t0+\\P, \\T, \\T", "\tadcx\tones(%rip), \\Z0",
+			"\tadox\t\\T, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmulx\t%d+\\P, \\T, \\Z0" % (8 * k),
+				"\tadcx\t\\T, %s" % z[k]]
+			if k < n - 1:
+				b.append("\tadox\t\\Z0, %s" % z[k + 1])
+		b += ["\tadox\t\\ZR, \\Z0", "\tadcx\t\\ZR, \\Z0"]
+		return macro("RDCSTEP", names(n) + ["T", "ZR", "P"], b)
+
 	def rdcn(self):
 		"""[Z0:Zn-1] <- [Z0:Zn-1]/2^(64n) mod p, at most p, by n Montgomery
 		steps."""
 		n = self.n
 		z = refs(names(n))
+		t = ["\\T0", self.zr()] if self.rone else ["\\T0", "\\T1"]
 		b = ["\tRDCSTEP\t%s" % args([z[(i + j) % n] for j in range(n)],
-			"\\T0", "\\T1", "\\P") for i in range(n)]
-		return macro("RDCN", names(n) + ["T0", "T1", "P"], b)
+			t, "\\P") for i in range(n)]
+		return macro("RDCN", names(n) + self.tparams() + ["P"], b)
 
 	def addh(self):
 		"""[Z0:Zn-1] += [H0:Hn-1], registers or memory."""
@@ -1429,17 +1121,25 @@ class Small(Field):
 		n = self.n
 		z = refs(names(n))
 		b = ["\tmovq\t%d+\\A, %s" % (8 * k, z[k]) for k in range(n)]
-		b += ["\tRDCN\t%s" % args(z, "\\T0", "\\T1", "\\P"),
+		if self.rone:
+			b.append("\txorq\t\\T0, \\T0")
+		b += ["\tRDCN\t%s" % args(z, refs(self.tparams()), "\\P"),
 			"\tADDH\t%s" % args(z, ["%d+\\A" % (8 * (n + k))
 				for k in range(n)])]
+		top = None
+		if self.hw:
+			# The sum reaches 2^(64n) when p fills the top bit.
+			b += self.full_only(["\tmovq\t$0, \\H", "\tadcq\t$0, \\H"])
+			top = "\\H"
 		if self.rcslot:
 			# The pointer to c is at CP, and the copies must not use T0.
 			b += ["\tmovq\t\\CP, \\T0", self.finalc_call(z,
-				refs(names(self.m, "C")), "0(\\T0)")]
+				refs(names(self.m, "C")), "0(\\T0)", top)]
 		else:
-			b.append(self.finalc_call(z, refs(names(self.m, "C"))))
-		return macro("FP_RDCN_LOW", ["A"] + names(n) + ["T0", "T1", "P"] +
-			names(self.m, "C") + (["CP"] if self.rcslot else []), b)
+			b.append(self.finalc_call(z, refs(names(self.m, "C")), top=top))
+		return macro("FP_RDCN_LOW", ["A"] + names(n) + self.tparams() + ["P"] +
+			names(self.m, "C") + (["CP"] if self.rcslot else []) +
+			(["H"] if self.hw else []), b)
 
 	def sqrn_reg(self):
 		"""[Z0:Z2n-1] <- a^2 with a = 0+A, computing each cross product once.
@@ -1522,29 +1222,39 @@ class Small(Field):
 		a = lambda k: "%d+\\A" % (8 * k)
 		o = lambda j: "%d+\\O" % (8 * j)
 
-		# Beyond kk digits, row 0 needs the register of w1 for its top word,
-		# so w1 is stored as soon as it is final, after the first product.
-		early = n > kk
+		# Beyond kk digits, row 0 needs the registers of w1, and of w2 beyond
+		# kk + 1, for its top words, so they are stored as soon as they are
+		# final. Row r then needs the register of w(2r + 1) for its top word,
+		# which is final after its first product.
+		early = set(j for j in (1, 2) if j + kk <= n)
+		done = set(early)
 
 		def stores(r):
 			"""Words 2r + 1 and 2r + 2 are final after row r."""
 			return ["\tmovq\t%s, %s" % (w(j), o(j)) for j in (2 * r + 1,
-				2 * r + 2) if j in spill and not (early and j == 1)]
+				2 * r + 2) if j in spill and j not in done]
 		b = ["\tmovq\t0+\\A, %rdx", "\tmulx\t%s, %s, %s" % (a(1), w(1), w(2))]
-		if early:
+		if 1 in early:
 			b.append("\tmovq\t%s, %s" % (w(1), o(1)))
 		for k in range(2, n):
 			b += ["\tmulx\t%s, \\T0, %s" % (a(k), w(k + 1)),
 				"\t%s\t\\T0, %s" % ("addq" if k == 2 else "adcq", w(k))]
+			if k == 2 and 2 in early:
+				b.append("\tmovq\t%s, %s" % (w(2), o(2)))
 		b.append("\tadcq\t$0, %s" % w(n))
 		b += stores(0)
 		for r in range(1, n - 2):
-			b += ["", "\tmovq\t%s, %%rdx" % a(r),
-				"\txorq\t%s, %s" % (w(n + r), w(n + r))]
+			mid = w(n + r) == w(2 * r + 1)
+			b += ["", "\tmovq\t%s, %%rdx" % a(r), "\txorq\t%s, %s" % (
+				("\\T0", "\\T0") if mid else (w(n + r), w(n + r)))]
 			for k in range(r + 1, n):
 				b += ["\tmulx\t%s, \\T0, \\T1" % a(k),
 					"\tadcx\t\\T0, %s" % w(r + k),
 					"\tadox\t\\T1, %s" % w(r + k + 1)]
+				if mid and k == r + 1:
+					b += ["\tmovq\t%s, %s" % (w(2 * r + 1), o(2 * r + 1)),
+						"\tmovq\t$0, %s" % w(n + r)]
+					done.add(2 * r + 1)
 			b.append("\tadcq\t$0, %s" % w(n + r))
 			b += stores(r)
 		r = n - 2
@@ -1577,7 +1287,13 @@ class Small(Field):
 		n = self.n
 		pool = refs(names(10)) + ["\\T0", "\\T1"]
 		cp = []
-		if self.rcslot:
+		if self.rone:
+			# One temporary, the copy %rdx and the top word in %rdi.
+			pool += ["%rsi", "%rdi"]
+			copies = ["%rdx"]
+			cp = ["\\C", pool[n + 1]]
+			pool = pool[:n + 1]
+		elif self.rcslot:
 			# The pointer to c is at C, and %rsi and %rdi are free.
 			pool += ["%rsi", "%rdi"]
 			copies = [pool[n + 1], "%rdx", pool[n + 2]]
@@ -1605,7 +1321,10 @@ class Small(Field):
 		if clear or (i == 0 and self.mulmadc):
 			b.append(self.clear())
 		if self.onet:
-			b += ["\tMULRDC1\t%s" % args(w, "\\T0", "\\T1", "\\P"), ".endif"]
+			b.append("\tMULRDC1\t%s" % args(w, "\\T0", self.zr(), "\\P"))
+			if self.hw and i < self.n - 1:
+				b += self.full_only(["\tmovq\t%s, \\K" % w[0]])
+			b.append(".endif")
 		else:
 			b += ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
 				"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P"), ".endif"]
@@ -1623,8 +1342,15 @@ class Small(Field):
 				"\tadcx\t\\T, %s" % z[k]]
 			if k < n - 1:
 				b.append("\tadox\t\\X, %s" % z[k + 1])
-		b += ["\tadox\t\\ZR, \\X", "\tadcx\t\\ZR, \\X"]
-		return macro("MULADD1", names(n) + ["X", "T", "ZR", "M"], b)
+		if self.hw:
+			# The top word of the accumulator, kept at K, goes in with the
+			# last carry.
+			b += ["\tadox\t\\ZR, \\X"] + self.full_only(["\tadcx\t\\K, \\X"],
+				["\tadcx\t\\ZR, \\X"])
+		else:
+			b += ["\tadox\t\\ZR, \\X", "\tadcx\t\\ZR, \\X"]
+		return macro("MULADD1", names(n) + ["X", "T", "ZR", "M"] +
+			(["K"] if self.hw else []), b)
 
 	def mulrdc1(self):
 		"""[Z1:Zn] <- ([Z0:Zn] + (Z0 x u0 mod 2^64) x p)/2^64 for p = 0+P. The
@@ -1640,6 +1366,11 @@ class Small(Field):
 			b += ["\tmulx\t%d+\\P, \\T, \\Z0" % (8 * k),
 				"\tadcx\t\\T, %s" % z[k], "\tadox\t\\Z0, %s" % z[k + 1]]
 		b.append("\tadcx\t\\ZR, %s" % z[n])
+		if self.hw:
+			# A value below 2p reaches 2^(64n), so the carries become the top
+			# word in Z0.
+			b += self.full_only(["\tmovq\t$0, \\Z0", "\tadox\t\\ZR, \\Z0",
+				"\tadcx\t\\ZR, \\Z0"])
 		return macro("MULRDC1", names(n + 1) + ["T", "ZR", "P"], b)
 
 	def result(self, b):
@@ -1648,20 +1379,23 @@ class Small(Field):
 		b += [".if \\RDC != 1"] + self.loadc() + ["\tmovq\t%s, %d(%s)" % (w[k],
 			8 * (n + k), self.cbase()) for k in range(n)] + [".else"]
 		b += self.loadc() + [self.finalc_call(w[:n], self.copies(),
-			"0(%s)" % self.cbase()), ".endif"]
+			"0(%s)" % self.cbase(), w[n] if self.hw else None), ".endif"]
 
 	def fp_mul_low(self):
 		"""c <- a x b (RDC = 0) or a x b/2^(64n) mod p (RDC = 1), after MULM,
 		adding ai x b at step i. With cslot, the pointer to c is at C, and
 		stores go through T0."""
 		n = self.n
-		b = ["\txorq\t\\T1, \\T1"] if self.onet else []
+		b = ["\txorq\t\\T1, \\T1"] if self.onet and not self.zmem else []
+		if self.hw:
+			b += self.full_only(["\tmovq\t$0, \\K"])
 		for i in range(n):
 			w = self.window(i)
 			if i > 0 and self.onet:
 				b += ["", "\txorq\t\\T0, \\T0",
 					"\tmovq\t%d+\\A, %%rdx" % (8 * i),
-					"\tMULADD1\t%s" % args(w[:n], w[n], "\\T0", "\\T1", "\\B")]
+					"\tMULADD1\t%s" % args(w[:n], w[n], "\\T0", self.zr(),
+						"\\B", ["\\K"] if self.hw else [])]
 			elif i > 0:
 				b += ["",
 					"\txorq\t%s, %s" % (w[n], w[n]),
@@ -1670,8 +1404,8 @@ class Small(Field):
 			self.step_end(b, i, False)
 		b.append("")
 		self.result(b)
-		return macro("FP_MUL_LOW", ["A", "B"] + names(n + 1) + ["T0", "T1",
-			"P", "RDC"] + self.cparam(), b)
+		return macro("FP_MUL_LOW", ["A", "B"] + names(n + 1) + self.tparams() +
+			["P", "RDC"] + self.cparam() + (["K"] if self.hw else []), b)
 
 	def fp2_mul0_low(self):
 		"""c0 <- a0 x b0 - a1 x b1 after MULM, as for FP_MUL_LOW, adding
@@ -1850,6 +1584,10 @@ class Small(Field):
 			"RDC", "S"], b)
 
 	def parts(self):
+		if self.rone:
+			return [self.mulm(), self.muladd1(), self.mulrdc1(), self.finalc(),
+				self.rdcstep1(), self.rdcn(), self.addh(), self.fp_rdcn_low(),
+				self.sqrn_mem(), self.fp_sqr_low_mem(), self.fp_mul_low()]
 		parts = [self.mulm(), self.muladd(), self.mulsub(), self.finalc(),
 			self.rdcstep(), self.rdcn(), self.addh(), self.fp_rdcn_low()]
 		if self.onet:
@@ -1864,17 +1602,23 @@ class Small(Field):
 
 
 def small_rdc_regs(g):
-	"""Accumulator, temporaries and copies of FP_RDCN_LOW for a based on %rsi or
-	%rsp. The copies reuse the temporaries, %rdx and %rsi."""
+	"""Accumulator, temporaries, copies and register of the top word of
+	FP_RDCN_LOW for a based on %rsi or %rsp. The copies reuse the
+	temporaries, %rdx and %rsi."""
 	n = g.n
 	r = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx"] + SMALL_ACC[4:]
+	if g.rone:
+		# One temporary, the copy %rdx, and the top word in %rsi, which A no
+		# longer needs.
+		r.append("%rdi")
+		return r[:n], r[n:n + 1], ["%rdx"], ["%rsi"]
 	if g.rcslot:
 		# The pointer to c is on the stack, freeing %rdi, and goes to T0.
 		r.append("%rdi")
 		z, t = r[:n], r[n:n + 2]
-		return z, t, [t[1], "%rdx", "%rsi"][:g.m]
+		return z, t, [t[1], "%rdx", "%rsi"][:g.m], []
 	z, t = r[:n], r[n:n + 2]
-	return z, t, (t + ["%rdx", "%rsi"] + r[n + 2:])[:g.m]
+	return z, t, (t + ["%rdx", "%rsi"] + r[n + 2:])[:g.m], []
 
 
 def small_copy(g, src, dst, words):
@@ -1897,7 +1641,7 @@ def small_mul_low(g):
 	o = file_head(g) + [".global cdecl(fp_mul1_low)",
 		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
 	o += mul1(g.n) + [""]
-	regs = args(z, t0, t1)
+	regs = args(z, g.t)
 	for name, rdc in (("fp_muln_low", 0), ("fp_mulm_low", 1)):
 		b = ["\tmovq\t%rdx, %rcx"]
 		a = "0(%rsi)"
@@ -1918,23 +1662,26 @@ def small_mul_low(g):
 				cs = ", %d(%%rsp)" % frame
 				b.append("\tmovq\t%%rdi, %d(%%rsp)" % frame)
 				frame += 8
+			if g.hw:
+				cs += ", %d(%%rsp)" % frame
+				frame += 8
 		b += ["", "\tMULM\t%s, %s, %s" % (a, bb, args(z, t0)),
 			"\tFP_MUL_LOW\t%s, %s, %s, p0(%%rip), %d%s" % (a, bb, regs, rdc,
 				cs)]
-		o += function(name, set(z + [t0, t1]), b, frame=frame)
+		o += function(name, set(z + g.t), b, frame=frame)
 		if rdc == 0:
 			o.append("")
 	return o
 
 
 def small_rdc_low(g):
-	z, t, c = small_rdc_regs(g)
+	z, t, c, h = small_rdc_regs(g)
 	# fp_rdcn_low(c, a): c = a/R mod p, for a < pR.
 	if g.rcslot:
 		return file_head(g) + [".global cdecl(fp_rdcn_low)", ""] + function(
-			"fp_rdcn_low", set(z + t + c), ["\tmovq\t%rdi, 0(%rsp)",
+			"fp_rdcn_low", set(z + t + c + h), ["\tmovq\t%rdi, 0(%rsp)",
 			"\tFP_RDCN_LOW\t0(%%rsi), %s, p0(%%rip), %s, 0(%%rsp)" % (args(z,
-				t), args(c))], frame=8)
+				t), args(c, h))], frame=8)
 	return file_head(g) + [".global cdecl(fp_rdcn_low)", ""] + function(
 		"fp_rdcn_low", set(z + t + c),
 		["\tFP_RDCN_LOW\t0(%%rsi), %s, p0(%%rip), %s" % (args(z, t), args(c))])
@@ -1973,7 +1720,7 @@ def small_rdcs(g, cs, c0, c1):
 	"""Reduces the products at c0(%rsp) and c1(%rsp) to c and c + 8n, with
 	the pointer to c at cs(%rsp)."""
 	n = g.n
-	rz, rt, rc = small_rdc_regs(g)
+	rz, rt, rc, _ = small_rdc_regs(g)
 	rr = args(rz, rt, "p0(%rip)", rc)
 	if g.rcslot:
 		rr += ", %d(%%rsp)" % cs
@@ -1990,7 +1737,7 @@ def small_rdcs(g, cs, c0, c1):
 def small_fpx_mul_low(g):
 	n = g.n
 	z, t0, t1 = g.z, g.t0, g.t1
-	rz, rt, rc = small_rdc_regs(g)
+	rz, rt, rc, _ = small_rdc_regs(g)
 	_, cs = g.fp2_frame()
 	f = cs + 8 * n
 	regs = args(z, t0, t1)
@@ -2047,7 +1794,7 @@ def small_fpx_mul_low(g):
 def small_fpx_sqr_low(g):
 	n = g.n
 	z, t0, t1 = g.z, g.t0, g.t1
-	rz, rt, rc = small_rdc_regs(g)
+	rz, rt, rc, _ = small_rdc_regs(g)
 	f = 24 * n + 16
 	sp = 24 * n
 	regs = args(z, t0, t1)
@@ -2114,25 +1861,30 @@ def write_small(n, out):
 	n + 1 digits, so it needs 3p < 2^(64n): FP2_SQR_RDC. The Fp2 functions
 	read both coordinates from one contiguous vector, hence FP2_ASM only with
 	ALLOC = AUTO."""
-	g = Small(n)
-	# RDCSTEP and the interleaved products keep intermediate results in n + 1
-	# words, which needs p < 2^(64n - 1).
+	g = Small(n, any(e[0] == 64 * n for e in PRIMES[n]))
+	# A Montgomery step leaves (z + m x p)/2^64 < 2^(64n - 64) + p, which
+	# stays below 2^(64n) for p < 2^(64n) - 2^(64n - 64). Without the top
+	# word, the final subtractions also need p < 2^(64n - 1).
 	for e in PRIMES[n]:
-		assert int(e[1], 16) < 1 << (64 * n - 1)
+		p = int(e[1], 16)
+		assert p < (1 << (64 * n)) - (1 << (64 * n - 64))
+		assert g.hw or p < 1 << (64 * n - 1)
 	guard = "#if %s\n#define %s\n#endif\n"
 	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
 		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
 		guard % ("defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
-	# MULRDC1 reads an all-ones word, local to each object.
+	# MULRDC1 reads an all-ones word, and at 12 digits a zero word, local to
+	# each object.
 	ones = ["#if defined(__APPLE__)\n.section __TEXT,__const\n#else\n"
-		".section .rodata\n#endif\n.p2align 3\nones:\t.quad\t-1\n"]
-	macro_s(g, out, guards, ones if g.onet else [], g.parts())
-	write_files(g, out, SMALL_FILES)
+		".section .rodata\n#endif\n.p2align 3\nones:\t.quad\t-1\n" +
+		("zero:\t.quad\t0\n" if g.zmem else "")]
+	macro_s(g, out, guards if g.fp2 else [], ones if g.onet else [],
+		g.parts())
+	write_files(g, out, [x for x in SMALL_FILES if g.fp2 or "fpx" not in x[0]])
 
 
 def main():
-	modes = {"--large": write_large, "--small": write_small,
-		"--uniform": write_uniform}
+	modes = {"--small": write_small, "--uniform": write_uniform}
 	if len(sys.argv) != 4 or sys.argv[1] not in modes:
 		sys.exit(__doc__)
 	modes[sys.argv[1]](int(sys.argv[2]), sys.argv[3])
