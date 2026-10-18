@@ -2,11 +2,14 @@
 """Generates the x64-asm-Nl backend sources in the design of x64-asm-12l.
 
 Usage: tools/relic-gen-x64.py N OUTDIR
+       tools/relic-gen-x64.py --uniform N DIR
 
-It writes macro.s and the assembly files of the backend for N limbs. The C
-files and CMakeLists.txt are generic and can be copied from x64-asm-12l. The
-supported primes come from PRIMES below; 12 limbs reproduces x64-asm-12l.
-Check a new backend with tools/relic-check-fp.c.
+The first form writes macro.s and the assembly files of the backend for N
+limbs. The C files and CMakeLists.txt are generic and can be copied from
+x64-asm-12l. The supported primes come from PRIMES below; 12 limbs reproduces
+x64-asm-12l. The second form rewrites only the addition and shift files of an
+existing backend in DIR, such as one in the design of x64-asm-6l, keeping their
+license headers. Check a backend with tools/relic-check-fp.c.
 """
 
 import os
@@ -512,6 +515,14 @@ class Gen:
 
 
 def main():
+	if sys.argv[1] == "--uniform":
+		# Only the files that do not depend on the design of the macros, for a
+		# backend whose macro.s defines P0..P(N-1) and the ADD1..DBLN macros.
+		n = int(sys.argv[2])
+		out = sys.argv[3]
+		macro = open(os.path.join(out, "macro.s")).read()
+		write_all(Gen(n, "FP_PRIME == %d" % (64 * n) in macro), out, True)
+		return
 	n = int(sys.argv[1])
 	out = sys.argv[2]
 	g = Gen(n, any(b == 64 * n for b, _, _ in PRIMES[n]))
@@ -587,14 +598,31 @@ def main():
 # ------------------------------------------------------------------ other files
 ACC = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rax",
 	"%rbx", "%rbp", "%rcx"]
-PUSH6 = ["\tpush\t%rbx", "\tpush\t%rbp", "\tpush\t%r12", "\tpush\t%r13",
-	"\tpush\t%r14", "\tpush\t%r15", ""]
-POP6 = ["\tpop\t\t%r15", "\tpop\t\t%r14", "\tpop\t\t%r13", "\tpop\t\t%r12",
-	"\tpop\t\t%rbp", "\tpop\t\t%rbx", "\tret"]
+POOL = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx", "%rbx", "%rbp", "%r12",
+	"%r13", "%r14", "%r15"]
+CALLER = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx", "%rdx", "%rbx", "%rbp",
+	"%r12", "%r13", "%r14", "%r15"]
 PUSHM = ["\tpush\t%r12", "\tpush\t%r13", "\tpush\t%r14", "\tpush\t%r15",
 	"\tpush\t%rbx", "\tpush\t%rbp"]
 POPM = ["\tpop\t\t%rbp", "\tpop\t\t%rbx", "\tpop\t\t%r15", "\tpop\t\t%r14",
 	"\tpop\t\t%r13", "\tpop\t\t%r12", "\tret"]
+
+
+def saves(order, regs):
+	"""Saves and restores, in the given order, the callee-saved registers that
+	a function uses, since only those must be preserved."""
+	used = [x for x in order if x in regs]
+	push = ["\tpush\t%s" % x for x in used]
+	return (push + [""] if push else [],
+		["\tpop\t\t%s" % x for x in reversed(used)] + ["\tret"])
+
+
+def save6(regs):
+	return saves(["%rbx", "%rbp", "%r12", "%r13", "%r14", "%r15"], regs)
+
+
+def savem(regs):
+	return saves(["%r12", "%r13", "%r14", "%r15", "%rbx", "%rbp"], regs)
 
 
 def header(name):
@@ -604,8 +632,19 @@ def header(name):
 
 def add_low(g):
 	n = g.n
-	r = ACC[:n]
 	full = g.full
+	# Besides %rdi, 14 registers hold a result and its copy once the operands
+	# are loaded, so small fields reduce without storing and reloading. The
+	# addition also needs a carry when p fills the top bit. Caller-saved
+	# registers come first, so fewer need saving.
+	add_reg = 2 * n + full <= 14
+	sub_reg = 2 * n <= 14
+	# The order of x64-asm-12l is kept for the large fields it reproduces.
+	r = POOL[:n] if n <= 10 else ACC[:n]
+	spare = ["%rdx", "%rsi"] + [x for x in POOL if x not in r]
+	add_extra = spare[:n + full] if add_reg else []
+	sub_extra = spare[:n] if sub_reg else []
+	carry = spare[n] if add_reg and full else "%rsi"
 	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "",
 		"#if defined(__APPLE__)", ".section __TEXT,__const", "#else",
 		".section .rodata", "#endif", "", ".p2align 3"]
@@ -622,11 +661,26 @@ def add_low(g):
 			return []
 		return [g.iffull(),
 			"\t// p fills the top bit, so keep the carry of the sum.",
-			"\tmovq\t$0, %rsi", "\tadcq\t$0, %rsi", "#endif"]
+			"\tmovq\t$0, %s" % carry, "\tadcq\t$0, %s" % carry, "#endif"]
 
 	def correct(base):
-		"""Subtracts p from [rsi:r] at base(%rdi), keeping it if no borrow."""
+		"""Subtracts p from [carry:r], keeping the difference if it does not
+		borrow, and stores the result at base(%rdi)."""
 		s = []
+		if add_reg:
+			c = add_extra
+			for i in range(n):
+				s.append("\tmovq\t%s, %s" % (r[i], c[i]))
+			s.append("\tsubq\tp0(%%rip), %s" % c[0])
+			for i in range(1, n):
+				s.append("\tsbbq\tp%d(%%rip), %s" % (i, c[i]))
+			if full:
+				s += [g.iffull(), "\tsbbq\t$0, %s" % carry, "#endif"]
+			for i in range(n):
+				s.append("\tcmovnc\t%s, %s" % (c[i], r[i]))
+			for i in range(n):
+				s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
+			return s
 		for i in range(n):
 			s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
 		s.append("\tsubq\tp0(%%rip), %s" % r[0])
@@ -641,7 +695,22 @@ def add_low(g):
 		return s
 
 	def addback(base):
-		"""Adds p to the difference at base(%rdi) if it borrowed."""
+		"""Adds p to the difference in r if it borrowed, and stores the result
+		at base(%rdi)."""
+		if sub_reg:
+			# The mask in c[0] covers the other words before becoming p0 & mask.
+			c = sub_extra
+			s = ["", "\tsbbq\t%s, %s" % (c[0], c[0])]
+			for i in range(1, n):
+				s.append("\tmovq\tp%d(%%rip), %s" % (i, c[i]))
+				s.append("\tandq\t%s, %s" % (c[0], c[i]))
+			s.append("\tandq\tp0(%%rip), %s" % c[0])
+			s.append("\taddq\t%s, %s" % (c[0], r[0]))
+			for i in range(1, n):
+				s.append("\tadcq\t%s, %s" % (c[i], r[i]))
+			for i in range(n):
+				s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
+			return s
 		s = ["", "\tsbbq\t%rsi, %rsi"]
 		for i in range(n):
 			s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
@@ -663,26 +732,28 @@ def add_low(g):
 		"\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "", "\tret", ""]
 	# fp_addm_low
-	o += ["cdecl(fp_addm_low):"] + PUSH6
+	o += ["cdecl(fp_addm_low):"] + save6(r + add_extra)[0]
 	o.append("\tmovq\t0(%%rdx), %s" % r[0])
 	o.append("\taddq\t0(%%rsi), %s" % r[0])
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rdx), %s" % (8 * i, r[i]))
 		o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, r[i]))
-	o += keep_carry() + [""] + correct(0) + [""] + POP6 + [""]
+	o += keep_carry() + [""] + correct(0) + [""]
+	o += save6(r + add_extra)[1] + [""]
 	# fp_addd_low
 	o += ["cdecl(fp_addd_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rdx), %r11",
 		"\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (2 * RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_addc_low
-	o += ["cdecl(fp_addc_low):"] + PUSH6
+	o += ["cdecl(fp_addc_low):"] + save6(r + add_extra)[0]
 	o += ["\tmovq\t0(%rdx), "
 		"%r11", "\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (RLC_FP_DIGS - 1)", ""]
 	for i in range(n):
 		o.append("\tmovq\t%d(%%rdx), %s" % (8 * (n + i), r[i]))
 		o.append("\tadcq\t%d(%%rsi), %s" % (8 * (n + i), r[i]))
-	o += keep_carry() + [""] + correct(8 * n) + [""] + POP6 + [""]
+	o += keep_carry() + [""] + correct(8 * n) + [""]
+	o += save6(r + add_extra)[1] + [""]
 	# fp_sub1_low and fp_subn_low
 	o += ["cdecl(fp_sub1_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r10",
 		"\tsubq\t%rdx, %r10", "\tmovq\t%r10, 0(%rdi)", "",
@@ -691,58 +762,63 @@ def add_low(g):
 		"\tsubq\t0(%rdx), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tSUBN\t1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "", "\tret", ""]
 	# fp_subm_low
-	o += ["cdecl(fp_subm_low):"] + PUSH6
+	o += ["cdecl(fp_subm_low):"] + save6(r + sub_extra)[0]
 	o.append("\tmovq\t0(%%rsi), %s" % r[0])
 	o.append("\tsubq\t0(%%rdx), %s" % r[0])
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
 		o.append("\tsbbq\t%d(%%rdx), %s" % (8 * i, r[i]))
-	o += addback(0) + [""] + POP6 + [""]
+	o += addback(0) + [""] + save6(r + sub_extra)[1] + [""]
 	# fp_subd_low
 	o += ["cdecl(fp_subd_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r8",
 		"\tsubq\t0(%rdx), %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tSUBN\t1 (2 * RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_subc_low
-	o += ["cdecl(fp_subc_low):"] + PUSH6
+	o += ["cdecl(fp_subc_low):"] + save6(r + sub_extra)[0]
 	o += ["\tmovq\t0(%rsi), "
 		"%r8", "\tsubq\t0(%rdx), %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tSUBN\t1 (RLC_FP_DIGS - 1)", ""]
 	for i in range(n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * (n + i), r[i]))
 		o.append("\tsbbq\t%d(%%rdx), %s" % (8 * (n + i), r[i]))
-	o += addback(8 * n) + [""] + POP6 + [""]
-	# fp_negm_low: c = p - a if a != 0, else 0.
-	o += ["cdecl(fp_negm_low):"] + PUSH6
+	o += addback(8 * n) + [""] + save6(r + sub_extra)[1] + [""]
+	# fp_negm_low: c = p - a if a != 0, else 0. Only %rsi is read, so %rdx
+	# joins the caller-saved registers.
+	nr = CALLER[:n] if n <= 10 else r
+	o += ["cdecl(fp_negm_low):"] + save6(nr)[0]
 	for i in range(1, n):
-		o.append("\txorq\t%s, %s" % (r[i], r[i]))
-	o.append("\tmovq\t0(%%rsi), %s" % r[0])
+		o.append("\txorq\t%s, %s" % (nr[i], nr[i]))
+	o.append("\tmovq\t0(%%rsi), %s" % nr[0])
 	for i in range(1, n):
-		o.append("\torq\t%d(%%rsi), %s" % (8 * i, r[0]))
-	o.append("\ttestq\t%s, %s" % (r[0], r[0]))
+		o.append("\torq\t%d(%%rsi), %s" % (8 * i, nr[0]))
+	o.append("\ttestq\t%s, %s" % (nr[0], nr[0]))
 	for i in range(n):
-		o.append("\tcmovnz\tp%d(%%rip), %s" % (i, r[i]))
-	o.append("\tsubq\t0(%%rsi), %s" % r[0])
-	o.append("\tmovq\t%s, 0(%%rdi)" % r[0])
+		o.append("\tcmovnz\tp%d(%%rip), %s" % (i, nr[i]))
+	o.append("\tsubq\t0(%%rsi), %s" % nr[0])
+	o.append("\tmovq\t%s, 0(%%rdi)" % nr[0])
 	for i in range(1, n):
-		o.append("\tsbbq\t%d(%%rsi), %s" % (8 * i, r[i]))
-		o.append("\tmovq\t%s, %d(%%rdi)" % (r[i], 8 * i))
-	o += [""] + POP6 + [""]
+		o.append("\tsbbq\t%d(%%rsi), %s" % (8 * i, nr[i]))
+		o.append("\tmovq\t%s, %d(%%rdi)" % (nr[i], 8 * i))
+	o += [""] + save6(nr)[1] + [""]
 	# fp_dbln_low
 	o += ["cdecl(fp_dbln_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r8",
 		"\taddq\t%r8, %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tDBLN 1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_dblm_low
-	o += ["cdecl(fp_dblm_low):"] + PUSH6
+	o += ["cdecl(fp_dblm_low):"] + save6(r + add_extra)[0]
 	o.append("\tmovq\t0(%%rsi), %s" % r[0])
 	o.append("\taddq\t%s, %s" % (r[0], r[0]))
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
 		o.append("\tadcq\t%s, %s" % (r[i], r[i]))
-	o += keep_carry() + [""] + correct(0) + [""] + POP6 + [""]
+	o += keep_carry() + [""] + correct(0) + [""]
+	o += save6(r + add_extra)[1] + [""]
 	# fp_hlvm_low: c = (a + (a odd ? p : 0)) / 2, with the carry shifted in.
 	h = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rbp",
 		"%rbx", "%rcx", "%rax"][:n]
-	o += ["cdecl(fp_hlvm_low):"] + PUSHM + ["",
+	if n <= 10:
+		h = POOL[:n]
+	o += ["cdecl(fp_hlvm_low):"] + savem(h)[0] + [
 		"\tmovq\t$1, %rdx", "\tandq\t0(%rsi), %rdx", "\tmovq\t$0, %rdx"]
 	for i in range(n):
 		o.append("\tmovq\t$P%d, %s" % (i, h[i]))
@@ -758,9 +834,47 @@ def add_low(g):
 	o.append("")
 	for i in range(n):
 		o.append("\tmovq\t%s, %d(%%rdi)" % (h[i], 8 * i))
-	o += ["\txorq\t%rax, %rax", ""] + POPM + [""]
-	# fp_hlvd_low: the same over 2n digits, adding p to the low half.
-	o += ["cdecl(fp_hlvd_low):"] + PUSHM + ["",
+	o += ["\txorq\t%rax, %rax", ""] + savem(h)[1] + [""]
+	# fp_hlvd_low: the same over 2n digits, adding p to the low half. Besides
+	# %rdi, 14 registers hold digits, with %rsi taking the last digit read, so
+	# only the lowest 2n - 14 digits of the high half go through memory.
+	if n <= 10:
+		lo = POOL[:n]
+		hi = (["%rdx"] + POOL[n:] + ["%rsi"])[:n]
+		mem = max(0, 2 * n - 14)
+		hi = [None] * mem + hi[:n - mem]
+		tmp = hi[mem]
+		regs = lo + [x for x in hi if x]
+		o += ["cdecl(fp_hlvd_low):"] + savem(regs)[0] + [
+			"\tmovq\t$1, %s" % tmp, "\tandq\t0(%%rsi), %s" % tmp,
+			"\tmovq\t$0, %s" % tmp]
+		for i in range(n):
+			o.append("\tmovq\t$P%d, %s" % (i, lo[i]))
+		for i in range(n):
+			o.append("\tcmovz\t%s, %s" % (tmp, lo[i]))
+		o.append("")
+		o.append("\taddq\t0(%%rsi), %s" % lo[0])
+		for i in range(1, n):
+			o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, lo[i]))
+		for i in range(n):
+			d = 8 * (n + i)
+			x = hi[i] or tmp
+			o.append("\tmovq\t%d(%%rsi), %s" % (d, x))
+			o.append("\tadcq\t$0, %s" % x)
+			if not hi[i]:
+				o.append("\tmovq\t%s, %d(%%rdi)" % (x, d))
+		o.append("")
+		for i in reversed(range(2 * n)):
+			x = lo[i] if i < n else hi[i - n]
+			o.append("\trcrq\t$1, %s" % (x or "%d(%%rdi)" % (8 * i)))
+		o.append("")
+		for i in range(2 * n):
+			x = lo[i] if i < n else hi[i - n]
+			if x:
+				o.append("\tmovq\t%s, %d(%%rdi)" % (x, 8 * i))
+		o += [""] + savem(regs)[1]
+		return o
+	o += ["cdecl(fp_hlvd_low):"] + savem(h)[0] + [
 		"\tmovq\t$1, %rdx", "\tandq\t0(%rsi), %rdx", "\tmovq\t$0, %rdx"]
 	for i in range(n):
 		o.append("\tmovq\t$P%d, %s" % (i, h[i]))
@@ -782,7 +896,7 @@ def add_low(g):
 	o.append("")
 	for i in range(n):
 		o.append("\tmovq\t%s, %d(%%rdi)" % (h[i], 8 * i))
-	o += [""] + POPM
+	o += [""] + savem(h)[1]
 	return o
 
 
@@ -909,6 +1023,8 @@ def sqr_low(g):
 
 def shift_low(g):
 	n = g.n
+	if n <= 6:
+		return shift_low_regs(g)
 	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text",
 		".global cdecl(fp_rsh1_low)", ".global cdecl(fp_lsh1_low)", "", "/*",
 		" * The digits are shifted in place from one end, so c may alias "
@@ -936,14 +1052,55 @@ def shift_low(g):
 	return o
 
 
-def write_all(g, out):
-	for name, fn in (("relic_fp_add_low.s", add_low), ("relic_fp_mul_low.s",
-		mul_low),
-			("relic_fp_rdc_low.s", rdc_low), ("relic_fp_sqr_low.s", sqr_low),
-			("relic_fp_shift_low.s", shift_low)):
-		text = header(name) + "\n" + "\n".join(fn(g)) + "\n"
-		open(os.path.join(out, name), "w").write(text)
 
+def shift_low_regs(g):
+	"""Shifts with all digits loaded first, which pipelines better while they
+	fit in caller-saved registers. Loading everything first keeps c = a safe."""
+	n = g.n
+	r = ["%r8", "%r9", "%r10", "%r11", "%rcx", "%rdx"][:n]
+	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text",
+		".global cdecl(fp_rsh1_low)", ".global cdecl(fp_lsh1_low)", "", "/*",
+		" * All the digits are read before any is written, so c may alias a.",
+		" */", "cdecl(fp_rsh1_low):"]
+	for i in range(n):
+		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
+	o += ["\tmovq\t%s, %%rax" % r[0], "\tandq\t$1, %rax"]
+	for i in range(n - 1):
+		o.append("\tshrd\t$1, %s, %s" % (r[i + 1], r[i]))
+	o.append("\tshrq\t$1, %s" % r[n - 1])
+	for i in range(n):
+		o.append("\tmovq\t%s, %d(%%rdi)" % (r[i], 8 * i))
+	o += ["\tret", "", "cdecl(fp_lsh1_low):"]
+	for i in range(n):
+		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
+	o += ["\tmovq\t%s, %%rax" % r[n - 1], "\tshrq\t$63, %rax"]
+	for i in range(n - 1, 0, -1):
+		o.append("\tshld\t$1, %s, %s" % (r[i - 1], r[i]))
+	o.append("\tshlq\t$1, %s" % r[0])
+	for i in range(n):
+		o.append("\tmovq\t%s, %d(%%rdi)" % (r[i], 8 * i))
+	o.append("\tret")
+	return o
+
+def kept_header(path, name):
+	"""Returns the license and documentation of an existing file, or ours."""
+	if os.path.exists(path):
+		src = open(path).read()
+		if "@file" in src and " */\n" in src[src.index("@file"):]:
+			return src[:src.index(" */\n", src.index("@file")) + 4]
+	return header(name)
+
+
+def write_all(g, out, uniform=False):
+	files = [("relic_fp_add_low.s", add_low), ("relic_fp_shift_low.s",
+		shift_low)]
+	if not uniform:
+		files += [("relic_fp_mul_low.s", mul_low), ("relic_fp_rdc_low.s",
+			rdc_low), ("relic_fp_sqr_low.s", sqr_low)]
+	for name, fn in files:
+		path = os.path.join(out, name)
+		head = kept_header(path, name) if uniform else header(name)
+		open(path, "w").write(head + "\n" + "\n".join(fn(g)) + "\n")
 
 if __name__ == "__main__":
 	main()

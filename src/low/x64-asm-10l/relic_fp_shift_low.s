@@ -37,8 +37,7 @@
 .global cdecl(fp_lsh1_low)
 
 /*
- * The digits are shifted one at a time, reading each digit of a before the
- * digit of c below (or above) it is written, so c may alias a.
+ * The digits are shifted in place from one end, so c may alias a.
  */
 cdecl(fp_rsh1_low):
 	movq	0(%rsi), %r8
