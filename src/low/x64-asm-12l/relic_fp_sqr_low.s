@@ -33,14 +33,10 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_sqrn_low)
 .global cdecl(fp_sqrm_low)
 
-/*
- * Function: fp_sqrn_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2
- */
 cdecl(fp_sqrn_low):
 	push	%r12
 	push	%r13
@@ -69,11 +65,6 @@ cdecl(fp_sqrn_low):
 	pop		%r12
 	ret
 
-/*
- * Function: fp_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p
- */
 cdecl(fp_sqrm_low):
 	push	%r12
 	push	%r13

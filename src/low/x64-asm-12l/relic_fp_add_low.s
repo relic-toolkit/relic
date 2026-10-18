@@ -125,12 +125,12 @@ cdecl(fp_addn_low):
 	ret
 
 cdecl(fp_addm_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
@@ -157,7 +157,6 @@ cdecl(fp_addm_low):
 	movq	88(%rdx), %rcx
 	adcq	88(%rsi), %rcx
 #if FP_PRIME == 768
-	// p fills the top bit, so keep the carry of the sum.
 	movq	$0, %rsi
 	adcq	$0, %rsi
 #endif
@@ -214,12 +213,12 @@ cdecl(fp_addm_low):
 	movq	%rbp, 80(%rdi)
 	movq	%rcx, 88(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_addd_low):
@@ -234,12 +233,12 @@ cdecl(fp_addd_low):
 	ret
 
 cdecl(fp_addc_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
@@ -272,7 +271,6 @@ cdecl(fp_addc_low):
 	movq	184(%rdx), %rcx
 	adcq	184(%rsi), %rcx
 #if FP_PRIME == 768
-	// p fills the top bit, so keep the carry of the sum.
 	movq	$0, %rsi
 	adcq	$0, %rsi
 #endif
@@ -329,12 +327,12 @@ cdecl(fp_addc_low):
 	movq	%rbp, 176(%rdi)
 	movq	%rcx, 184(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_sub1_low):
@@ -361,12 +359,12 @@ cdecl(fp_subn_low):
 	ret
 
 cdecl(fp_subm_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -455,12 +453,12 @@ cdecl(fp_subm_low):
 	movq	%rbp, 80(%rdi)
 	movq	%rcx, 88(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_subd_low):
@@ -475,12 +473,12 @@ cdecl(fp_subd_low):
 	ret
 
 cdecl(fp_subc_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -575,21 +573,21 @@ cdecl(fp_subc_low):
 	movq	%rbp, 176(%rdi)
 	movq	%rcx, 184(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_negm_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	xorq	%r9, %r9
 	xorq	%r10, %r10
@@ -652,12 +650,12 @@ cdecl(fp_negm_low):
 	sbbq	88(%rsi), %rcx
 	movq	%rcx, 88(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_dbln_low):
@@ -672,12 +670,12 @@ cdecl(fp_dbln_low):
 	ret
 
 cdecl(fp_dblm_low):
-	push	%rbx
-	push	%rbp
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
+	push	%rbx
+	push	%rbp
 
 	movq	0(%rsi), %r8
 	addq	%r8, %r8
@@ -704,7 +702,6 @@ cdecl(fp_dblm_low):
 	movq	88(%rsi), %rcx
 	adcq	%rcx, %rcx
 #if FP_PRIME == 768
-	// p fills the top bit, so keep the carry of the sum.
 	movq	$0, %rsi
 	adcq	$0, %rsi
 #endif
@@ -761,12 +758,12 @@ cdecl(fp_dblm_low):
 	movq	%rbp, 80(%rdi)
 	movq	%rcx, 88(%rdi)
 
+	pop		%rbp
+	pop		%rbx
 	pop		%r15
 	pop		%r14
 	pop		%r13
 	pop		%r12
-	pop		%rbp
-	pop		%rbx
 	ret
 
 cdecl(fp_hlvm_low):
@@ -868,39 +865,39 @@ cdecl(fp_hlvd_low):
 	movq	$P1, %r9
 	movq	$P2, %r10
 	movq	$P3, %r11
-	movq	$P4, %r12
-	movq	$P5, %r13
-	movq	$P6, %r14
-	movq	$P7, %r15
-	movq	$P8, %rbp
-	movq	$P9, %rbx
-	movq	$P10, %rcx
-	movq	$P11, %rax
+	movq	$P4, %rax
+	movq	$P5, %rcx
+	movq	$P6, %rbx
+	movq	$P7, %rbp
+	movq	$P8, %r12
+	movq	$P9, %r13
+	movq	$P10, %r14
+	movq	$P11, %r15
 	cmovz	%rdx, %r8
 	cmovz	%rdx, %r9
 	cmovz	%rdx, %r10
 	cmovz	%rdx, %r11
+	cmovz	%rdx, %rax
+	cmovz	%rdx, %rcx
+	cmovz	%rdx, %rbx
+	cmovz	%rdx, %rbp
 	cmovz	%rdx, %r12
 	cmovz	%rdx, %r13
 	cmovz	%rdx, %r14
 	cmovz	%rdx, %r15
-	cmovz	%rdx, %rbp
-	cmovz	%rdx, %rbx
-	cmovz	%rdx, %rcx
-	cmovz	%rdx, %rax
 
 	addq	0(%rsi), %r8
 	adcq	8(%rsi), %r9
 	adcq	16(%rsi), %r10
 	adcq	24(%rsi), %r11
-	adcq	32(%rsi), %r12
-	adcq	40(%rsi), %r13
-	adcq	48(%rsi), %r14
-	adcq	56(%rsi), %r15
-	adcq	64(%rsi), %rbp
-	adcq	72(%rsi), %rbx
-	adcq	80(%rsi), %rcx
-	adcq	88(%rsi), %rax
+	adcq	32(%rsi), %rax
+	adcq	40(%rsi), %rcx
+	adcq	48(%rsi), %rbx
+	adcq	56(%rsi), %rbp
+	adcq	64(%rsi), %r12
+	adcq	72(%rsi), %r13
+	adcq	80(%rsi), %r14
+	adcq	88(%rsi), %r15
 	movq	96(%rsi), %rdx
 	adcq	$0, %rdx
 	movq	%rdx, 96(%rdi)
@@ -933,13 +930,11 @@ cdecl(fp_hlvd_low):
 	movq	%rdx, 168(%rdi)
 	movq	176(%rsi), %rdx
 	adcq	$0, %rdx
-	movq	%rdx, 176(%rdi)
-	movq	184(%rsi), %rdx
-	adcq	$0, %rdx
-	movq	%rdx, 184(%rdi)
+	movq	184(%rsi), %rsi
+	adcq	$0, %rsi
 
-	rcrq	$1, 184(%rdi)
-	rcrq	$1, 176(%rdi)
+	rcrq	$1, %rsi
+	rcrq	$1, %rdx
 	rcrq	$1, 168(%rdi)
 	rcrq	$1, 160(%rdi)
 	rcrq	$1, 152(%rdi)
@@ -950,14 +945,14 @@ cdecl(fp_hlvd_low):
 	rcrq	$1, 112(%rdi)
 	rcrq	$1, 104(%rdi)
 	rcrq	$1, 96(%rdi)
-	rcrq	$1, %rax
-	rcrq	$1, %rcx
-	rcrq	$1, %rbx
-	rcrq	$1, %rbp
 	rcrq	$1, %r15
 	rcrq	$1, %r14
 	rcrq	$1, %r13
 	rcrq	$1, %r12
+	rcrq	$1, %rbp
+	rcrq	$1, %rbx
+	rcrq	$1, %rcx
+	rcrq	$1, %rax
 	rcrq	$1, %r11
 	rcrq	$1, %r10
 	rcrq	$1, %r9
@@ -967,14 +962,16 @@ cdecl(fp_hlvd_low):
 	movq	%r9, 8(%rdi)
 	movq	%r10, 16(%rdi)
 	movq	%r11, 24(%rdi)
-	movq	%r12, 32(%rdi)
-	movq	%r13, 40(%rdi)
-	movq	%r14, 48(%rdi)
-	movq	%r15, 56(%rdi)
-	movq	%rbp, 64(%rdi)
-	movq	%rbx, 72(%rdi)
-	movq	%rcx, 80(%rdi)
-	movq	%rax, 88(%rdi)
+	movq	%rax, 32(%rdi)
+	movq	%rcx, 40(%rdi)
+	movq	%rbx, 48(%rdi)
+	movq	%rbp, 56(%rdi)
+	movq	%r12, 64(%rdi)
+	movq	%r13, 72(%rdi)
+	movq	%r14, 80(%rdi)
+	movq	%r15, 88(%rdi)
+	movq	%rdx, 176(%rdi)
+	movq	%rsi, 184(%rdi)
 
 	pop		%rbp
 	pop		%rbx

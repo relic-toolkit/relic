@@ -49,7 +49,6 @@
 #define BARS	63
 #define BARJ	11
 #elif FP_PRIME == 766
-/* AFG16-766, the prime picked for 766 bits. K16_766 is not supported. */
 #define P0	0xF45D1E791E054605
 #define P1	0xFCBC4220020A6592
 #define P2	0x211730168CD3106C
@@ -67,7 +66,6 @@
 #define BARS	61
 #define BARJ	11
 #elif FP_PRIME == 765
-/* FM16-765 */
 #define P0	0x1000EFC080000001
 #define P1	0x0000000038223FF0
 #define P2	0x0000000000000000
@@ -99,12 +97,6 @@
 .section .note.GNU-stack, "", %progbits
 #endif
 
-/*
- * Stack frame of the multiplication and reduction functions. With 12 digits,
- * the accumulator takes 13 registers, the multiplier takes rdx and one more
- * register is left for the partial products, so the operand b, the pointers
- * and the constants live on the stack.
- */
 #define BCPY	0(%rsp)
 #define APTR	96(%rsp)
 #define CPTR	104(%rsp)
@@ -112,7 +104,6 @@
 #define ONES	120(%rsp)
 #define CARRY	128(%rsp)
 #define FRAME	136
-/* The squaring functions also keep the 24 words of a^2 on the stack. */
 #define SBUF	136(%rsp)
 #define SFRAME	328
 
@@ -163,7 +154,6 @@
 	.endif
 .endm
 
-// [Z0:Z12] <- a0 x b, with a pointer to a in A.
 .macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T
 	movq	\A, %rdx
 	movq	0(%rdx), %rdx
@@ -194,9 +184,6 @@
 	adox	ZEROS, \Z12
 .endm
 
-// [Z0:Z11, X] <- [Z0:Z11, CARRY] + rdx x M, where the free register X turns into
-// the top word and CARRY is zero unless the prime fills the top bit.
-// Needs CF = OF = 0 on entry.
 .macro MULADD Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, X, T, M
 	mulx	0+\M, \T, \X
 	adox	\T, \Z0
@@ -237,10 +224,6 @@
 	adcx	CARRY, \X
 .endm
 
-// [Z1:Z12] <- ([Z0:Z12] + (Z0 x U0 mod 2^64) x M) / 2^64, freeing Z0. The low
-// word cancels, so its carry is Z0 != 0, which adding all-ones to Z0 yields.
-// With Z12 blank, the top word is zero on entry and is left in Z0.
-// Needs CF = OF = 0 on entry.
 .macro MULRDC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, M
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T
@@ -288,8 +271,6 @@
 .endif
 .endm
 
-// Final correction: stores [C:Z0:Z11] - p if it does not borrow and [Z0:Z11]
-// otherwise at the pointer in CPTR. C is blank when the input is below 2^768.
 .macro FINALC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, C
 	movq	CPTR, %rdx
 	movq	\Z0, 0(%rdx)
@@ -345,8 +326,6 @@
 	movq	\Z11, 88(%rdx)
 .endm
 
-// [Z0:Z11] <- [Z0:Z11]/2^768 mod p, at most p, by twelve Montgomery steps.
-// Needs CF = OF = 0 on entry.
 .macro RDCN Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, P
 	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, , \T, \P
 	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, , \T, \P
@@ -362,7 +341,6 @@
 	MULRDC	\Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, , \T, \P
 .endm
 
-// [Z0:Z11] += [0+H:88+H].
 .macro ADDH Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, H
 	addq	0+\H, \Z0
 	adcq	8+\H, \Z1
@@ -378,11 +356,6 @@
 	adcq	88+\H, \Z11
 .endm
 
-// c <- a/2^768 mod p for a = 0+A < pR, with c at the pointer in CPTR: reduce
-// the low half to at most p, add the high half, which is below p, and subtract
-// p once. The low half stays below 2^768 at each step, so no carry leaves the
-// accumulator. For 768 bits the sum can reach 2^768 and its carry goes to T.
-// A must not be based on Z0..Z11 or T.
 .macro FP_RDCN_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, P
 	xorq	\T, \T
 	movq	0+\A, \Z0
@@ -408,14 +381,7 @@
 #endif
 .endm
 
-// a^2 for a = 0+A, computing each cross product once, with A and O based on
-// %rsp. With RDC = 0, the 24 words of a^2 go to the pointer in CPTR. With
-// RDC = 1, the low twelve words stay in [Z0:Z11] and the high twelve go to
-// 96+O. O is 24 words of scratch.
 .macro SQRN A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, T1, RDC
-	// The cross products a_i x a_j for i < j go to words 1..22 of O. Word w
-	// accumulates in Z(w mod 12) and is stored once no later row adds to it.
-	// [Z1:Z11, Z0] <- a0 x [a1:a11]
 	movq	0+\A, %rdx
 	mulx	8+\A, \Z1, \Z2
 	mulx	16+\A, \T0, \Z3
@@ -442,7 +408,6 @@
 	movq	\Z1, 8+\O
 	movq	\Z2, 16+\O
 
-	// words 3..13 += a1 x [a2:a11]
 	movq	8+\A, %rdx
 	xorq	\Z1, \Z1
 	mulx	16+\A, \T0, \T1
@@ -479,7 +444,6 @@
 	movq	\Z3, 24+\O
 	movq	\Z4, 32+\O
 
-	// words 5..14 += a2 x [a3:a11]
 	movq	16+\A, %rdx
 	xorq	\Z2, \Z2
 	mulx	24+\A, \T0, \T1
@@ -513,7 +477,6 @@
 	movq	\Z5, 40+\O
 	movq	\Z6, 48+\O
 
-	// words 7..15 += a3 x [a4:a11]
 	movq	24+\A, %rdx
 	xorq	\Z3, \Z3
 	mulx	32+\A, \T0, \T1
@@ -544,7 +507,6 @@
 	movq	\Z7, 56+\O
 	movq	\Z8, 64+\O
 
-	// words 9..16 += a4 x [a5:a11]
 	movq	32+\A, %rdx
 	xorq	\Z4, \Z4
 	mulx	40+\A, \T0, \T1
@@ -572,7 +534,6 @@
 	movq	\Z9, 72+\O
 	movq	\Z10, 80+\O
 
-	// words 11..17 += a5 x [a6:a11]
 	movq	40+\A, %rdx
 	xorq	\Z5, \Z5
 	mulx	48+\A, \T0, \T1
@@ -597,7 +558,6 @@
 	movq	\Z11, 88+\O
 	movq	\Z0, 96+\O
 
-	// words 13..18 += a6 x [a7:a11]
 	movq	48+\A, %rdx
 	xorq	\Z6, \Z6
 	mulx	56+\A, \T0, \T1
@@ -619,7 +579,6 @@
 	movq	\Z1, 104+\O
 	movq	\Z2, 112+\O
 
-	// words 15..19 += a7 x [a8:a11]
 	movq	56+\A, %rdx
 	xorq	\Z7, \Z7
 	mulx	64+\A, \T0, \T1
@@ -638,7 +597,6 @@
 	movq	\Z3, 120+\O
 	movq	\Z4, 128+\O
 
-	// words 17..20 += a8 x [a9:a11]
 	movq	64+\A, %rdx
 	xorq	\Z8, \Z8
 	mulx	72+\A, \T0, \T1
@@ -654,7 +612,6 @@
 	movq	\Z5, 136+\O
 	movq	\Z6, 144+\O
 
-	// words 19..21 += a9 x [a10:a11]
 	movq	72+\A, %rdx
 	xorq	\Z9, \Z9
 	mulx	80+\A, \T0, \T1
@@ -667,7 +624,6 @@
 	movq	\Z7, 152+\O
 	movq	\Z8, 160+\O
 
-	// words 21..22 += a10 x [a11:a11]
 	movq	80+\A, %rdx
 	xorq	\Z10, \Z10
 	mulx	88+\A, \T0, \T1
@@ -677,9 +633,6 @@
 	movq	\Z9, 168+\O
 	movq	\Z10, 176+\O
 
-	// Doubles the cross products and adds the squares a_k^2 at word 2k, word by
-	// word, with CF carrying the doubling and OF the squares. %rdx takes each
-	// word that is stored.
 	movq	0+\A, %rdx
 	mulx	%rdx, \T0, \T1
 .if \RDC != 1
@@ -912,12 +865,9 @@
 
 .endm
 
-// c <- a^2 (RDC = 0) or a^2/2^768 mod p (RDC = 1) for a = 0+A, with c at the
-// pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in SQRN.
 .macro FP_SQR_LOW A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, T1, P, RDC
 	SQRN	\A, \O, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \T1, \RDC
 .if \RDC == 1
-	// The low half reduces to at most p and the high half is below p.
 	xorq	\T0, \T0
 	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \P
 	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, 96+\O
@@ -931,17 +881,13 @@
 .endif
 .endm
 
-// Interleaved Montgomery multiplication after MULM, rotating the accumulator
-// over Z0..Z12. With RDC = 0, it stores the double-precision product instead.
 .macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, P, RDC
 .if \RDC != 1
 	movq	CPTR, %rdx
 	movq	\Z0, 0(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z0
 	adox	ZEROS, \Z0
 	adcx	ZEROS, \Z0
@@ -949,7 +895,6 @@
 #endif
 .endif
 
-	// z += a1 x b
 	movq	\A, %rdx
 	movq	8(%rdx), %rdx
 	xorq	\T, \T
@@ -959,10 +904,8 @@
 	movq	CPTR, %rdx
 	movq	\Z1, 8(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z1
 	adox	ZEROS, \Z1
 	adcx	ZEROS, \Z1
@@ -970,7 +913,6 @@
 #endif
 .endif
 
-	// z += a2 x b
 	movq	\A, %rdx
 	movq	16(%rdx), %rdx
 	xorq	\T, \T
@@ -980,10 +922,8 @@
 	movq	CPTR, %rdx
 	movq	\Z2, 16(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z2
 	adox	ZEROS, \Z2
 	adcx	ZEROS, \Z2
@@ -991,7 +931,6 @@
 #endif
 .endif
 
-	// z += a3 x b
 	movq	\A, %rdx
 	movq	24(%rdx), %rdx
 	xorq	\T, \T
@@ -1001,10 +940,8 @@
 	movq	CPTR, %rdx
 	movq	\Z3, 24(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z3
 	adox	ZEROS, \Z3
 	adcx	ZEROS, \Z3
@@ -1012,7 +949,6 @@
 #endif
 .endif
 
-	// z += a4 x b
 	movq	\A, %rdx
 	movq	32(%rdx), %rdx
 	xorq	\T, \T
@@ -1022,10 +958,8 @@
 	movq	CPTR, %rdx
 	movq	\Z4, 32(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z4
 	adox	ZEROS, \Z4
 	adcx	ZEROS, \Z4
@@ -1033,7 +967,6 @@
 #endif
 .endif
 
-	// z += a5 x b
 	movq	\A, %rdx
 	movq	40(%rdx), %rdx
 	xorq	\T, \T
@@ -1043,10 +976,8 @@
 	movq	CPTR, %rdx
 	movq	\Z5, 40(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z5
 	adox	ZEROS, \Z5
 	adcx	ZEROS, \Z5
@@ -1054,7 +985,6 @@
 #endif
 .endif
 
-	// z += a6 x b
 	movq	\A, %rdx
 	movq	48(%rdx), %rdx
 	xorq	\T, \T
@@ -1064,10 +994,8 @@
 	movq	CPTR, %rdx
 	movq	\Z6, 48(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z6
 	adox	ZEROS, \Z6
 	adcx	ZEROS, \Z6
@@ -1075,7 +1003,6 @@
 #endif
 .endif
 
-	// z += a7 x b
 	movq	\A, %rdx
 	movq	56(%rdx), %rdx
 	xorq	\T, \T
@@ -1085,10 +1012,8 @@
 	movq	CPTR, %rdx
 	movq	\Z7, 56(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z7
 	adox	ZEROS, \Z7
 	adcx	ZEROS, \Z7
@@ -1096,7 +1021,6 @@
 #endif
 .endif
 
-	// z += a8 x b
 	movq	\A, %rdx
 	movq	64(%rdx), %rdx
 	xorq	\T, \T
@@ -1106,10 +1030,8 @@
 	movq	CPTR, %rdx
 	movq	\Z8, 64(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z8
 	adox	ZEROS, \Z8
 	adcx	ZEROS, \Z8
@@ -1117,7 +1039,6 @@
 #endif
 .endif
 
-	// z += a9 x b
 	movq	\A, %rdx
 	movq	72(%rdx), %rdx
 	xorq	\T, \T
@@ -1127,10 +1048,8 @@
 	movq	CPTR, %rdx
 	movq	\Z9, 72(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z9
 	adox	ZEROS, \Z9
 	adcx	ZEROS, \Z9
@@ -1138,7 +1057,6 @@
 #endif
 .endif
 
-	// z += a10 x b
 	movq	\A, %rdx
 	movq	80(%rdx), %rdx
 	xorq	\T, \T
@@ -1148,10 +1066,8 @@
 	movq	CPTR, %rdx
 	movq	\Z10, 80(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z10
 	adox	ZEROS, \Z10
 	adcx	ZEROS, \Z10
@@ -1159,7 +1075,6 @@
 #endif
 .endif
 
-	// z += a11 x b
 	movq	\A, %rdx
 	movq	88(%rdx), %rdx
 	xorq	\T, \T
@@ -1169,10 +1084,8 @@
 	movq	CPTR, %rdx
 	movq	\Z11, 88(%rdx)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
 	MULRDC	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T, \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
 	movq	$0, \Z11
 	adox	ZEROS, \Z11
 	adcx	ZEROS, \Z11

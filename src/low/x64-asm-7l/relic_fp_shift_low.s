@@ -35,12 +35,10 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_rsh1_low)
 .global cdecl(fp_lsh1_low)
 
-/*
- * The digits are shifted in place from one end, so c may alias a.
- */
 cdecl(fp_rsh1_low):
 	movq	0(%rsi), %r8
 	movq	%r8, %rax

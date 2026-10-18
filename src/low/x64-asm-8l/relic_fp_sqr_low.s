@@ -33,14 +33,10 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_sqrn_low)
 .global cdecl(fp_sqrm_low)
 
-/*
- * Function: fp_sqrn_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2
- */
 cdecl(fp_sqrn_low):
 	push	%r12
 	push	%r13
@@ -48,24 +44,17 @@ cdecl(fp_sqrn_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$48, %rsp
 
-	FP_SQR_LOW	0(%rsi), 0(%rdi), 0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 0, 0(%rsp)
 
-	addq	$48, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
-/*
- * Function: fp_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p
- */
 cdecl(fp_sqrm_low):
 	push	%r12
 	push	%r13
@@ -75,13 +64,13 @@ cdecl(fp_sqrm_low):
 	push	%rbp
 	subq	$128, %rsp
 
-	FP_SQR_LOW	0(%rsi), 0(%rdi), 0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 1, 0(%rsp)
 
 	addq	$128, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret

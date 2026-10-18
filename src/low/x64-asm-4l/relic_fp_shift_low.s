@@ -33,12 +33,10 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_rsh1_low)
 .global cdecl(fp_lsh1_low)
 
-/*
- * All the digits are read before any is written, so c may alias a.
- */
 cdecl(fp_rsh1_low):
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9

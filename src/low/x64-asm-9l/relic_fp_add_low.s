@@ -116,9 +116,9 @@ cdecl(fp_addn_low):
 	ret
 
 cdecl(fp_addm_low):
+	push	%r12
 	push	%rbx
 	push	%rbp
-	push	%r12
 
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
@@ -176,9 +176,9 @@ cdecl(fp_addm_low):
 	movq	%rbp, 56(%rdi)
 	movq	%r12, 64(%rdi)
 
-	pop		%r12
 	pop		%rbp
 	pop		%rbx
+	pop		%r12
 	ret
 
 cdecl(fp_addd_low):
@@ -193,9 +193,9 @@ cdecl(fp_addd_low):
 	ret
 
 cdecl(fp_addc_low):
+	push	%r12
 	push	%rbx
 	push	%rbp
-	push	%r12
 
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
@@ -259,9 +259,9 @@ cdecl(fp_addc_low):
 	movq	%rbp, 128(%rdi)
 	movq	%r12, 136(%rdi)
 
-	pop		%r12
 	pop		%rbp
 	pop		%rbx
+	pop		%r12
 	ret
 
 cdecl(fp_sub1_low):
@@ -288,9 +288,9 @@ cdecl(fp_subn_low):
 	ret
 
 cdecl(fp_subm_low):
+	push	%r12
 	push	%rbx
 	push	%rbp
-	push	%r12
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -358,9 +358,9 @@ cdecl(fp_subm_low):
 	movq	%rbp, 56(%rdi)
 	movq	%r12, 64(%rdi)
 
-	pop		%r12
 	pop		%rbp
 	pop		%rbx
+	pop		%r12
 	ret
 
 cdecl(fp_subd_low):
@@ -375,9 +375,9 @@ cdecl(fp_subd_low):
 	ret
 
 cdecl(fp_subc_low):
+	push	%r12
 	push	%rbx
 	push	%rbp
-	push	%r12
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -451,9 +451,9 @@ cdecl(fp_subc_low):
 	movq	%rbp, 128(%rdi)
 	movq	%r12, 136(%rdi)
 
-	pop		%r12
 	pop		%rbp
 	pop		%rbx
+	pop		%r12
 	ret
 
 cdecl(fp_negm_low):
@@ -522,9 +522,9 @@ cdecl(fp_dbln_low):
 	ret
 
 cdecl(fp_dblm_low):
+	push	%r12
 	push	%rbx
 	push	%rbp
-	push	%r12
 
 	movq	0(%rsi), %r8
 	addq	%r8, %r8
@@ -582,9 +582,9 @@ cdecl(fp_dblm_low):
 	movq	%rbp, 56(%rdi)
 	movq	%r12, 64(%rdi)
 
-	pop		%r12
 	pop		%rbp
 	pop		%rbx
+	pop		%r12
 	ret
 
 cdecl(fp_hlvm_low):

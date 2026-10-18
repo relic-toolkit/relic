@@ -38,11 +38,6 @@
 
 .global cdecl(fp2_muln_low)
 
-/*
- * Function: fp2_muln_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b, with c[1] at RLC_DV_STRIDE bytes from c[0]
- */
 cdecl(fp2_muln_low):
 	push	%r12
 	push	%r13
@@ -51,6 +46,10 @@ cdecl(fp2_muln_low):
 	push	%rbx
 	push	%rbp
 	subq	$232, %rsp
+
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 0(%rsp)
+	movq	%rdx, %rcx
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
@@ -59,58 +58,50 @@ cdecl(fp2_muln_low):
 	movq	40(%rsi), %r13
 	movq	48(%rsi), %r14
 	movq	56(%rsi), %r15
-	movq	64(%rsi), %rbp
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
-	movq	%r15, 56(%rsp)
-	movq	%rbp, 64(%rsp)
-	movq	72(%rsi), %r8
-	movq	80(%rsi), %r9
-	movq	88(%rsi), %r10
-	movq	96(%rsi), %r11
-	movq	104(%rsi), %r12
-	movq	112(%rsi), %r13
-	movq	120(%rsi), %r14
-	movq	128(%rsi), %r15
-	movq	136(%rsi), %rbp
-	movq	%r8, 72(%rsp)
-	movq	%r9, 80(%rsp)
-	movq	%r10, 88(%rsp)
-	movq	%r11, 96(%rsp)
-	movq	%r12, 104(%rsp)
-	movq	%r13, 112(%rsp)
-	movq	%r14, 120(%rsp)
-	movq	%r15, 128(%rsp)
-	movq	%rbp, 136(%rsp)
-	leaq	RLC_DV_STRIDE(%rdi), %rax
-	movq	%rax, 152(%rsp)
-	movq	%rdx, %rcx
+	movq	64(%rsi), %rbx
+	movq	72(%rsi), %rbp
+	movq	%r8, 88(%rsp)
+	movq	%r9, 96(%rsp)
+	movq	%r10, 104(%rsp)
+	movq	%r11, 112(%rsp)
+	movq	%r12, 120(%rsp)
+	movq	%r13, 128(%rsp)
+	movq	%r14, 136(%rsp)
+	movq	%r15, 144(%rsp)
+	movq	%rbx, 152(%rsp)
+	movq	%rbp, 160(%rsp)
+	movq	80(%rsi), %r8
+	movq	88(%rsi), %r9
+	movq	96(%rsi), %r10
+	movq	104(%rsi), %r11
+	movq	112(%rsi), %r12
+	movq	120(%rsi), %r13
+	movq	128(%rsi), %r14
+	movq	136(%rsi), %r15
+	movq	%r8, 168(%rsp)
+	movq	%r9, 176(%rsp)
+	movq	%r10, 184(%rsp)
+	movq	%r11, 192(%rsp)
+	movq	%r12, 200(%rsp)
+	movq	%r13, 208(%rsp)
+	movq	%r14, 216(%rsp)
+	movq	%r15, 224(%rsp)
 
-	FP2_MUL_LOW	0(%rcx), 0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0, 144(%rsp)
+	FP2_MUL_LOW	88(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0, 0(%rsp)
 
 	addq	$232, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 .global cdecl(fp2_mulm_low)
 
 #ifdef FP2_MUL_RDC
 
-/*
- * Function: fp2_mulm_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b/R mod p, coefficient-wise
- */
 cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
@@ -119,6 +110,8 @@ cdecl(fp2_mulm_low):
 	push	%rbx
 	push	%rbp
 	subq	$232, %rsp
+
+	movq	%rdx, %rcx
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
@@ -127,55 +120,48 @@ cdecl(fp2_mulm_low):
 	movq	40(%rsi), %r13
 	movq	48(%rsi), %r14
 	movq	56(%rsi), %r15
-	movq	64(%rsi), %rbp
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
-	movq	%r15, 56(%rsp)
-	movq	%rbp, 64(%rsp)
-	movq	72(%rsi), %r8
-	movq	80(%rsi), %r9
-	movq	88(%rsi), %r10
-	movq	96(%rsi), %r11
-	movq	104(%rsi), %r12
-	movq	112(%rsi), %r13
-	movq	120(%rsi), %r14
-	movq	128(%rsi), %r15
-	movq	136(%rsi), %rbp
-	movq	%r8, 72(%rsp)
-	movq	%r9, 80(%rsp)
-	movq	%r10, 88(%rsp)
-	movq	%r11, 96(%rsp)
-	movq	%r12, 104(%rsp)
-	movq	%r13, 112(%rsp)
-	movq	%r14, 120(%rsp)
-	movq	%r15, 128(%rsp)
-	movq	%rbp, 136(%rsp)
-	movq	%rdx, %rcx
+	movq	64(%rsi), %rbx
+	movq	72(%rsi), %rbp
+	movq	%r8, 88(%rsp)
+	movq	%r9, 96(%rsp)
+	movq	%r10, 104(%rsp)
+	movq	%r11, 112(%rsp)
+	movq	%r12, 120(%rsp)
+	movq	%r13, 128(%rsp)
+	movq	%r14, 136(%rsp)
+	movq	%r15, 144(%rsp)
+	movq	%rbx, 152(%rsp)
+	movq	%rbp, 160(%rsp)
+	movq	80(%rsi), %r8
+	movq	88(%rsi), %r9
+	movq	96(%rsi), %r10
+	movq	104(%rsi), %r11
+	movq	112(%rsi), %r12
+	movq	120(%rsi), %r13
+	movq	128(%rsi), %r14
+	movq	136(%rsi), %r15
+	movq	%r8, 168(%rsp)
+	movq	%r9, 176(%rsp)
+	movq	%r10, 184(%rsp)
+	movq	%r11, 192(%rsp)
+	movq	%r12, 200(%rsp)
+	movq	%r13, 208(%rsp)
+	movq	%r14, 216(%rsp)
+	movq	%r15, 224(%rsp)
 
-	FP2_MUL_LOW	0(%rcx), 0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 1, 144(%rsp)
+	FP2_MUL_LOW	88(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 1, 0(%rsp)
 
 	addq	$232, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 #else
 
-/*
- * Function: fp2_mulm_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b/R mod p, coefficient-wise, by reducing the product of
- * fp2_muln_low separately
- */
 cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
@@ -183,7 +169,13 @@ cdecl(fp2_mulm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$456, %rsp
+	subq	$520, %rsp
+
+	movq	%rdi, 16(%rsp)
+	leaq	232(%rsp), %rdi
+	leaq	376(%rsp), %rax
+	movq	%rax, 0(%rsp)
+	movq	%rdx, %rcx
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10
@@ -192,57 +184,52 @@ cdecl(fp2_mulm_low):
 	movq	40(%rsi), %r13
 	movq	48(%rsi), %r14
 	movq	56(%rsi), %r15
-	movq	64(%rsi), %rbp
-	movq	%r8, 0(%rsp)
-	movq	%r9, 8(%rsp)
-	movq	%r10, 16(%rsp)
-	movq	%r11, 24(%rsp)
-	movq	%r12, 32(%rsp)
-	movq	%r13, 40(%rsp)
-	movq	%r14, 48(%rsp)
-	movq	%r15, 56(%rsp)
-	movq	%rbp, 64(%rsp)
-	movq	72(%rsi), %r8
-	movq	80(%rsi), %r9
-	movq	88(%rsi), %r10
-	movq	96(%rsi), %r11
-	movq	104(%rsi), %r12
-	movq	112(%rsi), %r13
-	movq	120(%rsi), %r14
-	movq	128(%rsi), %r15
-	movq	136(%rsi), %rbp
-	movq	%r8, 72(%rsp)
-	movq	%r9, 80(%rsp)
-	movq	%r10, 88(%rsp)
-	movq	%r11, 96(%rsp)
-	movq	%r12, 104(%rsp)
-	movq	%r13, 112(%rsp)
-	movq	%r14, 120(%rsp)
-	movq	%r15, 128(%rsp)
-	movq	%rbp, 136(%rsp)
-	movq	%rdi, 160(%rsp)
-	leaq	312(%rsp), %rax
-	movq	%rax, 152(%rsp)
-	leaq	168(%rsp), %rdi
-	movq	%rdx, %rcx
+	movq	64(%rsi), %rbx
+	movq	72(%rsi), %rbp
+	movq	%r8, 88(%rsp)
+	movq	%r9, 96(%rsp)
+	movq	%r10, 104(%rsp)
+	movq	%r11, 112(%rsp)
+	movq	%r12, 120(%rsp)
+	movq	%r13, 128(%rsp)
+	movq	%r14, 136(%rsp)
+	movq	%r15, 144(%rsp)
+	movq	%rbx, 152(%rsp)
+	movq	%rbp, 160(%rsp)
+	movq	80(%rsi), %r8
+	movq	88(%rsi), %r9
+	movq	96(%rsi), %r10
+	movq	104(%rsi), %r11
+	movq	112(%rsi), %r12
+	movq	120(%rsi), %r13
+	movq	128(%rsi), %r14
+	movq	136(%rsi), %r15
+	movq	%r8, 168(%rsp)
+	movq	%r9, 176(%rsp)
+	movq	%r10, 184(%rsp)
+	movq	%r11, 192(%rsp)
+	movq	%r12, 200(%rsp)
+	movq	%r13, 208(%rsp)
+	movq	%r14, 216(%rsp)
+	movq	%r15, 224(%rsp)
 
-	FP2_MUL_LOW	0(%rcx), 0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0, 144(%rsp)
+	FP2_MUL_LOW	88(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rax, p0(%rip), 0, 0(%rsp)
 
-	movq	160(%rsp), %rdi
-	FP_RDCN_LOW	168(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rsi, p0(%rip)
-	movq	160(%rsp), %rdi
+	movq	16(%rsp), %rdi
+	FP_RDCN_LOW	232(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, p0(%rip), %r15, %rbx, %rdx, %rsi, %rbp
+	movq	16(%rsp), %rdi
 	addq	$72, %rdi
-	FP_RDCN_LOW	312(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rsi, p0(%rip)
+	FP_RDCN_LOW	376(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, p0(%rip), %r15, %rbx, %rdx, %rsi, %rbp
 
-	addq	$456, %rsp
-	popq	%rbp
-	popq	%rbx
-	popq	%r15
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	addq	$520, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 #endif
 
-#endif /* FP2_ASM */
+#endif

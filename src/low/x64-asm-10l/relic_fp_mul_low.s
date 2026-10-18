@@ -32,28 +32,16 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
- */
-
 .text
 
 .global cdecl(fp_mul1_low)
 .global cdecl(fp_muln_low)
 .global cdecl(fp_mulm_low)
 
-/*
- * Function: fp_mul1_low
- * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
- * Output: c = a * digit mod p, in constant time
- */
 cdecl(fp_mul1_low):
 	push	%rbx
 	subq	$176, %rsp
 
-	/* d = a * digit. */
 	mulxq	0(%rsi), %rax, %r8
 	movq	%rax, 0(%rsp)
 	mulxq	8(%rsi), %rax, %r9
@@ -86,15 +74,12 @@ cdecl(fp_mul1_low):
 	adcq	$0, %r9
 	movq	%r9, 80(%rsp)
 
-	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
-	 * floor(d / p). */
 	movq	(8 * BARJ)(%rsp), %rax
 	movq	(8 * BARJ + 8)(%rsp), %rdx
 	shrdq	$BARS, %rdx, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	/* Subtract the low halves of q * p, keeping the high halves in t. */
 	movq	$P0, %rax
 	mulxq	%rax, %rax, %rcx
 	subq	%rax, 0(%rsp)
@@ -137,7 +122,6 @@ cdecl(fp_mul1_low):
 	movq	%rcx, 160(%rsp)
 	sbbq	$0, 80(%rsp)
 
-	/* Subtract the high halves, leaving d - q * p below 3p. */
 	movq	88(%rsp), %rax
 	subq	%rax, 8(%rsp)
 	movq	96(%rsp), %rax
@@ -159,7 +143,6 @@ cdecl(fp_mul1_low):
 	movq	160(%rsp), %rax
 	sbbq	%rax, 80(%rsp)
 
-	/* Subtract p twice, keeping the difference when there is no borrow. */
 	.rept 2
 	movq	0(%rsp), %rax
 	movq	$P0, %rdx
@@ -294,14 +277,11 @@ cdecl(fp_mul1_low):
 	movq	%rax, 64(%rdi)
 	movq	72(%rsp), %rax
 	movq	%rax, 72(%rdi)
+
 	addq	$176, %rsp
-	pop	%rbx
+	pop		%rbx
 	ret
 
-/*
- * Registers: z in r8-r15, rax, rbx, rbp; T0 = rsi, T1 = rdi; b in rcx.
- * Stack: 0(%rsp) = c, 8(%rsp) = a.
- */
 cdecl(fp_muln_low):
 	push	%r12
 	push	%r13
@@ -309,15 +289,35 @@ cdecl(fp_muln_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$16, %rsp
-	movq	%rdi, 0(%rsp)
-	movq	%rsi, 8(%rsp)
+	subq	$88, %rsp
+
 	movq	%rdx, %rcx
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rax
+	movq	72(%rsi), %rbx
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10, 16(%rsp)
+	movq	%r11, 24(%rsp)
+	movq	%r12, 32(%rsp)
+	movq	%r13, 40(%rsp)
+	movq	%r14, 48(%rsp)
+	movq	%r15, 56(%rsp)
+	movq	%rax, 64(%rsp)
+	movq	%rbx, 72(%rsp)
+	movq	%rdi, 80(%rsp)
 
-	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP_MUL_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
+	MULM	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
+	FP_MUL_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 80(%rsp)
 
-	addq	$16, %rsp
+	addq	$88, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -333,15 +333,35 @@ cdecl(fp_mulm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$16, %rsp
-	movq	%rdi, 0(%rsp)
-	movq	%rsi, 8(%rsp)
+	subq	$88, %rsp
+
 	movq	%rdx, %rcx
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %r12
+	movq	40(%rsi), %r13
+	movq	48(%rsi), %r14
+	movq	56(%rsi), %r15
+	movq	64(%rsi), %rax
+	movq	72(%rsi), %rbx
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10, 16(%rsp)
+	movq	%r11, 24(%rsp)
+	movq	%r12, 32(%rsp)
+	movq	%r13, 40(%rsp)
+	movq	%r14, 48(%rsp)
+	movq	%r15, 56(%rsp)
+	movq	%rax, 64(%rsp)
+	movq	%rbx, 72(%rsp)
+	movq	%rdi, 80(%rsp)
 
-	MULM	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
-	FP_MUL_LOW	8(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
+	MULM	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi
+	FP_MUL_LOW	0(%rsp), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 80(%rsp)
 
-	addq	$16, %rsp
+	addq	$88, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
