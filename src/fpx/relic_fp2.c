@@ -283,14 +283,35 @@ void fp2_mul_art(fp2_t c, const fp2_t a) {
 		fp_neg(c[0], a[1]);
 		fp_copy(c[1], t);
 #else
-		/* (a_0 + a_1 * i) * i = (a_1 * i^2) + a_0 * i. */
-		fp_copy(t, a[0]);
-		fp_neg(c[0], a[1]);
-		for (int i = -1; i > fp_prime_get_qnr(); i--) {
-			fp_sub(c[0], c[0], a[1]);
+		/* (a_0 + a_1 * i) * i = (a_1 * i^2) + a_0 * i, where a_1 * |i^2| is
+		 * computed by doubling and adding over the bits of |i^2|. */
+		int qnr = fp_prime_get_qnr(), k = 0;
+		dig_t q = (qnr < 0 ? -qnr : qnr);
+
+		/* The top bit of |i^2|, which is small. */
+		for (dig_t r = q; r > 1; r >>= 1) {
+			k++;
 		}
-		for (int i = 0; i <= fp_prime_get_qnr(); i++) {
-			fp_add(c[0], c[0], a[1]);
+		fp_copy(t, a[0]);
+		if (k == 0) {
+			if (qnr < 0) {
+				fp_neg(c[0], a[1]);
+			} else {
+				fp_copy(c[0], a[1]);
+			}
+		} else {
+			fp_dbl(c[0], a[1]);
+			while (k-- > 0) {
+				if ((q >> k) & 1) {
+					fp_add(c[0], c[0], a[1]);
+				}
+				if (k > 0) {
+					fp_dbl(c[0], c[0]);
+				}
+			}
+			if (qnr < 0) {
+				fp_neg(c[0], c[0]);
+			}
 		}
 		fp_copy(c[1], t);
 #endif
