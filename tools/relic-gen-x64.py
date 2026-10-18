@@ -1,22 +1,100 @@
 #!/usr/bin/env python3
-"""Generates the x64-asm-Nl backend sources in the design of x64-asm-12l.
+"""Generates the x64-asm-Nl backend sources.
 
-Usage: tools/relic-gen-x64.py N OUTDIR
+Usage: tools/relic-gen-x64.py --large N DIR
+       tools/relic-gen-x64.py --small N DIR
        tools/relic-gen-x64.py --uniform N DIR
 
-The first form writes macro.s and the assembly files of the backend for N
-limbs. The C files and CMakeLists.txt are generic and can be copied from
-x64-asm-12l. The supported primes come from PRIMES below; 12 limbs reproduces
-x64-asm-12l. The second form rewrites only the addition and shift files of an
-existing backend in DIR, such as one in the design of x64-asm-6l, keeping their
-license headers. Check a backend with tools/relic-check-fp.c.
+--large writes macro.s and the assembly files of the backend for N limbs in
+the design of x64-asm-12l, for 10 to 12 limbs; 12 reproduces x64-asm-12l. The
+C files and CMakeLists.txt are generic and can be copied from x64-asm-12l.
+--small does the same in the design of x64-asm-6l, for 4 to 10 limbs, Fp2
+included, for a backend whose C files are in DIR. --uniform rewrites only the
+addition and shift files, which both designs share. The supported primes come
+from PRIMES below. Existing files keep their license headers, and new files
+get the current year. Check a backend with tools/relic-check-fp.c.
 """
 
+import datetime
 import os
 import sys
 
-# Primes per limb count: (FP_PRIME, hex of p, comment or None).
+# Primes per limb count: (FP_PRIME, hex of p, comment or None), with an
+# optional condition that selects among primes of the same FP_PRIME.
 PRIMES = {
+	4: [
+		(254, ("2523648240000001BA344D80000000086121000000000013A7000000"
+			"00000013"), None),
+		(255, ("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			"FFFFFFED"), None),
+	],
+	5: [
+		(315, ("4C23A02B586D650D3F7498BE97C5EAFDEC1D01AA27A1AE0421EE5DA5"
+			"2BDE5026FE802FF40300001"), None),
+		(317, ("1058CA226F60892CF28FC5A0B7F9D039169A61E684C73446D6F339E4"
+			"3424BF7E8D512E565DAB2AAB"), None),
+	],
+	6: [
+		(330, ("24C0832E1406555615B5BF00BAF1EE31FECF12A1C4947A0784F27BBE"
+			"C8F954D9613523E67A53D5C40AD"), None),
+		(354, ("1428C74EA98F0A5315F4B6BA1928ADE1A404A338E6E049BE3926C482"
+			"E5DA80FED8491B9470948C8C6AAAB1D"), None),
+		(377, ("1AE3A4617C510EAC63B05C06CA1493B1A22D9F300F5138F1EF3622FB"
+			"A094800170B5D44300000008508C00000000001"), None),
+		(381, ("1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0"
+			"F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAAAB"), None),
+		(382, ("24009015183F94892D996CC179C6D1666F82CEFBE47879BBA6E58DBE"
+			"43002A0609480097801382BE004E000000000013"), None),
+		(383, ("5565569564AB6EB5A06DADC41FEA9284A0AD462CF365A511AC31B801"
+			"696124F47A8C3F298A64852BDA371D6485AAB0AB"), None),
+	],
+	# fp_param_set_any() picks B12_446 when FP_QNRES is defined and BN_446
+	# otherwise.
+	7: [
+		(446, ("3CDEE0FB28C5E535200FC34965AAD6400095A4B78A02FE320F75A64B"
+			"BAC71602824E6DC3E23ACDEE56EE4528C573B5CC311C0026AAB0AAAB"),
+			"B12_446", "defined(FP_QNRES)"),
+		(446, ("2400000000000000002400000002D00000000D800000021C00000018"
+			"00000000870000000B0400000057C00000015C000000132000000067"),
+			"BN_446"),
+	],
+	8: [
+		(455, ("55555955557955572AA00E0F95B49203003F665E3A5B1D56234BD939"
+			"54FCB314B8B3DB9994ACE86D1BA6C589556B2AA956AAA00001800002"
+			"AB"), None),
+		(508, ("C33B72B87E5A44DF420B8A16E4727D4A5524C027B6231A491E008FC1"
+			"21F07073D3F6EB93785360E0B1B3D5304D0957E6B5CC3A8F69C137AC"
+			"D1CCCF628BC1B1D"), None),
+		(509, ("155556FFFF39CA9BFCEDF2B4F9C0ECF6CB8AC8495D187E8C32EA0103"
+			"E01090BB626E85BF7C18A0F0CFCB5C6071BAD3D2EE63BD076E8D9300"
+			"A13D118DB8BFD2AB"), None),
+		(510, ("31BEC371AB26D0A65A1673FA252B4DAAB32E21F17F8B0A6713BA8856"
+			"149CDCB6BA09F4BACE3AC5588E97A75A70B54410393DDECB1D3C5517"
+			"DD5F62C1A3044101"), None),
+		(511, ("65B48E8F740F89BFFC8AB0D15E3E4C4AB42D083AEDC88C425AFBFCC6"
+			"9322C9CDA7AAC6C567F35507516730CC1F0B4F25C2721BF457ACA835"
+			"1B81B90533C6C87B"),
+			"CTIDH-511, the prime selected by fp_param_set_any()."),
+	],
+	9: [
+		(569, ("11B4A027E91038F2C99CC114CD71608FE3BB690BDCF4F4BD2649EBC6"
+			"50544C328081F9DC91FAF541D2ECA8F0498A59D19DB69EB4976E9752"
+			"DC3A7B07CECAA81BBD3F32002E191D3"), None),
+		(575, ("553D402AE2D5E4BC392BFDD23348B6A26137D053AA03007122696C9F"
+			"B7A0951F7514F41A6C7018715E1D4944218EA2D852064509AC3491BF"
+			"86CBB9BA813C985DF1E5CEF00AD97EFB"), None),
+	],
+	# fp_param_set_any() picks BLS12-P638 when FP_QNRES is defined and
+	# KSS18-P638 otherwise. BN-P638 and SG18-P638 are not supported.
+	10: [
+		(638, ("3CB868653D300B3FE80015554DD25DB0FC01DCDE95D4000000631BBD"
+			"421715013955555555529C005C75D6C2AB00000000000AC79600D2AB"
+			"AAAAAAAAAAAAAA93EAF3FF000AAAAAAAAAAAAAAABEAB000B"),
+			"BLS12-P638", "defined(FP_QNRES)"),
+		(638, ("30344028BB5A934E659ABF42A9FC767BBB534653BDD64BE85CC33424"
+			"93BEF7B5BD29B9F3F83809B40FBC237576EC5F251ACCD9ACD070D120"
+			"DC8DBE9D09E2BBCFFB8F59E264FB7A71B0BE48934E64EB1D"), "KSS18-P638"),
+	],
 	12: [
 		(768, ("FFFFFFE4FF4001423290395E476657BA172EC88A91CFC7D2BA1AF14A"
 			"9BC88DBA6A6D9D80470079AE9AD532EA851862BD828EC90E320E3793"
@@ -41,16 +119,24 @@ PRIMES = {
 	],
 }
 
-REGS = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-	"%rbx", "%rbp", "%rcx", "%rsi", "%rdi"]
+
+def names(n, p="Z"):
+	return ["%s%d" % (p, i) for i in range(n)]
 
 
-def zs(n, prefix="Z"):
-	return ", ".join("%s%d" % (prefix, i) for i in range(n))
+def refs(xs):
+	return ["\\" + x for x in xs]
 
 
-def bz(names):
-	return ", ".join("\\" + x for x in names)
+def args(*xs):
+	out = []
+	for x in xs:
+		out += x if isinstance(x, list) else [x]
+	return ", ".join(out)
+
+
+def macro(name, params, body):
+	return [".macro %s %s" % (name, args(params))] + body + [".endm"]
 
 
 def consts(p):
@@ -63,7 +149,7 @@ def consts(p):
 	assert bar < (1 << 64)
 	return limbs, u0, bar, s % 64, s // 64
 
-# The license header, shared by all files but for the year.
+# The license header, shared by all files, with the year of a new file.
 LICENSE = '''/*
  * RELIC is an Efficient LIbrary for Cryptography
  * Copyright (c) %s RELIC Authors
@@ -88,9 +174,9 @@ LICENSE = '''/*
  */
 '''
 
-# The year and the documentation after the license in each file.
+# The documentation after the license in each file.
 DOCS = {
-	'macro.s': ('2023', '''
+	'macro.s': '''
 #include "relic_fp_low.h"
 
 /**
@@ -101,8 +187,8 @@ DOCS = {
  * @ingroup fp
  */
 
-'''),
-	'relic_fp_add_low.s': ('2023', '''
+''',
+	'relic_fp_add_low.s': '''
 /**
  * @file
  *
@@ -111,8 +197,8 @@ DOCS = {
  *
  * @ingroup fp
  */
-'''),
-	'relic_fp_mul_low.s': ('2023', '''
+''',
+	'relic_fp_mul_low.s': '''
 /**
  * @file
  *
@@ -120,8 +206,8 @@ DOCS = {
  *
  * @ingroup bn
  */
-'''),
-	'relic_fp_rdc_low.s': ('2023', '''
+''',
+	'relic_fp_rdc_low.s': '''
 /**
  * @file
  *
@@ -129,8 +215,8 @@ DOCS = {
  *
  * @ingroup fp
  */
-'''),
-	'relic_fp_sqr_low.s': ('2023', '''
+''',
+	'relic_fp_sqr_low.s': '''
 /**
  * @file
  *
@@ -138,8 +224,8 @@ DOCS = {
  *
  * @ingroup fp
  */
-'''),
-	'relic_fp_shift_low.s': ('2021', '''
+''',
+	'relic_fp_shift_low.s': '''
 /**
  * @file
  *
@@ -147,11 +233,11 @@ DOCS = {
  *
  * @ingroup fp
  */
-'''),
+''',
 }
 
 # The macros for addition and subtraction with carries.
-SMALL = '''.macro ADD1 i j
+CARRY_MACROS = '''.macro ADD1 i j
 	movq	8*\\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\\i(%rdi)
@@ -199,7 +285,9 @@ SMALL = '''.macro ADD1 i j
 '''
 
 
-class Gen:
+class Field:
+	"""A backend for n digits. The addition and shift files only depend on
+	this."""
 	def __init__(self, n, full):
 		self.n = n
 		# Whether some supported prime fills the top bit of the top limb.
@@ -209,425 +297,183 @@ class Gen:
 	def iffull(self):
 		return "#if FP_PRIME == %d" % self.top
 
-	# ---------------------------------------------------------------- macro.s
-	def mulm(self):
-		n = self.n
-		o = ["// [Z0:Z%d] <- a0 x b, with a pointer to a in A." % n,
-			".macro MULM A, B, %s, T" % zs(n + 1),
-			"\tmovq\t\\A, %rdx",
-			"\tmovq\t0(%rdx), %rdx",
-			"\tmulx\t0+\\B, \\Z0, \\Z1",
-			"\txorq\t\\T, \\T"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\B, \\T, \\Z%d" % (8 * i, i + 1))
-			o.append("\tadox\t\\T, \\Z%d" % i)
-		o.append("\tadox\tZEROS, \\Z%d" % n)
-		o.append(".endm")
-		return o
 
-	def muladd(self):
-		n = self.n
-		o = ["// [Z0:Z%d, X] <- [Z0:Z%d, CARRY] + rdx x M, where the free "
-			"register X turns into" % (n - 1, n - 1),
-			"// the top word and CARRY is zero unless the prime fills the top "
-				"bit.",
-			"// Needs CF = OF = 0 on entry.",
-			".macro MULADD %s, X, T, M" % zs(n),
-			"\tmulx\t0+\\M, \\T, \\X",
-			"\tadox\t\\T, \\Z0",
-			"\tadox\t\\X, \\Z1"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\M, \\T, \\X" % (8 * i))
-			o.append("\tadcx\t\\T, \\Z%d" % i)
-			if i < n - 1:
-				o.append("\tadox\t\\X, \\Z%d" % (i + 1))
-		o.append("\tadox\tZEROS, \\X")
-		o.append("\tadcx\tCARRY, \\X")
-		o.append(".endm")
-		return o
+# The callee-saved registers, in the order they are saved.
+CALLEE = ["%r12", "%r13", "%r14", "%r15", "%rbx", "%rbp"]
 
-	def mulrdc(self):
-		n = self.n
-		o = ["// [Z1:Z%d] <- ([Z0:Z%d] + (Z0 x U0 mod 2^64) x M) / 2^64, "
-			"freeing Z0. The low" % (n, n),
-			"// word cancels, so its carry is Z0 != 0, which adding all-ones "
-				"to Z0 yields.",
-			"// With Z%d blank, the top word is zero on entry and is left in "
-				"Z0." % n,
-			"// Needs CF = OF = 0 on entry.",
-			".macro MULRDC %s, T, M" % zs(n + 1),
-			"\tmovq\t$U0, %rdx",
-			"\tmulx\t\\Z0, %rdx, \\T",
-			"\tmulx\t0+\\M, \\T, \\T",
-			"\tadcx\tONES, \\Z0",
-			"\tadox\t\\T, \\Z1"]
-		for i in range(1, n):
-			o.append("\tmulx\t%d+\\M, \\T, \\Z0" % (8 * i))
-			o.append("\tadcx\t\\T, \\Z%d" % i)
-			if i < n - 1:
-				o.append("\tadox\t\\Z0, \\Z%d" % (i + 1))
-		o += [".ifb \\Z%d" % n,
-			"\tadox\tZEROS, \\Z0",
-			"\tadcx\tZEROS, \\Z0",
-			".else",
-			"\tadox\t\\Z0, \\Z%d" % n,
-			"\tadcx\tZEROS, \\Z%d" % n,
-			".endif",
-			".endm"]
-		return o
 
-	def finalc(self):
-		n = self.n
-		o = ["// Final correction: stores [C:Z0:Z%d] - p if it does not borrow "
-			"and [Z0:Z%d]" % (n - 1, n - 1),
-			"// otherwise at the pointer in CPTR. C is blank when the input is "
-				"below 2^%d." % self.top,
-			".macro FINALC %s, C" % zs(n),
-			"\tmovq\tCPTR, %rdx"]
-		for i in range(n):
-			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
-		o.append("\tsubq\tp0(%rip), \\Z0")
-		for i in range(1, n):
-			o.append("\tsbbq\tp%d(%%rip), \\Z%d" % (i, i))
-		o += [".ifnb \\C", "\tsbbq\t$0, \\C", ".endif"]
-		for i in range(n):
-			o.append("\tcmovc\t%d(%%rdx), \\Z%d" % (8 * i, i))
-		for i in range(n):
-			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
-		o.append(".endm")
-		return o
+def saves(regs):
+	"""Saves and restores the callee-saved registers that a function uses,
+	since only those must be preserved."""
+	used = [x for x in CALLEE if x in regs]
+	push = ["\tpush\t%s" % x for x in used]
+	return (push + [""] if push else [],
+		["\tpop\t\t%s" % x for x in reversed(used)] + ["\tret"])
 
-	def rdcn(self):
-		n = self.n
-		words = {12: "twelve", 11: "eleven", 10: "ten"}[n]
-		o = ["// [Z0:Z%d] <- [Z0:Z%d]/2^%d mod p, at most p, by %s Montgomery "
-			"steps." % (n - 1, n - 1, self.top, words),
-			"// Needs CF = OF = 0 on entry.",
-			".macro RDCN %s, T, P" % zs(n)]
-		for k in range(n):
-			rot = ["Z%d" % ((k + i) % n) for i in range(n)]
-			o.append("\tMULRDC\t%s, , \\T, \\P" % bz(rot))
-		o.append(".endm")
-		return o
 
-	def addh(self):
-		n = self.n
-		o = ["// [Z0:Z%d] += [0+H:%d+H]." % (n - 1, 8 * (n - 1)),
-			".macro ADDH %s, H" % zs(n),
-			"\taddq\t0+\\H, \\Z0"]
-		for i in range(1, n):
-			o.append("\tadcq\t%d+\\H, \\Z%d" % (8 * i, i))
-		o.append(".endm")
-		return o
+def header(name):
+	return LICENSE % datetime.date.today().year + DOCS[name]
 
-	def fp_rdcn_low(self):
-		n = self.n
-		z = bz(["Z%d" % i for i in range(n)])
-		o = ["// c <- a/2^%d mod p for a = 0+A < pR, with c at the pointer in "
-			"CPTR: reduce" % self.top,
-			"// the low half to at most p, add the high half, which is below "
-				"p, and subtract",
-			"// p once. The low half stays below 2^%d at each step, so no "
-				"carry leaves the" % self.top]
-		if self.full:
-			o.append("// accumulator. For %d bits the sum can reach 2^%d and "
-				"its carry goes to T." % (self.top, self.top))
-		else:
-			o.append("// accumulator.")
-		o += ["// A must not be based on Z0..Z%d or T." % (n - 1),
-			".macro FP_RDCN_LOW A, %s, T, P" % zs(n),
-			"\txorq\t\\T, \\T"]
-		o.append("\tmovq\t0+\\A, \\Z0")
-		for i in range(1, n):
-			o.append("\tmovq\t%d+\\A, \\Z%d" % (8 * i, i))
-		o.append("\tRDCN\t%s, \\T, \\P" % z)
-		o.append("\tADDH\t%s, %d+\\A" % (z, 8 * n))
-		if self.full:
-			o += [self.iffull(), "\tmovq\t$0, \\T", "\tadcq\t$0, \\T",
-				"\tFINALC\t%s, \\T" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
-		else:
-			o.append("\tFINALC\t%s" % z)
-		o.append(".endm")
-		return o
 
-	def sqrn(self):
-		n = self.n
-		o = ["// a^2 for a = 0+A, computing each cross product once, with A "
-			"and O based on",
-			"// %%rsp. With RDC = 0, the %d words of a^2 go to the pointer in "
-				"CPTR. With" % (2 * n),
-			"// RDC = 1, the low %s words stay in [Z0:Z%d] and the high %s go "
-				"to" % (self.word(n), n - 1, self.word(n)),
-			"// %d+O. O is %d words of scratch." % (8 * n, 2 * n),
-			".macro SQRN A, O, %s, T0, T1, RDC" % zs(n),
-			"\t// The cross products a_i x a_j for i < j go to words 1..%d of "
-				"O. Word w" % (2 * n - 2),
-			"\t// accumulates in Z(w mod %d) and is stored once no later row "
-				"adds to it." % n,
-			"\t// [Z1:Z%d, Z0] <- a0 x [a1:a%d]" % (n - 1, n - 1),
-			"\tmovq\t0+\\A, %rdx",
-			"\tmulx\t8+\\A, \\Z1, \\Z2"]
-		for j in range(2, n):
-			o.append("\tmulx\t%d+\\A, \\T0, \\Z%d" % (8 * j, (j + 1) % n))
-			o.append("\t%s\t\\T0, \\Z%d" % ("addq" if j == 2 else "adcq", j))
-		o.append("\tadcq\t$0, \\Z0")
-		o.append("\tmovq\t\\Z1, 8+\\O")
-		o.append("\tmovq\t\\Z2, 16+\\O")
-		for i in range(1, n - 1):
-			o.append("")
-			o.append("\t// words %d..%d += a%d x "
-				"[a%d:a%d]" % (2 * i + 1, n + i, i, i + 1, n - 1))
-			o.append("\tmovq\t%d+\\A, %%rdx" % (8 * i))
-			o.append("\txorq\t\\Z%d, \\Z%d" % (i, i))
-			for j in range(i + 1, n):
-				o.append("\tmulx\t%d+\\A, \\T0, \\T1" % (8 * j))
-				o.append("\tadcx\t\\T0, \\Z%d" % ((i + j) % n))
-				o.append("\tadox\t\\T1, \\Z%d" % ((i + j + 1) % n))
-			o.append("\tadcq\t$0, \\Z%d" % i)
-			o.append("\tmovq\t\\Z%d, "
-				"%d+\\O" % ((2 * i + 1) % n, 8 * (2 * i + 1)))
-			o.append("\tmovq\t\\Z%d, "
-				"%d+\\O" % ((2 * i + 2) % n, 8 * (2 * i + 2)))
-		o += ["",
-			"\t// Doubles the cross products and adds the squares a_k^2 at "
-				"word 2k, word by",
-			"\t// word, with CF carrying the doubling and OF the squares. %rdx "
-				"takes each",
-			"\t// word that is stored.",
-			"\tmovq\t0+\\A, %rdx",
-			"\tmulx\t%rdx, \\T0, \\T1",
-			".if \\RDC != 1",
-			"\tmovq\tCPTR, \\Z0",
-			"\tmovq\t\\T0, 0(\\Z0)",
-			".else",
-			"\tmovq\t\\T0, \\Z0",
-			".endif",
-			"\txorq\t%rdx, %rdx",
-			".if \\RDC != 1"]
-		o += self.sqr_double(False)
-		o.append(".else")
-		o += self.sqr_double(True)
-		o += [".endif", "", ".endm"]
-		return o
+def kept_header(path, name):
+	"""Returns the license and documentation of an existing file, so that it
+	keeps its year, or ours for a new file."""
+	if os.path.exists(path):
+		src = open(path).read()
+		if name == "macro.s" and "#if FP_PRIME ==" in src:
+			src = src[:src.index("#if FP_PRIME ==")]
+			if "@file" in src and " */\n" in src[src.index("@file"):]:
+				return src[:src.index(" */\n", src.index("@file")) + 4] + "\n"
+			return src
+		if "@file" in src and " */\n" in src[src.index("@file"):]:
+			return src[:src.index(" */\n", src.index("@file")) + 4]
+	return header(name)
 
-	def word(self, n):
-		return {12: "twelve", 11: "eleven", 10: "ten"}[n]
 
-	def sqr_double(self, rdc):
-		n = self.n
-		o = []
-		for w in range(1, 2 * n):
-			if w % 2 == 0:
-				o.append("\tmovq\t%d+\\A, %%rdx" % (4 * w))
-				o.append("\tmulx\t%rdx, \\T0, \\T1")
-			t = "\\T0" if w % 2 == 0 else "\\T1"
-			if rdc and w < n:
-				o.append("\tmovq\t%d+\\O, \\Z%d" % (8 * w, w))
-				o.append("\tadcx\t\\Z%d, \\Z%d" % (w, w))
-				o.append("\tadox\t%s, \\Z%d" % (t, w))
-				continue
-			if w == 2 * n - 1:
-				o.append("\tmovq\t$0, %rdx")
-			else:
-				o.append("\tmovq\t%d+\\O, %%rdx" % (8 * w))
-			o.append("\tadcx\t%rdx, %rdx")
-			o.append("\tadox\t%s, %%rdx" % t)
-			if rdc:
-				o.append("\tmovq\t%%rdx, %d+\\O" % (8 * w))
-			else:
-				o.append("\tmovq\t%%rdx, %d(\\Z0)" % (8 * w))
-		return o
+def file_head(g):
+	return ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text", ""]
 
-	def fp_sqr_low(self):
-		n = self.n
-		z = bz(["Z%d" % i for i in range(n)])
-		o = ["// c <- a^2 (RDC = 0) or a^2/2^%d mod p (RDC = 1) for a = 0+A, "
-			"with c at the" % self.top,
-			"// pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in "
-				"SQRN.",
-			".macro FP_SQR_LOW A, O, %s, T0, T1, P, RDC" % zs(n),
-			"\tSQRN\t\\A, \\O, %s, \\T0, \\T1, \\RDC" % z,
-			".if \\RDC == 1",
-			"\t// The low half reduces to at most p and the high half is below "
-				"p.",
-			"\txorq\t\\T0, \\T0",
-			"\tRDCN\t%s, \\T0, \\P" % z,
-			"\tADDH\t%s, %d+\\O" % (z, 8 * n)]
-		if self.full:
-			o += [self.iffull(), "\tmovq\t$0, \\T0", "\tadcq\t$0, \\T0",
-				"\tFINALC\t%s, \\T0" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
-		else:
-			o.append("\tFINALC\t%s" % z)
-		o += [".endif", ".endm"]
-		return o
 
-	def fp_mul_low(self):
-		n = self.n
-		o = ["// Interleaved Montgomery multiplication after MULM, rotating "
-			"the accumulator",
-			"// over Z0..Z%d. With RDC = 0, it stores the double-precision "
-				"product instead." % n,
-			".macro FP_MUL_LOW A, B, %s, T, P, RDC" % zs(n + 1)]
-		for i in range(n):
-			rot = ["Z%d" % ((i + k) % (n + 1)) for k in range(n + 1)]
-			if i > 0:
-				o.append("")
-				o.append("\t// z += a%d x b" % i)
-				o.append("\tmovq\t\\A, %rdx")
-				o.append("\tmovq\t%d(%%rdx), %%rdx" % (8 * i))
-				o.append("\txorq\t\\T, \\T")
-				o.append("\tMULADD\t%s, \\T, \\B" % bz(rot[:n] + [rot[n]]))
-				o.append("")
-			o.append(".if \\RDC != 1")
-			o.append("\tmovq\tCPTR, %rdx")
-			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[0], 8 * i))
-			o.append(".else")
-			o.append("\t// z = (z + (z0 x u0 mod 2^64) x p) / 2^64")
-			o.append("\tMULRDC\t%s, \\T, \\P" % bz(rot))
-			if self.full:
-				o.append(self.iffull())
-				o.append("\t// The sum can reach 2^(64 * %d), so keep its "
-					"carry." % (n + 1))
-				o.append("\tmovq\t$0, \\%s" % rot[0])
-				o.append("\tadox\tZEROS, \\%s" % rot[0])
-				o.append("\tadcx\tZEROS, \\%s" % rot[0])
-				if i < n - 1:
-					o.append("\tmovq\t\\%s, CARRY" % rot[0])
-				o.append("#endif")
-			o.append(".endif")
-		# The product ends with the accumulator rotated by n.
-		rot = ["Z%d" % ((n + k) % (n + 1)) for k in range(n + 1)]
+def function(name, regs, body, frame=0, pushdi=False):
+	"""A function that saves the callee-saved registers in regs, then %rdi if
+	pushdi, and reserves frame bytes of stack, a number or a symbol."""
+	push, pop = saves(regs)
+	o = ["cdecl(%s):" % name] + push[:-1]
+	if pushdi:
+		o.append("\tpush\t%rdi")
+	if frame:
+		o.append("\tsubq\t$%s, %%rsp" % frame)
+	if len(o) > 1 and body[0] != "":
 		o.append("")
-		o.append(".if \\RDC != 1")
-		for k in range(n):
-			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[k], 8 * (n + k)))
-		o.append(".else")
-		if self.full:
-			o.append(self.iffull())
-			o.append("\tFINALC\t%s" % bz(rot))
-			o.append("#else")
-			o.append("\tFINALC\t%s" % bz(rot[:n]))
-			o.append("#endif")
-		else:
-			o.append("\tFINALC\t%s" % bz(rot[:n]))
-		o += [".endif", ".endm"]
-		return o
+	o += body + [""]
+	if frame:
+		o.append("\taddq\t$%s, %%rsp" % frame)
+	return o + pop
 
 
-def main():
-	if sys.argv[1] == "--uniform":
-		# Only the files that do not depend on the design of the macros, for a
-		# backend whose macro.s defines P0..P(N-1) and the ADD1..DBLN macros.
-		n = int(sys.argv[2])
-		out = sys.argv[3]
-		macro = open(os.path.join(out, "macro.s")).read()
-		write_all(Gen(n, "FP_PRIME == %d" % (64 * n) in macro), out, True)
-		return
-	n = int(sys.argv[1])
-	out = sys.argv[2]
-	g = Gen(n, any(b == 64 * n for b, _, _ in PRIMES[n]))
-	head = header("macro.s")
+def prime_block(n):
+	"""The constants of the primes supported with n limbs, for macro.s."""
 	b = []
-	names = []
-	for k, (bits, h, note) in enumerate(PRIMES[n]):
-		limbs, u0, bar, bars, barj = consts(int(h, 16))
+	bits = []
+	for k, e in enumerate(PRIMES[n]):
+		limbs, u0, bar, bars, barj = consts(int(e[1], 16))
 		assert len(limbs) == n
-		b.append(("#if" if k == 0 else "#elif") + " FP_PRIME == %d" % bits)
-		if note:
-			b.append("/* %s */" % note)
+		b.append(("#if" if k == 0 else "#elif") + " FP_PRIME == %d" % e[0] +
+			(" && " + e[3] if len(e) > 3 else ""))
 		for i, l in enumerate(limbs):
 			b.append("#define P%d\t0x%016X" % (i, l))
 		b.append("#define U0\t0x%016X" % u0)
 		b.append("#define BAR\t0x%016X" % bar)
 		b.append("#define BARS\t%d" % bars)
 		b.append("#define BARJ\t%d" % barj)
-		names.append(str(bits))
+		if str(e[0]) not in bits:
+			bits.append(str(e[0]))
 	b.append("#else")
-	names.sort(key=int)
-	last = names[-1]
-	if len(names) > 1:
-		last = ", ".join(names[:-1]) + " or " + last
+	bits.sort(key=int)
+	last = bits[-1]
+	if len(bits) > 1:
+		last = ", ".join(bits[:-1]) + " or " + last
 	b.append('#error "x64-asm-%dl supports only FP_PRIME = %s."' % (n, last))
 	b.append("#endif")
-	blocks = "\n".join(b) + "\n\n"
-	frame = 8 * n
-	tail = """#if defined(__APPLE__)
+	return "\n".join(b) + "\n\n"
+
+CDECL = """#if defined(__APPLE__)
 #define cdecl(S) _cdecl(S)
 #define _cdecl(S) _ ## S
 #else
 #define cdecl(S) S
 #endif
+"""
 
-#if defined(__ELF__)
+NOEXEC = """#if defined(__ELF__)
 .section .note.GNU-stack, "", %progbits
 #endif
+"""
 
-/*
- * Stack frame of the multiplication and reduction functions. With {w} digits,
- * the accumulator takes {acc} registers, the multiplier takes rdx and one more
- * register is left for the partial products, so the operand b, the pointers
- * and the constants live on the stack.
- */
-#define BCPY	0(%rsp)
-#define APTR	{a}(%rsp)
-#define CPTR	{c}(%rsp)
-#define ZEROS	{z}(%rsp)
-#define ONES	{o}(%rsp)
-#define CARRY	{k}(%rsp)
-#define FRAME	{f}
-/* The squaring functions also keep the {w2} words of a^2 on the stack. */
-#define SBUF	{f}(%rsp)
-#define SFRAME	{sf}
 
-.text
-""".format(w=n, acc=n + 1, a=frame, c=frame + 8, z=frame + 16,
-		o=frame + 24, k=frame + 32, f=frame + 40, w2=2 * n,
-		sf=frame + 40 + 16 * n)
-	small = SMALL
-	body = []
-	for part in (g.mulm(), g.muladd(), g.mulrdc(), g.finalc(), g.rdcn(),
-			g.addh(), g.fp_rdcn_low(), g.sqrn(), g.fp_sqr_low(),
-				g.fp_mul_low()):
-		body.append("\n".join(part))
-	text = head + blocks + tail + "\n" + small + "\n\n".join(body) + "\n"
-	os.makedirs(out, exist_ok=True)
-	open(os.path.join(out, "macro.s"), "w").write(text)
-	write_all(g, out)
+def macro_s(g, out, guards, defines, parts):
+	"""Writes macro.s: the constants of the primes, cdecl, the guards, the note
+	for a non-executable stack, the defines and the macros, where guards and
+	defines are blocks of lines."""
+	path = os.path.join(out, "macro.s")
+	text = kept_header(path, "macro.s") + prime_block(g.n) + CDECL + "\n"
+	text += "".join(x + "\n" for x in guards) + NOEXEC + "\n"
+	text += "".join(x + "\n" for x in defines) + ".text\n\n" + CARRY_MACROS
+	text += "\n\n".join("\n".join(x) for x in parts) + "\n"
+	open(path, "w").write(text)
 
+
+def write_files(g, out, files):
+	"""Writes the given (name, generator) files, keeping existing headers."""
+	for name, fn in files:
+		path = os.path.join(out, name)
+		head = kept_header(path, name)
+		open(path, "w").write(head + "\n" + "\n".join(fn(g)) + "\n")
+
+
+def stack_mul1(n):
+	"""fp_mul1_low(c, a, digit < 2^63): c = a * digit mod p, in constant time,
+	with d = a * digit on the stack, for fields too large for registers."""
+	o = []
+	t = 8 * (n + 1)
+	for i in range(n):
+		hi = "%r8" if i % 2 == 0 else "%r9"
+		o.append("\tmulxq\t%d(%%rsi), %%rax, %s" % (8 * i, hi))
+		if i > 0:
+			o.append("\t%s\t%s, %%rax" % ("addq" if i == 1 else "adcq",
+				"%r8" if i % 2 == 1 else "%r9"))
+		o.append("\tmovq\t%%rax, %d(%%rsp)" % (8 * i))
+	last = "%r8" if (n - 1) % 2 == 0 else "%r9"
+	o.append("\tadcq\t$0, %s" % last)
+	o.append("\tmovq\t%s, %d(%%rsp)" % (last, 8 * n))
+	# q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
+	# floor(d / p). Then subtract the low halves of q * p, keeping the high
+	# halves in t, subtract the high halves, leaving d - q * p below 3p, and
+	# subtract p twice, keeping the difference when there is no borrow.
+	o += ["", "\tmovq\t(8 * BARJ)(%rsp), %rax",
+		"\tmovq\t(8 * BARJ + 8)(%rsp), %rdx", "\tshrdq\t$BARS, %rdx, %rax",
+		"\tmovq\t$BAR, %rdx", "\tmulxq\t%rax, %rax, %rdx", ""]
+	for i in range(n):
+		o.append("\tmovq\t$P%d, %%rax" % i)
+		o.append("\tmulxq\t%rax, %rax, %rcx")
+		o.append("\t%s\t%%rax, "
+			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * i))
+		o.append("\tmovq\t%%rcx, %d(%%rsp)" % (t + 8 * i))
+	o.append("\tsbbq\t$0, %d(%%rsp)" % (8 * n))
+	o.append("")
+	for i in range(n):
+		o.append("\tmovq\t%d(%%rsp), %%rax" % (t + 8 * i))
+		o.append("\t%s\t%%rax, "
+			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * (i + 1)))
+	o += ["", "\t.rept 2"]
+	for i in range(n):
+		o.append("\tmovq\t%d(%%rsp), %%rax" % (8 * i))
+		o.append("\tmovq\t$P%d, %%rdx" % i)
+		o.append("\t%s\t%%rdx, %%rax" % ("subq" if i == 0 else "sbbq"))
+		o.append("\tmovq\t%%rax, %d(%%rsp)" % (t + 8 * i))
+	o += ["\tmovq\t%d(%%rsp), %%rax" % (8 * n), "\tsbbq\t$0, %rax",
+		"\tmovq\t%%rax, "
+			"%d(%%rsp)" % (t + 8 * n), "\tsbbq\t%rbx, %rbx", "\tnotq\t%rbx"]
+	for i in range(n + 1):
+		o += ["\tmovq\t%d(%%rsp), "
+			"%%rax" % (8 * i), "\tmovq\t%d(%%rsp), %%rdx" % (t + 8 * i),
+			"\txorq\t%rax, %rdx", "\tandq\t%rbx, %rdx", "\txorq\t%rdx, %rax",
+			"\tmovq\t%%rax, %d(%%rsp)" % (8 * i)]
+	o += ["\t.endr", ""]
+	for i in range(n):
+		o += ["\tmovq\t%d(%%rsp), "
+			"%%rax" % (8 * i), "\tmovq\t%%rax, %d(%%rdi)" % (8 * i)]
+	return function("fp_mul1_low", ["%rbx"], o, frame=16 * (n + 1))
 
 # ------------------------------------------------------------------ other files
 ACC = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rax",
 	"%rbx", "%rbp", "%rcx"]
+
 POOL = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx", "%rbx", "%rbp", "%r12",
 	"%r13", "%r14", "%r15"]
+
 CALLER = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx", "%rdx", "%rbx", "%rbp",
 	"%r12", "%r13", "%r14", "%r15"]
-PUSHM = ["\tpush\t%r12", "\tpush\t%r13", "\tpush\t%r14", "\tpush\t%r15",
-	"\tpush\t%rbx", "\tpush\t%rbp"]
-POPM = ["\tpop\t\t%rbp", "\tpop\t\t%rbx", "\tpop\t\t%r15", "\tpop\t\t%r14",
-	"\tpop\t\t%r13", "\tpop\t\t%r12", "\tret"]
-
-
-def saves(order, regs):
-	"""Saves and restores, in the given order, the callee-saved registers that
-	a function uses, since only those must be preserved."""
-	used = [x for x in order if x in regs]
-	push = ["\tpush\t%s" % x for x in used]
-	return (push + [""] if push else [],
-		["\tpop\t\t%s" % x for x in reversed(used)] + ["\tret"])
-
-
-def save6(regs):
-	return saves(["%rbx", "%rbp", "%r12", "%r13", "%r14", "%r15"], regs)
-
-
-def savem(regs):
-	return saves(["%r12", "%r13", "%r14", "%r15", "%rbx", "%rbp"], regs)
-
-
-def header(name):
-	year, doc = DOCS[name]
-	return LICENSE % year + doc
 
 
 def add_low(g):
@@ -659,8 +505,8 @@ def add_low(g):
 	def keep_carry():
 		if not full:
 			return []
+		# p fills the top bit, so keep the carry of the sum.
 		return [g.iffull(),
-			"\t// p fills the top bit, so keep the carry of the sum.",
 			"\tmovq\t$0, %s" % carry, "\tadcq\t$0, %s" % carry, "#endif"]
 
 	def correct(base):
@@ -732,20 +578,20 @@ def add_low(g):
 		"\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "", "\tret", ""]
 	# fp_addm_low
-	o += ["cdecl(fp_addm_low):"] + save6(r + add_extra)[0]
+	o += ["cdecl(fp_addm_low):"] + saves(r + add_extra)[0]
 	o.append("\tmovq\t0(%%rdx), %s" % r[0])
 	o.append("\taddq\t0(%%rsi), %s" % r[0])
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rdx), %s" % (8 * i, r[i]))
 		o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, r[i]))
 	o += keep_carry() + [""] + correct(0) + [""]
-	o += save6(r + add_extra)[1] + [""]
+	o += saves(r + add_extra)[1] + [""]
 	# fp_addd_low
 	o += ["cdecl(fp_addd_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rdx), %r11",
 		"\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (2 * RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_addc_low
-	o += ["cdecl(fp_addc_low):"] + save6(r + add_extra)[0]
+	o += ["cdecl(fp_addc_low):"] + saves(r + add_extra)[0]
 	o += ["\tmovq\t0(%rdx), "
 		"%r11", "\taddq\t0(%rsi), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tADDN\t1 (RLC_FP_DIGS - 1)", ""]
@@ -753,7 +599,7 @@ def add_low(g):
 		o.append("\tmovq\t%d(%%rdx), %s" % (8 * (n + i), r[i]))
 		o.append("\tadcq\t%d(%%rsi), %s" % (8 * (n + i), r[i]))
 	o += keep_carry() + [""] + correct(8 * n) + [""]
-	o += save6(r + add_extra)[1] + [""]
+	o += saves(r + add_extra)[1] + [""]
 	# fp_sub1_low and fp_subn_low
 	o += ["cdecl(fp_sub1_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r10",
 		"\tsubq\t%rdx, %r10", "\tmovq\t%r10, 0(%rdi)", "",
@@ -762,30 +608,30 @@ def add_low(g):
 		"\tsubq\t0(%rdx), %r11", "\tmovq\t%r11, 0(%rdi)", "",
 		"\tSUBN\t1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "", "\tret", ""]
 	# fp_subm_low
-	o += ["cdecl(fp_subm_low):"] + save6(r + sub_extra)[0]
+	o += ["cdecl(fp_subm_low):"] + saves(r + sub_extra)[0]
 	o.append("\tmovq\t0(%%rsi), %s" % r[0])
 	o.append("\tsubq\t0(%%rdx), %s" % r[0])
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
 		o.append("\tsbbq\t%d(%%rdx), %s" % (8 * i, r[i]))
-	o += addback(0) + [""] + save6(r + sub_extra)[1] + [""]
+	o += addback(0) + [""] + saves(r + sub_extra)[1] + [""]
 	# fp_subd_low
 	o += ["cdecl(fp_subd_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r8",
 		"\tsubq\t0(%rdx), %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tSUBN\t1 (2 * RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_subc_low
-	o += ["cdecl(fp_subc_low):"] + save6(r + sub_extra)[0]
+	o += ["cdecl(fp_subc_low):"] + saves(r + sub_extra)[0]
 	o += ["\tmovq\t0(%rsi), "
 		"%r8", "\tsubq\t0(%rdx), %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tSUBN\t1 (RLC_FP_DIGS - 1)", ""]
 	for i in range(n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * (n + i), r[i]))
 		o.append("\tsbbq\t%d(%%rdx), %s" % (8 * (n + i), r[i]))
-	o += addback(8 * n) + [""] + save6(r + sub_extra)[1] + [""]
+	o += addback(8 * n) + [""] + saves(r + sub_extra)[1] + [""]
 	# fp_negm_low: c = p - a if a != 0, else 0. Only %rsi is read, so %rdx
 	# joins the caller-saved registers.
 	nr = CALLER[:n] if n <= 10 else r
-	o += ["cdecl(fp_negm_low):"] + save6(nr)[0]
+	o += ["cdecl(fp_negm_low):"] + saves(nr)[0]
 	for i in range(1, n):
 		o.append("\txorq\t%s, %s" % (nr[i], nr[i]))
 	o.append("\tmovq\t0(%%rsi), %s" % nr[0])
@@ -799,26 +645,26 @@ def add_low(g):
 	for i in range(1, n):
 		o.append("\tsbbq\t%d(%%rsi), %s" % (8 * i, nr[i]))
 		o.append("\tmovq\t%s, %d(%%rdi)" % (nr[i], 8 * i))
-	o += [""] + save6(nr)[1] + [""]
+	o += [""] + saves(nr)[1] + [""]
 	# fp_dbln_low
 	o += ["cdecl(fp_dbln_low):", "\txorq\t%rax, %rax", "\tmovq\t0(%rsi), %r8",
 		"\taddq\t%r8, %r8", "\tmovq\t%r8, 0(%rdi)", "",
 		"\tDBLN 1 (RLC_FP_DIGS - 1)", "", "\tadcq\t$0, %rax", "\tret", ""]
 	# fp_dblm_low
-	o += ["cdecl(fp_dblm_low):"] + save6(r + add_extra)[0]
+	o += ["cdecl(fp_dblm_low):"] + saves(r + add_extra)[0]
 	o.append("\tmovq\t0(%%rsi), %s" % r[0])
 	o.append("\taddq\t%s, %s" % (r[0], r[0]))
 	for i in range(1, n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
 		o.append("\tadcq\t%s, %s" % (r[i], r[i]))
 	o += keep_carry() + [""] + correct(0) + [""]
-	o += save6(r + add_extra)[1] + [""]
+	o += saves(r + add_extra)[1] + [""]
 	# fp_hlvm_low: c = (a + (a odd ? p : 0)) / 2, with the carry shifted in.
 	h = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rbp",
 		"%rbx", "%rcx", "%rax"][:n]
 	if n <= 10:
 		h = POOL[:n]
-	o += ["cdecl(fp_hlvm_low):"] + savem(h)[0] + [
+	o += ["cdecl(fp_hlvm_low):"] + saves(h)[0] + [
 		"\tmovq\t$1, %rdx", "\tandq\t0(%rsi), %rdx", "\tmovq\t$0, %rdx"]
 	for i in range(n):
 		o.append("\tmovq\t$P%d, %s" % (i, h[i]))
@@ -834,202 +680,55 @@ def add_low(g):
 	o.append("")
 	for i in range(n):
 		o.append("\tmovq\t%s, %d(%%rdi)" % (h[i], 8 * i))
-	o += ["\txorq\t%rax, %rax", ""] + savem(h)[1] + [""]
+	o += ["\txorq\t%rax, %rax", ""] + saves(h)[1] + [""]
 	# fp_hlvd_low: the same over 2n digits, adding p to the low half. Besides
 	# %rdi, 14 registers hold digits, with %rsi taking the last digit read, so
 	# only the lowest 2n - 14 digits of the high half go through memory.
-	if n <= 10:
-		lo = POOL[:n]
-		hi = (["%rdx"] + POOL[n:] + ["%rsi"])[:n]
-		mem = max(0, 2 * n - 14)
-		hi = [None] * mem + hi[:n - mem]
-		tmp = hi[mem]
-		regs = lo + [x for x in hi if x]
-		o += ["cdecl(fp_hlvd_low):"] + savem(regs)[0] + [
-			"\tmovq\t$1, %s" % tmp, "\tandq\t0(%%rsi), %s" % tmp,
-			"\tmovq\t$0, %s" % tmp]
-		for i in range(n):
-			o.append("\tmovq\t$P%d, %s" % (i, lo[i]))
-		for i in range(n):
-			o.append("\tcmovz\t%s, %s" % (tmp, lo[i]))
-		o.append("")
-		o.append("\taddq\t0(%%rsi), %s" % lo[0])
-		for i in range(1, n):
-			o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, lo[i]))
-		for i in range(n):
-			d = 8 * (n + i)
-			x = hi[i] or tmp
-			o.append("\tmovq\t%d(%%rsi), %s" % (d, x))
-			o.append("\tadcq\t$0, %s" % x)
-			if not hi[i]:
-				o.append("\tmovq\t%s, %d(%%rdi)" % (x, d))
-		o.append("")
-		for i in reversed(range(2 * n)):
-			x = lo[i] if i < n else hi[i - n]
-			o.append("\trcrq\t$1, %s" % (x or "%d(%%rdi)" % (8 * i)))
-		o.append("")
-		for i in range(2 * n):
-			x = lo[i] if i < n else hi[i - n]
-			if x:
-				o.append("\tmovq\t%s, %d(%%rdi)" % (x, 8 * i))
-		o += [""] + savem(regs)[1]
-		return o
-	o += ["cdecl(fp_hlvd_low):"] + savem(h)[0] + [
-		"\tmovq\t$1, %rdx", "\tandq\t0(%rsi), %rdx", "\tmovq\t$0, %rdx"]
+	lo = POOL[:n]
+	hi = (["%rdx"] + POOL[n:] + ["%rsi"])[:n]
+	mem = max(0, 2 * n - 14)
+	hi = [None] * mem + hi[:n - mem]
+	tmp = hi[mem]
+	regs = lo + [x for x in hi if x]
+	o += ["cdecl(fp_hlvd_low):"] + saves(regs)[0] + [
+		"\tmovq\t$1, %s" % tmp, "\tandq\t0(%%rsi), %s" % tmp,
+		"\tmovq\t$0, %s" % tmp]
 	for i in range(n):
-		o.append("\tmovq\t$P%d, %s" % (i, h[i]))
+		o.append("\tmovq\t$P%d, %s" % (i, lo[i]))
 	for i in range(n):
-		o.append("\tcmovz\t%%rdx, %s" % h[i])
+		o.append("\tcmovz\t%s, %s" % (tmp, lo[i]))
 	o.append("")
-	o.append("\taddq\t0(%%rsi), %s" % h[0])
+	o.append("\taddq\t0(%%rsi), %s" % lo[0])
 	for i in range(1, n):
-		o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, h[i]))
+		o.append("\tadcq\t%d(%%rsi), %s" % (8 * i, lo[i]))
 	for i in range(n):
-		o.append("\tmovq\t%d(%%rsi), %%rdx" % (8 * (n + i)))
-		o.append("\tadcq\t$0, %rdx")
-		o.append("\tmovq\t%%rdx, %d(%%rdi)" % (8 * (n + i)))
+		d = 8 * (n + i)
+		x = hi[i] or tmp
+		o.append("\tmovq\t%d(%%rsi), %s" % (d, x))
+		o.append("\tadcq\t$0, %s" % x)
+		if not hi[i]:
+			o.append("\tmovq\t%s, %d(%%rdi)" % (x, d))
 	o.append("")
-	for i in reversed(range(n)):
-		o.append("\trcrq\t$1, %d(%%rdi)" % (8 * (n + i)))
-	for i in reversed(range(n)):
-		o.append("\trcrq\t$1, %s" % h[i])
+	for i in reversed(range(2 * n)):
+		x = lo[i] if i < n else hi[i - n]
+		o.append("\trcrq\t$1, %s" % (x or "%d(%%rdi)" % (8 * i)))
 	o.append("")
-	for i in range(n):
-		o.append("\tmovq\t%s, %d(%%rdi)" % (h[i], 8 * i))
-	o += [""] + savem(h)[1]
-	return o
-
-
-def mul_low(g):
-	n = g.n
-	o = ['#include "macro.s"', "", ".text", "",
-		".global cdecl(fp_mul1_low)", ".global cdecl(fp_muln_low)",
-		".global cdecl(fp_mulm_low)", "",
-		"/*", " * Function: fp_mul1_low",
-		" * Inputs: rdi = c, rsi = a, rdx = digit < 2^63",
-		" * Output: c = a * digit mod p, in constant time", " */",
-		"cdecl(fp_mul1_low):", "\tpush\t%rbx",
-			"\tsubq\t$%d, %%rsp" % (16 * (n + 1)), "",
-		"\t/* d = a * digit. */"]
-	t = 8 * (n + 1)
-	for i in range(n):
-		hi = "%r8" if i % 2 == 0 else "%r9"
-		o.append("\tmulxq\t%d(%%rsi), %%rax, %s" % (8 * i, hi))
-		if i > 0:
-			o.append("\t%s\t%s, %%rax" % ("addq" if i == 1 else "adcq",
-				"%r8" if i % 2 == 1 else "%r9"))
-		o.append("\tmovq\t%%rax, %d(%%rsp)" % (8 * i))
-	last = "%r8" if (n - 1) % 2 == 0 else "%r9"
-	o.append("\tadcq\t$0, %s" % last)
-	o.append("\tmovq\t%s, %d(%%rsp)" % (last, 8 * n))
-	o += ["",
-		"\t/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 "
-			"below",
-		"\t * floor(d / p). */", "\tmovq\t(8 * BARJ)(%rsp), %rax",
-		"\tmovq\t(8 * BARJ + 8)(%rsp), %rdx", "\tshrdq\t$BARS, %rdx, %rax",
-		"\tmovq\t$BAR, %rdx", "\tmulxq\t%rax, %rax, %rdx", "",
-		"\t/* Subtract the low halves of q * p, keeping the high halves in t. "
-			"*/"]
-	for i in range(n):
-		o.append("\tmovq\t$P%d, %%rax" % i)
-		o.append("\tmulxq\t%rax, %rax, %rcx")
-		o.append("\t%s\t%%rax, "
-			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * i))
-		o.append("\tmovq\t%%rcx, %d(%%rsp)" % (t + 8 * i))
-	o.append("\tsbbq\t$0, %d(%%rsp)" % (8 * n))
-	o += ["", "\t/* Subtract the high halves, leaving d - q * p below 3p. */"]
-	for i in range(n):
-		o.append("\tmovq\t%d(%%rsp), %%rax" % (t + 8 * i))
-		o.append("\t%s\t%%rax, "
-			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * (i + 1)))
-	o += ["",
-		"\t/* Subtract p twice, keeping the difference when there is no "
-			"borrow. */",
-		"\t.rept 2"]
-	for i in range(n):
-		o.append("\tmovq\t%d(%%rsp), %%rax" % (8 * i))
-		o.append("\tmovq\t$P%d, %%rdx" % i)
-		o.append("\t%s\t%%rdx, %%rax" % ("subq" if i == 0 else "sbbq"))
-		o.append("\tmovq\t%%rax, %d(%%rsp)" % (t + 8 * i))
-	o += ["\tmovq\t%d(%%rsp), %%rax" % (8 * n), "\tsbbq\t$0, %rax",
-		"\tmovq\t%%rax, "
-			"%d(%%rsp)" % (t + 8 * n), "\tsbbq\t%rbx, %rbx", "\tnotq\t%rbx"]
-	for i in range(n + 1):
-		o += ["\tmovq\t%d(%%rsp), "
-			"%%rax" % (8 * i), "\tmovq\t%d(%%rsp), %%rdx" % (t + 8 * i),
-			"\txorq\t%rax, %rdx", "\tandq\t%rbx, %rdx", "\txorq\t%rdx, %rax",
-			"\tmovq\t%%rax, %d(%%rsp)" % (8 * i)]
-	o += ["\t.endr", ""]
-	for i in range(n):
-		o += ["\tmovq\t%d(%%rsp), "
-			"%%rax" % (8 * i), "\tmovq\t%%rax, %d(%%rdi)" % (8 * i)]
-	o += ["\taddq\t$%d, %%rsp" % (16 * (n + 1)), "\tpop\t%rbx", "\tret", ""]
-	regs = ", ".join(REGS[:n + 1] + ["%rax"])
-	for name, rdc in (("muln", 0), ("mulm", 1)):
-		o += ["cdecl(fp_%s_low):" % name] + PUSHM + ["\tsubq\t$FRAME, %rsp", "",
-			"\tmovq\t%rdi, CPTR", "\tmovq\t%rsi, APTR", "\tmovq\t$0, ZEROS",
-			"\tmovq\t$-1, ONES", "\tmovq\t$0, CARRY", "\t.set\tk, 0",
-			"\t.rept\tRLC_FP_DIGS", "\tmovq\t8*k(%rdx), %rax",
-				"\tmovq\t%rax, 8*k+BCPY",
-			"\t.set\tk, k + 1", "\t.endr", "",
-			"\tMULM\tAPTR, BCPY, %s" % regs,
-			"\tFP_MUL_LOW\tAPTR, BCPY, %s, p0(%%rip), %d" % (regs, rdc), "",
-			"\taddq\t$FRAME, %rsp"] + POPM
-		if name == "muln":
-			o.append("")
-	return o
-
-
-def rdc_low(g):
-	n = g.n
-	regs = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-		"%rbx",
-		"%rbp", "%rax", "%rcx"][:n]
-	return ['#include '
-		'"relic_fp_low.h"', "", '#include "macro.s"', "", ".text", "",
-		".global cdecl(fp_rdcn_low)", "", "/*", " * Function: fp_rdcn_low",
-		" * Inputs: rdi = c, rsi = "
-			"a", " * Output: c = a/R mod p, for a < pR", " */",
-		"cdecl(fp_rdcn_low):"] + PUSHM + ["\tsubq\t$FRAME, %rsp", "",
-		"\tmovq\t%rdi, CPTR", "\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES",
-		"\tFP_RDCN_LOW\t0(%%rsi), %s, %%rdi, p0(%%rip)" % ", ".join(regs), "",
-		"\taddq\t$FRAME, %rsp"] + POPM
-
-
-def sqr_low(g):
-	n = g.n
-	z = REGS[:n]
-	t0 = REGS[n]
-	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text",
-		".global cdecl(fp_sqrn_low)", ".global cdecl(fp_sqrm_low)", ""]
-	for name, rdc, doc in (("sqrn", 0, "c = a^2"), ("sqrm", 1,
-		"c = a^2/R mod p")):
-		o += ["/*", " * Function: fp_%s_low" % name,
-			" * Inputs: rdi = c, rsi = a",
-			" * Output: "
-				"%s" % doc, " */", "cdecl(fp_%s_low):" % name] + PUSHM + [
-			"\tsubq\t$SFRAME, %rsp", "", "\tmovq\t%rdi, CPTR"]
-		if rdc:
-			o += ["\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES"]
-		o += ["\t.set\tk, 0", "\t.rept\tRLC_FP_DIGS", "\tmovq\t8*k(%rsi), %rax",
-			"\tmovq\t%rax, 8*k+BCPY", "\t.set\tk, k + 1", "\t.endr", "",
-			"\tFP_SQR_LOW\tBCPY, SBUF, %s, %s, %%rax, p0(%%rip), "
-				"%d" % (", ".join(z), t0, rdc),
-			"", "\taddq\t$SFRAME, %rsp"] + POPM
-		if name == "sqrn":
-			o.append("")
+	for i in range(2 * n):
+		x = lo[i] if i < n else hi[i - n]
+		if x:
+			o.append("\tmovq\t%s, %d(%%rdi)" % (x, 8 * i))
+	o += [""] + saves(regs)[1]
 	return o
 
 
 def shift_low(g):
+	"""Shifts the digits in place from one end, so c may alias a."""
 	n = g.n
 	if n <= 6:
 		return shift_low_regs(g)
-	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text",
-		".global cdecl(fp_rsh1_low)", ".global cdecl(fp_lsh1_low)", "", "/*",
-		" * The digits are shifted in place from one end, so c may alias "
-			"a.", " */",
-		"cdecl(fp_rsh1_low):", "\tmovq\t0(%rsi), %r8", "\tmovq\t%r8, %rax",
+	o = file_head(g) + [".global cdecl(fp_rsh1_low)",
+		".global cdecl(fp_lsh1_low)", "", "cdecl(fp_rsh1_low):",
+		"\tmovq\t0(%rsi), %r8", "\tmovq\t%r8, %rax",
 		"\tandq\t$1, %rax"]
 	cur, nxt = "%r8", "%r9"
 	for i in range(1, n):
@@ -1052,16 +751,13 @@ def shift_low(g):
 	return o
 
 
-
 def shift_low_regs(g):
 	"""Shifts with all digits loaded first, which pipelines better while they
 	fit in caller-saved registers. Loading everything first keeps c = a safe."""
 	n = g.n
 	r = ["%r8", "%r9", "%r10", "%r11", "%rcx", "%rdx"][:n]
-	o = ['#include "relic_fp_low.h"', '#include "macro.s"', "", ".text",
-		".global cdecl(fp_rsh1_low)", ".global cdecl(fp_lsh1_low)", "", "/*",
-		" * All the digits are read before any is written, so c may alias a.",
-		" */", "cdecl(fp_rsh1_low):"]
+	o = file_head(g) + [".global cdecl(fp_rsh1_low)",
+		".global cdecl(fp_lsh1_low)", "", "cdecl(fp_rsh1_low):"]
 	for i in range(n):
 		o.append("\tmovq\t%d(%%rsi), %s" % (8 * i, r[i]))
 	o += ["\tmovq\t%s, %%rax" % r[0], "\tandq\t$1, %rax"]
@@ -1082,25 +778,1204 @@ def shift_low_regs(g):
 	o.append("\tret")
 	return o
 
-def kept_header(path, name):
-	"""Returns the license and documentation of an existing file, or ours."""
-	if os.path.exists(path):
-		src = open(path).read()
-		if "@file" in src and " */\n" in src[src.index("@file"):]:
-			return src[:src.index(" */\n", src.index("@file")) + 4]
-	return header(name)
+UNIFORM_FILES = [("relic_fp_add_low.s", add_low), ("relic_fp_shift_low.s",
+	shift_low)]
 
 
-def write_all(g, out, uniform=False):
-	files = [("relic_fp_add_low.s", add_low), ("relic_fp_shift_low.s",
-		shift_low)]
-	if not uniform:
-		files += [("relic_fp_mul_low.s", mul_low), ("relic_fp_rdc_low.s",
-			rdc_low), ("relic_fp_sqr_low.s", sqr_low)]
-	for name, fn in files:
-		path = os.path.join(out, name)
-		head = kept_header(path, name) if uniform else header(name)
-		open(path, "w").write(head + "\n" + "\n".join(fn(g)) + "\n")
+def write_uniform(n, out):
+	"""The addition and shift files, which only depend on the primes in the
+	macro.s of the backend."""
+	macro = open(os.path.join(out, "macro.s")).read()
+	write_files(Field(n, "FP_PRIME == %d" % (64 * n) in macro), out,
+		UNIFORM_FILES)
+
+REGS = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+	"%rbx", "%rbp", "%rcx", "%rsi", "%rdi"]
+
+
+
+
+class Large(Field):
+	"""The design of x64-asm-12l: an accumulator of n + 1 registers, one
+	temporary, and the operand b, the pointers and the constants on the
+	stack."""
+
+	# ---------------------------------------------------------------- macro.s
+	def mulm(self):
+		"""[Z0:Zn] <- a0 x b, with a pointer to a in A."""
+		n = self.n
+		o = ["\tmovq\t\\A, %rdx",
+			"\tmovq\t0(%rdx), %rdx",
+			"\tmulx\t0+\\B, \\Z0, \\Z1",
+			"\txorq\t\\T, \\T"]
+		for i in range(1, n):
+			o.append("\tmulx\t%d+\\B, \\T, \\Z%d" % (8 * i, i + 1))
+			o.append("\tadox\t\\T, \\Z%d" % i)
+		o.append("\tadox\tZEROS, \\Z%d" % n)
+		return macro("MULM", ["A", "B"] + names(n + 1) + ["T"], o)
+
+	def muladd(self):
+		"""[Z0:Zn-1, X] <- [Z0:Zn-1, CARRY] + rdx x M, where the free register
+		X turns into the top word and CARRY is zero unless the prime fills the
+		top bit. Needs CF = OF = 0 on entry."""
+		n = self.n
+		o = ["\tmulx\t0+\\M, \\T, \\X",
+			"\tadox\t\\T, \\Z0",
+			"\tadox\t\\X, \\Z1"]
+		for i in range(1, n):
+			o.append("\tmulx\t%d+\\M, \\T, \\X" % (8 * i))
+			o.append("\tadcx\t\\T, \\Z%d" % i)
+			if i < n - 1:
+				o.append("\tadox\t\\X, \\Z%d" % (i + 1))
+		o.append("\tadox\tZEROS, \\X")
+		o.append("\tadcx\tCARRY, \\X")
+		return macro("MULADD", names(n) + ["X", "T", "M"], o)
+
+	def mulrdc(self):
+		"""[Z1:Zn] <- ([Z0:Zn] + (Z0 x U0 mod 2^64) x M) / 2^64, freeing Z0.
+		The low word cancels, so its carry is Z0 != 0, which adding all-ones
+		to Z0 yields. With Zn blank, the top word is zero on entry and is left
+		in Z0. Needs CF = OF = 0 on entry."""
+		n = self.n
+		o = ["\tmovq\t$U0, %rdx",
+			"\tmulx\t\\Z0, %rdx, \\T",
+			"\tmulx\t0+\\M, \\T, \\T",
+			"\tadcx\tONES, \\Z0",
+			"\tadox\t\\T, \\Z1"]
+		for i in range(1, n):
+			o.append("\tmulx\t%d+\\M, \\T, \\Z0" % (8 * i))
+			o.append("\tadcx\t\\T, \\Z%d" % i)
+			if i < n - 1:
+				o.append("\tadox\t\\Z0, \\Z%d" % (i + 1))
+		o += [".ifb \\Z%d" % n,
+			"\tadox\tZEROS, \\Z0",
+			"\tadcx\tZEROS, \\Z0",
+			".else",
+			"\tadox\t\\Z0, \\Z%d" % n,
+			"\tadcx\tZEROS, \\Z%d" % n,
+			".endif"]
+		return macro("MULRDC", names(n + 1) + ["T", "M"], o)
+
+	def finalc(self):
+		"""Final correction: stores [C:Z0:Zn-1] - p if it does not borrow and
+		[Z0:Zn-1] otherwise at the pointer in CPTR. C is blank when the input
+		is below 2^(64n)."""
+		n = self.n
+		o = ["\tmovq\tCPTR, %rdx"]
+		for i in range(n):
+			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
+		o.append("\tsubq\tp0(%rip), \\Z0")
+		for i in range(1, n):
+			o.append("\tsbbq\tp%d(%%rip), \\Z%d" % (i, i))
+		o += [".ifnb \\C", "\tsbbq\t$0, \\C", ".endif"]
+		for i in range(n):
+			o.append("\tcmovc\t%d(%%rdx), \\Z%d" % (8 * i, i))
+		for i in range(n):
+			o.append("\tmovq\t\\Z%d, %d(%%rdx)" % (i, 8 * i))
+		return macro("FINALC", names(n) + ["C"], o)
+
+	def rdcn(self):
+		"""[Z0:Zn-1] <- [Z0:Zn-1]/2^(64n) mod p, at most p, by n Montgomery
+		steps. Needs CF = OF = 0 on entry."""
+		n = self.n
+		o = []
+		for k in range(n):
+			rot = ["Z%d" % ((k + i) % n) for i in range(n)]
+			o.append("\tMULRDC\t%s, , \\T, \\P" % args(refs(rot)))
+		return macro("RDCN", names(n) + ["T", "P"], o)
+
+	def addh(self):
+		"""[Z0:Zn-1] += [0+H:8(n-1)+H]."""
+		n = self.n
+		o = ["\taddq\t0+\\H, \\Z0"]
+		for i in range(1, n):
+			o.append("\tadcq\t%d+\\H, \\Z%d" % (8 * i, i))
+		return macro("ADDH", names(n) + ["H"], o)
+
+	def fp_rdcn_low(self):
+		"""c <- a/2^(64n) mod p for a = 0+A < pR, with c at the pointer in
+		CPTR: reduce the low half to at most p, add the high half, which is
+		below p, and subtract p once. The low half stays below 2^(64n) at each
+		step, so no carry leaves the accumulator. When the prime fills the top
+		bit, the sum can reach 2^(64n) and its carry goes to T. A must not be
+		based on Z0..Zn-1 or T."""
+		n = self.n
+		z = args(refs(names(n)))
+		o = ["\txorq\t\\T, \\T"]
+		o.append("\tmovq\t0+\\A, \\Z0")
+		for i in range(1, n):
+			o.append("\tmovq\t%d+\\A, \\Z%d" % (8 * i, i))
+		o.append("\tRDCN\t%s, \\T, \\P" % z)
+		o.append("\tADDH\t%s, %d+\\A" % (z, 8 * n))
+		if self.full:
+			o += [self.iffull(), "\tmovq\t$0, \\T", "\tadcq\t$0, \\T",
+				"\tFINALC\t%s, \\T" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
+		else:
+			o.append("\tFINALC\t%s" % z)
+		return macro("FP_RDCN_LOW", ["A"] + names(n) + ["T", "P"], o)
+
+	def sqrn(self):
+		"""a^2 for a = 0+A, computing each cross product once, with A and O
+		based on %rsp. With RDC = 0, the 2n words of a^2 go to the pointer in
+		CPTR. With RDC = 1, the low n words stay in [Z0:Zn-1] and the high n
+		go to 8n+O. O is 2n words of scratch."""
+		n = self.n
+		# The cross products a_i x a_j for i < j go to words 1..2n-2 of O.
+		# Word w accumulates in Z(w mod n) and is stored once no later row
+		# adds to it. Row 0 is [Z1:Zn-1, Z0] <- a0 x [a1:an-1].
+		o = ["\tmovq\t0+\\A, %rdx",
+			"\tmulx\t8+\\A, \\Z1, \\Z2"]
+		for j in range(2, n):
+			o.append("\tmulx\t%d+\\A, \\T0, \\Z%d" % (8 * j, (j + 1) % n))
+			o.append("\t%s\t\\T0, \\Z%d" % ("addq" if j == 2 else "adcq", j))
+		o.append("\tadcq\t$0, \\Z0")
+		o.append("\tmovq\t\\Z1, 8+\\O")
+		o.append("\tmovq\t\\Z2, 16+\\O")
+		for i in range(1, n - 1):
+			# Words 2i+1..n+i += ai x [ai+1:an-1].
+			o.append("")
+			o.append("\tmovq\t%d+\\A, %%rdx" % (8 * i))
+			o.append("\txorq\t\\Z%d, \\Z%d" % (i, i))
+			for j in range(i + 1, n):
+				o.append("\tmulx\t%d+\\A, \\T0, \\T1" % (8 * j))
+				o.append("\tadcx\t\\T0, \\Z%d" % ((i + j) % n))
+				o.append("\tadox\t\\T1, \\Z%d" % ((i + j + 1) % n))
+			o.append("\tadcq\t$0, \\Z%d" % i)
+			o.append("\tmovq\t\\Z%d, "
+				"%d+\\O" % ((2 * i + 1) % n, 8 * (2 * i + 1)))
+			o.append("\tmovq\t\\Z%d, "
+				"%d+\\O" % ((2 * i + 2) % n, 8 * (2 * i + 2)))
+		# Doubles the cross products and adds the squares a_k^2 at word 2k,
+		# word by word, with CF carrying the doubling and OF the squares. %rdx
+		# takes each word that is stored.
+		o += ["",
+			"\tmovq\t0+\\A, %rdx",
+			"\tmulx\t%rdx, \\T0, \\T1",
+			".if \\RDC != 1",
+			"\tmovq\tCPTR, \\Z0",
+			"\tmovq\t\\T0, 0(\\Z0)",
+			".else",
+			"\tmovq\t\\T0, \\Z0",
+			".endif",
+			"\txorq\t%rdx, %rdx",
+			".if \\RDC != 1"]
+		o += self.sqr_double(False)
+		o.append(".else")
+		o += self.sqr_double(True)
+		o += [".endif", ""]
+		return macro("SQRN", ["A", "O"] + names(n) + ["T0", "T1", "RDC"], o)
+
+	def sqr_double(self, rdc):
+		n = self.n
+		o = []
+		for w in range(1, 2 * n):
+			if w % 2 == 0:
+				o.append("\tmovq\t%d+\\A, %%rdx" % (4 * w))
+				o.append("\tmulx\t%rdx, \\T0, \\T1")
+			t = "\\T0" if w % 2 == 0 else "\\T1"
+			if rdc and w < n:
+				o.append("\tmovq\t%d+\\O, \\Z%d" % (8 * w, w))
+				o.append("\tadcx\t\\Z%d, \\Z%d" % (w, w))
+				o.append("\tadox\t%s, \\Z%d" % (t, w))
+				continue
+			if w == 2 * n - 1:
+				o.append("\tmovq\t$0, %rdx")
+			else:
+				o.append("\tmovq\t%d+\\O, %%rdx" % (8 * w))
+			o.append("\tadcx\t%rdx, %rdx")
+			o.append("\tadox\t%s, %%rdx" % t)
+			if rdc:
+				o.append("\tmovq\t%%rdx, %d+\\O" % (8 * w))
+			else:
+				o.append("\tmovq\t%%rdx, %d(\\Z0)" % (8 * w))
+		return o
+
+	def fp_sqr_low(self):
+		"""c <- a^2 (RDC = 0) or a^2/2^(64n) mod p (RDC = 1) for a = 0+A, with
+		c at the pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in
+		SQRN. With RDC = 1, the low half reduces to at most p and the high
+		half is below p."""
+		n = self.n
+		z = args(refs(names(n)))
+		o = ["\tSQRN\t\\A, \\O, %s, \\T0, \\T1, \\RDC" % z,
+			".if \\RDC == 1",
+			"\txorq\t\\T0, \\T0",
+			"\tRDCN\t%s, \\T0, \\P" % z,
+			"\tADDH\t%s, %d+\\O" % (z, 8 * n)]
+		if self.full:
+			o += [self.iffull(), "\tmovq\t$0, \\T0", "\tadcq\t$0, \\T0",
+				"\tFINALC\t%s, \\T0" % z, "#else", "\tFINALC\t%s" % z, "#endif"]
+		else:
+			o.append("\tFINALC\t%s" % z)
+		o += [".endif"]
+		return macro("FP_SQR_LOW", ["A", "O"] + names(n) + ["T0", "T1", "P",
+			"RDC"], o)
+
+	def fp_mul_low(self):
+		"""Interleaved Montgomery multiplication after MULM, rotating the
+		accumulator over Z0..Zn. With RDC = 0, it stores the double-precision
+		product instead."""
+		n = self.n
+		o = []
+		for i in range(n):
+			rot = ["Z%d" % ((i + k) % (n + 1)) for k in range(n + 1)]
+			if i > 0:
+				# z += ai x b
+				o.append("")
+				o.append("\tmovq\t\\A, %rdx")
+				o.append("\tmovq\t%d(%%rdx), %%rdx" % (8 * i))
+				o.append("\txorq\t\\T, \\T")
+				o.append("\tMULADD\t%s, \\T, \\B" % args(refs(rot)))
+				o.append("")
+			# z = (z + (z0 x u0 mod 2^64) x p) / 2^64 when RDC = 1.
+			o.append(".if \\RDC != 1")
+			o.append("\tmovq\tCPTR, %rdx")
+			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[0], 8 * i))
+			o.append(".else")
+			o.append("\tMULRDC\t%s, \\T, \\P" % args(refs(rot)))
+			if self.full:
+				# The sum can reach 2^(64(n + 1)), so keep its carry.
+				o.append(self.iffull())
+				o.append("\tmovq\t$0, \\%s" % rot[0])
+				o.append("\tadox\tZEROS, \\%s" % rot[0])
+				o.append("\tadcx\tZEROS, \\%s" % rot[0])
+				if i < n - 1:
+					o.append("\tmovq\t\\%s, CARRY" % rot[0])
+				o.append("#endif")
+			o.append(".endif")
+		# The product ends with the accumulator rotated by n.
+		rot = ["Z%d" % ((n + k) % (n + 1)) for k in range(n + 1)]
+		o.append("")
+		o.append(".if \\RDC != 1")
+		for k in range(n):
+			o.append("\tmovq\t\\%s, %d(%%rdx)" % (rot[k], 8 * (n + k)))
+		o.append(".else")
+		if self.full:
+			o.append(self.iffull())
+			o.append("\tFINALC\t%s" % args(refs(rot)))
+			o.append("#else")
+			o.append("\tFINALC\t%s" % args(refs(rot[:n])))
+			o.append("#endif")
+		else:
+			o.append("\tFINALC\t%s" % args(refs(rot[:n])))
+		o += [".endif"]
+		return macro("FP_MUL_LOW", ["A", "B"] + names(n + 1) + ["T", "P",
+			"RDC"], o)
+
+	def parts(self):
+		return [self.mulm(), self.muladd(), self.mulrdc(), self.finalc(),
+			self.rdcn(), self.addh(), self.fp_rdcn_low(), self.sqrn(),
+			self.fp_sqr_low(), self.fp_mul_low()]
+
+
+def large_mul_low(g):
+	n = g.n
+	o = file_head(g) + [".global cdecl(fp_mul1_low)",
+		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
+	o += stack_mul1(n) + [""]
+	regs = ", ".join(REGS[:n + 1] + ["%rax"])
+	for name, rdc in (("muln", 0), ("mulm", 1)):
+		o += function("fp_%s_low" % name, CALLEE, ["\tmovq\t%rdi, CPTR",
+			"\tmovq\t%rsi, APTR", "\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES",
+			"\tmovq\t$0, CARRY", "\t.set\tk, 0", "\t.rept\tRLC_FP_DIGS",
+			"\tmovq\t8*k(%rdx), %rax", "\tmovq\t%rax, 8*k+BCPY",
+			"\t.set\tk, k + 1", "\t.endr", "", "\tMULM\tAPTR, BCPY, %s" % regs,
+			"\tFP_MUL_LOW\tAPTR, BCPY, %s, p0(%%rip), %d" % (regs, rdc)],
+			frame="FRAME")
+		if name == "muln":
+			o.append("")
+	return o
+
+
+def large_rdc_low(g):
+	n = g.n
+	regs = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+		"%rbx", "%rbp", "%rax", "%rcx"][:n]
+	return file_head(g) + [".global cdecl(fp_rdcn_low)", ""] + function(
+		"fp_rdcn_low", CALLEE, ["\tmovq\t%rdi, CPTR", "\tmovq\t$0, ZEROS",
+		"\tmovq\t$-1, ONES",
+		"\tFP_RDCN_LOW\t0(%%rsi), %s, %%rdi, p0(%%rip)" % ", ".join(regs)],
+		frame="FRAME")
+
+
+def large_sqr_low(g):
+	n = g.n
+	z = REGS[:n]
+	t0 = REGS[n]
+	o = file_head(g) + [".global cdecl(fp_sqrn_low)",
+		".global cdecl(fp_sqrm_low)", ""]
+	# fp_sqrn_low(c, a): c = a^2. fp_sqrm_low(c, a): c = a^2/R mod p.
+	for name, rdc in (("sqrn", 0), ("sqrm", 1)):
+		b = ["\tmovq\t%rdi, CPTR"]
+		if rdc:
+			b += ["\tmovq\t$0, ZEROS", "\tmovq\t$-1, ONES"]
+		b += ["\t.set\tk, 0", "\t.rept\tRLC_FP_DIGS", "\tmovq\t8*k(%rsi), %rax",
+			"\tmovq\t%rax, 8*k+BCPY", "\t.set\tk, k + 1", "\t.endr", "",
+			"\tFP_SQR_LOW\tBCPY, SBUF, %s, %s, %%rax, p0(%%rip), "
+				"%d" % (", ".join(z), t0, rdc)]
+		o += function("fp_%s_low" % name, CALLEE, b, frame="SFRAME")
+		if name == "sqrn":
+			o.append("")
+	return o
+
+LARGE_FILES = UNIFORM_FILES + [("relic_fp_mul_low.s", large_mul_low),
+	("relic_fp_rdc_low.s", large_rdc_low), ("relic_fp_sqr_low.s",
+		large_sqr_low)]
+
+
+def write_large(n, out):
+	g = Large(n, any(e[0] == 64 * n for e in PRIMES[n]))
+	# Stack frame of the multiplication and reduction functions. With n
+	# digits, the accumulator takes n + 1 registers, the multiplier takes rdx
+	# and one more register is left for the partial products, so the operand
+	# b, the pointers and the constants live on the stack. The squaring
+	# functions also keep the 2n words of a^2 there, at SBUF.
+	f = 8 * n
+	defines = ["""#define BCPY	0(%rsp)
+#define APTR	{a}(%rsp)
+#define CPTR	{c}(%rsp)
+#define ZEROS	{z}(%rsp)
+#define ONES	{o}(%rsp)
+#define CARRY	{k}(%rsp)
+#define FRAME	{f}
+#define SBUF	{f}(%rsp)
+#define SFRAME	{sf}
+""".format(a=f, c=f + 8, z=f + 16, o=f + 24, k=f + 32, f=f + 40,
+		sf=f + 40 + 16 * n)]
+	os.makedirs(out, exist_ok=True)
+	macro_s(g, out, [], defines, g.parts())
+	write_files(g, out, LARGE_FILES)
+
+# ------------------------------------------------------ design of x64-asm-6l
+# Backends from 4 to 10 limbs keep the accumulator and two temporaries in
+# registers, with the macros below taking registers as arguments. The
+# pointers stay in registers too up to 8 limbs.
+# Accumulator and temporaries of the multiplication, in order.
+SMALL_ACC = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+	"%rbx", "%rbp"]
+
+
+class Small(Field):
+	"""The design of x64-asm-6l, for 4 to 10 digits: an accumulator of n + 1
+	registers and two temporaries, with the pointers in registers up to 8
+	digits."""
+	def __init__(self, n):
+		Field.__init__(self, n, False)
+		# Squaring keeps a^2 in registers while it fits beside rdx and the
+		# two temporaries, and writes c through %rdi while that leaves it free.
+		self.sqreg = 2 * n + 3 <= 15
+		self.sqrdi = 2 * n + 4 <= 15
+		# fp_sqrm_low as an interleaved product of a by itself.
+		self.sqrmul = n == 4
+		# fp_mul1_low keeps a x digit in registers up to 6 digits, modulo
+		# 2^(64n) at 7, which the primes allow, and on the stack beyond.
+		self.mul1 = "reg" if n <= 6 else "mod" if n == 7 else "stack"
+		# From 8 digits, %rax is a temporary and MULADD takes its final carry
+		# from T1; from 10, MULM uses an adc chain instead of a zero register.
+		self.zt1 = n >= 8
+		self.mulmadc = n >= 10
+		# From 9 digits, a is copied to the stack, freeing %rsi; at 10, the
+		# pointer to c is on the stack too, and stores go through T0.
+		self.acopy = n >= 9
+		self.cslot = n >= 10
+		if n <= 7:
+			z, t0, t1 = SMALL_ACC[:n + 1], SMALL_ACC[n + 1], SMALL_ACC[n + 2]
+		elif n == 8:
+			z, t0, t1 = SMALL_ACC[:9], "%rbp", "%rax"
+		elif n == 9:
+			z, t0, t1 = SMALL_ACC, "%rsi", "%rax"
+		else:
+			z, t0, t1 = SMALL_ACC[:8] + ["%rax", "%rbx", "%rbp"], "%rsi", "%rdi"
+		self.z, self.t0, self.t1 = z, t0, t1
+		# Registers free at the end of a product, besides the accumulator.
+		self.fixed = [x for x in ("%rax", "%rdx", "%rsi", "%rcx")
+			if x not in z + [t0, t1]]
+		# Register copies of the final subtraction; FINALC keeps the other
+		# words at the destination.
+		self.m = min(n, 14 - n)
+
+	def window(self, i):
+		"""The n + 1 accumulator registers at step i of a product."""
+		n = self.n
+		z = refs(names(n + 1))
+		return [z[(i + j) % (n + 1)] for j in range(n + 1)]
+
+	def copies(self):
+		"""Registers free at the end of a product, for FINALC."""
+		n = self.n
+		c = ["\\Z%d" % (n - 1)] + ([] if self.cslot else ["\\T0"]) + ["\\T1"]
+		return (c + self.fixed)[:self.m]
+
+	def cparam(self):
+		return ["C"] if self.cslot else []
+
+	def cbase(self):
+		return "\\T0" if self.cslot else "%rdi"
+
+	def loadc(self):
+		return ["\tmovq\t\\C, \\T0"] if self.cslot else []
+
+	def clear(self):
+		"""Clears the flags, keeping %rax = 0 when MULADD needs it."""
+		return "\txorq\t\\T1, \\T1" if self.zt1 else "\txorq\t%rax, %rax"
+
+	def finalc_call(self, values, copies, dest="0(%rdi)"):
+		assert len(copies) == self.m
+		return "\tFINALC\t%s" % args(values, copies, dest)
+
+	def mulm(self):
+		"""[Z0:Zn] <- a0 x b for a = 0+A and b = 0+B, with Zn+1 as scratch.
+		The adox version also clears %rax and the flags."""
+		n = self.n
+		z = refs(names(n + 2))
+		if self.mulmadc:
+			b = ["\tmovq\t0+\\A, %rdx", "\tmulx\t0+\\B, \\Z0, \\Z1"]
+			for k in range(1, n):
+				b += ["\tmulx\t%d+\\B, %s, %s" % (8 * k, z[n + 1], z[k + 1]),
+					"\t%s\t%s, %s" % ("addq" if k == 1 else "adcq", z[n + 1],
+						z[k])]
+			b.append("\tadcq\t$0, %s" % z[n])
+		else:
+			b = ["\tmovq\t0+\\A, %rdx", "\tmulx\t0+\\B, \\Z0, \\Z1",
+				"\txorq\t%rax, %rax"]
+			for k in range(1, n):
+				b += ["\tmulx\t%d+\\B, %s, %s" % (8 * k, z[k + 2], z[k + 1]),
+					"\tadox\t%s, %s" % (z[k + 2], z[k])]
+			b.append("\tadox\t%%rax, %s" % z[n])
+		return macro("MULM", ["A", "B"] + names(n + 2), b)
+
+	def muladd(self):
+		"""[Z0:Zn] += rdx x m for m = 0+M, with the flags clear, and %rax = 0
+		unless T1 provides the zero."""
+		n = self.n
+		z = refs(names(n + 1))
+		b = ["\tmulx\t0+\\M, \\T1, \\T0", "\tadox\t\\T1, \\Z0",
+			"\tadox\t\\T0, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmulx\t%d+\\M, \\T1, \\T0" % (8 * k),
+				"\tadcx\t\\T1, %s" % z[k], "\tadox\t\\T0, %s" % z[k + 1]]
+		if self.zt1:
+			b += ["\tmovq\t$0, \\T1", "\tadcx\t\\T1, %s" % z[n]]
+		else:
+			b.append("\tadcx\t%%rax, %s" % z[n])
+		return macro("MULADD", names(n + 1) + ["T0", "T1", "M"], b)
+
+	def mulsub(self):
+		"""[Z0:Zn] -= rdx x m for m = 0+M."""
+		n = self.n
+		z = refs(names(n + 1))
+		b = []
+		# Odd words, then even words, each a single borrow chain.
+		for first in (1, 0):
+			ks = list(range(first, n, 2))
+			for j, k in enumerate(ks):
+				b += ["\tmulx\t%d+\\M, \\T1, \\T0" % (8 * k),
+					"\t%s\t\\T1, %s" % ("subq" if j == 0 else "sbbq", z[k]),
+					"\tsbbq\t\\T0, %s" % z[k + 1]]
+			if ks[-1] + 1 < n:
+				b.append("\tsbbq\t$0, %s" % z[n])
+		return macro("MULSUB", names(n + 1) + ["T0", "T1", "M"], b)
+
+	def finalc(self):
+		"""c <- v - p if no borrow, else v, for c = 0+D and v = [V0:Vn-1].
+		The top m words use the copies C0:Cm-1, and the others subtract in
+		place, kept at c."""
+		n = self.n
+		m = self.m
+		h = n - m
+		v = refs(names(n, "V"))
+		c = refs(names(m, "C"))
+		at = lambda k: "%d+\\D" % (8 * k)
+		x = lambda k: at(k) if k < h else c[k - h]
+		b = ["\tmovq\t%s, %s" % (v[k], x(k)) for k in range(n)]
+		b += ["\t%s\tp%d(%%rip), %s" % ("subq" if k == 0 else "sbbq", k,
+			v[k] if k < h else c[k - h]) for k in range(n)]
+		b += ["\tcmovc\t%s, %s" % (at(k), v[k]) if k < h else
+			"\tcmovc\t%s, %s" % (v[k], c[k - h]) for k in range(n)]
+		b += ["\tmovq\t%s, %s" % (v[k] if k < h else c[k - h], at(k))
+			for k in range(n)]
+		return macro("FINALC", names(n, "V") + names(m, "C") + ["D"], b)
+
+	def rdcstep(self):
+		"""Montgomery step on a window with no word above it:
+		[Z1:Zn-1, Z0] <- ([Z0:Zn-1] + (Z0 x u0 mod 2^64) x p)/2^64. The window
+		stays below 2^(64n) for p < 2^(64n - 1), so no carry leaves it."""
+		n = self.n
+		z = refs(names(n))
+		b = ["\tmovq\t$U0, %rdx", "\timulq\t\\Z0, %rdx", "\txorq\t\\T0, \\T0",
+			"\tmulx\t0+\\P, \\T0, \\T1", "\tadox\t\\T0, \\Z0",
+			"\tadox\t\\T1, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmulx\t%d+\\P, \\T0, \\T1" % (8 * k),
+				"\tadcx\t\\T0, %s" % z[k]]
+			if k < n - 1:
+				b.append("\tadox\t\\T1, %s" % z[k + 1])
+		# Z0 is zero here, so this cannot overflow.
+		b += ["\tadox\t\\T1, \\Z0", "\tadcq\t$0, \\Z0"]
+		return macro("RDCSTEP", names(n) + ["T0", "T1", "P"], b)
+
+	def rdcn(self):
+		"""[Z0:Zn-1] <- [Z0:Zn-1]/2^(64n) mod p, at most p, by n Montgomery
+		steps."""
+		n = self.n
+		z = refs(names(n))
+		b = ["\tRDCSTEP\t%s" % args([z[(i + j) % n] for j in range(n)],
+			"\\T0", "\\T1", "\\P") for i in range(n)]
+		return macro("RDCN", names(n) + ["T0", "T1", "P"], b)
+
+	def addh(self):
+		"""[Z0:Zn-1] += [H0:Hn-1], registers or memory."""
+		n = self.n
+		b = ["\t%s\t\\H%d, \\Z%d" % ("addq" if k == 0 else "adcq", k, k)
+			for k in range(n)]
+		return macro("ADDH", names(n) + names(n, "H"), b)
+
+	def fp_rdcn_low(self):
+		"""c <- a/2^(64n) mod p for a = 0+A < pR: reduce the low half to at
+		most p, add the high half, which is below p, and subtract p once with
+		the copies C0:Cm-1, which may reuse T0, T1, %rdx and the base of A."""
+		n = self.n
+		z = refs(names(n))
+		b = ["\tmovq\t%d+\\A, %s" % (8 * k, z[k]) for k in range(n)]
+		b += ["\tRDCN\t%s" % args(z, "\\T0", "\\T1", "\\P"),
+			"\tADDH\t%s" % args(z, ["%d+\\A" % (8 * (n + k))
+				for k in range(n)]),
+			self.finalc_call(z, refs(names(self.m, "C")))]
+		return macro("FP_RDCN_LOW", ["A"] + names(n) + ["T0", "T1", "P"] +
+			names(self.m, "C"), b)
+
+	def sqrn_reg(self):
+		"""[Z0:Z2n-1] <- a^2 with a = 0+A, computing each cross product once.
+		The last word Z2n-1 must be the base register of A. Row 0 computes
+		[Z1:Zn] <- a0 x [a1:an-1], row r adds ar x [ar+1:an-1] at
+		[Z2r+1:Zn+r], and the last pass sets [Z0:Z2n-1] <- 2 x [Z1:Z2n-2] +
+		[a0^2:an-1^2]."""
+		n = self.n
+		z = refs(names(2 * n))
+		a = lambda k: "%d+\\A" % (8 * k)
+		b = ["\tmovq\t0+\\A, %rdx", "\tmulx\t%s, \\Z1, \\Z2" % a(1)]
+		for k in range(2, n):
+			b += ["\tmulx\t%s, \\T0, %s" % (a(k), z[k + 1]),
+				"\t%s\t\\T0, %s" % ("addq" if k == 2 else "adcq", z[k])]
+		b.append("\tadcq\t$0, %s" % z[n])
+		for r in range(1, n - 2):
+			b += ["", "\tmovq\t%s, %%rdx" % a(r),
+				"\txorq\t%s, %s" % (z[n + r], z[n + r])]
+			for k in range(r + 1, n):
+				b += ["\tmulx\t%s, \\T0, \\T1" % a(k),
+					"\tadcx\t\\T0, %s" % z[r + k],
+					"\tadox\t\\T1, %s" % z[r + k + 1]]
+			b.append("\tadcq\t$0, %s" % z[n + r])
+		r = n - 2
+		b += ["", "\tmovq\t%s, %%rdx" % a(r),
+			"\tmulx\t%s, \\T0, %s" % (a(r + 1), z[2 * r + 2]),
+			"\taddq\t\\T0, %s" % z[2 * r + 1], "\tadcq\t$0, %s" % z[2 * r + 2],
+			"", "\tmovq\t0+\\A, %rdx", "\tmulx\t%rdx, \\Z0, \\T1",
+			"\txorq\t\\T0, \\T0", "\tadcx\t\\Z1, \\Z1", "\tadox\t\\T1, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmovq\t%s, %%rdx" % a(k), "\tmulx\t%rdx, \\T0, \\T1"]
+			if k == n - 1:
+				b.append("\tmovq\t$0, %s" % z[2 * n - 1])
+			b += ["\tadcx\t%s, %s" % (z[2 * k], z[2 * k]),
+				"\tadox\t\\T0, %s" % z[2 * k],
+				"\tadcx\t%s, %s" % (z[2 * k + 1], z[2 * k + 1]),
+				"\tadox\t\\T1, %s" % z[2 * k + 1]]
+		return macro("SQRN", ["A"] + names(2 * n) + ["T0", "T1"], b)
+
+	def fp_sqr_low_reg(self):
+		"""c <- a^2 (RDC = 0) or a^2/2^(64n) mod p (RDC = 1), for a = 0+A based
+		on Z2n-1. Without sqrdi, it expects c on top of the stack and pops it
+		before storing. With sqrmul, RDC = 1 multiplies a by itself, which
+		needs %rax and %rdx. Otherwise the low half reduces to at most p and
+		the high half is below p."""
+		n = self.n
+		z = refs(names(2 * n))
+		c = "%rdi" if self.sqrdi else "%rdx"
+		b = [".if \\RDC != 1", "\tSQRN\t%s" % args("\\A", z, "\\T0", "\\T1")]
+		if not self.sqrdi:
+			b.append("\tpopq\t%rdx")
+		b += ["\tmovq\t%s, %d(%s)" % (z[k], 8 * k, c) for k in range(2 * n)]
+		b.append(".else")
+		if self.sqrmul:
+			b += ["\tMULM\t\\A, \\A, %s" % args(z[:n + 2]),
+				"\tFP_MUL_LOW\t\\A, \\A, %s, \\P, 1" % args(z[:n + 3])]
+		else:
+			b += ["\tSQRN\t%s" % args("\\A", z, "\\T0", "\\T1"),
+				"\tRDCN\t%s" % args(z[:n], "\\T0", "\\T1", "\\P"),
+				"\tADDH\t%s" % args(z)]
+			if not self.sqrdi:
+				b.append("\tpopq\t%rdi")
+			b.append(self.finalc_call(z[:n], ["\\T1"] + z[n:n + 2] +
+				self.fixed[:n - 3]))
+		b.append(".endif")
+		return macro("FP_SQR_LOW", ["A"] + names(2 * n) + ["T0", "T1", "P",
+			"RDC"], b)
+
+	def sqrn_mem(self):
+		"""O <- a^2 with a = 0+A, computing each cross product once and keeping
+		word j in register Z((j - 1) mod 10). Words whose register a later row
+		reuses are stored once final and read back from O by the last pass,
+		O <- 2 x [w1:w2n-2] + [a0^2:an-1^2]."""
+		n = self.n
+		kk = 10
+		z = refs(names(kk))
+		top = 2 * n - 2
+		spill = set(j for j in range(1, top + 1) if j + kk <= top)
+		w = lambda j: z[(j - 1) % kk]
+		a = lambda k: "%d+\\A" % (8 * k)
+		o = lambda j: "%d+\\O" % (8 * j)
+
+		def stores(r):
+			"""Words 2r + 1 and 2r + 2 are final after row r."""
+			return ["\tmovq\t%s, %s" % (w(j), o(j)) for j in (2 * r + 1,
+				2 * r + 2) if j in spill]
+		b = ["\tmovq\t0+\\A, %rdx", "\tmulx\t%s, %s, %s" % (a(1), w(1), w(2))]
+		for k in range(2, n):
+			b += ["\tmulx\t%s, \\T0, %s" % (a(k), w(k + 1)),
+				"\t%s\t\\T0, %s" % ("addq" if k == 2 else "adcq", w(k))]
+		b.append("\tadcq\t$0, %s" % w(n))
+		b += stores(0)
+		for r in range(1, n - 2):
+			b += ["", "\tmovq\t%s, %%rdx" % a(r),
+				"\txorq\t%s, %s" % (w(n + r), w(n + r))]
+			for k in range(r + 1, n):
+				b += ["\tmulx\t%s, \\T0, \\T1" % a(k),
+					"\tadcx\t\\T0, %s" % w(r + k),
+					"\tadox\t\\T1, %s" % w(r + k + 1)]
+			b.append("\tadcq\t$0, %s" % w(n + r))
+			b += stores(r)
+		r = n - 2
+		b += ["", "\tmovq\t%s, %%rdx" % a(r),
+			"\tmulx\t%s, \\T0, %s" % (a(r + 1), w(top)),
+			"\taddq\t\\T0, %s" % w(top - 1), "\tadcq\t$0, %s" % w(top), ""]
+		for k in range(n):
+			b += ["\tmovq\t%s, %%rdx" % a(k), "\tmulx\t%rdx, \\T0, \\T1"]
+			if k == 0:
+				b += ["\tmovq\t\\T0, %s" % o(0), "\txorq\t\\T0, \\T0"]
+			for j in (2 * k, 2 * k + 1):
+				if j == 0:
+					continue
+				r = w(j)
+				if j == top + 1:
+					r = "%rdx"
+					b.append("\tmovq\t$0, %rdx")
+				elif j in spill:
+					# T0 is free once a0^2 is stored.
+					r = "\\T0" if k == 0 else "%rdx"
+					b.append("\tmovq\t%s, %s" % (o(j), r))
+				b += ["\tadcx\t%s, %s" % (r, r), "\tadox\t%s, %s" % (
+					"\\T0" if j % 2 == 0 else "\\T1", r),
+					"\tmovq\t%s, %s" % (r, o(j))]
+		return macro("SQRN", ["A", "O"] + names(kk) + ["T0", "T1"], b)
+
+	def fp_sqr_low_mem(self):
+		"""c <- a^2 (RDC = 0) or a^2/2^(64n) mod p (RDC = 1), for a = 0+A based
+		on %rsi, with S holding 2n words."""
+		n = self.n
+		pool = refs(names(10)) + ["\\T0", "\\T1"]
+		copies = ([pool[n], pool[n + 1], "%rdx", "%rsi"] + pool[n + 2:])[:n]
+		b = [".if \\RDC != 1", "\tSQRN\t%s" % args("\\A", "0(%rdi)",
+			refs(names(10)), "\\T0", "\\T1"), ".else",
+			"\tSQRN\t%s" % args("\\A", "\\S", refs(names(10)), "\\T0", "\\T1"),
+			"\tFP_RDCN_LOW\t%s" % args("\\S", pool[:n + 2], "\\P",
+				copies[:self.m]), ".endif"]
+		return macro("FP_SQR_LOW", ["A"] + names(10) + ["T0", "T1", "P", "RDC",
+			"S"], b)
+
+	def store(self, reg, off):
+		if self.cslot:
+			return ["\tmovq\t\\C, \\T0", "\tmovq\t%s, %d(\\T0)" % (reg, off)]
+		return ["\tmovq\t%s, %d(%%rdi)" % (reg, off)]
+
+	def step_end(self, b, i, clear):
+		"""Stores or reduces the low word at step i of a product."""
+		w = self.window(i)
+		# z <- (z + (z0 x u0 mod 2^64) x p)/2^64 when RDC = 1.
+		b += [".if \\RDC != 1"] + self.store(w[0], 8 * i) + [".else"]
+		if clear or (i == 0 and self.mulmadc):
+			b.append(self.clear())
+		b += ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
+			"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P"), ".endif"]
+
+	def result(self, b):
+		n = self.n
+		w = self.window(n)
+		b += [".if \\RDC != 1"] + self.loadc() + ["\tmovq\t%s, %d(%s)" % (w[k],
+			8 * (n + k), self.cbase()) for k in range(n)] + [".else"]
+		b += self.loadc() + [self.finalc_call(w[:n], self.copies(),
+			"0(%s)" % self.cbase()), ".endif"]
+
+	def fp_mul_low(self):
+		"""c <- a x b (RDC = 0) or a x b/2^(64n) mod p (RDC = 1), after MULM,
+		adding ai x b at step i. With cslot, the pointer to c is at C, and
+		stores go through T0."""
+		n = self.n
+		b = []
+		for i in range(n):
+			w = self.window(i)
+			if i > 0:
+				b += ["",
+					"\txorq\t%s, %s" % (w[n], w[n]),
+					"\tmovq\t%d+\\A, %%rdx" % (8 * i),
+					"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\B")]
+			self.step_end(b, i, False)
+		b.append("")
+		self.result(b)
+		return macro("FP_MUL_LOW", ["A", "B"] + names(n + 1) + ["T0", "T1",
+			"P", "RDC"] + self.cparam(), b)
+
+	def fp2_mul0_low(self):
+		"""c0 <- a0 x b0 - a1 x b1 after MULM, as for FP_MUL_LOW, adding
+		a0i x b0 - a1i x b1 at step i, where the unreduced c0 is in
+		(-p, 2^(64n)). At the end, p is added if the result is negative, as
+		adcx keeps SF."""
+		n = self.n
+		b = ["\tmovq\t%d+\\A, %%rdx" % (8 * n),
+			"\tMULSUB\t%s" % args(self.window(0), "\\T0", "\\T1",
+				"%d+\\B" % (8 * n))]
+		for i in range(n):
+			w = self.window(i)
+			if i > 0:
+				b += ["",
+					"\tmovq\t%d+\\A, %%rdx" % (8 * i), self.clear(),
+					"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\B"),
+					"\tmovq\t%d+\\A, %%rdx" % (8 * (n + i)),
+					"\tMULSUB\t%s" % args(w, "\\T0", "\\T1",
+						"%d+\\B" % (8 * n))]
+			self.step_end(b, i, True)
+			# The top word is signed: extend it into the next one.
+			if i < n - 1:
+				b += ["\txorq\t%s, %s" % (w[0], w[0]),
+					"\tbtq\t\t$63, %s" % w[n], "\tsbbq\t$0, %s" % w[0]]
+			else:
+				b.append("\ttestq\t%s, %s" % (w[n], w[n]))
+		w = self.window(n)
+		b.append("")
+		for k in range(n):
+			t = "\\T0" if k % 2 == 0 else "\\T1"
+			b += ["\tmovq\t$0, %s" % t, "\tcmovs\tp%d(%%rip), %s" % (k, t),
+				"\tadcx\t%s, %s" % (t, w[k])]
+		self.result(b)
+		return macro("FP2_MUL0_LOW", ["A", "B"] + names(n + 1) + ["T0", "T1",
+			"P", "RDC"] + self.cparam(), b)
+
+	def fp2_mul1_low(self):
+		"""c1 <- a0 x b1 + a1 x b0 after MULM of a0 and b1, as for FP_MUL_LOW,
+		adding a0i x b1 + a1i x b0 at step i."""
+		n = self.n
+		b = ["\tmovq\t%d+\\A, %%rdx" % (8 * n)]
+		if self.mulmadc:
+			b.append(self.clear())
+		b.append("\tMULADD\t%s" % args(self.window(0), "\\T0", "\\T1", "\\B"))
+		for i in range(n):
+			w = self.window(i)
+			if i > 0:
+				b += ["",
+					"\txorq\t%s, %s" % (w[n], w[n]),
+					"\tmovq\t%d+\\A, %%rdx" % (8 * i),
+					"\tMULADD\t%s" % args(w, "\\T0", "\\T1",
+						"%d+\\B" % (8 * n)),
+					"\tmovq\t%d+\\A, %%rdx" % (8 * (n + i)),
+					"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\B")]
+			self.step_end(b, i, False)
+		b.append("")
+		self.result(b)
+		return macro("FP2_MUL1_LOW", ["A", "B"] + names(n + 1) + ["T0", "T1",
+			"P", "RDC"] + self.cparam(), b)
+
+	def bases(self):
+		"""Base registers of the operands of FP2_MUL_LOW."""
+		return ["%rcx"] if self.acopy else ["%rsi", "%rcx"]
+
+	def fp2_frame(self):
+		"""Offsets in the scratch of FP2_MUL_LOW: the pointer to c1 at 0, the
+		one to c0 at 8 when c is on the stack, then the base registers that
+		FINALC overwrites, then c1."""
+		o = 16 if self.cslot else 8
+		kept = {}
+		for x in self.bases():
+			if x in self.copies():
+				kept[x] = o
+				o += 8
+		return kept, o
+
+	def fp2_mul_low(self):
+		"""c <- a x b in Fp2 with u^2 = -1, for a = 0+A and b = 0+B, with c0 at
+		%rdi, or at the pointer in 8+S with cslot, and, for RDC = 0, c1 at the
+		pointer in 0+S. For RDC = 1, c1 is at 8n bytes from c0, reduced, and c
+		may alias a or b: c1 goes to the scratch space first, since c0 still
+		reads a1 and b1. S is the words of fp2_frame plus n of scratch."""
+		n = self.n
+		z = refs(names(n + 1))
+		kept, c1 = self.fp2_frame()
+		zz = args(z, "\\T0")
+		zt = args(z, "\\T0", "\\T1", "\\P")
+		ks = sorted(kept.items(), key=lambda i: i[1])
+		c0 = ", 8+\\S" if self.cslot else ""
+		c1p = ", 0+\\S" if self.cslot else ""
+		b = [".if \\RDC != 1", "\tMULM\t\\A, \\B, %s" % zz,
+			"\tFP2_MUL0_LOW\t\\A, \\B, %s, 0%s" % (zt, c0)]
+		if not self.cslot:
+			b.append("\tmovq\t0+\\S, %rdi")
+		b += ["\tMULM\t\\A, %d+\\B, %s" % (8 * n, zz),
+			"\tFP2_MUL1_LOW\t\\A, \\B, %s, 0%s" % (zt, c1p), ".else"]
+		b += ["\tmovq\t%s, %d+\\S" % (x, o) for x, o in ks]
+		if self.cslot:
+			b += ["\tleaq\t%d+\\S, %%rdx" % c1, "\tmovq\t%rdx, 0+\\S"]
+		else:
+			b += ["\tmovq\t%rdi, 0+\\S", "\tleaq\t%d+\\S, %%rdi" % c1]
+		b += ["\tMULM\t\\A, %d+\\B, %s" % (8 * n, zz),
+			"\tFP2_MUL1_LOW\t\\A, \\B, %s, 1%s" % (zt, c1p)]
+		b += ["\tmovq\t%d+\\S, %s" % (o, x) for x, o in ks]
+		if not self.cslot:
+			b.append("\tmovq\t0+\\S, %rdi")
+		b += ["\tMULM\t\\A, \\B, %s" % zz,
+			"\tFP2_MUL0_LOW\t\\A, \\B, %s, 1%s" % (zt, c0)]
+		c = "%rdi"
+		if self.cslot:
+			c = "\\T0"
+			b.append("\tmovq\t8+\\S, \\T0")
+		b += ["\tmovq\t%d+\\S, %s" % (c1 + 8 * k, z[k]) for k in range(n)]
+		b += ["\tmovq\t%s, %d(%s)" % (z[k], 8 * (n + k), c) for k in range(n)]
+		b.append(".endif")
+		return macro("FP2_MUL_LOW", ["A", "B"] + names(n + 1) + ["T0", "T1",
+			"P", "RDC", "S"], b)
+
+	def fp2_sqr_low(self):
+		"""c <- a^2 in Fp2 with u^2 = -1, for a = 0+A: c0 = (a0 + a1) x
+		(a0 - a1 + p), c1 = 2 x a0 x a1, with S holding 3n + 2 words: a0 + a1
+		at 0, a0 - a1 + p at 8n, 2 x a0 at 16n and the pointers at 24n. With
+		cslot, c0 is at the pointer in 24n+8+S and c1 at the one in 24n+S,
+		which RDC = 1 reduces. Otherwise, RDC = 0 puts c0 at %rdi and c1 at
+		the pointer in 24n+S, and RDC = 1 puts c0 at %rdi and c1 at 8n(%rdi),
+		reduced, where c may alias a. c1 goes first: it is the last reader of
+		a, and c0 only reads the scratch."""
+		n = self.n
+		z = refs(names(n + 1))
+		t = z[n]
+		s0, s1, s2, sp = 0, 8 * n, 16 * n, 24 * n
+		b = ["\tmovq\t%d+\\A, %s" % (8 * k, z[k]) for k in range(n)]
+		for k in range(n):
+			b += ["\tmovq\t%s, %s" % (z[k], t), "\t%s\t%d+\\A, %s" % ("addq"
+				if k == 0 else "adcq", 8 * (n + k), t),
+				"\tmovq\t%s, %d+\\S" % (t, s0 + 8 * k)]
+		for k in range(n):
+			b += ["\tmovq\t%s, %s" % (z[k], t), "\t%s\t%s, %s" % ("addq"
+				if k == 0 else "adcq", z[k], t),
+				"\tmovq\t%s, %d+\\S" % (t, s2 + 8 * k)]
+		b += ["\t%s\t%d+\\A, %s" % ("subq" if k == 0 else "sbbq", 8 * (n + k),
+			z[k]) for k in range(n)]
+		b += ["\t%s\t%d+\\P, %s" % ("addq" if k == 0 else "adcq", 8 * k, z[k])
+			for k in range(n)]
+		b += ["\tmovq\t%s, %d+\\S" % (z[k], s1 + 8 * k) for k in range(n)]
+		zz = args(z, "\\T0")
+		zt = args(z, "\\T0", "\\T1", "\\P", "\\RDC")
+		b.append("")
+		if self.cslot:
+			b += ["\tMULM\t%d+\\S, %d+\\A, %s" % (s2, 8 * n, zz),
+				"\tFP_MUL_LOW\t%d+\\S, %d+\\A, %s, %d+\\S" % (s2, 8 * n, zt,
+					sp),
+				"\tMULM\t%d+\\S, %d+\\S, %s" % (s0, s1, zz),
+				"\tFP_MUL_LOW\t%d+\\S, %d+\\S, %s, %d+\\S" % (s0, s1, zt,
+					sp + 8)]
+		else:
+			b += [".if \\RDC != 1", "\tmovq\t%%rdi, %d+\\S" % (sp + 8),
+				"\tmovq\t%d+\\S, %%rdi" % sp, ".else",
+				"\taddq\t$%d, %%rdi" % (8 * n), ".endif",
+				"\tMULM\t%d+\\S, %d+\\A, %s" % (s2, 8 * n, zz),
+				"\tFP_MUL_LOW\t%d+\\S, %d+\\A, %s" % (s2, 8 * n, zt),
+				".if \\RDC != 1", "\tmovq\t%d+\\S, %%rdi" % (sp + 8), ".else",
+				"\tsubq\t$%d, %%rdi" % (8 * n), ".endif",
+				"\tMULM\t%d+\\S, %d+\\S, %s" % (s0, s1, zz),
+				"\tFP_MUL_LOW\t%d+\\S, %d+\\S, %s" % (s0, s1, zt)]
+		return macro("FP2_SQR_LOW", ["A"] + names(n + 1) + ["T0", "T1", "P",
+			"RDC", "S"], b)
+
+	def parts(self):
+		parts = [self.mulm(), self.muladd(), self.mulsub(), self.finalc(),
+			self.rdcstep(), self.rdcn(), self.addh(), self.fp_rdcn_low()]
+		if self.sqreg:
+			parts += [self.sqrn_reg(), self.fp_sqr_low_reg()]
+		else:
+			parts += [self.sqrn_mem(), self.fp_sqr_low_mem()]
+		parts += [self.fp_mul_low(), self.fp2_mul0_low(), self.fp2_mul1_low(),
+			self.fp2_mul_low(), self.fp2_sqr_low()]
+		return parts
+
+
+def small_mul1(g):
+	"""fp_mul1_low(c, a, digit < 2^63): c = a * digit mod p, in constant time.
+	d = a * digit and q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64), which
+	is at most 2 below floor(d / p). Subtracting the low halves of q * p and
+	then the high halves leaves d - q * p below 3p, and p is subtracted twice,
+	keeping the difference when there is no borrow. With mul1 = "mod", the
+	difference is computed modulo 2^(64n), since 3p < 2^(64n)."""
+	n = g.n
+	if g.mul1 == "stack":
+		return stack_mul1(n)
+	mod = g.mul1 == "mod"
+	d = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15"][:n + 1]
+	h = ["%rbx", "%rcx", "%rsi", "%rdi", "%rbp", "%r15"][:n]
+	if mod:
+		h = h[:n - 1] + ["%rdx"]
+	c = (["%rax", "%rbx", "%rcx", "%rsi", "%rdi", "%rbp", "%r15"])[:n + (0 if
+		mod else 1)]
+	b = []
+	for k in range(n):
+		hi = d[n] if k == n - 1 else ("%rax" if k % 2 == 0 else "%rbx")
+		b.append("\tmulxq\t%d(%%rsi), %s, %s" % (8 * k, d[k], hi))
+		if k > 0:
+			b.append("\t%s\t%s, %s" % ("addq" if k == 1 else "adcq",
+				"%rax" if k % 2 == 1 else "%rbx", d[k]))
+	b += ["\tadcq\t$0, %s" % d[n], "", "\tmovq\t%s, %%rax" % d[n - 1],
+		"\tshrdq\t$BARS, %s, %%rax" % d[n], "\tmovq\t$BAR, %rdx",
+		"\tmulxq\t%rax, %rax, %rdx", ""]
+	for k in range(n):
+		b += ["\tmovq\t$P%d, %%rax" % k, "\tmulxq\t%%rax, %%rax, %s" % h[k],
+			"\t%s\t%%rax, %s" % ("subq" if k == 0 else "sbbq", d[k])]
+	if not mod:
+		b.append("\tsbbq\t$0, %s" % d[n])
+	b.append("")
+	top = n - 1 if mod else n
+	b += ["\t%s\t%s, %s" % ("subq" if k == 0 else "sbbq", h[k], d[k + 1])
+		for k in range(top)]
+	b += ["", "\t.rept 2"]
+	for k in range(n):
+		b += ["\tmovq\t%s, %s" % (d[k], c[k]), "\tmovq\t$P%d, %%rdx" % k,
+			"\t%s\t%%rdx, %s" % ("subq" if k == 0 else "sbbq", c[k])]
+	if not mod:
+		b += ["\tmovq\t%s, %s" % (d[n], c[n]), "\tsbbq\t$0, %s" % c[n]]
+	b += ["\tcmovncq\t%s, %s" % (c[k], d[k]) for k in range(len(c))]
+	b += ["\t.endr", "", "\tpop\t\t%rdi"]
+	b += ["\tmovq\t%s, %d(%%rdi)" % (d[k], 8 * k) for k in range(n)]
+	return function("fp_mul1_low", set(d + h + c), b, pushdi=True)
+
+
+def small_rdc_regs(g):
+	"""Accumulator, temporaries and copies of FP_RDCN_LOW for a based on %rsi or
+	%rsp. The copies reuse the temporaries, %rdx and %rsi."""
+	n = g.n
+	r = ["%r8", "%r9", "%r10", "%r11", "%rax", "%rcx"] + SMALL_ACC[4:]
+	z, t = r[:n], r[n:n + 2]
+	return z, t, (t + ["%rdx", "%rsi"] + r[n + 2:])[:g.m]
+
+
+def small_copy(g, src, dst, words):
+	"""Copies words from 0(src) to dst(%rsp) through the accumulator."""
+	o = []
+	for i in range(0, words, len(g.z)):
+		k = range(i, min(words, i + len(g.z)))
+		o += ["\tmovq\t%d(%s), %s" % (8 * j, src, g.z[j - i]) for j in k]
+		o += ["\tmovq\t%s, %d(%%rsp)" % (g.z[j - i], dst + 8 * j) for j in k]
+	return o
+
+
+def small_mul_low(g):
+	n = g.n
+	z, t0, t1 = g.z, g.t0, g.t1
+	# Techniques and code heavily inspired from "Efficient Algorithms for Large
+	# Prime Characteristic Fields and Their Application to Bilinear Pairings"
+	# by Longa at TCHES'23. fp_muln_low(c, a, b): c = a * b, and
+	# fp_mulm_low(c, a, b): c = a * b/R mod p.
+	o = file_head(g) + [".global cdecl(fp_mul1_low)",
+		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
+	o += small_mul1(g) + [""]
+	regs = args(z, t0, t1)
+	for name, rdc in (("fp_muln_low", 0), ("fp_mulm_low", 1)):
+		b = ["\tmovq\t%rdx, %rcx"]
+		a = "0(%rsi)"
+		frame = 0
+		cs = ""
+		if g.acopy:
+			# a goes to the stack, and so does c when the registers run out.
+			a = "0(%rsp)"
+			frame = 8 * n
+			b += small_copy(g, "%rsi", 0, n)
+			if g.cslot:
+				cs = ", %d(%%rsp)" % frame
+				b.append("\tmovq\t%%rdi, %d(%%rsp)" % frame)
+				frame += 8
+		b += ["", "\tMULM\t%s, 0(%%rcx), %s" % (a, args(z, t0)),
+			"\tFP_MUL_LOW\t%s, 0(%%rcx), %s, p0(%%rip), %d%s" % (a, regs, rdc,
+				cs)]
+		o += function(name, set(z + [t0, t1]), b, frame=frame)
+		if rdc == 0:
+			o.append("")
+	return o
+
+
+def small_rdc_low(g):
+	z, t, c = small_rdc_regs(g)
+	# fp_rdcn_low(c, a): c = a/R mod p, for a < pR.
+	return file_head(g) + [".global cdecl(fp_rdcn_low)", ""] + function(
+		"fp_rdcn_low", set(z + t + c),
+		["\tFP_RDCN_LOW\t0(%%rsi), %s, p0(%%rip), %s" % (args(z, t), args(c))])
+
+
+def small_sqr_low(g):
+	n = g.n
+	o = file_head(g) + [".global cdecl(fp_sqrn_low)",
+		".global cdecl(fp_sqrm_low)", ""]
+	# fp_sqrn_low(c, a): c = a^2, and fp_sqrm_low(c, a): c = a^2/R mod p.
+	for name, rdc in (("fp_sqrn_low", 0), ("fp_sqrm_low", 1)):
+		if g.sqreg:
+			z = SMALL_ACC[:2 * n - 1] + ["%rsi"]
+			if not g.sqrdi:
+				z = SMALL_ACC[:2 * n - 2] + ["%rdi", "%rsi"]
+			o += function(name, set(z), ["\tFP_SQR_LOW\t0(%%rsi), %s, "
+				"p0(%%rip), %d" % (args(z, "%rax", "%rcx"), rdc)],
+				pushdi=not g.sqrdi)
+		else:
+			z = SMALL_ACC[:10]
+			o += function(name, set(z), ["\tFP_SQR_LOW\t0(%%rsi), %s, "
+				"p0(%%rip), %d, 0(%%rsp)" % (args(z, "%rax", "%rcx"), rdc)],
+				frame=16 * n * rdc)
+		if rdc == 0:
+			o.append("")
+	return o
+
+
+def small_fpx_mul_low(g):
+	n = g.n
+	z, t0, t1 = g.z, g.t0, g.t1
+	rz, rt, rc = small_rdc_regs(g)
+	_, cs = g.fp2_frame()
+	f = cs + 8 * n
+	regs = args(z, t0, t1)
+	used = set(z + [t0, t1])
+
+	def body(rdc, frame):
+		"""Loads the operands of FP2_MUL_LOW, copying a to frame(%rsp)."""
+		b = ["\tmovq\t%rdx, %rcx"]
+		a, bb = "0(%rcx)", "0(%rsi)"
+		if g.acopy:
+			a, bb = "%d(%%rsp)" % frame, "0(%rcx)"
+			b += small_copy(g, "%rsi", frame, 2 * n)
+		return b, "\tFP2_MUL_LOW\t%s, %s, %s, p0(%%rip), %d, 0(%%rsp)" % (a, bb,
+			regs, rdc)
+	ac = 16 * n if g.acopy else 0
+	o = file_head(g) + ["#ifdef FP2_ASM", "", ".global cdecl(fp2_muln_low)",
+		""]
+	b, call = body(0, f)
+	# fp2_muln_low(c, a, b): c = a * b, with c[1] at RLC_DV_STRIDE bytes from
+	# c[0]. fp2_mulm_low(c, a, b): c = a * b/R mod p, coefficient-wise,
+	# interleaved under FP2_MUL_RDC and otherwise by reducing the product of
+	# fp2_muln_low separately.
+	o += function("fp2_muln_low", used, ["\tleaq\tRLC_DV_STRIDE(%rdi), %rax",
+		"\tmovq\t%rax, 0(%rsp)"] + (["\tmovq\t%rdi, 8(%rsp)"] if g.cslot
+		else []) + b + ["", call],
+		frame=f + ac)
+	o += ["", ".global cdecl(fp2_mulm_low)", "", "#ifdef FP2_MUL_RDC", ""]
+	b, call = body(1, f)
+	o += function("fp2_mulm_low", used, (["\tmovq\t%rdi, 8(%rsp)"] if
+		g.cslot else []) + b + ["", call], frame=f + ac)
+	# c goes where the scratch keeps c1 when reducing, which it does not here.
+	c0 = f + ac
+	c1 = c0 + 16 * n
+	b, call = body(0, f)
+	if g.cslot:
+		ptrs = ["\tmovq\t%%rdi, %d(%%rsp)" % cs,
+			"\tleaq\t%d(%%rsp), %%rax" % c0, "\tmovq\t%rax, 8(%rsp)"]
+	else:
+		ptrs = ["\tmovq\t%%rdi, %d(%%rsp)" % cs,
+			"\tleaq\t%d(%%rsp), %%rdi" % c0]
+	ptrs += ["\tleaq\t%d(%%rsp), %%rax" % c1, "\tmovq\t%rax, 0(%rsp)"]
+	rr = args(rz, rt, "p0(%rip)", rc)
+	o += ["", "#else", ""]
+	o += function("fp2_mulm_low", used | set(rz + rt + rc),
+		ptrs + b + ["", call, "", "\tmovq\t%d(%%rsp), %%rdi" % cs,
+		"\tFP_RDCN_LOW\t%d(%%rsp), %s" % (c0, rr),
+		"\tmovq\t%d(%%rsp), %%rdi" % cs, "\taddq\t$%d, %%rdi" % (8 * n),
+		"\tFP_RDCN_LOW\t%d(%%rsp), %s" % (c1, rr)], frame=c1 + 16 * n)
+	return o + ["", "#endif", "", "#endif"]
+
+
+def small_fpx_sqr_low(g):
+	n = g.n
+	z, t0, t1 = g.z, g.t0, g.t1
+	rz, rt, rc = small_rdc_regs(g)
+	f = 24 * n + 16
+	sp = 24 * n
+	regs = args(z, t0, t1)
+	used = set(z + [t0, t1])
+	# From 9 digits, %rsi is a temporary and a is read through %rcx.
+	a = "0(%rcx)" if g.acopy else "0(%rsi)"
+	mv = ["\tmovq\t%rsi, %rcx"] if g.acopy else []
+
+	def call(rdc):
+		return "\tFP2_SQR_LOW\t%s, %s, p0(%%rip), %d, 0(%%rsp)" % (a, regs, rdc)
+	# Techniques and code heavily inspired from "Efficient Algorithms for Large
+	# Prime Characteristic Fields and Their Application to Bilinear Pairings"
+	# by Longa at TCHES'23. fp2_sqrn_low(c, a): c = a^2, with c[1] at
+	# RLC_DV_STRIDE bytes from c[0]. fp2_sqrm_low(c, a): c = a^2/R mod p,
+	# coefficient-wise, interleaved under FP2_SQR_RDC and otherwise by
+	# reducing the product of fp2_sqrn_low separately.
+	o = file_head(g) + ["#ifdef FP2_ASM",
+		"", ".global cdecl(fp2_sqrn_low)", ".global cdecl(fp2_sqrm_low)", ""]
+	b = ["\tleaq\tRLC_DV_STRIDE(%rdi), %rax", "\tmovq\t%%rax, %d(%%rsp)" % sp]
+	if g.cslot:
+		b.append("\tmovq\t%%rdi, %d(%%rsp)" % (sp + 8))
+	o += function("fp2_sqrn_low", used, b + mv + ["", call(0)], frame=f)
+	o += ["", "#ifdef FP2_SQR_RDC", ""]
+	b = []
+	if g.cslot:
+		b = ["\tleaq\t%d(%%rdi), %%rax" % (8 * n),
+			"\tmovq\t%%rax, %d(%%rsp)" % sp,
+			"\tmovq\t%%rdi, %d(%%rsp)" % (sp + 8)]
+	o += function("fp2_sqrm_low", used, b + mv + ["", call(1)], frame=f)
+	# The product of fp2_sqrn_low goes after the scratch, with c kept at f.
+	c0 = f + 8
+	c1 = c0 + 16 * n
+	if g.cslot:
+		b = ["\tleaq\t%d(%%rsp), %%rax" % c0,
+			"\tmovq\t%%rax, %d(%%rsp)" % (sp + 8)]
+	else:
+		b = ["\tleaq\t%d(%%rsp), %%rdi" % c0]
+	b = ["\tmovq\t%%rdi, %d(%%rsp)" % f] + b + ["\tleaq\t%d(%%rsp), %%rax" % c1,
+		"\tmovq\t%%rax, %d(%%rsp)" % sp]
+	rr = args(rz, rt, "p0(%rip)", rc)
+	o += ["", "#else", ""]
+	o += function("fp2_sqrm_low", used | set(rz + rt + rc),
+		b + mv + ["", call(0), "", "\tmovq\t%d(%%rsp), %%rdi" % f,
+		"\tFP_RDCN_LOW\t%d(%%rsp), %s" % (c0, rr),
+		"\tmovq\t%d(%%rsp), %%rdi" % f, "\taddq\t$%d, %%rdi" % (8 * n),
+		"\tFP_RDCN_LOW\t%d(%%rsp), %s" % (c1, rr)], frame=c1 + 16 * n)
+	return o + ["", "#endif", "", "#endif"]
+
+SMALL_FILES = [("relic_fp_mul_low.s", small_mul_low), ("relic_fp_rdc_low.s",
+	small_rdc_low), ("relic_fp_sqr_low.s", small_sqr_low),
+	("relic_fpx_mul_low.s", small_fpx_mul_low), ("relic_fpx_sqr_low.s",
+		small_fpx_sqr_low)]
+
+
+def write_small(n, out):
+	"""Writes a backend in the design of x64-asm-6l. FP2_MUL0_LOW with RDC = 1
+	keeps the real part as a signed value in (-p, 2p), which only fits n
+	digits when 2p < 2^(64n - 1), that is, p < 2^(64n - 2): FP2_MUL_RDC.
+	FP2_SQR_LOW with RDC = 1 multiplies by a0 - a1 + p < 2p with interleaved
+	reduction, whose intermediate values stay below 2^64 x (3p) and must fit
+	n + 1 digits, so it needs 3p < 2^(64n): FP2_SQR_RDC. The Fp2 functions
+	read both coordinates from one contiguous vector, hence FP2_ASM only with
+	ALLOC = AUTO."""
+	g = Small(n)
+	# RDCSTEP and the interleaved products keep intermediate results in n + 1
+	# words, which needs p < 2^(64n - 1).
+	for e in PRIMES[n]:
+		assert int(e[1], 16) < 1 << (64 * n - 1)
+	guard = "#if %s\n#define %s\n#endif\n"
+	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
+		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
+		guard % ("defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
+	macro_s(g, out, guards, [], g.parts())
+	write_files(g, out, SMALL_FILES)
+
+
+def main():
+	modes = {"--large": write_large, "--small": write_small,
+		"--uniform": write_uniform}
+	if len(sys.argv) != 4 or sys.argv[1] not in modes:
+		sys.exit(__doc__)
+	modes[sys.argv[1]](int(sys.argv[2]), sys.argv[3])
 
 if __name__ == "__main__":
 	main()
