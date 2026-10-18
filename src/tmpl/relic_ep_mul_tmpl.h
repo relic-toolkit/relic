@@ -273,8 +273,9 @@
 						F##_copy_sec(q[1]->x, t[i][m]->x, m == col);		\
 						F##_copy_sec(q[1]->y, t[i][m]->y, m == col);		\
 					}														\
-					C##_neg(q[2], q[1]);									\
-					F##_copy_sec(q[1]->y, q[2]->y, sac[i][j]);				\
+					/* Scratch points that are never the head of a group. */\
+					C##_neg(q[S - 1], q[1]);								\
+					F##_copy_sec(q[1]->y, q[S - 1]->y, sac[i][j]);			\
 					C##_add(r, r, q[1]);									\
 				}															\
 			}																\
