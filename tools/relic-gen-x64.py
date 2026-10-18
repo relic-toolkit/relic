@@ -1262,11 +1262,11 @@ class Small(Field):
 		# to c on the stack, loading it into T0 for the final subtraction.
 		self.bcopy = n >= 11
 		self.rcslot = n >= 11
-		# At 11, the products keep T1 = 0 and use a single temporary: a row
-		# puts each high half in the register that becomes its top word, and
-		# a Montgomery step reuses the cancelled low word, taking its carry
-		# from an all-ones constant.
-		self.onet = n >= 11 or os.environ.get("GEN_ONET") == "1"
+		# From 8, where T1 gives the zero, the products keep T1 = 0 and use a
+		# single temporary: a row puts each high half in the register that
+		# becomes its top word, and a Montgomery step reuses the cancelled
+		# low word, taking its carry from an all-ones constant.
+		self.onet = n >= 8
 		if n <= 7:
 			z, t0, t1 = SMALL_ACC[:n + 1], SMALL_ACC[n + 1], SMALL_ACC[n + 2]
 		elif n == 8:
