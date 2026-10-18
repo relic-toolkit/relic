@@ -389,6 +389,10 @@ def prime_block(n):
 		b.append("#define BAR\t0x%016X" % bar)
 		b.append("#define BARS\t%d" % bars)
 		b.append("#define BARJ\t%d" % barj)
+		# Montgomery-friendly primes: p = -1 mod 2^64 gives u0 = 1 and an
+		# all-ones low word, which save two multiplications per step.
+		if u0 == 1:
+			b.append("#define U0_ONE")
 		if str(e[0]) not in bits:
 			bits.append(str(e[0]))
 	b.append("#else")
@@ -939,6 +943,11 @@ class Small(Field):
 			z = SMALL_ACC[:8] + ["%rax", "%rbx", "%rbp", "%rcx", "%rdi"]
 			t0, t1 = "%rsi", None
 		self.z, self.t0, self.t1 = z, t0, t1
+		# Primes with p = -1 mod 2^64 among those of this limb count, which
+		# get specialized Montgomery steps below 8 digits. Other shapes, such
+		# as u0 = 2^32 + 1, do not pay off against mulx.
+		u0s = [consts(int(e[1], 16))[1] for e in PRIMES.get(n, [])]
+		self.u0one = not self.onet and 1 in u0s
 		# Registers free at the end of a product, besides the accumulator.
 		self.fixed = [x for x in ("%rax", "%rdx", "%rsi", "%rcx")
 			if x not in z + [t0, t1]]
@@ -1031,6 +1040,20 @@ class Small(Field):
 			b.append("\tadcx\t%%rax, %s" % z[n])
 		return macro("MULADD", names(n + 1) + ["T0", "T1", "M"], b)
 
+	def muladdp(self):
+		"""MULADD of rdx = Z0 times p for p = -1 mod 2^64: Z0 + Z0 x p0 is
+		Z0 x 2^64, so the first limb adds rdx to Z1 and leaves Z0, whose
+		register the caller clears or discards, instead of a multiplication.
+		Needs the flags clear and %rax = 0, as MULADD."""
+		n = self.n
+		z = refs(names(n + 1))
+		b = ["\tadox\t%rdx, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmulx\t%d+\\M, \\T1, \\T0" % (8 * k),
+				"\tadcx\t\\T1, %s" % z[k], "\tadox\t\\T0, %s" % z[k + 1]]
+		b.append("\tadcx\t%%rax, %s" % z[n])
+		return macro("MULADDP", names(n + 1) + ["T0", "T1", "M"], b)
+
 	def mulsub(self):
 		"""[Z0:Zn] -= rdx x m for m = 0+M."""
 		n = self.n
@@ -1079,6 +1102,11 @@ class Small(Field):
 		b = ["\tmovq\t$U0, %rdx", "\timulq\t\\Z0, %rdx", "\txorq\t\\T0, \\T0",
 			"\tmulx\t0+\\P, \\T0, \\T1", "\tadox\t\\T0, \\Z0",
 			"\tadox\t\\T1, \\Z1"]
+		if self.u0one:
+			# Z0 + Z0 x p0 = Z0 x 2^64: add the digit to Z1 and clear Z0.
+			b = ["#if defined(U0_ONE)", "\tmovq\t\\Z0, %rdx",
+				"\txorq\t\\Z0, \\Z0", "\tadox\t%rdx, \\Z1", "#else"] + b + [
+				"#endif"]
 		for k in range(1, n):
 			b += ["\tmulx\t%d+\\P, \\T0, \\T1" % (8 * k),
 				"\tadcx\t\\T0, %s" % z[k]]
@@ -1334,8 +1362,13 @@ class Small(Field):
 				b += self.full_only(["\tmovq\t%s, \\K" % w[0]])
 			b.append(".endif")
 		else:
-			b += ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
-				"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P"), ".endif"]
+			q = ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
+				"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P")]
+			if self.u0one:
+				q = ["#if defined(U0_ONE)", "\tmovq\t%s, %%rdx" % w[0],
+					"\tMULADDP\t%s" % args(w, "\\T0", "\\T1", "\\P"),
+					"#else"] + q + ["#endif"]
+			b += q + [".endif"]
 
 	def muladd1(self):
 		"""[Z0:Zn-1, X] <- [Z0:Zn-1] + rdx x m for m = 0+M, with X the new top
@@ -1596,7 +1629,8 @@ class Small(Field):
 			return [self.mulm(), self.muladd1(), self.mulrdc1(), self.finalc(),
 				self.rdcstep1(), self.rdcn(), self.addh(), self.fp_rdcn_low(),
 				self.sqrn_mem(), self.fp_sqr_low_mem(), self.fp_mul_low()]
-		parts = [self.mulm(), self.muladd(), self.mulsub(), self.finalc(),
+		parts = [self.mulm(), self.muladd()] + ([self.muladdp()] if
+			self.u0one else []) + [self.mulsub(), self.finalc(),
 			self.rdcstep(), self.rdcn(), self.addh(), self.fp_rdcn_low()]
 		if self.onet:
 			parts[2:2] = [self.muladd1(), self.mulrdc1()]
@@ -1880,8 +1914,8 @@ def write_small(n, out):
 	guard = "#if %s\n#define %s\n#endif\n"
 	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
 		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
-		guard % ("(defined(FP_QNRES)%s) && RLC_ALLOC == RLC_AUTO" %
-			(" || " + SS3[n] if n in SS3 else ""), "FP2_ASM")]
+		guard % (("(defined(FP_QNRES) || %s)" % SS3[n] if n in SS3 else
+			"defined(FP_QNRES)") + " && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
 	# MULRDC1 reads an all-ones word, and at 12 digits a zero word, local to
 	# each object.
 	ones = ["#if defined(__APPLE__)\n.section __TEXT,__const\n#else\n"

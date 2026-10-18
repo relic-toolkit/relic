@@ -61,6 +61,7 @@
 #define BAR	0x87263B55416BC6A7
 #define BARS	61
 #define BARJ	4
+#define U0_ONE
 #else
 #error "x64-asm-5l supports only FP_PRIME = 315, 317 or 318."
 #endif
@@ -169,6 +170,23 @@
 	adcx	%rax, \Z5
 .endm
 
+.macro MULADDP Z0, Z1, Z2, Z3, Z4, Z5, T0, T1, M
+	adox	%rdx, \Z1
+	mulx	8+\M, \T1, \T0
+	adcx	\T1, \Z1
+	adox	\T0, \Z2
+	mulx	16+\M, \T1, \T0
+	adcx	\T1, \Z2
+	adox	\T0, \Z3
+	mulx	24+\M, \T1, \T0
+	adcx	\T1, \Z3
+	adox	\T0, \Z4
+	mulx	32+\M, \T1, \T0
+	adcx	\T1, \Z4
+	adox	\T0, \Z5
+	adcx	%rax, \Z5
+.endm
+
 .macro MULSUB Z0, Z1, Z2, Z3, Z4, Z5, T0, T1, M
 	mulx	8+\M, \T1, \T0
 	subq	\T1, \Z1
@@ -212,12 +230,18 @@
 .endm
 
 .macro RDCSTEP Z0, Z1, Z2, Z3, Z4, T0, T1, P
+#if defined(U0_ONE)
+	movq	\Z0, %rdx
+	xorq	\Z0, \Z0
+	adox	%rdx, \Z1
+#else
 	movq	$U0, %rdx
 	imulq	\Z0, %rdx
 	xorq	\T0, \T0
 	mulx	0+\P, \T0, \T1
 	adox	\T0, \Z0
 	adox	\T1, \Z1
+#endif
 	mulx	8+\P, \T0, \T1
 	adcx	\T0, \Z1
 	adox	\T1, \Z2
@@ -356,9 +380,14 @@
 .if \RDC != 1
 	movq	\Z0, 0(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z0, %rdx
+	MULADDP	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T1
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z0, \Z0
@@ -367,9 +396,14 @@
 .if \RDC != 1
 	movq	\Z1, 8(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z1, %rdx
+	MULADDP	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, \T1
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z1, \Z1
@@ -378,9 +412,14 @@
 .if \RDC != 1
 	movq	\Z2, 16(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z2, %rdx
+	MULADDP	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, \T1
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z2, \Z2
@@ -389,9 +428,14 @@
 .if \RDC != 1
 	movq	\Z3, 24(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z3, %rdx
+	MULADDP	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, \T1
 	MULADD	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z3, \Z3
@@ -400,9 +444,14 @@
 .if \RDC != 1
 	movq	\Z4, 32(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z4, %rdx
+	MULADDP	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, \T1
 	MULADD	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#endif
 .endif
 
 .if \RDC != 1
@@ -423,9 +472,14 @@
 	movq	\Z0, 0(%rdi)
 .else
 	xorq	%rax, %rax
+#if defined(U0_ONE)
+	movq	\Z0, %rdx
+	MULADDP	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T1
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#endif
 .endif
 	xorq	\Z0, \Z0
 	btq		$63, \Z5
@@ -440,9 +494,14 @@
 	movq	\Z1, 8(%rdi)
 .else
 	xorq	%rax, %rax
+#if defined(U0_ONE)
+	movq	\Z1, %rdx
+	MULADDP	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, \T1
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#endif
 .endif
 	xorq	\Z1, \Z1
 	btq		$63, \Z0
@@ -457,9 +516,14 @@
 	movq	\Z2, 16(%rdi)
 .else
 	xorq	%rax, %rax
+#if defined(U0_ONE)
+	movq	\Z2, %rdx
+	MULADDP	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, \T1
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#endif
 .endif
 	xorq	\Z2, \Z2
 	btq		$63, \Z1
@@ -474,9 +538,14 @@
 	movq	\Z3, 24(%rdi)
 .else
 	xorq	%rax, %rax
+#if defined(U0_ONE)
+	movq	\Z3, %rdx
+	MULADDP	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, \T1
 	MULADD	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#endif
 .endif
 	xorq	\Z3, \Z3
 	btq		$63, \Z2
@@ -491,9 +560,14 @@
 	movq	\Z4, 32(%rdi)
 .else
 	xorq	%rax, %rax
+#if defined(U0_ONE)
+	movq	\Z4, %rdx
+	MULADDP	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, \T1
 	MULADD	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#endif
 .endif
 	testq	\Z3, \Z3
 
@@ -529,9 +603,14 @@
 .if \RDC != 1
 	movq	\Z0, 0(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z0, %rdx
+	MULADDP	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T1
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z0, \Z0
@@ -542,9 +621,14 @@
 .if \RDC != 1
 	movq	\Z1, 8(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z1, %rdx
+	MULADDP	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z1, %rdx, \T1
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z0, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z1, \Z1
@@ -555,9 +639,14 @@
 .if \RDC != 1
 	movq	\Z2, 16(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z2, %rdx
+	MULADDP	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z2, %rdx, \T1
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z0, \Z1, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z2, \Z2
@@ -568,9 +657,14 @@
 .if \RDC != 1
 	movq	\Z3, 24(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z3, %rdx
+	MULADDP	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z3, %rdx, \T1
 	MULADD	\Z3, \Z4, \Z5, \Z0, \Z1, \Z2, \T0, \T1, \P
+#endif
 .endif
 
 	xorq	\Z3, \Z3
@@ -581,9 +675,14 @@
 .if \RDC != 1
 	movq	\Z4, 32(%rdi)
 .else
+#if defined(U0_ONE)
+	movq	\Z4, %rdx
+	MULADDP	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#else
 	movq	$U0, %rdx
 	mulx	\Z4, %rdx, \T1
 	MULADD	\Z4, \Z5, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+#endif
 .endif
 
 .if \RDC != 1

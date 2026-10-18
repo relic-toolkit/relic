@@ -201,15 +201,17 @@
 		bn_t n, _k[S], u;													\
 		int8_t even[T], col, sac[T][(S / T) * (RLC_FP_BITS + 1)];			\
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
-		/* Fewer dimensions if the order has fewer digits in base u. */		\
-		size_t s = RLC_MIN((size_t)S, (size_t)ep_curve_frdim()), g = s / T;	\
+		/* Fewer dimensions if the order has fewer digits in base u, kept in\
+		 * groups of S / T and thus in fewer groups, c = s / g. */			\
+		size_t s = RLC_MIN((size_t)S, (size_t)ep_curve_frdim());			\
+		size_t g = RLC_MIN((size_t)S / T, s), c = s / g;					\
 																			\
 		bn_null_all(n, u);													\
 		for (int i = 0; i < S; i++) {										\
 			bn_null(_k[i]);													\
 			C##_null(q[i]);													\
 		}																	\
-		for (int i = 0; i < T; i++) {										\
+		for (int i = 0; i < (int)c; i++) {									\
 			for (int j = 0; j < (1 << (S / T - 1)); j++) {					\
 				C##_null(t[i][j]);											\
 			}																\
@@ -221,7 +223,7 @@
 				bn_new(_k[i]);												\
 				C##_new(q[i]);												\
 			}																\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
 					C##_new(t[i][j]);										\
 				}															\
@@ -241,12 +243,12 @@
 				F##_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);		\
 				bn_abs(_k[i], _k[i]);										\
 			}																\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				even[i] = bn_is_even(_k[i * g]);							\
 				bn_add_dig(_k[i * g], _k[i * g], even[i]);					\
 			}																\
 																			\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				C##_copy(t[i][0], q[i * g]);								\
 				for (int j = 1; j < (1 << (g - 1)); j++) {					\
 					l = util_bits_dig(j);									\
@@ -258,7 +260,7 @@
 				C##_norm_sim(t[i] + l, (const C##_t *)t[i] + l,				\
 						(1 << (g - 1)) - l);								\
 				l = RLC_FP_BITS + 1;										\
-				bn_rec_sac(sac[i], &l, _k + i * g, u, T, g,					\
+				bn_rec_sac(sac[i], &l, _k + i * g, u, c, g,					\
 						bn_bits(n), flag);									\
 			}																\
 																			\
@@ -267,7 +269,7 @@
 			C##_set_infty(r);												\
 			for (int j = l - 1; j >= 0; j--) {								\
 				C##_dbl(r, r);												\
-				for (int i = 0; i < T; i++) {								\
+				for (int i = 0; i < (int)c; i++) {							\
 					col = 0;												\
 					for (int m = g - 1; m > 0; m--) {						\
 						col <<= 1;											\
@@ -284,7 +286,7 @@
 				}															\
 			}																\
 																			\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				C##_sub(q[1], r, q[i * g]);									\
 				F##_copy_sec(r->x, q[1]->x, even[i]);						\
 				F##_copy_sec(r->y, q[1]->y, even[i]);						\
@@ -303,7 +305,7 @@
 				bn_free(_k[i]);												\
 				C##_free(q[i]);												\
 			}																\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
 					C##_free(t[i][j]);										\
 				}															\
