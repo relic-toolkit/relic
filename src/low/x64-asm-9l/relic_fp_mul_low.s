@@ -39,226 +39,125 @@
 .global cdecl(fp_mulm_low)
 
 cdecl(fp_mul1_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
 	push	%rbx
-	subq	$160, %rsp
+	push	%rbp
+	subq	$8, %rsp
 
-	mulxq	0(%rsi), %rax, %r8
-	movq	%rax, 0(%rsp)
-	mulxq	8(%rsi), %rax, %r9
-	addq	%r8, %rax
-	movq	%rax, 8(%rsp)
-	mulxq	16(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 16(%rsp)
-	mulxq	24(%rsi), %rax, %r9
-	adcq	%r8, %rax
-	movq	%rax, 24(%rsp)
-	mulxq	32(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 32(%rsp)
-	mulxq	40(%rsi), %rax, %r9
-	adcq	%r8, %rax
-	movq	%rax, 40(%rsp)
-	mulxq	48(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 48(%rsp)
-	mulxq	56(%rsi), %rax, %r9
-	adcq	%r8, %rax
-	movq	%rax, 56(%rsp)
-	mulxq	64(%rsi), %rax, %r8
-	adcq	%r9, %rax
-	movq	%rax, 64(%rsp)
-	adcq	$0, %r8
-	movq	%r8, 72(%rsp)
+	movq	%rdi, 0(%rsp)
+	mulxq	0(%rsi), %r8, %rax
+	mulxq	8(%rsi), %r9, %rbx
+	addq	%rax, %r9
+	mulxq	16(%rsi), %r10, %rax
+	adcq	%rbx, %r10
+	mulxq	24(%rsi), %r11, %rbx
+	adcq	%rax, %r11
+	mulxq	32(%rsi), %rcx, %rax
+	adcq	%rbx, %rcx
+	mulxq	40(%rsi), %rdi, %rbx
+	adcq	%rax, %rdi
+	mulxq	48(%rsi), %r12, %rax
+	adcq	%rbx, %r12
+	mulxq	56(%rsi), %r13, %rbx
+	adcq	%rax, %r13
+	mulxq	64(%rsi), %r14, %r15
+	adcq	%rbx, %r14
+	adcq	$0, %r15
 
-	movq	(8 * BARJ)(%rsp), %rax
-	movq	(8 * BARJ + 8)(%rsp), %rdx
-	shrdq	$BARS, %rdx, %rax
+	movq	%r14, %rax
+	shrdq	$BARS, %r15, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	movq	$P0, %rax
-	mulxq	%rax, %rax, %rcx
-	subq	%rax, 0(%rsp)
-	movq	%rcx, 80(%rsp)
-	movq	$P1, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 8(%rsp)
-	movq	%rcx, 88(%rsp)
-	movq	$P2, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 16(%rsp)
-	movq	%rcx, 96(%rsp)
-	movq	$P3, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 24(%rsp)
-	movq	%rcx, 104(%rsp)
-	movq	$P4, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 32(%rsp)
-	movq	%rcx, 112(%rsp)
-	movq	$P5, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 40(%rsp)
-	movq	%rcx, 120(%rsp)
-	movq	$P6, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 48(%rsp)
-	movq	%rcx, 128(%rsp)
-	movq	$P7, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 56(%rsp)
-	movq	%rcx, 136(%rsp)
-	movq	$P8, %rax
-	mulxq	%rax, %rax, %rcx
-	sbbq	%rax, 64(%rsp)
-	movq	%rcx, 144(%rsp)
-	sbbq	$0, 72(%rsp)
-
-	movq	80(%rsp), %rax
-	subq	%rax, 8(%rsp)
-	movq	88(%rsp), %rax
-	sbbq	%rax, 16(%rsp)
-	movq	96(%rsp), %rax
-	sbbq	%rax, 24(%rsp)
-	movq	104(%rsp), %rax
-	sbbq	%rax, 32(%rsp)
-	movq	112(%rsp), %rax
-	sbbq	%rax, 40(%rsp)
-	movq	120(%rsp), %rax
-	sbbq	%rax, 48(%rsp)
-	movq	128(%rsp), %rax
-	sbbq	%rax, 56(%rsp)
-	movq	136(%rsp), %rax
-	sbbq	%rax, 64(%rsp)
-	movq	144(%rsp), %rax
-	sbbq	%rax, 72(%rsp)
+	xorq	%rax, %rax
+	stc
+	mulxq	p0(%rip), %rax, %rbx
+	notq	%rax
+	adcx	%rax, %r8
+	mulxq	p1(%rip), %rax, %rsi
+	adox	%rbx, %rax
+	notq	%rax
+	adcx	%rax, %r9
+	mulxq	p2(%rip), %rax, %rbx
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %r10
+	mulxq	p3(%rip), %rax, %rsi
+	adox	%rbx, %rax
+	notq	%rax
+	adcx	%rax, %r11
+	mulxq	p4(%rip), %rax, %rbx
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %rcx
+	mulxq	p5(%rip), %rax, %rsi
+	adox	%rbx, %rax
+	notq	%rax
+	adcx	%rax, %rdi
+	mulxq	p6(%rip), %rax, %rbx
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %r12
+	mulxq	p7(%rip), %rax, %rsi
+	adox	%rbx, %rax
+	notq	%rax
+	adcx	%rax, %r13
+	mulxq	p8(%rip), %rax, %rbx
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %r14
+	movq	0(%rsp), %r15
 
 	.rept 2
-	movq	0(%rsp), %rax
-	movq	$P0, %rdx
-	subq	%rdx, %rax
-	movq	%rax, 80(%rsp)
-	movq	8(%rsp), %rax
-	movq	$P1, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 88(%rsp)
-	movq	16(%rsp), %rax
-	movq	$P2, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 96(%rsp)
-	movq	24(%rsp), %rax
-	movq	$P3, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 104(%rsp)
-	movq	32(%rsp), %rax
-	movq	$P4, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 112(%rsp)
-	movq	40(%rsp), %rax
-	movq	$P5, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 120(%rsp)
-	movq	48(%rsp), %rax
-	movq	$P6, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 128(%rsp)
-	movq	56(%rsp), %rax
-	movq	$P7, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 136(%rsp)
-	movq	64(%rsp), %rax
-	movq	$P8, %rdx
-	sbbq	%rdx, %rax
-	movq	%rax, 144(%rsp)
-	movq	72(%rsp), %rax
-	sbbq	$0, %rax
-	movq	%rax, 152(%rsp)
-	sbbq	%rbx, %rbx
-	notq	%rbx
-	movq	0(%rsp), %rax
-	movq	80(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 0(%rsp)
-	movq	8(%rsp), %rax
-	movq	88(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 8(%rsp)
-	movq	16(%rsp), %rax
-	movq	96(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 16(%rsp)
-	movq	24(%rsp), %rax
-	movq	104(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 24(%rsp)
-	movq	32(%rsp), %rax
-	movq	112(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 32(%rsp)
-	movq	40(%rsp), %rax
-	movq	120(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 40(%rsp)
-	movq	48(%rsp), %rax
-	movq	128(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 48(%rsp)
-	movq	56(%rsp), %rax
-	movq	136(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 56(%rsp)
-	movq	64(%rsp), %rax
-	movq	144(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 64(%rsp)
-	movq	72(%rsp), %rax
-	movq	152(%rsp), %rdx
-	xorq	%rax, %rdx
-	andq	%rbx, %rdx
-	xorq	%rdx, %rax
-	movq	%rax, 72(%rsp)
+	movq	%r8, 0(%r15)
+	subq	p0(%rip), %r8
+	movq	%r9, 8(%r15)
+	sbbq	p1(%rip), %r9
+	movq	%r10, 16(%r15)
+	sbbq	p2(%rip), %r10
+	movq	%r11, 24(%r15)
+	sbbq	p3(%rip), %r11
+	movq	%rcx, %rbp
+	sbbq	p4(%rip), %rbp
+	movq	%rdi, %rbx
+	sbbq	p5(%rip), %rbx
+	movq	%r12, %rsi
+	sbbq	p6(%rip), %rsi
+	movq	%r13, %rdx
+	sbbq	p7(%rip), %rdx
+	movq	%r14, %rax
+	sbbq	p8(%rip), %rax
+	cmovc	0(%r15), %r8
+	cmovc	8(%r15), %r9
+	cmovc	16(%r15), %r10
+	cmovc	24(%r15), %r11
+	cmovnc	%rbp, %rcx
+	cmovnc	%rbx, %rdi
+	cmovnc	%rsi, %r12
+	cmovnc	%rdx, %r13
+	cmovnc	%rax, %r14
 	.endr
 
-	movq	0(%rsp), %rax
-	movq	%rax, 0(%rdi)
-	movq	8(%rsp), %rax
-	movq	%rax, 8(%rdi)
-	movq	16(%rsp), %rax
-	movq	%rax, 16(%rdi)
-	movq	24(%rsp), %rax
-	movq	%rax, 24(%rdi)
-	movq	32(%rsp), %rax
-	movq	%rax, 32(%rdi)
-	movq	40(%rsp), %rax
-	movq	%rax, 40(%rdi)
-	movq	48(%rsp), %rax
-	movq	%rax, 48(%rdi)
-	movq	56(%rsp), %rax
-	movq	%rax, 56(%rdi)
-	movq	64(%rsp), %rax
-	movq	%rax, 64(%rdi)
+	movq	%r8, 0(%r15)
+	movq	%r9, 8(%r15)
+	movq	%r10, 16(%r15)
+	movq	%r11, 24(%r15)
+	movq	%rcx, 32(%r15)
+	movq	%rdi, 40(%r15)
+	movq	%r12, 48(%r15)
+	movq	%r13, 56(%r15)
+	movq	%r14, 64(%r15)
 
-	addq	$160, %rsp
+	addq	$8, %rsp
+	pop		%rbp
 	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_muln_low):

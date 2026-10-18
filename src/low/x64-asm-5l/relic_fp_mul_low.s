@@ -41,84 +41,69 @@
 cdecl(fp_mul1_low):
 	push	%r12
 	push	%r13
-	push	%rbx
-	push	%rbp
-	push	%rdi
+	push	%r14
+	subq	$8, %rsp
 
+	movq	%rdi, 0(%rsp)
 	mulxq	0(%rsi), %r8, %rax
-	mulxq	8(%rsi), %r9, %rbx
+	mulxq	8(%rsi), %r9, %r12
 	addq	%rax, %r9
 	mulxq	16(%rsi), %r10, %rax
-	adcq	%rbx, %r10
-	mulxq	24(%rsi), %r11, %rbx
+	adcq	%r12, %r10
+	mulxq	24(%rsi), %r11, %r12
 	adcq	%rax, %r11
-	mulxq	32(%rsi), %r12, %r13
-	adcq	%rbx, %r12
-	adcq	$0, %r13
+	mulxq	32(%rsi), %rcx, %rdi
+	adcq	%r12, %rcx
+	adcq	$0, %rdi
 
-	movq	%r12, %rax
-	shrdq	$BARS, %r13, %rax
+	movq	%rcx, %rax
+	shrdq	$BARS, %rdi, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	movq	$P0, %rax
-	mulxq	%rax, %rax, %rbx
+	mulxq	p0(%rip), %rax, %r12
 	subq	%rax, %r8
-	movq	$P1, %rax
-	mulxq	%rax, %rax, %rcx
+	mulxq	p1(%rip), %rax, %rsi
 	sbbq	%rax, %r9
-	movq	$P2, %rax
-	mulxq	%rax, %rax, %rsi
+	mulxq	p2(%rip), %rax, %r13
 	sbbq	%rax, %r10
-	movq	$P3, %rax
-	mulxq	%rax, %rax, %rdi
+	mulxq	p3(%rip), %rax, %r14
 	sbbq	%rax, %r11
-	movq	$P4, %rax
-	mulxq	%rax, %rax, %rbp
-	sbbq	%rax, %r12
-	sbbq	$0, %r13
+	mulxq	p4(%rip), %rax, %rdx
+	sbbq	%rax, %rcx
 
-	subq	%rbx, %r9
-	sbbq	%rcx, %r10
-	sbbq	%rsi, %r11
-	sbbq	%rdi, %r12
-	sbbq	%rbp, %r13
+	subq	%r12, %r9
+	sbbq	%rsi, %r10
+	sbbq	%r13, %r11
+	sbbq	%r14, %rcx
 
 	.rept 2
-	movq	%r8, %rax
-	movq	$P0, %rdx
-	subq	%rdx, %rax
-	movq	%r9, %rbx
-	movq	$P1, %rdx
-	sbbq	%rdx, %rbx
-	movq	%r10, %rcx
-	movq	$P2, %rdx
-	sbbq	%rdx, %rcx
-	movq	%r11, %rsi
-	movq	$P3, %rdx
-	sbbq	%rdx, %rsi
-	movq	%r12, %rdi
-	movq	$P4, %rdx
-	sbbq	%rdx, %rdi
-	movq	%r13, %rbp
-	sbbq	$0, %rbp
-	cmovncq	%rax, %r8
-	cmovncq	%rbx, %r9
-	cmovncq	%rcx, %r10
-	cmovncq	%rsi, %r11
-	cmovncq	%rdi, %r12
-	cmovncq	%rbp, %r13
+	movq	%r8, %r13
+	subq	p0(%rip), %r13
+	movq	%r9, %r12
+	sbbq	p1(%rip), %r12
+	movq	%r10, %rsi
+	sbbq	p2(%rip), %rsi
+	movq	%r11, %rdx
+	sbbq	p3(%rip), %rdx
+	movq	%rcx, %rax
+	sbbq	p4(%rip), %rax
+	cmovnc	%r13, %r8
+	cmovnc	%r12, %r9
+	cmovnc	%rsi, %r10
+	cmovnc	%rdx, %r11
+	cmovnc	%rax, %rcx
 	.endr
+	movq	0(%rsp), %rax
 
-	pop		%rdi
-	movq	%r8, 0(%rdi)
-	movq	%r9, 8(%rdi)
-	movq	%r10, 16(%rdi)
-	movq	%r11, 24(%rdi)
-	movq	%r12, 32(%rdi)
+	movq	%r8, 0(%rax)
+	movq	%r9, 8(%rax)
+	movq	%r10, 16(%rax)
+	movq	%r11, 24(%rax)
+	movq	%rcx, 32(%rax)
 
-	pop		%rbp
-	pop		%rbx
+	addq	$8, %rsp
+	pop		%r14
 	pop		%r13
 	pop		%r12
 	ret

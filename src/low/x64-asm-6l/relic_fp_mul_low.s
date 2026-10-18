@@ -46,91 +46,81 @@ cdecl(fp_mul1_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	push	%rdi
+	subq	$8, %rsp
 
+	movq	%rdi, 0(%rsp)
 	mulxq	0(%rsi), %r8, %rax
-	mulxq	8(%rsi), %r9, %rbx
+	mulxq	8(%rsi), %r9, %r13
 	addq	%rax, %r9
 	mulxq	16(%rsi), %r10, %rax
-	adcq	%rbx, %r10
-	mulxq	24(%rsi), %r11, %rbx
+	adcq	%r13, %r10
+	mulxq	24(%rsi), %r11, %r13
 	adcq	%rax, %r11
-	mulxq	32(%rsi), %r12, %rax
-	adcq	%rbx, %r12
-	mulxq	40(%rsi), %r13, %r14
-	adcq	%rax, %r13
-	adcq	$0, %r14
+	mulxq	32(%rsi), %rcx, %rax
+	adcq	%r13, %rcx
+	mulxq	40(%rsi), %rdi, %r12
+	adcq	%rax, %rdi
+	adcq	$0, %r12
 
-	movq	%r13, %rax
-	shrdq	$BARS, %r14, %rax
+	movq	%rdi, %rax
+	shrdq	$BARS, %r12, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	movq	$P0, %rax
-	mulxq	%rax, %rax, %rbx
+	mulxq	p0(%rip), %rax, %r13
 	subq	%rax, %r8
-	movq	$P1, %rax
-	mulxq	%rax, %rax, %rcx
+	mulxq	p1(%rip), %rax, %rsi
 	sbbq	%rax, %r9
-	movq	$P2, %rax
-	mulxq	%rax, %rax, %rsi
+	mulxq	p2(%rip), %rax, %r14
 	sbbq	%rax, %r10
-	movq	$P3, %rax
-	mulxq	%rax, %rax, %rdi
+	mulxq	p3(%rip), %rax, %r15
 	sbbq	%rax, %r11
-	movq	$P4, %rax
-	mulxq	%rax, %rax, %rbp
-	sbbq	%rax, %r12
-	movq	$P5, %rax
-	mulxq	%rax, %rax, %r15
-	sbbq	%rax, %r13
-	sbbq	$0, %r14
+	mulxq	p4(%rip), %rax, %rbx
+	sbbq	%rax, %rcx
+	mulxq	p5(%rip), %rax, %rbp
+	sbbq	%rax, %rdi
+	sbbq	$0, %r12
 
-	subq	%rbx, %r9
-	sbbq	%rcx, %r10
-	sbbq	%rsi, %r11
-	sbbq	%rdi, %r12
-	sbbq	%rbp, %r13
-	sbbq	%r15, %r14
+	subq	%r13, %r9
+	sbbq	%rsi, %r10
+	sbbq	%r14, %r11
+	sbbq	%r15, %rcx
+	sbbq	%rbx, %rdi
+	sbbq	%rbp, %r12
 
 	.rept 2
-	movq	%r8, %rax
-	movq	$P0, %rdx
-	subq	%rdx, %rax
-	movq	%r9, %rbx
-	movq	$P1, %rdx
-	sbbq	%rdx, %rbx
-	movq	%r10, %rcx
-	movq	$P2, %rdx
-	sbbq	%rdx, %rcx
-	movq	%r11, %rsi
-	movq	$P3, %rdx
-	sbbq	%rdx, %rsi
-	movq	%r12, %rdi
-	movq	$P4, %rdx
-	sbbq	%rdx, %rdi
-	movq	%r13, %rbp
-	movq	$P5, %rdx
-	sbbq	%rdx, %rbp
-	movq	%r14, %r15
-	sbbq	$0, %r15
-	cmovncq	%rax, %r8
-	cmovncq	%rbx, %r9
-	cmovncq	%rcx, %r10
-	cmovncq	%rsi, %r11
-	cmovncq	%rdi, %r12
-	cmovncq	%rbp, %r13
-	cmovncq	%r15, %r14
+	movq	%r8, %rbx
+	subq	p0(%rip), %rbx
+	movq	%r9, %r15
+	sbbq	p1(%rip), %r15
+	movq	%r10, %r14
+	sbbq	p2(%rip), %r14
+	movq	%r11, %r13
+	sbbq	p3(%rip), %r13
+	movq	%rcx, %rsi
+	sbbq	p4(%rip), %rsi
+	movq	%rdi, %rdx
+	sbbq	p5(%rip), %rdx
+	movq	%r12, %rax
+	sbbq	$0, %rax
+	cmovnc	%rbx, %r8
+	cmovnc	%r15, %r9
+	cmovnc	%r14, %r10
+	cmovnc	%r13, %r11
+	cmovnc	%rsi, %rcx
+	cmovnc	%rdx, %rdi
+	cmovnc	%rax, %r12
 	.endr
+	movq	0(%rsp), %rax
 
-	pop		%rdi
-	movq	%r8, 0(%rdi)
-	movq	%r9, 8(%rdi)
-	movq	%r10, 16(%rdi)
-	movq	%r11, 24(%rdi)
-	movq	%r12, 32(%rdi)
-	movq	%r13, 40(%rdi)
+	movq	%r8, 0(%rax)
+	movq	%r9, 8(%rax)
+	movq	%r10, 16(%rax)
+	movq	%r11, 24(%rax)
+	movq	%rcx, 32(%rax)
+	movq	%rdi, 40(%rax)
 
+	addq	$8, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
