@@ -171,18 +171,6 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size);
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
 
 /**
- * Shifts a signed digit vector to the right by an amount smaller than a digit.
- * Computes c = a >> bits.
- *
- * @param[out] c			- the result
- * @param[in] a				- the signed digit vector to shift.
- * @param[in] size			- the number of digits to shift.
- * @param[in] bits			- the shift amount.
- * @return the carry of the last digit shift.
- */
-dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
-
-/**
  * Multiplies a digit vector by a digit and adds this result to another digit
  * vector. Computes c = c + a * digit.
  *
