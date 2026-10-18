@@ -142,6 +142,9 @@ void fp2_norm_low(fp2_t c, const fp2_t a) {
 	}
 }
 
+/* Defining FP2_NORD_ASM leaves out fp2_nord_low(), so it can be replaced. */
+#ifndef FP2_NORD_ASM
+
 void fp2_nord_low(dv2_t c, dv2_t a) {
 #ifdef FP_QNRES
 	rlc_align dig_t t[2 * RLC_FP_DIGS];
@@ -207,6 +210,8 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	}
 #endif
 }
+
+#endif
 
 void fp3_addn_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_addn_low(c[0], a[0], b[0]);

@@ -1863,7 +1863,71 @@ def fpx_mul_low(g):
 	o += function("fp2_mulm_low", used | set(rz + rt + rc),
 		ptrs + b + ["", call, ""] + rdcs(g, cs, c0, c1),
 		frame=c1 + 16 * n)
-	return o + ["", "#endif", "", "#endif"]
+	o += ["", "#endif", "", "#endif"]
+	if n in SS3:
+		o += ["", "#ifdef FP2_NORD_ASM", "", NORD_MACRO.rstrip("\n"), "",
+			".global cdecl(fp2_nord_low)", ""]
+		o += fp2_nord(g) + ["", "#endif"]
+	return o
+
+
+# One digit of fp2_nord_low, for digits i to j: %r10 and %r11 carry the top
+# bits of the doublings of a0 and a1, and %rcx holds the shift of 63.
+NORD_MACRO = '''.macro NORD i j
+	movq	8*\\i(%rsi), %r8
+	movq	RLC_DV_STRIDE+8*\\i(%rsi), %r9
+	leaq	(%r10,%r8,2), %rax
+	shrxq	%rcx, %r8, %r10
+	leaq	(%r11,%r9,2), %rdx
+	shrxq	%rcx, %r9, %r11
+	notq	%r9
+	adcx	%r9, %rax
+	adox	%r8, %rdx
+	movq	%rax, 8*\\i(%rdi)
+	movq	%rdx, RLC_DV_STRIDE+8*\\i(%rdi)
+	.if \\i - \\j
+		NORD "(\\i + 1)" \\j
+	.endif
+.endm
+'''
+
+
+def fp2_nord(g):
+	"""fp2_nord_low(c, a): c = a x (2 + u) mod pR for the SS3 primes, whose
+	non-residue is 2 + u, with c0 = 2 x a0 - a1 and c1 = 2 x a1 + a0 and
+	the coordinates RLC_DV_STRIDE bytes apart. One pass of NORD over the 2n
+	digits doubles with lea and shrx, which keep the flags, and adds a0 to
+	2 x a1 on the OF chain and the complement of a1 to 2 x a0 on the CF
+	chain, starting from CF = 1. As 2pR < 2^(128n), c0 is negative exactly
+	when the CF chain ends without a carry, and p is then added to its top
+	half. As 3p < 2^(64n), the top half of c1 is below 3p, and two final
+	subtractions bring both below p. c may alias a, as each digit is read
+	before it is written."""
+	n = g.n
+	m = g.m
+	s = "RLC_DV_STRIDE+"
+	# The xors clear OF and the carries into the first digit.
+	o = ["\tmovq\t$63, %rcx", "\txorl\t%r10d, %r10d",
+		"\txorl\t%r11d, %r11d", "\tstc", "\tNORD\t0 %d" % (2 * n - 1)]
+	pool = regs("%rdi", "%rcx")
+	v, c = pool[:n], pool[n:n + m]
+	# SF marks a negative c0, and p goes into its top half through cmovs.
+	o += ["", "\tsbbq\t%rcx, %rcx", "\tnotq\t%rcx", "\ttestq\t%rcx, %rcx"]
+	o += ["\tmovq\t%d(%%rdi), %s" % (8 * (n + k), v[k]) for k in range(n)]
+	for k in range(n):
+		x = c[k % 2]
+		o += ["\tmovq\t$0, %s" % x, "\tcmovs\tp%d(%%rip), %s" % (k, x),
+			"\tadcx\t%s, %s" % (x, v[k])]
+	o.append(g.finalc_call(v, c, "%d(%%rdi)" % (8 * n)))
+	# The second subtraction takes the outputs of the first, which leaves
+	# the low n - m words in place and the top m in the copies.
+	o += [""] + ["\tmovq\t%s%d(%%rdi), %s" % (s, 8 * (n + k), v[k])
+		for k in range(n)]
+	d = "%s%d(%%rdi)" % (s, 8 * n)
+	o.append(g.finalc_call(v, c, d))
+	o.append(g.finalc_call(v[:n - m] + c, v[n - m:], d))
+	used = set(x for x in CALLEE if any(x in line for line in o))
+	return function("fp2_nord_low", used, o)
 
 
 def fpx_sqr_low(g):
@@ -1949,11 +2013,24 @@ def write(n, out):
 		if e[0] in QNRS:
 			q = QNRS[e[0]]
 			assert q % 2 == 1 and (3 * q + 1) * p < 1 << (64 * n)
+		if n in SS3 and "SS3" in str(e[2]):
+			# fp2_nord_low multiplies by 2 + u, the non-residue that
+			# fp2_field_init() finds when 1 + u is a square or a cube, and
+			# keeps the top half of 2 x a1 + a0 below 2^(64n).
+			assert p % 8 == 7 and 3 * p < 1 << (64 * n)
+			for k in (1, 2):
+				r = k * k + 1
+				res = pow(r, (p - 1) // 2, p) == 1 or (p % 3 == 1 and
+					pow(r, (p - 1) // 3, p) == 1)
+				assert res == (k == 1)
 	guard = "#if %s\n#define %s\n#endif\n"
 	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
 		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
 		guard % (("(defined(FP_QNRES) || %s)" % SS3[n] if n in SS3 else
 			"defined(FP_QNRES)") + " && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
+	if n in SS3:
+		guards.append(guard % ("!defined(FP_QNRES) && %s && RLC_ALLOC == "
+			"RLC_AUTO" % SS3[n], "FP2_NORD_ASM"))
 	if g.qnr:
 		guards[0:0] = [guard % ("!defined(FP_QNRES) && defined(QNR)",
 			"FP2_QNR\tQNR")]

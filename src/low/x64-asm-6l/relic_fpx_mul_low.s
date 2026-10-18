@@ -119,3 +119,84 @@ cdecl(fp2_mulm_low):
 #endif
 
 #endif
+
+#ifdef FP2_NORD_ASM
+
+.macro NORD i j
+	movq	8*\i(%rsi), %r8
+	movq	RLC_DV_STRIDE+8*\i(%rsi), %r9
+	leaq	(%r10,%r8,2), %rax
+	shrxq	%rcx, %r8, %r10
+	leaq	(%r11,%r9,2), %rdx
+	shrxq	%rcx, %r9, %r11
+	notq	%r9
+	adcx	%r9, %rax
+	adox	%r8, %rdx
+	movq	%rax, 8*\i(%rdi)
+	movq	%rdx, RLC_DV_STRIDE+8*\i(%rdi)
+	.if \i - \j
+		NORD "(\i + 1)" \j
+	.endif
+.endm
+
+.global cdecl(fp2_nord_low)
+
+cdecl(fp2_nord_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+
+	movq	$63, %rcx
+	xorl	%r10d, %r10d
+	xorl	%r11d, %r11d
+	stc
+	NORD	0 11
+
+	sbbq	%rcx, %rcx
+	notq	%rcx
+	testq	%rcx, %rcx
+	movq	48(%rdi), %r8
+	movq	56(%rdi), %r9
+	movq	64(%rdi), %r10
+	movq	72(%rdi), %r11
+	movq	80(%rdi), %rax
+	movq	88(%rdi), %rdx
+	movq	$0, %rsi
+	cmovs	p0(%rip), %rsi
+	adcx	%rsi, %r8
+	movq	$0, %r12
+	cmovs	p1(%rip), %r12
+	adcx	%r12, %r9
+	movq	$0, %rsi
+	cmovs	p2(%rip), %rsi
+	adcx	%rsi, %r10
+	movq	$0, %r12
+	cmovs	p3(%rip), %r12
+	adcx	%r12, %r11
+	movq	$0, %rsi
+	cmovs	p4(%rip), %rsi
+	adcx	%rsi, %rax
+	movq	$0, %r12
+	cmovs	p5(%rip), %r12
+	adcx	%r12, %rdx
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, %r15, %rbx, 48(%rdi)
+
+	movq	RLC_DV_STRIDE+48(%rdi), %r8
+	movq	RLC_DV_STRIDE+56(%rdi), %r9
+	movq	RLC_DV_STRIDE+64(%rdi), %r10
+	movq	RLC_DV_STRIDE+72(%rdi), %r11
+	movq	RLC_DV_STRIDE+80(%rdi), %rax
+	movq	RLC_DV_STRIDE+88(%rdi), %rdx
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, %r15, %rbx, RLC_DV_STRIDE+48(%rdi)
+	FINALC	%rsi, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %rax, %rdx, RLC_DV_STRIDE+48(%rdi)
+
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif
