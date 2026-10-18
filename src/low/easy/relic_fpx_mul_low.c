@@ -38,6 +38,32 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void fp2_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	int k = 0;
+
+	if (digit <= 1) {
+		if (digit == 0) {
+			dv_zero(c, 2 * RLC_FP_DIGS);
+		} else {
+			dv_copy(c, a, 2 * RLC_FP_DIGS);
+		}
+		return;
+	}
+	/* The top bit of the digit, which is small. */
+	for (dig_t r = digit; r > 1; r >>= 1) {
+		k++;
+	}
+	fp_addc_low(c, a, a);
+	while (k-- > 0) {
+		if ((digit >> k) & 1) {
+			fp_addc_low(c, c, a);
+		}
+		if (k > 0) {
+			fp_addc_low(c, c, c);
+		}
+	}
+}
+
 /* Defining FP2_ASM leaves out the Fp2 functions, so they can be replaced. */
 #ifndef FP2_ASM
 
@@ -67,14 +93,17 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	fp_addc_low(t0, c[0], c[1]);
 #endif
 
-	/* c_0 = (a_0 * b_0) + u^2 * (a_1 * b_1). */
-	fp_subc_low(c[0], c[0], c[1]);
-
+	/* c_0 = (a_0 * b_0) + u^2 * (a_1 * b_1), with u^2 < 0. */
 #ifndef FP_QNRES
-	/* t1 = u^2 * (a_1 * b_1). */
-	for (int i = -1; i > fp_prime_get_qnr(); i--) {
+	if (fp_prime_get_qnr() != -1) {
+		/* t1 = |u^2| * (a_1 * b_1). */
+		fp2_mul1_low(t1, c[1], -fp_prime_get_qnr());
+		fp_subc_low(c[0], c[0], t1);
+	} else {
 		fp_subc_low(c[0], c[0], c[1]);
 	}
+#else
+	fp_subc_low(c[0], c[0], c[1]);
 #endif
 
 	/* c_1 = t2 - t0. */

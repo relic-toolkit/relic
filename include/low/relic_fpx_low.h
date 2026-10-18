@@ -157,6 +157,18 @@ void fp2_norm_low(fp2_t c, const fp2_t a);
 void fp2_nord_low(dv2_t c, dv2_t a);
 
 /**
+ * Multiplies a double-length prime field element below p * R by a small
+ * digit, by doubling and adding over the bits of the digit with fp_addc_low(),
+ * as the quadratic extension needs for non-residues other than -1. Computes
+ * c = a * digit mod p * R. The result must not overlap the input.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the double-length digit vector to multiply.
+ * @param[in] digit			- the small digit to multiply.
+ */
+void fp2_mul1_low(dig_t *c, const dig_t *a, dig_t digit);
+
+/**
  * Multiplies two quadratic extension field elements of the same size.
  * Computes c = a * b.
  *

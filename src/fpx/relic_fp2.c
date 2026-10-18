@@ -176,14 +176,9 @@ void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 		/* t2 = (a_0 * b_0) + (a_1 * b_1). */
 		fp_addc_low(t2, t0, t4);
 
-		/* t1 = (a_0 * b_0) + i^2 * (a_1 * b_1). */
-		fp_subc_low(t1, t0, t4);
-		for (int i = -1; i > fp_prime_get_qnr(); i--) {
-			fp_subc_low(t1, t1, t4);
-		}
-		for (int i = 1; i < fp_prime_get_qnr(); i++) {
-			fp_addc_low(t1, t1, t4);
-		}
+		/* t1 = (a_0 * b_0) + i^2 * (a_1 * b_1), with i^2 < 0. */
+		fp2_mul1_low(t1, t4, -fp_prime_get_qnr());
+		fp_subc_low(t1, t0, t1);
 
 		/* c_0 = t1 mod p. */
 		fp_rdc(c[0], t1);

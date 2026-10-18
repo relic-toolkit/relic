@@ -161,37 +161,21 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 
 		switch (fp_prime_get_mod8()) {
 			case 1:
-			case 5: {
-				/* If p = 1,5 mod 8, (i) is a QNR. a_1 * |i^2| is computed
-				 * by doubling and adding over the bits of |i^2|, which is
-				 * small. */
-				dig_t q = -fp_prime_get_qnr();
-				const dig_t *s = a[1];
-				int k = 0;
-
-				for (dig_t r = q; r > 1; r >>= 1) {
-					k++;
-				}
+			case 5:
+				/* If p = 1,5 mod 8, (i) is a QNR, with i^2 < 0. */
 				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				if (k > 0) {
-					fp_addc_low(t[1], a[1], a[1]);
-					while (k-- > 0) {
-						if ((q >> k) & 1) {
-							fp_addc_low(t[1], t[1], a[1]);
-						}
-						if (k > 0) {
-							fp_addc_low(t[1], t[1], t[1]);
-						}
-					}
-					s = t[1];
-				}
-				/* Subtracting from zero keeps the result below pR, also for
+				/* Subtracting from zero keeps -a_1 * |i^2| below pR, also for
 				 * a_1 = 0. */
-				dv_zero(c[0], 2 * RLC_FP_DIGS);
-				fp_subc_low(c[0], c[0], s);
+				if (fp_prime_get_qnr() == -1) {
+					dv_zero(t[1], 2 * RLC_FP_DIGS);
+					fp_subc_low(c[0], t[1], a[1]);
+				} else {
+					fp2_mul1_low(t[1], a[1], -fp_prime_get_qnr());
+					dv_zero(c[0], 2 * RLC_FP_DIGS);
+					fp_subc_low(c[0], c[0], t[1]);
+				}
 				dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
 				break;
-			}
 			case 3:
 				if (qnr == 1) {
 					/* If p = 3 mod 8, (1 + i) is a QNR, i^2 = -1. */
