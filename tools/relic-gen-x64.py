@@ -618,15 +618,13 @@ def add_low(g):
 			for i in range(n):
 				s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
 			return s
-		s = ["", "\tsbbq\t%rsi, %rsi"]
+		# Without registers for the masked words, SF keeps the borrow while
+		# adcx adds p word by word, through %rdx and %rsi in turn.
+		s = ["", "\tsbbq\t%rsi, %rsi", "\ttestq\t%rsi, %rsi"]
 		for i in range(n):
-			s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
-		for i in range(n):
-			s.append("\tmovq\tp%d(%%rip), %s" % (i, r[i]))
-			s.append("\tandq\t%%rsi, %s" % r[i])
-		s.append("\taddq\t%d(%%rdi), %s" % (base, r[0]))
-		for i in range(1, n):
-			s.append("\tadcq\t%d(%%rdi), %s" % (base + 8 * i, r[i]))
+			t = ("%rdx", "%rsi")[i % 2]
+			s += ["\tmovq\t$0, %s" % t, "\tcmovs\tp%d(%%rip), %s" % (i, t),
+				"\tadcx\t%s, %s" % (t, r[i])]
 		for i in range(n):
 			s.append("\tmovq\t%s, %d(%%rdi)" % (r[i], base + 8 * i))
 		return s
