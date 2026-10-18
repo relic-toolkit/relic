@@ -397,7 +397,6 @@ endforeach()
 set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)
 string(REPLACE "-" "_" ARITH ${ARITH})
-string(REPLACE "." "_" ARITH ${ARITH})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/relic_conf.h @ONLY)
 message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in with backend " ${ARITH_COPY})
