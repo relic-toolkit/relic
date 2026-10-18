@@ -207,19 +207,6 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 
 /**
- * Multiplies a signed digit vector by a signed digit and stores this result in
- * another digit vector. Computes c = (-1)^sa * a * digit.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first digit vector to multiply.
- * @param[in] sa 			- the sign of the first digit vector.
- * @param[in] digit			- the digit to multiply.
- * @param[in] size			- the number of digits to multiply.
- * @return the most significant digit.
- */
-dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size);
-
-/**
  * Multiplies two digit vectors of the same size. Computes c = a * b.
  *
  * @param[out] c			- the result.

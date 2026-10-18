@@ -475,7 +475,6 @@
 #undef bn_mula_low
 #undef bn_muls_low
 #undef bn_mul1_low
-#undef bn_smul_low
 #undef bn_muln_low
 #undef bn_muld_low
 #undef bn_sqra_low
@@ -502,7 +501,6 @@
 #define bn_mula_low 	RLC_PREFIX(bn_mula_low)
 #define bn_muls_low 	RLC_PREFIX(bn_muls_low)
 #define bn_mul1_low 	RLC_PREFIX(bn_mul1_low)
-#define bn_smul_low 	RLC_PREFIX(bn_smul_low)
 #define bn_muln_low 	RLC_PREFIX(bn_muln_low)
 #define bn_muld_low 	RLC_PREFIX(bn_muld_low)
 #define bn_sqra_low 	RLC_PREFIX(bn_sqra_low)

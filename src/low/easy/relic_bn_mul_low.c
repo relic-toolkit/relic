@@ -77,30 +77,6 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return carry;
 }
 
-dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
-		size_t size) {
-	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
-
-	sa = -sa;
-	sign = sa ^ sd;
-	digit = (digit ^ sd) - sd;
-
-	RLC_MUL_DIG(r, _c, a[0], (dig_t)digit);
-	_c ^= sign;
-	c[0] = _c - sign;
-	c1 = (c[0] < _c);
-	c0 = r;
-	for (size_t i = 1; i < size; i++) {
-		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
-		_c += c0;
-		c0 = r + (_c < c0);
-		_c ^= sign;
-		c[i] = _c + c1;
-		c1 = (c[i] < _c);
-	}
-	return (c0 ^ sign) + c1;
-}
-
 void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	size_t i, j;
 	const dig_t *tmpa, *tmpb;

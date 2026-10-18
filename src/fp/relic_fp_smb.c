@@ -354,7 +354,7 @@ int fp_smb_basic(const fp_t a) {
 
 int fp_smb_binar(const fp_t a) {
 	const size_t s = RLC_DIG - 2;
-	dv_t f, g, t, t0, t1;
+	dv_t f, g, t;
 	dig_t g_[2], f_[2], neg, l, g_hi, g_lo, f_hi, f_lo, mask, k = 0;
 	dis_t m[4];
 	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
@@ -363,10 +363,10 @@ int fp_smb_binar(const fp_t a) {
 		return 0;
 	}
 
-	dv_null_all(f, g, t, t0, t1);
+	dv_null_all(f, g, t);
 
 	RLC_TRY {
-		dv_new_all(f, g, t, t0, t1);
+		dv_new_all(f, g, t);
 
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
@@ -377,6 +377,8 @@ int fp_smb_binar(const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
+		/* Both stay nonnegative, with a zero sign digit for smb_apply(). */
+		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 
 		for (size_t len, i = 0; i < iterations / s; i++) {
 			f_hi = f[RLC_FP_DIGS - 1], f_lo = f[RLC_FP_DIGS - 2];
@@ -396,20 +398,13 @@ int fp_smb_binar(const fp_t a) {
 
 			k = porninstep(m, f_, g_, k, s);
 
-			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[1], RLC_FP_DIGS);
-			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-			neg = RLC_SIGN(t0[RLC_FP_DIGS]);
-			bn_rshb_low(t, t0, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_sneg_low(t, t, neg, RLC_FP_DIGS);
-
-			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[3], RLC_FP_DIGS);
-			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-			bn_rshb_low(f, t1, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_sneg_low(f, f, RLC_SIGN(t1[RLC_FP_DIGS]), RLC_FP_DIGS);
-
-			fp_copy(g, t);
+			/* (g, f) <- (m0 g + m1 f, m2 g + m3 f)/2^s, then their absolute
+			 * values. */
+			smb_apply(g, f, m, s);
+			neg = RLC_SIGN(g[RLC_FP_DIGS]);
+			bn_sneg_low(g, g, neg, RLC_FP_DIGS);
+			bn_sneg_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), RLC_FP_DIGS);
+			f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 			k += (f[0] >> 1) & neg;
 		}
 
@@ -418,7 +413,7 @@ int fp_smb_binar(const fp_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free_all(f, g, t, t0, t1);
+		dv_free_all(f, g, t);
 	}
 
 	return (k & 1 ? -1 : 1);
