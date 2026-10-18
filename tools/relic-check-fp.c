@@ -26,7 +26,8 @@
  *
  * Differential test of the low-level prime field functions against GMP, for
  * checking a new arithmetic backend. Every function of relic_fp_low.h that an
- * x64-asm-Nl backend exports is compared on random and edge-case inputs.
+ * x64-asm-Nl backend exports is compared on random and edge-case inputs, and
+ * so are the Fp2 functions when FP_QNRES is defined, as u^2 = -1 then.
  *
  * Build it against a static library of the backend, for example:
  *   cmake -B build -DARITH=x64-asm-12l -DFP_PRIME=768 -DBN_PRECI=2048 \
@@ -41,6 +42,7 @@
 
 #include "relic.h"
 #include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 
 #define N	RLC_FP_DIGS
 
@@ -79,6 +81,24 @@ static void checkd(const char *name, dig_t got, dig_t want) {
 		}
 		fails++;
 	}
+}
+
+/* Checks an unreduced result: congruent to want mod p and below pR. */
+static void checkc(const char *name, const dig_t *got, const mpz_t want,
+		const mpz_t pr) {
+	mpz_t g, w;
+	mpz_inits(g, w, NULL);
+	get(g, got, 2 * N);
+	mpz_mod(w, want, P);
+	mpz_mod(T, g, P);
+	if (mpz_cmp(T, w) != 0 || mpz_cmp(g, pr) >= 0) {
+		if (fails < 20) {
+			gmp_printf("FAIL %s\n  got  %Zx\n  want %Zx mod p, below pR\n",
+					name, g, w);
+		}
+		fails++;
+	}
+	mpz_clears(g, w, NULL);
 }
 
 /* Random element in [0, bound), or an edge case depending on k. */
@@ -181,6 +201,44 @@ int main(void) {
 		mpz_mul(T, x, x); mpz_mul(T, T, U); mpz_mod(T, T, P);
 		fp_sqrm_low(c, a); check("sqrm", c, T, N);
 
+#if defined(FP_QNRES)
+		/* Quadratic extension with u^2 = -1, whose functions the Fp2 assembly
+		 * of a backend replaces. FP_QNRES only fits primes 3 mod 4. */
+		if (mpz_fdiv_ui(P, 4) == 3) {
+			fp2_t a2, b2, c2;
+			dv2_t d2;
+			mpz_t x1, y1, re, im;
+
+			mpz_inits(x1, y1, re, im, NULL);
+			elem(x1, P, k / 3); elem(y1, P, k / 5);
+			put(a2[0], x, N); put(a2[1], x1, N);
+			put(b2[0], y, N); put(b2[1], y1, N);
+			/* (x + x1 u)(y + y1 u) = (x y - x1 y1) + (x y1 + x1 y) u. */
+			mpz_mul(re, x, y); mpz_submul(re, x1, y1);
+			mpz_mul(im, x, y1); mpz_addmul(im, x1, y);
+			fp2_muln_low(d2, a2, b2);
+			checkc("fp2_muln[0]", d2[0], re, PR);
+			checkc("fp2_muln[1]", d2[1], im, PR);
+			fp2_mulm_low(c2, a2, b2);
+			mpz_mul(T, re, U); mpz_mod(T, T, P);
+			check("fp2_mulm[0]", c2[0], T, N);
+			mpz_mul(T, im, U); mpz_mod(T, T, P);
+			check("fp2_mulm[1]", c2[1], T, N);
+			/* (x + x1 u)^2 = (x^2 - x1^2) + 2 x x1 u. */
+			mpz_mul(re, x, x); mpz_submul(re, x1, x1);
+			mpz_mul(im, x, x1); mpz_mul_2exp(im, im, 1);
+			fp2_sqrn_low(d2, a2);
+			checkc("fp2_sqrn[0]", d2[0], re, PR);
+			checkc("fp2_sqrn[1]", d2[1], im, PR);
+			fp2_sqrm_low(c2, a2);
+			mpz_mul(T, re, U); mpz_mod(T, T, P);
+			check("fp2_sqrm[0]", c2[0], T, N);
+			mpz_mul(T, im, U); mpz_mod(T, T, P);
+			check("fp2_sqrm[1]", c2[1], T, N);
+			mpz_clears(x1, y1, re, im, NULL);
+		}
+#endif
+
 		/* Operations on double-precision values below pR. */
 		elem(x, PR, k); elem(y, PR, k / 8);
 		put(a, x, 2 * N); put(b, y, 2 * N);
@@ -205,6 +263,11 @@ int main(void) {
 		mpz_fdiv_q_2exp(T, z, 1);
 		fp_hlvd_low(c, a); check("hlvd", c, T, 2 * N);
 	}
+#if defined(FP_QNRES)
+	if (mpz_fdiv_ui(P, 4) != 3) {
+		printf("FP_QNRES is set but p is not 3 mod 4: Fp2 not checked.\n");
+	}
+#endif
 	printf("FP_PRIME=%d N=%d: %d iterations, %d failures\n", FP_PRIME,
 			(int)N, iters, fails);
 	core_clean();
