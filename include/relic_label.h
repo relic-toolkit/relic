@@ -1741,6 +1741,7 @@
 #undef ep4_curve_get_cof
 #undef ep4_curve_set
 #undef ep4_curve_set_twist
+#undef ep4_curve_set_super
 #undef ep4_is_infty
 #undef ep4_set_infty
 #undef ep4_copy
@@ -1806,6 +1807,7 @@
 #define ep4_curve_get_cof 	RLC_PREFIX(ep4_curve_get_cof)
 #define ep4_curve_set 	RLC_PREFIX(ep4_curve_set)
 #define ep4_curve_set_twist 	RLC_PREFIX(ep4_curve_set_twist)
+#define ep4_curve_set_super 	RLC_PREFIX(ep4_curve_set_super)
 #define ep4_is_infty 	RLC_PREFIX(ep4_is_infty)
 #define ep4_set_infty 	RLC_PREFIX(ep4_set_infty)
 #define ep4_copy 	RLC_PREFIX(ep4_copy)
@@ -3361,6 +3363,7 @@
 #undef pp_dbl_lit_k18
 #undef pp_exp_k1
 #undef pp_exp_k2
+#undef pp_exp_k3
 #undef pp_exp_k8
 #undef pp_exp_k12
 #undef pp_exp_k16
@@ -3381,6 +3384,8 @@
 #undef pp_map_sim_tatep_k1
 #undef pp_map_tatep_k2
 #undef pp_map_sim_tatep_k2
+#undef pp_map_oatep_k3
+#undef pp_map_sim_oatep_k3
 #undef pp_map_weilp_k1
 #undef pp_map_sim_weilp_k1
 #undef pp_map_weilp_k2
@@ -3496,6 +3501,7 @@
 #define pp_dbl_lit_k18 	RLC_PREFIX(pp_dbl_lit_k18)
 #define pp_exp_k1 	RLC_PREFIX(pp_exp_k1)
 #define pp_exp_k2 	RLC_PREFIX(pp_exp_k2)
+#define pp_exp_k3 	RLC_PREFIX(pp_exp_k3)
 #define pp_exp_k8 	RLC_PREFIX(pp_exp_k8)
 #define pp_exp_k12 	RLC_PREFIX(pp_exp_k12)
 #define pp_exp_k16 	RLC_PREFIX(pp_exp_k16)
@@ -3516,6 +3522,8 @@
 #define pp_map_sim_tatep_k1 	RLC_PREFIX(pp_map_sim_tatep_k1)
 #define pp_map_tatep_k2 	RLC_PREFIX(pp_map_tatep_k2)
 #define pp_map_sim_tatep_k2 	RLC_PREFIX(pp_map_sim_tatep_k2)
+#define pp_map_oatep_k3 	RLC_PREFIX(pp_map_oatep_k3)
+#define pp_map_sim_oatep_k3 	RLC_PREFIX(pp_map_sim_oatep_k3)
 #define pp_map_weilp_k1 	RLC_PREFIX(pp_map_weilp_k1)
 #define pp_map_sim_weilp_k1 	RLC_PREFIX(pp_map_sim_weilp_k1)
 #define pp_map_weilp_k2 	RLC_PREFIX(pp_map_weilp_k2)

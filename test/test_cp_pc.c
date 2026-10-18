@@ -476,7 +476,7 @@ static int ibe(void) {
 	bn_t s;
 	g1_t pub;
 	g2_t prv;
-	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
+	uint8_t in[10], out[10 + RLC_G1_BYTES];
 	char *id = "Alice";
 	size_t il, ol;
 	int result;
@@ -495,7 +495,7 @@ static int ibe(void) {
 		TEST_CASE("boneh-franklin identity-based encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			il = 10;
-			ol = il + 2 * RLC_FP_BYTES + 1;
+			ol = il + RLC_G1_BYTES;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_ibe_gen_prv(prv, id, s) == RLC_OK, end);
 			TEST_ASSERT(cp_ibe_enc(out, &ol, in, il, id, pub) == RLC_OK, end);
@@ -1294,6 +1294,10 @@ static int lhs(void) {
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
 			int label[L], b = i % 2;
 
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+			/* ECDSA needs G_1 over a prime field, so use only BLS. */
+			b = 1;
+#endif
 			for (int j = 0; j < S; j++) {
 				cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], b);
 			}

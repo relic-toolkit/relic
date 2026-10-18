@@ -1,0 +1,2 @@
+#!/bin/sh
+cmake -DWSIZE=64 -DRAND=UDEV -DSHLIB=OFF -DSTBIN=ON -DTIMER=CYCLE -DCHECK=off -DVERBS=off -DARITH=x64-asm-5l -DFP_PRIME=318 -DFP_METHD="INTEG;INTEG;INTEG;MONTY;JMPDS;JMPDS;SLIDE" -DCFLAGS="-O3 -funroll-loops -fomit-frame-pointer -finline-small-functions -march=native -mtune=native" -DFPX_METHD="INTEG;INTEG;LAZYR" -DEP_METHD="JACOB;LWNAF;BASIC;SSWUM" -DPP_METHD="LAZYR;OATEP" $1

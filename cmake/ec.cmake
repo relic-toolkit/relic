@@ -1,7 +1,8 @@
 message(STATUS "Elliptic curve cryptography configuration (EC module):\n")
 
 message("   ** Options for the binary elliptic curve module (default = on):\n")
-message("      EC_ENDOM=[off|on] Prefer (prime or binary) curves with endomorphisms.\n")
+message("      EC_ENDOM=[off|on] Prefer (prime or binary) curves with endomorphisms.")
+message("      EC_SUPER=[off|on] Prefer supersingular curves, also for pairings.\n")
 
 message("   ** Available elliptic curve methods (default = PRIME):\n")
 message("      EC_METHD=PRIME    Use prime curves.")
@@ -9,6 +10,11 @@ message("      EC_METHD=CHAR2    Use binary curves.")
 message("      EC_METHD=EDDIE    Use prime Edwards curves.\n")
 
 option(EC_ENDOM "Prefer (prime or binary) curves with endomorphisms" off)
+option(EC_SUPER "Prefer supersingular curves, also for pairings" off)
+# Only at 381 bits is there an ordinary and a supersingular curve to choose.
+if (EC_SUPER AND NOT FP_PRIME EQUAL 381)
+	message(FATAL_ERROR "EC_SUPER chooses between curves at FP_PRIME = 381 only.")
+endif(EC_SUPER AND NOT FP_PRIME EQUAL 381)
 
 # Choose the arithmetic methods.
 if (NOT EC_METHD)

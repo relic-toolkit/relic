@@ -413,6 +413,13 @@
 			for (int i = 0; i < (int)(sizeof(F##_t) / sizeof(fp_t)); i++) {	\
 				fp_mul(((fp_t *)z1)[i], ((fp_t *)z1)[i], ctx->ep_map_c[4]);	\
 			}																\
+			if (fp_prime_get_mod18() % 3 == 2) {							\
+				/* The constant is sqrt(3), so multiply by u in Fp^2. */	\
+				for (int i = 0; i < (int)(sizeof(F##_t) / sizeof(fp_t)) / 2;\
+						i++) {												\
+					fp2_mul_art(((fp2_t *)z1)[i], ((fp2_t *)z1)[i]);		\
+				}															\
+			}																\
 			F##_mul(x1, x1, z1);											\
 			F##_mul(z1, z1, t);												\
 			F##_dbl(z1, z1);												\

@@ -143,12 +143,8 @@ void fp4_frb(fp4_t c, const fp4_t a, int i) {
 	for (; i % 4 > 0; i--) {
 		fp2_frb(c[0], c[0], 1);
 		fp2_frb(c[1], c[1], 1);
-		if (fp_prime_get_mod18() % 3 == 1) {
-			fp2_mul_frb(c[1], c[1], 1, 3);
-		} else {
-			fp2_mul_frb(c[1], c[1], 2, 1);
-			fp2_mul_frb(c[1], c[1], 2, 1);
-		}
+		/* The coefficient of v gets v^(p - 1) = QNR^((p - 1) / 2). */
+		fp2_mul_frb(c[1], c[1], 1, 3);
 	}
 }
 

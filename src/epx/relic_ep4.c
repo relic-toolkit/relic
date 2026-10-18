@@ -49,12 +49,14 @@ TMPL_EP_BIN(ep4, fp4);
 
 void ep4_frb(ep4_t r, const ep4_t p, int i) {
 	ctx_t *ctx = core_get();
+	/* Without a twist, the endomorphism [p] is built from the p^2-power. */
+	int e = (ctx->ep4_is_twist ? 1 : 2);
 
 	ep4_copy(r, p);
 	for (; i > 0; i--) {
-		fp4_frb(r->x, r->x, 1);
-		fp4_frb(r->y, r->y, 1);
-		fp4_frb(r->z, r->z, 1);
+		fp4_frb(r->x, r->x, e);
+		fp4_frb(r->y, r->y, e);
+		fp4_frb(r->z, r->z, e);
 		fp4_mul(r->x, r->x, ctx->ep4_frb[0]);
 		fp4_mul(r->y, r->y, ctx->ep4_frb[1]);
 	}

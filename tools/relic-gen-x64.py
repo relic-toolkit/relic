@@ -14,6 +14,9 @@ import datetime
 import os
 import sys
 
+# The SS3 primes also have u^2 = -1 in Fp^2, as FP_QNRES ensures for others.
+SS3 = {5: "FP_PRIME == 318", 6: "(FP_PRIME == 381 && defined(EC_SUPER))"}
+
 # Primes per limb count: (FP_PRIME, hex of p, comment or None), with an
 # optional condition that selects among primes of the same FP_PRIME.
 PRIMES = {
@@ -28,6 +31,8 @@ PRIMES = {
 			"2BDE5026FE802FF40300001"), None),
 		(317, ("1058CA226F60892CF28FC5A0B7F9D039169A61E684C73446D6F339E4"
 			"3424BF7E8D512E565DAB2AAB"), None),
+		(318, ("3C9D4B197042868EE79844EFF67BCD12762BCF6C704AABA75F321791"
+			"1EB1657BFFFFFFFFFFFFFFFF"), "M318b, the SS3 prime"),
 	],
 	6: [
 		(330, ("24C0832E1406555615B5BF00BAF1EE31FECF12A1C4947A0784F27BBE"
@@ -36,6 +41,9 @@ PRIMES = {
 			"E5DA80FED8491B9470948C8C6AAAB1D"), None),
 		(377, ("1AE3A4617C510EAC63B05C06CA1493B1A22D9F300F5138F1EF3622FB"
 			"A094800170B5D44300000008508C00000000001"), None),
+		(381, ("10D3D10D00EE5D72BD99C96E04729F8F08A88098F51FEBEFAE328A41"
+			"F46782B7000000000080000000000000FFFFFFFF"), "SS3_381",
+			"defined(EC_SUPER)"),
 		(381, ("1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0"
 			"F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAAAB"), None),
 		(382, ("24009015183F94892D996CC179C6D1666F82CEFBE47879BBA6E58DBE"
@@ -378,6 +386,10 @@ def prime_block(n):
 		b.append("#define U0\t0x%016X" % u0)
 		b.append("#define BAR\t0x%016X" % bar)
 		b.append("#define BARS\t%d" % bars)
+		# Montgomery-friendly primes: p = -1 mod 2^64 gives u0 = 1 and an
+		# all-ones low word, which save two multiplications per step.
+		if u0 == 1:
+			b.append("#define U0_ONE")
 		if e[0] in QNRS:
 			b.append("#define QNR\t%d" % QNRS[e[0]])
 		if str(e[0]) not in bits:
@@ -908,6 +920,11 @@ class Backend:
 			z = ACC6[:8] + ["%rax", "%rbx", "%rbp", "%rcx", "%rdi"]
 			t0, t1 = "%rsi", None
 		self.z, self.t0, self.t1 = z, t0, t1
+		# Primes with p = -1 mod 2^64 among those of this limb count, which
+		# get specialized Montgomery steps below 8 digits. Other shapes, such
+		# as u0 = 2^32 + 1, do not pay off against mulx.
+		u0s = [consts(int(e[1], 16))[1] for e in PRIMES.get(n, [])]
+		self.u0one = not self.onet and 1 in u0s
 		# Registers free at the end of a product, besides the accumulator.
 		self.fixed = [x for x in ("%rax", "%rdx", "%rsi", "%rcx")
 			if x not in z + [t0, t1]]
@@ -1003,6 +1020,20 @@ class Backend:
 			b.append("\tadcx\t%%rax, %s" % z[n])
 		return macro("MULADD", names(n + 1) + ["T0", "T1", "M"], b)
 
+	def muladdp(self):
+		"""MULADD of rdx = Z0 times p for p = -1 mod 2^64: Z0 + Z0 x p0 is
+		Z0 x 2^64, so the first limb adds rdx to Z1 and leaves Z0, whose
+		register the caller clears or discards, instead of a multiplication.
+		Needs the flags clear and %rax = 0, as MULADD."""
+		n = self.n
+		z = refs(names(n + 1))
+		b = ["\tadox\t%rdx, \\Z1"]
+		for k in range(1, n):
+			b += ["\tmulx\t%d+\\M, \\T1, \\T0" % (8 * k),
+				"\tadcx\t\\T1, %s" % z[k], "\tadox\t\\T0, %s" % z[k + 1]]
+		b.append("\tadcx\t%%rax, %s" % z[n])
+		return macro("MULADDP", names(n + 1) + ["T0", "T1", "M"], b)
+
 	def mulsub(self):
 		"""[Z0:Zn] -= rdx x m for m = 0+M."""
 		n = self.n
@@ -1051,6 +1082,11 @@ class Backend:
 		b = ["\tmovq\t$U0, %rdx", "\timulq\t\\Z0, %rdx", "\txorq\t\\T0, \\T0",
 			"\tmulx\t0+\\P, \\T0, \\T1", "\tadox\t\\T0, \\Z0",
 			"\tadox\t\\T1, \\Z1"]
+		if self.u0one:
+			# Z0 + Z0 x p0 = Z0 x 2^64: add the digit to Z1 and clear Z0.
+			b = ["#if defined(U0_ONE)", "\tmovq\t\\Z0, %rdx",
+				"\txorq\t\\Z0, \\Z0", "\tadox\t%rdx, \\Z1", "#else"] + b + [
+				"#endif"]
 		for k in range(1, n):
 			b += ["\tmulx\t%d+\\P, \\T0, \\T1" % (8 * k),
 				"\tadcx\t\\T0, %s" % z[k]]
@@ -1306,8 +1342,13 @@ class Backend:
 				b += self.full_only(["\tmovq\t%s, \\K" % w[0]])
 			b.append(".endif")
 		else:
-			b += ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
-				"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P"), ".endif"]
+			q = ["\tmovq\t$U0, %rdx", "\tmulx\t%s, %%rdx, \\T1" % w[0],
+				"\tMULADD\t%s" % args(w, "\\T0", "\\T1", "\\P")]
+			if self.u0one:
+				q = ["#if defined(U0_ONE)", "\tmovq\t%s, %%rdx" % w[0],
+					"\tMULADDP\t%s" % args(w, "\\T0", "\\T1", "\\P"),
+					"#else"] + q + ["#endif"]
+			b += q + [".endif"]
 
 	def muladd1(self):
 		"""[Z0:Zn-1, X] <- [Z0:Zn-1] + rdx x m for m = 0+M, with X the new top
@@ -1621,7 +1662,8 @@ class Backend:
 			return [self.mulm(), self.muladd1(), self.mulrdc1(), self.finalc(),
 				self.rdcstep1(), self.rdcn(), self.addh(), self.fp_rdcn_low(),
 				self.sqrn_mem(), self.fp_sqr_low_mem(), self.fp_mul_low()]
-		parts = [self.mulm(), self.muladd(), self.mulsub(), self.finalc(),
+		parts = [self.mulm(), self.muladd()] + ([self.muladdp()] if
+			self.u0one else []) + [self.mulsub(), self.finalc(),
 			self.rdcstep(), self.rdcn(), self.addh(), self.fp_rdcn_low()]
 		if self.onet:
 			parts[2:2] = [self.muladd1(), self.mulrdc1()]
@@ -1910,7 +1952,8 @@ def write(n, out):
 	guard = "#if %s\n#define %s\n#endif\n"
 	guards = [guard % ("P%d < 0x4000000000000000" % (n - 1), "FP2_MUL_RDC"),
 		guard % ("P%d < 0x5555555555555555" % (n - 1), "FP2_SQR_RDC"),
-		guard % ("defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
+		guard % (("(defined(FP_QNRES) || %s)" % SS3[n] if n in SS3 else
+			"defined(FP_QNRES)") + " && RLC_ALLOC == RLC_AUTO", "FP2_ASM")]
 	if g.qnr:
 		guards[0:0] = [guard % ("!defined(FP_QNRES) && defined(QNR)",
 			"FP2_QNR\tQNR")]

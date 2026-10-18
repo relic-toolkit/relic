@@ -572,6 +572,17 @@
 #endif
 
 /**
+ * Computes a pairing of two points on a supersingular curve over Fp^4 of
+ * embedding degree 3. Computes e(P, Q). Only the optimal eta_d pairing is
+ * available, so it is used for every choice of pairing.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#define pp_map_k3(R, P, Q)		pp_map_oatep_k3(R, P, Q)
+
+/**
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
  * curve of embedding degree 8. Computes e(P, Q).
  *
@@ -664,6 +675,17 @@
 #elif PP_MAP == PP_TATEP || PP_MAP == PP_OATEP
 #define pp_map_sim_k2(R, P, Q, M)	pp_map_sim_tatep_k2(R, P, Q, M)
 #endif
+
+/**
+ * Computes a multi-pairing of points on a supersingular curve over Fp^4 of
+ * embedding degree 3. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#define pp_map_sim_k3(R, P, Q, M)	pp_map_sim_oatep_k3(R, P, Q, M)
 
 /**
  * Computes a multi-pairing of elliptic curve points defined on an elliptic
@@ -1631,6 +1653,16 @@ void pp_exp_k1(fp_t c, fp_t a);
 void pp_exp_k2(fp2_t c, fp2_t a);
 
 /**
+ * Computes the final exponentiation for a pairing defined over a
+ * supersingular curve over Fp^4 of embedding degree 3. Computes
+ * c = a^((p^12 - 1)/r).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+void pp_exp_k3(fp12_t c, fp12_t a);
+
+/**
  * Computes the final exponentiation for a pairing defined over curves of
  * embedding degree 8. Computes c = a^(p^8 - 1)/r.
  *
@@ -1815,6 +1847,27 @@ void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
+ * Computes the optimal eta_d pairing of two points on a supersingular curve
+ * over Fp^4 of embedding degree 3. Computes e(P, Q).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ */
+void pp_map_oatep_k3(fp12_t r, const ep4_t p, const ep4_t q);
+
+/**
+ * Computes the optimal eta_d multi-pairing of points on a supersingular curve
+ * over Fp^4 of embedding degree 3. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments.
+ * @param[in] q				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m);
 
 /**
  * Computes the Weil pairing of two points in a parameterized elliptic curve

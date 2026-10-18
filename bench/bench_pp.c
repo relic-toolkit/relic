@@ -165,6 +165,50 @@ static void pairing1(void) {
 	}
 }
 
+static void pairing3(void) {
+	ep4_t p[2], q[2];
+	fp12_t e;
+	int j;
+
+	fp12_null(e);
+	fp12_new(e);
+
+	for (j = 0; j < 2; j++) {
+		ep4_null(p[j]);
+		ep4_null(q[j]);
+		ep4_new(p[j]);
+		ep4_new(q[j]);
+	}
+
+	BENCH_RUN("pp_exp_k3") {
+		fp12_rand(e);
+		BENCH_ADD(pp_exp_k3(e, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_k3") {
+		ep4_rand(p[0]);
+		ep4_rand(q[0]);
+		BENCH_ADD(pp_map_k3(e, p[0], q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_k3 (2)") {
+		ep4_rand(p[0]);
+		ep4_rand(q[0]);
+		ep4_rand(p[1]);
+		ep4_rand(q[1]);
+		BENCH_ADD(pp_map_sim_k3(e, p, q, 2));
+	}
+	BENCH_END;
+
+	fp12_free(e);
+	for (j = 0; j < 2; j++) {
+		ep4_free(p[j]);
+		ep4_free(q[j]);
+	}
+}
+
 static void pairing2(void) {
 	bn_t k, n, l;
 	ep_t p[2], q[2];
@@ -1598,7 +1642,11 @@ int main(void) {
 		pairing8();
 	}
 
-	if (ep_curve_embed() == 12) {
+	if (ep_curve_is_pairf() == EP_SS3) {
+		pairing3();
+	}
+
+	if (ep_curve_embed() == 12 && ep_curve_is_pairf() != EP_SS3) {
 		pairing12();
 	}
 

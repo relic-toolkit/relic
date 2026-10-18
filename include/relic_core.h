@@ -384,6 +384,11 @@ typedef struct _ctx_t {
 	bn_st ep4_h;
 	/** The constants needed for Frobenius. */
 	fp4_t ep4_frb[2];
+	/** The constants of the pairing on a supersingular curve, in order:
+	 * B^-((p+1)/3), B^-((p-1)/2), B^((p^2-1)/3), B^((p-2)/3)^(p^3),
+	 * B^((2p-1)/3)^(p^3), 1/N3 and -1/N2, where B is the b-coefficient and
+	 * N3, N2 are the norms to Fp^2 of B^((p^2-1)/3), B^((p^2-1)/2). */
+	fp4_t ep4_ss3[7];
 	/** Optimization identifier for the a-coefficient. */
 	int ep4_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -473,6 +478,7 @@ typedef struct _ctx_t {
 	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp_st fp2_p0[2];
+	fp2_st fp2_pz[2];
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[4];
 	int frb3[3];

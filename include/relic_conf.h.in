@@ -517,6 +517,8 @@
 #define EC_METHD "@EC_METHD@"
 /** Prefer curves with efficient endomorphisms. */
 #cmakedefine EC_ENDOM
+/** Prefer supersingular curves, also for pairings. */
+#cmakedefine EC_SUPER
 
 /** Basic quadratic extension field arithmetic. */
 #define PP_BASIC    1

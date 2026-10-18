@@ -707,6 +707,180 @@ static int doubling2(void) {
 	return code;
 }
 
+/**
+ * Pairing of the generator with itself on the SS3 curves, from the reference
+ * implementation, in the order of the coefficients of an element of Fp^12.
+ */
+#if FP_PRIME == 318
+static const char *SS3_GT[12] = {
+	"B27421BFD02F726B50FB9D495F68816FE69078946A2B589A5A24DD3EFB039F0E7F89ACEA32040CB",
+	"24E566F89AD9DDB4364478E937BDFC32D31A17612B8E79EB176080DFAD87C2CCB06A6BACA5BD4AE8",
+	"E998D5F354A19B1A3096FEB820FA96187192F764F4A457BC7E75C14B30676A881662FDD9DD498BB",
+	"58AAFFAAE92BC4F26835513E17D9F8CE5D1778B523918047D0B08B2833EB2D5B21897695E565D4E",
+	"27EC18DE5D1846CF4FE14CD32F0129D2E54A0413096121323E720F3CAC4F1FF4BFB19168FE83C3F5",
+	"12D45714ECF88D1382DFD9C8D84172B2FAC24E1FEAC9A95FDB7B7CA23A362FD6B725653CADA1B408",
+	"1A7D166A063D3C48558685EF7313C650317814209A519BC266FA96C5121446845D605A92DF55EB19",
+	"A3E6040A6EF6A75EB545131994178E41B3BE73EB3B2F50F7ABFAB56EF2727F578BD71B8FCB3A37D",
+	"1F185322674C26E7E3E058052F4B99F95093D8D4F774E30114797EB9D5081ADF1E1BC010A2FC0B03",
+	"26F49D5C722CB755A7BBB309E1F99315F91F29D609CA9372748B33ADB498E9E07D34B24884195302",
+	"19227821FD385D045972CB134AC7CB774706757DC36BE3913585BB20845DEB65A7218C86B42F32CC",
+	"39F32ED89A873FF01CDD268BDC96143522DC6ECD5DDD50961F7906EFD763385C7E9448B6D56FE677"
+};
+#elif FP_PRIME == 381 && defined(EC_SUPER)
+static const char *SS3_GT[12] = {
+	"659552A2ED503F5457303CB129E294D3EE2026942CEE9787C3BAE8F77FC42A37729ACAAC464BFB935CEA081C91B84F5",
+	"AFF785268E052970EE80A855F84A96B61DE6745A161707769CC5011730A9D85D1284AC917E931C9A82B244F4D6A7B13",
+	"1095D13BBE3CBC21F50F419F5B160D1B0A85924767F122B263E4B5C82CA07FFC06DF8740B3C164F50C090F26EAD2F4FA",
+	"A446C161CAD3B249023DE231A5A13B225DF8EFB249F5C076A20A5798365C34B91E0F955C32FAE95D651C530EC81BC50",
+	"3346B17BE32FF0FD723323363D5D09085AC81BDEA69D494F0CBA8796739C75C1FE35DDE7284185FCB3B2E2D91AAB5F7",
+	"80D29174F4442FE8795A1F7798B3AB0A10B321B6AFB79456F2AC2743C77FDDFF4273881C4D30DE8E668A2A58C101628",
+	"6717C15B95AFDA70E8CF1800B12FB64D328C9F603CA9EA79ED52EB6DB7B571CAB4CCF9D231605D2B157D041E84236F6",
+	"D90DE1F6F3D0D10A403ECE9AD5760B895168696B137305C7D864D09F4AE1F4F3901F60AA6F53D758A21522CEF6B869F",
+	"7F0DC1376B876EC9E3FAD259BF308F2BBDC51177847AE4C2CC274512C78CC7BD66CA22D1D8B518D2458549113754598",
+	"49EB8B80EB85DF24AC80127AF39DD808ACCC217CB1A78CE29ADD6307BB28E516DA0B49B75B9540191DC5E4FEC529018",
+	"DA705CCFE7EFF5AAF4398D6EBC0A0BD21A9F4908ED8341AF30F51E393006CBF31D3CD4605938678C2C558147C316220",
+	"384521B85AAF22CE9EC86B7A3D959B51EA2FFE1EC0CF768C162DCFDF8CD9DF83838D154C34F37AC69B1AD462687DCC6"
+};
+#endif
+
+static int pairing3(void) {
+	int j, code = RLC_ERR;
+	bn_t k, n;
+	ep4_t p[2], q[2], r;
+	fp12_t e1, e2;
+
+	bn_null(k);
+	bn_null(n);
+	ep4_null(r);
+	fp12_null(e1);
+	fp12_null(e2);
+	for (j = 0; j < 2; j++) {
+		ep4_null(p[j]);
+		ep4_null(q[j]);
+	}
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		ep4_new(r);
+		fp12_new(e1);
+		fp12_new(e2);
+		for (j = 0; j < 2; j++) {
+			ep4_new(p[j]);
+			ep4_new(q[j]);
+		}
+
+		ep4_curve_get_ord(n);
+
+		TEST_CASE("final exponentiation is correct") {
+			fp12_rand(e1);
+			pp_exp_k3(e1, e1);
+			/* The result is a non-trivial r-th root of unity. */
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != RLC_EQ, end);
+			fp12_exp(e2, e1, n);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == RLC_EQ, end);
+		} TEST_END;
+
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+		TEST_CASE("pairing matches the reference value") {
+			ep4_curve_get_gen(p[0]);
+			pp_map_k3(e1, p[0], p[0]);
+			for (j = 0; j < 12; j++) {
+				fp_read_str(e2[j / 6][(j / 2) % 3][j % 2], SS3_GT[j],
+						strlen(SS3_GT[j]), 16);
+			}
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("pairing non-degeneracy is correct") {
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep4_set_infty(p[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
+			ep4_rand(p[0]);
+			ep4_set_infty(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("pairing is bilinear") {
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			bn_rand_mod(k, n);
+			ep4_mul(r, q[0], k);
+			pp_map_k3(e1, p[0], r);
+			pp_map_k3(e2, p[0], q[0]);
+			fp12_exp(e2, e2, k);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_mul(p[0], p[0], k);
+			pp_map_k3(e2, p[0], q[0]);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_dbl(p[0], p[0]);
+			pp_map_k3(e2, p[0], q[0]);
+			fp12_sqr(e1, e1);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_dbl(q[0], q[0]);
+			pp_map_k3(e2, p[0], q[0]);
+			fp12_sqr(e1, e1);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("pairing is symmetric") {
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			pp_map_k3(e2, q[0], p[0]);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing is correct") {
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			ep4_rand(p[1]);
+			ep4_set_infty(q[1]);
+			pp_map_sim_k3(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_set_infty(p[1]);
+			ep4_rand(q[1]);
+			pp_map_sim_k3(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep4_set_infty(q[0]);
+			pp_map_sim_k3(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep4_rand(p[0]);
+			ep4_rand(q[0]);
+			pp_map_k3(e1, p[0], q[0]);
+			ep4_rand(p[1]);
+			ep4_rand(q[1]);
+			pp_map_k3(e2, p[1], q[1]);
+			fp12_mul(e1, e1, e2);
+			pp_map_sim_k3(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k);
+	ep4_free(r);
+	fp12_free(e1);
+	fp12_free(e2);
+	for (j = 0; j < 2; j++) {
+		ep4_free(p[j]);
+		ep4_free(q[j]);
+	}
+	return code;
+}
+
 static int pairing2(void) {
 	int j, code = RLC_ERR;
 	bn_t k, n;
@@ -4525,7 +4699,14 @@ int main(void) {
 		}
 	}
 
-	if (ep_curve_embed() == 12) {
+	if (ep_curve_is_pairf() == EP_SS3) {
+		if (pairing3() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
+	if (ep_curve_embed() == 12 && ep_curve_is_pairf() != EP_SS3) {
 		if (doubling12() != RLC_OK) {
 			core_clean();
 			return 1;
