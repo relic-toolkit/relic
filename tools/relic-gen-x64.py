@@ -429,61 +429,126 @@ def write_files(g, out, files):
 		open(path, "w").write(head + "\n" + "\n".join(fn(g)) + "\n")
 
 
-def stack_mul1(n):
-	"""fp_mul1_low(c, a, digit < 2^63): c = a * digit mod p, in constant time,
-	with d = a * digit on the stack, for fields too large for registers."""
-	o = []
-	t = 8 * (n + 1)
-	for i in range(n):
-		hi = "%r8" if i % 2 == 0 else "%r9"
-		o.append("\tmulxq\t%d(%%rsi), %%rax, %s" % (8 * i, hi))
-		if i > 0:
-			o.append("\t%s\t%s, %%rax" % ("addq" if i == 1 else "adcq",
-				"%r8" if i % 2 == 1 else "%r9"))
-		o.append("\tmovq\t%%rax, %d(%%rsp)" % (8 * i))
-	last = "%r8" if (n - 1) % 2 == 0 else "%r9"
-	o.append("\tadcq\t$0, %s" % last)
-	o.append("\tmovq\t%s, %d(%%rsp)" % (last, 8 * n))
-	# q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
-	# floor(d / p). Then subtract the low halves of q * p, keeping the high
-	# halves in t, subtract the high halves, leaving d - q * p below 3p, and
-	# subtract p twice, keeping the difference when there is no borrow.
-	o += ["", "\tmovq\t(8 * BARJ)(%rsp), %rax",
-		"\tmovq\t(8 * BARJ + 8)(%rsp), %rdx", "\tshrdq\t$BARS, %rdx, %rax",
-		"\tmovq\t$BAR, %rdx", "\tmulxq\t%rax, %rax, %rdx", ""]
-	for i in range(n):
-		o.append("\tmovq\t$P%d, %%rax" % i)
-		o.append("\tmulxq\t%rax, %rax, %rcx")
-		o.append("\t%s\t%%rax, "
-			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * i))
-		o.append("\tmovq\t%%rcx, %d(%%rsp)" % (t + 8 * i))
-	o.append("\tsbbq\t$0, %d(%%rsp)" % (8 * n))
-	o.append("")
-	for i in range(n):
-		o.append("\tmovq\t%d(%%rsp), %%rax" % (t + 8 * i))
-		o.append("\t%s\t%%rax, "
-			"%d(%%rsp)" % ("subq" if i == 0 else "sbbq", 8 * (i + 1)))
+def mul1(n):
+	"""fp_mul1_low(c, a, digit < 2^63): c = a * digit mod p, in constant time.
+	q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
+	floor(d / p) for d = a * digit, so d - q * p < 3p, and p is subtracted
+	twice, keeping the difference when there is no borrow. The n + 1 words of
+	d stay in registers while they fit beside a temporary, with the lowest
+	ones on the stack otherwise. q * p is built on the OF chain and added
+	complemented on the CF chain, since sbb would clobber OF. The final
+	subtractions keep copies in the free registers and back the other words
+	up in c, as in FINALC. The quotient reads words n - 1 and n of d. When
+	3p < 2^(64n) for every prime, d - q * p is computed modulo 2^(64n), and
+	the top word is only needed for q."""
+	for e in PRIMES[n]:
+		assert (int(e[1], 16).bit_length() - 1) // 64 == n - 1
+	mod = all(3 * int(e[1], 16) < 1 << (64 * n) for e in PRIMES[n])
+	top = n if mod else n + 1
+	regs = ["%r8", "%r9", "%r10", "%r11", "%rcx", "%rdi", "%r12", "%r13",
+		"%r14", "%r15", "%rbx", "%rbp"]
+	s = max(0, n + 2 - len(regs))
+	d = [None] * s + regs[:n + 1 - s]
+	t2 = regs[n + 1 - s]
+	slot = lambda k: "%d(%%rsp)" % (8 + 8 * k)
+	o = ["\tmovq\t%rdi, 0(%rsp)"]
+	# d = a * digit, with the high halves alternating in %rax and t2. The low
+	# word of a spilled product goes through the register of the top word.
+	hi = ["%rax", t2]
+	for k in range(n):
+		lo = d[k] or d[n]
+		h = d[n] if k == n - 1 else hi[k % 2]
+		o.append("\tmulxq\t%d(%%rsi), %s, %s" % (8 * k, lo, h))
+		if k > 0:
+			o.append("\t%s\t%s, %s" % ("addq" if k == 1 else "adcq",
+				hi[(k - 1) % 2], lo))
+		if d[k] is None:
+			o.append("\tmovq\t%s, %s" % (lo, slot(k)))
+	o += ["\tadcq\t$0, %s" % d[n], "", "\tmovq\t%s, %%rax" % d[n - 1],
+		"\tshrdq\t$BARS, %s, %%rax" % d[n], "\tmovq\t$BAR, %rdx",
+		"\tmulxq\t%rax, %rax, %rdx", ""]
+	# Subtract q * p. When the high halves fit in the free registers, the low
+	# halves and then the high halves go in two borrow chains. Otherwise
+	# d += ~(q * p) + 1, with the words of q * p on OF and the sum on CF,
+	# so that no high half is kept.
+	hs = [t2, "%rsi"] + regs[n + 2 - s:]
+	if len(hs) >= top - 1:
+		for k in range(n):
+			hk = hs[k] if k < top - 1 else "%rdx"
+			o += ["\tmulxq\tp%d(%%rip), %%rax, %s" % (k, hk),
+				"\t%s\t%%rax, %s" % ("subq" if k == 0 else "sbbq", d[k])]
+		if not mod:
+			o.append("\tsbbq\t$0, %s" % d[n])
+		o.append("")
+		o += ["\t%s\t%s, %s" % ("subq" if k == 0 else "sbbq", hs[k], d[k + 1])
+			for k in range(top - 1)]
+	else:
+		h = [t2, "%rsi"]
+		o += ["\txorq\t%rax, %rax", "\tstc"]
+		for k in range(top):
+			if k < n:
+				o.append("\tmulxq\tp%d(%%rip), %%rax, %s" % (k, h[k % 2]))
+				if k > 0:
+					o.append("\tadox\t%s, %%rax" % h[(k - 1) % 2])
+				w = "%rax"
+			else:
+				w = h[(n - 1) % 2]
+				o += ["\tmovq\t$0, %rax", "\tadox\t%%rax, %s" % w]
+			o.append("\tnotq\t%s" % w)
+			if d[k] is None:
+				o += ["\tadcx\t%s, %s" % (slot(k), w),
+					"\tmovq\t%s, %s" % (w, slot(k))]
+			else:
+				o.append("\tadcx\t%s, %s" % (w, d[k]))
+	# Two conditional subtractions of p, with copies for the spilled words,
+	# the top word and then the highest words, and the rest backed up in c.
+	free = ["%rax", "%rdx", "%rsi", t2] + regs[n + 2 - s:]
+	if mod:
+		free.append(d[n])
+	need = [k for k in range(top) if d[k] is None] + [k for k in
+		range(top - 1, s - 1, -1)]
+	cp = None
+	if len(free) < top:
+		cp = free.pop()
+	copy = {}
+	for k in need:
+		if k not in copy and free:
+			copy[k] = free.pop(0)
+	if cp:
+		o.append("\tmovq\t0(%%rsp), %s" % cp)
 	o += ["", "\t.rept 2"]
-	for i in range(n):
-		o.append("\tmovq\t%d(%%rsp), %%rax" % (8 * i))
-		o.append("\tmovq\t$P%d, %%rdx" % i)
-		o.append("\t%s\t%%rdx, %%rax" % ("subq" if i == 0 else "sbbq"))
-		o.append("\tmovq\t%%rax, %d(%%rsp)" % (t + 8 * i))
-	o += ["\tmovq\t%d(%%rsp), %%rax" % (8 * n), "\tsbbq\t$0, %rax",
-		"\tmovq\t%%rax, "
-			"%d(%%rsp)" % (t + 8 * n), "\tsbbq\t%rbx, %rbx", "\tnotq\t%rbx"]
-	for i in range(n + 1):
-		o += ["\tmovq\t%d(%%rsp), "
-			"%%rax" % (8 * i), "\tmovq\t%d(%%rsp), %%rdx" % (t + 8 * i),
-			"\txorq\t%rax, %rdx", "\tandq\t%rbx, %rdx", "\txorq\t%rdx, %rax",
-			"\tmovq\t%%rax, %d(%%rsp)" % (8 * i)]
-	o += ["\t.endr", ""]
-	for i in range(n):
-		o += ["\tmovq\t%d(%%rsp), "
-			"%%rax" % (8 * i), "\tmovq\t%%rax, %d(%%rdi)" % (8 * i)]
-	return function("fp_mul1_low", ["%rbx"], o, frame=16 * (n + 1))
+	for k in range(top):
+		op = "subq" if k == 0 else "sbbq"
+		src = "$0" if k == n else "p%d(%%rip)" % k
+		if k in copy:
+			o.append("\tmovq\t%s, %s" % (d[k] or slot(k), copy[k]))
+			o.append("\t%s\t%s, %s" % (op, src, copy[k]))
+		else:
+			o.append("\tmovq\t%s, %d(%s)" % (d[k], 8 * k, cp))
+			o.append("\t%s\t%s, %s" % (op, src, d[k]))
+	for k in range(top):
+		if k in copy and d[k] is None:
+			o += ["\tcmovc\t%s, %s" % (slot(k), copy[k]),
+				"\tmovq\t%s, %s" % (copy[k], slot(k))]
+		elif k in copy:
+			o.append("\tcmovnc\t%s, %s" % (copy[k], d[k]))
+		else:
+			o.append("\tcmovc\t%d(%s), %s" % (8 * k, cp, d[k]))
+	o.append("\t.endr")
+	if not cp:
+		cp = copy.pop(top - 1)
+		o.append("\tmovq\t0(%%rsp), %s" % cp)
+	o.append("")
+	for k in range(n):
+		if d[k] is None:
+			o += ["\tmovq\t%s, %%rax" % slot(k),
+				"\tmovq\t%%rax, %d(%s)" % (8 * k, cp)]
+		else:
+			o.append("\tmovq\t%s, %d(%s)" % (d[k], 8 * k, cp))
+	used = set(x for x in CALLEE if any(x in line for line in o))
+	return function("fp_mul1_low", used, o, frame=8 + 8 * s)
 
-# ------------------------------------------------------------------ other files
+
 ACC = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rax",
 	"%rbx", "%rbp", "%rcx"]
 
@@ -1090,7 +1155,7 @@ def large_mul_low(g):
 	n = g.n
 	o = file_head(g) + [".global cdecl(fp_mul1_low)",
 		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
-	o += stack_mul1(n) + [""]
+	o += mul1(n) + [""]
 	regs = ", ".join(REGS[:n + 1] + ["%rax"])
 	for name, rdc in (("muln", 0), ("mulm", 1)):
 		o += function("fp_%s_low" % name, CALLEE, ["\tmovq\t%rdi, CPTR",
@@ -1185,9 +1250,6 @@ class Small(Field):
 		self.sqrdi = 2 * n + 4 <= 15
 		# fp_sqrm_low as an interleaved product of a by itself.
 		self.sqrmul = n == 4
-		# fp_mul1_low keeps a x digit in registers up to 6 digits, modulo
-		# 2^(64n) at 7, which the primes allow, and on the stack beyond.
-		self.mul1 = "reg" if n <= 6 else "mod" if n == 7 else "stack"
 		# From 8 digits, %rax is a temporary and MULADD takes its final carry
 		# from T1; from 10, MULM uses an adc chain instead of a zero register.
 		self.zt1 = n >= 8
@@ -1801,54 +1863,6 @@ class Small(Field):
 		return parts
 
 
-def small_mul1(g):
-	"""fp_mul1_low(c, a, digit < 2^63): c = a * digit mod p, in constant time.
-	d = a * digit and q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64), which
-	is at most 2 below floor(d / p). Subtracting the low halves of q * p and
-	then the high halves leaves d - q * p below 3p, and p is subtracted twice,
-	keeping the difference when there is no borrow. With mul1 = "mod", the
-	difference is computed modulo 2^(64n), since 3p < 2^(64n)."""
-	n = g.n
-	if g.mul1 == "stack":
-		return stack_mul1(n)
-	mod = g.mul1 == "mod"
-	d = ["%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15"][:n + 1]
-	h = ["%rbx", "%rcx", "%rsi", "%rdi", "%rbp", "%r15"][:n]
-	if mod:
-		h = h[:n - 1] + ["%rdx"]
-	c = (["%rax", "%rbx", "%rcx", "%rsi", "%rdi", "%rbp", "%r15"])[:n + (0 if
-		mod else 1)]
-	b = []
-	for k in range(n):
-		hi = d[n] if k == n - 1 else ("%rax" if k % 2 == 0 else "%rbx")
-		b.append("\tmulxq\t%d(%%rsi), %s, %s" % (8 * k, d[k], hi))
-		if k > 0:
-			b.append("\t%s\t%s, %s" % ("addq" if k == 1 else "adcq",
-				"%rax" if k % 2 == 1 else "%rbx", d[k]))
-	b += ["\tadcq\t$0, %s" % d[n], "", "\tmovq\t%s, %%rax" % d[n - 1],
-		"\tshrdq\t$BARS, %s, %%rax" % d[n], "\tmovq\t$BAR, %rdx",
-		"\tmulxq\t%rax, %rax, %rdx", ""]
-	for k in range(n):
-		b += ["\tmovq\t$P%d, %%rax" % k, "\tmulxq\t%%rax, %%rax, %s" % h[k],
-			"\t%s\t%%rax, %s" % ("subq" if k == 0 else "sbbq", d[k])]
-	if not mod:
-		b.append("\tsbbq\t$0, %s" % d[n])
-	b.append("")
-	top = n - 1 if mod else n
-	b += ["\t%s\t%s, %s" % ("subq" if k == 0 else "sbbq", h[k], d[k + 1])
-		for k in range(top)]
-	b += ["", "\t.rept 2"]
-	for k in range(n):
-		b += ["\tmovq\t%s, %s" % (d[k], c[k]), "\tmovq\t$P%d, %%rdx" % k,
-			"\t%s\t%%rdx, %s" % ("subq" if k == 0 else "sbbq", c[k])]
-	if not mod:
-		b += ["\tmovq\t%s, %s" % (d[n], c[n]), "\tsbbq\t$0, %s" % c[n]]
-	b += ["\tcmovncq\t%s, %s" % (c[k], d[k]) for k in range(len(c))]
-	b += ["\t.endr", "", "\tpop\t\t%rdi"]
-	b += ["\tmovq\t%s, %d(%%rdi)" % (d[k], 8 * k) for k in range(n)]
-	return function("fp_mul1_low", set(d + h + c), b, pushdi=True)
-
-
 def small_rdc_regs(g):
 	"""Accumulator, temporaries and copies of FP_RDCN_LOW for a based on %rsi or
 	%rsp. The copies reuse the temporaries, %rdx and %rsi."""
@@ -1882,7 +1896,7 @@ def small_mul_low(g):
 	# fp_mulm_low(c, a, b): c = a * b/R mod p.
 	o = file_head(g) + [".global cdecl(fp_mul1_low)",
 		".global cdecl(fp_muln_low)", ".global cdecl(fp_mulm_low)", ""]
-	o += small_mul1(g) + [""]
+	o += mul1(g.n) + [""]
 	regs = args(z, t0, t1)
 	for name, rdc in (("fp_muln_low", 0), ("fp_mulm_low", 1)):
 		b = ["\tmovq\t%rdx, %rcx"]
