@@ -283,35 +283,13 @@ void fp2_mul_art(fp2_t c, const fp2_t a) {
 		fp_neg(c[0], a[1]);
 		fp_copy(c[1], t);
 #else
-		/* (a_0 + a_1 * i) * i = (a_1 * i^2) + a_0 * i, where a_1 * |i^2| is
-		 * computed by doubling and adding over the bits of |i^2|. */
-		int qnr = fp_prime_get_qnr(), k = 0;
-		dig_t q = (qnr < 0 ? -qnr : qnr);
-
-		/* The top bit of |i^2|, which is small. */
-		for (dig_t r = q; r > 1; r >>= 1) {
-			k++;
-		}
+		/* (a_0 + a_1 * i) * i = (a_1 * i^2) + a_0 * i, with i^2 < 0. */
 		fp_copy(t, a[0]);
-		if (k == 0) {
-			if (qnr < 0) {
-				fp_neg(c[0], a[1]);
-			} else {
-				fp_copy(c[0], a[1]);
-			}
+		if (fp_prime_get_qnr() == -1) {
+			fp_neg(c[0], a[1]);
 		} else {
-			fp_dbl(c[0], a[1]);
-			while (k-- > 0) {
-				if ((q >> k) & 1) {
-					fp_add(c[0], c[0], a[1]);
-				}
-				if (k > 0) {
-					fp_dbl(c[0], c[0]);
-				}
-			}
-			if (qnr < 0) {
-				fp_neg(c[0], c[0]);
-			}
+			fp_mul_dig(c[0], a[1], -fp_prime_get_qnr());
+			fp_neg(c[0], c[0]);
 		}
 		fp_copy(c[1], t);
 #endif
@@ -378,18 +356,9 @@ void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 		/* t0 = (a_0 + a_1). */
 		fp_add(t0, a[0], a[1]);
 
-		/* t1 = (a_0 - a_1). */
-		fp_sub(t1, a[0], a[1]);
-
-		/* t1 = a_0 + u^2 * a_1. */
-		for (int i = -1; i > fp_prime_get_qnr(); i--) {
-			fp_sub(t1, t1, a[1]);
-		}
-		for (int i = 1; i < fp_prime_get_qnr(); i++) {
-			fp_add(t1, t1, a[1]);
-		}
-		
 		if (fp_prime_get_qnr() == -1) {
+			/* t1 = a_0 + u^2 * a_1. */
+			fp_sub(t1, a[0], a[1]);
 			/* t2 = 2 * a_0. */
 			fp_dbl(t2, a[0]);
 			/* c_1 = 2 * a_0 * a_1. */
@@ -397,16 +366,16 @@ void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 			/* c_0 = a_0^2 + a_1^2 * u^2. */
 			fp_mul(c[0], t0, t1);
 		} else {
+			/* t1 = a_0 + u^2 * a_1, with u^2 < 0. */
+			fp_mul_dig(t1, a[1], -fp_prime_get_qnr());
+			fp_sub(t1, a[0], t1);
 			/* c_1 = a_0 * a_1. */
 			fp_mul(c[1], a[0], a[1]);
 			/* c_0 = a_0^2 + a_1^2 * u^2. */
 			fp_mul(c[0], t0, t1);
-			for (int i = -1; i > fp_prime_get_qnr(); i--) {
-				fp_add(c[0], c[0], c[1]);
-			}
-			for (int i = 1; i < fp_prime_get_qnr(); i++) {
-				fp_add(c[0], c[0], c[1]);
-			}
+			/* c_0 += (|u^2| - 1) * a_0 * a_1. */
+			fp_mul_dig(t2, c[1], -fp_prime_get_qnr() - 1);
+			fp_add(c[0], c[0], t2);
 
 			/* c_1 = 2 * a_0 * a_1. */
 			fp_dbl(c[1], c[1]);
