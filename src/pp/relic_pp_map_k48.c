@@ -52,7 +52,7 @@ TMPL_PP_LIN(48, fp8);
 /** @{ */
 #define TMPL_PP_PAR_48(A)			/* No change of the parameter. */
 #define TMPL_PP_PRE_FIN_48(T, Y, J, L, R, Q, E)	/* No final lines. */
-#define TMPL_PP_FIX_FIN_48(R, L, T, J, P, D)		/* No final lines. */
+#define TMPL_PP_FIX_FIN_48(R, L, T, J, P, D, G)	/* No final lines. */
 /** @} */
 
 /*============================================================================*/
@@ -92,3 +92,5 @@ TMPL_PP_MAP_SIM_OATEP(48, ep8, EP_B48);
 TMPL_PP_MAP_PRE(48, ep8, fp8);
 
 TMPL_PP_MAP_FIX(48, fp8);
+
+TMPL_PP_MAP_SIM_FIX(48, ep8, fp8);

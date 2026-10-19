@@ -476,145 +476,6 @@ static void pp_fin_k3(fp12_t l, const ep4_t p, const fp4_t *c) {
 }
 
 /**
- * Computes the Miller loop of the eta_d pairing for m pairs of arguments,
- * including the final line, sharing a single accumulator.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first pairing arguments, in affine form.
- * @param[in] q				- the second pairing arguments, in affine form.
- * @param[in] m				- the number of pairs.
- */
-static void pp_mil_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m) {
-	fp4_t *s = RLC_ALLOCA(fp4_t, PP_K3_PTS * m);
-	fp4_t *c = RLC_ALLOCA(fp4_t, PP_K3_PRE * m);
-	ep4_t *n = RLC_ALLOCA(ep4_t, m);
-	fp12_t la, lb;
-	fp4_t g, e;
-	bn_t d;
-	int i, j, k, first = 1;
-	size_t len = RLC_FP_BITS + 1;
-	int8_t naf[RLC_FP_BITS + 1];
-
-	fp12_null(la);
-	fp12_null(lb);
-	fp4_null(g);
-	fp4_null(e);
-	bn_null(d);
-
-	if (s == NULL || c == NULL || n == NULL) {
-		RLC_FREE(s);
-		RLC_FREE(c);
-		RLC_FREE(n);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	for (j = 0; j < PP_K3_PTS * m; j++) {
-		fp4_null(s[j]);
-	}
-	for (j = 0; j < PP_K3_PRE * m; j++) {
-		fp4_null(c[j]);
-	}
-	for (j = 0; j < m; j++) {
-		ep4_null(n[j]);
-	}
-
-	RLC_TRY {
-		fp12_new(la);
-		fp12_new(lb);
-		fp4_new(g);
-		fp4_new(e);
-		bn_new(d);
-		for (j = 0; j < PP_K3_PTS * m; j++) {
-			fp4_new(s[j]);
-		}
-		for (j = 0; j < PP_K3_PRE * m; j++) {
-			fp4_new(c[j]);
-		}
-		for (j = 0; j < m; j++) {
-			ep4_new(n[j]);
-			ep4_neg(n[j], p[j]);
-		}
-
-		for (j = 0; j < m; j++) {
-			pp_pre_k3(c + PP_K3_PRE * j, q[j]);
-			k = PP_K3_PTS * j;
-			fp4_copy(s[k], p[j]->x);
-			fp4_copy(s[k + 1], p[j]->y);
-			fp4_set_dig(s[k + 2], 1);
-			fp4_sqr(s[k + 3], p[j]->x);
-			fp4_set_dig(s[k + 4], 1);
-		}
-
-		fp_prime_get_par(d);
-		bn_rec_naf(naf, &len, d, 2);
-		fp12_set_dig(r, 1);
-		for (i = len - 2; i >= 0; i--) {
-			if (!first) {
-				fp12_sqr(r, r);
-			}
-			for (j = 0; j < m; j++) {
-				pp_dbl_k3(s + PP_K3_PTS * j, g, e);
-				pp_lns_k3(la, lb, s + PP_K3_PTS * j, g, e,
-						c + PP_K3_PRE * j);
-				if (first) {
-					fp12_copy(r, la);
-					first = 0;
-				} else {
-					fp12_mul(r, r, la);
-				}
-				fp12_mul(r, r, lb);
-			}
-			if (naf[i] != 0) {
-				for (j = 0; j < m; j++) {
-					pp_add_k3(s + PP_K3_PTS * j, g, e,
-							(naf[i] > 0 ? p[j] : n[j]));
-					pp_lns_k3(la, lb, s + PP_K3_PTS * j, g, e,
-							c + PP_K3_PRE * j);
-					fp12_mul(r, r, la);
-					fp12_mul(r, r, lb);
-					if (naf[i] < 0) {
-						/* Odd embedding degree: verticals do not vanish. */
-						pp_ver_k3(la, lb, p[j], c + PP_K3_PRE * j);
-						fp12_mul(r, r, la);
-						fp12_mul(r, r, lb);
-					}
-				}
-			}
-		}
-		/* A single accumulator suffices since A^(p^2) * B^p = (A^p * B)^p. */
-		fp12_frb(r, r, 1);
-
-		for (j = 0; j < m; j++) {
-			pp_fin_k3(la, p[j], c + PP_K3_PRE * j);
-			fp12_mul(r, r, la);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp12_free(la);
-		fp12_free(lb);
-		fp4_free(g);
-		fp4_free(e);
-		bn_free(d);
-		for (j = 0; j < PP_K3_PTS * m; j++) {
-			fp4_free(s[j]);
-		}
-		for (j = 0; j < PP_K3_PRE * m; j++) {
-			fp4_free(c[j]);
-		}
-		for (j = 0; j < m; j++) {
-			ep4_free(n[j]);
-		}
-		RLC_FREE(s);
-		RLC_FREE(c);
-		RLC_FREE(n);
-	}
-}
-
-/**
  * Evaluates the two lines of a Miller step from the values of a table built by
  * pp_map_pre_k3(), as pp_lns_k3() does from the running point: with the lines
  * divided by beta = e * Z, which the final exponentiation removes, they only
@@ -654,6 +515,167 @@ static void pp_lfx_k3(fp12_t la, fp12_t lb, const fp4_t *t, const fp4_t *c) {
 	}
 }
 
+/**
+ * Computes the Miller loop of the eta_d pairing for m pairs of arguments and
+ * n pairs whose second argument is fixed by pp_map_pre_k3(), including the
+ * final lines, sharing a single accumulator. By symmetry, the loop of a fixed
+ * pair runs over its fixed argument, whose lines come from the table.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first pairing arguments, in affine form.
+ * @param[in] q				- the second pairing arguments, in affine form.
+ * @param[in] m				- the number of pairs.
+ * @param[in] f				- the first arguments of the fixed pairs.
+ * @param[in] t				- the tables of the fixed second arguments.
+ * @param[in] n				- the number of fixed pairs.
+ */
+static void pp_mil_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m,
+		const ep4_t *f, const fp4_t **t, int n) {
+	/* One more element each, so that no allocation is empty. */
+	fp4_t *s = RLC_ALLOCA(fp4_t, PP_K3_PTS * m + 1);
+	fp4_t *c = RLC_ALLOCA(fp4_t, PP_K3_PRE * (m + n) + 1);
+	ep4_t *v = RLC_ALLOCA(ep4_t, m + n + 1), *w = v + m;
+	fp12_t la, lb;
+	fp4_t g, e;
+	bn_t d;
+	int i, j, k, x = 0, first = 1;
+	size_t len = RLC_FP_BITS + 1;
+	int8_t naf[RLC_FP_BITS + 1];
+
+	fp12_null_all(la, lb);
+	fp4_null_all(g, e);
+	bn_null(d);
+
+	if (s == NULL || c == NULL || v == NULL) {
+		RLC_FREE(s);
+		RLC_FREE(c);
+		RLC_FREE(v);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (j = 0; j < PP_K3_PTS * m + 1; j++) {
+		fp4_null(s[j]);
+	}
+	for (j = 0; j < PP_K3_PRE * (m + n) + 1; j++) {
+		fp4_null(c[j]);
+	}
+	for (j = 0; j < m + n + 1; j++) {
+		ep4_null(v[j]);
+	}
+
+	RLC_TRY {
+		fp12_new_all(la, lb);
+		fp4_new_all(g, e);
+		bn_new(d);
+		for (j = 0; j < PP_K3_PTS * m + 1; j++) {
+			fp4_new(s[j]);
+		}
+		for (j = 0; j < PP_K3_PRE * (m + n) + 1; j++) {
+			fp4_new(c[j]);
+		}
+		for (j = 0; j < m + n + 1; j++) {
+			ep4_new(v[j]);
+		}
+
+		for (j = 0; j < m; j++) {
+			ep4_neg(v[j], p[j]);
+			pp_pre_k3(c + PP_K3_PRE * j, q[j]);
+			k = PP_K3_PTS * j;
+			fp4_copy(s[k], p[j]->x);
+			fp4_copy(s[k + 1], p[j]->y);
+			fp4_set_dig(s[k + 2], 1);
+			fp4_sqr(s[k + 3], p[j]->x);
+			fp4_set_dig(s[k + 4], 1);
+		}
+		for (j = 0; j < n; j++) {
+			/* The fixed argument is at the start of its table. */
+			pp_pre_k3(c + PP_K3_PRE * (m + j), f[j]);
+			fp4_copy(w[j]->x, t[j][0]);
+			fp4_copy(w[j]->y, t[j][1]);
+			fp4_set_dig(w[j]->z, 1);
+			w[j]->coord = EC_AFFIN;
+		}
+
+		fp_prime_get_par(d);
+		bn_rec_naf(naf, &len, d, 2);
+		fp12_set_dig(r, 1);
+		for (i = len - 2; i >= 0; i--) {
+			if (!first) {
+				fp12_sqr(r, r);
+			}
+			for (j = 0; j < m + n; j++) {
+				if (j < m) {
+					pp_dbl_k3(s + PP_K3_PTS * j, g, e);
+					pp_lns_k3(la, lb, s + PP_K3_PTS * j, g, e,
+							c + PP_K3_PRE * j);
+				} else {
+					pp_lfx_k3(la, lb, t[j - m] + 3 * x + 2,
+							(const fp4_t *)c + PP_K3_PRE * j);
+				}
+				if (first) {
+					fp12_copy(r, la);
+					first = 0;
+				} else {
+					fp12_mul(r, r, la);
+				}
+				fp12_mul(r, r, lb);
+			}
+			x++;
+			if (naf[i] != 0) {
+				for (j = 0; j < m + n; j++) {
+					if (j < m) {
+						pp_add_k3(s + PP_K3_PTS * j, g, e,
+								(naf[i] > 0 ? p[j] : v[j]));
+						pp_lns_k3(la, lb, s + PP_K3_PTS * j, g, e,
+								c + PP_K3_PRE * j);
+					} else {
+						pp_lfx_k3(la, lb, t[j - m] + 3 * x + 2,
+								(const fp4_t *)c + PP_K3_PRE * j);
+					}
+					fp12_mul(r, r, la);
+					fp12_mul(r, r, lb);
+					if (naf[i] < 0) {
+						/* Odd embedding degree: verticals do not vanish. */
+						pp_ver_k3(la, lb, j < m ? p[j] : w[j - m],
+								c + PP_K3_PRE * j);
+						fp12_mul(r, r, la);
+						fp12_mul(r, r, lb);
+					}
+				}
+				x++;
+			}
+		}
+		/* A single accumulator suffices since A^(p^2) * B^p = (A^p * B)^p. */
+		fp12_frb(r, r, 1);
+
+		for (j = 0; j < m + n; j++) {
+			pp_fin_k3(la, j < m ? p[j] : w[j - m], c + PP_K3_PRE * j);
+			fp12_mul(r, r, la);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp12_free_all(la, lb);
+		fp4_free_all(g, e);
+		bn_free(d);
+		for (j = 0; j < PP_K3_PTS * m + 1; j++) {
+			fp4_free(s[j]);
+		}
+		for (j = 0; j < PP_K3_PRE * (m + n) + 1; j++) {
+			fp4_free(c[j]);
+		}
+		for (j = 0; j < m + n + 1; j++) {
+			ep4_free(v[j]);
+		}
+		RLC_FREE(s);
+		RLC_FREE(c);
+		RLC_FREE(v);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -672,7 +694,8 @@ void pp_map_oatep_k3(fp12_t r, const ep4_t p, const ep4_t q) {
 		if (!ep4_is_infty(p) && !ep4_is_infty(q)) {
 			ep4_norm(_p[0], p);
 			ep4_norm(_q[0], q);
-			pp_mil_k3(r, (const ep4_t *)_p, (const ep4_t *)_q, 1);
+			pp_mil_k3(r, (const ep4_t *)_p, (const ep4_t *)_q, 1, NULL, NULL,
+					0);
 			pp_exp_k3(r, r);
 		}
 	}
@@ -717,7 +740,8 @@ void pp_map_sim_oatep_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m) {
 
 		fp12_set_dig(r, 1);
 		if (j > 0) {
-			pp_mil_k3(r, (const ep4_t *)_p, (const ep4_t *)_q, j);
+			pp_mil_k3(r, (const ep4_t *)_p, (const ep4_t *)_q, j, NULL, NULL,
+					0);
 			pp_exp_k3(r, r);
 		}
 	}
@@ -836,64 +860,65 @@ void pp_map_pre_k3(fp4_t *t, const ep4_t q) {
 }
 
 void pp_map_fix_k3(fp12_t r, const ep4_t p, const fp4_t *t) {
-	fp4_t c[PP_K3_PRE];
-	fp12_t la, lb;
-	ep4_t _p, q;
-	bn_t d;
-	int i, j = 0;
-	size_t len = RLC_FP_BITS + 1;
-	int8_t naf[RLC_FP_BITS + 1];
+	ep4_t _p[1];
 
-	for (i = 0; i < PP_K3_PRE; i++) {
-		fp4_null(c[i]);
-	}
-	fp12_null_all(la, lb);
-	ep4_null_all(_p, q);
-	bn_null(d);
+	ep4_null(_p[0]);
 
 	RLC_TRY {
-		for (i = 0; i < PP_K3_PRE; i++) {
-			fp4_new(c[i]);
+		ep4_new(_p[0]);
+		ep4_copy(_p[0], p);
+		pp_map_sim_fix_k3(r, NULL, NULL, 0, (const ep4_t *)_p, &t, 1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(_p[0]);
+	}
+}
+
+void pp_map_sim_fix_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m,
+		const ep4_t *s, const fp4_t **t, int n) {
+	/* One more element each, so that no allocation is empty. */
+	ep4_t *_p = RLC_ALLOCA(ep4_t, 2 * m + n + 1), *_q = _p + m, *_s = _q + m;
+	const fp4_t **_t = RLC_ALLOCA(const fp4_t *, n + 1);
+	int i, mm = 0, nn = 0;
+
+	if (_p == NULL || _t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	for (i = 0; i < 2 * m + n + 1; i++) {
+		ep4_null(_p[i]);
+	}
+
+	RLC_TRY {
+		for (i = 0; i < 2 * m + n + 1; i++) {
+			ep4_new(_p[i]);
 		}
-		fp12_new_all(la, lb);
-		ep4_new_all(_p, q);
-		bn_new(d);
+
+		/* Pairs with a point at infinity contribute nothing. */
+		for (i = 0; i < m; i++) {
+			if (!ep4_is_infty(p[i]) && !ep4_is_infty(q[i])) {
+				ep4_norm(_p[mm], p[i]);
+				ep4_norm(_q[mm++], q[i]);
+			}
+		}
+		for (i = 0; i < n; i++) {
+			if (!ep4_is_infty(s[i]) &&
+					!(fp4_is_zero(t[i][0]) && fp4_is_zero(t[i][1]))) {
+				ep4_norm(_s[nn], s[i]);
+				_t[nn++] = t[i];
+			}
+		}
 
 		fp12_set_dig(r, 1);
-		if (!ep4_is_infty(p) && !(fp4_is_zero(t[0]) && fp4_is_zero(t[1]))) {
-			/* By symmetry, P takes the place of the second argument. */
-			ep4_norm(_p, p);
-			pp_pre_k3(c, _p);
-			fp4_copy(q->x, t[0]);
-			fp4_copy(q->y, t[1]);
-			fp4_set_dig(q->z, 1);
-			q->coord = EC_AFFIN;
-
-			fp_prime_get_par(d);
-			bn_rec_naf(naf, &len, d, 2);
-			for (i = len - 2; i >= 0; i--) {
-				pp_lfx_k3(la, lb, t + 3 * j + 2, (const fp4_t *)c);
-				if (j++ == 0) {
-					fp12_copy(r, la);
-				} else {
-					fp12_sqr(r, r);
-					fp12_mul(r, r, la);
-				}
-				fp12_mul(r, r, lb);
-				if (naf[i] != 0) {
-					pp_lfx_k3(la, lb, t + 3 * j++ + 2, (const fp4_t *)c);
-					fp12_mul(r, r, la);
-					fp12_mul(r, r, lb);
-					if (naf[i] < 0) {
-						pp_ver_k3(la, lb, q, (const fp4_t *)c);
-						fp12_mul(r, r, la);
-						fp12_mul(r, r, lb);
-					}
-				}
-			}
-			fp12_frb(r, r, 1);
-			pp_fin_k3(la, q, (const fp4_t *)c);
-			fp12_mul(r, r, la);
+		if (mm + nn > 0) {
+			pp_mil_k3(r, (const ep4_t *)_p, (const ep4_t *)_q, mm,
+					(const ep4_t *)_s, _t, nn);
 			pp_exp_k3(r, r);
 		}
 	}
@@ -901,11 +926,10 @@ void pp_map_fix_k3(fp12_t r, const ep4_t p, const fp4_t *t) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < PP_K3_PRE; i++) {
-			fp4_free(c[i]);
+		for (i = 0; i < 2 * m + n + 1; i++) {
+			ep4_free(_p[i]);
 		}
-		fp12_free_all(la, lb);
-		ep4_free_all(_p, q);
-		bn_free(d);
+		RLC_FREE(_p);
+		RLC_FREE(_t);
 	}
 }

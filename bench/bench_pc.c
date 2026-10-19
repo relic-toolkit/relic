@@ -767,9 +767,9 @@ static void pairing(void) {
 	g2_t q[AGGS];
 	gt_t r;
 #ifdef RLC_PC_FIX
-	RLC_CAT(RLC_PC_FIELD, t) t[RLC_PC_TABLE];
+	RLC_CAT(RLC_PC_FIELD, t) t[2 * RLC_PC_TABLE];
 
-	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+	for (size_t i = 0; i < 2 * RLC_PC_TABLE; i++) {
 		RLC_CAT(RLC_PC_FIELD, null)(t[i]);
 		RLC_CAT(RLC_PC_FIELD, new)(t[i]);
 	}
@@ -820,7 +820,41 @@ static void pairing(void) {
 	}
 	BENCH_END;
 
-	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+	BENCH_RUN("pc_map_sim (2)") {
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		BENCH_ADD(pc_map_sim(r, p, q, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_sim_fix (1 + 1)") {
+		RLC_CAT(RLC_PC_FIELD, t) *u[1] = { t };
+
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		pc_map_pre(t, q[1]);
+		BENCH_ADD(pc_map_sim_fix(r, p, q, 1, p + 1, u, 1));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_sim_fix (0 + 2)") {
+		RLC_CAT(RLC_PC_FIELD, t) *u[2] = { t, t + RLC_PC_TABLE };
+
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		pc_map_pre(t, q[0]);
+		pc_map_pre(t + RLC_PC_TABLE, q[1]);
+		BENCH_ADD(pc_map_sim_fix(r, NULL, NULL, 0, p, u, 2));
+	}
+	BENCH_END;
+
+	for (size_t i = 0; i < 2 * RLC_PC_TABLE; i++) {
 		RLC_CAT(RLC_PC_FIELD, free)(t[i]);
 	}
 #endif

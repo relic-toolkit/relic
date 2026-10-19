@@ -144,8 +144,9 @@ static void pp_pre_fin_k54(fp9_t *t, fp9_t *y, int *j, fp54_t l, ep9_t r,
 }
 
 /**
- * Multiplies the cube of the result by the final lines of the optimal ate
- * pairing over SG54 curves, stored by pp_pre_fin_k54(), as pp_fin_k54() does.
+ * Multiplies the result by the final lines of the optimal ate pairing over
+ * SG54 curves, stored by pp_pre_fin_k54(), as pp_fin_k54() does. If g is set,
+ * first cubes the result, which a product of pairings does only once.
  *
  * @param[in,out] r			- the result.
  * @param[out] l			- a scratch line.
@@ -153,13 +154,16 @@ static void pp_pre_fin_k54(fp9_t *t, fp9_t *y, int *j, fp54_t l, ep9_t r,
  * @param[in,out] j			- the next line in the table.
  * @param[in] p				- the point of G_1.
  * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
  */
 static void pp_fix_fin_k54(fp54_t r, fp54_t l, const fp9_t *t, int *j,
-		const ep_t p, const ep_t d) {
-	/* Compute f^3, with l as scratch, which is zeroed again for the lines. */
-	fp54_sqr(l, r);
-	fp54_mul(r, r, l);
-	fp54_zero(l);
+		const ep_t p, const ep_t d, int g) {
+	if (g) {
+		/* Compute f^3, with l as scratch, zeroed again for the lines. */
+		fp54_sqr(l, r);
+		fp54_mul(r, r, l);
+		fp54_zero(l);
+	}
 	pp_lin_k54(l, t, j, d);
 	fp54_mul_dxs(r, r, l);
 	pp_lin_k54(l, t, j, p);
@@ -176,8 +180,8 @@ static void pp_fix_fin_k54(fp54_t r, fp54_t l, const fp9_t *t, int *j,
 #define TMPL_PP_PAR_54(A)			/* No change of the parameter. */
 #define TMPL_PP_PRE_FIN_54(T, Y, J, L, R, Q, E)								\
 	pp_pre_fin_k54(T, Y, J, L, R, Q, E);
-#define TMPL_PP_FIX_FIN_54(R, L, T, J, P, D)								\
-	pp_fix_fin_k54(R, L, T, J, P, D);
+#define TMPL_PP_FIX_FIN_54(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k54(R, L, T, J, P, D, G);
 /** @} */
 
 /*============================================================================*/
@@ -217,3 +221,5 @@ TMPL_PP_MAP_SIM_OATEP(54, ep9, EP_SG54);
 TMPL_PP_MAP_PRE(54, ep9, fp9);
 
 TMPL_PP_MAP_FIX(54, fp9);
+
+TMPL_PP_MAP_SIM_FIX(54, ep9, fp9);

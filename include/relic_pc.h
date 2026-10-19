@@ -1099,6 +1099,28 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 	RLC_CAT(pp_map_fix_k, RLC_GT_EMBED)(R, P, (const RLC_CAT(RLC_PC_FIELD,	\
 		t) *)T)
 #endif
+
+/**
+ * Computes the multi-pairing of G_1 elements and G_2 elements, where the
+ * G_2 elements of the last N pairs are fixed by pc_map_pre(). Computes
+ * R = \prod e(P_i, Q_i) * \prod e(S_j, Q'_j), where T[j] is the table of Q'_j.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the G_1 elements of the other pairs.
+ * @param[in] Q				- the G_2 elements of the other pairs.
+ * @param[in] M				- the number of other pairs.
+ * @param[in] S				- the G_1 elements of the fixed pairs.
+ * @param[in] T				- the tables of the fixed G_2 elements.
+ * @param[in] N				- the number of fixed pairs.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_sim_fix(R, P, Q, M, S, T, N)									\
+	pp_map_sim_fix_k3(R, P, Q, M, S, (const fp4_t **)T, N)
+#else
+#define pc_map_sim_fix(R, P, Q, M, S, T, N)									\
+	RLC_CAT(pp_map_sim_fix_k, RLC_GT_EMBED)(R, P, Q, M, S,					\
+		(const RLC_CAT(RLC_PC_FIELD, t) **)T, N)
+#endif
 #endif
 
 /**

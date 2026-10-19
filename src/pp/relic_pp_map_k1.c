@@ -42,18 +42,26 @@
 
 /**
  * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter.
+ * given parameter, for n pairs of arguments and h pairs whose second argument
+ * is fixed by pp_map_pre_k1(). By symmetry, the loop of a fixed pair runs
+ * over its fixed argument, whose lines come from the table.
  *
  * @param[out] r			- the result.
  * @param[out] t			- the resulting point.
  * @param[in] p				- the first pairing argument in affine coordinates.
  * @param[in] q				- the second pairing argument in affine coordinates.
  * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] e				- the points where the fixed pairs are evaluated.
+ * @param[in] f				- the fixed second arguments.
+ * @param[in] c				- the tables of the fixed second arguments.
+ * @param[in] h				- the number of fixed pairs.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
-	fp_t l, m, s, *w = RLC_ALLOCA(fp_t, n);
-	int i, j;
+static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n,
+		const ep_t *e, const ep_t *f, const fp_t **c, int h, bn_t a) {
+	/* One more element, so that the allocation is not empty. */
+	fp_t l, m, s, *w = RLC_ALLOCA(fp_t, n + 1);
+	int i, j, x = 0;
 	size_t len = bn_bits(a) + 1;
 	int8_t b[RLC_FP_BITS + 1];
 
@@ -62,19 +70,17 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 		return;
 	}
 
-	fp_null(l);
-	fp_null(m);
-	fp_null(s);
-	for (j = 0; j < n; j++) {
+	fp_null_all(l, m, s);
+	for (j = 0; j < n + 1; j++) {
 		fp_null(w[j]);
 	}
 
 	RLC_TRY {
-		fp_new(l);
-		fp_new(m);
-		fp_new(s);
-		for (j = 0; j < n; j++) {
+		fp_new_all(l, m, s);
+		for (j = 0; j < n + 1; j++) {
 			fp_new(w[j]);
+		}
+		for (j = 0; j < n; j++) {
 			ep_copy(t[j], p[j]);
 			fp_set_dig(w[j], 1);
 		}
@@ -109,6 +115,31 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 					fp_mul(s, s, l);
 				}
 			}
+			for (j = 0; j < h; j++) {
+				for (int k = 0; k < 2; k++) {
+					if (k == 1 && b[i] == 0) {
+						break;
+					}
+					/* Line (c_j + c_x * x + c_y * y) / (d_j + d_x * x). */
+					fp_mul(l, c[j][5 * (x + k) + 3], e[j]->x);
+					fp_add(l, l, c[j][5 * (x + k) + 2]);
+					fp_mul(m, c[j][5 * (x + k) + 4], e[j]->y);
+					fp_add(l, l, m);
+					if (fp_is_zero(l)) {
+						fp_set_dig(l, 1);
+					}
+					fp_mul(m, c[j][5 * (x + k) + 6], e[j]->x);
+					fp_add(m, m, c[j][5 * (x + k) + 5]);
+					fp_mul(r, r, l);
+					fp_mul(s, s, m);
+				}
+				if (b[i] < 0) {
+					/* Subtracting Q also divides by the vertical through Q. */
+					fp_sub(l, e[j]->x, f[j]->x);
+					fp_mul(s, s, l);
+				}
+			}
+			x += (b[i] == 0 ? 1 : 2);
 		}
 
 		if (!fp_is_zero(s)) {
@@ -122,10 +153,8 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(l);
-		fp_free(m);
-		fp_free(s);
-		for (j = 0; j < n; j++) {
+		fp_free_all(l, m, s);
+		for (j = 0; j < n + 1; j++) {
 			fp_free(w[j]);
 		}
 		RLC_FREE(w);
@@ -409,7 +438,7 @@ void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 		fp_set_dig(r, 1);
 
 		if (!ep_is_infty(p) && !ep_is_infty(q)) {
-			pp_mil_k1(r, t, _p, _q, 1, n);
+			pp_mil_k1(r, t, _p, _q, 1, NULL, NULL, NULL, 0, n);
 			pp_exp_k1(r, r);
 		}
 	}
@@ -469,7 +498,7 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		ep_curve_get_ord(n);
 		fp_set_dig(r, 1);
 		if (j > 0) {
-			pp_mil_k1(r, t, _p, _q, j, n);
+			pp_mil_k1(r, t, _p, _q, j, NULL, NULL, NULL, 0, n);
 			pp_exp_k1(r, r);
 		}
 	}
@@ -522,8 +551,8 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q) {
 		if (!ep_is_infty(_p[0]) && !ep_is_infty(_q[0])) {
 			fp_set_dig(r0, 1);
 			fp_set_dig(r1, 1);	
-			pp_mil_k1(r0, t0, _p, _q, 1, n);
-			pp_mil_k1(r1, t1, _q, _p, 1, n);
+			pp_mil_k1(r0, t0, _p, _q, 1, NULL, NULL, NULL, 0, n);
+			pp_mil_k1(r1, t1, _q, _p, 1, NULL, NULL, NULL, 0, n);
 			/* Compute r = (-1)^n * r0/r1. */
 			fp_inv(r1, r1);
 			fp_mul(r, r0, r1);
@@ -601,8 +630,8 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		if (j > 0) {
 			fp_set_dig(r0, 1);
 			fp_set_dig(r1, 1);	
-			pp_mil_k1(r0, t0, _p, _q, j, n);
-			pp_mil_k1(r1, t1, _q, _p, j, n);
+			pp_mil_k1(r0, t0, _p, _q, j, NULL, NULL, NULL, 0, n);
+			pp_mil_k1(r1, t1, _q, _p, j, NULL, NULL, NULL, 0, n);
 			fp_inv(r1, r1);
 			fp_mul(r, r0, r1);
 			if (!bn_is_even(n) && (j & 1)) {
@@ -730,70 +759,82 @@ void pp_map_pre_k1(fp_t *t, const ep_t q) {
 }
 
 void pp_map_fix_k1(fp_t r, const ep_t p, const fp_t *t) {
-	fp_t l, m, s;
-	ep_t e, q;
-	bn_t a;
-	int i, j = 0;
-	size_t len = RLC_FP_BITS + 1;
-	int8_t b[RLC_FP_BITS + 1];
+	ep_t _p[1];
 
-	fp_null_all(l, m, s);
-	ep_null_all(e, q);
-	bn_null(a);
+	ep_null(_p[0]);
 
 	RLC_TRY {
-		fp_new_all(l, m, s);
-		ep_new_all(e, q);
+		ep_new(_p[0]);
+		ep_copy(_p[0], p);
+		pp_map_sim_fix_k1(r, NULL, NULL, 0, (const ep_t *)_p, &t, 1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep_free(_p[0]);
+	}
+}
+
+void pp_map_sim_fix_k1(fp_t r, const ep_t *p, const ep_t *q, int m,
+		const ep_t *s, const fp_t **t, int n) {
+	/* One more element each, so that no allocation is empty. */
+	ep_t *_p = RLC_ALLOCA(ep_t, 3 * m + 2 * n + 1), *_q = _p + m, *u = _q + m;
+	ep_t *e = u + m, *f = e + n;
+	const fp_t **_t = RLC_ALLOCA(const fp_t *, n + 1);
+	bn_t a;
+	int i, mm = 0, nn = 0;
+
+	if (_p == NULL || _t == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_t);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(a);
+	for (i = 0; i < 3 * m + 2 * n + 1; i++) {
+		ep_null(_p[i]);
+	}
+
+	RLC_TRY {
 		bn_new(a);
+		for (i = 0; i < 3 * m + 2 * n + 1; i++) {
+			ep_new(_p[i]);
+		}
+
+		/* Pairs with a point at infinity contribute nothing. A table whose
+		 * first line has no y term stands for the point at infinity. */
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
+				ep_norm(_p[mm], p[i]);
+				/* Evaluate at Q + psi(P), as in the single pairing. */
+				ep_psi(_q[mm], p[i]);
+				ep_add(_q[mm], _q[mm], q[i]);
+				ep_norm(_q[mm], _q[mm]);
+				mm++;
+			}
+		}
+		for (i = 0; i < n; i++) {
+			if (!ep_is_infty(s[i]) && !fp_is_zero(t[i][4])) {
+				/* By symmetry, evaluate at P + psi(Q), as the single pairing
+				 * does at Q + psi(P) with the arguments swapped. */
+				fp_copy(f[nn]->x, t[i][0]);
+				fp_copy(f[nn]->y, t[i][1]);
+				fp_set_dig(f[nn]->z, 1);
+				f[nn]->coord = EC_AFFIN;
+				ep_psi(e[nn], f[nn]);
+				ep_add(e[nn], e[nn], s[i]);
+				ep_norm(e[nn], e[nn]);
+				_t[nn++] = t[i];
+			}
+		}
 
 		fp_set_dig(r, 1);
-		if (!ep_is_infty(p) && !fp_is_zero(t[4])) {
-			/* By symmetry, evaluate at P + psi(Q), as pp_map_tatep_k1() does
-			 * at Q + psi(P) with the arguments swapped. */
-			fp_copy(q->x, t[0]);
-			fp_copy(q->y, t[1]);
-			fp_set_dig(q->z, 1);
-			q->coord = EC_AFFIN;
-			ep_psi(e, q);
-			ep_add(e, e, p);
-			ep_norm(e, e);
-
-			fp_set_dig(s, 1);
+		if (mm + nn > 0) {
 			ep_curve_get_ord(a);
-			bn_rec_naf(b, &len, a, 2);
-			for (i = len - 2; i >= 0; i--) {
-				fp_sqr(r, r);
-				fp_sqr(s, s);
-				for (int k = 0; k < 2; k++) {
-					if (k == 1 && b[i] == 0) {
-						break;
-					}
-					fp_mul(l, t[5 * j + 3], e->x);
-					fp_add(l, l, t[5 * j + 2]);
-					fp_mul(m, t[5 * j + 4], e->y);
-					fp_add(l, l, m);
-					if (fp_is_zero(l)) {
-						fp_set_dig(l, 1);
-					}
-					fp_mul(m, t[5 * j + 6], e->x);
-					fp_add(m, m, t[5 * j + 5]);
-					fp_mul(r, r, l);
-					fp_mul(s, s, m);
-					j++;
-				}
-				if (b[i] < 0) {
-					/* Subtracting Q also divides by the vertical through Q. */
-					fp_sub(l, e->x, q->x);
-					fp_mul(s, s, l);
-				}
-			}
-
-			if (!fp_is_zero(s)) {
-				fp_inv(s, s);
-				fp_mul(r, r, s);
-			} else {
-				fp_set_dig(r, 1);
-			}
+			pp_mil_k1(r, u, _p, _q, mm, (const ep_t *)e, (const ep_t *)f, _t,
+					nn, a);
 			pp_exp_k1(r, r);
 		}
 	}
@@ -801,8 +842,11 @@ void pp_map_fix_k1(fp_t r, const ep_t p, const fp_t *t) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free_all(l, m, s);
-		ep_free_all(e, q);
 		bn_free(a);
+		for (i = 0; i < 3 * m + 2 * n + 1; i++) {
+			ep_free(_p[i]);
+		}
+		RLC_FREE(_p);
+		RLC_FREE(_t);
 	}
 }

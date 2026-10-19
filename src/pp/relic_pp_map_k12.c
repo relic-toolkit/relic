@@ -87,6 +87,24 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, const ep2_t q, const ep_t p) {
 	}
 }
 
+/**
+ * Multiplies by the final lines of the optimal ate pairing over BN curves, for
+ * m pairs, after the Miller loop of pp_mil_k12().
+ *
+ * @param[in,out] r			- the result.
+ * @param[in,out] t			- the resulting points.
+ * @param[in] q				- the points of G_2.
+ * @param[in] p				- the points of G_1.
+ * @param[in] m				- the number of pairs.
+ */
+static void pp_fin_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m) {
+	if (ep_curve_is_pairf() == EP_BN) {
+		for (int i = 0; i < m; i++) {
+			pp_fin_k12_oatep(r, t[i], q[i], p[i]);
+		}
+	}
+}
+
 TMPL_PP_LIN(12, fp2);
 
 /**
@@ -158,6 +176,7 @@ static void pp_fix_fin_k12(fp12_t r, fp12_t l, const fp2_t *t, int *j,
  * the final lines of BN curves.
  */
 /** @{ */
+#define TMPL_PP_FIN_12(R, T, Q, P, M)	pp_fin_k12(R, T, Q, P, M);
 #define TMPL_PP_PAR_12(A)													\
 	if (ep_curve_is_pairf() == EP_BN) {										\
 		bn_mul_dig(A, A, 6);												\
@@ -165,7 +184,7 @@ static void pp_fix_fin_k12(fp12_t r, fp12_t l, const fp2_t *t, int *j,
 	}
 #define TMPL_PP_PRE_FIN_12(T, Y, J, L, R, Q, E)								\
 	pp_pre_fin_k12(T, Y, J, L, R, Q, E);
-#define TMPL_PP_FIX_FIN_12(R, L, T, J, P, D)								\
+#define TMPL_PP_FIX_FIN_12(R, L, T, J, P, D, G)							\
 	pp_fix_fin_k12(R, L, T, J, P);
 /** @} */
 
@@ -617,3 +636,5 @@ void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 TMPL_PP_MAP_PRE(12, ep2, fp2);
 
 TMPL_PP_MAP_FIX(12, fp2);
+
+TMPL_PP_MAP_SIM_FIX(12, ep2, fp2);

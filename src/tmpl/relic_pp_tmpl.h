@@ -1638,7 +1638,7 @@
 				if (bn_sign(a) == RLC_NEG) {								\
 					fp##K##_inv_cyc(r, r);									\
 				}															\
-				TMPL_PP_FIX_FIN_##K(r, l, t, &j, _p, d)						\
+				TMPL_PP_FIX_FIN_##K(r, l, t, &j, _p, d, 1)					\
 				pp_exp_k##K(r, r);											\
 			}																\
 		}																	\
@@ -1649,6 +1649,169 @@
 			fp##K##_free(l);												\
 			ep_free_all(_p, d);												\
 			bn_free(a);														\
+		}																	\
+	}
+
+/**
+ * Defines a template for a product of optimal ate pairings in which some
+ * points of G_2 are fixed, given by the tables of TMPL_PP_MAP_PRE. All pairs
+ * share the squarings of one Miller loop and the final exponentiation: the
+ * other pairs run the point arithmetic of TMPL_PP_MIL, and the fixed ones
+ * evaluate their stored lines as in TMPL_PP_MAP_FIX. TMPL_PP_FIN_K applies
+ * the step that the family takes on the whole product and the final lines of
+ * the other pairs, and TMPL_PP_FIX_FIN_K the final lines of the fixed pairs,
+ * taking that step itself only when there are no other pairs.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_SIM_FIX(K, C, F)										\
+	void pp_map_sim_fix_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
+			int m, const ep_t *s, const F##_t **t, int n) {					\
+		/* One more element each, so that no allocation is empty. */		\
+		ep_t *_p = RLC_ALLOCA(ep_t, 2 * (m + n) + 1), *e, *_s, *d;			\
+		C##_t *_q = RLC_ALLOCA(C##_t, 3 * m + 1), *u, *v;					\
+		const F##_t **_t = RLC_ALLOCA(const F##_t *, n + 1);				\
+		fp##K##_t l, h;														\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t w[RLC_FP_BITS + 1];											\
+		int i, j, k, c = 0, mm = 0, nn = 0, first = 1;						\
+																			\
+		if (_p == NULL || _q == NULL || _t == NULL) {						\
+			RLC_FREE(_p);													\
+			RLC_FREE(_q);													\
+			RLC_FREE(_t);													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		e = _p + m;															\
+		_s = e + m;															\
+		d = _s + n;															\
+		u = _q + m;															\
+		v = u + m;															\
+																			\
+		fp##K##_null_all(l, h);												\
+		bn_null(a);															\
+		for (i = 0; i < 2 * (m + n) + 1; i++) {								\
+			ep_null(_p[i]);													\
+		}																	\
+		for (i = 0; i < 3 * m + 1; i++) {									\
+			C##_null(_q[i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			fp##K##_new_all(l, h);											\
+			bn_new(a);														\
+			for (i = 0; i < 2 * (m + n) + 1; i++) {							\
+				ep_new(_p[i]);												\
+			}																\
+			for (i = 0; i < 3 * m + 1; i++) {								\
+				C##_new(_q[i]);												\
+			}																\
+																			\
+			/* Pairs with a point at infinity contribute nothing. */		\
+			for (i = 0; i < m; i++) {										\
+				if (!ep_is_infty(p[i]) && !C##_is_infty(q[i])) {			\
+					ep_norm(_p[mm], p[i]);									\
+					C##_norm(_q[mm], q[i]);									\
+					C##_copy(u[mm], _q[mm]);								\
+					C##_neg(v[mm], _q[mm]);									\
+					TMPL_PP_MIL_P_##K(e[mm], _p[mm])						\
+					mm++;													\
+				}															\
+			}																\
+			for (i = 0; i < n; i++) {										\
+				if (!ep_is_infty(s[i]) &&									\
+						!(F##_is_zero(t[i][0]) && F##_is_zero(t[i][1]))) {	\
+					ep_norm(_s[nn], s[i]);									\
+					TMPL_PP_MIL_P_##K(d[nn], _s[nn])						\
+					_t[nn++] = t[i];										\
+				}															\
+			}																\
+																			\
+			fp##K##_set_dig(r, 1);											\
+			if (mm + nn > 0) {												\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(w, &len, a, 2);									\
+				/* The fixed pairs use their own line, as pp_lin_k##K()		\
+				 * keeps the slots that it does not write. */				\
+				fp##K##_zero(l);											\
+				fp##K##_zero(h);											\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					if (!first) {											\
+						fp##K##_sqr(r, r);									\
+					}														\
+					for (j = 0; j < mm; j++) {								\
+						pp_dbl_k##K(l, u[j], u[j], e[j]);					\
+						if (first) {										\
+							fp##K##_copy(r, l);								\
+							first = 0;										\
+						} else {											\
+							fp##K##_mul_dxs(r, r, l);						\
+						}													\
+					}														\
+					for (j = 0; j < nn; j++) {								\
+						k = c;												\
+						pp_lin_k##K(h, _t[j], &k, d[j]);					\
+						if (first) {										\
+							fp##K##_copy(r, h);								\
+							first = 0;										\
+						} else {											\
+							fp##K##_mul_dxs(r, r, h);						\
+						}													\
+					}														\
+					c++;													\
+					if (w[i] != 0) {										\
+						for (j = 0; j < mm; j++) {							\
+							pp_add_k##K(l, u[j], w[i] > 0 ? _q[j] : v[j],	\
+									_p[j]);									\
+							fp##K##_mul_dxs(r, r, l);						\
+						}													\
+						for (j = 0; j < nn; j++) {							\
+							k = c;											\
+							pp_lin_k##K(h, _t[j], &k, _s[j]);				\
+							fp##K##_mul_dxs(r, r, h);						\
+						}													\
+						c++;												\
+					}														\
+				}															\
+				/* For a negative parameter, f = 1/f_{|a|,Q} and T = aQ. */	\
+				if (bn_sign(a) == RLC_NEG) {								\
+					fp##K##_inv_cyc(r, r);									\
+					for (j = 0; j < mm; j++) {								\
+						C##_neg(u[j], u[j]);								\
+					}														\
+				}															\
+				if (mm > 0) {												\
+					TMPL_PP_FIN_##K(r, u, _q, _p, mm)						\
+				}															\
+				for (j = 0; j < nn; j++) {									\
+					k = c;													\
+					TMPL_PP_FIX_FIN_##K(r, h, _t[j], &k, _s[j], d[j],		\
+							mm == 0 && j == 0)								\
+				}															\
+				pp_exp_k##K(r, r);											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			fp##K##_free_all(l, h);											\
+			bn_free(a);														\
+			for (i = 0; i < 2 * (m + n) + 1; i++) {							\
+				ep_free(_p[i]);												\
+			}																\
+			for (i = 0; i < 3 * m + 1; i++) {								\
+				C##_free(_q[i]);											\
+			}																\
+			RLC_FREE(_p);													\
+			RLC_FREE(_q);													\
+			RLC_FREE(_t);													\
 		}																	\
 	}
 

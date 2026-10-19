@@ -110,6 +110,30 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
     }
 }
 
+/**
+ * Multiplies by the final lines of the optimal ate pairing over
+ * KSS and SG curves for m pairs, after the Miller loop of pp_mil_k18().
+ *
+ * @param[in,out] r			- the result.
+ * @param[in,out] t			- the resulting points.
+ * @param[in] q				- the points of G_2.
+ * @param[in] p				- the points of G_1.
+ * @param[in] m				- the number of pairs.
+ */
+static void pp_fin_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m) {
+	for (int i = 0; i < m; i++) {
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				pp_fin_k18_oatep(r, t[i], q[i], p[i], 0);
+				break;
+			case EP_SG18:
+				/* Apply Frobenius only once. */
+				pp_fin_k18_oatep(r, t[i], q[i], p[i], i == 0);
+				break;
+		}
+	}
+}
+
 TMPL_PP_LIN(18, fp3);
 
 /**
@@ -166,7 +190,9 @@ static void pp_pre_fin_k18(fp3_t *t, fp3_t *y, int *j, fp18_t l, ep3_t r,
 
 /**
  * Multiplies by the final lines of the optimal ate pairing over KSS and SG
- * curves, stored by pp_pre_fin_k18(), as pp_fin_k18_oatep() does.
+ * curves, stored by pp_pre_fin_k18(), as pp_fin_k18_oatep() does. If g is
+ * set, SG18 curves first multiply the result by its Frobenius, which a product
+ * of pairings does only once.
  *
  * @param[in,out] r			- the result.
  * @param[out] l			- a scratch line.
@@ -174,9 +200,10 @@ static void pp_pre_fin_k18(fp3_t *t, fp3_t *y, int *j, fp18_t l, ep3_t r,
  * @param[in,out] j			- the next line in the table.
  * @param[in] p				- the point of G_1.
  * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
  */
 static void pp_fix_fin_k18(fp18_t r, fp18_t l, const fp3_t *t, int *j,
-		const ep_t p, const ep_t d) {
+		const ep_t p, const ep_t d, int g) {
 	fp18_t u;
 
 	fp18_null(u);
@@ -196,8 +223,10 @@ static void pp_fix_fin_k18(fp18_t r, fp18_t l, const fp3_t *t, int *j,
 				fp18_mul_dxs(r, r, l);
 				break;
 			case EP_SG18:
-				fp18_frb(u, r, 3);
-				fp18_mul(r, r, u);
+				if (g) {
+					fp18_frb(u, r, 3);
+					fp18_mul(r, r, u);
+				}
 				pp_lin_k18(l, t, j, p);
 				fp18_mul_dxs(r, r, l);
 				break;
@@ -214,11 +243,12 @@ static void pp_fix_fin_k18(fp18_t r, fp18_t l, const fp3_t *t, int *j,
  * parameter itself, followed by the final lines of KSS and SG curves.
  */
 /** @{ */
+#define TMPL_PP_FIN_18(R, T, Q, P, M)	pp_fin_k18(R, T, Q, P, M);
 #define TMPL_PP_PAR_18(A)			/* No change of the parameter. */
 #define TMPL_PP_PRE_FIN_18(T, Y, J, L, R, Q, E)								\
 	pp_pre_fin_k18(T, Y, J, L, R, Q, E);
-#define TMPL_PP_FIX_FIN_18(R, L, T, J, P, D)								\
-	pp_fix_fin_k18(R, L, T, J, P, D);
+#define TMPL_PP_FIX_FIN_18(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k18(R, L, T, J, P, D, G);
 /** @} */
 
 /*============================================================================*/
@@ -392,3 +422,5 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 TMPL_PP_MAP_PRE(18, ep3, fp3);
 
 TMPL_PP_MAP_FIX(18, fp3);
+
+TMPL_PP_MAP_SIM_FIX(18, ep3, fp3);

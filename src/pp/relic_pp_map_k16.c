@@ -91,6 +91,25 @@ static void pp_fin_k16_oatep(fp16_t r, ep4_t t, const ep4_t q, const ep_t p) {
 	}
 }
 
+/**
+ * Multiplies by the final lines of the optimal ate pairing over
+ * KSS16 curves for m pairs, after the Miller loop of pp_mil_k16().
+ *
+ * @param[in,out] r			- the result.
+ * @param[in,out] t			- the resulting points.
+ * @param[in] q				- the points of G_2.
+ * @param[in] p				- the points of G_1.
+ * @param[in] m				- the number of pairs.
+ */
+static void pp_fin_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m) {
+	if (ep_curve_is_pairf() == EP_K16) {
+		fp16_frb(r, r, 3);
+		for (int i = 0; i < m; i++) {
+			pp_fin_k16_oatep(r, t[i], q[i], p[i]);
+		}
+	}
+}
+
 TMPL_PP_LIN(16, fp4);
 
 /**
@@ -136,7 +155,8 @@ static void pp_pre_fin_k16(fp4_t *t, fp4_t *y, int *j, fp16_t l, ep4_t r,
 /**
  * Multiplies by the final lines of the optimal ate pairing over KSS16 curves,
  * stored by pp_pre_fin_k16(), as pp_map_oatep_k16() and pp_fin_k16_oatep() do
- * after the Miller loop.
+ * after the Miller loop. If g is set, first applies the Frobenius to the
+ * result, which a product of pairings does only once.
  *
  * @param[in,out] r			- the result.
  * @param[out] l			- a scratch line.
@@ -144,9 +164,10 @@ static void pp_pre_fin_k16(fp4_t *t, fp4_t *y, int *j, fp16_t l, ep4_t r,
  * @param[in,out] j			- the next line in the table.
  * @param[in] p				- the point of G_1.
  * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
  */
 static void pp_fix_fin_k16(fp16_t r, fp16_t l, const fp4_t *t, int *j,
-		const ep_t p, const ep_t d) {
+		const ep_t p, const ep_t d, int g) {
 	fp16_t u;
 
 	if (ep_curve_is_pairf() != EP_K16) {
@@ -158,7 +179,9 @@ static void pp_fix_fin_k16(fp16_t r, fp16_t l, const fp4_t *t, int *j,
 	RLC_TRY {
 		fp16_new(u);
 
-		fp16_frb(r, r, 3);
+		if (g) {
+			fp16_frb(r, r, 3);
+		}
 		pp_lin_k16(l, t, j, p);
 		fp16_frb(u, l, 3);
 		fp16_mul_dxs(r, r, u);
@@ -176,11 +199,12 @@ static void pp_fix_fin_k16(fp16_t r, fp16_t l, const fp4_t *t, int *j,
  * parameter itself, followed by the final lines of KSS16 curves.
  */
 /** @{ */
+#define TMPL_PP_FIN_16(R, T, Q, P, M)	pp_fin_k16(R, T, Q, P, M);
 #define TMPL_PP_PAR_16(A)			/* No change of the parameter. */
 #define TMPL_PP_PRE_FIN_16(T, Y, J, L, R, Q, E)								\
 	pp_pre_fin_k16(T, Y, J, L, R, Q, E);
-#define TMPL_PP_FIX_FIN_16(R, L, T, J, P, D)								\
-	pp_fix_fin_k16(R, L, T, J, P, D);
+#define TMPL_PP_FIX_FIN_16(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k16(R, L, T, J, P, D, G);
 /** @} */
 
 /*============================================================================*/
@@ -341,3 +365,5 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 TMPL_PP_MAP_PRE(16, ep4, fp4);
 
 TMPL_PP_MAP_FIX(16, fp4);
+
+TMPL_PP_MAP_SIM_FIX(16, ep4, fp4);

@@ -1975,6 +1975,24 @@ void pp_map_pre_k3(fp4_t *t, const ep4_t q);
 void pp_map_fix_k3(fp12_t r, const ep4_t p, const fp4_t *t);
 
 /**
+ * Computes a product of eta_d pairings in a supersingular curve with
+ * embedding degree 3 over Fp^4, where the last n pairs have their second
+ * argument fixed by pp_map_pre_k3(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed argument Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first arguments of the other pairs.
+ * @param[in] q				- the second arguments of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the first arguments of the fixed pairs.
+ * @param[in] t				- the tables of the fixed second arguments.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m,
+		const ep4_t *s, const fp4_t **t, int n);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 1.
  *
@@ -2017,6 +2035,24 @@ void pp_map_pre_k1(fp_t *t, const ep_t q);
 void pp_map_fix_k1(fp_t r, const ep_t p, const fp_t *t);
 
 /**
+ * Computes a product of Tate pairings in a curve with embedding degree 1, where
+ * the last n pairs have their second argument fixed by pp_map_pre_k1(),
+ * sharing one Miller loop and the final exponentiation. Computes
+ * r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ..., where t[i] is the table of the
+ * fixed argument Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first arguments of the other pairs.
+ * @param[in] q				- the second arguments of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the first arguments of the fixed pairs.
+ * @param[in] t				- the tables of the fixed second arguments.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k1(fp_t r, const ep_t *p, const ep_t *q, int m,
+		const ep_t *s, const fp_t **t, int n);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 2.
  *
@@ -2056,6 +2092,24 @@ void pp_map_pre_k2(fp_t *t, const ep_t q);
  * @param[in] t				- the table of the fixed argument.
  */
 void pp_map_fix_k2(fp2_t r, const ep_t p, const fp_t *t);
+
+/**
+ * Computes a product of Tate pairings in a curve with embedding degree 2, where
+ * the last n pairs have their second argument fixed by pp_map_pre_k2(),
+ * sharing one Miller loop and the final exponentiation. Computes
+ * r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ..., where t[i] is the table of the
+ * fixed argument Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first arguments of the other pairs.
+ * @param[in] q				- the second arguments of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the first arguments of the fixed pairs.
+ * @param[in] t				- the tables of the fixed second arguments.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k2(fp2_t r, const ep_t *p, const ep_t *q, int m,
+		const ep_t *s, const fp_t **t, int n);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -2142,6 +2196,24 @@ void pp_map_pre_k8(fp2_t *t, const ep2_t q);
 void pp_map_fix_k8(fp8_t r, const ep_t p, const fp2_t *t);
 
 /**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 8, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k8(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m,
+		const ep_t *s, const fp2_t **t, int n);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 12.
  *
@@ -2224,6 +2296,24 @@ void pp_map_pre_k12(fp2_t *t, const ep2_t q);
  * @param[in] t				- the table of the fixed point of G_2.
  */
 void pp_map_fix_k12(fp12_t r, const ep_t p, const fp2_t *t);
+
+/**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 12, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k12(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m,
+		const ep_t *s, const fp2_t **t, int n);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -2310,6 +2400,24 @@ void pp_map_pre_k16(fp4_t *t, const ep4_t q);
 void pp_map_fix_k16(fp16_t r, const ep_t p, const fp4_t *t);
 
 /**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 16, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k16(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m,
+		const ep_t *s, const fp4_t **t, int n);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 18.
  *
@@ -2392,6 +2500,24 @@ void pp_map_pre_k18(fp3_t *t, const ep3_t q);
  * @param[in] t				- the table of the fixed point of G_2.
  */
 void pp_map_fix_k18(fp18_t r, const ep_t p, const fp3_t *t);
+
+/**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 18, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k18(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m,
+		const ep_t *s, const fp3_t **t, int n);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -2478,6 +2604,24 @@ void pp_map_pre_k24(fp4_t *t, const ep4_t q);
 void pp_map_fix_k24(fp24_t r, const ep_t p, const fp4_t *t);
 
 /**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 24, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k24(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m,
+		const ep_t *s, const fp4_t **t, int n);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 48.
  *
@@ -2562,6 +2706,24 @@ void pp_map_pre_k48(fp8_t *t, const ep8_t q);
 void pp_map_fix_k48(fp48_t r, const ep_t p, const fp8_t *t);
 
 /**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 48, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k48(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k48(fp48_t r, const ep_t *p, const ep8_t *q, int m,
+		const ep_t *s, const fp8_t **t, int n);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 54.
  *
@@ -2644,5 +2806,23 @@ void pp_map_pre_k54(fp9_t *t, const ep9_t q);
  * @param[in] t				- the table of the fixed point of G_2.
  */
 void pp_map_fix_k54(fp54_t r, const ep_t p, const fp9_t *t);
+
+/**
+ * Computes a product of optimal ate pairings in a parameterized elliptic curve
+ * with embedding degree 54, where the last n pairs have their point of G_2
+ * fixed by pp_map_pre_k54(), sharing one Miller loop and the final
+ * exponentiation. Computes r = e(p[0], q[0]) * ... * e(s[0], Q_0) * ...,
+ * where t[i] is the table of the fixed point Q_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points of G_1 of the other pairs.
+ * @param[in] q				- the points of G_2 of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the points of G_1 of the fixed pairs.
+ * @param[in] t				- the tables of the fixed points of G_2.
+ * @param[in] n				- the number of fixed pairs.
+ */
+void pp_map_sim_fix_k54(fp54_t r, const ep_t *p, const ep9_t *q, int m,
+		const ep_t *s, const fp9_t **t, int n);
 
 #endif /* !RLC_PP_H */
