@@ -1071,6 +1071,15 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
 #endif
 
+/**
+ * Indicates that the library context keeps the table of the generator of G_2,
+ * so that pairings with it use pc_map_fix(). Curves with embedding degree 1
+ * and 2 leave it out, as their tables are large.
+ */
+#if defined(RLC_PC_FIX) && RLC_GT_EMBED > 2
+#define RLC_PC_GEN
+#endif
+
 #ifdef RLC_PC_FIX
 /**
  * Precomputes the lines of a fixed argument of G_2 for pc_map_fix().
@@ -1153,6 +1162,31 @@ void pc_core_calc(void);
  * Finalizes the cryptographic protocol module.
  */
 void pc_core_clean(void);
+
+/**
+ * Computes the bilinear pairing of a G_1 element and the generator of G_2,
+ * with the table of the generator when the context keeps it. Computes
+ * R = e(P, G).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the element of G_1.
+ */
+void pc_map_gen(gt_t r, const g1_t p);
+
+/**
+ * Computes the multi-pairing of G_1 elements and G_2 elements times the
+ * pairing of a G_1 element and the generator of G_2, with the table of the
+ * generator when the context keeps it. Computes
+ * R = \prod e(P_i, Q_i) * e(S, G).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the G_1 elements of the other pairs.
+ * @param[in] q				- the G_2 elements of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the G_1 element paired with the generator.
+ */
+void pc_map_sim_gen(gt_t r, const g1_t *p, const g2_t *q, int m,
+		const g1_t s);
 
 /**
  * Assigns a random value to an element from G_T.

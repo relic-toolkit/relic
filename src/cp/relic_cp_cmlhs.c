@@ -48,27 +48,30 @@ int cp_cmlhs_init(g1_t h) {
 
 int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls) {
-	g1_t g1;
-	g2_t g2;
 	gt_t gt;
 	bn_t n;
 	int result = RLC_OK;
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
+	/* An ECDSA key is a point in G_1. */
+	g1_t g1;
 
 	g1_null(g1);
-	g2_null(g2);
+#endif
+
 	gt_null(gt);
 	bn_null(n);
 
 	RLC_TRY {
 		bn_new(n);
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 		g1_new(g1);
-		g2_new(g2);
+#endif
 		gt_new(gt);
 
 		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-		pc_map(gt, g1, g2);
+		gt_get_gen(gt);
 
 		rand_bytes(prf, plen);
 
@@ -101,8 +104,10 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 		g1_free(g1);
-		g2_free(g2);
+#endif
 		gt_free(gt);
 		bn_free(n);
 	}
@@ -241,7 +246,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
 		int bls) {
 	g1_t g1;
-	g2_t g2;
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
@@ -256,7 +260,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	}
 
 	g1_null(g1);
-	g2_null(g2);
 	gt_null(e);
 	gt_null(u);
 	gt_null(v);
@@ -265,7 +268,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 
 	RLC_TRY {
 		g1_new(g1);
-		g2_new(g2);
 		gt_new(e);
 		gt_new(u);
 		gt_new(v);
@@ -300,11 +302,10 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		if (ok) {
 			pc_get_ord(n);
 			g1_get_gen(g1);
-			g2_get_gen(g2);
 
 			pc_map_sim(e, a, z, slen);
 			pc_map_sim(u, c, y, slen);
-			pc_map(v, r, g2);
+			pc_map_gen(v, r);
 			gt_mul(u, u, v);
 
 			for (size_t i = 0; i < slen; i++) {
@@ -323,11 +324,11 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 				g1_add(g1, g1, c[i]);
 			}
 			g1_norm(g1, g1);
-			pc_map(u, g1, g2);
+			pc_map_gen(u, g1);
 			gt_mul(e, e, u);
 
 			g1_mul(g1, h, m);
-			pc_map(v, g1, g2);
+			pc_map_gen(v, g1);
 			ok = (gt_cmp(e, v) == RLC_EQ);
 		}
 
@@ -339,7 +340,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	}
 	RLC_FINALLY {
 		g1_free(g1);
-		g2_free(g2);
 		gt_free(e);
 		gt_free(u);
 		gt_free(v);
@@ -378,7 +378,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
 		size_t slen, int bls) {
 	g1_t g1;
-	g2_t g2;
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
@@ -393,7 +392,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	}
 
 	g1_null(g1);
-	g2_null(g2);
 	gt_null(e);
 	gt_null(u);
 	gt_null(v);
@@ -402,7 +400,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 
 	RLC_TRY {
 		g1_new(g1);
-		g2_new(g2);
 		gt_new(e);
 		gt_new(u);
 		gt_new(v);
@@ -437,11 +434,10 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		if (ok) {
 			pc_get_ord(n);
 			g1_get_gen(g1);
-			g2_get_gen(g2);
 
 			pc_map_sim(e, a, z, slen);
 			pc_map_sim(u, c, y, slen);
-			pc_map(v, r, g2);
+			pc_map_gen(v, r);
 			gt_mul(u, u, v);
 			gt_mul(u, u, vk);
 			ok = (gt_cmp(e, u) == RLC_EQ);
@@ -454,11 +450,11 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 				g1_add(g1, g1, c[i]);
 			}
 			g1_norm(g1, g1);
-			pc_map(u, g1, g2);
+			pc_map_gen(u, g1);
 			gt_mul(e, e, u);
 
 			g1_mul(g1, h, msg);
-			pc_map(v, g1, g2);
+			pc_map_gen(v, g1);
 			ok = (gt_cmp(e, v) == RLC_EQ);
 		}
 
@@ -468,7 +464,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		g1_free(g1);
-		g2_free(g2);
 		gt_free(e);
 		gt_free(u);
 		gt_free(v);

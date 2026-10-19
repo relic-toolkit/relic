@@ -3636,10 +3636,14 @@
 #undef pc_core_init
 #undef pc_core_calc
 #undef pc_core_clean
+#undef pc_map_gen
+#undef pc_map_sim_gen
 
 #define pc_core_init 	RLC_PREFIX(pc_core_init)
 #define pc_core_calc 	RLC_PREFIX(pc_core_calc)
 #define pc_core_clean 	RLC_PREFIX(pc_core_clean)
+#define pc_map_gen 	RLC_PREFIX(pc_map_gen)
+#define pc_map_sim_gen 	RLC_PREFIX(pc_map_sim_gen)
 
 #undef g1_mul
 #undef g1_mul_gen

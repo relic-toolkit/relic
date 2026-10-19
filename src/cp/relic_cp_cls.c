@@ -99,7 +99,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		size_t len, const g2_t x, const g2_t y) {
 	g1_t p[2];
-	g2_t r[2];
+	g2_t r[1];
 	gt_t e;
 	bn_t m, n;
 	int result = 0;
@@ -107,7 +107,6 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(r[0]);
-	g2_null(r[1]);
 	gt_null(e);
 	bn_null(m);
 	bn_null(n);
@@ -116,7 +115,6 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(r[0]);
-		g2_new(r[1]);
 		gt_new(e);
 		bn_new(m);
 		bn_new(n);
@@ -124,11 +122,9 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		if (g1_is_valid(a) && g1_is_valid(b) && g1_is_valid(c)) {
 			/* Check that e(a, Y) = e(b, g). */
 			g1_copy(p[0], a);
-			g1_copy(p[1], b);
+			g1_neg(p[1], b);
 			g2_copy(r[0], y);
-			g2_get_gen(r[1]);
-			g2_neg(r[1], r[1]);
-			pc_map_sim(e, p, r, 2);
+			pc_map_sim_gen(e, p, r, 1, p[1]);
 
 			if (gt_is_unity(e)) {
 				/* Check that e(a + [m]b, X) = e(c, g). */
@@ -138,9 +134,9 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 				g1_mul(p[0], b, m);
 				g1_add(p[0], p[0], a);
 				g1_norm(p[0], p[0]);
-				g1_copy(p[1], c);
+				g1_neg(p[1], c);
 				g2_copy(r[0], x);
-				pc_map_sim(e, p, r, 2);
+				pc_map_sim_gen(e, p, r, 1, p[1]);
 
 				result = gt_is_unity(e);
 			}
@@ -154,7 +150,6 @@ int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		g1_free(p[0]);
 		g1_free(p[1]);
 		g2_free(r[0]);
-		g2_free(r[1]);
 		gt_free(e);
 		bn_free(m);
 		bn_free(n);
@@ -239,7 +234,7 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		size_t len, const bn_t r, const g2_t x, const g2_t y, const g2_t z) {
 	g1_t p[2];
-	g2_t q[2];
+	g2_t q[1];
 	gt_t e;
 	bn_t m, n;
 	int ok, result = 0;
@@ -247,7 +242,6 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(q[0]);
-	g2_null(q[1]);
 	gt_null(e);
 	bn_null(m);
 	bn_null(n);
@@ -256,7 +250,6 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(q[0]);
-		g2_new(q[1]);
 		gt_new(e);
 		bn_new(m);
 		bn_new(n);
@@ -267,25 +260,23 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		/* Check that e(a, Z) = e(A, g) or that e(a, Z)e(A, -g) = 1. */
 		if (ok) {
 			g1_copy(p[0], a);
-			g1_copy(p[1], A);
+			g1_neg(p[1], A);
 			g2_copy(q[0], z);
-			g2_get_gen(q[1]);
-			g2_neg(q[1], q[1]);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
 		/* Check e(a, Y) = e(b, g) and e(A, Y) = e(B, g) using same trick. */
 		if (ok) {
-			g1_copy(p[1], b);
+			g1_neg(p[1], b);
 			g2_copy(q[0], y);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 		if (ok) {
 			g1_copy(p[0], A);
-			g1_copy(p[1], B);
-			pc_map_sim(e, p, q, 2);
+			g1_neg(p[1], B);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
@@ -297,9 +288,9 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 			g1_mul_sim(p[0], b, m, B, r);
 			g1_add(p[0], p[0], a);
 			g1_norm(p[0], p[0]);
-			g1_copy(p[1], c);
+			g1_neg(p[1], c);
 			g2_copy(q[0], x);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
@@ -312,7 +303,6 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 	RLC_FINALLY {
 		g1_free(p[0]);
 		g1_free(p[1]);
-		g2_free(q[1]);
 		g2_free(q[0]);
 		gt_free(e);
 		bn_free(m);
@@ -408,7 +398,7 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
 		const g2_t y, const g2_t z[], size_t l) {
 	g1_t p[2];
-	g2_t q[2];
+	g2_t q[1];
 	gt_t e;
 	bn_t m, n;
 	int ok, result = 0;
@@ -417,7 +407,6 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(q[0]);
-	g2_null(q[1]);
 	gt_null(e);
 	bn_null(m);
 	bn_null(n);
@@ -426,7 +415,6 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(q[0]);
-		g2_new(q[1]);
 		gt_new(e);
 		bn_new(m);
 		bn_new(n);
@@ -438,26 +426,24 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 
 		/* Check that e(a, Z_i) = e(A_i, g) or that e(a, Z_i)e(A_i, -g) = 1. */
 		g1_copy(p[0], a);
-		g2_get_gen(q[1]);
-		g2_neg(q[1], q[1]);
 		for (i = 1; ok && i < l; i++) {
-			g1_copy(p[1], A[i - 1]);
+			g1_neg(p[1], A[i - 1]);
 			g2_copy(q[0], z[i - 1]);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
 		/* Check e(a, Y) = e(b, g) and e(A_i, Y) = e(B_i, g) using the trick. */
 		if (ok) {
-			g1_copy(p[1], b);
+			g1_neg(p[1], b);
 			g2_copy(q[0], y);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 		for (i = 1; ok && i < l; i++) {
 			g1_copy(p[0], A[i - 1]);
-			g1_copy(p[1], B[i - 1]);
-			pc_map_sim(e, p, q, 2);
+			g1_neg(p[1], B[i - 1]);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
@@ -475,9 +461,9 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 				g1_add(p[0], p[0], p[1]);
 			}
 			g1_norm(p[0], p[0]);
-			g1_copy(p[1], c);
+			g1_neg(p[1], c);
 			g2_copy(q[0], x);
-			pc_map_sim(e, p, q, 2);
+			pc_map_sim_gen(e, p, q, 1, p[1]);
 			ok = gt_is_unity(e);
 		}
 
@@ -491,7 +477,6 @@ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 		g1_free(p[0]);
 		g1_free(p[1]);
 		g2_free(q[0]);
-		g2_free(q[1]);
 		gt_free(e);
 		bn_free(m);
 		bn_free(n);

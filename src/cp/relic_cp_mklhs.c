@@ -167,7 +167,6 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		const size_t flen[], const g2_t pk[], size_t slen) {
 	bn_t t, n;
 	g1_t d, *g = RLC_ALLOCA(g1_t, slen);
-	g2_t g2;
 	gt_t c, e;
 	size_t imax = 0, lmax = 0, fmax = 0;
 	int result = 0;
@@ -192,7 +191,6 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 	bn_null(t);
 	bn_null(n);
 	g1_null(d);
-	g2_null(g2);
 	gt_null(c);
 	gt_null(e);
 	for (size_t j = 0; j < slen; j++) {
@@ -206,7 +204,6 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		bn_new(t);
 		bn_new(n);
 		g1_new(d);
-		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
 
@@ -236,8 +233,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 			}
 			g1_norm_sim(g, g, slen);
 
-			g2_get_gen(g2);
-			pc_map(e, sig, g2);
+			pc_map_gen(e, sig);
 			pc_map_sim(c, g, pk, slen);
 			result = (gt_cmp(c, e) == RLC_EQ);
 		}
@@ -250,7 +246,6 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 		bn_free(t);
 		bn_free(n);
 		g1_free(d);
-		g2_free(g2);
 		gt_free(c);
 		gt_free(e);
 		for (size_t j = 0; j < slen; j++) {
@@ -330,7 +325,6 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		const g2_t pk[], size_t slen) {
 	bn_t t, n;
 	g1_t d, g1, *g = RLC_ALLOCA(g1_t, slen);
-	g2_t g2;
 	gt_t c, e;
 	int result = 0;
 	size_t imax = 0;
@@ -350,7 +344,6 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 	bn_null(n);
 	g1_null(d);
 	g1_null(g1);
-	g2_null(g2);
 	gt_null(c);
 	gt_null(e);
 	for (size_t j = 0; j < slen; j++) {
@@ -362,7 +355,6 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		bn_new(n);
 		g1_new(d);
 		g1_new(g1);
-		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
 
@@ -385,8 +377,7 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 			}
 			g1_norm_sim(g, g, slen);
 
-			g2_get_gen(g2);
-			pc_map(e, sig, g2);
+			pc_map_gen(e, sig);
 			pc_map_sim(c, g, pk, slen);
 			result = (gt_cmp(c, e) == RLC_EQ);
 		}
@@ -400,7 +391,6 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		bn_free(n);
 		g1_free(d);
 		g1_free(g1);
-		g2_free(g2);
 		gt_free(c);
 		gt_free(e);
 		for (size_t j = 0; j < slen; j++) {
