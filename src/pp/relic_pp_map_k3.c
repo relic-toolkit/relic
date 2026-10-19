@@ -223,17 +223,14 @@ static void pp_lns_k3(fp12_t la, fp12_t lb, const fp4_t *s, const fp4_t g,
  */
 static void pp_dbl_k3(fp4_t *s, fp4_t g, fp4_t e) {
 	fp4_t a, b, c, d;
+	dv4_t u0, u1;
 
-	fp4_null(a);
-	fp4_null(b);
-	fp4_null(c);
-	fp4_null(d);
+	fp4_null_all(a, b, c, d);
+	dv4_null_all(u0, u1);
 
 	RLC_TRY {
-		fp4_new(a);
-		fp4_new(b);
-		fp4_new(c);
-		fp4_new(d);
+		fp4_new_all(a, b, c, d);
+		dv4_new_all(u0, u1);
 
 		/* A = Y^2, B = 2 * X * Y, C = 2 * Y * Z, D = 3 * b * Z^2. */
 		fp4_sqr(a, s[1]);
@@ -247,16 +244,21 @@ static void pp_dbl_k3(fp4_t *s, fp4_t g, fp4_t e) {
 		fp4_sub(c, c, s[4]);
 		fp4_mul_art(d, s[4]);
 		fp4_mul_dig(d, d, 3);
-		/* X3 = B * (A - 3 * D). */
-		fp4_mul_dig(e, d, 3);
+		/* X3 = B * (A - 3 * D), with 3 * D = 2 * D + D. */
+		fp4_dbl(g, d);
+		fp4_add(e, g, d);
+		fp4_sqr_unr(u1, g);
 		fp4_sub(g, a, e);
 		fp4_mul(s[0], b, g);
-		/* Y3 = (A + 3 * D)^2 - 12 * D^2. */
+		/* Y3 = (A + 3 * D)^2 - 3 * (2 * D)^2, reduced once. */
 		fp4_add(g, a, e);
-		fp4_sqr(s[1], g);
-		fp4_sqr(d, d);
-		fp4_mul_dig(d, d, 12);
-		fp4_sub(s[1], s[1], d);
+		fp4_sqr_unr(u0, g);
+		for (int k = 0; k < 2; k++) {
+			fp2_subc_low(u0[k], u0[k], u1[k]);
+			fp2_subc_low(u0[k], u0[k], u1[k]);
+			fp2_subc_low(u0[k], u0[k], u1[k]);
+			fp2_rdcn_low(s[1][k], u0[k]);
+		}
 		/* Z3 = 4 * A * C. */
 		fp4_mul(s[2], a, c);
 		fp4_dbl(s[2], s[2]);
@@ -274,10 +276,8 @@ static void pp_dbl_k3(fp4_t *s, fp4_t g, fp4_t e) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp4_free(a);
-		fp4_free(b);
-		fp4_free(c);
-		fp4_free(d);
+		fp4_free_all(a, b, c, d);
+		dv4_free_all(u0, u1);
 	}
 }
 
