@@ -47,9 +47,7 @@
 #define U0	0x471A9E12007FFFFF
 #define BAR	0x8000000D806000CB
 #define BARS	63
-#define BARJ	11
 #elif FP_PRIME == 766
-/* AFG16-766, the prime picked for 766 bits. K16_766 is not supported. */
 #define P0	0xF45D1E791E054605
 #define P1	0xFCBC4220020A6592
 #define P2	0x211730168CD3106C
@@ -65,9 +63,7 @@
 #define U0	0xF282381A203F6933
 #define BAR	0x8000900055F02428
 #define BARS	61
-#define BARJ	11
 #elif FP_PRIME == 765
-/* FM16-765 */
 #define P0	0x1000EFC080000001
 #define P1	0x0000000038223FF0
 #define P2	0x0000000000000000
@@ -83,7 +79,6 @@
 #define U0	0xD000EFC07FFFFFFF
 #define BAR	0xB6BC81C39E9E28BA
 #define BARS	60
-#define BARJ	11
 #else
 #error "x64-asm-12l supports only FP_PRIME = 765, 766 or 768."
 #endif
@@ -99,22 +94,14 @@
 .section .note.GNU-stack, "", %progbits
 #endif
 
-/*
- * Stack frame of the multiplication and reduction functions. With 12 digits,
- * the accumulator takes 13 registers, the multiplier takes rdx and one more
- * register is left for the partial products, so the operand b, the pointers
- * and the constants live on the stack.
- */
-#define BCPY	0(%rsp)
-#define APTR	96(%rsp)
-#define CPTR	104(%rsp)
-#define ZEROS	112(%rsp)
-#define ONES	120(%rsp)
-#define CARRY	128(%rsp)
-#define FRAME	136
-/* The squaring functions also keep the 24 words of a^2 on the stack. */
-#define SBUF	136(%rsp)
-#define SFRAME	328
+#if defined(__APPLE__)
+.section __TEXT,__const
+#else
+.section .rodata
+#endif
+.p2align 3
+ones:	.quad	-1
+zero:	.quad	0
 
 .text
 
@@ -163,41 +150,35 @@
 	.endif
 .endm
 
-// [Z0:Z12] <- a0 x b, with a pointer to a in A.
-.macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T
-	movq	\A, %rdx
-	movq	0(%rdx), %rdx
+.macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13
+	movq	0+\A, %rdx
 	mulx	0+\B, \Z0, \Z1
-	xorq	\T, \T
-	mulx	8+\B, \T, \Z2
-	adox	\T, \Z1
-	mulx	16+\B, \T, \Z3
-	adox	\T, \Z2
-	mulx	24+\B, \T, \Z4
-	adox	\T, \Z3
-	mulx	32+\B, \T, \Z5
-	adox	\T, \Z4
-	mulx	40+\B, \T, \Z6
-	adox	\T, \Z5
-	mulx	48+\B, \T, \Z7
-	adox	\T, \Z6
-	mulx	56+\B, \T, \Z8
-	adox	\T, \Z7
-	mulx	64+\B, \T, \Z9
-	adox	\T, \Z8
-	mulx	72+\B, \T, \Z10
-	adox	\T, \Z9
-	mulx	80+\B, \T, \Z11
-	adox	\T, \Z10
-	mulx	88+\B, \T, \Z12
-	adox	\T, \Z11
-	adox	ZEROS, \Z12
+	mulx	8+\B, \Z13, \Z2
+	addq	\Z13, \Z1
+	mulx	16+\B, \Z13, \Z3
+	adcq	\Z13, \Z2
+	mulx	24+\B, \Z13, \Z4
+	adcq	\Z13, \Z3
+	mulx	32+\B, \Z13, \Z5
+	adcq	\Z13, \Z4
+	mulx	40+\B, \Z13, \Z6
+	adcq	\Z13, \Z5
+	mulx	48+\B, \Z13, \Z7
+	adcq	\Z13, \Z6
+	mulx	56+\B, \Z13, \Z8
+	adcq	\Z13, \Z7
+	mulx	64+\B, \Z13, \Z9
+	adcq	\Z13, \Z8
+	mulx	72+\B, \Z13, \Z10
+	adcq	\Z13, \Z9
+	mulx	80+\B, \Z13, \Z11
+	adcq	\Z13, \Z10
+	mulx	88+\B, \Z13, \Z12
+	adcq	\Z13, \Z11
+	adcq	$0, \Z12
 .endm
 
-// [Z0:Z11, X] <- [Z0:Z11, CARRY] + rdx x M, where the free register X turns into
-// the top word and CARRY is zero unless the prime fills the top bit.
-// Needs CF = OF = 0 on entry.
-.macro MULADD Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, X, T, M
+.macro MULADD1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, X, T, ZR, M, K
 	mulx	0+\M, \T, \X
 	adox	\T, \Z0
 	adox	\X, \Z1
@@ -233,158 +214,188 @@
 	adox	\X, \Z11
 	mulx	88+\M, \T, \X
 	adcx	\T, \Z11
-	adox	ZEROS, \X
-	adcx	CARRY, \X
+	adox	\ZR, \X
+#if FP_PRIME == 768
+	adcx	\K, \X
+#else
+	adcx	\ZR, \X
+#endif
 .endm
 
-// [Z1:Z12] <- ([Z0:Z12] + (Z0 x U0 mod 2^64) x M) / 2^64, freeing Z0. The low
-// word cancels, so its carry is Z0 != 0, which adding all-ones to Z0 yields.
-// With Z12 blank, the top word is zero on entry and is left in Z0.
-// Needs CF = OF = 0 on entry.
-.macro MULRDC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, M
+.macro MULRDC1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, ZR, P
 	movq	$U0, %rdx
 	mulx	\Z0, %rdx, \T
-	mulx	0+\M, \T, \T
-	adcx	ONES, \Z0
+	mulx	0+\P, \T, \T
+	adcx	ones(%rip), \Z0
 	adox	\T, \Z1
-	mulx	8+\M, \T, \Z0
+	mulx	8+\P, \T, \Z0
 	adcx	\T, \Z1
 	adox	\Z0, \Z2
-	mulx	16+\M, \T, \Z0
+	mulx	16+\P, \T, \Z0
 	adcx	\T, \Z2
 	adox	\Z0, \Z3
-	mulx	24+\M, \T, \Z0
+	mulx	24+\P, \T, \Z0
 	adcx	\T, \Z3
 	adox	\Z0, \Z4
-	mulx	32+\M, \T, \Z0
+	mulx	32+\P, \T, \Z0
 	adcx	\T, \Z4
 	adox	\Z0, \Z5
-	mulx	40+\M, \T, \Z0
+	mulx	40+\P, \T, \Z0
 	adcx	\T, \Z5
 	adox	\Z0, \Z6
-	mulx	48+\M, \T, \Z0
+	mulx	48+\P, \T, \Z0
 	adcx	\T, \Z6
 	adox	\Z0, \Z7
-	mulx	56+\M, \T, \Z0
+	mulx	56+\P, \T, \Z0
 	adcx	\T, \Z7
 	adox	\Z0, \Z8
-	mulx	64+\M, \T, \Z0
+	mulx	64+\P, \T, \Z0
 	adcx	\T, \Z8
 	adox	\Z0, \Z9
-	mulx	72+\M, \T, \Z0
+	mulx	72+\P, \T, \Z0
 	adcx	\T, \Z9
 	adox	\Z0, \Z10
-	mulx	80+\M, \T, \Z0
+	mulx	80+\P, \T, \Z0
 	adcx	\T, \Z10
 	adox	\Z0, \Z11
-	mulx	88+\M, \T, \Z0
+	mulx	88+\P, \T, \Z0
 	adcx	\T, \Z11
-.ifb \Z12
-	adox	ZEROS, \Z0
-	adcx	ZEROS, \Z0
-.else
 	adox	\Z0, \Z12
-	adcx	ZEROS, \Z12
-.endif
+	adcx	\ZR, \Z12
+#if FP_PRIME == 768
+	movq	$0, \Z0
+	adox	\ZR, \Z0
+	adcx	\ZR, \Z0
+#endif
 .endm
 
-// Final correction: stores [C:Z0:Z11] - p if it does not borrow and [Z0:Z11]
-// otherwise at the pointer in CPTR. C is blank when the input is below 2^768.
-.macro FINALC Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, C
-	movq	CPTR, %rdx
-	movq	\Z0, 0(%rdx)
-	movq	\Z1, 8(%rdx)
-	movq	\Z2, 16(%rdx)
-	movq	\Z3, 24(%rdx)
-	movq	\Z4, 32(%rdx)
-	movq	\Z5, 40(%rdx)
-	movq	\Z6, 48(%rdx)
-	movq	\Z7, 56(%rdx)
-	movq	\Z8, 64(%rdx)
-	movq	\Z9, 72(%rdx)
-	movq	\Z10, 80(%rdx)
-	movq	\Z11, 88(%rdx)
-	subq	p0(%rip), \Z0
-	sbbq	p1(%rip), \Z1
-	sbbq	p2(%rip), \Z2
-	sbbq	p3(%rip), \Z3
-	sbbq	p4(%rip), \Z4
-	sbbq	p5(%rip), \Z5
-	sbbq	p6(%rip), \Z6
-	sbbq	p7(%rip), \Z7
-	sbbq	p8(%rip), \Z8
-	sbbq	p9(%rip), \Z9
-	sbbq	p10(%rip), \Z10
-	sbbq	p11(%rip), \Z11
-.ifnb \C
-	sbbq	$0, \C
-.endif
-	cmovc	0(%rdx), \Z0
-	cmovc	8(%rdx), \Z1
-	cmovc	16(%rdx), \Z2
-	cmovc	24(%rdx), \Z3
-	cmovc	32(%rdx), \Z4
-	cmovc	40(%rdx), \Z5
-	cmovc	48(%rdx), \Z6
-	cmovc	56(%rdx), \Z7
-	cmovc	64(%rdx), \Z8
-	cmovc	72(%rdx), \Z9
-	cmovc	80(%rdx), \Z10
-	cmovc	88(%rdx), \Z11
-	movq	\Z0, 0(%rdx)
-	movq	\Z1, 8(%rdx)
-	movq	\Z2, 16(%rdx)
-	movq	\Z3, 24(%rdx)
-	movq	\Z4, 32(%rdx)
-	movq	\Z5, 40(%rdx)
-	movq	\Z6, 48(%rdx)
-	movq	\Z7, 56(%rdx)
-	movq	\Z8, 64(%rdx)
-	movq	\Z9, 72(%rdx)
-	movq	\Z10, 80(%rdx)
-	movq	\Z11, 88(%rdx)
+.macro FINALC V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, C0, D, H
+	movq	\V0, 0+\D
+	movq	\V1, 8+\D
+	movq	\V2, 16+\D
+	movq	\V3, 24+\D
+	movq	\V4, 32+\D
+	movq	\V5, 40+\D
+	movq	\V6, 48+\D
+	movq	\V7, 56+\D
+	movq	\V8, 64+\D
+	movq	\V9, 72+\D
+	movq	\V10, 80+\D
+	movq	\V11, \C0
+	subq	p0(%rip), \V0
+	sbbq	p1(%rip), \V1
+	sbbq	p2(%rip), \V2
+	sbbq	p3(%rip), \V3
+	sbbq	p4(%rip), \V4
+	sbbq	p5(%rip), \V5
+	sbbq	p6(%rip), \V6
+	sbbq	p7(%rip), \V7
+	sbbq	p8(%rip), \V8
+	sbbq	p9(%rip), \V9
+	sbbq	p10(%rip), \V10
+	sbbq	p11(%rip), \C0
+#if FP_PRIME == 768
+	sbbq	$0, \H
+#endif
+	cmovc	0+\D, \V0
+	cmovc	8+\D, \V1
+	cmovc	16+\D, \V2
+	cmovc	24+\D, \V3
+	cmovc	32+\D, \V4
+	cmovc	40+\D, \V5
+	cmovc	48+\D, \V6
+	cmovc	56+\D, \V7
+	cmovc	64+\D, \V8
+	cmovc	72+\D, \V9
+	cmovc	80+\D, \V10
+	cmovc	\V11, \C0
+	movq	\V0, 0+\D
+	movq	\V1, 8+\D
+	movq	\V2, 16+\D
+	movq	\V3, 24+\D
+	movq	\V4, 32+\D
+	movq	\V5, 40+\D
+	movq	\V6, 48+\D
+	movq	\V7, 56+\D
+	movq	\V8, 64+\D
+	movq	\V9, 72+\D
+	movq	\V10, 80+\D
+	movq	\C0, 88+\D
 .endm
 
-// [Z0:Z11] <- [Z0:Z11]/2^768 mod p, at most p, by twelve Montgomery steps.
-// Needs CF = OF = 0 on entry.
-.macro RDCN Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, P
-	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, , \T, \P
-	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, , \T, \P
-	MULRDC	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, , \T, \P
-	MULRDC	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, , \T, \P
-	MULRDC	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, , \T, \P
-	MULRDC	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, , \T, \P
-	MULRDC	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, , \T, \P
-	MULRDC	\Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, , \T, \P
-	MULRDC	\Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, , \T, \P
-	MULRDC	\Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, , \T, \P
-	MULRDC	\Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, , \T, \P
-	MULRDC	\Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, , \T, \P
+.macro RDCSTEP Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, ZR, P
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T
+	mulx	0+\P, \T, \T
+	adcx	ones(%rip), \Z0
+	adox	\T, \Z1
+	mulx	8+\P, \T, \Z0
+	adcx	\T, \Z1
+	adox	\Z0, \Z2
+	mulx	16+\P, \T, \Z0
+	adcx	\T, \Z2
+	adox	\Z0, \Z3
+	mulx	24+\P, \T, \Z0
+	adcx	\T, \Z3
+	adox	\Z0, \Z4
+	mulx	32+\P, \T, \Z0
+	adcx	\T, \Z4
+	adox	\Z0, \Z5
+	mulx	40+\P, \T, \Z0
+	adcx	\T, \Z5
+	adox	\Z0, \Z6
+	mulx	48+\P, \T, \Z0
+	adcx	\T, \Z6
+	adox	\Z0, \Z7
+	mulx	56+\P, \T, \Z0
+	adcx	\T, \Z7
+	adox	\Z0, \Z8
+	mulx	64+\P, \T, \Z0
+	adcx	\T, \Z8
+	adox	\Z0, \Z9
+	mulx	72+\P, \T, \Z0
+	adcx	\T, \Z9
+	adox	\Z0, \Z10
+	mulx	80+\P, \T, \Z0
+	adcx	\T, \Z10
+	adox	\Z0, \Z11
+	mulx	88+\P, \T, \Z0
+	adcx	\T, \Z11
+	adox	\ZR, \Z0
+	adcx	\ZR, \Z0
 .endm
 
-// [Z0:Z11] += [0+H:88+H].
-.macro ADDH Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, H
-	addq	0+\H, \Z0
-	adcq	8+\H, \Z1
-	adcq	16+\H, \Z2
-	adcq	24+\H, \Z3
-	adcq	32+\H, \Z4
-	adcq	40+\H, \Z5
-	adcq	48+\H, \Z6
-	adcq	56+\H, \Z7
-	adcq	64+\H, \Z8
-	adcq	72+\H, \Z9
-	adcq	80+\H, \Z10
-	adcq	88+\H, \Z11
+.macro RDCN Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, P
+	RDCSTEP	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, zero(%rip), \P
+	RDCSTEP	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \T0, zero(%rip), \P
+	RDCSTEP	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \T0, zero(%rip), \P
+	RDCSTEP	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \T0, zero(%rip), \P
+	RDCSTEP	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \P
+	RDCSTEP	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \P
+	RDCSTEP	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \P
+	RDCSTEP	\Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \P
+	RDCSTEP	\Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \P
+	RDCSTEP	\Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \P
+	RDCSTEP	\Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \P
+	RDCSTEP	\Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \P
 .endm
 
-// c <- a/2^768 mod p for a = 0+A < pR, with c at the pointer in CPTR: reduce
-// the low half to at most p, add the high half, which is below p, and subtract
-// p once. The low half stays below 2^768 at each step, so no carry leaves the
-// accumulator. For 768 bits the sum can reach 2^768 and its carry goes to T.
-// A must not be based on Z0..Z11 or T.
-.macro FP_RDCN_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, P
-	xorq	\T, \T
+.macro ADDH Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11
+	addq	\H0, \Z0
+	adcq	\H1, \Z1
+	adcq	\H2, \Z2
+	adcq	\H3, \Z3
+	adcq	\H4, \Z4
+	adcq	\H5, \Z5
+	adcq	\H6, \Z6
+	adcq	\H7, \Z7
+	adcq	\H8, \Z8
+	adcq	\H9, \Z9
+	adcq	\H10, \Z10
+	adcq	\H11, \Z11
+.endm
+
+.macro FP_RDCN_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, P, C0, CP, H
 	movq	0+\A, \Z0
 	movq	8+\A, \Z1
 	movq	16+\A, \Z2
@@ -397,57 +408,83 @@
 	movq	72+\A, \Z9
 	movq	80+\A, \Z10
 	movq	88+\A, \Z11
-	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T, \P
-	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, 96+\A
+	xorq	\T0, \T0
+	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \P
+	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, 96+\A, 104+\A, 112+\A, 120+\A, 128+\A, 136+\A, 144+\A, 152+\A, 160+\A, 168+\A, 176+\A, 184+\A
 #if FP_PRIME == 768
-	movq	$0, \T
-	adcq	$0, \T
-	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T
-#else
-	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11
+	movq	$0, \H
+	adcq	$0, \H
 #endif
+	movq	\CP, \T0
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \C0, 0(\T0), \H
 .endm
 
-// a^2 for a = 0+A, computing each cross product once, with A and O based on
-// %rsp. With RDC = 0, the 24 words of a^2 go to the pointer in CPTR. With
-// RDC = 1, the low twelve words stay in [Z0:Z11] and the high twelve go to
-// 96+O. O is 24 words of scratch.
-.macro SQRN A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, T1, RDC
-	// The cross products a_i x a_j for i < j go to words 1..22 of O. Word w
-	// accumulates in Z(w mod 12) and is stored once no later row adds to it.
-	// [Z1:Z11, Z0] <- a0 x [a1:a11]
+.macro SQRN A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1
 	movq	0+\A, %rdx
-	mulx	8+\A, \Z1, \Z2
-	mulx	16+\A, \T0, \Z3
-	addq	\T0, \Z2
-	mulx	24+\A, \T0, \Z4
+	mulx	8+\A, \Z0, \Z1
+	movq	\Z0, 8+\O
+	mulx	16+\A, \T0, \Z2
+	addq	\T0, \Z1
+	movq	\Z1, 16+\O
+	mulx	24+\A, \T0, \Z3
+	adcq	\T0, \Z2
+	mulx	32+\A, \T0, \Z4
 	adcq	\T0, \Z3
-	mulx	32+\A, \T0, \Z5
+	mulx	40+\A, \T0, \Z5
 	adcq	\T0, \Z4
-	mulx	40+\A, \T0, \Z6
+	mulx	48+\A, \T0, \Z6
 	adcq	\T0, \Z5
-	mulx	48+\A, \T0, \Z7
+	mulx	56+\A, \T0, \Z7
 	adcq	\T0, \Z6
-	mulx	56+\A, \T0, \Z8
+	mulx	64+\A, \T0, \Z8
 	adcq	\T0, \Z7
-	mulx	64+\A, \T0, \Z9
+	mulx	72+\A, \T0, \Z9
 	adcq	\T0, \Z8
-	mulx	72+\A, \T0, \Z10
+	mulx	80+\A, \T0, \Z0
 	adcq	\T0, \Z9
-	mulx	80+\A, \T0, \Z11
-	adcq	\T0, \Z10
-	mulx	88+\A, \T0, \Z0
-	adcq	\T0, \Z11
-	adcq	$0, \Z0
-	movq	\Z1, 8+\O
-	movq	\Z2, 16+\O
+	mulx	88+\A, \T0, \Z1
+	adcq	\T0, \Z0
+	adcq	$0, \Z1
 
-	// words 3..13 += a1 x [a2:a11]
 	movq	8+\A, %rdx
-	xorq	\Z1, \Z1
+	xorq	\T0, \T0
 	mulx	16+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	movq	\Z2, 24+\O
+	movq	$0, \Z2
+	mulx	24+\A, \T0, \T1
 	adcx	\T0, \Z3
 	adox	\T1, \Z4
+	mulx	32+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	adcq	$0, \Z2
+	movq	\Z3, 32+\O
+
+	movq	16+\A, %rdx
+	xorq	\Z3, \Z3
 	mulx	24+\A, \T0, \T1
 	adcx	\T0, \Z4
 	adox	\T1, \Z5
@@ -465,71 +502,6 @@
 	adox	\T1, \Z9
 	mulx	64+\A, \T0, \T1
 	adcx	\T0, \Z9
-	adox	\T1, \Z10
-	mulx	72+\A, \T0, \T1
-	adcx	\T0, \Z10
-	adox	\T1, \Z11
-	mulx	80+\A, \T0, \T1
-	adcx	\T0, \Z11
-	adox	\T1, \Z0
-	mulx	88+\A, \T0, \T1
-	adcx	\T0, \Z0
-	adox	\T1, \Z1
-	adcq	$0, \Z1
-	movq	\Z3, 24+\O
-	movq	\Z4, 32+\O
-
-	// words 5..14 += a2 x [a3:a11]
-	movq	16+\A, %rdx
-	xorq	\Z2, \Z2
-	mulx	24+\A, \T0, \T1
-	adcx	\T0, \Z5
-	adox	\T1, \Z6
-	mulx	32+\A, \T0, \T1
-	adcx	\T0, \Z6
-	adox	\T1, \Z7
-	mulx	40+\A, \T0, \T1
-	adcx	\T0, \Z7
-	adox	\T1, \Z8
-	mulx	48+\A, \T0, \T1
-	adcx	\T0, \Z8
-	adox	\T1, \Z9
-	mulx	56+\A, \T0, \T1
-	adcx	\T0, \Z9
-	adox	\T1, \Z10
-	mulx	64+\A, \T0, \T1
-	adcx	\T0, \Z10
-	adox	\T1, \Z11
-	mulx	72+\A, \T0, \T1
-	adcx	\T0, \Z11
-	adox	\T1, \Z0
-	mulx	80+\A, \T0, \T1
-	adcx	\T0, \Z0
-	adox	\T1, \Z1
-	mulx	88+\A, \T0, \T1
-	adcx	\T0, \Z1
-	adox	\T1, \Z2
-	adcq	$0, \Z2
-	movq	\Z5, 40+\O
-	movq	\Z6, 48+\O
-
-	// words 7..15 += a3 x [a4:a11]
-	movq	24+\A, %rdx
-	xorq	\Z3, \Z3
-	mulx	32+\A, \T0, \T1
-	adcx	\T0, \Z7
-	adox	\T1, \Z8
-	mulx	40+\A, \T0, \T1
-	adcx	\T0, \Z8
-	adox	\T1, \Z9
-	mulx	48+\A, \T0, \T1
-	adcx	\T0, \Z9
-	adox	\T1, \Z10
-	mulx	56+\A, \T0, \T1
-	adcx	\T0, \Z10
-	adox	\T1, \Z11
-	mulx	64+\A, \T0, \T1
-	adcx	\T0, \Z11
 	adox	\T1, \Z0
 	mulx	72+\A, \T0, \T1
 	adcx	\T0, \Z0
@@ -541,20 +513,22 @@
 	adcx	\T0, \Z2
 	adox	\T1, \Z3
 	adcq	$0, \Z3
-	movq	\Z7, 56+\O
-	movq	\Z8, 64+\O
+	movq	\Z4, 40+\O
+	movq	\Z5, 48+\O
 
-	// words 9..16 += a4 x [a5:a11]
-	movq	32+\A, %rdx
+	movq	24+\A, %rdx
 	xorq	\Z4, \Z4
+	mulx	32+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
 	mulx	40+\A, \T0, \T1
-	adcx	\T0, \Z9
-	adox	\T1, \Z10
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
 	mulx	48+\A, \T0, \T1
-	adcx	\T0, \Z10
-	adox	\T1, \Z11
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
 	mulx	56+\A, \T0, \T1
-	adcx	\T0, \Z11
+	adcx	\T0, \Z9
 	adox	\T1, \Z0
 	mulx	64+\A, \T0, \T1
 	adcx	\T0, \Z0
@@ -569,14 +543,16 @@
 	adcx	\T0, \Z3
 	adox	\T1, \Z4
 	adcq	$0, \Z4
-	movq	\Z9, 72+\O
-	movq	\Z10, 80+\O
+	movq	\Z6, 56+\O
+	movq	\Z7, 64+\O
 
-	// words 11..17 += a5 x [a6:a11]
-	movq	40+\A, %rdx
+	movq	32+\A, %rdx
 	xorq	\Z5, \Z5
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
 	mulx	48+\A, \T0, \T1
-	adcx	\T0, \Z11
+	adcx	\T0, \Z9
 	adox	\T1, \Z0
 	mulx	56+\A, \T0, \T1
 	adcx	\T0, \Z0
@@ -594,12 +570,14 @@
 	adcx	\T0, \Z4
 	adox	\T1, \Z5
 	adcq	$0, \Z5
-	movq	\Z11, 88+\O
-	movq	\Z0, 96+\O
+	movq	\Z8, 72+\O
+	movq	\Z9, 80+\O
 
-	// words 13..18 += a6 x [a7:a11]
-	movq	48+\A, %rdx
+	movq	40+\A, %rdx
 	xorq	\Z6, \Z6
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
 	mulx	56+\A, \T0, \T1
 	adcx	\T0, \Z1
 	adox	\T1, \Z2
@@ -616,12 +594,14 @@
 	adcx	\T0, \Z5
 	adox	\T1, \Z6
 	adcq	$0, \Z6
-	movq	\Z1, 104+\O
-	movq	\Z2, 112+\O
+	movq	\Z0, 88+\O
+	movq	\Z1, 96+\O
 
-	// words 15..19 += a7 x [a8:a11]
-	movq	56+\A, %rdx
+	movq	48+\A, %rdx
 	xorq	\Z7, \Z7
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
 	mulx	64+\A, \T0, \T1
 	adcx	\T0, \Z3
 	adox	\T1, \Z4
@@ -635,12 +615,12 @@
 	adcx	\T0, \Z6
 	adox	\T1, \Z7
 	adcq	$0, \Z7
-	movq	\Z3, 120+\O
-	movq	\Z4, 128+\O
 
-	// words 17..20 += a8 x [a9:a11]
-	movq	64+\A, %rdx
+	movq	56+\A, %rdx
 	xorq	\Z8, \Z8
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
 	mulx	72+\A, \T0, \T1
 	adcx	\T0, \Z5
 	adox	\T1, \Z6
@@ -651,12 +631,12 @@
 	adcx	\T0, \Z7
 	adox	\T1, \Z8
 	adcq	$0, \Z8
-	movq	\Z5, 136+\O
-	movq	\Z6, 144+\O
 
-	// words 19..21 += a9 x [a10:a11]
-	movq	72+\A, %rdx
+	movq	64+\A, %rdx
 	xorq	\Z9, \Z9
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
 	mulx	80+\A, \T0, \T1
 	adcx	\T0, \Z7
 	adox	\T1, \Z8
@@ -664,539 +644,312 @@
 	adcx	\T0, \Z8
 	adox	\T1, \Z9
 	adcq	$0, \Z9
-	movq	\Z7, 152+\O
-	movq	\Z8, 160+\O
 
-	// words 21..22 += a10 x [a11:a11]
-	movq	80+\A, %rdx
-	xorq	\Z10, \Z10
+	movq	72+\A, %rdx
+	xorq	\Z0, \Z0
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
 	mulx	88+\A, \T0, \T1
 	adcx	\T0, \Z9
-	adox	\T1, \Z10
-	adcq	$0, \Z10
-	movq	\Z9, 168+\O
-	movq	\Z10, 176+\O
+	adox	\T1, \Z0
+	adcq	$0, \Z0
 
-	// Doubles the cross products and adds the squares a_k^2 at word 2k, word by
-	// word, with CF carrying the doubling and OF the squares. %rdx takes each
-	// word that is stored.
+	movq	80+\A, %rdx
+	mulx	88+\A, \T0, \Z1
+	addq	\T0, \Z0
+	adcq	$0, \Z1
+
 	movq	0+\A, %rdx
 	mulx	%rdx, \T0, \T1
-.if \RDC != 1
-	movq	CPTR, \Z0
-	movq	\T0, 0(\Z0)
-.else
-	movq	\T0, \Z0
-.endif
-	xorq	%rdx, %rdx
-.if \RDC != 1
-	movq	8+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 8(\Z0)
+	movq	\T0, 0+\O
+	xorq	\T0, \T0
+	movq	8+\O, \T0
+	adcx	\T0, \T0
+	adox	\T1, \T0
+	movq	\T0, 8+\O
 	movq	8+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	16+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
-	movq	%rdx, 16(\Z0)
+	movq	%rdx, 16+\O
 	movq	24+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
-	movq	%rdx, 24(\Z0)
+	movq	%rdx, 24+\O
 	movq	16+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	32+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
-	movq	%rdx, 32(\Z0)
+	movq	%rdx, 32+\O
 	movq	40+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
-	movq	%rdx, 40(\Z0)
+	movq	%rdx, 40+\O
 	movq	24+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	48+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
-	movq	%rdx, 48(\Z0)
+	movq	%rdx, 48+\O
 	movq	56+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
-	movq	%rdx, 56(\Z0)
+	movq	%rdx, 56+\O
 	movq	32+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	64+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
-	movq	%rdx, 64(\Z0)
+	movq	%rdx, 64+\O
 	movq	72+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
-	movq	%rdx, 72(\Z0)
+	movq	%rdx, 72+\O
 	movq	40+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	80+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
-	movq	%rdx, 80(\Z0)
+	movq	%rdx, 80+\O
 	movq	88+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
-	movq	%rdx, 88(\Z0)
-	movq	48+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	96+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 96(\Z0)
-	movq	104+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 104(\Z0)
-	movq	56+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	112+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 112(\Z0)
-	movq	120+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 120(\Z0)
-	movq	64+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	128+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 128(\Z0)
-	movq	136+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 136(\Z0)
-	movq	72+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	144+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 144(\Z0)
-	movq	152+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 152(\Z0)
-	movq	80+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	160+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 160(\Z0)
-	movq	168+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 168(\Z0)
-	movq	88+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	176+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 176(\Z0)
-	movq	$0, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 184(\Z0)
-.else
-	movq	8+\O, \Z1
-	adcx	\Z1, \Z1
-	adox	\T1, \Z1
-	movq	8+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	16+\O, \Z2
-	adcx	\Z2, \Z2
-	adox	\T0, \Z2
-	movq	24+\O, \Z3
-	adcx	\Z3, \Z3
-	adox	\T1, \Z3
-	movq	16+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	32+\O, \Z4
-	adcx	\Z4, \Z4
-	adox	\T0, \Z4
-	movq	40+\O, \Z5
-	adcx	\Z5, \Z5
-	adox	\T1, \Z5
-	movq	24+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	48+\O, \Z6
-	adcx	\Z6, \Z6
-	adox	\T0, \Z6
-	movq	56+\O, \Z7
-	adcx	\Z7, \Z7
-	adox	\T1, \Z7
-	movq	32+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	64+\O, \Z8
-	adcx	\Z8, \Z8
-	adox	\T0, \Z8
-	movq	72+\O, \Z9
-	adcx	\Z9, \Z9
-	adox	\T1, \Z9
-	movq	40+\A, %rdx
-	mulx	%rdx, \T0, \T1
-	movq	80+\O, \Z10
-	adcx	\Z10, \Z10
-	adox	\T0, \Z10
-	movq	88+\O, \Z11
-	adcx	\Z11, \Z11
-	adox	\T1, \Z11
+	movq	%rdx, 88+\O
 	movq	48+\A, %rdx
 	mulx	%rdx, \T0, \T1
 	movq	96+\O, %rdx
 	adcx	%rdx, %rdx
 	adox	\T0, %rdx
 	movq	%rdx, 96+\O
-	movq	104+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 104+\O
+	adcx	\Z2, \Z2
+	adox	\T1, \Z2
+	movq	\Z2, 104+\O
 	movq	56+\A, %rdx
 	mulx	%rdx, \T0, \T1
-	movq	112+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 112+\O
-	movq	120+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 120+\O
+	adcx	\Z3, \Z3
+	adox	\T0, \Z3
+	movq	\Z3, 112+\O
+	adcx	\Z4, \Z4
+	adox	\T1, \Z4
+	movq	\Z4, 120+\O
 	movq	64+\A, %rdx
 	mulx	%rdx, \T0, \T1
-	movq	128+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 128+\O
-	movq	136+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 136+\O
+	adcx	\Z5, \Z5
+	adox	\T0, \Z5
+	movq	\Z5, 128+\O
+	adcx	\Z6, \Z6
+	adox	\T1, \Z6
+	movq	\Z6, 136+\O
 	movq	72+\A, %rdx
 	mulx	%rdx, \T0, \T1
-	movq	144+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 144+\O
-	movq	152+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 152+\O
+	adcx	\Z7, \Z7
+	adox	\T0, \Z7
+	movq	\Z7, 144+\O
+	adcx	\Z8, \Z8
+	adox	\T1, \Z8
+	movq	\Z8, 152+\O
 	movq	80+\A, %rdx
 	mulx	%rdx, \T0, \T1
-	movq	160+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 160+\O
-	movq	168+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T1, %rdx
-	movq	%rdx, 168+\O
+	adcx	\Z9, \Z9
+	adox	\T0, \Z9
+	movq	\Z9, 160+\O
+	adcx	\Z0, \Z0
+	adox	\T1, \Z0
+	movq	\Z0, 168+\O
 	movq	88+\A, %rdx
 	mulx	%rdx, \T0, \T1
-	movq	176+\O, %rdx
-	adcx	%rdx, %rdx
-	adox	\T0, %rdx
-	movq	%rdx, 176+\O
+	adcx	\Z1, \Z1
+	adox	\T0, \Z1
+	movq	\Z1, 176+\O
 	movq	$0, %rdx
 	adcx	%rdx, %rdx
 	adox	\T1, %rdx
 	movq	%rdx, 184+\O
-.endif
-
 .endm
 
-// c <- a^2 (RDC = 0) or a^2/2^768 mod p (RDC = 1) for a = 0+A, with c at the
-// pointer in CPTR and a^2 < pR when RDC = 1. A and O are as in SQRN.
-.macro FP_SQR_LOW A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, T1, P, RDC
-	SQRN	\A, \O, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \T1, \RDC
-.if \RDC == 1
-	// The low half reduces to at most p and the high half is below p.
+.macro FP_SQR_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1, P, RDC, S, C
+.if \RDC != 1
+	SQRN	\A, 0(%rdi), \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1
+.else
+	SQRN	\A, \S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1
+	FP_RDCN_LOW	\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, %rsi, \P, %rdx, \C, %rdi
+.endif
+.endm
+
+.macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T0, P, RDC, C, K
+#if FP_PRIME == 768
+	movq	$0, \K
+#endif
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z0, 0(\T0)
+.else
 	xorq	\T0, \T0
-	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \P
-	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, 96+\O
+	MULRDC1	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	movq	$0, \T0
-	adcq	$0, \T0
-	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0
-#else
-	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11
-#endif
-.endif
-.endm
-
-// Interleaved Montgomery multiplication after MULM, rotating the accumulator
-// over Z0..Z12. With RDC = 0, it stores the double-precision product instead.
-.macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, P, RDC
-.if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z0, 0(%rdx)
-.else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \T, \P
-#if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z0
-	adox	ZEROS, \Z0
-	adcx	ZEROS, \Z0
-	movq	\Z0, CARRY
+	movq	\Z0, \K
 #endif
 .endif
 
-	// z += a1 x b
-	movq	\A, %rdx
-	movq	8(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T, \B
-
+	xorq	\T0, \T0
+	movq	8+\A, %rdx
+	MULADD1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z1, 8(%rdx)
+	movq	\C, \T0
+	movq	\Z1, 8(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T, \P
+	MULRDC1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z1
-	adox	ZEROS, \Z1
-	adcx	ZEROS, \Z1
-	movq	\Z1, CARRY
+	movq	\Z1, \K
 #endif
 .endif
 
-	// z += a2 x b
-	movq	\A, %rdx
-	movq	16(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T, \B
-
+	xorq	\T0, \T0
+	movq	16+\A, %rdx
+	MULADD1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z2, 16(%rdx)
+	movq	\C, \T0
+	movq	\Z2, 16(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T, \P
+	MULRDC1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z2
-	adox	ZEROS, \Z2
-	adcx	ZEROS, \Z2
-	movq	\Z2, CARRY
+	movq	\Z2, \K
 #endif
 .endif
 
-	// z += a3 x b
-	movq	\A, %rdx
-	movq	24(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T, \B
-
+	xorq	\T0, \T0
+	movq	24+\A, %rdx
+	MULADD1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z3, 24(%rdx)
+	movq	\C, \T0
+	movq	\Z3, 24(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T, \P
+	MULRDC1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z3
-	adox	ZEROS, \Z3
-	adcx	ZEROS, \Z3
-	movq	\Z3, CARRY
+	movq	\Z3, \K
 #endif
 .endif
 
-	// z += a4 x b
-	movq	\A, %rdx
-	movq	32(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T, \B
-
+	xorq	\T0, \T0
+	movq	32+\A, %rdx
+	MULADD1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z4, 32(%rdx)
+	movq	\C, \T0
+	movq	\Z4, 32(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T, \P
+	MULRDC1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z4
-	adox	ZEROS, \Z4
-	adcx	ZEROS, \Z4
-	movq	\Z4, CARRY
+	movq	\Z4, \K
 #endif
 .endif
 
-	// z += a5 x b
-	movq	\A, %rdx
-	movq	40(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T, \B
-
+	xorq	\T0, \T0
+	movq	40+\A, %rdx
+	MULADD1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z5, 40(%rdx)
+	movq	\C, \T0
+	movq	\Z5, 40(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T, \P
+	MULRDC1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z5
-	adox	ZEROS, \Z5
-	adcx	ZEROS, \Z5
-	movq	\Z5, CARRY
+	movq	\Z5, \K
 #endif
 .endif
 
-	// z += a6 x b
-	movq	\A, %rdx
-	movq	48(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T, \B
-
+	xorq	\T0, \T0
+	movq	48+\A, %rdx
+	MULADD1	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z6, 48(%rdx)
+	movq	\C, \T0
+	movq	\Z6, 48(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T, \P
+	MULRDC1	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z6
-	adox	ZEROS, \Z6
-	adcx	ZEROS, \Z6
-	movq	\Z6, CARRY
+	movq	\Z6, \K
 #endif
 .endif
 
-	// z += a7 x b
-	movq	\A, %rdx
-	movq	56(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T, \B
-
+	xorq	\T0, \T0
+	movq	56+\A, %rdx
+	MULADD1	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z7, 56(%rdx)
+	movq	\C, \T0
+	movq	\Z7, 56(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T, \P
+	MULRDC1	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z7
-	adox	ZEROS, \Z7
-	adcx	ZEROS, \Z7
-	movq	\Z7, CARRY
+	movq	\Z7, \K
 #endif
 .endif
 
-	// z += a8 x b
-	movq	\A, %rdx
-	movq	64(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T, \B
-
+	xorq	\T0, \T0
+	movq	64+\A, %rdx
+	MULADD1	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z8, 64(%rdx)
+	movq	\C, \T0
+	movq	\Z8, 64(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T, \P
+	MULRDC1	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z8
-	adox	ZEROS, \Z8
-	adcx	ZEROS, \Z8
-	movq	\Z8, CARRY
+	movq	\Z8, \K
 #endif
 .endif
 
-	// z += a9 x b
-	movq	\A, %rdx
-	movq	72(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T, \B
-
+	xorq	\T0, \T0
+	movq	72+\A, %rdx
+	MULADD1	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z9, 72(%rdx)
+	movq	\C, \T0
+	movq	\Z9, 72(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T, \P
+	MULRDC1	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z9
-	adox	ZEROS, \Z9
-	adcx	ZEROS, \Z9
-	movq	\Z9, CARRY
+	movq	\Z9, \K
 #endif
 .endif
 
-	// z += a10 x b
-	movq	\A, %rdx
-	movq	80(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T, \B
-
+	xorq	\T0, \T0
+	movq	80+\A, %rdx
+	MULADD1	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z10, 80(%rdx)
+	movq	\C, \T0
+	movq	\Z10, 80(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T, \P
+	MULRDC1	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \P
 #if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z10
-	adox	ZEROS, \Z10
-	adcx	ZEROS, \Z10
-	movq	\Z10, CARRY
+	movq	\Z10, \K
 #endif
 .endif
 
-	// z += a11 x b
-	movq	\A, %rdx
-	movq	88(%rdx), %rdx
-	xorq	\T, \T
-	MULADD	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T, \B
-
+	xorq	\T0, \T0
+	movq	88+\A, %rdx
+	MULADD1	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \B, \K
 .if \RDC != 1
-	movq	CPTR, %rdx
-	movq	\Z11, 88(%rdx)
+	movq	\C, \T0
+	movq	\Z11, 88(\T0)
 .else
-	// z = (z + (z0 x u0 mod 2^64) x p) / 2^64
-	MULRDC	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T, \P
-#if FP_PRIME == 768
-	// The sum can reach 2^(64 * 13), so keep its carry.
-	movq	$0, \Z11
-	adox	ZEROS, \Z11
-	adcx	ZEROS, \Z11
-#endif
+	MULRDC1	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \P
 .endif
 
 .if \RDC != 1
-	movq	\Z12, 96(%rdx)
-	movq	\Z0, 104(%rdx)
-	movq	\Z1, 112(%rdx)
-	movq	\Z2, 120(%rdx)
-	movq	\Z3, 128(%rdx)
-	movq	\Z4, 136(%rdx)
-	movq	\Z5, 144(%rdx)
-	movq	\Z6, 152(%rdx)
-	movq	\Z7, 160(%rdx)
-	movq	\Z8, 168(%rdx)
-	movq	\Z9, 176(%rdx)
-	movq	\Z10, 184(%rdx)
+	movq	\C, \T0
+	movq	\Z12, 96(\T0)
+	movq	\Z0, 104(\T0)
+	movq	\Z1, 112(\T0)
+	movq	\Z2, 120(\T0)
+	movq	\Z3, 128(\T0)
+	movq	\Z4, 136(\T0)
+	movq	\Z5, 144(\T0)
+	movq	\Z6, 152(\T0)
+	movq	\Z7, 160(\T0)
+	movq	\Z8, 168(\T0)
+	movq	\Z9, 176(\T0)
+	movq	\Z10, 184(\T0)
 .else
-#if FP_PRIME == 768
-	FINALC	\Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11
-#else
-	FINALC	\Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10
-#endif
+	movq	\C, \T0
+	FINALC	\Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, %rdx, 0(\T0), \Z11
 .endif
 .endm

@@ -48,7 +48,7 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_powm_itch(sm + 1, enb, sm));
 	(void)u;
 
-	/* RLC_GMP needs a positive base, so pass a + m, which is congruent to a. */
+	/* GMP needs a positive base, so pass a + m, which is congruent to a. */
 	dv_zero(s, sm);
 	dv_copy(s, a, RLC_MIN(sa, sm));
 	s[sm] = mpn_add_n((mp_ptr)s, (mp_srcptr)s, (mp_srcptr)m, sm);

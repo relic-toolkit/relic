@@ -1,6 +1,7 @@
 message(STATUS "Available pseudo-random number generators (default = HASHD):\n")
 
 message("   RAND=HASHD     Use the HASH-DRBG generator. (recommended)")
+message("   RAND=HMACD     Use the HMAC-DRBG generator.")
 message("   RAND=UDEV      Use the operating system underlying generator.")
 message("   RAND=CALL      Override the generator with a callback.\n")
 
@@ -14,7 +15,8 @@ message("   SEED=WCGR      Use Windows' CryptGenRandom. (recommended)\n")
 # Choose the pseudo-random number generator.
 set(RAND "HASHD" CACHE STRING "Pseudo-random number generator")
 
-if(MSVC)
+# Windows has no /dev/urandom, whatever the compiler.
+if(WIN32)
 
     # Choose the pseudo-random number generator.
     set(SEED "WCGR" CACHE STRING "Random number generator seeder")
@@ -36,4 +38,12 @@ endif()
 if(SEED STREQUAL "LIBC")
 	message(FATAL_ERROR "SEED=LIBC was removed, use SEED=NONE for a fixed "
 		"seed or a real seeder such as UDEV.")
+endif()
+if(NOT RAND MATCHES "^(HASHD|HMACD|UDEV|CALL)$")
+	message(FATAL_ERROR "Unknown generator RAND=${RAND}, choose one of: "
+		"HASHD HMACD UDEV CALL")
+endif()
+if(NOT SEED MATCHES "^(NONE|RDRND|UDEV|WCGR)$")
+	message(FATAL_ERROR "Unknown seeder SEED=${SEED}, choose one of: "
+		"NONE RDRND UDEV WCGR")
 endif()

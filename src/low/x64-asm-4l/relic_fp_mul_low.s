@@ -32,98 +32,74 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
- */
-
 .text
+
 .global cdecl(fp_mul1_low)
 .global cdecl(fp_muln_low)
 .global cdecl(fp_mulm_low)
 
-/*
- * Function: fp_mul1_low
- * Inputs: rdi = c, rsi = a, rdx = digit < 2^63
- * Output: c = a * digit mod p, in constant time
- */
 cdecl(fp_mul1_low):
 	push	%r12
 	push	%r13
-	push	%r14
-	push	%rbx
+	subq	$8, %rsp
 
-	/* d = a * digit in r8-r12. */
+	movq	%rdi, 0(%rsp)
 	mulxq	0(%rsi), %r8, %rax
-	mulxq	8(%rsi), %r9, %rbx
+	mulxq	8(%rsi), %r9, %rdi
 	addq	%rax, %r9
 	mulxq	16(%rsi), %r10, %rax
-	adcq	%rbx, %r10
-	mulxq	24(%rsi), %r11, %r12
+	adcq	%rdi, %r10
+	mulxq	24(%rsi), %r11, %rcx
 	adcq	%rax, %r11
-	adcq	$0, %r12
+	adcq	$0, %rcx
 
-	/* q = floor(floor(d / 2^(|p| - 1)) * BAR / 2^64) is at most 2 below
-	 * floor(d / p). */
 	movq	%r11, %rax
-	shrdq	$BARS, %r12, %rax
+	shrdq	$BARS, %rcx, %rax
 	movq	$BAR, %rdx
 	mulxq	%rax, %rax, %rdx
 
-	/* Subtract the low halves of q * p, keeping the high halves. */
-	movq	$P0, %rax
-	mulxq	%rax, %rax, %rbx
+	mulxq	p0(%rip), %rax, %rdi
 	subq	%rax, %r8
-	movq	$P1, %rax
-	mulxq	%rax, %rax, %rcx
+	mulxq	p1(%rip), %rax, %rsi
 	sbbq	%rax, %r9
-	movq	$P2, %rax
-	mulxq	%rax, %rax, %r13
+	mulxq	p2(%rip), %rax, %r12
 	sbbq	%rax, %r10
-	movq	$P3, %rax
-	mulxq	%rax, %rax, %r14
+	mulxq	p3(%rip), %rax, %r13
 	sbbq	%rax, %r11
-	sbbq	$0, %r12
+	sbbq	$0, %rcx
 
-	/* Subtract the high halves, leaving d - q * p below 3p. */
-	subq	%rbx, %r9
-	sbbq	%rcx, %r10
-	sbbq	%r13, %r11
-	sbbq	%r14, %r12
+	subq	%rdi, %r9
+	sbbq	%rsi, %r10
+	sbbq	%r12, %r11
+	sbbq	%r13, %rcx
 
-	/* Subtract p twice, keeping the difference when there is no borrow. */
 	.rept 2
-	movq	%r8, %rax
-	movq	$P0, %rdx
-	subq	%rdx, %rax
-	movq	%r9, %rbx
-	movq	$P1, %rdx
-	sbbq	%rdx, %rbx
-	movq	%r10, %rcx
-	movq	$P2, %rdx
-	sbbq	%rdx, %rcx
-	movq	%r11, %r13
-	movq	$P3, %rdx
-	sbbq	%rdx, %r13
-	movq	%r12, %r14
-	sbbq	$0, %r14
-	cmovncq	%rax, %r8
-	cmovncq	%rbx, %r9
-	cmovncq	%rcx, %r10
-	cmovncq	%r13, %r11
-	cmovncq	%r14, %r12
+	movq	%r8, %r12
+	subq	p0(%rip), %r12
+	movq	%r9, %rdi
+	sbbq	p1(%rip), %rdi
+	movq	%r10, %rsi
+	sbbq	p2(%rip), %rsi
+	movq	%r11, %rdx
+	sbbq	p3(%rip), %rdx
+	movq	%rcx, %rax
+	sbbq	$0, %rax
+	cmovnc	%r12, %r8
+	cmovnc	%rdi, %r9
+	cmovnc	%rsi, %r10
+	cmovnc	%rdx, %r11
+	cmovnc	%rax, %rcx
 	.endr
+	movq	0(%rsp), %rax
 
-	movq	%r8, 0(%rdi)
-	movq	%r9, 8(%rdi)
-	movq	%r10, 16(%rdi)
-	movq	%r11, 24(%rdi)
+	movq	%r8, 0(%rax)
+	movq	%r9, 8(%rax)
+	movq	%r10, 16(%rax)
+	movq	%r11, 24(%rax)
 
-	pop	%rbx
-	pop	%r14
-	pop	%r13
-	pop	%r12
+	addq	$8, %rsp
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_muln_low):
@@ -136,9 +112,9 @@ cdecl(fp_muln_low):
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
 	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0
 
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_mulm_low):
@@ -151,7 +127,7 @@ cdecl(fp_mulm_low):
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
 	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1
 
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret

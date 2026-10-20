@@ -145,11 +145,26 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 /*============================================================================*/
 
 void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
-	if ((b >> (RLC_DIG - 1)) == 0) {
+	dig_t t[RLC_FP_DIGS];
+
+	/* Doubling and adding beats fp_mul1_low() for digits up to 4. */
+	if (b <= 1) {
+		if (b == 0) {
+			fp_zero(c);
+		} else {
+			fp_copy(c, a);
+		}
+	} else if (b == 2) {
+		fp_dbl(c, a);
+	} else if (b == 3) {
+		fp_dbl(t, a);
+		fp_add(c, t, a);
+	} else if (b == 4) {
+		fp_dbl(c, a);
+		fp_dbl(c, c);
+	} else if ((b >> (RLC_DIG - 1)) == 0) {
 		fp_mul1_low(c, a, b);
 	} else {
-		dig_t t[RLC_FP_DIGS];
-
 		fp_prime_conv_dig(t, b);
 		fp_mul(c, a, t);
 	}

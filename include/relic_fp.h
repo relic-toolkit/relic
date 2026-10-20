@@ -124,6 +124,8 @@ enum {
 	B24_315,
 	/** 317-bit prime for BLS curve of embedding degree 24 (SNARKs). */
 	B24_317,
+	/** 318-bit prime for supersingular curve over Fp^4 with k = 3. */
+	SS3_318,
 	/** 330-bit prime for KSS curve with embedding degree 16. */
 	K16_330,
 	/** 381-bit prime for BLS curve of embedding degree 12 (SNARKs). */
@@ -132,6 +134,8 @@ enum {
 	K18_354,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
 	B12_381,
+	/** 381-bit prime for supersingular curve over Fp^4 with k = 3. */
+	SS3_381,
 	/** 382-bit prime provided by Barreto for BN curve. */
 	BN_382,
 	/** 383-bit prime for GT-strong BLS curve of embedding degree 12. */
@@ -149,7 +153,7 @@ enum {
 	/** 510-bit prime for new family with embedding degree 16. */
 	AFG16_510,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
-	GMT8_544,
+	CP8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */
 	SG54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
@@ -162,6 +166,8 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
+	/** Random 672-bit prime for Cocks-Pinch curve with embedding degree 6. */
+	CP6_672,
 	/** 765-bit prime for FM curve with embedding degree 16. */
 	FM16_765,
 	/** 766-bit prime for KSS curve with embedding degree 16. */

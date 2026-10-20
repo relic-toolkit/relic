@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of RLC_MSP-dependent routines.
+ * Implementation of MSP-dependent routines.
  *
  * @ingroup arch
  */

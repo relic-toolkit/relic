@@ -55,6 +55,7 @@ g2_t *s;
 
 void *socketThread(void *arg) {
 	uint8_t buffer[4 * RLC_PC_BYTES + 1];
+	int newSocket = *((int *)arg);
 
 	if (core_init() != RLC_OK) {
 		goto end;
@@ -87,8 +88,6 @@ void *socketThread(void *arg) {
 	}
 	g2_null(d[M]);
 	g2_new(d[M]);
-
-	int newSocket = *((int *)arg);
 
 	pc_get_ord(q);
 	bn_set_dig(x[0], 1);

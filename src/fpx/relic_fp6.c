@@ -109,13 +109,33 @@ TMPL_FPX_INV_CUBIC(fp6, fp2, fp2_mul_nor);
 TMPL_FPX_EXP(fp6);
 
 void fp6_frb(fp6_t c, const fp6_t a, int i) {
-	/* Cost of two multiplication in Fp^2 per Frobenius. */
-	fp6_copy(c, a);
-	for (; i % 6 > 0; i--) {
-		fp2_frb(c[0], c[0], 1);
-		fp2_frb(c[1], c[1], 1);
-		fp2_frb(c[2], c[2], 1);
-		fp2_mul_frb(c[1], c[1], 1, 2);
-		fp2_mul_frb(c[2], c[2], 1, 4);
+	fp2_t t;
+
+	fp2_null(t);
+
+	RLC_TRY {
+		fp2_new(t);
+
+		/* Cost of two multiplication in Fp^2 per Frobenius. */
+		fp6_copy(c, a);
+		for (; i % 6 > 0; i--) {
+			fp2_frb(c[0], c[0], 1);
+			fp2_frb(c[1], c[1], 1);
+			fp2_frb(c[2], c[2], 1);
+			fp2_mul_frb(c[1], c[1], 1, 2);
+			fp2_mul_frb(c[2], c[2], 1, 4);
+			if (fp_prime_get_mod18() % 3 == 2) {
+				/* For p = 2 mod 3, the Frobenius swaps v and v^2. */
+				fp2_copy(t, c[1]);
+				fp2_copy(c[1], c[2]);
+				fp2_copy(c[2], t);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp2_free(t);
 	}
 }

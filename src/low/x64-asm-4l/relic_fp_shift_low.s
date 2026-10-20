@@ -33,6 +33,7 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_rsh1_low)
 .global cdecl(fp_lsh1_low)
 
@@ -46,11 +47,11 @@ cdecl(fp_rsh1_low):
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
-	shr	    $1, %r11
-	movq	%r8,0(%rdi)
-	movq	%r9,8(%rdi)
-	movq	%r10,16(%rdi)
-	movq	%r11,24(%rdi)
+	shrq	$1, %r11
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
 	ret
 
 cdecl(fp_lsh1_low):
@@ -63,9 +64,9 @@ cdecl(fp_lsh1_low):
 	shld	$1, %r10, %r11
 	shld	$1, %r9, %r10
 	shld	$1, %r8, %r9
-	shl     $1, %r8
-	movq	%r8,0(%rdi)
-	movq	%r9,8(%rdi)
-	movq	%r10,16(%rdi)
-	movq	%r11,24(%rdi)
+	shlq	$1, %r8
+	movq	%r8, 0(%rdi)
+	movq	%r9, 8(%rdi)
+	movq	%r10, 16(%rdi)
+	movq	%r11, 24(%rdi)
 	ret

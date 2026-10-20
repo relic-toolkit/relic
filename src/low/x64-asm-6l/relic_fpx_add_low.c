@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,53 +24,24 @@
 /**
  * @file
  *
- * Implementation of the low-level quadratic extension field multiplication
- * functions, for u^2 = -5.
+ * Implementation of the low-level extension field addition functions.
  *
  * @ingroup fpx
  */
 
+#include "relic_core.h"
 #include "relic_fp_low.h"
-#include "macro.s"
+#include "relic_fpx_low.h"
 
 /*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application to Bilinear Pairings" by
- * Longa at TCHES'23.
+ * The assembly multiplies by the non-residue 2 + u of the SS3 prime and reads
+ * both coordinates from one contiguous vector, which only automatic allocation
+ * guarantees.
  */
+#if !defined(FP_QNRES) && (FP_PRIME == 381 && defined(EC_SUPER)) && \
+	RLC_ALLOC == RLC_AUTO
+#define FP2_NORD_ASM
+#endif
 
-.text
-
-#ifdef FP2_ASM
-
-.global cdecl(fp2_mulm_low)
-
-/*
- * Function: fp2_mulm_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b/R mod p, coefficient-wise
- */
-cdecl(fp2_mulm_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	subq	$168, %rsp
-	movq	%rsi, 0(%rsp)
-	movq	%rdi, 8(%rsp)
-	movq	%rdx, %rcx
-
-	FP2_MUL_LOW	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rdi, p0(%rip)
-
-	addq	$168, %rsp
-	pop	%rbp
-	pop	%rbx
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	ret
-
-#endif /* FP2_ASM */
+/* The other functions, and fp2_nord_low() otherwise, are the portable ones. */
+#include "../easy/relic_fpx_add_low.c"

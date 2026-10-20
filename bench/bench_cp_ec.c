@@ -166,6 +166,11 @@ static void ecdsa(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("cp_ecdsa_sign_det (h = 0)") {
+		BENCH_ADD(cp_ecdsa_sig_det(r, s, msg, 5, 0, d));
+	}
+	BENCH_END;
+
 	BENCH_RUN("cp_ecdsa_ver (h = 0)") {
 		BENCH_ADD(cp_ecdsa_ver(r, s, msg, 5, 0, p));
 	}

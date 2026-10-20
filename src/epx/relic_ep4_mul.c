@@ -283,6 +283,71 @@ static void ep4_mul_cof_fm16(ep4_t r, const ep4_t p) {
 	}
 }
 
+/* Defined below by the multiplication template. */
+static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k);
+
+/**
+ * Multiplies a point by the cofactor in a supersingular curve over Fp^4 with
+ * embedding degree 3, which is the hard part c * (p^2 + d^2 - 1) * (p + d) + 1
+ * of the final exponentiation of its pairing, for p = d + c * r.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep4_mul_cof_ss3(ep4_t r, const ep4_t p) {
+	ep4_t t0, t1, t2;
+	bn_t c, d, n;
+
+	ep4_null(t0);
+	ep4_null(t1);
+	ep4_null(t2);
+	bn_null(c);
+	bn_null(d);
+	bn_null(n);
+
+	RLC_TRY {
+		ep4_new(t0);
+		ep4_new(t1);
+		ep4_new(t2);
+		bn_new(c);
+		bn_new(d);
+		bn_new(n);
+
+		fp_prime_get_par(d);
+		ep4_curve_get_ord(n);
+		bn_read_raw(c, fp_prime_get(), RLC_FP_DIGS);
+		bn_sub(c, c, d);
+		bn_div(c, c, n);
+
+		/* The endomorphism [p] is defined on the whole curve, but the GLS
+		 * decomposition is not, so use w-NAF, which reduces modulo r > c. */
+		ep4_mul_naf_imp(t0, p, c);
+		/* t0 = [p^2 + d^2 - 1]t0. */
+		ep4_frb(t1, t0, 2);
+		ep4_mul_dig(t2, t0, d->dp[0]);
+		ep4_mul_dig(t2, t2, d->dp[0]);
+		ep4_add(t1, t1, t2);
+		ep4_sub(t0, t1, t0);
+		/* t0 = [p + d]t0. */
+		ep4_frb(t1, t0, 1);
+		ep4_mul_dig(t2, t0, d->dp[0]);
+		ep4_add(t0, t1, t2);
+		ep4_add(r, t0, p);
+		ep4_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(t0);
+		ep4_free(t1);
+		ep4_free(t2);
+		bn_free(c);
+		bn_free(d);
+		bn_free(n);
+	}
+}
+
 /**
  * Multiplies a point by the cofactor in a BLS24 curve.
  *
@@ -370,6 +435,9 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 				break;
 			case EP_B24:
 				ep4_mul_cof_b24(r, p);
+				break;
+			case EP_SS3:
+				ep4_mul_cof_ss3(r, p);
 				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */

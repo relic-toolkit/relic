@@ -57,10 +57,14 @@ enum {
     EP_K1 = 1,
     /** Supersingular curves with embedding degree 2. */
     EP_SS2,
+    /** Supersingular curves over Fp^4 with embedding degree 3. */
+    EP_SS3,
     /** Barreto-Naehrig. */
     EP_BN,
-    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
-    EP_GMT8,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé. */
+    EP_CP6,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé. */
+    EP_CP8,
     /* Barreto-Lynn-Scott family with embedding degree 12. */
     EP_B12,
     /* New family from Fotiadis-Martindale family with embedding degree 16. */
@@ -139,6 +143,8 @@ enum {
 	B24_P315,
 	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
 	B24_P317,
+	/** Supersingular curve over Fp^4 with embedding degree 3 (M318b). */
+	SS3_P318,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P330,
 	/** Kachisa-Schaefer-Scott curve with embedding degree 18. */
@@ -147,6 +153,8 @@ enum {
 	B12_P377,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
+	/** Supersingular curve over Fp^4 with embedding degree 3. */
+	SS3_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (GT-strong). */
@@ -166,7 +174,7 @@ enum {
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
-	GMT8_P544,
+	CP8_P544,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
 	SG54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */

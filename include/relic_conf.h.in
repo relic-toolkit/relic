@@ -61,9 +61,9 @@
 /** Build static library. */
 #cmakedefine RLC_STLIB
 /** Width of window processing for exponentiation methods. */
-#define RLC_WIDTH @RLC_WIDTH@
+#define RLC_WIDTH @WIDTH@
 /** Width of precomputation table for fixed base exponentiation methods. */
-#define RLC_DEPTH @RLC_DEPTH@
+#define RLC_DEPTH @DEPTH@
 
 /** Number of times each test is ran. */
 #define RLC_TESTS    @TESTS@
@@ -72,13 +72,13 @@
 /** Number of available cores. */
 #define RLC_CORES    @CORES@
 
-/** Atmel RLC_AVR ATMega128 8-bit architecture. */
+/** Atmel AVR ATMega128 8-bit architecture. */
 #define RLC_AVR      1
 /** MSP430 16-bit architecture. */
 #define RLC_MSP      2
-/** RLC_ARM 32-bit architecture. */
+/** ARM 32-bit architecture. */
 #define RLC_ARM      3
-/** RLC_ARM 64-bit architecture. */
+/** ARM 64-bit architecture. */
 #define RLC_A64      4
 /** Intel x86-compatible 32-bit architecture. */
 #define RLC_X86      5
@@ -126,9 +126,9 @@
 
 /** Easy C-only backend. */
 #define RLC_EASY	 1
-/** RLC_GMP backend. */
+/** GMP backend. */
 #define RLC_GMP      2
-/** RLC_GMP constant-time backend. */
+/** GMP constant-time backend. */
 #define RLC_GMP_SEC  3
 /** Arithmetic backend. */
 #define RLC_ARITH    RLC_@ARITH@
@@ -517,6 +517,8 @@
 #define EC_METHD "@EC_METHD@"
 /** Prefer curves with efficient endomorphisms. */
 #cmakedefine EC_ENDOM
+/** Prefer supersingular curves, also for pairings. */
+#cmakedefine EC_SUPER
 
 /** Basic quadratic extension field arithmetic. */
 #define PP_BASIC    1
@@ -549,8 +551,25 @@
 #define MD_B2S160         6
 /** BLAKE2s-256 hash function. */
 #define MD_B2S256         7
+/** SHA3-224 hash function. */
+#define MD_S3224          8
+/** SHA3-256 hash function. */
+#define MD_S3256          9
+/** SHA3-384 hash function. */
+#define MD_S3384          10
+/** SHA3-512 hash function. */
+#define MD_S3512          11
 /** Chosen hash function. */
 #define MD_MAP   MD_@MD_MAP@
+
+/** BLAKE2s-based extendable-output function. */
+#define MD_B2XS           12
+/** SHAKE128 extendable-output function. */
+#define MD_SK128          13
+/** SHAKE256 extendable-output function. */
+#define MD_SK256          14
+/** Chosen extendable-output function. */
+#define MD_XOF   MD_@MD_XOF@
 
 /** Choice of hash function. */
 #define MD_METHD "@MD_METHD@"
@@ -564,6 +583,8 @@
 
 /** NIST HASH-DRBG generator. */
 #define RLC_HASHD    1
+/** NIST HMAC-DRBG generator. */
+#define RLC_HMACD    2
 /** Operating system underlying generator. */
 #define RLC_UDEV     3
 /** Override library generator with the callback. */
@@ -612,7 +633,7 @@
 #define RLC_HPROC    2
 /** Per-thread high-resolution timer. */
 #define RLC_HTHRD    3
-/** RLC_ANSI-compatible timer. */
+/** ANSI-compatible timer. */
 #define RLC_ANSI     5
 /** Cycle-counting timer. */
 #define RLC_CYCLE    6

@@ -1446,6 +1446,22 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		const bn_t d);
 
 /**
+ * Signs a message using ECDSA with deterministic nonces (RFC 6979), derived
+ * from the private key and the digest with HMAC_DRBG on the default hash
+ * function.
+ *
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ecdsa_sig_det(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d);
+
+/**
  * Verifies a message signed with ECDSA using the basic method.
  *
  * @param[in] r				- the first component of the signature.

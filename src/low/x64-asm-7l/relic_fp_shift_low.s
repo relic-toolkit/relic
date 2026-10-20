@@ -35,59 +35,58 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_rsh1_low)
 .global cdecl(fp_lsh1_low)
 
 cdecl(fp_rsh1_low):
 	movq	0(%rsi), %r8
+	movq	%r8, %rax
+	andq	$1, %rax
 	movq	8(%rsi), %r9
-	movq	16(%rsi), %r10
-	movq	24(%rsi), %r11
-	movq	32(%rsi), %rax
-	movq	40(%rsi), %rcx
-	movq	48(%rsi), %rsi
-	movq	%r8, %rdx
-	andq	$1, %rdx
 	shrd	$1, %r9, %r8
-	shrd	$1, %r10, %r9
-	shrd	$1, %r11, %r10
-	shrd	$1, %rax, %r11
-	shrd	$1, %rcx, %rax
-	shrd	$1, %rsi, %rcx
-	shr	    $1, %rsi
-	movq	%r8,0(%rdi)
-	movq	%r9,8(%rdi)
-	movq	%r10,16(%rdi)
-	movq	%r11,24(%rdi)
-	movq	%rax,32(%rdi)
-	movq	%rcx,40(%rdi)
-	movq	%rsi,48(%rdi)
-	movq	%rdx, %rax
+	movq	%r8, 0(%rdi)
+	movq	16(%rsi), %r8
+	shrd	$1, %r8, %r9
+	movq	%r9, 8(%rdi)
+	movq	24(%rsi), %r9
+	shrd	$1, %r9, %r8
+	movq	%r8, 16(%rdi)
+	movq	32(%rsi), %r8
+	shrd	$1, %r8, %r9
+	movq	%r9, 24(%rdi)
+	movq	40(%rsi), %r9
+	shrd	$1, %r9, %r8
+	movq	%r8, 32(%rdi)
+	movq	48(%rsi), %r8
+	shrd	$1, %r8, %r9
+	movq	%r9, 40(%rdi)
+	shrq	$1, %r8
+	movq	%r8, 48(%rdi)
 	ret
 
 cdecl(fp_lsh1_low):
-	movq	0(%rsi), %r8
-	movq	8(%rsi), %r9
-	movq	16(%rsi), %r10
-	movq	24(%rsi), %r11
-	movq	32(%rsi), %rax
-	movq	40(%rsi), %rcx
-	movq	48(%rsi), %rsi
-	movq	%rsi, %rdx
-	shrq	$63, %rdx
-	shld	$1, %rcx, %rsi
-	shld	$1, %rax, %rcx
-	shld	$1, %r11, %rax
-	shld	$1, %r10, %r11
-	shld	$1, %r9, %r10
+	movq	48(%rsi), %r8
+	movq	%r8, %rax
+	shrq	$63, %rax
+	movq	40(%rsi), %r9
+	shld	$1, %r9, %r8
+	movq	%r8, 48(%rdi)
+	movq	32(%rsi), %r8
 	shld	$1, %r8, %r9
-	shl     $1, %r8
-	movq	%r8,0(%rdi)
-	movq	%r9,8(%rdi)
-	movq	%r10,16(%rdi)
-	movq	%r11,24(%rdi)
-	movq	%rax,32(%rdi)
-	movq	%rcx,40(%rdi)
-	movq	%rsi,48(%rdi)
-	movq	%rdx, %rax
+	movq	%r9, 40(%rdi)
+	movq	24(%rsi), %r9
+	shld	$1, %r9, %r8
+	movq	%r8, 32(%rdi)
+	movq	16(%rsi), %r8
+	shld	$1, %r8, %r9
+	movq	%r9, 24(%rdi)
+	movq	8(%rsi), %r9
+	shld	$1, %r9, %r8
+	movq	%r8, 16(%rdi)
+	movq	0(%rsi), %r8
+	shld	$1, %r8, %r9
+	movq	%r9, 8(%rdi)
+	shlq	$1, %r8
+	movq	%r8, 0(%rdi)
 	ret

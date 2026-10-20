@@ -62,15 +62,15 @@ int fp3_field_get_cnr(void) {
 
 void fp2_field_init(void) {
 	bn_t e;
-	fp2_t t0, t1;
+	fp2_t t0, t1, t2;
 	ctx_t *ctx = core_get();
 
 	bn_null(e);
-	fp2_null_all(t0, t1);
+	fp2_null_all(t0, t1, t2);
 
 	RLC_TRY {
 		bn_new(e);
-		fp2_new_all(t0, t1);
+		fp2_new_all(t0, t1, t2);
 
 		/* Start by finding a quadratic/cubic non-residue. */
 #ifdef FP_QNRES
@@ -98,7 +98,9 @@ void fp2_field_init(void) {
 		}
 #endif /* !FP_QNRES */
 
-		/* Compute QNR^(p - 1)/6 and consecutive powers. */
+		/* Compute the constants g_j = QNR^floor(j * p / 6), such that the
+		 * Frobenius maps x^j to g_j * x^(j * p mod 6) for x^6 = QNR, starting
+		 * with g_1 = QNR^floor((p - 1) / 6). */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
@@ -109,26 +111,50 @@ void fp2_field_init(void) {
 
 		fp_copy(ctx->fp2_p1[0][0], t0[0]);
 		fp_copy(ctx->fp2_p1[0][1], t0[1]);
-		fp2_sqr(t1, t0);
-		fp_copy(ctx->fp2_p1[1][0], t1[0]);
-		fp_copy(ctx->fp2_p1[1][1], t1[1]);
-		fp2_mul(t1, t1, t0);
-		fp_copy(ctx->fp2_p1[2][0], t1[0]);
-		fp_copy(ctx->fp2_p1[2][1], t1[1]);
-		fp2_sqr(t1, t0);
-		fp2_sqr(t1, t1);
-		fp_copy(ctx->fp2_p1[3][0], t1[0]);
-		fp_copy(ctx->fp2_p1[3][1], t1[1]);
-		fp2_mul(t1, t1, t0);
-		fp_copy(ctx->fp2_p1[4][0], t1[0]);
-		fp_copy(ctx->fp2_p1[4][1], t1[1]);
+		if (fp_prime_get_mod18() % 3 == 1) {
+			/* For p = 1 mod 6, g_j = g_1^j. */
+			fp2_sqr(t1, t0);
+			fp_copy(ctx->fp2_p1[1][0], t1[0]);
+			fp_copy(ctx->fp2_p1[1][1], t1[1]);
+			fp2_mul(t1, t1, t0);
+			fp_copy(ctx->fp2_p1[2][0], t1[0]);
+			fp_copy(ctx->fp2_p1[2][1], t1[1]);
+			fp2_sqr(t1, t0);
+			fp2_sqr(t1, t1);
+			fp_copy(ctx->fp2_p1[3][0], t1[0]);
+			fp_copy(ctx->fp2_p1[3][1], t1[1]);
+			fp2_mul(t1, t1, t0);
+			fp_copy(ctx->fp2_p1[4][0], t1[0]);
+			fp_copy(ctx->fp2_p1[4][1], t1[1]);
 
-		/* Compute the norm z of QNR^(p - 1)/6, a sixth root of unity in Fp
-		 * that gives the constants of the even powers of Frobenius, and z^2. */
-		fp2_frb(t1, t0, 1);
-		fp2_mul(t1, t1, t0);
-		fp_copy(ctx->fp2_p0[0], t1[0]);
-		fp_sqr(ctx->fp2_p0[1], t1[0]);
+			/* Compute the norm z of g_1, a sixth root of unity in Fp that
+			 * gives the constants of the even powers of Frobenius, and z^2. */
+			fp2_frb(t1, t0, 1);
+			fp2_mul(t1, t1, t0);
+			fp_copy(ctx->fp2_p0[0], t1[0]);
+			fp_sqr(ctx->fp2_p0[1], t1[0]);
+		} else {
+			/* For p = 5 mod 6, g_j = g_1^j * QNR^(j - 1). */
+			fp2_set_dig(t2, 1);
+			fp2_mul_nor(t2, t2);
+			fp2_copy(t1, t0);
+			for (int j = 1; j < 5; j++) {
+				fp2_mul(t1, t1, t0);
+				fp2_mul(t1, t1, t2);
+				fp_copy(ctx->fp2_p1[j][0], t1[0]);
+				fp_copy(ctx->fp2_p1[j][1], t1[1]);
+			}
+
+			/* The sixth root of unity z = g_1^p * g_5 of the even powers of
+			 * Frobenius now lies in Fp^2, so store it and z^2 there. */
+			fp2_frb(t2, t0, 1);
+			fp2_mul(t2, t2, t1);
+			fp_copy(ctx->fp2_pz[0][0], t2[0]);
+			fp_copy(ctx->fp2_pz[0][1], t2[1]);
+			fp2_sqr(t2, t2);
+			fp_copy(ctx->fp2_pz[1][0], t2[0]);
+			fp_copy(ctx->fp2_pz[1][1], t2[1]);
+		}
 
 		/* Compute QNR^(p - (p mod 4))/4. */
 		fp2_set_dig(t1, 1);
@@ -173,7 +199,7 @@ void fp2_field_init(void) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(e);
-		fp2_free_all(t0, t1);
+		fp2_free_all(t0, t1, t2);
 	}
 }
 

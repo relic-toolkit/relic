@@ -32,18 +32,6 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
- */
-
-/*
- * Registers: z in r8-r15, rax, rbx, rbp; T0 = rsi, T1 = rdi; a in rcx.
- * Stack: 0(%rsp) = c, 8(%rsp) = c1, then the pointers and the operands built
- * from a.
- */
-
 .text
 
 #ifdef FP2_ASM
@@ -51,11 +39,6 @@
 .global cdecl(fp2_sqrn_low)
 .global cdecl(fp2_sqrm_low)
 
-/*
- * Function: fp2_sqrn_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2, with c[1] at RLC_DV_STRIDE bytes from c[0]
- */
 cdecl(fp2_sqrn_low):
 	push	%r12
 	push	%r13
@@ -63,15 +46,16 @@ cdecl(fp2_sqrn_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$272, %rsp
-	movq	%rdi, 0(%rsp)
+	subq	$256, %rsp
+
 	leaq	RLC_DV_STRIDE(%rdi), %rax
-	movq	%rax, 8(%rsp)
+	movq	%rax, 240(%rsp)
+	movq	%rdi, 248(%rsp)
 	movq	%rsi, %rcx
 
 	FP2_SQR_LOW	0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
 
-	addq	$272, %rsp
+	addq	$256, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -80,11 +64,8 @@ cdecl(fp2_sqrn_low):
 	pop		%r12
 	ret
 
-/*
- * Function: fp2_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p, coefficient-wise
- */
+#ifdef FP2_SQR_RDC
+
 cdecl(fp2_sqrm_low):
 	push	%r12
 	push	%r13
@@ -92,13 +73,16 @@ cdecl(fp2_sqrm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$272, %rsp
-	movq	%rdi, 0(%rsp)
+	subq	$256, %rsp
+
+	leaq	80(%rdi), %rax
+	movq	%rax, 240(%rsp)
+	movq	%rdi, 248(%rsp)
 	movq	%rsi, %rcx
 
 	FP2_SQR_LOW	0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 1, 0(%rsp)
 
-	addq	$272, %rsp
+	addq	$256, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -107,4 +91,41 @@ cdecl(fp2_sqrm_low):
 	pop		%r12
 	ret
 
-#endif /* FP2_ASM */
+#else
+
+cdecl(fp2_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$584, %rsp
+
+	movq	%rdi, 256(%rsp)
+	leaq	264(%rsp), %rax
+	movq	%rax, 248(%rsp)
+	leaq	424(%rsp), %rax
+	movq	%rax, 240(%rsp)
+	movq	%rsi, %rcx
+
+	FP2_SQR_LOW	0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rax, %rbx, %rbp, %rsi, %rdi, p0(%rip), 0, 0(%rsp)
+
+	movq	256(%rsp), %rdi
+	FP_RDCN_LOW	264(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), %rbx, %rbp, %rdx, %rsi
+	movq	256(%rsp), %rdi
+	addq	$80, %rdi
+	FP_RDCN_LOW	424(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), %rbx, %rbp, %rdx, %rsi
+
+	addq	$584, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif
+
+#endif

@@ -45,7 +45,7 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a) {
 
 dig_t fb_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	dig_t carry = 0;
-	/* RLC_GMP requires the shift count to be nonzero. */
+	/* GMP requires the shift count to be nonzero. */
 	if (bits > 0) {
 		carry = mpn_lshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
 	} else {
@@ -60,7 +60,7 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a) {
 
 dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	dig_t carry = 0;
-	/* RLC_GMP requires the shift count to be nonzero. */
+	/* GMP requires the shift count to be nonzero. */
 	if (bits > 0) {
 		carry = mpn_rshift((mp_ptr)c, (mp_srcptr)a, RLC_FB_DIGS, bits);
 	} else {

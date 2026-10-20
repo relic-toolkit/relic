@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of RLC_AVR-dependent routines.
+ * Implementation of AVR-dependent routines.
  *
  * @ingroup arch
  */

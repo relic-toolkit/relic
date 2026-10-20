@@ -6,7 +6,7 @@
 
 static int paillier(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, s, pub, prv;
+	bn_t a, b, c, d, pub, prv;
 	int result;
 
 	bn_null(a);

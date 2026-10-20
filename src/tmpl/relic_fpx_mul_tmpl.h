@@ -677,10 +677,12 @@
 																			\
 			if (S##_is_zero(a[1])) {										\
 				/* Either a[0] is a square and the root is purely 'real',	\
-				 * or it is not and the root is purely 'imaginary'. */		\
+				 * or it is not and the root is purely 'imaginary'. The		\
+				 * square root tells which. */								\
 				r = 1;														\
-				if (S##_is_sqr(a[0])) {										\
-					S##_srt(c[0], a[0]);									\
+				if (S##_srt(t0, a[0])) {									\
+					/* Through t0, as c may alias a. */						\
+					S##_copy(c[0], t0);										\
 					S##_zero(c[1]);											\
 				} else {													\
 					/* Compute a[0]/s^2. */									\
@@ -701,8 +703,8 @@
 				NOR(t2, t1);												\
 				S##_sub(t0, t0, t2);										\
 																			\
-				if (S##_is_sqr(t0)) {										\
-					S##_srt(t1, t0);										\
+				/* The square root tells whether t0 is a square. */			\
+				if (S##_srt(t1, t0)) {										\
 					/* t0 = (a_0 + sqrt(t0)) / 2 */							\
 					S##_add(t0, a[0], t1);									\
 					for (int i = 0; i < (H); i++) {							\

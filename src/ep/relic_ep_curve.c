@@ -199,6 +199,14 @@ static void ep_curve_set_map(void) {
 			if (!fp_srt(c4, c4)) {
 				RLC_THROW(ERR_NO_VALID);
 			}
+		} else if (fp_prime_get_mod18() % 3 == 2 &&
+				fp_prime_get_mod8() % 4 == 3) {
+			/* Then -3 is not a square, but sqrt(-3) = sqrt(3) * u in Fp^2
+			 * for u^2 = -1, so store sqrt(3), a square for p = 3 mod 4. */
+			fp_set_dig(c4, 3);
+			if (!fp_srt(c4, c4)) {
+				RLC_THROW(ERR_NO_VALID);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -531,10 +539,13 @@ int ep_curve_embed(void) {
 			return 1;
 		case EP_SS2:
 			return 2;
-		case EP_GMT8:
+		case EP_CP6:
+			return 6;
+		case EP_CP8:
 			return 8;
 		case EP_BN:
 		case EP_B12:
+		case EP_SS3:
 			return 12;
 		case EP_AFG16:
 		case EP_FM16:

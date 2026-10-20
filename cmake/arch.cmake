@@ -22,18 +22,17 @@ message("   ALIGN=2        Align digit vectors into 16-bit boundaries.")
 message("   ALIGN=8        Align digit vectors into 64-bit boundaries.")
 message("   ALIGN=16       Align digit vectors into 128-bit boundaries.\n")
 
-# Architecture and memory layout.
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
-	set(ARCH "X86" CACHE STRING "Architecture")
-endif()
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
-	set(ARCH "ARM" CACHE STRING "Architecture")
-endif()
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+# Architecture and memory layout, under the names that the operating systems
+# report: Linux says aarch64 and armv7l where macOS says arm64 and arm.
+string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" PROCESSOR)
+if(PROCESSOR MATCHES "^(x86_64|amd64)$")
 	set(ARCH "X64" CACHE STRING "Architecture")
-endif()
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+elseif(PROCESSOR MATCHES "^(x86|i[3-6]86)$")
+	set(ARCH "X86" CACHE STRING "Architecture")
+elseif(PROCESSOR MATCHES "^(aarch64|arm64)$")
 	set(ARCH "A64" CACHE STRING "Architecture")
+elseif(PROCESSOR MATCHES "^arm")
+	set(ARCH "ARM" CACHE STRING "Architecture")
 endif()
 
 if(WORD AND NOT WSIZE)
@@ -41,14 +40,13 @@ if(WORD AND NOT WSIZE)
 endif()
 
 if(NOT WSIZE)
-	# Default is 64 bits. The flags are cached together with the word size,
-	# so that later runs of CMake keep them.
+	# Default is 64 bits.
 	set(WSIZE 64)
-	if(ARCH STREQUAL "X64" OR ARCH STREQUAL "A64")
-		set(AFLAGS "-m64" CACHE STRING "Architecture flags")
+	if(ARCH STREQUAL "A64")
 		set(WSIZE 64)
-	elseif(ARCH STREQUAL "X86" OR ARCH STREQUAL "ARM")
-		set(AFLAGS "-m32" CACHE STRING "Architecture flags")
+	elseif(ARCH STREQUAL "X86")
+		set(WSIZE 32)
+	elseif(ARCH STREQUAL "ARM")
 		set(WSIZE 32)
 	elseif(ARCH STREQUAL "MSP")
 		set(WSIZE 16)
@@ -58,6 +56,16 @@ if(NOT WSIZE)
 endif()
 
 set(WSIZE ${WSIZE} CACHE STRING "Processor word size")
+
+# Only x86 compilers take -m64 and -m32, which GCC for ARM rejects. The flags
+# follow ARCH and WSIZE on every run, so that changing either takes effect.
+unset(AFLAGS CACHE)
+set(AFLAGS "")
+if(ARCH STREQUAL "X64" AND WSIZE EQUAL 64)
+	set(AFLAGS "-m64")
+elseif(ARCH STREQUAL "X86" AND WSIZE EQUAL 32)
+	set(AFLAGS "-m32")
+endif()
 
 if(NOT ALIGN)
 	set(ALIGN 1)

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2023 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,20 +24,54 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field multiplication functions.
+ * Implementation of the low-level prime field squaring functions.
  *
- * @ingroup bn
+ * @ingroup fp
  */
 
-#include <gmp.h>
-
-#include "relic_fp.h"
 #include "relic_fp_low.h"
+#include "macro.s"
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+.text
 
-dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
-}
+.global cdecl(fp_sqrn_low)
+.global cdecl(fp_sqrm_low)
+
+cdecl(fp_sqrn_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 0, 0(%rsp), 0(%rsp)
+
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+cdecl(fp_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+	subq	$184, %rsp
+
+	movq	%rdi, 176(%rsp)
+	FP_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, %rcx, p0(%rip), 1, 0(%rsp), 176(%rsp)
+
+	addq	$184, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret

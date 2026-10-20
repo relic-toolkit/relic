@@ -4629,6 +4629,24 @@ static int cyclotomic12(void) {
 			fp12_exp_cyc(c, a, f);
 			fp12_inv_cyc(c, c);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp12_exp(b, a, f);
+				fp12_exp_cyc(c, a, f);
+				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp12_exp_cyc(c, a, f);
+				fp12_inv_cyc(c, c);
+				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			}
         } TEST_END;
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
@@ -5368,6 +5386,24 @@ static int cyclotomic16(void) {
 			fp16_exp_cyc(c, a, f);
 			fp16_inv_cyc(c, c);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp16_exp(b, a, f);
+				fp16_exp_cyc(c, a, f);
+				TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp16_exp_cyc(c, a, f);
+				fp16_inv_cyc(c, c);
+				TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 
 		if (ep_curve_is_pairf() && ep_curve_embed() == 16) {
@@ -6167,6 +6203,24 @@ static int cyclotomic18(void) {
 			fp18_exp_cyc(c, a, f);
 			fp18_inv_cyc(c, c);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp18_exp(b, a, f);
+				fp18_exp_cyc(c, a, f);
+				TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp18_exp_cyc(c, a, f);
+				fp18_inv_cyc(c, c);
+				TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
@@ -6968,6 +7022,24 @@ static int cyclotomic24(void) {
 			fp24_exp_cyc(c, a, f);
 			fp24_inv_cyc(c, c);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp24_exp(b, a, f);
+				fp24_exp_cyc(c, a, f);
+				TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp24_exp_cyc(c, a, f);
+				fp24_inv_cyc(c, c);
+				TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			}
         } TEST_END;
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
@@ -7845,6 +7917,24 @@ static int cyclotomic48(void) {
 			fp48_exp_cyc(c, a, f);
 			fp48_inv_cyc(c, c);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp48_exp(b, a, f);
+				fp48_exp_cyc(c, a, f);
+				TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp48_exp_cyc(c, a, f);
+				fp48_inv_cyc(c, c);
+				TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			}
         } TEST_END;
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
@@ -8571,6 +8661,24 @@ static int cyclotomic54(void) {
 			fp54_exp_cyc(c, a, f);
 			fp54_inv_cyc(c, c);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			/* And exponents whose NAF is sparser, ending in -1 or 1. */
+			for (int s = -1; s <= 1; s += 2) {
+				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);
+				bn_sub_dig(f, f, 1);
+				bn_lsh(f, f, RLC_FP_BITS / 2);
+				if (s < 0) {
+					bn_sub_dig(f, f, 1);
+				} else {
+					bn_add_dig(f, f, 1);
+				}
+				fp54_exp(b, a, f);
+				fp54_exp_cyc(c, a, f);
+				TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+				bn_neg(f, f);
+				fp54_exp_cyc(c, a, f);
+				fp54_inv_cyc(c, c);
+				TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			}
         } TEST_END;
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
@@ -8948,7 +9056,9 @@ int main(void) {
 	}
 
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_curve_embed() >= 6)) {
+	/* The sextic towers are built over Fp^2, as for the SS3 curve. */
+	if (fp_prime_get_qnr() && (fp_prime_get_cnr() ||
+			ep_curve_is_pairf() == EP_SS3) && (ep_curve_embed() >= 6)) {
 		util_print("\n-- Sextic extension: (i + %d) as CNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
@@ -9122,7 +9232,8 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() &&
+	if (fp_prime_get_qnr() && (fp_prime_get_cnr() ||
+			ep_curve_is_pairf() == EP_SS3) &&
 			(ep_curve_embed() >= 12) && (ep_curve_embed() != 16)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);

@@ -140,12 +140,10 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 					}
 				}
 			} else {
-				/* t[0] = a[0]^2 - i^2 * a[1]^2 */
+				/* t[0] = a[0]^2 - i^2 * a[1]^2, with i^2 < 0. */
 				fp_sqr(t[0], a[0]);
 				fp_sqr(t[1], a[1]);
-				for (int i = -1; i > fp_prime_get_qnr(); i--) {
-					fp_add(t[0], t[0], t[1]);
-				}
+				fp_mul_dig(t[1], t[1], -fp_prime_get_qnr());
 				fp_add(t[0], t[0], t[1]);
 
 				if (fp_is_sqr(t[0])) {
@@ -246,13 +244,13 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 				fp_zero(c[0]);
 				r = fp_crt(c[1], t[1]);
 			} else {
+				/* t[0] = a[0]^2 - i^2 * a[1]^2, u[0] = a[0]^2 + i^2 * a[1]^2,
+				 * with i^2 < 0. */
 				fp_sqr(t[0], a[0]);
 				fp_sqr(t[1], a[1]);
-				fp2_copy(u, t);
-				for (int i = -1; i >= fp_prime_get_qnr(); i--) {
-					fp_add(t[0], t[0], t[1]);
-					fp_sub(u[0], u[0], u[1]);
-				}
+				fp_mul_dig(t[1], t[1], -fp_prime_get_qnr());
+				fp_sub(u[0], t[0], t[1]);
+				fp_add(t[0], t[0], t[1]);
 				fp_inv(t[1], t[0]);
 				fp_crt(t[0], t[0]);
 				fp_mul(u[0], u[0], t[1]);

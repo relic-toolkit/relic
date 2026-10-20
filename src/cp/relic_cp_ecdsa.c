@@ -32,37 +32,89 @@
 #include "relic.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-int cp_ecdsa_gen(bn_t d, ec_t q) {
-	bn_t n;
-	int result = RLC_OK;
+/**
+ * Maximum length in bytes of the order of the curve.
+ */
+#define ECDSA_BYTES		RLC_CEIL(RLC_BN_BITS, 8)
 
-	bn_null(n);
+/**
+ * Updates the state K || V of the HMAC_DRBG that derives deterministic
+ * nonces (RFC 6979).
+ *
+ * @param[in,out] kv		- the state.
+ * @param[in] in			- the provided data, or NULL.
+ * @param[in] len			- the number of bytes in the provided data.
+ */
+static void ecdsa_det_update(uint8_t *kv, const uint8_t *in, size_t len) {
+	uint8_t *k = kv, *v = kv + RLC_MD_LEN;
+	uint8_t buf[RLC_MD_LEN + 1 + 2 * ECDSA_BYTES];
 
-	RLC_TRY {
-		bn_new(n);
-
-		ec_curve_get_ord(n);
-		bn_rand_mod(d, n);
-		ec_mul_gen(q, d);
+	if (len > 2 * ECDSA_BYTES) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
+	if (len > 0) {
+		memcpy(buf + RLC_MD_LEN + 1, in, len);
 	}
-	RLC_FINALLY {
-		bn_free(n);
+	/* The second round only happens when there is data. */
+	for (int j = 0; j < (len > 0 ? 2 : 1); j++) {
+		/* K = HMAC(K, V || j || data), V = HMAC(K, V). */
+		memcpy(buf, v, RLC_MD_LEN);
+		buf[RLC_MD_LEN] = j;
+		md_hmac(k, buf, RLC_MD_LEN + 1 + len, k, RLC_MD_LEN);
+		md_hmac(v, v, RLC_MD_LEN, k, RLC_MD_LEN);
 	}
-
-	return result;
+	util_zero(buf, sizeof(buf));
 }
 
-int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
-		const bn_t d) {
+/**
+ * Derives the next deterministic nonce candidate in [1, n - 1] (RFC 6979).
+ *
+ * @param[out] k			- the nonce.
+ * @param[in,out] kv		- the state K || V of the HMAC_DRBG.
+ * @param[in] n				- the order of the curve.
+ */
+static void ecdsa_det_next(bn_t k, uint8_t *kv, const bn_t n) {
+	size_t rlen = RLC_CEIL(bn_bits(n), 8);
+	uint8_t t[ECDSA_BYTES];
+
+	do {
+		/* T = V_1 || V_2 || ..., until it has qlen bits. */
+		for (size_t i = 0; i < rlen; i += RLC_MD_LEN) {
+			md_hmac(kv + RLC_MD_LEN, kv + RLC_MD_LEN, RLC_MD_LEN, kv,
+					RLC_MD_LEN);
+			memcpy(t + i, kv + RLC_MD_LEN, RLC_MIN(RLC_MD_LEN, rlen - i));
+		}
+		/* k = bits2int(T). */
+		bn_read_bin(k, t, rlen);
+		bn_rsh(k, k, 8 * rlen - bn_bits(n));
+		/* Prepare the state for another candidate. */
+		ecdsa_det_update(kv, NULL, 0);
+	} while (bn_is_zero(k) || bn_cmp(k, n) != RLC_LT);
+	util_zero(t, sizeof(t));
+}
+
+/**
+ * Signs a message using ECDSA, with random or deterministic nonces.
+ *
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
+ * @param[in] det			- the flag to derive nonces as in RFC 6979.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d, int det) {
 	bn_t n, k, x, e;
 	ec_t p;
-	uint8_t h[RLC_MD_LEN];
+	uint8_t h[RLC_MD_LEN], kv[2 * RLC_MD_LEN], seed[2 * ECDSA_BYTES];
+	size_t rlen;
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -94,9 +146,29 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 			bn_read_bin(e, msg, len);
 		}
 
+		if (det) {
+			rlen = RLC_CEIL(bn_bits(n), 8);
+			if (rlen > ECDSA_BYTES) {
+				RLC_THROW(ERR_NO_BUFFER);
+			}
+			/* K = 00...00, V = 01...01. */
+			memset(kv, 0x00, RLC_MD_LEN);
+			memset(kv + RLC_MD_LEN, 0x01, RLC_MD_LEN);
+			/* Seed with int2octets(d) || bits2octets(e). */
+			bn_mod(x, d, n);
+			bn_write_bin(seed, rlen, x);
+			bn_mod(x, e, n);
+			bn_write_bin(seed + rlen, rlen, x);
+			ecdsa_det_update(kv, seed, 2 * rlen);
+		}
+
 		do {
 			do {
-				bn_rand_mod(k, n);
+				if (det) {
+					ecdsa_det_next(k, kv, n);
+				} else {
+					bn_rand_mod(k, n);
+				}
 				ec_mul_gen(p, k);
 				ec_get_x(x, p);
 				bn_mod(r, x, n);
@@ -121,6 +193,8 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		util_zero(kv, sizeof(kv));
+		util_zero(seed, sizeof(seed));
 		bn_free(n);
 		bn_free(k);
 		bn_free(x);
@@ -128,6 +202,43 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		ec_free(p);
 	}
 	return result;
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+int cp_ecdsa_gen(bn_t d, ec_t q) {
+	bn_t n;
+	int result = RLC_OK;
+
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(n);
+
+		ec_curve_get_ord(n);
+		bn_rand_mod(d, n);
+		ec_mul_gen(q, d);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+	}
+
+	return result;
+}
+
+int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d) {
+	return ecdsa_sig(r, s, msg, len, hash, d, 0);
+}
+
+int cp_ecdsa_sig_det(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d) {
+	return ecdsa_sig(r, s, msg, len, hash, d, 1);
 }
 
 int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,

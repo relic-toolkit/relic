@@ -1672,6 +1672,10 @@ int main(void) {
 	}
 
 	r2 = ep_param_set_any_pairf();
+	if (r2 == RLC_OK && ep_curve_is_pairf() == EP_SS3) {
+		/* The SS3 curve is over Fp^4, and tested in the EPX module. */
+		r2 = RLC_ERR;
+	}
 	if (r2 == RLC_OK) {
 		c2 = ep_param_get();
 		if (c2 != c1) {
@@ -1683,6 +1687,10 @@ int main(void) {
 	}
 
 	r3 = ep_param_set_any_super();
+	if (r3 == RLC_OK && ep_curve_is_pairf() == EP_SS3) {
+		/* The SS3 curve is over Fp^4, and tested in the EPX module. */
+		r3 = RLC_ERR;
+	}
 	if (r3 == RLC_OK) {
 		c3 = ep_param_get();
 		if (c3 != c2) {

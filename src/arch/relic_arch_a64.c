@@ -179,7 +179,7 @@ void arch_init(void) {
 		core_get()->lzcnt_ptr =
 			(has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
 		core_get()->tzcnt_ptr =
-			(has_lzcnt_hard() ? tzcnt64_hard : tzcnt64_soft);
+			(has_tzcnt_hard() ? tzcnt64_hard : tzcnt64_soft);
 	}
 
 #if RLC_TIMER == RLC_CYCLE

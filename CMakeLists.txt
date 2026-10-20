@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
-	cmake_policy(SET CMP0054 NEW)
-endif()
 
-project(RELIC C CXX)
+project(RELIC C)
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "7")
 set(PROJECT_VERSION_PATCH "0")
@@ -20,7 +17,7 @@ set(WFLAGS "-Wall")
 
 message("\n-- Configuring ${PROJECT_NAME} ${PROJECT_VERSION}...\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
+message(STATUS "Available switches (default = CHECK, VERBS, DOCUM, COLOR, SHLIB, STLIB):\n")
 
 message("   DEBUG=[off|on] Build with debugging support.")
 message("   CHECK=[off|on] Build with error-checking support.")
@@ -48,7 +45,7 @@ option(STBIN "Build static binaries" off)
 option(AMALG "Build amalgamation" off)
 option(AUSAN "Build with ASan and UBSan (gcc/clang only)" off)
 
-message(STATUS "Number of times each test or benchmark is ran (default = 50, 1000):\n")
+message(STATUS "Number of times each test or benchmark is run (default = 100, 100):\n")
 
 message("   TESTS=n        If n > 0, build automated tests and run them n times.")
 message("   BENCH=n        If n > 0, build automated benchmarks and run them n * n times.\n")
@@ -57,6 +54,11 @@ message(STATUS "Number of available processor cores (default = 1):\n")
 
 message("   CORES=n        If n > 1, enable multithreading support.\n")
 
+message(STATUS "Widths of precomputation tables (default = 5, 4):\n")
+
+message("   DEPTH=w        Width w in [2,8] of table for fixed exponentiation.")
+message("   WIDTH=w        Width w in [2,6] of table for exponentiation.\n")
+
 message(STATUS "Available modules (default = ALL)\n")
 
 message("   WITH=BN       Multiple precision arithmetic.")
@@ -64,13 +66,14 @@ message("   WITH=DV       Temporary double-precision digit vectors.")
 message("   WITH=FP       Prime field arithmetic.")
 message("   WITH=FPX      Prime extension field arithmetic.")
 message("   WITH=FB       Binary field arithmetic.")
+message("   WITH=FBX      Binary extension field arithmetic.")
 message("   WITH=EP       Elliptic curves over prime fields.")
 message("   WITH=EPX      Elliptic curves over extensions of prime fields.")
 message("   WITH=EB       Elliptic curves over binary fields.")
 message("   WITH=ED       Elliptic Edwards curves over prime fields.")
-message("   WTTH=EC       Elliptic curve cryptography.")
+message("   WITH=EC       Elliptic curve cryptography.")
 message("   WITH=PP       Pairings over prime elliptic curves.")
-message("   WTTH=PC       Pairing-based cryptography.")
+message("   WITH=PC       Pairing-based cryptography.")
 message("   WITH=BC       Block ciphers (symmetric encryption).")
 message("   WITH=MD       Message digests (hash functions).")
 message("   WITH=CP       Cryptographic protocols.")
@@ -82,7 +85,7 @@ message(STATUS "Available arithmetic backends (default = easy):\n")
 
 message("   ARITH=easy     Easy-to-understand and portable, but slow backend.")
 message("   ARITH=fiat     Backend based on code generated from Fiat-Crypto.")
-message("   ARITH=gmp      Backend based on GNU Multiple Precision library.\n")
+message("   ARITH=gmp      Backend based on GNU Multiple Precision library.")
 message("   ARITH=gmp-sec  Same as above, but using constant-time code.\n")
 
 message(STATUS "Available memory-allocation policies (default = AUTO):\n")
@@ -121,15 +124,6 @@ message(STATUS "Prefix to identify this build of the library (default = \"\"):\n
 
 message("   LABEL=relic\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
-
-message("   RLC_DEPTH=w    Width w in [2,8] of table for fixed exponentiation.")
-message("   RLC_WIDTH=w    Width w in [2,6] of table for exponentiation.\n")
-
-# Table sizes for exponentiation methods
-set(RLC_DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
-set(RLC_WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
-
 include(cmake/arch.cmake)
 include(cmake/err.cmake)
 include(cmake/bn.cmake)
@@ -156,8 +150,20 @@ if(NOT CORES STREQUAL "1" AND NOT MULTI)
 	set(MULTI OPENMP)
 endif()
 
-# Choose the arithmetic backend.
+# Table sizes for exponentiation methods
+set(DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
+set(WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
+
+# Choose the arithmetic backend, which must be one of the folders of src/low.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
+string(TOLOWER "${ARITH}" ARITH_DIR)
+if(NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/low/${ARITH_DIR}")
+	file(GLOB BACKENDS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src/low"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/low/*")
+	string(REPLACE ";" " " BACKENDS "${BACKENDS}")
+	message(FATAL_ERROR "Unknown arithmetic backend ARITH=${ARITH}, choose "
+		"one of: ${BACKENDS}")
+endif()
 
 # Choose the memory-allocation policy.
 set(ALLOC "AUTO" CACHE STRING "Allocation policy")
@@ -167,10 +173,17 @@ set(SIMUL "$ENV{SIMUL}" CACHE STRING "Path to call a simulator of the target pla
 set(SIMAR "$ENV{SIMAR}" CACHE STRING "Arguments to call a simulator of the target platform.")
 string(REPLACE " " ";" SIMAR "${SIMAR}")
 
-# Linker flags.
-string(TOLOWER ${ARITH} LFLAGS)
-set(LFLAGS "-L${CMAKE_CURRENT_SOURCE_DIR}/src/low/${LFLAGS}/")
-set(LFLAGS "${LFLAGS} $ENV{LDFLAGS}")
+# A top-level build takes CFLAGS and LDFLAGS, while a subproject takes them as
+# RLC_CFLAGS and RLC_LDFLAGS, which cannot clash with a parent project's.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+	set(FLAGS_PREFIX "")
+else()
+	set(FLAGS_PREFIX "RLC_")
+endif()
+
+# Linker flags, by default from LDFLAGS in the environment.
+set(${FLAGS_PREFIX}LDFLAGS "$ENV{LDFLAGS}" CACHE STRING "Linker flags.")
+set(LFLAGS "${${FLAGS_PREFIX}LDFLAGS}")
 
 if(STBIN)
 	set(LFLAGS "${LFLAGS} -static")
@@ -179,19 +192,19 @@ if(STBIN)
 endif()
 
 # Discover the operating system.
-if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(OPSYS "LINUX" CACHE STRING "Operating system")
 else()
-	if(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
+	if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 		set(OPSYS "FREEBSD" CACHE STRING "Operating system")
 	else()
-		if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+		if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 			set(OPSYS "MACOSX" CACHE STRING "Operating system")
 		else()
-			if(CMAKE_SYSTEM_NAME STREQUAL NetBSD)
+			if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 				set(OPSYS "NETBSD" CACHE STRING "Operating system")
 			else()
-				if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+				if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 					set(OPSYS "WINDOWS" CACHE STRING "Operating system")
 				endif()
 			endif()
@@ -231,38 +244,41 @@ if(MSVC)
 	endforeach()
 endif()
 
-if("$ENV{CFLAGS}" STREQUAL "")
-	# If the user did not specify compile flags, we use sane defaults.
+# Compiler flags, by default from CFLAGS in the environment, and collected in
+# RLC_CFLAGS. When they are empty, the defaults below apply. They are not
+# cached, so that switching DEBUG in an existing build directory takes effect.
+set(${FLAGS_PREFIX}CFLAGS "$ENV{CFLAGS}" CACHE STRING
+	"Compiler flags, empty for the defaults.")
+set(RLC_CFLAGS "${${FLAGS_PREFIX}CFLAGS}")
+if(RLC_CFLAGS STREQUAL "")
 	if(DEBUG)
-		if (MSVC)
-			set(CFLAGS "/Od" CACHE STRING "Default compiler flags.")
+		if(MSVC)
+			set(RLC_CFLAGS "/Od")
 		else()
 			# Turn off all optimizations.
-			set(CFLAGS "-pipe -std=c99 -O0 -fno-omit-frame-pointer" CACHE STRING "Default compiler flags.")
-			set(DFLAGS "-ggdb")
+			set(RLC_CFLAGS "-pipe -std=c99 -O0 -fno-omit-frame-pointer")
 		endif()
 	else()
-		if (MSVC)
-			set(CFLAGS "/O2" CACHE STRING "Default compiler flags.")
+		if(MSVC)
+			set(RLC_CFLAGS "/O2")
 		else()
-			set(CFLAGS "-pipe -std=c99 -O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "Default compiler flags.")
+			set(RLC_CFLAGS "-pipe -std=c99 -O2 -funroll-loops -fomit-frame-pointer")
 		endif()
 	endif()
-else()
-	# Turn on debugging symbols with custom flags.
-	if(DEBUG)
-		if (MSVC)
-			set(DFLAGS "/Z7")
-		else()
-			set(DFLAGS "-ggdb")
-		endif()
+endif()
+# Turn on debugging symbols.
+set(DFLAGS "")
+if(DEBUG)
+	if(MSVC)
+		set(DFLAGS "/Z7")
+	else()
+		set(DFLAGS "-ggdb")
 	endif()
-	set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
 endif()
 
 # Remove annoying flags when compiler cannot compute buffer sizes.
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	set(CFLAGS "${CFLAGS} -Wno-stringop-overflow -Wno-stringop-overread")
+	set(RLC_CFLAGS "${RLC_CFLAGS} -Wno-stringop-overflow -Wno-stringop-overread")
 endif()
 
 if(AUSAN)
@@ -272,23 +288,29 @@ endif()
 # Find OpenMP
 if(MULTI STREQUAL "OPENMP")
 	if (MSVC)
-		set(CFLAGS "${CFLAGS} /openmp")
+		set(RLC_CFLAGS "${RLC_CFLAGS} /openmp")
 	else()
 		if (OPSYS STREQUAL "MACOSX" AND CMAKE_C_COMPILER_ID MATCHES "Clang")
-			include_directories("/usr/local/include")
-			link_directories("/usr/local/lib")
+			# Apple Clang has no OpenMP runtime, so take libomp from Homebrew,
+			# which keeps it apart under opt/libomp, or from MacPorts.
+			set(OMP_PATHS /opt/homebrew/opt/libomp /usr/local/opt/libomp
+				/opt/local /opt/homebrew /usr/local)
+			find_path(OMP_INCLUDE_DIR omp.h HINTS ${LIBOMP_ROOT} ENV LIBOMP_ROOT
+				PATHS ${OMP_PATHS} PATH_SUFFIXES include include/libomp)
+			find_library(OMP_LIBRARY omp HINTS ${LIBOMP_ROOT} ENV LIBOMP_ROOT
+				PATHS ${OMP_PATHS} PATH_SUFFIXES lib lib/libomp)
+			if(NOT OMP_INCLUDE_DIR OR NOT OMP_LIBRARY)
+				message(FATAL_ERROR "MULTI=OPENMP with Apple Clang needs libomp, "
+					"from brew install libomp, or LIBOMP_ROOT pointing to it.")
+			endif()
+			include_directories(${OMP_INCLUDE_DIR})
 			set(OpenMP_C "${CMAKE_C_COMPILER}")
-			set(OpenMP_C_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
-			set(OpenMP_C_LIB_NAMES "libomp" "libgomp" "libiomp5")
-			set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")
-			set(OpenMP_CXX_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
-			set(OpenMP_CXX_LIB_NAMES "libomp" "libgomp" "libiomp5")
-			set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-			set(OpenMP_libgomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-			set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
-			set(CFLAGS "${CFLAGS} -Xclang -fopenmp")
+			set(OpenMP_C_FLAGS "-Xclang -fopenmp -I${OMP_INCLUDE_DIR}")
+			set(OpenMP_C_LIB_NAMES "omp")
+			set(OpenMP_omp_LIBRARY "${OMP_LIBRARY}")
+			set(RLC_CFLAGS "${RLC_CFLAGS} -Xclang -fopenmp")
 		else()
-			set(CFLAGS "${CFLAGS} -fopenmp")
+			set(RLC_CFLAGS "${RLC_CFLAGS} -fopenmp")
 		endif()
 		find_package(OpenMP REQUIRED)
 	endif()
@@ -296,7 +318,7 @@ if(MULTI STREQUAL "OPENMP")
 else()
 	if(MULTI STREQUAL "PTHREAD")
 		find_package(Threads REQUIRED)
-		set(CFLAGS "${CFLAGS} -pthread")
+		set(RLC_CFLAGS "${RLC_CFLAGS} -pthread")
 		set(MULTI "PTHREAD" CACHE STRING "Multithreading interface")
 	endif()
 endif()
@@ -309,17 +331,13 @@ if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp-sec")
 	endif()
 endif()
 
-if(ARITH STREQUAL "fiat")
-	message(STATUS "Configured Fiat-Crypto: After build completes, set FIAT_CRYPTO to root folder and run: make fiat; cmake; make.")
-endif()
-
 # Let the linker remove unused code and data when stripping.
 if(STRIP)
 	if(MSVC)
-		set(CFLAGS "${CFLAGS} /Gy /Gw")
+		set(RLC_CFLAGS "${RLC_CFLAGS} /Gy /Gw")
 		set(LFLAGS "${LFLAGS} /OPT:REF")
 	else()
-		set(CFLAGS "${CFLAGS} -ffunction-sections -fdata-sections")
+		set(RLC_CFLAGS "${RLC_CFLAGS} -ffunction-sections -fdata-sections")
 		if(OPSYS STREQUAL "MACOSX")
 			set(LFLAGS "${LFLAGS} -Wl,-dead_strip")
 		else()
@@ -328,8 +346,36 @@ if(STRIP)
 	endif()
 endif()
 
-set(CMAKE_C_FLAGS "${AFLAGS} ${WFLAGS} ${DFLAGS} ${CFLAGS}")
+# Flags given to CMake itself come last, so that they win. CMake derives the
+# initial values from the environment, which RLC_CFLAGS and LFLAGS already
+# hold, so only values that differ from those are the user's own. CMake reads
+# the environment on the first run only, so remember the values from then.
+if(NOT DEFINED RLC_INIT_CFLAGS)
+	set(RLC_INIT_CFLAGS "${CMAKE_C_FLAGS_INIT}" CACHE INTERNAL "")
+	set(RLC_INIT_LFLAGS "${CMAKE_EXE_LINKER_FLAGS_INIT}" CACHE INTERNAL "")
+endif()
+string(STRIP "${CMAKE_C_FLAGS}" USER_CFLAGS)
+string(STRIP "${RLC_INIT_CFLAGS}" INIT_CFLAGS)
+if("${USER_CFLAGS}" STREQUAL "${INIT_CFLAGS}")
+	set(USER_CFLAGS "")
+endif()
+string(STRIP "${CMAKE_EXE_LINKER_FLAGS}" USER_LFLAGS)
+string(STRIP "${RLC_INIT_LFLAGS}" INIT_LFLAGS)
+if("${USER_LFLAGS}" STREQUAL "${INIT_LFLAGS}")
+	set(USER_LFLAGS "")
+endif()
+set(CMAKE_C_FLAGS "${AFLAGS} ${WFLAGS} ${DFLAGS} ${RLC_CFLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${LFLAGS}")
+if(USER_CFLAGS)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USER_CFLAGS}")
+endif()
+if(USER_LFLAGS)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${USER_LFLAGS}")
+endif()
+if(CMAKE_BUILD_TYPE)
+	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} adds its own flags, "
+		"while RELIC chooses them through ${FLAGS_PREFIX}CFLAGS and DEBUG.")
+endif()
 
 message(STATUS "Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} (${CMAKE_C_COMPILER})")
 message(STATUS "Compiler flags: ${CMAKE_C_FLAGS}")
@@ -351,7 +397,6 @@ endforeach()
 set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)
 string(REPLACE "-" "_" ARITH ${ARITH})
-string(REPLACE "." "_" ARITH ${ARITH})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/relic_conf.h @ONLY)
 message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in with backend " ${ARITH_COPY})
@@ -365,7 +410,7 @@ else()
 	set(RELIC_S "relic_s")
 endif()
 
-# Choose the arithmetic backend.
+# Choose the label that prefixes the symbols of this build.
 set(LABEL "" CACHE STRING "Build label")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -376,7 +421,7 @@ file(GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/include/low/*.h")
 install(FILES ${includes} DESTINATION include/${RELIC}/low)
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/" DESTINATION include/${RELIC})
 
-install(FILES cmake/relic-config.cmake DESTINATION cmake/)
+install(FILES cmake/relic-config.cmake DESTINATION lib/cmake/relic)
 
 if(DOCUM)
 	include(cmake/doxygen.cmake)

@@ -3,7 +3,7 @@
  *
  * @version 3.0 (December 2000)
  *
- * Optimised RLC_ANSI C code for the Rijndael cipher (now AES)
+ * Optimised ANSI C code for the Rijndael cipher (now AES)
  *
  * @author Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
  * @author Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
