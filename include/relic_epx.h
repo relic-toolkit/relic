@@ -1542,9 +1542,10 @@ void ep2_mul_twnaf(ep2_t r, const ep2_t p, const bn_t k);
 
 /**
  * Multiplies a point in an elliptic curve over a quadratic extension by an
- * integer using two regular tau-adic expansions and complete formulas, in
- * constant time and without exceptions, with tau = 1 - w for the cube root of
- * unity w of the endomorphism and the decomposition along psi. Curves where
+ * integer using two regular tau-adic expansions, in constant time, and without
+ * exceptions in projective coordinates, where the formulas are complete, with
+ * tau = 1 - w for the cube root of unity w of the endomorphism and the
+ * decomposition along psi. Curves where
  * psi^2 does not act as a unit use the regular method.
  *
  * @param[out] r			- the result.
@@ -2198,9 +2199,9 @@ void ep3_mul_twnaf(ep3_t r, const ep3_t p, const bn_t k);
 
 /**
  * Multiplies a point in an elliptic curve over a cubic extension by an integer
- * using interleaved regular tau-adic expansions and complete formulas, in
- * constant time and without exceptions. Curves where a power of psi does not
- * act as a unit use the regular method.
+ * using interleaved regular tau-adic expansions, in constant time, and without
+ * exceptions in projective coordinates, where the formulas are complete.
+ * Curves where a power of psi does not act as a unit use the regular method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -2827,8 +2828,9 @@ void ep4_mul_twnaf(ep4_t r, const ep4_t p, const bn_t k);
 
 /**
  * Multiplies a point in an elliptic curve over a quartic extension by an
- * integer using interleaved regular tau-adic expansions and complete formulas,
- * in constant time and without exceptions. Curves where a power of psi does not
+ * integer using interleaved regular tau-adic expansions, in constant time, and
+ * without exceptions in projective coordinates, where the formulas are
+ * complete. Curves where a power of psi does not
  * act as a unit use the regular method.
  *
  * @param[out] r			- the result.
@@ -3451,9 +3453,9 @@ void ep8_mul_twnaf(ep8_t r, const ep8_t p, const bn_t k);
 
 /**
  * Multiplies a point in an elliptic curve over an octic extension by an integer
- * using interleaved regular tau-adic expansions and complete formulas, in
- * constant time and without exceptions. Curves where a power of psi does not
- * act as a unit use the regular method.
+ * using interleaved regular tau-adic expansions, in constant time, and without
+ * exceptions in projective coordinates, where the formulas are complete.
+ * Curves where a power of psi does not act as a unit use the regular method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -4065,10 +4067,10 @@ void ep9_mul_twnaf(ep9_t r, const ep9_t p, const bn_t k);
 
 /**
  * Multiplies a point in an elliptic curve over a nonic extension by an integer
- * using interleaved regular tau-adic expansions and complete formulas, in
- * constant time and without exceptions. Curves where a power of psi does not
- * act as a unit use the regular method, as do the SG54 curves, whose
- * decomposition along psi has dimension 10.
+ * using interleaved regular tau-adic expansions, in constant time, and without
+ * exceptions in projective coordinates, where the formulas are complete.
+ * Curves where a power of psi does not act as a unit use the regular method,
+ * as do the SG54 curves, whose decomposition along psi has dimension 10.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

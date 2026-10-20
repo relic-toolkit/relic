@@ -505,8 +505,10 @@
 /**
  * Defines a template for the evaluation of e interleaved regular tau-adic
  * expansions from bn_rec_retnaf() with Horner's rule in base tau^2 = -3w, on
- * tables of 12 points per expansion from C##_tw_tab(), read by scanning them
- * and added with complete formulas, in constant time.
+ * tables of 12 points per expansion from C##_tw_tab(), read by scanning them,
+ * in constant time. The formulas are those of the configured coordinates, and
+ * the evaluation is free of exceptions in projective coordinates, where they
+ * are complete.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -526,12 +528,12 @@
 																			\
 			/* Horner's rule in base 3 as in the NAF, now with a digit at	\
 			 * every position multiple of 3, read in constant time from the	\
-			 * table by scanning it, and complete formulas. */				\
+			 * table by scanning it. */										\
 			F##_set_dig(u->z, 1);											\
 			u->coord = EC_AFFIN;												\
 			for (int m = top / 2; m >= 0; m--) {							\
 				if (m < top / 2) {											\
-					C##_tpl_projc(r, r);									\
+					C##_tpl(r, r);												\
 				}															\
 				for (int i = 2 * m; i <= RLC_MIN(2 * m + 1, top); i++) {	\
 					if (i % 3 != 0) {										\
@@ -566,7 +568,7 @@
 						if (m == top / 2 && k == 0) {						\
 							C##_copy(r, u);									\
 						} else {											\
-							C##_add_projc(r, r, u);							\
+							C##_add(r, r, u);									\
 						}													\
 					}														\
 				}															\
@@ -574,7 +576,7 @@
 			/* Undo the increments of the recodings. */						\
 			for (int k = 0; k < e; k++) {									\
 				C##_neg(u, t[12 * k]);										\
-				C##_add_projc(q, r, u);										\
+				C##_add(q, r, u);												\
 				F##_copy_sec(r->x, q->x, c[k]);								\
 				F##_copy_sec(r->y, q->y, c[k]);								\
 				F##_copy_sec(r->z, q->z, c[k]);								\
