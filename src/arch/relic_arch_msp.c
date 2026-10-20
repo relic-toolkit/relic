@@ -41,7 +41,7 @@ void arch_init(void) {
 void arch_clean(void) {
 }
 
-#if TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
 #ifdef __MSP430__
 /* Support for MSPGCC with custom MSPsim simulator. */
@@ -89,7 +89,7 @@ ull_t arch_cycles(void) {
 
 #endif /* __ICC430__ */
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = RLC_CYCLE */
 
 uint_t arch_lzcnt(dig_t a) {
 	/* Leading zeros of a nibble. */
@@ -99,7 +99,7 @@ uint_t arch_lzcnt(dig_t a) {
 	uint_t offset = 0;
 
 	if (a == 0) {
-		return WSIZE;
+		return RLC_WSIZE;
 	}
 	/* Find the most significant non-zero byte, then its leading nibble. */
 	if (a >> 8 == 0) {
@@ -120,7 +120,7 @@ uint_t arch_tzcnt(dig_t a) {
 	uint_t offset = 0;
 
 	if (a == 0) {
-		return WSIZE;
+		return RLC_WSIZE;
 	}
 	/* Find the least significant non-zero byte, then its trailing nibble. */
 	if ((a & 0xFF) == 0) {

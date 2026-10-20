@@ -166,7 +166,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		fp_set_dig(u->z, 1);
 		fp_set_dig(w->z, 1);
-		u->coord = w->coord = BASIC;
+		u->coord = w->coord = EC_AFFIN;
 		/* The first digit initializes the accumulator, which depends only
 		 * on the loop counters. */
 		for (int i = l - 1; i >= 0; i--) {

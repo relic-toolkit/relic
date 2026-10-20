@@ -188,13 +188,13 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 
 	x = (((b + 2) & 4) << 1) + b;				/* here x*a==1 mod 2**4 */
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**8 */
-#if WSIZE > 8
+#if RLC_WSIZE > 8
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**16 */
 #endif
-#if WSIZE > 16
+#if RLC_WSIZE > 16
 	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**32 */
 #endif
-#if WSIZE > 32
+#if RLC_WSIZE > 32
 	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**64 */
 #endif
 	/* u = -1/m0 (mod 2^RLC_DIG) */
@@ -328,67 +328,5 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 	RLC_FINALLY {
 		bn_free_all(s, t);
-	}
-}
-
-void bn_mod_pre_pmers(bn_t u, const bn_t m) {
-	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	bn_set_2b(u, bn_bits(m));
-	bn_sub(u, u, m);
-}
-
-void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	bn_t q, t;
-	int neg = 0, bits = bn_bits(m);
-
-	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	bn_null_all(q, t);
-
-	RLC_TRY {
-		/* Implement algorithm 10.25 from HEHC. */
-
-		bn_new_all(q, t);
-
-		bn_copy(c, a);
-		if (bn_sign(c) == RLC_NEG) {
-			neg = 1;
-			bn_sub(c, m, c);
-		}
-
-		bn_rsh(q, c, bits);
-		bn_mod_2b(c, c, bits);
-
-		while (bits > 0 && !bn_is_zero(q)) {
-			if (u -> used == 1) {
-				bn_mul_dig(t, q, u->dp[0]);
-			} else {
-				bn_mul(t, q, u);
-			}
-			bn_rsh(q, t, bits);
-			bn_mod_2b(t, t, bits);
-
-			bn_add(c, c, t);
-		}
-		while (bits > 0 && bn_cmp_abs(c, m) != RLC_LT) {
-			bn_sub(c, c, m);
-		}
-
-		if (neg && !bn_is_zero(c)) {
-			bn_sub(c, m, c);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free_all(t, q);
 	}
 }

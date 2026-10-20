@@ -85,7 +85,7 @@ static void dummy4(void) {
 
 int main(void) {
 	err_t e = 0;
-#ifdef CHECK
+#ifdef RLC_CHECK
 	char *msg = NULL;
 #endif
 	int code = RLC_ERR;
@@ -100,7 +100,7 @@ int main(void) {
 	TEST_ONCE("not using try-catch is correct") {
 		counter = 0;
 		dummy();
-#ifdef CHECK
+#ifdef RLC_CHECK
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == ERR_NO_MEMORY, end);
 		TEST_ASSERT(msg == core_get()->reason[ERR_NO_MEMORY], end);
@@ -112,7 +112,7 @@ int main(void) {
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 	} TEST_END;
 
-#ifdef CHECK
+#ifdef RLC_CHECK
 	TEST_ONCE("errors are reported again after reading the code") {
 		RLC_THROW(ERR_NO_VALID);
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);

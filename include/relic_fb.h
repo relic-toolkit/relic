@@ -138,7 +138,7 @@ enum {
  * Size of a precomputation table for repeated squaring/square-root using the
  * chosen algorithm.
  */
-#if FB_ITR == BASIC
+#if FB_ITR == FB_BASIC
 #define RLC_FB_TABLE 			RLC_FB_TABLE_BASIC
 #else
 #define RLC_FB_TABLE			RLC_FB_TABLE_QUICK
@@ -185,7 +185,7 @@ enum {
 /**
  * Represents a binary field element.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t fb_t[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8)];
 #else
 typedef dig_t *fb_t;
@@ -205,7 +205,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define fb_null(A)			/* empty */
 #else
 #define fb_null(A)			A = NULL;
@@ -217,9 +217,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] A			- the new binary field element.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fb_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FB_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fb_new(A)			/* empty */
 #endif
 
@@ -228,9 +228,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  *
  * @param[out] A			- the binary field element to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fb_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fb_free(A)			/* empty */
 #endif
 
@@ -255,11 +255,11 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  */
 #if FB_KARAT > 0
 #define fb_mul(C, A, B)		fb_mul_karat(C, A, B)
-#elif FB_MUL == BASIC
+#elif FB_MUL == FB_BASIC
 #define fb_mul(C, A, B)		fb_mul_basic(C, A, B)
-#elif FB_MUL == INTEG
+#elif FB_MUL == FB_INTEG
 #define fb_mul(C, A, B)		fb_mul_integ(C, A, B)
-#elif FB_MUL == LODAH
+#elif FB_MUL == FB_LODAH
 #define fb_mul(C, A, B)		fb_mul_lodah(C, A, B)
 #endif
 
@@ -269,11 +269,11 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] C			- the result.
  * @param[in] A				- the binary field element to square.
  */
-#if FB_SQR == BASIC
+#if FB_SQR == FB_BASIC
 #define fb_sqr(C, A)		fb_sqr_basic(C, A)
-#elif FB_SQR == QUICK
+#elif FB_SQR == FB_QUICK
 #define fb_sqr(C, A)		fb_sqr_quick(C, A)
-#elif FB_SQR == INTEG
+#elif FB_SQR == FB_INTEG
 #define fb_sqr(C, A)		fb_sqr_integ(C, A)
 #endif
 
@@ -283,9 +283,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] C			- the result.
  * @param[in] A				- the binary field element.
  */
-#if FB_SRT == BASIC
+#if FB_SRT == FB_BASIC
 #define fb_srt(C, A)		fb_srt_basic(C, A)
-#elif FB_SRT == QUICK
+#elif FB_SRT == FB_QUICK
 #define fb_srt(C, A)		fb_srt_quick(C, A)
 #endif
 
@@ -296,9 +296,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] C			- the result.
  * @param[in] A				- the multiplication result to reduce.
  */
-#if FB_RDC == BASIC
+#if FB_RDC == FB_BASIC
 #define fb_rdc(C, A)		fb_rdc_basic(C, A)
-#elif FB_RDC == QUICK
+#elif FB_RDC == FB_QUICK
 #define fb_rdc(C, A)		fb_rdc_quick(C, A)
 #endif
 
@@ -308,9 +308,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[in] A				- the binary field element.
  * @return the trace of the binary field element.
  */
-#if FB_TRC == BASIC
+#if FB_TRC == FB_BASIC
 #define fb_trc(A)			fb_trc_basic(A)
-#elif FB_TRC == QUICK
+#elif FB_TRC == FB_QUICK
 #define fb_trc(A)			fb_trc_quick(A)
 #endif
 
@@ -321,9 +321,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] C			- the result.
  * @param[in] A				- the binary field element.
  */
-#if FB_SLV == BASIC
+#if FB_SLV == FB_BASIC
 #define fb_slv(C, A)		fb_slv_basic(C, A)
-#elif FB_SLV == QUICK
+#elif FB_SLV == FB_QUICK
 #define fb_slv(C, A)		fb_slv_quick(C, A)
 #endif
 
@@ -333,17 +333,17 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] C			- the result.
  * @param[in] A				- the binary field element to invert.
  */
-#if FB_INV == BASIC
+#if FB_INV == FB_BASIC
 #define fb_inv(C, A)		fb_inv_basic(C, A)
-#elif FB_INV == BINAR
+#elif FB_INV == FB_BINAR
 #define fb_inv(C, A)		fb_inv_binar(C, A)
-#elif FB_INV == EXGCD
+#elif FB_INV == FB_EXGCD
 #define fb_inv(C, A)		fb_inv_exgcd(C, A)
-#elif FB_INV == ITOHT
+#elif FB_INV == FB_ITOHT
 #define fb_inv(C, A)		fb_inv_itoht(C, A)
-#elif FB_INV == CTAIA
+#elif FB_INV == FB_CTAIA
 #define fb_inv(C, A)		fb_inv_ctaia(C, A)
-#elif FB_INV == LOWER
+#elif FB_INV == FB_LOWER
 #define fb_inv(C, A)		fb_inv_lower(C, A)
 #endif
 
@@ -354,11 +354,11 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[in] A				- the basis.
  * @param[in] B				- the exponent.
  */
-#if FB_EXP == BASIC
+#if FB_EXP == FB_BASIC
 #define fb_exp(C, A, B)		fb_exp_basic(C, A, B)
-#elif FB_EXP == SLIDE
+#elif FB_EXP == FB_SLIDE
 #define fb_exp(C, A, B)		fb_exp_slide(C, A, B)
-#elif FB_EXP == MONTY
+#elif FB_EXP == FB_MONTY
 #define fb_exp(C, A, B)		fb_exp_monty(C, A, B)
 #endif
 
@@ -368,9 +368,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] T			- the table.
  * @param[in] B				- the exponent.
  */
-#if FB_ITR == BASIC
+#if FB_ITR == FB_BASIC
 #define fb_itr_pre(T, B)	(void)(T), (void)(B)
-#elif FB_ITR == QUICK
+#elif FB_ITR == FB_QUICK
 #define fb_itr_pre(T, B)	fb_itr_pre_quick(T, B)
 #endif
 
@@ -399,9 +399,9 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[in] B					- the exponent.
  * @param[in] T					- the precomputed table for the exponent.
  */
-#if FB_ITR == BASIC
+#if FB_ITR == FB_BASIC
 #define fb_itr_imp(C, A, B, T)		fb_itr_basic(C, A, B)
-#elif FB_ITR == QUICK
+#elif FB_ITR == FB_QUICK
 #define fb_itr_imp(C, A, B, T)		fb_itr_quick(C, A, T)
 #endif
 /*============================================================================*/

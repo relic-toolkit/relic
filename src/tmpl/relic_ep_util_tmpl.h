@@ -45,21 +45,21 @@
  * @param[in] P			- the point to randomize.
  * @param[in] T			- the random field element.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 
 #define TMPL_EP_BLIND_COORD(C, F, R, P, T)									\
 	(void)T;																\
 	C##_copy(R, P)
 
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 
 #define TMPL_EP_BLIND_COORD(C, F, R, P, T)									\
 	F##_mul(R->x, P->x, T);													\
 	F##_mul(R->y, P->y, T);													\
 	F##_mul(R->z, P->z, T);													\
-	R->coord = PROJC
+	R->coord = EC_PROJC
 
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 
 #define TMPL_EP_BLIND_COORD(C, F, R, P, T)									\
 	F##_mul(R->z, P->z, T);													\
@@ -67,7 +67,7 @@
 	F##_sqr(T, T);															\
 	F##_mul(R->x, P->x, T);													\
 	F##_mul(R->y, R->y, T);													\
-	R->coord = JACOB
+	R->coord = EC_JACOB
 
 #endif
 
@@ -82,7 +82,7 @@
  * @param[in] P			- the point to copy.
  * @param[in] B			- the condition bit.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 
 #define TMPL_EP_COPY_SEC(C, F, R, P, B)										\
 	dv_copy_sec((dig_t *)R, (const dig_t *)P,								\
@@ -117,7 +117,7 @@
 		F##_zero(p->x);														\
 		F##_set_dig(p->y, 1);												\
 		F##_zero(p->z);														\
-		p->coord = PROJC;													\
+		p->coord = EC_PROJC;													\
 	}																		\
 																			\
 	void C##_copy(C##_t r, const C##_t p) {									\
@@ -247,7 +247,7 @@
  */
 #define TMPL_EP_NORM(C, F)													\
 	static void C##_norm_imp(C##_t r, const C##_t p, int inv) {				\
-		if (p->coord != BASIC) {											\
+		if (p->coord != EC_AFFIN) {											\
 			F##_t t;														\
 																			\
 			F##_null(t);													\
@@ -262,11 +262,11 @@
 				}															\
 																			\
 				switch (p->coord) {											\
-					case PROJC:												\
+					case EC_PROJC:												\
 						F##_mul(r->x, p->x, r->z);							\
 						F##_mul(r->y, p->y, r->z);							\
 						break;												\
-					case JACOB:												\
+					case EC_JACOB:												\
 						F##_sqr(t, r->z);									\
 						F##_mul(r->x, p->x, t);								\
 						F##_mul(t, t, r->z);								\
@@ -286,7 +286,7 @@
 			}																\
 		}																	\
 																			\
-		r->coord = BASIC;													\
+		r->coord = EC_AFFIN;													\
 	}																		\
 																			\
 	void C##_norm(C##_t r, const C##_t p) {									\
@@ -295,7 +295,7 @@
 			return;															\
 		}																	\
 																			\
-		if (p->coord == BASIC) {											\
+		if (p->coord == EC_AFFIN) {											\
 			/* If the point is in affine coordinates, just copy it. */		\
 			C##_copy(r, p);													\
 			return;															\
@@ -377,13 +377,13 @@
 			C##_new_all(r, s);												\
 																			\
 			switch (q->coord) {												\
-				case PROJC:													\
+				case EC_PROJC:													\
 					/* If q is in homogeneous projective coordinates,		\
 					 * compute x1 * z2 and y1 * z2. */						\
 					F##_mul(r->x, p->x, q->z);								\
 					F##_mul(r->y, p->y, q->z);								\
 					break;													\
-				case JACOB:													\
+				case EC_JACOB:													\
 					/* If q is in Jacobian projective coordinates,			\
 					 * compute x1 * z2^2 and y1 * z2^3. */					\
 					F##_sqr(r->z, q->z);									\
@@ -398,11 +398,11 @@
 																			\
 			switch (p->coord) {												\
 				/* Now do the same for the other point. */					\
-				case PROJC:													\
+				case EC_PROJC:													\
 					F##_mul(s->x, q->x, p->z);								\
 					F##_mul(s->y, q->y, p->z);								\
 					break;													\
-				case JACOB:													\
+				case EC_JACOB:													\
 					F##_sqr(s->z, p->z);									\
 					F##_mul(s->x, q->x, s->z);								\
 					F##_mul(s->z, s->z, p->z);								\
@@ -439,7 +439,7 @@
  * @param[in,out] T		- the field element.
  * @param[in] V			- the coefficient (a or b).
  */
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 
 #define TMPL_EP_RHS_ADD(C, F, T, V)											\
 	switch (C##_curve_opt_##V()) {											\
@@ -546,7 +546,7 @@
 			F##_zero(r->y);													\
 			fp_set_bit(((fp_t *)r->y)[0], 0, b);							\
 			F##_set_dig(r->z, 1);											\
-			r->coord = BASIC;												\
+			r->coord = EC_AFFIN;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -579,7 +579,7 @@
 				F##_copy(r->x, p->x);										\
 				F##_copy(r->y, t);											\
 				F##_set_dig(r->z, 1);										\
-				r->coord = BASIC;											\
+				r->coord = EC_AFFIN;											\
 			}																\
 		} RLC_CATCH_ANY {													\
 			result = 0;														\
@@ -628,7 +628,7 @@
 			return RLC_ERR;													\
 		}																	\
 																			\
-		a->coord = BASIC;													\
+		a->coord = EC_AFFIN;													\
 		F##_set_dig(a->z, 1);												\
 		if (F##_read_bin(a->x, bin + 1, l) != RLC_OK) {						\
 			return RLC_ERR;													\

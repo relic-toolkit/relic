@@ -94,7 +94,7 @@
 				F##_sub(r->y, t0, p->y);									\
 				F##_copy(r->x, t1);											\
 				F##_copy(r->z, p->z);										\
-				r->coord = BASIC;											\
+				r->coord = EC_AFFIN;											\
 			}																\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -170,7 +170,7 @@
 					F##_dbl(t0, r->z);										\
 					F##_add(r->z, r->z, t0);								\
 				}															\
-				r->coord = PROJC;											\
+				r->coord = EC_PROJC;									\
 			} else {														\
 				/* No particularly efficient formula is known, so reuse. */	\
 				C##_dbl_projc(q, p);										\
@@ -225,7 +225,7 @@
 				F##_sub(t4, t3, t4);										\
 				F##_mul(t4, t4, p->y);										\
 				/* Z3 = 3*XtX1Z1. */										\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					F##_mul(t1, p->x, t2);									\
 				} else {													\
 					F##_mul(t1, p->x, p->z);								\
@@ -306,7 +306,7 @@
 				F##_dbl(r->y, r->y);										\
 				F##_dbl(r->y, r->y);										\
 			}																\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\

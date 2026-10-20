@@ -104,7 +104,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	return carry;
 }
 
-#if FB_INV == EXGCD || !defined(STRIP)
+#if FB_INV == FB_EXGCD || !defined(RLC_STRIP)
 
 dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size) {
 	if (bits == 1)

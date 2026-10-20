@@ -43,7 +43,7 @@
 /* Private definitions                                                         */
 /*============================================================================*/
 
-#if RAND == CALL
+#if RLC_RAND == RLC_CALL
 
 static void rand_stub(uint8_t *buf, size_t size, void *args) {
 	int fd = open(RLC_RAND_PATH, O_RDONLY);
@@ -79,7 +79,7 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if RAND == CALL
+#if RLC_RAND == RLC_CALL
 
 void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();

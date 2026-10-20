@@ -50,6 +50,21 @@
 #define BN_MAP_TRIES	((uint32_t)1 << 20)
 
 /**
+ * Number of consecutive candidates sieved at once when generating primes. The
+ * small primes for the sieve are the odd ones below twice this number.
+ */
+#if RLC_WSIZE > 16
+#define BN_SIEVE_WINDOW	(16384)
+#else
+#define BN_SIEVE_WINDOW	(1024)
+#endif
+
+/**
+ * Maximum number of small primes used for sieving.
+ */
+#define BN_SIEVE_PRIMES	(BN_SIEVE_WINDOW / 4)
+
+/**
  * Small prime numbers table.
  */
 static const dig_t primes[] = {
@@ -59,7 +74,7 @@ static const dig_t primes[] = {
 	0x0061, 0x0065, 0x0067, 0x006B, 0x006D, 0x0071, 0x007F, 0x0083,
 	0x0089, 0x008B, 0x0095, 0x0097, 0x009D, 0x00A3, 0x00A7, 0x00AD,
 	0x00B3, 0x00B5, 0x00BF, 0x00C1, 0x00C5, 0x00C7, 0x00D3, 0x00DF,
-#if WSIZE > 8
+#if RLC_WSIZE > 8
 	0x00E3, 0x00E5, 0x00E9, 0x00EF, 0x00F1, 0x00FB, 0x0101, 0x0107,
 	0x010D, 0x010F, 0x0115, 0x0119, 0x011B, 0x0125, 0x0133, 0x0137,
 
@@ -128,60 +143,207 @@ static const dig_t primes[] = {
 #endif
 };
 
-#if BN_MOD == PMERS
+/**
+ * Tests if 2^(a - 1) = 1 mod a for an odd a > 2, the Fermat test to base 2,
+ * with temporaries given by the caller and without error handling of its own.
+ *
+ * @param[in] a				- the number to test.
+ * @param[out] t			- a temporary.
+ * @param[out] u			- another temporary.
+ * @return 1 if a is a probable prime, 0 otherwise.
+ */
+static int bn_prime_fermt(const bn_t a, bn_t t, bn_t u) {
+	bn_sub_dig(u, a, 1);
+	bn_set_dig(t, 2);
+	bn_mxp(t, t, u, a);
+	return (bn_cmp_dig(t, 1) == RLC_EQ);
+}
 
 /**
- * Computes c = a ^ b mod m.
+ * Settles primality for the integers below 3 and for the even ones, which the
+ * probabilistic tests do not handle.
  *
- * @param c				- the result.
- * @param a				- the basis.
- * @param b				- the exponent.
- * @param m				- the modulus.
+ * @param[in] a				- the number to test.
+ * @return 1 if a = 2, 0 if a < 2 or a is even, -1 if a is odd and above 2.
  */
-static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	int i, l;
-	bn_t t;
+static int bn_prime_small(const bn_t a) {
+	int cmp2 = bn_cmp_dig(a, 2);
 
-	bn_null(t);
+	if (cmp2 == RLC_EQ) {
+		return 1;
+	}
+	if (cmp2 == RLC_LT || bn_is_even(a)) {
+		return 0;
+	}
+	return -1;
+}
+
+/**
+ * Searches for the first u among the integers s, s + d, s + 2d, ... such
+ * that u, 2u + 1, ..., 2^(len - 1) * (u + 1) - 1 are all probable primes. The
+ * candidates are taken in windows of consecutive terms of the progression,
+ * those with a term divisible by a small prime are sieved out, and only the
+ * terms of the rest are tested, first with a Fermat test and then with the
+ * full test.
+ *
+ * @param[out] p			- the last term of the chain.
+ * @param[out] u			- the first term of the chain, or NULL.
+ * @param[in] s				- the odd integer where the search starts.
+ * @param[in] d				- the even step of the progression, NULL for 2.
+ * @param[in] len			- the number of primes in the chain.
+ * @param[in] ubits			- the maximum length of u in bits, or 0 for none.
+ * @return 1 if a chain was found, 0 if u ran out of length, -1 on error.
+ */
+static int bn_prime_sieve(bn_t p, bn_t u, const bn_t s, const bn_t d,
+		size_t len, size_t ubits) {
+	const size_t sbits = bn_bits(s), slen = RLC_CEIL(sbits, 8);
+	const size_t dlen = (d == NULL ? 1 : RLC_CEIL(bn_bits(d), 8));
+	const uint32_t dmax = (uint32_t)(dig_t)-1;
+	uint16_t *q = RLC_ALLOCA(uint16_t, 4 * BN_SIEVE_PRIMES), *r, *e, *w;
+	uint8_t *bad = RLC_ALLOCA(uint8_t, BN_SIEVE_WINDOW);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, slen + dlen);
+	uint32_t c, g, h, j, k, m, pos = 0;
+	size_t n = 0;
+	int found = 0, result;
+	bn_t a, t, x, y, z;
+
+	if (q == NULL || bad == NULL || buf == NULL) {
+		RLC_FREE(q);
+		RLC_FREE(bad);
+		RLC_FREE(buf);
+		RLC_THROW(ERR_NO_MEMORY);
+		return -1;
+	}
+	r = q + BN_SIEVE_PRIMES;
+	e = r + BN_SIEVE_PRIMES;
+	w = e + BN_SIEVE_PRIMES;
+
+	bn_null_all(a, t, x, y, z);
 
 	RLC_TRY {
-		bn_new(t);
+		bn_new_all(a, t, x, y, z);
 
-		l = bn_bits(b);
-
-		bn_copy(t, a);
-
-		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(t, t);
-			bn_mod(t, t, m);
-			if (bn_get_bit(b, i)) {
-				bn_mul(t, t, a);
-				bn_mod(t, t, m);
+		/* Collect odd primes m = 2j + 1 with the sieve of Eratosthenes, all
+		 * below s so that no term is sieved out for being one of them. */
+		memset(bad, 0, BN_SIEVE_WINDOW);
+		for (j = 1; j < BN_SIEVE_WINDOW && n < BN_SIEVE_PRIMES; j++) {
+			m = 2 * j + 1;
+			if (sbits <= 16 && m >= ((uint32_t)1 << (sbits - 1))) {
+				break;
+			}
+			if (bad[j] == 0) {
+				q[n++] = (uint16_t)m;
+				for (g = (m * m) / 2; g < BN_SIEVE_WINDOW; g += m) {
+					bad[g] = 1;
+				}
 			}
 		}
 
-		bn_copy(c, t);
+		/* Keep, modulo each small prime m, the residue of a, the inverse of
+		 * the step z, which is 0 when m divides z, and the step of a whole
+		 * window. */
+		bn_copy(a, s);
+		if (d == NULL) {
+			bn_set_dig(z, 2);
+		} else {
+			bn_copy(z, d);
+		}
+		bn_write_bin(buf, slen, a);
+		bn_write_bin(buf + slen, dlen, z);
+		for (size_t i = 0; i < n; i++) {
+			m = q[i];
+			c = h = 0;
+			for (size_t l = 0; l < slen; l++) {
+				c = ((c << 8) | buf[l]) % m;
+			}
+			for (size_t l = slen; l < slen + dlen; l++) {
+				h = ((h << 8) | buf[l]) % m;
+			}
+			r[i] = (uint16_t)c;
+			w[i] = (uint16_t)((BN_SIEVE_WINDOW % m) * h % m);
+			/* Compute h^(m - 2) mod m by square-and-multiply. */
+			for (c = 1, k = m - 2; k > 0; k >>= 1) {
+				if (k & 1) {
+					c = c * h % m;
+				}
+				h = h * h % m;
+			}
+			e[i] = (uint16_t)c;
+		}
+
+		/* Sieve windows of candidates a + jz. The l-th term
+		 * 2^l * (a + jz + 1) - 1 is divisible by a small prime m when
+		 * a + jz = 2^(-l) - 1 mod m. */
+		while (!found && (ubits == 0 || bn_bits(a) <= ubits)) {
+			memset(bad, 0, BN_SIEVE_WINDOW);
+			for (size_t i = 0; i < n; i++) {
+				m = q[i];
+				if (e[i] != 0) {
+					h = (m + 1) / 2;
+					g = 1;
+					for (size_t l = 0; l < len; l++) {
+						c = (g + m - 1) % m;
+						j = ((c + m - r[i]) % m) * e[i] % m;
+						for (; j < BN_SIEVE_WINDOW; j += m) {
+							bad[j] = 1;
+						}
+						g = (g * h) % m;
+					}
+				}
+				r[i] = (uint16_t)((r[i] + w[i]) % m);
+			}
+
+			/* Move a to each candidate left, the window start being at
+			 * position 0, and to the next window when none is found. */
+			for (j = 0; j <= BN_SIEVE_WINDOW && !found; j++) {
+				if (j < BN_SIEVE_WINDOW && bad[j] != 0) {
+					continue;
+				}
+				for (k = j - pos; k > 0; k -= g) {
+					g = RLC_MIN(k, dmax);
+					bn_mul_dig(t, z, (dig_t)g);
+					bn_add(a, a, t);
+				}
+				pos = j;
+				if (j == BN_SIEVE_WINDOW ||
+						(ubits != 0 && bn_bits(a) > ubits)) {
+					break;
+				}
+				/* Test all terms with a single exponentiation each, and
+				 * only then with the full test. */
+				found = 1;
+				for (size_t l = 0; found && l < 2 * len; l++) {
+					if (l % len == 0) {
+						bn_copy(t, a);
+					} else {
+						bn_dbl(t, t);
+						bn_add_dig(t, t, 1);
+					}
+					found = (l < len ? bn_prime_fermt(t, x, y) :
+							bn_is_prime(t));
+				}
+			}
+			pos = 0;
+		}
+		if (found) {
+			bn_copy(p, t);
+			if (u != NULL) {
+				bn_copy(u, a);
+			}
+		}
+		result = found;
 	}
 	RLC_CATCH_ANY {
+		result = -1;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
+		bn_free_all(a, t, x, y, z);
+		RLC_FREE(q);
+		RLC_FREE(bad);
+		RLC_FREE(buf);
 	}
-}
-
-#endif
-
-/**
- * Computes c = a^b mod m, falling back to the pseudo-Mersenne exponentiation
- * above when the active reduction does not support general exponentiation.
- */
-static void bn_prime_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-#if BN_MOD != PMERS
-	bn_mxp(c, a, b, m);
-#else
-	bn_exp(c, a, b, m);
-#endif
+	return result;
 }
 
 /*============================================================================*/
@@ -237,27 +399,15 @@ int bn_is_prime_basic(const bn_t a) {
 
 int bn_is_prime_rabin(const bn_t a) {
 	bn_t t, n1, y, r;
-	int i, s, j, result, b, tests = 0, cmp2;
-
-	tests = 0;
-	result = 1;
+	int i, s, j, result, b, tests = 0;
 
 	bn_null_all(t, n1, y, r);
 
-	cmp2 = bn_cmp_dig(a, 2);
-	if (cmp2 == RLC_LT) {
-		/* Numbers 1 or smaller are not prime */
-		return 0;
+	result = bn_prime_small(a);
+	if (result >= 0) {
+		return result;
 	}
-	if (cmp2 == RLC_EQ) {
-		/* The number 2 is prime */
-		return 1;
-	}
-
-	if (bn_is_even(a) == 1) {
-		/* Even numbers > 2 are not prime */
-		return 0;
-	}
+	result = 1;
 
 	RLC_TRY {
 		/*
@@ -313,7 +463,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			}
 
 			/* y = b^r mod a. */
-			bn_prime_exp(y, t, r, a);
+			bn_mxp(y, t, r, a);
 
 			if (bn_cmp_dig(y, 1) != RLC_EQ && bn_cmp(y, n1) != RLC_EQ) {
 				j = 1;
@@ -370,7 +520,7 @@ int bn_is_prime_solov(const bn_t a) {
 			/* t1 = (a - 1)/2. */
 			bn_rsh(t1, t2, 1);
 			/* t1 = t0^(a - 1)/2 mod a. */
-			bn_prime_exp(t1, t0, t1, a);
+			bn_mxp(t1, t0, t1, a);
 			/* If t1 != 1 and t1 != n - 1 return 0 */
 			if (bn_cmp_dig(t1, 1) != RLC_EQ && bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
@@ -403,21 +553,44 @@ int bn_is_prime_solov(const bn_t a) {
 	return result;
 }
 
+int bn_is_prime_fermt(const bn_t a) {
+	bn_t t, u;
+	int result = bn_prime_small(a);
+
+	if (result >= 0) {
+		return result;
+	}
+
+	bn_null_all(t, u);
+
+	RLC_TRY {
+		bn_new_all(t, u);
+
+		result = bn_prime_fermt(a, t, u);
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(t, u);
+	}
+	return result;
+}
+
 int bn_is_prime_lucas(const bn_t a) {
 	bn_t d, n1, q, qk, u, v, t0, t1;
 	dis_t p = 1, s;
 	dig_t m;
-	int i, j, r, done = 0, result = 1;
+	int i, j, r, done = 0, result = bn_prime_small(a);
 
-	if (bn_cmp_dig(a, 2) == RLC_LT) {
-		return 0;
-	}
-	if (bn_is_even(a)) {
-		return (bn_cmp_dig(a, 2) == RLC_EQ);
+	if (result >= 0) {
+		return result;
 	}
 	if (bn_cmp_dig(a, 3) == RLC_EQ) {
 		return 1;
 	}
+	result = 1;
 
 	bn_null_all(d, n1, q, qk, u, v, t0, t1);
 
@@ -539,52 +712,60 @@ int bn_is_prime_lucas(const bn_t a) {
 	return result;
 }
 
-void bn_gen_prime_basic(bn_t a, size_t bits) {
-	while (1) {
-		do {
-			bn_rand(a, RLC_POS, bits);
-		} while (bn_bits(a) != bits);
-		if (bn_is_prime(a)) {
-			return;
+int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len) {
+	size_t ubits;
+	int found = 0, result = RLC_OK;
+	bn_t s;
+
+	/* The first term has len - 1 bits less than the last one, and at least
+	 * two for its top bits to be set. Longer chains are rare at short
+	 * lengths, where some do not exist at all. */
+	if (len == 0 || bits < len + 1 || (len > 1 && bits < 16)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	ubits = bits - len + 1;
+
+	bn_null(s);
+
+	RLC_TRY {
+		bn_new(s);
+
+		while (found == 0) {
+			/* Start from a random odd s with the top two bits set, so that
+			 * the last term has them set too. */
+			bn_rand(s, RLC_POS, ubits);
+			bn_set_bit(s, ubits - 1, 1);
+			bn_set_bit(s, ubits - 2, 1);
+			bn_set_bit(s, 0, 1);
+			found = bn_prime_sieve(p, u, s, NULL, len, ubits);
+		}
+		if (found < 0) {
+			result = RLC_ERR;
 		}
 	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(s);
+	}
+	return result;
+}
+
+void bn_gen_prime_basic(bn_t a, size_t bits) {
+	bn_gen_prime_chain(a, NULL, bits, 1);
 }
 
 void bn_gen_prime_safep(bn_t a, size_t bits) {
-	/* The smallest safe prime, 5, has three bits. */
-	if (bits < 3) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	while (1) {
-		do {
-			bn_rand(a, RLC_POS, bits);
-		} while (bn_bits(a) != bits);
-		/* Make a = 3 mod 4, so that (a - 1)/2 is odd and a keeps its length
-		 * when rebuilt below. */
-		bn_set_bit(a, 0, 1);
-		bn_set_bit(a, 1, 1);
-		/* Trial divide both a and (a - 1)/2 before any expensive test. */
-		if (!bn_is_prime_basic(a)) {
-			continue;
-		}
-		bn_rsh(a, a, 1);
-		if (bn_is_prime_basic(a) && bn_is_prime(a)) {
-			/* Restore a. */
-			bn_lsh(a, a, 1);
-			bn_add_dig(a, a, 1);
-			if (bn_is_prime(a)) {
-				return;
-			}
-		}
-	}
+	bn_gen_prime_chain(a, NULL, bits, 2);
 }
 
 void bn_gen_prime_stron(bn_t a, size_t bits) {
 	dig_t i, j;
 	int found, k;
-	bn_t r, s, t;
+	bn_t r, s, t, w;
 
 	/* The auxiliary primes need a few bits more than half a digit. */
 	if (bits < RLC_DIG + 6) {
@@ -592,38 +773,30 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 		return;
 	}
 
-	bn_null_all(r, s, t);
+	bn_null_all(r, s, t, w);
 
 	RLC_TRY {
-		bn_new_all(r, s, t);
+		bn_new_all(r, s, t, w);
 
 		do {
 			/* Generate two large primes s and t, each on its own, since
 			 * retrying both until both are prime squares the number of
-			 * candidates. The basic method avoids recursing through
-			 * bn_gen_prime() when it selects this function. */
+			 * candidates. */
 			bn_gen_prime_basic(s, bits / 2 - RLC_DIG / 2);
 			bn_gen_prime_basic(t, bits / 2 - RLC_DIG / 2);
-			found = 1;
 			bn_rand(a, RLC_POS, bits / 2 - bn_bits(t) - 1);
 			i = a->dp[0];
 			bn_dbl(t, t);
-			do {
-				/* Find first prime r = 2 * i * t + 1. */
-				bn_mul_dig(r, t, i);
-				bn_add_dig(r, r, 1);
-				i++;
-				if (bn_bits(r) > bits / 2 - 1) {
-					found = 0;
-					break;
-				}
-			} while (!bn_is_prime(r));
-			if (found == 0) {
+			/* Find the first prime r = 2 * i * t + 1, from i upwards. */
+			bn_mul_dig(r, t, i);
+			bn_add_dig(r, r, 1);
+			found = bn_prime_sieve(r, NULL, r, t, 1, bits / 2 - 1);
+			if (found <= 0) {
 				continue;
 			}
 			/* Compute t = 2 * (s^(r-2) mod r) * s - 1. */
 			bn_sub_dig(t, r, 2);
-			bn_prime_exp(t, s, t, r);
+			bn_mxp(t, s, t, r);
 
 			bn_mul(t, t, s);
 			bn_dbl(t, t);
@@ -633,25 +806,22 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 			k -= bn_bits(s);
 			bn_rand(a, RLC_POS, k);
 			j = a->dp[0];
-			do {
-				/* Find first prime a = t + 2 * j * r * s. */
-				bn_mul(a, r, s);
-				bn_mul_dig(a, a, j);
-				bn_dbl(a, a);
-				bn_add(a, a, t);
-				j++;
-				if (bn_bits(a) > bits) {
-					found = 0;
-					break;
-				}
-			} while (!bn_is_prime(a));
-		} while (found == 0 || bn_bits(a) != bits);
+			/* Find the first prime a = t + 2 * j * r * s, from j upwards. */
+			bn_mul(w, r, s);
+			bn_dbl(w, w);
+			bn_mul_dig(a, w, j);
+			bn_add(a, a, t);
+			found = bn_prime_sieve(a, NULL, a, w, 1, bits);
+		} while (found == 0 || (found > 0 && bn_bits(a) != bits));
+		if (found < 0) {
+			RLC_THROW(ERR_CAUGHT);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(r, s, t);
+		bn_free_all(r, s, t, w);
 	}
 }
 
@@ -669,7 +839,9 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		bn_new_all(lo, hi, u);
 
 		while (!found) {
-			bn_gen_prime(a, abits);
+			/* An ordinary prime keeps the residues of a varied, so that some
+			 * b = a * u + 1 is prime even when u has a single value. */
+			bn_gen_prime_basic(a, abits);
 			/* b = a * u + 1 has bbits bits for u in [lo, hi]. */
 			bn_set_2b(lo, bbits - 1);
 			bn_div_rem_rup(lo, NULL, lo, a);
@@ -705,13 +877,28 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 }
 
 void bn_next_prime(bn_t q, const bn_t p) {
-	if (bn_is_even(p)) {
-		bn_add_dig(q, p, 1);
-	} else {
-		bn_add_dig(q, p, 2);
+	bn_t s;
+
+	/* The only even prime comes first. */
+	if (bn_sign(p) == RLC_NEG || bn_cmp_dig(p, 2) == RLC_LT) {
+		bn_set_dig(q, 2);
+		return;
 	}
-	while (!bn_is_prime(q)) {
-		bn_add_dig(q, q, 2);
+
+	bn_null(s);
+
+	RLC_TRY {
+		bn_new(s);
+
+		/* Sieve from the first odd integer after p, with no bound. */
+		bn_add_dig(s, p, bn_is_even(p) ? 1 : 2);
+		bn_prime_sieve(q, NULL, s, NULL, 1, 0);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(s);
 	}
 }
 

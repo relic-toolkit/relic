@@ -30,26 +30,21 @@
  */
 
 #include "relic_fp_low.h"
-
 #include "macro.s"
 
 .text
 
 .global cdecl(fp_rdcn_low)
 
-/*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- */
 cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
 
-	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip)
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, p0(%rip), %r13, %r14, %rdx, %rsi, %r15, %rbx, %rbp
 
 	pop		%rbp
 	pop		%rbx

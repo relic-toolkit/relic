@@ -40,11 +40,11 @@
 /*============================================================================*/
 
 int ed_is_infty(const ed_t p) {
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		return (fp_is_zero(p->x) && (fp_cmp_dig(p->y, 1) == RLC_EQ));
 	}
 
-	if (p->coord != BASIC) {
+	if (p->coord != EC_AFFIN) {
 		return (fp_is_zero(p->x) && (fp_cmp(p->y, p->z) == RLC_EQ));
 	}
 
@@ -60,17 +60,17 @@ void ed_set_infty(ed_t p) {
 	fp_zero(p->x);
 	fp_set_dig(p->y, 1);
 	fp_set_dig(p->z, 1);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_zero(p->t);
 #endif
-	p->coord = PROJC;
+	p->coord = EC_PROJC;
 }
 
 void ed_copy(ed_t r, const ed_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_copy(r->t, p->t);
 #endif
 
@@ -114,16 +114,16 @@ void ed_blind(ed_t r, const ed_t p) {
 	RLC_TRY {
 		fp_new(rand);
 		fp_rand(rand);
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 		(void)rand;
 		ed_copy(r, p);
-#elif ED_ADD == PROJC || ED_ADD == EXTND
+#elif ED_ADD == ED_PROJC || ED_ADD == ED_EXTND
 		fp_mul(r->x, p->x, rand);
 		fp_mul(r->y, p->y, rand);
 		fp_mul(r->z, p->z, rand);
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 #endif
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(r->t, p->t, rand);
 #endif
 	} RLC_CATCH_ANY {
@@ -155,7 +155,7 @@ int ed_on_curve(const ed_t p) {
 		ed_norm(t, p);
 
 		/* Compute y^2 * (d * x^2 - 1) */
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(t->z, t->x, t->y);
 		r &= (fp_cmp(t->z, t->t) == RLC_EQ);
 #endif
@@ -234,7 +234,7 @@ void ed_tab(ed_t *t, const ed_t p, int w) {
 void ed_print(const ed_t p) {
 	fp_print(p->x);
 	fp_print(p->y);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_print(p->t);
 #endif
 	fp_print(p->z);
@@ -271,7 +271,7 @@ int ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 		return RLC_ERR;
 	}
 
-	a->coord = BASIC;
+	a->coord = EC_AFFIN;
 	fp_set_dig(a->z, 1);
 	if (fp_read_bin(a->y, bin + 1, RLC_FP_BYTES) != RLC_OK) {
 		return RLC_ERR;
@@ -316,7 +316,7 @@ int ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 			return RLC_ERR;
 		}
 	}
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_mul(a->t, a->x, a->y);
 	fp_mul(a->x, a->x, a->z);
 	fp_mul(a->y, a->y, a->z);

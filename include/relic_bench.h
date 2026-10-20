@@ -44,7 +44,7 @@ extern "C" {
 #include "relic_label.h"
 #include "relic_util.h"
 
-#if OPSYS == LINUX && TIMER == PERF
+#if RLC_OPSYS == RLC_LINUX && RLC_TIMER == RLC_PERF
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -84,11 +84,11 @@ extern "C" {
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
 	bench_before();															\
-	for (int i = 0; i < BENCH; i++)	{										\
+	for (int i = 0; i < RLC_BENCH; i++)	{										\
 		FUNCTION;															\
 	}																		\
 	bench_after();															\
-	bench_compute(BENCH * (N));												\
+	bench_compute(RLC_BENCH * (N));												\
 	bench_print();															\
 
 /**
@@ -99,14 +99,14 @@ extern "C" {
 #define BENCH_RUN(LABEL)													\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
-	for (int _b = 0; _b < BENCH; _b++)	{									\
+	for (int _b = 0; _b < RLC_BENCH; _b++)	{									\
 
 /**
  * Prints the average timing of each execution in the chosen metric.
  */
 #define BENCH_END															\
 	}																		\
-	bench_compute(BENCH * BENCH);											\
+	bench_compute(RLC_BENCH * RLC_BENCH);											\
 	bench_print()															\
 
 /**
@@ -116,7 +116,7 @@ extern "C" {
  */
 #define BENCH_DIV(N)														\
 	}																		\
-	bench_compute(BENCH * BENCH * N);										\
+	bench_compute(RLC_BENCH * RLC_BENCH * N);										\
 	bench_print()															\
 
 /**
@@ -125,9 +125,9 @@ extern "C" {
  * @param[in] FUNCTION		- the function executed.
  */
 #define BENCH_ADD(FUNCTION)													\
-	if (BENCH > 1) FUNCTION;												\
+	if (RLC_BENCH > 1) FUNCTION;												\
 	bench_before();															\
-	for (int _b = 0; _b < BENCH; _b++) {									\
+	for (int _b = 0; _b < RLC_BENCH; _b++) {									\
 		FUNCTION;															\
 	}																		\
 	bench_after();															\
@@ -139,22 +139,22 @@ extern "C" {
 /**
  * Timer type.
  */
-#if OPSYS == DUINO && TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 
 typedef uint32_t ben_t;
 
-#elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
+#elif RLC_TIMER == RLC_HREAL || RLC_TIMER == RLC_HPROC || RLC_TIMER == RLC_HTHRD
 
 #include <sys/time.h>
 #include <time.h>
 typedef struct timespec ben_t;
 
-#elif TIMER == ANSI
+#elif RLC_TIMER == RLC_ANSI
 
 #include <time.h>
 typedef clock_t ben_t;
 
-#else /* TIMER == CYCLE || TIMER == PERF */
+#else /* RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF */
 
 typedef ull_t ben_t;
 

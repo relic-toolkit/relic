@@ -52,7 +52,7 @@ int eb_cmp(const eb_t p, const eb_t q) {
         eb_new(r);
         eb_new(s);
 
-        if ((p->coord == PROJC) && (q->coord == PROJC)) {
+        if ((p->coord == EC_PROJC) && (q->coord == EC_PROJC)) {
             /* If the two points are not normalized, it is faster to compare
              * x1 * z2 == x2 * z1 and y1 * z2^2 == y2 * z1^2. */
             fb_mul(r->x, p->x, q->z);
@@ -62,13 +62,13 @@ int eb_cmp(const eb_t p, const eb_t q) {
             fb_mul(r->y, p->y, s->z);
             fb_mul(s->y, q->y, r->z);
         } else {
-            if (p->coord == BASIC) {
+            if (p->coord == EC_AFFIN) {
                 eb_copy(r, p);
             } else {
                 eb_norm(r, p);
             }
 
-            if (q->coord == BASIC) {
+            if (q->coord == EC_AFFIN) {
                 eb_copy(s, q);
             } else {
                 eb_norm(s, q);

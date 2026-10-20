@@ -74,6 +74,16 @@
 	C##_mul_sim_plain(R, P, K, Q, M)
 
 /**
+ * Returns the dimension of the GLS decomposition, which is lower for the
+ * supersingular curve over Fp^4, as its order has fewer digits in base u.
+ *
+ * @param[in] S			- the dimension of the GLS decomposition.
+ */
+#define TMPL_EP_MUL_DIM(S)													\
+	(ep_curve_is_pairf() == EP_SS3 ?										\
+		RLC_MIN((size_t)S, (size_t)ep_curve_frdim()) : (size_t)S)
+
+/**
  * Defines a template for point multiplication using the GLS endomorphism. The
  * scalar is decomposed in S subscalars, each recoded in w-NAF form and
  * processed by interleaving.
@@ -84,6 +94,7 @@
 #define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		size_t l, _l[S], w = RLC_WIDTH;										\
+		size_t s = TMPL_EP_MUL_DIM(S);										\
 		bn_t n, _k[S], u;													\
 		int8_t naf[S][RLC_FP_BITS + 1];										\
 		C##_t q, t[S][1 << (RLC_WIDTH - 2)];								\
@@ -110,10 +121,10 @@
 			C##_curve_get_ord(n);											\
 			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
-			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+			bn_rec_frb(_k, s, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
 																			\
 			l = 0;															\
-			for (size_t i = 0; i < S; i++) {								\
+			for (size_t i = 0; i < s; i++) {								\
 				l = RLC_MAX(l, bn_bits(_k[i]));								\
 			}																\
 			if (l < bn_bits(u) / 2) {										\
@@ -121,7 +132,7 @@
 			}																\
 																			\
 			l = 0;															\
-			for (size_t i = 0; i < S; i++) {								\
+			for (size_t i = 0; i < s; i++) {								\
 				_l[i] = RLC_FP_BITS + 1;									\
 				bn_rec_naf(naf[i], &_l[i], _k[i], w);						\
 				l = RLC_MAX(l, _l[i]);										\
@@ -156,7 +167,7 @@
 					C##_dbl(r, r);											\
 				}															\
 																			\
-				for (size_t i = 0; i < S; i++) {							\
+				for (size_t i = 0; i < s; i++) {							\
 					if (naf[i][j] > 0) {									\
 						C##_add(r, r, t[i][naf[i][j] / 2]);					\
 					}														\
@@ -200,15 +211,19 @@
 		const int flag = (ep_curve_is_pairf() == EP_BN);					\
 		size_t l;															\
 		bn_t n, _k[S], u;													\
-		int8_t even[T], col, sac[T][(S / T) * (RLC_FP_BITS + 1)];			\
+		int8_t even[T] = { 0 }, col, sac[T][(S / T) * (RLC_FP_BITS + 1)];	\
 		C##_t q[S], t[T][1 << (S / T - 1)];									\
+		/* Fewer dimensions if the order has fewer digits in base u, kept in\
+		 * groups of S / T and thus in fewer groups, c = s / g. */			\
+		size_t s = TMPL_EP_MUL_DIM(S);										\
+		size_t g = RLC_MIN((size_t)S / T, s), c = s / g;					\
 																			\
 		bn_null_all(n, u);													\
 		for (int i = 0; i < S; i++) {										\
 			bn_null(_k[i]);													\
 			C##_null(q[i]);													\
 		}																	\
-		for (int i = 0; i < T; i++) {										\
+		for (int i = 0; i < (int)c; i++) {									\
 			for (int j = 0; j < (1 << (S / T - 1)); j++) {					\
 				C##_null(t[i][j]);											\
 			}																\
@@ -220,7 +235,7 @@
 				bn_new(_k[i]);												\
 				C##_new(q[i]);												\
 			}																\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
 					C##_new(t[i][j]);										\
 				}															\
@@ -229,58 +244,59 @@
 			C##_curve_get_ord(n);											\
 			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
-			bn_rec_frb(_k, S, _k[0], u, n, flag);							\
+			bn_rec_frb(_k, s, _k[0], u, n, flag);							\
 																			\
 			C##_norm(q[0], p);												\
-			for (int i = 1; i < S; i++) {									\
+			for (size_t i = 1; i < s; i++) {								\
 				C##_psi(q[i], q[i - 1]);									\
 			}																\
-			for (int i = 0; i < S; i++) {									\
+			for (size_t i = 0; i < s; i++) {								\
 				C##_neg(r, q[i]);											\
 				F##_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);		\
 				bn_abs(_k[i], _k[i]);										\
 			}																\
-			for (int i = 0; i < T; i++) {									\
-				even[i] = bn_is_even(_k[i * (S / T)]);						\
-				bn_add_dig(_k[i * (S / T)], _k[i * (S / T)], even[i]);		\
+			for (int i = 0; i < (int)c; i++) {								\
+				even[i] = bn_is_even(_k[i * g]);							\
+				bn_add_dig(_k[i * g], _k[i * g], even[i]);					\
 			}																\
 																			\
-			for (int i = 0; i < T; i++) {									\
-				C##_copy(t[i][0], q[i * (S / T)]);							\
-				for (int j = 1; j < (1 << (S / T - 1)); j++) {				\
+			for (int i = 0; i < (int)c; i++) {								\
+				C##_copy(t[i][0], q[i * g]);								\
+				for (int j = 1; j < (1 << (g - 1)); j++) {					\
 					l = util_bits_dig(j);									\
 					C##_add(t[i][j], t[i][j ^ (1 << (l - 1))],				\
-							q[l + i * (S / T)]);							\
+							q[l + i * g]);									\
 				}															\
 				/* The endomorphism may return projective points. */		\
-				l = (t[i][0]->coord == BASIC);								\
+				l = (t[i][0]->coord == EC_AFFIN);								\
 				C##_norm_sim(t[i] + l, (const C##_t *)t[i] + l,				\
-						(1 << (S / T - 1)) - l);							\
+						(1 << (g - 1)) - l);								\
 				l = RLC_FP_BITS + 1;										\
-				bn_rec_sac(sac[i], &l, _k + i * (S / T), u, T, S / T,		\
+				bn_rec_sac(sac[i], &l, _k + i * g, u, c, g,					\
 						bn_bits(n), flag);									\
 			}																\
 																			\
 			F##_set_dig(q[1]->z, 1);										\
-			q[1]->coord = BASIC;											\
+			q[1]->coord = EC_AFFIN;											\
 			/* The first digit initializes the accumulator, which only		\
 			 * depends on the loop counters. */								\
 			for (int j = l - 1; j >= 0; j--) {								\
 				if (j < (int)l - 1) {										\
 					C##_dbl(r, r);											\
 				}															\
-				for (int i = 0; i < T; i++) {								\
+				for (int i = 0; i < (int)c; i++) {							\
 					col = 0;												\
-					for (int m = S / T - 1; m > 0; m--) {					\
+					for (int m = g - 1; m > 0; m--) {						\
 						col <<= 1;											\
 						col += sac[i][m * l + j];							\
 					}														\
-					for (int m = 0; m < (1 << (S / T - 1)); m++) {			\
+					for (int m = 0; m < (1 << (g - 1)); m++) {				\
 						F##_copy_sec(q[1]->x, t[i][m]->x, m == col);		\
 						F##_copy_sec(q[1]->y, t[i][m]->y, m == col);		\
 					}														\
-					C##_neg(q[2], q[1]);									\
-					F##_copy_sec(q[1]->y, q[2]->y, sac[i][j]);				\
+					/* Scratch points that are never the head of a group. */\
+					C##_neg(q[s - 1], q[1]);								\
+					F##_copy_sec(q[1]->y, q[s - 1]->y, sac[i][j]);			\
 					if (j == (int)l - 1 && i == 0) {						\
 						C##_copy(r, q[1]);									\
 					} else {												\
@@ -289,8 +305,8 @@
 				}															\
 			}																\
 																			\
-			for (int i = 0; i < T; i++) {									\
-				C##_sub(q[1], r, q[i * (S / T)]);							\
+			for (int i = 0; i < (int)c; i++) {								\
+				C##_sub(q[1], r, q[i * g]);									\
 				F##_copy_sec(r->x, q[1]->x, even[i]);						\
 				F##_copy_sec(r->y, q[1]->y, even[i]);						\
 				F##_copy_sec(r->z, q[1]->z, even[i]);						\
@@ -308,7 +324,7 @@
 				bn_free(_k[i]);												\
 				C##_free(q[i]);												\
 			}																\
-			for (int i = 0; i < T; i++) {									\
+			for (int i = 0; i < (int)c; i++) {								\
 				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
 					C##_free(t[i][j]);										\
 				}															\
@@ -364,7 +380,7 @@
 			F##_mul(r->z, t0, c3);											\
 			F##_copy(r->x, t3);												\
 			F##_copy(r->y, t4);												\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -512,7 +528,7 @@
 			 * every position multiple of 3, read in constant time from the	\
 			 * table by scanning it, and complete formulas. */				\
 			F##_set_dig(u->z, 1);											\
-			u->coord = BASIC;												\
+			u->coord = EC_AFFIN;												\
 			for (int m = top / 2; m >= 0; m--) {							\
 				if (m < top / 2) {											\
 					C##_tpl_projc(r, r);									\
@@ -732,7 +748,7 @@
 				 * When psi leaves affine coordinates, building the table of\
 				 * psi(P) is cheaper. */									\
 				C##_psi(q, t[0]);											\
-				aff = (q->coord == BASIC);									\
+				aff = (q->coord == EC_AFFIN);									\
 				for (int i = 1; i < H; i++) {								\
 					if (aff) {												\
 						for (int m = 0; m < 2 * s; m++) {					\
@@ -897,7 +913,7 @@
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
 			}																\
 			/* Normalize if the endomorphism returns projective points. */	\
-			if (_p[e]->coord != BASIC) {									\
+			if (_p[e]->coord != EC_AFFIN) {									\
 				C##_norm_sim(_p + e, (const C##_t *)_p + e, (S - 1) * e);	\
 				C##_norm_sim(_q + e, (const C##_t *)_q + e, (S - 1) * e);	\
 			}																\
@@ -1212,6 +1228,14 @@
  * @param[in] C			- the curve prefix.
  * @param[in] E			- the endomorphism method, glv or gls.
  */
+/**
+ * Tests if the endomorphism of the GLV or GLS method is available. The
+ * supersingular curve over Fp^4 has one, [p], even if the base curve has not.
+ */
+#define TMPL_EP_MUL_ENDOM_glv		ep_curve_is_endom()
+#define TMPL_EP_MUL_ENDOM_gls												\
+	(ep_curve_is_endom() || ep_curve_is_pairf() == EP_SS3)
+
 #define TMPL_EP_MUL_LWNAF(C, E)												\
 	void C##_mul_lwnaf(C##_t r, const C##_t p, const bn_t k) {				\
 		if (bn_is_zero(k) || C##_is_infty(p)) {								\
@@ -1219,7 +1243,7 @@
 			return;															\
 		}																	\
 																			\
-		if (ep_curve_is_endom()) {											\
+		if (TMPL_EP_MUL_ENDOM_##E) {										\
 			C##_mul_##E##_imp(r, p, k);										\
 			return;															\
 		}																	\
@@ -1241,7 +1265,7 @@
 			return;															\
 		}																	\
 																			\
-		if (ep_curve_is_endom()) {											\
+		if (TMPL_EP_MUL_ENDOM_##E) {										\
 			C##_mul_reg_##E(r, p, k);										\
 			return;															\
 		}																	\

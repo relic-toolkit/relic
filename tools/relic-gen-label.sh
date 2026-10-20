@@ -37,7 +37,7 @@ cat << PREAMBLE
 
 #include "relic_conf.h"
 
-#define RLC_PREFIX(F)			_RLC_PREFIX(LABEL, F)
+#define RLC_PREFIX(F)			_RLC_PREFIX(RLC_LABEL, F)
 #define _RLC_PREFIX(A, B)		__RLC_PREFIX(A, B)
 #define __RLC_PREFIX(A, B)		A ## _ ## B
 
@@ -45,7 +45,7 @@ cat << PREAMBLE
 /* Macro definitions                                                          */
 /*============================================================================*/
 
-#ifdef LABEL
+#ifdef RLC_LABEL
 
 PREAMBLE
 
@@ -85,7 +85,7 @@ echo "#undef first_ctx"
 echo "#define first_ctx					RLC_PREFIX(first_ctx)"
 echo "#undef core_ctx"
 echo "#define core_ctx					RLC_PREFIX(core_ctx)"
-echo "#if defined(MULTI)"
+echo "#if defined(RLC_MULTI)"
 echo "#undef core_thread_initializer"
 echo "#define core_thread_initializer	RLC_PREFIX(core_thread_initializer)"
 echo "#undef core_init_ptr"
@@ -296,6 +296,6 @@ REDEF cp
 
 REDEF md
 
-echo "#endif /* LABEL */"
+echo "#endif /* RLC_LABEL */"
 echo
 echo "#endif /* !RLC_LABEL_H */"

@@ -74,7 +74,7 @@ typedef struct {
 /**
  * Pointer to an RSA key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef _rsa_st rsa_t[1];
 #else
 typedef _rsa_st *rsa_t;
@@ -83,7 +83,7 @@ typedef _rsa_st *rsa_t;
 /**
  * Pointer to a Rabin key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef crt_st rabin_t[1];
 #else
 typedef crt_st *rabin_t;
@@ -92,7 +92,7 @@ typedef crt_st *rabin_t;
 /**
  * Pointer to a Paillier's Homomorphic Probabilistic Encryption key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef crt_st phpe_t[1];
 #else
 typedef crt_st *phpe_t;
@@ -117,7 +117,7 @@ typedef struct {
 /**
  * Pointer to a Subgroup-Paillier's Homomorphic Probabilistic Encryption key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef shpe_st shpe_t[1];
 #else
 typedef shpe_st *shpe_t;
@@ -142,7 +142,7 @@ typedef struct {
 /**
  * Pointer to a Benaloh's Dense Probabilistic Encryption key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef bdpe_st bdpe_t[1];
 #else
 typedef bdpe_st *bdpe_t;
@@ -161,7 +161,7 @@ typedef struct _sokaka {
 /**
  * Pointer to SOKAKA key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef sokaka_st sokaka_t[1];
 #else
 typedef sokaka_st *sokaka_t;
@@ -195,7 +195,7 @@ typedef struct {
 /**
  * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef bgn_st bgn_t[1];
 #else
 typedef bgn_st *bgn_t;
@@ -220,7 +220,7 @@ typedef struct _ers_st {
 /**
  * Pointer to an extendable ring signature.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ers_st ers_t[1];
 #else
 typedef ers_st *ers_t;
@@ -247,7 +247,7 @@ typedef struct _smlers_st {
 /**
  * Pointer to an extendable ring signature.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef smlers_st smlers_t[1];
 #else
 typedef smlers_st *smlers_t;
@@ -274,7 +274,7 @@ typedef struct _etrs_st {
 /**
  * Pointer to an extendable ring signature.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef etrs_st etrs_t[1];
 #else
 typedef etrs_st *etrs_t;
@@ -296,7 +296,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define shpe_new(A)															\
 	A = (shpe_t)calloc(1, sizeof(shpe_st));									\
 	if (A == NULL) {														\
@@ -308,7 +308,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->gn);														\
 	crt_new((A)->crt);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define shpe_new(A)															\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
@@ -323,7 +323,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define shpe_free(A)														\
 	if (A != NULL) {														\
 		bn_free((A)->a);													\
@@ -335,7 +335,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define shpe_free(A)				/* empty */
 
 #endif
@@ -352,7 +352,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define rsa_new(A)															\
 	A = (rsa_t)calloc(1, sizeof(_rsa_st));									\
 	if (A == NULL) {														\
@@ -364,7 +364,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->e);															\
 	crt_new((A)->crt);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define rsa_new(A)															\
 	bn_new((A)->d);															\
 	bn_new((A)->e);															\
@@ -377,7 +377,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define rsa_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->d);													\
@@ -387,7 +387,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define rsa_free(A)				/* empty */
 
 #endif
@@ -446,7 +446,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bdpe_new(A)															\
 	A = (bdpe_t)calloc(1, sizeof(bdpe_st));									\
 	if (A == NULL) {														\
@@ -458,7 +458,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->q);															\
 	(A)->t = 0;																\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bdpe_new(A)															\
 	bn_new((A)->n);															\
 	bn_new((A)->y);															\
@@ -473,7 +473,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bdpe_free(A)														\
 	if (A != NULL) {														\
 		bn_free((A)->n);													\
@@ -485,7 +485,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bdpe_free(A)			/* empty */
 #endif
 
@@ -501,7 +501,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define sokaka_new(A)														\
 	A = (sokaka_t)calloc(1, sizeof(sokaka_st));								\
 	if (A == NULL) {														\
@@ -510,7 +510,7 @@ typedef etrs_st *etrs_t;
 	g1_new((A)->s1);														\
 	g2_new((A)->s2);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define sokaka_new(A)			/* empty */
 #endif
 
@@ -519,7 +519,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define sokaka_free(A)														\
 	if (A != NULL) {														\
 		g1_free((A)->s1);													\
@@ -528,7 +528,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define sokaka_free(A)			/* empty */
 #endif
 
@@ -544,7 +544,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bgn_new(A)															\
 	A = (bgn_t)calloc(1, sizeof(bgn_st));									\
 	if (A == NULL) {														\
@@ -562,7 +562,7 @@ typedef etrs_st *etrs_t;
 	g2_new((A)->hy);														\
 	g2_new((A)->hz);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bgn_new(A)															\
 	for (int _i = 0; _i < 2; _i++) {										\
 		bn_new((A)->x[_i]);													\
@@ -577,7 +577,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bgn_free(A)															\
 	if (A != NULL) {														\
 		for (int _i = 0; _i < 2; _i++) {									\
@@ -595,7 +595,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bgn_free(A)				/* empty */
 #endif
 
@@ -611,7 +611,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new signature ring.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ers_new(A)															\
 	A = (ers_t)calloc(1, sizeof(ers_st));									\
 	if (A == NULL) {														\
@@ -624,7 +624,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[0]);														\
 	bn_new((A)->r[1]);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ers_new(A)				/* empty */
 #endif
 
@@ -633,7 +633,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the signature ring to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ers_free(A)															\
 	if (A != NULL) {														\
 		ec_free((A)->h);													\
@@ -646,7 +646,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ers_free(A)				/* empty */
 #endif
 
@@ -662,7 +662,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new signature ring.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define smlers_new(A)														\
 	A = (smlers_t)calloc(1, sizeof(smlers_st));								\
 	if (A == NULL) {														\
@@ -676,7 +676,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[0]);														\
 	bn_new((A)->r[1]);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define smlers_new(A)		/* empty */
 #endif
 
@@ -685,7 +685,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the signature ring to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define smlers_free(A)														\
 	if (A != NULL) {														\
 		ec_free((A)->h);													\
@@ -699,7 +699,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define smlers_free(A)		/* empty */
 #endif
 
@@ -715,7 +715,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the new signature ring.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define etrs_new(A)															\
 	A = (etrs_t)calloc(1, sizeof(etrs_st));									\
 	if (A == NULL) {														\
@@ -729,7 +729,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[0]);														\
 	bn_new((A)->r[1]);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define etrs_new(A)			/* empty */
 
 #endif
@@ -739,7 +739,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the signature ring to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define etrs_free(A)														\
 	if (A != NULL) {														\
 		bn_free((A)->y);													\
@@ -753,7 +753,7 @@ typedef etrs_st *etrs_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define etrs_free(A)		/* empty */
 #endif
 
@@ -1279,6 +1279,22 @@ int cp_ecdsa_gen(bn_t d, ec_t q);
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d);
+
+/**
+ * Signs a message using ECDSA with deterministic nonces (RFC 6979), derived
+ * from the private key and the digest with HMAC_DRBG on the default hash
+ * function.
+ *
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ecdsa_sig_det(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		const bn_t d);
 
 /**

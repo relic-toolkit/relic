@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2023 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,10 +24,9 @@
 /**
  * @file
  *
- * Implementation of the low-level quadratic extension field squaring
- * functions, for u^2 = -5.
+ * Implementation of low-level prime field modular reduction.
  *
- * @ingroup fpx
+ * @ingroup fp
  */
 
 #include "relic_fp_low.h"
@@ -35,37 +34,25 @@
 
 .text
 
-#ifdef FP2_ASM
+.global cdecl(fp_rdcn_low)
 
-.global cdecl(fp2_sqrm_low)
-
-/*
- * Function: fp2_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p, coefficient-wise
- */
-cdecl(fp2_sqrm_low):
+cdecl(fp_rdcn_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$232, %rsp
+	subq	$8, %rsp
+
 	movq	%rdi, 0(%rsp)
-	leaq	72(%rdi), %rax
-	movq	%rax, 8(%rsp)
-	movq	%rsi, %rcx
+	FP_RDCN_LOW	0(%rsi), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, %rbx, %rbp, %rdi, p0(%rip), %rdi, %rdx, %rsi, 0(%rsp)
 
-	FP2_SQR_LOW	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rsi, %rdi, p0(%rip)
-
-	addq	$232, %rsp
-	pop	%rbp
-	pop	%rbx
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
+	addq	$8, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
-
-#endif /* FP2_ASM */

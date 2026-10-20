@@ -35,9 +35,10 @@
 
 /*
  * The assembly reads both coordinates from one contiguous vector, which only
- * automatic allocation guarantees.
+ * automatic allocation guarantees. It has u^2 = -1 with FP_QNRES, and u^2 = -5
+ * for the 544-bit prime otherwise.
  */
-#if defined(FP_QNRES) && ALLOC == AUTO
+#if (defined(FP_QNRES) || FP_PRIME == 544) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

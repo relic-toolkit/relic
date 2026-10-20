@@ -175,7 +175,8 @@ static int test_##C##_util(void) {											\
 			TEST_ASSERT(C##_cmp(t[0], a) == RLC_EQ, end);					\
 			TEST_ASSERT(C##_is_infty(t[1]), end);							\
 			TEST_ASSERT(C##_cmp(t[2], b) == RLC_EQ, end);					\
-			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);	\
+			TEST_ASSERT(t[0]->coord == EC_AFFIN &&							\
+					t[2]->coord == EC_AFFIN, end);							\
 		} TEST_END;															\
 																			\
 		TEST_CASE("reading and writing a point are consistent") {			\
@@ -1482,7 +1483,8 @@ int main(void) {
 		}
 	}
 
-	if ((r2 = ep4_curve_is_twist())) {
+	r2 = ep4_curve_is_twist() || ep_curve_is_pairf() == EP_SS3;
+	if (r2) {
 		ep_param_print();
 
 		util_banner("Utilities:", 1);

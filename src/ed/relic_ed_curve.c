@@ -67,7 +67,7 @@ const ed_t *ed_curve_get_tab(void) {
 #if defined(ED_PRECO)
 
 	/* Return a meaningful pointer. */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	return (const ed_t *)*core_get()->ed_ptr;
 #else
 	return (const ed_t *)core_get()->ed_ptr;

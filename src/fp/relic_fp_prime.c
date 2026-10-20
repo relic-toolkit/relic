@@ -84,7 +84,7 @@ static void fp_prime_set(const bn_t p) {
 		bn_lsh(t, t, RLC_DIG_LOG);
 		fp_exp(ctx->conv, r, t);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		/* Compute R^3 mod p for the inversion by jump division steps. */
 		fp_mul(ctx->inv, ctx->conv, ctx->conv);
 #endif
@@ -302,7 +302,7 @@ int fp_prime_get_2ad(void) {
 
 void fp_prime_set_dense(const bn_t p) {
 	fp_prime_set(p);
-#if FP_RDC == QUICK || FP_RDC == LOWER
+#if FP_RDC == FP_QUICK || FP_RDC == FP_LOWER
 	RLC_THROW(ERR_NO_CONFIG);
 #endif
 }
@@ -679,7 +679,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 			/* Copy used digits, fill the rest with zero. */
 			dv_copy(c, t->dp, t->used);
 			dv_zero(c + t->used, RLC_FP_DIGS - t->used);
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 			fp_mul(c, c, core_get()->conv);
 #endif
 		}
@@ -693,7 +693,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 }
 
 void fp_prime_conv_dig(fp_t c, dig_t a) {
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	ctx_t *ctx = core_get();
 
 	/* Compute a * R mod p from R mod p. */
@@ -724,7 +724,7 @@ void fp_prime_back(bn_t c, const fp_t a) {
 		bn_grow(c, RLC_FP_DIGS);
 		fp_norm(c->dp, a);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		dv_zero(t, 2 * RLC_FP_DIGS + 1);
 		dv_copy(t, c->dp, RLC_FP_DIGS);
 		fp_rdc(c->dp, t);

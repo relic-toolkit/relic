@@ -32,97 +32,78 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
- */
-
 .text
 
 #ifdef FP2_ASM
 
 .global cdecl(fp2_muln_low)
 
-/*
- * Function: fp2_muln_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b, with c[1] at RLC_DV_STRIDE bytes from c[0]
- */
 cdecl(fp2_muln_low):
 	push	%r12
 	push	%r13
 	push	%r14
-	subq	$48, %rsp
+	subq	$40, %rsp
+
 	leaq	RLC_DV_STRIDE(%rdi), %rax
 	movq	%rax, 0(%rsp)
 	movq	%rdx, %rcx
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0, 0(%rsp)
 
-	addq	$48, %rsp
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	addq	$40, %rsp
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 .global cdecl(fp2_mulm_low)
 
 #ifdef FP2_MUL_RDC
 
-/*
- * Function: fp2_mulm_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b/R mod p, coefficient-wise
- */
 cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
-	subq	$48, %rsp
+	subq	$40, %rsp
+
 	movq	%rdx, %rcx
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1, 0(%rsp)
 
-	addq	$48, %rsp
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	addq	$40, %rsp
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 #else
 
-/*
- * Function: fp2_mulm_low
- * Inputs: rdi = c, rsi = a, rdx = b
- * Output: c = a * b/R mod p, coefficient-wise, by reducing the product of
- * fp2_muln_low separately
- */
 cdecl(fp2_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
-	subq	$192, %rsp
+	subq	$168, %rsp
+
 	movq	%rdi, 8(%rsp)
-	movq	%rdx, %rcx
-	leaq	128(%rsp), %rax
+	leaq	40(%rsp), %rdi
+	leaq	104(%rsp), %rax
 	movq	%rax, 0(%rsp)
-	leaq	64(%rsp), %rdi
+	movq	%rdx, %rcx
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0, 0(%rsp)
 
 	movq	8(%rsp), %rdi
-	FP_RDCN_LOW	64(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %rdx, %rsi, p0(%rip)
+	FP_RDCN_LOW	40(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, p0(%rip), %rax, %rcx, %rdx, %rsi
 	movq	8(%rsp), %rdi
 	addq	$32, %rdi
-	FP_RDCN_LOW	128(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %rdx, %rsi, p0(%rip)
+	FP_RDCN_LOW	104(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, p0(%rip), %rax, %rcx, %rdx, %rsi
 
-	addq	$192, %rsp
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	addq	$168, %rsp
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
 #endif
 
-#endif /* FP2_ASM */
+#endif

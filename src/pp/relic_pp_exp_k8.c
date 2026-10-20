@@ -41,8 +41,8 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 	fp8_t t0, t1, t2, t3, t4;
 	bn_t x, t;
 
-	/* The addition chain below is specific to the GMT8-544 parameters. */
-	if (ep_param_get() != GMT8_P544) {
+	/* The addition chain below is specific to the CP8-544 parameters. */
+	if (ep_param_get() != CP8_P544) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}

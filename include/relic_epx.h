@@ -68,11 +68,11 @@
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_BASIC
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_LWREG
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBD
 #endif
 
@@ -109,7 +109,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a quadratic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep2_st ep2_t[1];
 #else
 typedef ep2_st *ep2_t;
@@ -133,7 +133,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a cubic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep3_st ep3_t[1];
 #else
 typedef ep3_st *ep3_t;
@@ -157,7 +157,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep4_st ep4_t[1];
 #else
 typedef ep4_st *ep4_t;
@@ -181,7 +181,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over an octic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep8_st ep8_t[1];
 #else
 typedef ep8_st *ep8_t;
@@ -205,7 +205,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point over a nonic extension field.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ep9_st ep9_t[1];
 #else
 typedef ep9_st *ep9_t;
@@ -259,7 +259,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_new(A)															\
 	A = (ep2_t)calloc(1, sizeof(ep2_st));									\
 	if (A == NULL) {														\
@@ -272,7 +272,7 @@ typedef iso2_st *iso2_t;
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_new(A)				/* empty */
 
 #endif
@@ -282,7 +282,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep2_free(A)															\
 	if (A != NULL) {														\
 		fp2_free((A)->x);													\
@@ -292,7 +292,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep2_free(A)				/* empty */
 #endif
 
@@ -320,7 +320,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_new(A)															\
 	A = (ep3_t)calloc(1, sizeof(ep3_st));									\
 	if (A == NULL) {														\
@@ -333,7 +333,7 @@ typedef iso2_st *iso2_t;
 	fp3_new((A)->y);														\
 	fp3_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_new(A)				/* empty */
 
 #endif
@@ -343,7 +343,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep3_free(A)															\
 	if (A != NULL) {														\
 		fp3_free((A)->x);													\
@@ -353,7 +353,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep3_free(A)				/* empty */
 #endif
 
@@ -381,7 +381,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_new(A)															\
 	A = (ep4_t)calloc(1, sizeof(ep4_st));									\
 	if (A == NULL) {														\
@@ -394,7 +394,7 @@ typedef iso2_st *iso2_t;
 	fp4_new((A)->y);														\
 	fp4_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_new(A)				/* empty */
 
 #endif
@@ -404,7 +404,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep4_free(A)															\
 	if (A != NULL) {														\
 		fp4_free((A)->x);													\
@@ -414,7 +414,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep4_free(A)				/* empty */
 #endif
 
@@ -442,7 +442,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_new(A)															\
 	A = (ep8_t)calloc(1, sizeof(ep8_st));									\
 	if (A == NULL) {														\
@@ -455,7 +455,7 @@ typedef iso2_st *iso2_t;
 	fp8_new((A)->y);														\
 	fp8_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_new(A)				/* empty */
 
 #endif
@@ -465,7 +465,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep8_free(A)															\
 	if (A != NULL) {														\
 		fp8_free((A)->x);													\
@@ -475,7 +475,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep8_free(A)				/* empty */
 #endif
 
@@ -503,7 +503,7 @@ typedef iso2_st *iso2_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep9_new(A)															\
 	A = (ep9_t)calloc(1, sizeof(ep9_st));									\
 	if (A == NULL) {														\
@@ -516,7 +516,7 @@ typedef iso2_st *iso2_t;
 	fp9_new((A)->y);														\
 	fp9_new((A)->z);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep9_new(A)				/* empty */
 
 #endif
@@ -526,7 +526,7 @@ typedef iso2_st *iso2_t;
  *
  * @param[out] A				- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ep9_free(A)															\
 	if (A != NULL) {														\
 		fp9_free((A)->x);													\
@@ -536,7 +536,7 @@ typedef iso2_st *iso2_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ep9_free(A)				/* empty */
 #endif
 
@@ -559,11 +559,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep2_add(R, P, Q)		ep2_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep2_add(R, P, Q)		ep2_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep2_add(R, P, Q)		ep2_add_jacob(R, P, Q)
 #endif
 
@@ -574,11 +574,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep2_dbl(R, P)			ep2_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep2_dbl(R, P)			ep2_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep2_dbl(R, P)			ep2_dbl_jacob(R, P)
 #endif
 
@@ -589,11 +589,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep2_tpl(R, P)			ep2_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep2_tpl(R, P)			ep2_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep2_tpl(R, P)			ep2_tpl_jacob(R, P)
 #endif
 
@@ -605,17 +605,17 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
-#elif EP_MUL == TWNAF
+#elif EP_MUL == EP_TWNAF
 #define ep2_mul(R, P, K)		ep2_mul_twnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep2_mul(R, P, K)		ep2_mul_lwreg(R, P, K)
-#elif EP_MUL == TWREG
+#elif EP_MUL == EP_TWREG
 #define ep2_mul(R, P, K)		ep2_mul_twreg(R, P, K)
 #endif
 
@@ -626,11 +626,11 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep2_mul_pre(T, P)		ep2_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep2_mul_pre(T, P)		ep2_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep2_mul_pre(T, P)		ep2_mul_pre_combd(T, P)
 #endif
 
@@ -642,11 +642,11 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_combd(R, T, K)
 #endif
 
@@ -668,11 +668,11 @@ typedef iso2_st *iso2_t;
  * @param[in] S					- the string to hash.
  * @param[in] L					- the string length.
  */
-#if EP_MAP == BASIC
+#if EP_MAP == EP_BASIC
 #define ep2_map(R, S, L)			ep2_map_basic(R, S, L)
-#elif EP_MAP == SSWUM
+#elif EP_MAP == EP_SSWUM
 #define ep2_map(R, S, L)			ep2_map_sswum(R, S, L)
-#elif EP_MAP == SWIFT
+#elif EP_MAP == EP_SWIFT
 #define ep2_map(R, S, L)			ep2_map_swift(R, S, L)
 #endif
 
@@ -684,11 +684,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep3_add(R, P, Q)		ep3_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep3_add(R, P, Q)		ep3_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep3_add(R, P, Q)		ep3_add_jacob(R, P, Q)
 #endif
 
@@ -699,11 +699,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep3_dbl(R, P)			ep3_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep3_dbl(R, P)			ep3_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep3_dbl(R, P)			ep3_dbl_jacob(R, P)
 #endif
 
@@ -713,11 +713,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep3_tpl(R, P)			ep3_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep3_tpl(R, P)			ep3_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep3_tpl(R, P)			ep3_tpl_jacob(R, P)
 #endif
 
@@ -729,17 +729,17 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep3_mul(R, P, K)		ep3_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep3_mul(R, P, K)		ep3_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep3_mul(R, P, K)		ep3_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep3_mul(R, P, K)		ep3_mul_lwreg(R, P, K)
-#elif EP_MUL == TWNAF
+#elif EP_MUL == EP_TWNAF
 #define ep3_mul(R, P, K)		ep3_mul_twnaf(R, P, K)
-#elif EP_MUL == TWREG
+#elif EP_MUL == EP_TWREG
 #define ep3_mul(R, P, K)		ep3_mul_twreg(R, P, K)
 #endif
 
@@ -750,11 +750,11 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep3_mul_pre(T, P)		ep3_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep3_mul_pre(T, P)		ep3_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep3_mul_pre(T, P)		ep3_mul_pre_combd(T, P)
 #endif
 
@@ -766,11 +766,11 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep3_mul_fix(R, T, K)	ep3_mul_fix_combd(R, T, K)
 #endif
 
@@ -792,11 +792,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep4_add(R, P, Q)		ep4_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep4_add(R, P, Q)		ep4_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep4_add(R, P, Q)		ep4_add_jacob(R, P, Q)
 #endif
 
@@ -807,11 +807,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep4_dbl(R, P)			ep4_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep4_dbl(R, P)			ep4_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep4_dbl(R, P)			ep4_dbl_jacob(R, P)
 #endif
 
@@ -822,11 +822,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep4_tpl(R, P)			ep4_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep4_tpl(R, P)			ep4_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep4_tpl(R, P)			ep4_tpl_jacob(R, P)
 #endif
 
@@ -838,17 +838,17 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep4_mul(R, P, K)		ep4_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep4_mul(R, P, K)		ep4_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep4_mul(R, P, K)		ep4_mul_lwreg(R, P, K)
-#elif EP_MUL == TWNAF
+#elif EP_MUL == EP_TWNAF
 #define ep4_mul(R, P, K)		ep4_mul_twnaf(R, P, K)
-#elif EP_MUL == TWREG
+#elif EP_MUL == EP_TWREG
 #define ep4_mul(R, P, K)		ep4_mul_twreg(R, P, K)
 #endif
 
@@ -859,11 +859,11 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep4_mul_pre(T, P)		ep4_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep4_mul_pre(T, P)		ep4_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep4_mul_pre(T, P)		ep4_mul_pre_combd(T, P)
 #endif
 
@@ -875,11 +875,11 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep4_mul_fix(R, T, K)	ep4_mul_fix_combd(R, T, K)
 #endif
 
@@ -901,11 +901,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep8_add(R, P, Q)		ep8_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep8_add(R, P, Q)		ep8_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep8_add(R, P, Q)		ep8_add_jacob(R, P, Q)
 #endif
 
@@ -916,11 +916,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep8_dbl(R, P)			ep8_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep8_dbl(R, P)			ep8_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep8_dbl(R, P)			ep8_dbl_jacob(R, P)
 #endif
 
@@ -931,11 +931,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep8_tpl(R, P)			ep8_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep8_tpl(R, P)			ep8_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep8_tpl(R, P)			ep8_tpl_jacob(R, P)
 #endif
 
@@ -947,17 +947,17 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep8_mul(R, P, K)		ep8_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep8_mul(R, P, K)		ep8_mul_lwreg(R, P, K)
-#elif EP_MUL == TWNAF
+#elif EP_MUL == EP_TWNAF
 #define ep8_mul(R, P, K)		ep8_mul_twnaf(R, P, K)
-#elif EP_MUL == TWREG
+#elif EP_MUL == EP_TWREG
 #define ep8_mul(R, P, K)		ep8_mul_twreg(R, P, K)
 #endif
 
@@ -968,11 +968,11 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep8_mul_pre(T, P)		ep8_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep8_mul_pre(T, P)		ep8_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep8_mul_pre(T, P)		ep8_mul_pre_combd(T, P)
 #endif
 
@@ -984,11 +984,11 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep8_mul_fix(R, T, K)	ep8_mul_fix_combd(R, T, K)
 #endif
 
@@ -1010,11 +1010,11 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep9_add(R, P, Q)		ep9_add_basic(R, P, Q)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep9_add(R, P, Q)		ep9_add_projc(R, P, Q)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep9_add(R, P, Q)		ep9_add_jacob(R, P, Q)
 #endif
 
@@ -1025,11 +1025,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep9_dbl(R, P)			ep9_dbl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep9_dbl(R, P)			ep9_dbl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep9_dbl(R, P)			ep9_dbl_jacob(R, P)
 #endif
 
@@ -1039,11 +1039,11 @@ typedef iso2_st *iso2_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to triple.
  */
-#if EP_ADD == BASIC
+#if EP_ADD == EP_BASIC
 #define ep9_tpl(R, P)			ep9_tpl_basic(R, P)
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 #define ep9_tpl(R, P)			ep9_tpl_projc(R, P)
-#elif EP_ADD == JACOB
+#elif EP_ADD == EP_JACOB
 #define ep9_tpl(R, P)			ep9_tpl_jacob(R, P)
 #endif
 
@@ -1055,17 +1055,17 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#if EP_MUL == BASIC
+#if EP_MUL == EP_BASIC
 #define ep9_mul(R, P, K)		ep9_mul_basic(R, P, K)
-#elif EP_MUL == MONTY
+#elif EP_MUL == EP_MONTY
 #define ep9_mul(R, P, K)		ep9_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == EP_LWNAF
 #define ep9_mul(R, P, K)		ep9_mul_lwnaf(R, P, K)
-#elif EP_MUL == LWREG
+#elif EP_MUL == EP_LWREG
 #define ep9_mul(R, P, K)		ep9_mul_lwreg(R, P, K)
-#elif EP_MUL == TWNAF
+#elif EP_MUL == EP_TWNAF
 #define ep9_mul(R, P, K)		ep9_mul_twnaf(R, P, K)
-#elif EP_MUL == TWREG
+#elif EP_MUL == EP_TWREG
 #define ep9_mul(R, P, K)		ep9_mul_twreg(R, P, K)
 #endif
 
@@ -1076,11 +1076,11 @@ typedef iso2_st *iso2_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep9_mul_pre(T, P)		ep9_mul_pre_basic(T, P)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep9_mul_pre(T, P)		ep9_mul_pre_lwreg(T, P)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep9_mul_pre(T, P)		ep9_mul_pre_combd(T, P)
 #endif
 
@@ -1092,11 +1092,11 @@ typedef iso2_st *iso2_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#if EP_FIX == BASIC
+#if EP_FIX == EP_BASIC
 #define ep9_mul_fix(R, T, K)	ep9_mul_fix_basic(R, T, K)
-#elif EP_FIX == LWREG
+#elif EP_FIX == EP_LWREG
 #define ep9_mul_fix(R, T, K)	ep9_mul_fix_lwreg(R, T, K)
-#elif EP_FIX == COMBD
+#elif EP_FIX == EP_COMBD
 #define ep9_mul_fix(R, T, K)	ep9_mul_fix_combd(R, T, K)
 #endif
 
@@ -2513,6 +2513,13 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 void ep4_curve_set_twist(int type);
 
 /**
+ * Configures a supersingular elliptic curve over a quartic extension, on which
+ * the groups of a symmetric pairing lie, for the currently configured prime
+ * curve parameters.
+ */
+void ep4_curve_set_super(void);
+
+/**
  * Tests if a point on an elliptic curve is at the infinity.
  *
  * @param[in] p				- the point to test.
@@ -2989,7 +2996,9 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
  * Computes a power of the Galbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
  * quartic extension. That is, Psi^i(P) = Twist(Frob^i(Untwist(P))). On the
- * subgroup of prime order, it acts as multiplication by p^i.
+ * subgroup of prime order, it acts as multiplication by p^i. On a curve that
+ * is not a twist, it computes the endomorphism [p]^i built from the
+ * p^2-power Frobenius.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.

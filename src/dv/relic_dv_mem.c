@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#if ALLOC != AUTO && OPSYS == WINDOWS
+#if RLC_ALLOC != RLC_AUTO && RLC_OPSYS == RLC_WINDOWS
 #include <malloc.h>
 #endif
 
@@ -45,19 +45,19 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 
 void dv_new_dynam(dv_t *a, size_t digits) {
 	if (digits > RLC_DV_DIGS) {
 		RLC_THROW(ERR_NO_PRECI);
 		return;
 	}
-#if ALIGN == 1
+#if RLC_ALIGN == 1
 	*a = malloc(digits * (RLC_DIG / 8));
-#elif OPSYS == WINDOWS
-	*a = _aligned_malloc(digits * (RLC_DIG / 8), ALIGN);
+#elif RLC_OPSYS == RLC_WINDOWS
+	*a = _aligned_malloc(digits * (RLC_DIG / 8), RLC_ALIGN);
 #else
-	int r = posix_memalign((void **)a, ALIGN, digits * (RLC_DIG / 8));
+	int r = posix_memalign((void **)a, RLC_ALIGN, digits * (RLC_DIG / 8));
 	if (r != 0) {
 		/* The pointer is left undefined when the allocation fails. */
 		*a = NULL;
@@ -75,7 +75,7 @@ void dv_new_dynam(dv_t *a, size_t digits) {
 
 void dv_free_dynam(dv_t *a) {
 	if ((*a) != NULL) {
-#if OPSYS == WINDOWS && ALIGN > 1
+#if RLC_OPSYS == RLC_WINDOWS && RLC_ALIGN > 1
 		_aligned_free(*a);
 #else
 		free(*a);

@@ -47,7 +47,7 @@
 	}
 
 /* conditionally normalize result of isogeny map when not using projective coords */
-#if EP_ADD == JACOB
+#if EP_ADD == EP_JACOB
 
 #define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
@@ -61,10 +61,10 @@
 		/* X = Nx * Dy * Z. */												\
 		PFX##_mul(q->x, t0, t2);											\
 		PFX##_mul(q->x, q->x, q->z);										\
-		q->coord = JACOB;													\
+		q->coord = EC_JACOB;													\
 	} while (0)																\
 
-#elif EP_ADD == PROJC
+#elif EP_ADD == EP_PROJC
 
 #define TMPL_EP_MAP_ISOMAP_NORM(PFX)											\
 		/* Z = Dx * Dy. */													\
@@ -74,7 +74,7 @@
 		/* Y = Ny * Dx. */													\
 		PFX##_mul(q->y, p->y, t1);											\
 		PFX##_mul(q->y, q->y, t3);											\
-		q->coord = PROJC;													\
+		q->coord = EC_PROJC;													\
 
 #else
 
@@ -92,7 +92,7 @@
 		PFX##_mul(q->x, q->x, t0);											\
 		/* z coord == 1 */													\
 		PFX##_set_dig(q->z, 1);												\
-		q->coord = BASIC;													\
+		q->coord = EC_AFFIN;													\
 	} while (0)																\
 
 #endif
@@ -110,7 +110,7 @@
 			return;															\
 		}																	\
 		/* XXX need to add real support for input projective points */		\
-		if (p->coord != BASIC) {											\
+		if (p->coord != EC_AFFIN) {											\
 			CUR##_norm(p, p);												\
 		}																	\
 																			\
@@ -219,7 +219,7 @@
 				RLC_THROW(ERR_NO_VALID);									\
 			}																\
 			PFX##_set_dig(p->z, 1);											\
-			p->coord = BASIC;												\
+			p->coord = EC_AFFIN;												\
 		}																	\
 		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }							\
 		RLC_FINALLY {														\
@@ -304,7 +304,7 @@
 				RLC_THROW(ERR_NO_VALID);									\
 			}																\
 			PFX##_set_dig(p->z, 1);											\
-			p->coord = BASIC;												\
+			p->coord = EC_AFFIN;												\
 		}																	\
 		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }							\
 		RLC_FINALLY {														\
@@ -413,6 +413,13 @@
 			for (int i = 0; i < (int)(sizeof(F##_t) / sizeof(fp_t)); i++) {	\
 				fp_mul(((fp_t *)z1)[i], ((fp_t *)z1)[i], ctx->ep_map_c[4]);	\
 			}																\
+			if (fp_prime_get_mod18() % 3 == 2) {							\
+				/* The constant is sqrt(3), so multiply by u in Fp^2. */	\
+				for (int i = 0; i < (int)(sizeof(F##_t) / sizeof(fp_t)) / 2;\
+						i++) {												\
+					fp2_mul_art(((fp2_t *)z1)[i], ((fp2_t *)z1)[i]);		\
+				}															\
+			}																\
 			F##_mul(x1, x1, z1);											\
 			F##_mul(z1, z1, t);												\
 			F##_dbl(z1, z1);												\
@@ -459,7 +466,7 @@
 				F##_copy(p->x, x1);											\
 				F##_copy(p->y, t);											\
 				F##_set_dig(p->z, 1);										\
-				p->coord = BASIC;											\
+				p->coord = EC_AFFIN;											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
@@ -604,7 +611,7 @@
 				F##_copy(p->x, x1);											\
 				F##_copy(p->y, t);											\
 				F##_set_dig(p->z, 1);										\
-				p->coord = BASIC;											\
+				p->coord = EC_AFFIN;											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\

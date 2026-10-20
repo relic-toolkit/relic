@@ -65,7 +65,7 @@ void bn_hlv(bn_t c, const bn_t a) {
 		return;
 	}
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	RLC_TRY {
 		bn_grow(c, a->used);
 		bn_rsh1_low(c->dp, a->dp, a->used);

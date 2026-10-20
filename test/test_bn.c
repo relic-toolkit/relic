@@ -462,7 +462,7 @@ static int addition(void) {
 			TEST_ASSERT(bn_is_zero(e) && bn_sign(e) == RLC_POS, end);
 		} TEST_END;
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 		TEST_CASE("addition of a digit grows the result") {
 			/* The input is longer than a fresh result. */
 			bn_set_dig(d, 1);
@@ -651,7 +651,7 @@ static int multiplication(void) {
 		}
 		TEST_END;
 
-#if BN_MUL == BASIC || !defined(STRIP)
+#if BN_MUL == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -662,7 +662,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if BN_MUL == COMBA || !defined(STRIP)
+#if BN_MUL == BN_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -673,7 +673,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if BN_KARAT > 0 || !defined(STRIP)
+#if BN_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -710,7 +710,7 @@ static int squaring(void) {
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if BN_SQR == BASIC || !defined(STRIP)
+#if BN_SQR == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -719,7 +719,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if BN_SQR == COMBA || !defined(STRIP)
+#if BN_SQR == BN_COMBA || !defined(RLC_STRIP)
 		TEST_CASE("comba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -728,7 +728,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if BN_KARAT > 0 || !defined(STRIP)
+#if BN_KARAT > 0 || !defined(RLC_STRIP)
 		TEST_CASE("karatsuba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
@@ -1155,7 +1155,7 @@ static int reduction(void) {
 	RLC_TRY {
 		bn_new_all(a, b, c, d, e);
 
-#if BN_MOD == BASIC || !defined(STRIP)
+#if BN_MOD == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1173,7 +1173,7 @@ static int reduction(void) {
 		TEST_END;
 #endif
 
-#if BN_MOD == BARRT || !defined(STRIP)
+#if BN_MOD == BN_BARRT || !defined(RLC_STRIP)
 		TEST_CASE("barrett reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1223,7 +1223,7 @@ static int reduction(void) {
 		}
 		TEST_END;
 
-#if BN_MOD == MONTY || !defined(STRIP)
+#if BN_MOD == BN_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("conversion from montgomery form is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1292,33 +1292,6 @@ static int reduction(void) {
 		TEST_END;
 #endif
 
-#if BN_MOD == PMERS || !defined(STRIP)
-		TEST_CASE("pseudo-mersenne reduction is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
-			bn_rand(c, RLC_POS, RLC_BN_BITS / 4);
-			if (bn_is_zero(c)) {
-				bn_set_dig(c, 1);
-			}
-			bn_set_2b(b, RLC_BN_BITS / 2);
-			bn_sub(b, b, c);
-			bn_mod(c, a, b);
-			bn_mod_pre_pmers(e, b);
-			bn_mod_pmers(d, a, b, e);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
-			bn_neg(a, a);
-			bn_mod(c, a, b);
-			bn_mod_pmers(d, a, b, e);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
-			/* Negative multiples of the modulus reduce to zero. */
-			bn_mul_dig(a, b, 2);
-			bn_neg(a, a);
-			bn_mod_pmers(d, a, b, e);
-			TEST_ASSERT(bn_is_zero(d), end);
-		}
-		TEST_END;
-#endif
-
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1351,14 +1324,7 @@ static int exponentiation(void) {
         }
 		crt_new(crt);
 
-#if BN_MOD != PMERS
 		bn_gen_prime(p, RLC_BN_BITS);
-#elif BN_PRECI >= 128
-		/* Let's try a Mersenne prime. */
-		bn_zero(p);
-		bn_set_bit(p, 127, 1);
-		bn_sub_dig(p, p, 1);
-#endif
 
 		TEST_CASE("modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1426,7 +1392,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-#if BN_MXP == BASIC || !defined(STRIP)
+#if BN_MXP == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1436,7 +1402,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == SLIDE || !defined(STRIP)
+#if BN_MXP == BN_SLIDE || !defined(RLC_STRIP)
 		TEST_CASE("sliding window modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1446,7 +1412,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == MONTY || !defined(STRIP)
+#if BN_MXP == BN_MONTY || !defined(RLC_STRIP)
 		TEST_CASE("powering ladder modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1456,7 +1422,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == LOWER
+#if BN_MXP == BN_LOWER
 		TEST_CASE("low-level modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
@@ -1664,8 +1630,9 @@ static int square_root(void) {
 		} TEST_END;
 
 		TEST_CASE("modular square root is correct for a prime one mod four") {
+			/* Safe primes are all three mod four, so avoid them as default. */
 			do {
-				bn_gen_prime(p, RLC_BN_BITS / 4);
+				bn_gen_prime_basic(p, RLC_BN_BITS / 4);
 				bn_mod_dig(&d, p, 4);
 			} while (d != 1);
 			bn_rand_mod(a, p);
@@ -1762,7 +1729,7 @@ static int gcd(void) {
 		TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 		} TEST_END;
 
-#if BN_GCD == BASIC || !defined(STRIP)
+#if BN_GCD == BN_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1805,7 +1772,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == BINAR || !defined(STRIP)
+#if BN_GCD == BN_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1848,7 +1815,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == LEHME || !defined(STRIP)
+#if BN_GCD == BN_LEHME || !defined(RLC_STRIP)
 		TEST_CASE("lehmer greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1891,7 +1858,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if BN_GCD == LOWER
+#if BN_GCD == BN_LOWER
 		TEST_CASE("lower greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1934,7 +1901,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-#if !defined(STRIP)
+#if !defined(RLC_STRIP)
 		TEST_CASE("extended greatest common divisor handles edge cases") {
 			void (*ext[])(bn_t, bn_t, bn_t, const bn_t, const bn_t) = {
 				bn_gcd_ext_basic, bn_gcd_ext_binar, bn_gcd_ext_lehme
@@ -2430,14 +2397,7 @@ static int digit(void) {
 		}
 		TEST_END;
 
-#if BN_MOD != PMERS
 		bn_gen_prime(d, RLC_BN_BITS);
-#elif BN_PRECI >= 128
-		/* Let's try a Mersenne prime. */
-		bn_zero(d);
-		bn_set_bit(d, 127, 1);
-		bn_sub_dig(d, d, 1);
-#endif
 
 		TEST_CASE("modular exponentiation with a digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -2460,13 +2420,13 @@ static int digit(void) {
 
 static int prime(void) {
 	int code = RLC_ERR;
-	bn_t p, q;
+	bn_t p, q, r;
 	uint8_t msg[16];
 
-	bn_null_all(p, q);
+	bn_null_all(p, q, r);
 
 	RLC_TRY {
-		bn_new_all(p, q);
+		bn_new_all(p, q, r);
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
@@ -2496,6 +2456,58 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("chain prime generation is consistent") {
+			for (size_t k = 1; k <= 3; k++) {
+				TEST_ASSERT(bn_gen_prime_chain(p, q, RLC_BN_BITS / 4,
+						k) == RLC_OK, end);
+				TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
+				TEST_ASSERT(bn_get_bit(p, RLC_BN_BITS / 4 - 2) == 1, end);
+				/* Walk the chain from its first term to its last one. */
+				for (size_t l = 1; l < k; l++) {
+					TEST_ASSERT(bn_is_prime(q) == 1, end);
+					bn_dbl(q, q);
+					bn_add_dig(q, q, 1);
+				}
+				TEST_ASSERT(bn_is_prime(q) == 1, end);
+				TEST_ASSERT(bn_cmp(q, p) == RLC_EQ, end);
+			}
+			/* The shortest prime with the top two bits set. */
+			TEST_ASSERT(bn_gen_prime_chain(p, NULL, 2, 1) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp_dig(p, 3) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_ONCE("next prime agrees with a naive search") {
+			/* Small values cover sieving primes close to the candidates. */
+			bn_zero(r);
+			for (int k = 0; k < 2048; k++) {
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+				bn_add_dig(r, r, 1);
+			}
+			for (int k = 0; k < 4; k++) {
+				bn_rand(r, RLC_POS, RLC_BN_BITS / 8);
+				bn_next_prime(q, r);
+				bn_add_dig(p, r, 1);
+				while (!bn_is_prime(p)) {
+					bn_add_dig(p, p, 1);
+				}
+				TEST_ASSERT(bn_cmp(p, q) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("chain prime generation rejects invalid parameters") {
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 16, 0));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 1, 1));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_gen_prime_chain(p, NULL, 15, 2));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+		} TEST_END;
+
 		TEST_ONCE("strong prime generation is consistent") {
 			/* Strong primes need several prime searches, so keep them smaller. */
 			bn_gen_prime_stron(p, RLC_MAX(RLC_BN_BITS / 4, 2 * RLC_DIG));
@@ -2505,7 +2517,8 @@ static int prime(void) {
 
 		TEST_ONCE("prime generation with a close prime factor terminates") {
 			for (int k = 1; k <= 2; k++) {
-				bn_gen_prime_factor(q, p, 30, 30 + k);
+				TEST_ASSERT(bn_gen_prime_factor(q, p, 30, 30 + k) == RLC_OK,
+						end);
 				TEST_ASSERT(bn_is_prime(q) && bn_is_prime(p), end);
 				TEST_ASSERT(bn_bits(p) == (size_t)(30 + k), end);
 				bn_sub_dig(p, p, 1);
@@ -2534,6 +2547,10 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime_solov(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("fermat prime testing is correct") {
+			TEST_ASSERT(bn_is_prime_fermt(p) == 1, end);
+		} TEST_END;
+
 		TEST_ONCE("lucas prime testing is correct") {
 			TEST_ASSERT(bn_is_prime_lucas(p) == 1, end);
 		} TEST_END;
@@ -2554,7 +2571,7 @@ static int prime(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free_all(p, q);
+	bn_free_all(p, q, r);
 	return code;
 }
 
@@ -2606,6 +2623,20 @@ static int small_primes(void) {
 			for(i = 0; i < nr_tests; i++) {
 				bn_set_dig(p, non_primes[i]);
 				TEST_ASSERT(bn_is_prime_rabin(p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("fermat testing of small primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, primes[i]);
+				TEST_ASSERT(bn_is_prime_fermt(p) == 1, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("fermat testing of small non-primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, non_primes[i]);
+				TEST_ASSERT(bn_is_prime_fermt(p) == 0, end);
 			}
 		} TEST_END;
 
@@ -2737,7 +2768,8 @@ static int factor(void) {
 		bn_new_all(p, q, n);
 
 		TEST_ONCE("integer factorization is consistent") {
-			bn_gen_prime(p, 16);
+			/* The factor is short, so avoid strong primes as the default. */
+			bn_gen_prime_basic(p, 16);
 			bn_rand(n, RLC_POS, RLC_BN_BITS - 16);
 			bn_mul(n, n, p);
 			if (bn_factor(q, n) == 1) {

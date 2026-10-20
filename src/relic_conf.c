@@ -55,36 +55,140 @@
 #define _QUOTE(A)			#A
 /** @} */
 
+/**
+ * Names the state of the switches.
+ */
+/** @{ */
+#ifdef RLC_CHECK
+#define CONF_CHECK			"on"
+#else
+#define CONF_CHECK			"off"
+#endif
+#ifdef RLC_STRIP
+#define CONF_STRIP			"on"
+#else
+#define CONF_STRIP			"off"
+#endif
+/** @} */
+
+/**
+ * Names the chosen architecture.
+ */
+#if RLC_ARCH == RLC_AVR
+#define CONF_ARCH			"AVR"
+#elif RLC_ARCH == RLC_MSP
+#define CONF_ARCH			"MSP"
+#elif RLC_ARCH == RLC_ARM
+#define CONF_ARCH			"ARM"
+#elif RLC_ARCH == RLC_A64
+#define CONF_ARCH			"A64"
+#elif RLC_ARCH == RLC_X86
+#define CONF_ARCH			"X86"
+#elif RLC_ARCH == RLC_X64
+#define CONF_ARCH			"X64"
+#else
+#define CONF_ARCH			"none"
+#endif
+
+/**
+ * Names the chosen random generator.
+ */
+#if RLC_RAND == RLC_HASHD
+#define CONF_RAND			"HASHD"
+#elif RLC_RAND == RLC_HMACD
+#define CONF_RAND			"HMACD"
+#elif RLC_RAND == RLC_UDEV
+#define CONF_RAND			"UDEV"
+#elif RLC_RAND == RLC_CALL
+#define CONF_RAND			"CALL"
+#else
+#define CONF_RAND			"none"
+#endif
+
+/**
+ * Names the chosen seeder of the generator.
+ */
+#if RLC_SEED == RLC_NONE
+#define CONF_SEED			"NONE"
+#elif RLC_SEED == RLC_RDRND
+#define CONF_SEED			"RDRND"
+#elif RLC_SEED == RLC_UDEV
+#define CONF_SEED			"UDEV"
+#elif RLC_SEED == RLC_WCGR
+#define CONF_SEED			"WCGR"
+#else
+#define CONF_SEED			"none"
+#endif
+
+/**
+ * Names the chosen multithreading API.
+ */
+#if RLC_MULTI == RLC_OPENMP
+#define CONF_MULTI			"OPENMP"
+#elif RLC_MULTI == RLC_PTHREAD
+#define CONF_MULTI			"PTHREAD"
+#else
+#define CONF_MULTI			"none"
+#endif
+
+/**
+ * Names the chosen timer.
+ */
+#if RLC_TIMER == RLC_HREAL
+#define CONF_TIMER			"HREAL"
+#elif RLC_TIMER == RLC_HPROC
+#define CONF_TIMER			"HPROC"
+#elif RLC_TIMER == RLC_HTHRD
+#define CONF_TIMER			"HTHRD"
+#elif RLC_TIMER == RLC_ANSI
+#define CONF_TIMER			"ANSI"
+#elif RLC_TIMER == RLC_CYCLE
+#define CONF_TIMER			"CYCLE"
+#elif RLC_TIMER == RLC_PERF
+#define CONF_TIMER			"PERF"
+#else
+#define CONF_TIMER			"none"
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void conf_print(void) {
-#ifndef QUIET
+#ifndef RLC_QUIET
 	util_print("-- RELIC " RLC_VERSION " configuration:\n\n");
-#if ALLOC == DYNAMIC
+	util_print("** Compiler: " RLC_CC "\n");
+	util_print("   Flags: " RLC_FLAGS "\n\n");
+	util_print("** Architecture: " CONF_ARCH ", %d-bit words\n\n", (int)RLC_WSIZE);
+	util_print("** Switches: CHECK " CONF_CHECK ", STRIP " CONF_STRIP
+			", multithreading " CONF_MULTI "\n\n");
+	util_print("** Random number generator: " CONF_RAND ", seeded by "
+			CONF_SEED "\n\n");
+	util_print("** Timer: " CONF_TIMER "\n\n");
+#if RLC_ALLOC == RLC_DYNAMIC
 	util_print("** Allocation mode: DYNAMIC\n\n");
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 	util_print("** Allocation mode: AUTO\n\n");
 #endif
 
-#if ARITH == EASY
+#if RLC_ARITH == RLC_EASY
 	util_print("** Arithmetic backend: easy\n\n");
-#elif ARITH == GMP
+#elif RLC_ARITH == RLC_GMP
 	util_print("** Arithmetic backend: gmp\n\n");
-#elif ARITH == GMP_SEC
+#elif RLC_ARITH == RLC_GMP_SEC
 	util_print("** Arithmetic backend: gmp-sec\n\n");
 #else
-	util_print("** Arithmetic backend: " QUOTE(ARITH) "\n\n");
+	/* Skip the prefix of the backend name. */
+	util_print("** Arithmetic backend: %s\n\n", QUOTE(RLC_ARITH) + 4);
 #endif
 
-#ifdef LABEL
-	util_print("** Configured label: " QUOTE(LABEL) "\n\n");
+#ifdef RLC_LABEL
+	util_print("** Configured label: " QUOTE(RLC_LABEL) "\n\n");
 #endif
 
-#if BENCH > 1
+#if RLC_BENCH > 1
 	util_print("** Benchmarking options:\n");
-	util_print("   Number of times: %d\n", (int)(BENCH * BENCH));
+	util_print("   Number of times: %d\n", (int)(RLC_BENCH * RLC_BENCH));
 	util_print("\n");
 #endif
 

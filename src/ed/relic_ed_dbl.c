@@ -69,7 +69,7 @@ void ed_dbl_basic(ed_t r, const ed_t p) {
 		fp_copy(r->x, t0);
 		fp_copy(r->z, p->z);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -104,7 +104,7 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 
 		/* F = E + D, H = Z^2, saving 1S if z1 = 1. */
 		fp_add(t4, t3, t2);
-		if (p->coord == BASIC) {
+		if (p->coord == EC_AFFIN) {
 			fp_set_dig(t5, 1);
 		} else {
 			fp_sqr(t5, p->z);
@@ -126,7 +126,7 @@ void ed_dbl_projc(ed_t r, const ed_t p) {
 		/* x3 = F * J */
 		fp_mul(r->z, t4, t6);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -150,7 +150,7 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_sqr(t1, p->y);
 
 		/* C = 2 * Z^2, saving 1S if z1 = 1. */
-		if (p->coord == BASIC) {
+		if (p->coord == EC_AFFIN) {
 			fp_set_dig(r->z, 2);
 		} else {
 			fp_sqr(r->z, p->z);
@@ -179,7 +179,7 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_mul(r->t, t2, r->z);
 		/* Z = F * G */
 		fp_mul(r->z, t3, t4);
-		r->coord = EXTND;
+		r->coord = EC_EXTND;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

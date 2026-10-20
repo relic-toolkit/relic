@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory1(void) {
-	g1_t a[BENCH];
+	g1_t a[RLC_BENCH];
 
 	BENCH_FEW("g1_null", g1_null(a[i]), 1);
 
 	BENCH_FEW("g1_new", g1_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g1_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g1_new(a[i]);
 	}
 	BENCH_FEW("g1_free", g1_free(a[i]), 1);
@@ -54,7 +54,7 @@ static void memory1(void) {
 
 static void util1(void) {
 	g1_t p, q;
-	uint8_t bin[2 * RLC_PC_BYTES + 1];
+	uint8_t bin[RLC_G1_BYTES];
 	int l;
 
 	g1_null(p);
@@ -296,16 +296,16 @@ static void arith1(void) {
 }
 
 static void memory2(void) {
-	g2_t a[BENCH];
+	g2_t a[RLC_BENCH];
 
 	BENCH_FEW("g2_null", g2_null(a[i]), 1);
 
 	BENCH_FEW("g2_new", g2_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g2_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g2_new(a[i]);
 	}
 	BENCH_FEW("g2_free", g2_free(a[i]), 1);
@@ -565,16 +565,16 @@ static void arith2(void) {
 }
 
 static void memory(void) {
-	gt_t a[BENCH];
+	gt_t a[RLC_BENCH];
 
 	BENCH_FEW("gt_null", gt_null(a[i]), 1);
 
 	BENCH_FEW("gt_new", gt_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		gt_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		gt_new(a[i]);
 	}
 	BENCH_FEW("gt_free", gt_free(a[i]), 1);

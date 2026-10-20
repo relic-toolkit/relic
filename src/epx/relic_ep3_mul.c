@@ -93,7 +93,7 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 		ep3_norm_sim(t + 1, t + 1, (1 << 5) - 1);
 		fp3_set_dig(q[1]->z, 1);
-		q[1]->coord = BASIC;
+		q[1]->coord = EC_AFFIN;
 
 		/* The first digit initializes the accumulator. */
 		for (int j = l - 1; j >= 0; j--) {

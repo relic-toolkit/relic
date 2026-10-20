@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,62 +24,23 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring functions.
+ * Implementation of the low-level extension field addition functions.
  *
- * @ingroup fp
+ * @ingroup fpx
  */
 
+#include "relic_core.h"
 #include "relic_fp_low.h"
-#include "macro.s"
-
-.text
-.global cdecl(fp_sqrn_low)
-.global cdecl(fp_sqrm_low)
+#include "relic_fpx_low.h"
 
 /*
- * Function: fp_sqrn_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2
+ * The assembly multiplies by the non-residue 2 + u of the SS3 prime and reads
+ * both coordinates from one contiguous vector, which only automatic allocation
+ * guarantees.
  */
-cdecl(fp_sqrn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
+#if !defined(FP_QNRES) && FP_PRIME == 318 && RLC_ALLOC == RLC_AUTO
+#define FP2_NORD_ASM
+#endif
 
-	FP_SQR_LOW	0(%rsi), 0(%rdi), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rbp, p0(%rip), 0
-
-	pop	%rbp
-	pop	%rbx
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	ret
-
-/*
- * Function: fp_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p
- */
-cdecl(fp_sqrm_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
-	push	%rbp
-	subq	$144, %rsp
-
-	FP_SQR_LOW	0(%rsi), 0(%rsp), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rbp, p0(%rip), 1
-
-	addq	$144, %rsp
-	pop	%rbp
-	pop	%rbx
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	ret
+/* The other functions, and fp2_nord_low() otherwise, are the portable ones. */
+#include "../easy/relic_fpx_add_low.c"

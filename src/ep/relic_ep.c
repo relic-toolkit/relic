@@ -57,7 +57,7 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 		switch (ep_curve_opt_a()) {
 			case RLC_ZERO:
 				break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 			case RLC_MIN3:
 				fp_sub_dig(t0, t0, 3);
 				break;
@@ -83,7 +83,7 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 		switch (ep_curve_opt_b()) {
 			case RLC_ZERO:
 				break;
-#if FP_RDC != MONTY
+#if FP_RDC != FP_MONTY
 			case RLC_MIN3:
 				fp_sub_dig(t0, t0, 3);
 				break;
@@ -141,7 +141,7 @@ int ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 		return RLC_ERR;
 	}
 
-	a->coord = BASIC;
+	a->coord = EC_AFFIN;
 	fp_set_dig(a->z, 1);
 	if (fp_read_bin(a->x, bin + 1, RLC_FP_BYTES) != RLC_OK) {
 		return RLC_ERR;
@@ -282,7 +282,7 @@ void ep_pck(ep_t r, const ep_t p) {
 		fp_set_bit(r->y, 0, b);
 		fp_set_dig(r->z, 1);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
@@ -337,7 +337,7 @@ int ep_upk(ep_t r, const ep_t p) {
 			fp_copy(r->x, p->x);
 			fp_copy(r->y, t);
 			fp_set_dig(r->z, 1);
-			r->coord = BASIC;
+			r->coord = EC_AFFIN;
 		}
 	}
 	RLC_CATCH_ANY {

@@ -64,7 +64,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 			dv_zero(a0b0, h + 1);
 			dv_zero(a1b1, h + 1);
 			for (int i = 0; i < h; i++) {
@@ -75,7 +75,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 				carry = bn_mula_low(a1b1 + i, a + h, *(b + h + i), h1);
 				*(a1b1 + i + h1) = carry;
 			}
-#elif FP_MUL == COMBA || FP_MUL == INTEG
+#elif FP_MUL == FP_COMBA || FP_MUL == FP_INTEG
 			bn_muln_low(a0b0, a, b, h);
 			bn_muln_low(a1b1, a + h, b + h, h1);
 #endif
@@ -103,13 +103,13 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 
 		if (level <= 1) {
 			/* t = (a1 + a0)*(b1 + b0) */
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 			dv_zero(t, h1 + 1);
 			for (int i = 0; i < h1 + 1; i++) {
 				carry = bn_mula_low(t + i, a1, *(b1 + i), h1 + 1);
 				*(t + i + h1 + 1) = carry;
 			}
-#elif FP_MUL == COMBA || FP_MUL == INTEG
+#elif FP_MUL == FP_COMBA || FP_MUL == FP_INTEG
 			bn_muln_low(t, a1, b1, h1 + 1);
 #endif
 		} else {
@@ -145,11 +145,26 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 /*============================================================================*/
 
 void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
-	if ((b >> (RLC_DIG - 1)) == 0) {
+	dig_t t[RLC_FP_DIGS];
+
+	/* Doubling and adding beats fp_mul1_low() for digits up to 4. */
+	if (b <= 1) {
+		if (b == 0) {
+			fp_zero(c);
+		} else {
+			fp_copy(c, a);
+		}
+	} else if (b == 2) {
+		fp_dbl(c, a);
+	} else if (b == 3) {
+		fp_dbl(t, a);
+		fp_add(c, t, a);
+	} else if (b == 4) {
+		fp_dbl(c, a);
+		fp_dbl(c, c);
+	} else if ((b >> (RLC_DIG - 1)) == 0) {
 		fp_mul1_low(c, a, b);
 	} else {
-		dig_t t[RLC_FP_DIGS];
-
 		fp_prime_conv_dig(t, b);
 		fp_mul(c, a, t);
 	}

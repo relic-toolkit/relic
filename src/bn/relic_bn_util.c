@@ -66,7 +66,7 @@ void bn_swap(bn_t a, bn_t b) {
 	if (a == b) {
 		return;
 	}
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	/*
 	 * The digits live behind a pointer, so exchanging the headers exchanges the
 	 * values: dp travels with the alloc that describes it.
@@ -358,7 +358,7 @@ void bn_print(const bn_t a) {
 	if (a->used == 0) {
 		util_print("0\n");
 	} else {
-#if WSIZE == 64
+#if RLC_WSIZE == 64
 		util_print_dig(a->dp[a->used - 1], 0);
 		for (i = a->used - 2; i >= 0; i--) {
 			util_print_dig(a->dp[i], 1);

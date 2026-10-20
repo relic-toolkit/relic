@@ -114,11 +114,25 @@
  */
 #define TMPL_EXP_CYC(F)														\
 	void F##_exp_cyc(F##_t c, const F##_t a, const bn_t b) {				\
-		size_t l, w = bn_ham(b);											\
+		size_t l, n = 0, h = bn_ham(b), w;									\
+		int8_t *d;															\
 																			\
 		if (bn_is_zero(b)) {												\
 			return F##_set_dig(c, 1);										\
 		}																	\
+																			\
+		/* The NAF may be sparser than the binary expansion. */				\
+		l = bn_bits(b) + 1;													\
+		d = RLC_ALLOCA(int8_t, l);											\
+		if (d == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		bn_rec_naf(d, &l, b, 2);											\
+		for (size_t i = 0; i < l; i++) {									\
+			n += (d[i] != 0);												\
+		}																	\
+		w = RLC_MIN(h, n);													\
 																			\
 		if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {			\
 			F##_t r, s, t[1 << (RLC_WIDTH - 2)];							\
@@ -176,22 +190,56 @@
 				}															\
 			}																\
 		} else {															\
-			/* Collect the positions of the nonzero bits of the exponent. */\
-			int *e = RLC_ALLOCA(int, w);									\
+			/* Collect the positions of the nonzero digits of the sparser	\
+			 * expansion, negated for the -1 digits of the NAF. Position 0	\
+			 * cannot be negated, so a -1 digit there is applied at the		\
+			 * end. */														\
+			int *e = RLC_ALLOCA(int, w), last = 0;							\
 			size_t j = 0;													\
+			F##_t t;														\
 																			\
 			if (e == NULL) {												\
+				RLC_FREE(d);												\
 				RLC_THROW(ERR_NO_MEMORY);									\
 				return;														\
 			}																\
-			for (size_t i = 0; i < bn_bits(b); i++) {						\
-				if (bn_get_bit(b, i)) {										\
-					e[j++] = i;												\
+			if (n < h) {													\
+				for (size_t i = 0; i < l; i++) {							\
+					if (d[i] == 1) {										\
+						e[j++] = i;											\
+					} else if (d[i] == -1 && i > 0) {						\
+						e[j++] = -(int)i;									\
+					}														\
+				}															\
+				last = (d[0] == -1);										\
+			} else {														\
+				for (size_t i = 0; i < bn_bits(b); i++) {					\
+					if (bn_get_bit(b, i)) {									\
+						e[j++] = i;											\
+					}														\
 				}															\
 			}																\
-			F##_exp_cyc_sps(c, a, e, w, bn_sign(b));						\
+			if (last) {														\
+				F##_null(t);												\
+				RLC_TRY {													\
+					F##_new(t);												\
+					F##_exp_cyc_sps(t, a, e, j, RLC_POS);					\
+					F##_inv_cyc(c, a);										\
+					F##_mul(c, c, t);										\
+					if (bn_sign(b) == RLC_NEG) {							\
+						F##_inv_cyc(c, c);									\
+					}														\
+				} RLC_CATCH_ANY {											\
+					RLC_THROW(ERR_CAUGHT);									\
+				} RLC_FINALLY {												\
+					F##_free(t);											\
+				}															\
+			} else {														\
+				F##_exp_cyc_sps(c, a, e, j, bn_sign(b));					\
+			}																\
 			RLC_FREE(e);													\
 		}																	\
+		RLC_FREE(d);														\
 	}
 
 /**

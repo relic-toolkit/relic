@@ -166,6 +166,11 @@ static void ecdsa(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("cp_ecdsa_sign_det (h = 0)") {
+		BENCH_ADD(cp_ecdsa_sig_det(r, s, msg, 5, 0, d));
+	}
+	BENCH_END;
+
 	BENCH_RUN("cp_ecdsa_ver (h = 0)") {
 		BENCH_ADD(cp_ecdsa_ver(r, s, msg, 5, 0, p));
 	}
@@ -284,8 +289,8 @@ static void vbnn(void) {
 	ec_free(pkb);
 }
 
-#define MAX_KEYS	RLC_MAX(BENCH, 16)
-#define MIN_KEYS	RLC_MIN(BENCH, 16)
+#define MAX_KEYS	RLC_MAX(RLC_BENCH, 16)
+#define MIN_KEYS	RLC_MIN(RLC_BENCH, 16)
 
 static void ers(void) {
 	size_t size;
@@ -324,8 +329,8 @@ static void ers(void) {
 
 	size = 1;
 	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
-	for (int j = 1; j < MAX_KEYS && size < BENCH; j = j << 1) {
-		for (int k = 0; k < j && size < BENCH; k++) {
+	for (int j = 1; j < MAX_KEYS && size < RLC_BENCH; j = j << 1) {
+		for (int k = 0; k < j && size < RLC_BENCH; k++) {
 			cp_ers_ext(td, ring, &size, m, 5, pk[size]);
 		}
 		cp_ers_ver(td, ring, size, m, 5, pp);
@@ -379,8 +384,8 @@ static void smlers(void) {
 
 	size = 1;
 	cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
-	for (int j = 1; j < MAX_KEYS && size < BENCH; j = j << 1) {
-		for (int k = 0; k < j && size < BENCH; k++) {
+	for (int j = 1; j < MAX_KEYS && size < RLC_BENCH; j = j << 1) {
+		for (int k = 0; k < j && size < RLC_BENCH; k++) {
 			cp_smlers_ext(td, ring, &size, m, 5, pk[size]);
 		}
 		cp_smlers_ver(td, ring, size, m, 5, pp);

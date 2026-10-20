@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,35 +24,22 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field modular reduction functions.
+ * Implementation of the low-level extension field squaring functions.
  *
- * @ingroup fp
+ * @ingroup fpx
  */
 
+#include "relic_core.h"
 #include "relic_fp_low.h"
-#include "macro.s"
-
-.text
-
-.global cdecl(fp_rdcn_low)
+#include "relic_fpx_low.h"
 
 /*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a, with a a double-length value of 17 limbs
- * Output: c = a * 2^-576 mod p
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
  */
-cdecl(fp_rdcn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push	%rbx
+#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
+#define FP2_ASM
+#endif
 
-	FP_RDCN_LOW	0(%rsi), %rdi, %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rcx, %rax, p0(%rip)
-
-	pop	%rbx
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	ret
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_sqr_low.c"

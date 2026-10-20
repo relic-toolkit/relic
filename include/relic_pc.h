@@ -51,7 +51,17 @@
  * Prefix for function mappings.
  */
 /** @{ */
-#if FP_PRIME < 1536
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+/* Symmetric pairing on a supersingular curve over Fp^4. */
+#define RLC_G1_LOWER			ep4_
+#define RLC_G1_UPPER			EP
+#define RLC_G2_LOWER			ep4_
+#define RLC_G2_UPPER			EP
+#define RLC_G2_BASEF(A)			A
+#define RLC_GT_LOWER			fp12_
+#define RLC_GT_EMBED      		12
+
+#elif FP_PRIME < 1536
 
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
@@ -118,6 +128,15 @@
  * Represents the size in bytes of the order of G_1 and G_2.
  */
 #define RLC_PC_BYTES			RLC_FP_BYTES
+
+/**
+ * Represents the size in bytes of a G_1 element in uncompressed form.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define RLC_G1_BYTES			(8 * RLC_FP_BYTES + 1)
+#else
+#define RLC_G1_BYTES			(2 * RLC_FP_BYTES + 1)
+#endif
 
 /**
  * Represents a G_1 precomputed table.
@@ -277,7 +296,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define pc_param_set_any()	ep_param_set_any_pairf()
 #else
 #define pc_param_set_any()	RLC_ERR
@@ -297,6 +316,9 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #if FP_PRIME == 3072
 #undef pc_map_is_typea
 #define pc_map_is_typea()	(1)
+#elif FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#undef pc_map_is_type1
+#define pc_map_is_type1()	(1)
 #elif FP_PRIME < 1536
 #undef pc_map_is_type3
 #define pc_map_is_type3()	(1)
@@ -311,12 +333,20 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Prints the current configured binary elliptic curve.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_param_print()	ep_param_print()
+#else
 #define pc_param_print()	RLC_CAT(RLC_G1_LOWER, param_print)()
+#endif
 
 /*
  * Returns the current security level.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_param_level()	ep_param_level()
+#else
 #define pc_param_level()	RLC_CAT(RLC_G1_LOWER, param_level)()
+#endif
 
 /**
  * Tests if a G_1 element is on the curve.
@@ -378,11 +408,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] P			- the element to assign.
  * @param[out] Q			- the G_2 element storing the coordinates.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define g1_set_g2(P, Q)			ep4_copy(P, Q)
+#else
 #define g1_set_g2(P, Q)																								\
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
 	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
 	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
 	(P)->coord = (Q)->coord;																						\
+
+#endif
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -390,11 +425,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] Q			- the element to assign.
  * @param[out] P			- the G_1 element storing the coordinates.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define g2_set_g1(Q, P)			ep4_copy(Q, P)
+#else
 #define g2_set_g1(Q, P)																								\
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
 	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
 	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
 	(Q)->coord = (P)->coord;																						\
+
+#endif
 
 /**
  * Assigns a G_T element to zero.
@@ -961,7 +1001,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P				- the first element.
  * @param[in] Q				- the second element.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map(R, P, Q)	  pp_map_k3(R, P, Q)
+#else
 #define pc_map(R, P, Q)	  RLC_CAT(pp_map_k, RLC_GT_EMBED)(R, P, Q)
+#endif
 
 /**
  * Computes the multi-pairing of G_1 elements and G_2 elements. Computes
@@ -972,7 +1016,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairing arguments.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_sim(R, P, Q, M)  pp_map_sim_k3(R, P, Q, M)
+#else
 #define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
+#endif
 
 /**
  * Computes the final exponentiation of the pairing.
@@ -980,7 +1028,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the field element to exponentiate.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_exp(C, A)			pp_exp_k3(C, A)
+#else
 #define pc_exp(C, A)			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
+#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */

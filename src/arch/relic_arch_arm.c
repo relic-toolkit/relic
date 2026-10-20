@@ -55,7 +55,7 @@
 /*============================================================================*/
 
 void arch_init(void) {
-#if TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 	/*
@@ -78,7 +78,7 @@ void arch_init(void) {
 	*DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = RLC_CYCLE */
 }
 
 void arch_clean(void) {
@@ -87,7 +87,7 @@ void arch_clean(void) {
 ull_t arch_cycles(void) {
 	uint_t value = 0;
 
-#if TIMER == CYCLE
+#if RLC_TIMER == RLC_CYCLE
 
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 	asm("mrc p15, 0, %0, c15, c12, 1" : "=r"(value));
@@ -99,23 +99,32 @@ ull_t arch_cycles(void) {
 	#error "Unsupported ARM architecture. Cycle count implementation missing for this ARM version."
 #endif
 
-#endif /* TIMER = CYCLE */
+#endif /* RLC_TIMER = RLC_CYCLE */
 
 	return value;
 }
 
+/* Cores before ARMv5 have no CLZ instruction, so they count in software. */
 uint_t arch_lzcnt(dig_t x) {
-#if WSIZE == 32
-	return lzcnt32_gcc_arm(x);
-#elif WSIZE == 64
-	return lzcnt64_gcc_arm(x);
+#if RLC_WSIZE == 32 && defined(HAS_LZCNT32_HARD)
+	return lzcnt32_hard(x);
+#elif RLC_WSIZE == 32
+	return lzcnt32_soft(x);
+#elif RLC_WSIZE == 64 && defined(HAS_LZCNT64_HARD)
+	return lzcnt64_hard(x);
+#elif RLC_WSIZE == 64
+	return lzcnt64_soft(x);
 #endif
 }
 
 uint_t arch_tzcnt(dig_t x) {
-#if WSIZE == 32
-	return tzcnt32_gcc_arm(x);
-#elif WSIZE == 64
-	return tzcnt64_gcc_arm(x);
+#if RLC_WSIZE == 32 && defined(HAS_TZCNT32_HARD)
+	return tzcnt32_hard(x);
+#elif RLC_WSIZE == 32
+	return tzcnt32_soft(x);
+#elif RLC_WSIZE == 64 && defined(HAS_TZCNT64_HARD)
+	return tzcnt64_hard(x);
+#elif RLC_WSIZE == 64
+	return tzcnt64_soft(x);
 #endif
 }

@@ -44,7 +44,7 @@ void eb_frb(eb_t r, const eb_t p) {
 
 	fb_sqr(r->x, p->x);
 	fb_sqr(r->y, p->y);
-	if (p->coord != BASIC) {
+	if (p->coord != EC_AFFIN) {
 		fb_sqr(r->z, p->z);
 	} else {
 		fb_set_dig(r->z, 1);

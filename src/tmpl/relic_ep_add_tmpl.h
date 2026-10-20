@@ -99,7 +99,7 @@
 					F##_copy(s, t2);										\
 				}															\
 																			\
-				r->coord = BASIC;											\
+				r->coord = EC_AFFIN;											\
 			}																\
 			F##_free_all(t0, t1, t2);										\
 		} RLC_CATCH_ANY {													\
@@ -143,7 +143,7 @@
 			F##_mul(t3, t3, t4);											\
 			F##_add(t4, t0, t1);											\
 			F##_sub(t3, t3, t4);											\
-			if (p->coord == BASIC) {										\
+			if (p->coord == EC_AFFIN) {										\
 				/* Save 2M if z1 = 1. */									\
 				F##_add(t4, q->x, p->x);									\
 				F##_add(t5, q->y, p->y);									\
@@ -156,7 +156,7 @@
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 10M + 2m_3b. */									\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					/* Save 1m_3b if z1 = 1. */								\
 					F##_dbl(r->y, C##_curve_get_b());						\
 					F##_add(r->y, r->y, C##_curve_get_b());					\
@@ -176,7 +176,7 @@
 				F##_add(t1, t1, t0);										\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 10M + 2m_b. */									\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					/* Save 1m_b if z1 = 1. */								\
 					F##_set_dig(t2, 3);										\
 					F##_sub(r->y, t4, C##_curve_get_b());					\
@@ -203,7 +203,7 @@
 				F##_add(t2, t2, r->y);										\
 			} else {														\
 				/* Cost of 10M + 3m_a + 2m_3b. */							\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					/* Save 1m_a + 1m_3b if z1 = 1. */						\
 					F##_copy(t2, C##_curve_get_a());						\
 					C##_curve_mul_a(r->z, t4);								\
@@ -251,7 +251,7 @@
 			F##_add(r->x, r->x, t0);										\
 			F##_add(r->z, r->z, t3);										\
 																			\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -266,7 +266,7 @@
 		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		if (q->coord == BASIC) {											\
+		if (q->coord == EC_AFFIN) {											\
 			C##_add_projc_mix(r, p, q);										\
 			return;															\
 		}																	\
@@ -370,7 +370,7 @@
 			F##_add(r->y, r->x, r->y);										\
 			F##_add(r->x, r->x, t0);										\
 			F##_add(r->z, r->z, t3);										\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -399,7 +399,7 @@
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
-			if (p->coord != BASIC) {										\
+			if (p->coord != EC_AFFIN) {										\
 				/* t0 = z1^2. */											\
 				F##_sqr(t0, p->z);											\
 																			\
@@ -461,7 +461,7 @@
 				F##_dbl(t1, t1);											\
 				F##_sub(r->y, t4, t1);										\
 																			\
-				if (p->coord != BASIC) {									\
+				if (p->coord != EC_AFFIN) {									\
 					/* z3 = (z1 + H)^2 - z1^2 - HH. */						\
 					F##_add(r->z, p->z, t3);								\
 					F##_sqr(r->z, r->z);									\
@@ -472,7 +472,7 @@
 					F##_dbl(r->z, t3);										\
 				}															\
 			}																\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
@@ -494,7 +494,7 @@
 																			\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
-		if (q->coord == BASIC) {											\
+		if (q->coord == EC_AFFIN) {											\
 			C##_add_jacob_mix(r, p, q);										\
 			return;															\
 		}																	\
@@ -573,7 +573,7 @@
 				F##_sub(r->z, r->z, t6);									\
 				F##_mul(r->z, r->z, t3);									\
 			}																\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\

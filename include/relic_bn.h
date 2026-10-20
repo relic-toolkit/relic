@@ -94,10 +94,10 @@ typedef struct {
 	size_t used;
 	/** The sign of this multiple precision integer. */
 	int sign;
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 	/** The sequence of contiguous digits that forms this integer. */
 	rlc_align dig_t dp[RLC_BN_SIZE];
 #endif
@@ -106,10 +106,10 @@ typedef struct {
 /**
  * Pointer to a multiple precision integer structure.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef bn_st bn_t[1];
-#elif ALLOC == DYNAMIC
-#ifdef CHECK
+#elif RLC_ALLOC == RLC_DYNAMIC
+#ifdef RLC_CHECK
 typedef bn_st *volatile bn_t;
 #else
 typedef bn_st *bn_t;
@@ -134,7 +134,7 @@ typedef struct {
 	bn_t qi;
 } crt_st;
 
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef crt_st crt_t[1];
 #else
 typedef crt_st *crt_t;
@@ -149,9 +149,9 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define bn_null(A)			/* empty */
-#elif ALLOC == DYNAMIC
+#elif RLC_ALLOC == RLC_DYNAMIC
 #define bn_null(A)			A = NULL;
 #endif
 
@@ -161,7 +161,7 @@ typedef crt_st *crt_t;
  * @param[in,out] A			- the multiple precision integer to initialize.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new(A)															\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if ((A) == NULL) {														\
@@ -169,7 +169,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, RLC_BN_SIZE);												\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new(A)															\
 	bn_make(A, RLC_BN_SIZE);												\
 
@@ -185,7 +185,7 @@ typedef crt_st *crt_t;
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  *							by the library.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new_size(A, D)													\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if (A == NULL) {														\
@@ -193,7 +193,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, D);															\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new_size(A, D)													\
 	bn_make(A, D);															\
 
@@ -204,7 +204,7 @@ typedef crt_st *crt_t;
  *
  * @param[in,out] A			- the multiple precision integer to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_free(A)															\
 	if (A != NULL) {														\
 		bn_clean(A);														\
@@ -212,7 +212,7 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_free(A)			/* empty */										\
 
 #endif
@@ -241,7 +241,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the new CRT moduli set.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_new(A)															\
 	A = (crt_t)calloc(1, sizeof(crt_st));									\
 	if (A == NULL) {														\
@@ -254,7 +254,7 @@ typedef crt_st *crt_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_new(A)															\
 	bn_new((A)->n);															\
 	bn_new((A)->dp);														\
@@ -270,7 +270,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the CRT moduli set to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->n);													\
@@ -283,7 +283,7 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_free(A)				/* empty */
 
 #endif
@@ -297,9 +297,9 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_mul(C, A, B)		bn_mul_karat(C, A, B)
-#elif BN_MUL == BASIC
+#elif BN_MUL == BN_BASIC
 #define bn_mul(C, A, B)		bn_mul_basic(C, A, B)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mul(C, A, B)		bn_mul_comba(C, A, B)
 #endif
 
@@ -311,11 +311,11 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_sqr(C, A)		bn_sqr_karat(C, A)
-#elif BN_SQR == BASIC
+#elif BN_SQR == BN_BASIC
 #define bn_sqr(C, A)		bn_sqr_basic(C, A)
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 #define bn_sqr(C, A)		bn_sqr_comba(C, A)
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 #define bn_sqr(C, A)		bn_mul(C, A, A)
 #endif
 
@@ -326,14 +326,12 @@ typedef crt_st *crt_t;
  * @param[out] U			- the result.
  * @param[in] M				- the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_pre(U, M)	(void)(U), (void)(M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_pre(U, M)	bn_mod_pre_monty(U, M)
-#elif BN_MOD == PMERS
-#define bn_mod_pre(U, M)	bn_mod_pre_pmers(U, M)
 #endif
 
 /**
@@ -359,14 +357,12 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the auxiliar value derived from the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_imp(C, A, M, U)	bn_mod_basic(C, A, M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_imp(C, A, M, U)	bn_mod_monty(C, A, M, U)
-#elif BN_MOD == PMERS
-#define bn_mod_imp(C, A, M, U)	bn_mod_pmers(C, A, M, U)
 #endif
 
 /**
@@ -378,9 +374,9 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the reciprocal of the modulus.
  */
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_basic(C, A, M, U)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_comba(C, A, M, U)
 #endif
 
@@ -394,13 +390,13 @@ typedef crt_st *crt_t;
  * @param[in] B				- the exponent.
  * @param[in] M				- the modulus.
  */
-#if BN_MXP == BASIC
+#if BN_MXP == BN_BASIC
 #define bn_mxp(C, A, B, M)	bn_mxp_basic(C, A, B, M)
-#elif BN_MXP == SLIDE
+#elif BN_MXP == BN_SLIDE
 #define bn_mxp(C, A, B, M)	bn_mxp_slide(C, A, B, M)
-#elif BN_MXP == MONTY
+#elif BN_MXP == BN_MONTY
 #define bn_mxp(C, A, B, M)	bn_mxp_monty(C, A, B, M)
-#elif BN_MXP == LOWER
+#elif BN_MXP == BN_LOWER
 #define bn_mxp(C, A, B, M)	bn_mxp_lower(C, A, B, M)
 #endif
 
@@ -412,13 +408,13 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd(C, A, B)		bn_gcd_basic(C, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd(C, A, B)		bn_gcd_lower(C, A, B)
 #endif
 
@@ -433,29 +429,24 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_basic(C, D, E, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lower(C, D, E, A, B)
 #endif
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number. Safe and strong primes have their own
+ * functions, for the callers that need them.
  *
  * @param[out] A			- the result.
  * @param[in] B				- the length of the number in bits.
  */
-#if BN_GEN == BASIC
 #define bn_gen_prime(A, B)	bn_gen_prime_basic(A, B)
-#elif BN_GEN == SAFEP
-#define bn_gen_prime(A, B)	bn_gen_prime_safep(A, B)
-#elif BN_GEN == STRON
-#define bn_gen_prime(A, B)	bn_gen_prime_stron(A, B)
-#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -1197,25 +1188,6 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
- * Computes u if the modulus has the form 2^b - u.
- *
- * @param[out] u			- the result.
- * @param[in] m				- the modulus.
- */
-void bn_mod_pre_pmers(bn_t u, const bn_t m);
-
-/**
- * Reduces a multiple precision integer modulo a positive integer using
- * pseudo-Mersenne modular reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the multiple precision integer to reduce.
- * @param[in] m				- the modulus.
- * @param[in] u				- the auxiliar value derived from the modulus.
- */
-void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
-
-/**
  * Exponentiates a multiple precision integer modulo a positive integer using
  * the binary method. The modulus may be even, which the other methods do not
  * accept, as they reduce by an algorithm that needs an odd one.
@@ -1559,6 +1531,16 @@ int bn_is_prime_rabin(const bn_t a);
 int bn_is_prime_solov(const bn_t a);
 
 /**
+ * Tests if a number is prime using the Fermat test to base two. A single
+ * exponentiation rejects most composites, but some pass, so a number accepted
+ * by this test should be confirmed by another one.
+ *
+ * @param[in] a				- the number to test.
+ * @return 1 if a is a probable prime, 0 otherwise.
+ */
+int bn_is_prime_fermt(const bn_t a);
+
+/**
  * Tests if a number a > 2 is a strong Lucas probable prime, with the
  * parameters chosen by Selfridge's method A.
  *
@@ -1587,18 +1569,19 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len);
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number with the top two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 2.
  */
 void bn_gen_prime_basic(bn_t a, size_t bits);
 
 /**
- * Generates a probable prime number a with (a - 1)/2 also prime.
+ * Generates a probable prime number a with (a - 1)/2 also prime and the top
+ * two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 16.
  */
 void bn_gen_prime_safep(bn_t a, size_t bits);
 
@@ -1612,6 +1595,22 @@ void bn_gen_prime_safep(bn_t a, size_t bits);
 void bn_gen_prime_stron(bn_t a, size_t bits);
 
 /**
+ * Generates the probable primes u, 2u + 1, ..., p = 2^(len - 1) * (u + 1) - 1,
+ * a Cunningham chain of the first kind of a given length. The top two bits of
+ * p are set, so that the product of two such primes has exactly the sum of
+ * their lengths. Candidates for u are taken in windows of consecutive odd
+ * integers, those with a term divisible by a small prime are sieved out, and
+ * the terms of the rest pass a Fermat test before the full primality test.
+ *
+ * @param[out] p			- the last term of the chain.
+ * @param[out] u			- the first term of the chain, or NULL.
+ * @param[in] bits			- the length of p in bits, at least 16 when len > 1.
+ * @param[in] len			- the number of primes in the chain, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
+
+/**
  * Generates a probable prime number b, with (b-1) divisible by a probable large
  * prime a.
  *
@@ -1619,14 +1618,16 @@ void bn_gen_prime_stron(bn_t a, size_t bits);
  * @param[out] b			- the prime result b.
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
 /**
- * Compute the next prime q strictly greater than p.
+ * Computes the smallest probable prime q strictly greater than p, with
+ * consecutive candidates sieved by small primes before they are tested.
  *
  * @param[out] q			- the result.
- * @param[in] p				- the starting prime.
+ * @param[in] p				- the starting integer.
  */
 void bn_next_prime(bn_t q, const bn_t p);
 

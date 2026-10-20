@@ -47,7 +47,7 @@ int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
 	fp_t t0, t1, t2, t3;
 	int f = 0, r = 0;
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	const dig_t *srt = (const dig_t *)fp_prime_get_srt();
 #else
 	const fp_t srt = (fp_t)fp_prime_get_srt();

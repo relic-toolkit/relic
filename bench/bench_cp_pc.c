@@ -404,7 +404,7 @@ static void ibe(void) {
 	bn_t s;
 	g1_t pub;
 	g2_t prv;
-	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
+	uint8_t in[10], out[10 + RLC_G1_BYTES];
 	char *id = "Alice";
 	size_t in_len, out_len;
 
@@ -430,7 +430,7 @@ static void ibe(void) {
 
 	BENCH_RUN("cp_ibe_enc") {
 		in_len = sizeof(in);
-		out_len = in_len + 2 * RLC_FP_BYTES + 1;
+		out_len = in_len + RLC_G1_BYTES;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_ibe_enc(out, &out_len, in, in_len, id, pub));
 		cp_ibe_dec(out, &out_len, out, out_len, prv);
@@ -439,7 +439,7 @@ static void ibe(void) {
 
 	BENCH_RUN("cp_ibe_dec") {
 		in_len = sizeof(in);
-		out_len = in_len + 2 * RLC_FP_BYTES + 1;
+		out_len = in_len + RLC_G1_BYTES;
 		rand_bytes(in, sizeof(in));
 		cp_ibe_enc(out, &out_len, in, in_len, id, pub);
 		BENCH_ADD(cp_ibe_dec(out, &out_len, out, out_len, prv));
@@ -1080,6 +1080,8 @@ static void lhs(void) {
 	/* Initialize scheme for messages of single components. */
 	cp_cmlhs_init(h);
 
+#if !(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
+	/* ECDSA needs G_1 over a prime field. */
 	BENCH_ONE("cp_cmlhs_gen (ecdsa)",
 		for (int j = 0; j < S; j++) {
 			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], 0);
@@ -1097,6 +1099,7 @@ static void lhs(void) {
 			}
 		},
 	S * L);
+#endif
 
 	BENCH_RUN("cp_cmlhs_fun") {
 		for (int j = 0; j < S; j++) {
@@ -1126,20 +1129,26 @@ static void lhs(void) {
 		bn_mod(m, m, n);
 	}
 
+#if !(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
+	/* ECDSA needs G_1 over a prime field. */
 	BENCH_RUN("cp_cmlhs_ver (ecdsa)") {
 		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
 			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 0));
 	} BENCH_DIV(S);
+#endif
 
 	BENCH_RUN("cp_cmlhs_off") {
 		BENCH_ADD(cp_cmlhs_off(vk, label, (const gt_t **)hs,
 			(const dig_t **)f, flen, S));
 	} BENCH_DIV(S);
 
+#if !(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
+	/* ECDSA needs G_1 over a prime field. */
 	BENCH_RUN("cp_cmlhs_onv (ecdsa)") {
 		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
 			pk, S, 0));
 	} BENCH_DIV(S);
+#endif
 
 	BENCH_ONE("cp_cmlhs_gen (bls)",
 		for (int j = 0; j < S; j++) {

@@ -42,7 +42,7 @@ dig_t fb_trcn_low(const dig_t *a) {
 
 	fb_poly_get_trc(&ta, &tb, &tc);
 
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	r = fb_get_bit(a, ta);
 	if (tb != -1) {
 		r ^= fb_get_bit(a, tb);

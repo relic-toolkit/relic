@@ -38,7 +38,7 @@
  * The assembly reads both coordinates from one contiguous vector, which only
  * automatic allocation guarantees.
  */
-#if defined(FP_QNRES) && ALLOC == AUTO
+#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

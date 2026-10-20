@@ -257,7 +257,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -532,7 +532,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 					fb_mul(w, w, z);
 					fb_srt(s->x, w);
 					fb_set_dig(s->z, 1);
-					s->coord = HALVE;
+					s->coord = EC_HALVE;
 				}
 				eb_copy(q, s);
 			}

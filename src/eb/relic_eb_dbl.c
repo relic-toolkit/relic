@@ -92,7 +92,7 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 
 		fb_copy(r->z, p->z);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -122,7 +122,7 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 		/* C = B + y1. */
 		fb_add(r->y, t0, p->y);
 
-		if (p->coord != BASIC) {
+		if (p->coord != EC_AFFIN) {
 			/* A = x1 * z1. */
 			fb_mul(t1, p->x, p->z);
 			/* z3 = A^2. */
@@ -168,7 +168,7 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 		fb_mul(r->y, t1, r->x);
 		fb_add(r->y, r->y, t0);
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

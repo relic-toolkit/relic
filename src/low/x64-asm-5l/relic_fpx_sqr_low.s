@@ -32,12 +32,6 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application to Bilinear Pairings" by
- * Longa at TCHES'23.
- */
-
 .text
 
 #ifdef FP2_ASM
@@ -45,48 +39,72 @@
 .global cdecl(fp2_sqrn_low)
 .global cdecl(fp2_sqrm_low)
 
-/*
- * Function: fp2_sqrn_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2, with c[1] at RLC_DV_STRIDE bytes from c[0]
- */
 cdecl(fp2_sqrn_low):
 	push	%r12
 	push	%r13
 	push	%r14
-	push	%rbx
+	push	%r15
 	subq	$136, %rsp
+
 	leaq	RLC_DV_STRIDE(%rdi), %rax
 	movq	%rax, 120(%rsp)
 
-	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 0, 0(%rsp)
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 0, 0(%rsp)
 
 	addq	$136, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
-/*
- * Function: fp2_sqrm_low
- * Inputs: rdi = c, rsi = a
- * Output: c = a^2/R mod p, coefficient-wise
- */
+#ifdef FP2_SQR_RDC
+
 cdecl(fp2_sqrm_low):
 	push	%r12
 	push	%r13
 	push	%r14
-	push	%rbx
+	push	%r15
 	subq	$136, %rsp
 
-	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 1, 0(%rsp)
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 1, 0(%rsp)
 
 	addq	$136, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%r13
-	popq	%r12
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret
 
-#endif /* FP2_ASM */
+#else
+
+cdecl(fp2_sqrm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	subq	$304, %rsp
+
+	movq	%rdi, 136(%rsp)
+	leaq	144(%rsp), %rdi
+	leaq	224(%rsp), %rax
+	movq	%rax, 120(%rsp)
+
+	FP2_SQR_LOW	0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 0, 0(%rsp)
+
+	movq	136(%rsp), %rdi
+	FP_RDCN_LOW	144(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, p0(%rip), %rcx, %r12, %rdx, %rsi, %r13
+	movq	136(%rsp), %rdi
+	addq	$40, %rdi
+	FP_RDCN_LOW	224(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, p0(%rip), %rcx, %r12, %rdx, %rsi, %r13
+
+	addq	$304, %rsp
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif
+
+#endif

@@ -278,7 +278,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 
 		fp_hlv(r->y, t1);
 
-		r->coord = JACOB;
+		r->coord = EC_JACOB;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -362,7 +362,7 @@ void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 
 		fp_hlv(r->y, t1);
 
-		r->coord = JACOB;
+		r->coord = EC_JACOB;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -483,7 +483,7 @@ void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		fp_mul(l[1], r->z, t0);
 		fp_mul(l[1], l[1], q->y);
 
-		r->coord = JACOB;
+		r->coord = EC_JACOB;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -584,7 +584,7 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 		fp_mul(l[1], r->z, t0);
 		fp_mul(l[1], l[1], q->y);
 
-		r->coord = JACOB;
+		r->coord = EC_JACOB;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

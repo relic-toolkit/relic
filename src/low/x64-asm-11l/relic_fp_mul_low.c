@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,50 +24,20 @@
 /**
  * @file
  *
- * Implementation of the ASM multiple precision bit shifting functions.
+ * Implementation of the low-level prime field multiplication functions.
  *
  * @ingroup bn
  */
 
-#include "relic_bn_low.h"
-#include "macro.s"
+#include <gmp.h>
 
-.text
-.global cdecl(bn_srsh_low)
-.text
-.global cdecl(bn_srsh_low)
+#include "relic_fp.h"
+#include "relic_fp_low.h"
 
-/*
- * Function: bn_srsh_low
- * Inputs: rdi = c, rsi = a, rdx = size = RLC_FP_DIGS + 1, rcx = 0 < bits < 64
- * Output: c = a >> bits (arithmetic), returns the bits shifted out of a[0]
- * in the most significant bits of the digit.
- */
-cdecl(bn_srsh_low):
-	movq	0(%rsi), %r8
-	xorq	%rax, %rax
-	shrd	%cl, %r8, %rax
-	movq	8(%rsi), %r9
-	shrd	%cl, %r9, %r8
-	movq	%r8, 0(%rdi)
-	movq	16(%rsi), %r10
-	shrd	%cl, %r10, %r9
-	movq	%r9, 8(%rdi)
-	movq	24(%rsi), %r11
-	shrd	%cl, %r11, %r10
-	movq	%r10, 16(%rdi)
-	movq	32(%rsi), %r8
-	shrd	%cl, %r8, %r11
-	movq	%r11, 24(%rdi)
-	movq	40(%rsi), %r9
-	shrd	%cl, %r9, %r8
-	movq	%r8, 32(%rdi)
-	movq	48(%rsi), %r10
-	shrd	%cl, %r10, %r9
-	movq	%r9, 40(%rdi)
-	movq	56(%rsi), %r11
-	shrd	%cl, %r11, %r10
-	movq	%r10, 48(%rdi)
-	sar		%cl, %r11
-	movq	%r11, 56(%rdi)
-	ret
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
+}

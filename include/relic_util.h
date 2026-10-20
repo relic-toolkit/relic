@@ -84,7 +84,7 @@
  * @param[in] B			- the number of bits to isolate.
  */
 #define RLC_MASK(B)															\
-	((-(dig_t)((B) >= WSIZE)) | (((dig_t)1 << ((B) % WSIZE)) - 1))
+	((-(dig_t)((B) >= RLC_WSIZE)) | (((dig_t)1 << ((B) % RLC_WSIZE)) - 1))
 
 /**
  * Returns a bit mask to isolate the lowest half of a digit.
@@ -208,7 +208,7 @@
  *
  * @param[out] A			- the object to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define RLC_NULL(A)			/* empty */
 #else
 #define RLC_NULL(A)			A = NULL;
@@ -269,7 +269,7 @@
  *
  * @param[in] F			- the format string.
  */
-#ifndef QUIET
+#ifndef RLC_QUIET
 #define util_print(F, ...)		util_printf(RLC_STR(F), ##__VA_ARGS__)
 #else
 #define util_print(F, ...)		/* empty */

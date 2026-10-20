@@ -84,14 +84,15 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		if (bls) {
 			result = cp_bls_gen(sk, pk);
 		} else {
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 			if (cp_ecdsa_gen(sk, g1) == RLC_OK) {
 				g2_set_g1(pk, g1);
 			} else {
 				result = RLC_ERR;
 			}
 #else
-			/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
+			/* ECDSA keys must be points in G1 over a prime field. */
 			result = RLC_ERR;
 #endif
 		}
@@ -189,13 +190,14 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		if (bls) {
 			result = cp_bls_sig(sig, buf, len + dlen, sk);
 		} else {
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 			result = cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
 			fp_prime_conv(sig->x, m);
 			fp_prime_conv(sig->y, n);
 			fp_set_dig(sig->z, 1);
 #else
-			/* ECDSA keys must be points in G1, so ECDSA needs prime curves. */
+			/* ECDSA keys must be points in G1 over a prime field. */
 			result = RLC_ERR;
 #endif
 		}
@@ -282,13 +284,14 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 			if (bls) {
 				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
 				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
-				/* ECDSA keys must be points in G1, on prime curves. */
+				/* ECDSA keys must be points in G1 over a prime field. */
 				ok = 0;
 #endif
 			}
@@ -418,13 +421,14 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			if (bls) {
 				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
 				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 #else
-				/* ECDSA keys must be points in G1, on prime curves. */
+				/* ECDSA keys must be points in G1 over a prime field. */
 				ok = 0;
 #endif
 			}

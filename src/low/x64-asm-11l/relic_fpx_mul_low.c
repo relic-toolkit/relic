@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,48 +24,34 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision bit shifting functions.
+ * Implementation of the low-level extension field multiplication functions.
  *
- * @ingroup bn
+ * @ingroup fpx
  */
 
-#include <gmp.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "relic_dv.h"
-#include "relic_bn.h"
+#include "relic_core.h"
 #include "relic_bn_low.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
+
+/*
+ * The assembly reads both coordinates from one contiguous vector, which only
+ * automatic allocation guarantees.
+ */
+#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
+#define FP2_ASM
+#endif
+
+/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+#include "../easy/relic_fpx_mul_low.c"
+
+#ifdef FP2_ASM
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	return mpn_lshift(c, a, size, 1);
-}
+/* The assembly finds c[1] of a dv2_t at RLC_DV_STRIDE bytes from c[0]. */
+typedef char rlc_dv_stride_check[sizeof(dv_t) == RLC_DV_STRIDE ? 1 : -1];
 
-dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	dig_t carry = 0;
-	if (bits > 0) {
-		carry = mpn_lshift(c, a, size, bits);
-	} else {
-		dv_copy(c, a, size);
-	}
-	return carry;
-}
-
-dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	return mpn_rshift(c, a, size, 1);
-}
-
-dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	dig_t carry = 0;
-	if (bits > 0) {
-		carry = mpn_rshift(c, a, size, bits);
-	} else {
-		dv_copy(c, a, size);
-	}
-	return carry;
-}
+#endif

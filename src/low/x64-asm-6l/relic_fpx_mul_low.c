@@ -35,10 +35,12 @@
 #include "relic_fpx_low.h"
 
 /*
- * The assembly reads both coordinates from one contiguous vector, which only
+ * The assembly assumes u^2 = -1, as for p = 3 mod 8 with FP_QNRES or for the
+ * SS3 prime, and reads both coordinates from one contiguous vector, which only
  * automatic allocation guarantees.
  */
-#if defined(FP_QNRES) && ALLOC == AUTO
+#if (defined(FP_QNRES) || (FP_PRIME == 381 && defined(EC_SUPER))) && \
+	RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

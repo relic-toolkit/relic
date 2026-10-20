@@ -109,9 +109,7 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 	int found = 0;
 	char line[1024];
 	char str[3];
-	char label[100] = { 0 };
 	dig_t n;
-	uint64_t acc[3] = { 0 };
 
 	sprintf(str, "%d", region);
 	while (fgets(line, 1024, stream)) {

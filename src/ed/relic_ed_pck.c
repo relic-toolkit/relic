@@ -51,7 +51,7 @@ void ed_pck(ed_t r, const ed_t p) {
 		fp_zero(r->x);
 		fp_set_bit(r->x, 0, b);
 		fp_set_dig(r->z, 1);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -91,11 +91,11 @@ int ed_upk(ed_t r, const ed_t p) {
 		}
 		fp_copy(r->x, u);
 
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(r->t, r->x, r->y);
 #endif
 		fp_set_dig(r->z, 1);
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		result = 0;

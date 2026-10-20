@@ -50,14 +50,14 @@ int ed_cmp(const ed_t p, const ed_t q) {
         ed_new(r);
         ed_new(s);
 
-        if ((p->coord != BASIC) && (q->coord != BASIC)) {
+        if ((p->coord != EC_AFFIN) && (q->coord != EC_AFFIN)) {
             /* If the two points are not normalized, it is faster to compare
              * x1 * z2 == x2 * z1 and y1 * z2 == y2 * z1. */
             fp_mul(r->x, p->x, q->z);
             fp_mul(s->x, q->x, p->z);
             fp_mul(r->y, p->y, q->z);
             fp_mul(s->y, q->y, p->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 			fp_mul(r->t, p->t, q->z);
 			fp_mul(s->t, q->t, p->z);
 			if (fp_cmp(r->t, s->t) != RLC_EQ) {
@@ -67,10 +67,10 @@ int ed_cmp(const ed_t p, const ed_t q) {
         } else {
 			ed_copy(r, p);
             ed_copy(s, q);
-            if (p->coord != BASIC) {
+            if (p->coord != EC_AFFIN) {
                 ed_norm(r, p);
             }
-            if (q->coord != BASIC) {
+            if (q->coord != EC_AFFIN) {
                 ed_norm(s, q);
             }
         }

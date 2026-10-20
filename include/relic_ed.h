@@ -79,11 +79,11 @@ enum {
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if ED_FIX == BASIC
+#if ED_FIX == ED_BASIC
 #define RLC_ED_TABLE			RLC_ED_TABLE_BASIC
-#elif ED_FIX == LWREG
+#elif ED_FIX == ED_LWREG
 #define RLC_ED_TABLE			RLC_ED_TABLE_LWREG
-#elif ED_FIX == COMBD
+#elif ED_FIX == ED_COMBD
 #define RLC_ED_TABLE			RLC_ED_TABLE_COMBD
 #endif
 
@@ -91,7 +91,7 @@ enum {
  * Maximum size of a precomputation table, which only needs to fit the
  * chosen method when unused methods are stripped.
  */
-#ifdef STRIP
+#ifdef RLC_STRIP
 #define RLC_ED_TABLE_MAX		RLC_ED_TABLE
 #else
 #define RLC_ED_TABLE_MAX		RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
@@ -120,10 +120,10 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef ed_st ed_t[1];
 #else
-#ifdef CHECK
+#ifdef RLC_CHECK
 typedef ed_st *volatile ed_t;
 #else
 typedef ed_st *ed_t;
@@ -139,7 +139,7 @@ typedef ed_st *ed_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define ed_null(A)			/* empty */
 #else
 #define ed_null(A)			A = NULL;
@@ -151,14 +151,14 @@ typedef ed_st *ed_t;
  * @param[out] A			- the new point.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ed_new(A)															\
 	A = (ed_t)calloc(1, sizeof(ed_st));										\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ed_new(A)			/* empty */
 
 #endif
@@ -168,14 +168,14 @@ typedef ed_st *ed_t;
  *
  * @param[out] A			- the point to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define ed_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define ed_free(A)			/* empty */
 
 #endif
@@ -197,9 +197,9 @@ typedef ed_st *ed_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to negate.
  */
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 #define ed_neg(R, P)		ed_neg_basic(R, P)
-#elif ED_ADD == PROJC || ED_ADD == EXTND
+#elif ED_ADD == ED_PROJC || ED_ADD == ED_EXTND
 #define ed_neg(R, P)		ed_neg_projc(R, P)
 #endif
 
@@ -210,11 +210,11 @@ typedef ed_st *ed_t;
  * @param[in] P				- the first point to add.
  * @param[in] Q				- the second point to add.
  */
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 #define ed_add(R, P, Q)		ed_add_basic(R, P, Q)
-#elif ED_ADD == PROJC
+#elif ED_ADD == ED_PROJC
 #define ed_add(R, P, Q)		ed_add_projc(R, P, Q)
-#elif ED_ADD == EXTND
+#elif ED_ADD == ED_EXTND
 #define ed_add(R, P, Q)		ed_add_extnd(R, P, Q)
 #endif
 
@@ -225,11 +225,11 @@ typedef ed_st *ed_t;
  * @param[in] P				- the first point.
  * @param[in] Q				- the second point.
  */
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 #define ed_sub(R, P, Q)		ed_sub_basic(R, P, Q)
-#elif ED_ADD == PROJC
+#elif ED_ADD == ED_PROJC
 #define ed_sub(R, P, Q)		ed_sub_projc(R, P, Q)
-#elif ED_ADD == EXTND
+#elif ED_ADD == ED_EXTND
 #define ed_sub(R, P, Q)		ed_sub_extnd(R, P, Q)
 #endif
 
@@ -239,11 +239,11 @@ typedef ed_st *ed_t;
  * @param[out] R			- the result.
  * @param[in] P				- the point to double.
  */
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 #define ed_dbl(R, P)		ed_dbl_basic(R, P)
-#elif ED_ADD == PROJC
+#elif ED_ADD == ED_PROJC
 #define ed_dbl(R, P)		ed_dbl_projc(R, P)
-#elif ED_ADD == EXTND
+#elif ED_ADD == ED_EXTND
 #define ed_dbl(R, P)		ed_dbl_extnd(R, P)
 #endif
 
@@ -305,7 +305,7 @@ void ed_param_print(void);
  */
 int ed_param_level(void);
 
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 /**
  * Converts projective point into extended point.
  */
@@ -530,13 +530,13 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  * @param[in] P				- the point to multiply.
  * @param[in] K				- the integer.
  */
-#if ED_MUL == BASIC
+#if ED_MUL == ED_BASIC
 #define ed_mul(R, P, K)   ed_mul_basic(R, P, K)
-#elif ED_MUL == MONTY
+#elif ED_MUL == ED_MONTY
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
-#elif ED_MUL == LWNAF
+#elif ED_MUL == ED_LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
-#elif ED_MUL == LWREG
+#elif ED_MUL == ED_LWREG
 #define ed_mul(R, P, K)   ed_mul_lwreg(R, P, K)
 #endif
 
@@ -546,11 +546,11 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  * @param[out] T			- the precomputation table.
  * @param[in] P			 	- the point to multiply.
  */
-#if ED_FIX == BASIC
+#if ED_FIX == ED_BASIC
 #define ed_mul_pre(T, P)	ed_mul_pre_basic(T, P)
-#elif ED_FIX == LWREG
+#elif ED_FIX == ED_LWREG
 #define ed_mul_pre(T, P)	ed_mul_pre_lwreg(T, P)
-#elif ED_FIX == COMBD
+#elif ED_FIX == ED_COMBD
 #define ed_mul_pre(T, P)	ed_mul_pre_combd(T, P)
 #endif
 
@@ -562,11 +562,11 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
  * @param[in] T			 	- the precomputation table.
  * @param[in] K			 	- the integer.
  */
-#if ED_FIX == BASIC
+#if ED_FIX == ED_BASIC
 #define ed_mul_fix(R, T, K) ed_mul_fix_basic(R, T, K)
-#elif ED_FIX == LWREG
+#elif ED_FIX == ED_LWREG
 #define ed_mul_fix(R, T, K) ed_mul_fix_lwreg(R, T, K)
-#elif ED_FIX == COMBD
+#elif ED_FIX == ED_COMBD
 #define ed_mul_fix(R, T, K) ed_mul_fix_combd(R, T, K)
 #endif
 

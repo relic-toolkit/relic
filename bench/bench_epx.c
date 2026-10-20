@@ -43,16 +43,16 @@
  */
 #define TMPL_BENCH_EPX(C, F)												\
 static void bench_##C##_memory(void) {										\
-	C##_t a[BENCH];															\
+	C##_t a[RLC_BENCH];															\
 																			\
 	BENCH_FEW(#C "_null", C##_null(a[i]), 1);								\
 																			\
 	BENCH_FEW(#C "_new", C##_new(a[i]), 1);									\
-	for (int i = 0; i < BENCH; i++) {										\
+	for (int i = 0; i < RLC_BENCH; i++) {										\
 		C##_free(a[i]);														\
 	}																		\
 																			\
-	for (int i = 0; i < BENCH; i++) {										\
+	for (int i = 0; i < RLC_BENCH; i++) {										\
 		C##_new(a[i]);														\
 	}																		\
 	BENCH_FEW(#C "_free", C##_free(a[i]), 1);								\
@@ -649,7 +649,8 @@ int main(void) {
 		bench_ep3_arith();
 	}
 
-	if ((r2 = ep4_curve_is_twist())) {
+	r2 = ep4_curve_is_twist() || ep_curve_is_pairf() == EP_SS3;
+	if (r2) {
 		ep_param_print();
 
 		util_banner("Utilities:", 1);

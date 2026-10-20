@@ -432,7 +432,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	}
 }
 
-#if FB_INV == LOWER
+#if FB_INV == FB_LOWER
 
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {

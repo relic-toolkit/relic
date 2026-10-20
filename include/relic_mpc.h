@@ -72,7 +72,7 @@ typedef struct {
 /**
  * Pointer to a multiplication triple structure.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef mt_st mt_t[1];
 #else
 typedef mt_st *mt_t;
@@ -93,7 +93,7 @@ typedef struct _pt_st {
 /**
  * Pointer to a pairing triple.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef pt_st pt_t[1];
 #else
 typedef pt_st *pt_t;
@@ -108,7 +108,7 @@ typedef pt_st *pt_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define mt_null(A)				/* empty */
 #else
 #define mt_null(A)			A = NULL;
@@ -120,7 +120,7 @@ typedef pt_st *pt_t;
  * @param[in,out] A			- the multiple precision integer to initialize.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define mt_new(A)															\
 	A = (mt_t)calloc(1, sizeof(mt_st));										\
 	if ((A) == NULL) {														\
@@ -135,7 +135,7 @@ typedef pt_st *pt_t;
 	(A)->b1 = NULL;															\
 	(A)->c1 = NULL;															\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define mt_new(A)															\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
@@ -150,7 +150,7 @@ typedef pt_st *pt_t;
  *
  * @param[in,out] A			- the multiple precision integer to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define mt_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->a);													\
@@ -160,7 +160,7 @@ typedef pt_st *pt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define mt_free(A)			/* empty */										\
 
 #endif
@@ -170,7 +170,7 @@ typedef pt_st *pt_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define pt_null(A)				/* empty */
 #else
 #define pt_null(A)			A = NULL;
@@ -181,7 +181,7 @@ typedef pt_st *pt_t;
  *
  * @param[out] A			- the new pairing triple.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define pt_new(A)															\
 	A = (pt_t)calloc(1, sizeof(pt_st));										\
 	if (A == NULL) {														\
@@ -191,7 +191,7 @@ typedef pt_st *pt_t;
 	g2_new((A)->b);															\
 	gt_new((A)->c);															\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define pt_new(A)				/* empty */
 
 #endif
@@ -201,7 +201,7 @@ typedef pt_st *pt_t;
  *
  * @param[out] A			- the pairing triple to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define pt_free(A)															\
 	if (A != NULL) {														\
 		g1_free((A)->a);													\
@@ -211,7 +211,7 @@ typedef pt_st *pt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define pt_free(A)				/* empty */
 
 #endif
