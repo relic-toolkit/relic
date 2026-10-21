@@ -422,28 +422,35 @@ static int trsa(void) {
 			TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 		} TEST_END;
 
-		/* Keys from Cunningham chains are slow to generate, so make one
-		 * with the smallest modulus that fits OAEP and the message. */
+		/* Keys from Cunningham chains are slow to generate, so make one per
+		 * length with the smallest modulus that fits OAEP and the message. */
 		bn_set_2b(e, 16);
 		bn_add_dig(e, e, 1);
 		TEST_ONCE("timed rsa with a given exponent is correct") {
-			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2,
-					3) == RLC_OK, end);
-			TEST_ASSERT(bn_cmp(ek->e, e) == RLC_EQ, end);
-			il = sizeof(in);
-			rand_bytes(in, il);
-			ol = sizeof(out);
-			TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab), ek,
-					2) == RLC_OK, end);
-			TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, sizeof(lab), dk,
-					3) == RLC_OK, end);
-			TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
+			for (size_t len = 2; len <= 3; len++) {
+				TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2, 3,
+						len) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(ek->e, e) == RLC_EQ, end);
+				il = sizeof(in);
+				rand_bytes(in, il);
+				ol = sizeof(out);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab),
+						ek, 2) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, sizeof(lab),
+						dk, 3) == RLC_OK, end);
+				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
+			}
+			/* Only chains of length 2 or 3 are supported. */
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2, 3,
+					1) == RLC_ERR, end);
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2, 3,
+					4) == RLC_ERR, end);
 			/* The exponent and theta must be odd for such moduli. */
-			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2,
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2, 2,
 					2) == RLC_ERR, end);
 			bn_sub_dig(e, e, 1);
-			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2,
-					3) == RLC_ERR, end);
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 2, 3,
+					2) == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);

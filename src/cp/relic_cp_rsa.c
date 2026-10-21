@@ -1117,6 +1117,51 @@ static void trsa_set(bn_t a, size_t v) {
 	}
 }
 
+/**
+ * Generates a prime p = 2p' + 1 ending a Cunningham chain of the first kind,
+ * with gcd(e, p - 1) = gcd(w, p' - 1) = 1. Both conditions hold for the lcm
+ * of such values exactly when they hold for each, so a prime that fails them
+ * is replaced without discarding the other one.
+ *
+ * @param[out] p			- the prime.
+ * @param[in] bits			- the length of the prime in bits.
+ * @param[in] len			- the length of the chain, at least 2.
+ * @param[in] e				- the integer coprime to p - 1.
+ * @param[in] w				- the integer coprime to p' - 1.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int trsa_gen_prime(bn_t p, size_t bits, size_t len, const bn_t e,
+		const bn_t w) {
+	bn_t t;
+	int ok = 0, result = RLC_OK;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		while (!ok && result == RLC_OK) {
+			result = bn_gen_prime_chain(p, NULL, bits, len);
+			/* p - 1 = 2p' and p' - 1 = (p - 3) / 2. */
+			bn_sub_dig(t, p, 1);
+			bn_gcd(t, e, t);
+			ok = (bn_cmp_dig(t, 1) == RLC_EQ);
+			bn_sub_dig(t, p, 3);
+			bn_hlv(t, t);
+			bn_gcd(t, w, t);
+			ok &= (bn_cmp_dig(t, 1) == RLC_EQ);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+
+	return result;
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -1297,13 +1342,15 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 }
 
 int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
-		size_t theta) {
+		size_t theta, size_t len) {
 	bn_t p, q, u, v, l, m, t;
-	int err = 0, ok = 0, result = RLC_OK;
+	int err = 0, result = RLC_OK;
 
-	/* With Lambda = 2p'q' and Lambda' = 2p''q'', both e and theta are odd. */
+	/* With Lambda = 2p'q' and Lambda' = lcm(p' - 1, q' - 1), both e and theta
+	 * are odd. */
 	if (ek == NULL || dk == NULL || bits < 32 || tau == 0 ||
-			(theta & 1) == 0 || bn_cmp_dig(e, 1) != RLC_GT || bn_is_even(e)) {
+			(len != 2 && len != 3) || (theta & 1) == 0 ||
+			bn_cmp_dig(e, 1) != RLC_GT || bn_is_even(e)) {
 		return RLC_ERR;
 	}
 
@@ -1312,41 +1359,34 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
 	RLC_TRY {
 		bn_new_all(p, q, u, v, l, m, t);
 
-		while (!ok && !err) {
-			/* Primes p = 2p' + 1 and q = 2q' + 1, with p' = 2p'' + 1 and
-			 * q' = 2q'' + 1 also prime, and n = pq of the requested length. */
-			do {
-				err = (bn_gen_prime_chain(p, u, bits / 2, 3) != RLC_OK ||
-						bn_gen_prime_chain(q, v, bits - bits / 2, 3) != RLC_OK);
-				bn_mul(ek->crt->n, p, q);
-			} while (!err && (bn_cmp(p, q) == RLC_EQ ||
-					bn_bits(ek->crt->n) != bits));
-			if (err) {
-				break;
-			}
-
-			/* Lambda = lcm(p - 1, q - 1) and Lambda' = lcm(2p'', 2q''). */
-			bn_sub_dig(p, p, 1);
-			bn_sub_dig(q, q, 1);
-			bn_lcm(l, p, q);
-			bn_dbl(u, u);
-			bn_dbl(v, v);
-			bn_lcm(m, u, v);
-
-			/* Lemma 2 needs gcd(e, Lambda) = gcd(theta, Lambda') = 1. */
-			bn_gcd(t, e, l);
-			ok = (bn_cmp_dig(t, 1) == RLC_EQ);
-			trsa_set(u, theta);
-			bn_gcd(t, u, m);
-			ok &= (bn_cmp_dig(t, 1) == RLC_EQ);
-		}
+		/* Lemma 2 needs gcd(e, Lambda) = gcd(theta, Lambda') = 1, checked
+		 * on each prime, and n = pq of the requested length. */
+		trsa_set(t, theta);
+		do {
+			err = (trsa_gen_prime(p, bits / 2, len, e, t) != RLC_OK ||
+					trsa_gen_prime(q, bits - bits / 2, len, e, t) != RLC_OK);
+			bn_mul(ek->crt->n, p, q);
+		} while (!err && (bn_cmp(p, q) == RLC_EQ ||
+				bn_bits(ek->crt->n) != bits));
 		if (err) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		bn_copy(dk->crt->n, ek->crt->n);
 
+		/* Lambda' = lcm(p' - 1, q' - 1), with p' - 1 = (p - 3) / 2. */
+		bn_sub_dig(u, p, 3);
+		bn_hlv(u, u);
+		bn_sub_dig(v, q, 3);
+		bn_hlv(v, v);
+		bn_lcm(m, u, v);
+
+		/* Lambda = lcm(p - 1, q - 1). */
+		bn_sub_dig(p, p, 1);
+		bn_sub_dig(q, q, 1);
+		bn_lcm(l, p, q);
+
 		/* d = e^(-tau * w) mod Lambda, with w = theta^(-1) mod Lambda'. */
-		bn_mod_inv(u, u, m);
+		bn_mod_inv(u, t, m);
 		trsa_set(t, tau);
 		bn_mul(u, u, t);
 		bn_mod_inv(t, e, l);
