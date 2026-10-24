@@ -1941,9 +1941,28 @@
 	}
 
 /**
+ * Selects the squaring that the Weil pairing of degree K applies to remove
+ * the factors in proper subfields that the twist introduces. Degree 2 maps
+ * G_2 with a distortion map instead, so it does not square.
+ *
+ * @param[in,out] R		- the result.
+ */
+/** @{ */
+#define TMPL_PP_WEI_2(R)		/* No squaring. */
+#define TMPL_PP_WEI_8(R)		fp8_sqr(R, R);
+#define TMPL_PP_WEI_12(R)		fp12_sqr(R, R);
+#define TMPL_PP_WEI_16(R)		fp16_sqr(R, R);
+#define TMPL_PP_WEI_18(R)		fp18_sqr(R, R);
+#define TMPL_PP_WEI_24(R)		fp24_sqr(R, R);
+#define TMPL_PP_WEI_48(R)		fp48_sqr(R, R);
+#define TMPL_PP_WEI_54(R)		fp54_sqr(R, R);
+/** @} */
+
+/**
  * Defines a template for the Weil pairing, computed as
  * (f_{n-1,P}(Q) / f_{n-1,Q}(P))^(2(p^(K/2) - 1)) to remove the factors in
- * proper subfields that the twist introduces.
+ * proper subfields that the twist introduces, or without the factor 2 when
+ * TMPL_PP_WEI_K does not square.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
@@ -1989,7 +2008,7 @@
 				fp##K##_inv_cyc(r0, r0);									\
 			}																\
 			fp##K##_mul(r, r0, r1);											\
-			fp##K##_sqr(r, r);												\
+			TMPL_PP_WEI_##K(r)												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -2072,7 +2091,7 @@
 				fp##K##_inv_cyc(r0, r0);									\
 			}																\
 			fp##K##_mul(r, r0, r1);											\
-			fp##K##_sqr(r, r);												\
+			TMPL_PP_WEI_##K(r)												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
