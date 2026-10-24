@@ -1057,9 +1057,10 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
  * as one required by a standard. The primes p and q end Cunningham chains of
  * the first kind, so that the Carmichael function Lambda' of Lambda is known
  * and d = e^(-tau * w) mod Lambda for w = theta^(-1) mod Lambda'. Chains of
- * length 2 are safe primes, and a prime is replaced when theta shares a
- * factor with its contribution to Lambda'. Chains of length 3 make that
- * unlikely, but are generated tens of times more slowly.
+ * length 2 are safe primes, which suffice and are the recommended choice; a
+ * prime is replaced when theta shares a factor with its contribution to
+ * Lambda'. Chains of length 3 make that unlikely, but are generated tens of
+ * times more slowly.
  *
  * @param[out] ek			- the encryption key.
  * @param[out] dk			- the decryption key.
@@ -1067,7 +1068,7 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
  * @param[in] e				- the encryption exponent, odd and greater than one.
  * @param[in] tau			- the encryption hardness, at least one.
  * @param[in] theta			- the decryption hardness, odd.
- * @param[in] len			- the length of the chains, 2 or 3.
+ * @param[in] len			- the length of the chains, 2 (recommended) or 3.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
