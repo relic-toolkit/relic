@@ -983,6 +983,25 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 	RLC_FREE(t);
 }
 
+/**
+ * First row of n * B^(-1) for the lattice basis B of BN curves, as
+ * polynomials in x listed from the constant term up.
+ */
+static const int8_t frb_bn_l[4][4] = {
+	{ 1, 3, 2, 0 }, { 0, 1, 8, 12 }, { 0, 1, 4, 6 }, { 0, -1, -2, 0 }
+};
+
+/**
+ * Lattice basis B of BN curves [Galbraith-Scott], each entry a * x + b
+ * stored as { a, b }.
+ */
+static const int8_t frb_bn_b[4][4][2] = {
+	{ { 1, 1 }, { 1, 0 }, { 1, 0 }, { -2, 0 } },
+	{ { 2, 1 }, { -1, 0 }, { -1, -1 }, { -1, 0 } },
+	{ { 2, 0 }, { 2, 1 }, { 2, 1 }, { 2, 1 } },
+	{ { 1, -1 }, { 4, 2 }, { -2, 1 }, { 1, -1 } }
+};
+
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		const bn_st *u, int cof) {
 	/* Constant-time for |k| < n: |k| is decomposed with fixed lengths and
@@ -991,7 +1010,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	dig_t a[RLC_REC_DIGS], m[RLC_REC_DIGS], mu[RLC_REC_DIGS];
 	dig_t q[RLC_REC_DIGS], r[RLC_REC_DIGS], t[2 * RLC_REC_DIGS];
 	dig_t b[4][RLC_REC_DIGS], c[RLC_REC_DIGS], h;
-	int sk = bn_sign(k), sx = bn_sign(x), sv[4];
+	int e, sk = bn_sign(k), sx = bn_sign(x), sv[4];
 	bn_t l[4], v[4];
 
 	if (2 * d + 1 > RLC_REC_DIGS) {
@@ -1044,25 +1063,19 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				dv_copy(a, q, d);
 			}
 		} else {
-			/* v0 = 2x^2 + 3x + 1, v1 = 12x^3 + 8x^2 + x,
-			 * v2 = 6x^3 + 4x^2 + x and v3 = -(2x^2 + x). */
-			bn_sqr(l[3], x);
-			bn_dbl(l[3], l[3]);
-			bn_mul_dig(v[0], x, 3);
-			bn_add_dig(v[0], v[0], 1);
-			bn_add(v[0], v[0], l[3]);
-			bn_add(v[3], x, l[3]);
-			bn_neg(v[3], v[3]);
-			bn_dbl(l[3], l[3]);
-			bn_add(v[2], x, l[3]);
-			bn_dbl(l[3], l[3]);
-			bn_add(v[1], x, l[3]);
-			bn_rsh(l[3], l[3], 2);
-			bn_mul(l[3], l[3], x);
-			bn_mul_dig(l[3], l[3], 3);
-			bn_add(v[2], v[2], l[3]);
-			bn_dbl(l[3], l[3]);
-			bn_add(v[1], v[1], l[3]);
+			/* Evaluate v_i = l_i(x) by Horner. */
+			for (int i = 0; i < 4; i++) {
+				bn_zero(v[i]);
+				for (int j = 3; j >= 0; j--) {
+					bn_mul(v[i], v[i], x);
+					e = frb_bn_l[i][j];
+					if (e < 0) {
+						bn_sub_dig(v[i], v[i], -e);
+					} else {
+						bn_add_dig(v[i], v[i], e);
+					}
+				}
+			}
 
 			/* b_i = sign(v_i) * |v_i| * |k| / n, rounded down, is estimated
 			 * without dividing the secret as |k| * c_i shifted right by
@@ -1082,38 +1095,22 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				dv_copy(b[i], t + d + 1, d);
 			}
 
-			/* k_j = [j = 0] * (|k| mod n) - sum_i u_ji * b_i, in two's
-			 * complement with w digits, for the rows of the lattice:
-			 * (x + 1, 2x + 1, 2x, x - 1), (x, -x, 2x + 1, 4x + 2),
-			 * (x, -(x + 1), 2x + 1, -(2x - 1)), (-2x, -x, 2x + 1, x - 1). */
+			/* k_j = [j = 0] * |k| - sum_i B[i][j] * b_i, in two's complement
+			 * with w digits. */
 			for (int j = 0; j < 4; j++) {
-				bn_dbl(l[2], x);
-				bn_add_dig(l[2], l[2], 1);
-				switch (j) {
-					case 0:
-						bn_add_dig(l[0], x, 1);
-						bn_copy(l[1], l[2]);
-						bn_dbl(l[2], x);
-						bn_sub_dig(l[3], x, 1);
-						break;
-					case 1:
-						bn_copy(l[0], x);
-						bn_neg(l[1], x);
-						bn_dbl(l[3], l[2]);
-						break;
-					case 2:
-						bn_copy(l[0], x);
-						bn_add_dig(l[1], x, 1);
-						bn_neg(l[1], l[1]);
-						bn_sub_dig(l[3], l[2], 2);
-						bn_neg(l[3], l[3]);
-						break;
-					default:
-						bn_dbl(l[0], x);
-						bn_neg(l[0], l[0]);
-						bn_neg(l[1], x);
-						bn_sub_dig(l[3], x, 1);
-						break;
+				for (int i = 0; i < 4; i++) {
+					/* l_i = a * x + b. */
+					e = frb_bn_b[i][j][0];
+					bn_mul_dig(l[i], x, e < 0 ? -e : e);
+					if (e < 0) {
+						bn_neg(l[i], l[i]);
+					}
+					e = frb_bn_b[i][j][1];
+					if (e < 0) {
+						bn_sub_dig(l[i], l[i], -e);
+					} else {
+						bn_add_dig(l[i], l[i], e);
+					}
 				}
 				dv_zero(c, w);
 				if (j == 0) {
