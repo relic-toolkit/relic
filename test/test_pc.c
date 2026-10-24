@@ -1787,6 +1787,41 @@ static int pairing(void) {
 			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 #endif
+
+		TEST_CASE("pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_get_gen(q[0]);
+			pc_map(e1, p[0], q[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_get_gen(p[0]);
+			gt_get_gen(e1);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_set_infty(p[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			g1_rand(p[1]);
+			g2_get_gen(q[1]);
+			pc_map_sim(e1, p, q, 2);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			pc_map_gen(e1, p[1]);
+			pc_map_sim_gen(e2, NULL, NULL, 0, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			/* e(P, kG) * e(-kP, G) = 1. */
+			bn_rand_mod(k, n);
+			g2_mul_gen(q[0], k);
+			g1_mul(p[1], p[0], k);
+			g1_neg(p[1], p[1]);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

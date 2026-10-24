@@ -36,21 +36,25 @@
 /*============================================================================*/
 
 void pc_map_gen(gt_t r, const g1_t p) {
-	g1_t s[1];
+#ifdef RLC_PC_GEN
+	pc_map_fix(r, p, core_get()->g2_tab);
+#else
+	g2_t q;
 
-	g1_null(s[0]);
+	g2_null(q);
 
 	RLC_TRY {
-		g1_new(s[0]);
-		g1_copy(s[0], p);
-		pc_map_sim_gen(r, NULL, NULL, 0, s[0]);
+		g2_new(q);
+		g2_get_gen(q);
+		pc_map(r, p, q);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		g1_free(s[0]);
+		g2_free(q);
 	}
+#endif
 }
 
 void pc_map_sim_gen(gt_t r, const g1_t *p, const g2_t *q, int m,

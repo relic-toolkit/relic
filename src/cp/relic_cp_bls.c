@@ -212,13 +212,10 @@ int cp_bls_agg_key(g2_t a, const g2_t q[], size_t n) {
 int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 		size_t size, const g2_t q[]) {
 	g1_t *p = RLC_ALLOCA(g1_t, size + 1);
-	g2_t *r = RLC_ALLOCA(g2_t, size + 1);
 	gt_t e;
 	int result = 0;
 
-	if (p == NULL || r == NULL) {
-		RLC_FREE(p);
-		RLC_FREE(r);
+	if (p == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return 0;
 	}
@@ -226,23 +223,20 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	gt_null(e);
 	for (size_t i = 0; i < size + 1; i++) {
 		g1_null(p[i]);
-		g2_null(r[i]);
 	}
 
 	RLC_TRY {
 		g1_new(p[0]);
 		for (size_t i = 0; i < size; i++) {
 			g1_new(p[i + 1]);
-			g2_new(r[i + 1]);
 			g1_map(p[i + 1], m[i], l[i]);
-			g2_copy(r[i + 1], q[i]);
 		}
 		gt_new(e);
 
 		g1_neg(p[0], s);
 
 		/* Check that prod e(H(m_i), q_i) * e(-s, g) = 1. */
-		pc_map_sim_gen(e, p + 1, r + 1, size, p[0]);
+		pc_map_sim_gen(e, p + 1, q, size, p[0]);
 		if (gt_is_unity(e) && g1_is_valid(s)) {
 			result = 1;
 		}
@@ -263,11 +257,9 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	RLC_FINALLY {
 		for (size_t i = 0; i < size + 1; i++) {
 			g1_free(p[i]);
-			g2_free(r[i]);
 		}
 		gt_free(e);
 		RLC_FREE(p);
-		RLC_FREE(r);
 	}
 	return result;
 }

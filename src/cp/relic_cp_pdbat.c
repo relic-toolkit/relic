@@ -417,12 +417,11 @@ int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 		gt_new(g);
 
 		if (m == 1) {
+			/* gs_1 = e(p_0, d) * e(c_0, G_2). */
 			g1_copy(ps[0], p[0]);
 			g2_copy(qs[0], d);
-			g1_copy(ps[1], c[0]);
-			g2_get_gen(qs[1]);
 			pc_map(gs[0], p[0], q[0]);
-			pc_map_sim(gs[1], ps, qs, 2);
+			pc_map_sim_gen(gs[1], ps, qs, 1, c[0]);
 		} else {
 			for (size_t i = 0; i < m; i++) {
 				pc_map(gs[i], p[i], q[i]);

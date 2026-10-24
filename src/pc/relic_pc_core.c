@@ -40,7 +40,7 @@
 void pc_core_init(void) {
 	gt_new(core_get()->gt_g);
 #ifdef RLC_PC_GEN
-	for (int i = 0; i < RLC_PC_TABLE; i++) {
+	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
 		RLC_CAT(RLC_PC_FIELD, new)(core_get()->g2_tab[i]);
 	}
 #endif
@@ -85,7 +85,7 @@ void pc_core_clean(void) {
 	if (ctx != NULL) {
 		gt_free(ctx->gt_g);
 #ifdef RLC_PC_GEN
-		for (int i = 0; i < RLC_PC_TABLE; i++) {
+		for (size_t i = 0; i < RLC_PC_TABLE; i++) {
 			RLC_CAT(RLC_PC_FIELD, free)(ctx->g2_tab[i]);
 		}
 #endif
