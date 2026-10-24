@@ -801,8 +801,7 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 	}
 
 	bn_null_all(n, x, y);
-	bn_null(r[0]);
-	bn_null(r[1]);
+	bn_null_all(r[0], r[1]);
 	gt_null(q);
 	for (int i = 0; i < 2 * h; i++) {
 		bn_null(_b[i]);
@@ -813,8 +812,7 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 
 	RLC_TRY {
 		bn_new_all(n, x, y);
-		bn_new(r[0]);
-		bn_new(r[1]);
+		bn_new_all(r[0], r[1]);
 		gt_new(q);
 		for (int i = 0; i < 2 * h; i++) {
 			bn_new(_b[i]);
@@ -846,9 +844,6 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 		gt_get_ord(n);
 		ep_curve_frbase(x);
 		bn_mod(_b[0], b, n);
-		if (bn_sign(_b[0]) == RLC_NEG) {
-			bn_add(_b[0], _b[0], n);
-		}
 		bn_rec_frb(_b, 2 * h, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
 		l = 0;
 		for (int i = 0; i < h; i++) {
@@ -921,8 +916,7 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 	}
 	RLC_FINALLY {
 		bn_free_all(n, x, y);
-		bn_free(r[0]);
-		bn_free(r[1]);
+		bn_free_all(r[0], r[1]);
 		gt_free(q);
 		for (int i = 0; i < 2 * h; i++) {
 			bn_free(_b[i]);

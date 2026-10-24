@@ -1417,7 +1417,6 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-
 	}
 
 	if ((r1 = ep3_curve_is_twist())) {

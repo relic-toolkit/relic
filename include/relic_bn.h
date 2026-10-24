@@ -1687,8 +1687,9 @@ void bn_rec_slw(uint8_t *win, size_t *len, const bn_t k, size_t w);
 void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w);
 
 /**
- * Recodes a positive integer in width-w \tau-NAF. If a negative integer is
- * given instead, its absolute value is taken.
+ * Recodes a positive integer in width-w \tau-NAF, for \tau with
+ * \tau^2 - u * \tau + 2 = 0 in the integers of Q(sqrt(-7)). If a negative
+ * integer is given instead, its absolute value is taken.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1702,8 +1703,9 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		size_t w);
 
 /**
- * Recodes a positive integer in regular fixed-length width-w \tau-NAF.
- * If a negative integer is given instead, its absolute value is taken.
+ * Recodes a positive integer in regular fixed-length width-w \tau-NAF, for
+ * \tau with \tau^2 - u * \tau + 2 = 0 in the integers of Q(sqrt(-7)). If a
+ * negative integer is given instead, its absolute value is taken.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1742,8 +1744,9 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 
 /**
- * Recodes an element u + v * w of Z[w], for a primitive cube root of unity w,
- * in width-3 \tau-adic NAF with \tau = 1 - w, least significant digit first.
+ * Recodes an element u + v * w of the Eisenstein integers Z[w], for a
+ * primitive cube root of unity w, in width-3 \tau-adic NAF with \tau = 1 - w,
+ * least significant digit first.
  * A nonzero digit is 1 + 6 * i + j for the unit (-1)^(j / 3) * w^(j % 3)
  * times the i-th base digit among 1, 2 and 1 + \tau, and zero digits are 0.
  *
@@ -1757,10 +1760,10 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v);
 
 /**
- * Recodes an element u + v * w of Z[w], for a primitive cube root of unity w,
- * in constant time as a regular \tau-adic expansion with \tau = 1 - w: a
- * nonzero digit at every position multiple of 3, least significant first,
- * where reg[i] is the digit at position 3i.
+ * Recodes an element u + v * w of the Eisenstein integers Z[w], for a
+ * primitive cube root of unity w, in constant time as a regular \tau-adic
+ * expansion with \tau = 1 - w: a nonzero digit at every position multiple of
+ * 3, least significant first, where reg[i] is the digit at position 3i.
  * Digit 6 * i + j is the unit (-1)^(j / 3) * w^(j % 3) times the i-th base
  * digit among 1, 2, 1 + \tau, 1 - 2\tau, 2 + \tau and 1 + 2\tau. The element
  * is first incremented by c in {0, 1} so that \tau does not divide it, and

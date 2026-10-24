@@ -170,7 +170,7 @@
 					F##_dbl(t0, r->z);										\
 					F##_add(r->z, r->z, t0);								\
 				}															\
-				r->coord = EC_PROJC;									\
+				r->coord = EC_PROJC;										\
 			} else {														\
 				/* No particularly efficient formula is known, so reuse. */	\
 				C##_dbl_projc(q, p);										\

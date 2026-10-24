@@ -2899,6 +2899,46 @@ static int interpolation(void) {
 	return code;
 }
 
+/**
+ * Multiplies a + b * w by tau = 1 - w in Z[w], where w^2 = -1 - w:
+ * (a + b * w) * tau = (a + b) + (2b - a) * w.
+ */
+static void tw_tau(bn_t a, bn_t b, bn_t t) {
+	bn_add(t, a, b);
+	bn_dbl(b, b);
+	bn_sub(b, b, a);
+	bn_copy(a, t);
+}
+
+/**
+ * Sets x + y * w to the digit 6 * i + j of the tau-adic recodings: the unit
+ * (-1)^(j / 3) * w^(j % 3) times the i-th base digit among 1, 2, 1 + tau,
+ * 1 - 2tau, 2 + tau and 1 + 2tau.
+ */
+static void tw_dig(bn_t x, bn_t y, bn_t t, int d) {
+	const int bx[6] = { 1, 2, 2, -1, 3, 3 }, by[6] = { 0, 0, -1, 2, -1, -2 };
+	int i = d / 6, j = d % 6;
+
+	bn_set_dig(x, bx[i] < 0 ? -bx[i] : bx[i]);
+	if (bx[i] < 0) {
+		bn_neg(x, x);
+	}
+	bn_set_dig(y, by[i] < 0 ? -by[i] : by[i]);
+	if (by[i] < 0) {
+		bn_neg(y, y);
+	}
+	/* (x + y * w) * w = -y + (x - y) * w. */
+	for (int k = 0; k < j % 3; k++) {
+		bn_copy(t, x);
+		bn_neg(x, y);
+		bn_sub(y, t, y);
+	}
+	if (j / 3) {
+		bn_neg(x, x);
+		bn_neg(y, y);
+	}
+}
+
 static int recoding(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, v1[3], v2[3];
@@ -3132,6 +3172,70 @@ static int recoding(void) {
 			l = RLC_BN_BITS + 1;
 			TEST_ERR(bn_rec_reg(e, &l, a, RLC_BN_BITS / 2, 4));
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
+		} TEST_END;
+
+		TEST_CASE("tau-adic naf recoding is correct") {
+			for (w = 0; w < 4; w++) {
+				bn_rand(v1[0], RLC_POS, RLC_BN_BITS / 2);
+				bn_rand(v1[1], RLC_POS, RLC_BN_BITS / 2);
+				if (w & 1) {
+					bn_neg(v1[0], v1[0]);
+				}
+				if (w & 2) {
+					bn_neg(v1[1], v1[1]);
+				}
+				l = sizeof(e);
+				bn_rec_etnaf(e, &l, v1[0], v1[1]);
+				/* Evaluate the digits in Z[w] as a + b * w, with tau = 1 - w. */
+				bn_zero(a);
+				bn_zero(b);
+				for (k = (int)l - 1; k >= 0; k--) {
+					tw_tau(a, b, c);
+					if (e[k] != 0) {
+						tw_dig(v2[0], v2[1], c, e[k] - 1);
+						bn_add(a, a, v2[0]);
+						bn_add(b, b, v2[1]);
+					}
+				}
+				TEST_ASSERT(bn_cmp(a, v1[0]) == RLC_EQ &&
+						bn_cmp(b, v1[1]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("regular tau-adic recoding is correct") {
+			int8_t inc;
+			/* Enough digits for coordinates below 2^(RLC_BN_BITS / 2). */
+			size_t len = (2 * (RLC_BN_BITS / 2 + 2) * 1000 + 120) / 4754 + 1;
+			for (w = 0; w < 4; w++) {
+				bn_rand(v1[0], RLC_POS, RLC_BN_BITS / 2);
+				bn_rand(v1[1], RLC_POS, RLC_BN_BITS / 2);
+				if (w & 1) {
+					bn_neg(v1[0], v1[0]);
+				}
+				if (w & 2) {
+					bn_neg(v1[1], v1[1]);
+				}
+				bn_rec_retnaf(e, &inc, len, v1[0], v1[1]);
+				/* Evaluate the digits at positions 3k in Z[w]. */
+				bn_zero(a);
+				bn_zero(b);
+				for (k = (int)len; k >= 0; k--) {
+					tw_tau(a, b, c);
+					tw_tau(a, b, c);
+					tw_tau(a, b, c);
+					TEST_ASSERT(e[k] >= 0 && e[k] < 36, end);
+					tw_dig(v2[0], v2[1], c, e[k]);
+					bn_add(a, a, v2[0]);
+					bn_add(b, b, v2[1]);
+				}
+				TEST_ASSERT(inc == 0 || inc == 1, end);
+				bn_sub_dig(a, a, inc);
+				TEST_ASSERT(bn_cmp(a, v1[0]) == RLC_EQ &&
+						bn_cmp(b, v1[1]) == RLC_EQ, end);
+			}
+			/* Too few digits for the coordinates. */
+			TEST_ERR(bn_rec_retnaf(e, &inc, 2, v1[0], v1[1]));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 
 		TEST_CASE("jsf recoding is correct") {

@@ -313,7 +313,8 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 		 * subtracts a digit of norm at most 19 and divides by tau^3, of
 		 * absolute value sqrt(27), so after len steps the remainder is below
 		 * (1.5 * 2^(l/2) + 1) / 27^(len/2) + sqrt(19) / (sqrt(27) - 1). It is
-		 * below 2, hence a unit, when len > (l + 1.29) / log2(27). */
+		 * below 2 and not divisible by tau, hence a unit, when
+		 * len > (l + 1.29) / log2(27). */
 		l = 0;
 		for (int i = 0; i < 2; i++) {
 			/* Not const, since bn_t is a pointer with dynamic allocation. */

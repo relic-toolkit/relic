@@ -1091,9 +1091,9 @@ void ep_mul_twnaf(ep_t r, const ep_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using a regular tau-adic
- * recoding, in constant time, and without exceptions in projective coordinates,
- * where the formulas are complete. Curves without an endomorphism of order 3
- * use the regular method.
+ * recoding, which runs in constant time and without exceptions in projective
+ * coordinates, where the formulas are complete. Curves without an
+ * endomorphism of order 3 use the regular method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

@@ -380,7 +380,7 @@
 			F##_mul(r->z, t0, c3);											\
 			F##_copy(r->x, t3);												\
 			F##_copy(r->y, t4);												\
-			r->coord = EC_PROJC;												\
+			r->coord = EC_PROJC;											\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -505,10 +505,10 @@
 /**
  * Defines a template for the evaluation of e interleaved regular tau-adic
  * expansions from bn_rec_retnaf() with Horner's rule in base tau^2 = -3w, on
- * tables of 12 points per expansion from C##_tw_tab(), read by scanning them,
- * in constant time. The formulas are those of the configured coordinates, and
- * the evaluation is free of exceptions in projective coordinates, where they
- * are complete.
+ * tables of 12 points per expansion from C##_tw_tab(), read by scanning them.
+ * The formulas are those of the configured coordinates, and the evaluation
+ * runs in constant time and without exceptions in projective coordinates,
+ * where they are complete.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -530,10 +530,10 @@
 			 * every position multiple of 3, read in constant time from the	\
 			 * table by scanning it. */										\
 			F##_set_dig(u->z, 1);											\
-			u->coord = EC_AFFIN;												\
+			u->coord = EC_AFFIN;											\
 			for (int m = top / 2; m >= 0; m--) {							\
 				if (m < top / 2) {											\
-					C##_tpl(r, r);												\
+					C##_tpl(r, r);											\
 				}															\
 				for (int i = 2 * m; i <= RLC_MIN(2 * m + 1, top); i++) {	\
 					if (i % 3 != 0) {										\
@@ -568,7 +568,7 @@
 						if (m == top / 2 && k == 0) {						\
 							C##_copy(r, u);									\
 						} else {											\
-							C##_add(r, r, u);									\
+							C##_add(r, r, u);								\
 						}													\
 					}														\
 				}															\
@@ -576,7 +576,7 @@
 			/* Undo the increments of the recodings. */						\
 			for (int k = 0; k < e; k++) {									\
 				C##_neg(u, t[12 * k]);										\
-				C##_add(q, r, u);												\
+				C##_add(q, r, u);											\
 				F##_copy_sec(r->x, q->x, c[k]);								\
 				F##_copy_sec(r->y, q->y, c[k]);								\
 				F##_copy_sec(r->z, q->z, c[k]);								\
@@ -750,7 +750,7 @@
 				 * When psi leaves affine coordinates, building the table of\
 				 * psi(P) is cheaper. */									\
 				C##_psi(q, t[0]);											\
-				aff = (q->coord == EC_AFFIN);									\
+				aff = (q->coord == EC_AFFIN);								\
 				for (int i = 1; i < H; i++) {								\
 					if (aff) {												\
 						for (int m = 0; m < 2 * s; m++) {					\

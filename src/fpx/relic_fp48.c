@@ -115,7 +115,7 @@ static void fp48_mul_dxs_imp(dv48_t c, const fp48_t a, const fp48_t b,
 		dv24_new_all(t0, t1, u);
 
 		fp24_add(s0, a[0], a[1]);
-		/* Lines with LY in the prime field are cheaper. */
+		/* Sparse elements with LY in the prime field are cheaper. */
 		fp8_copy(s1[0], b[1][1]);
 		fp_zero(s1[0][0][0][0]);
 		if (fp8_is_zero(s1[0])) {
