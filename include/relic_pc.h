@@ -1073,10 +1073,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 /**
  * Indicates that the library context keeps the table of the generator of G_2,
- * so that pairings with it use pc_map_fix(). Curves with embedding degree 1
- * and 2 leave it out, as their tables are large.
+ * so that pairings with it use pc_map_fix(). The table is built only with
+ * PC_PRECO, and curves with embedding degree 1 and 2 leave it out, as their
+ * tables are large.
  */
-#if defined(RLC_PC_FIX) && RLC_GT_EMBED > 2
+#if defined(PC_PRECO) && defined(RLC_PC_FIX) && RLC_GT_EMBED > 2
 #define RLC_PC_GEN
 #endif
 
