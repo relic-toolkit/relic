@@ -32,6 +32,7 @@
 
 #include "relic_core.h"
 #include "relic_pp.h"
+#include "relic_pp_tmpl.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
 #include "relic_util.h"
@@ -41,99 +42,40 @@
 /*============================================================================*/
 
 /**
- * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter, for m pairs of arguments and n pairs whose second argument
- * is fixed by pp_map_pre_k2(). By symmetry, the loop of a fixed pair runs
- * over its fixed argument, whose lines come from the table.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] p				- the first pairing argument in affine coordinates.
- * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] m 			- the number of pairings to evaluate.
- * @param[in] s				- the first arguments of the fixed pairs.
- * @param[in] w				- the tables of the fixed second arguments.
- * @param[in] n				- the number of fixed pairs.
- * @param[in] a				- the loop parameter.
+ * Multiplies by a line of degree 2, which is dense, where the templates
+ * multiply by the sparse lines of the other degrees.
  */
-static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m,
-		const ep_t *s, const fp_t **w, int n, bn_t a) {
-	fp2_t l;
-	/* One more element, so that the allocation is not empty. */
-	ep_t *_q = RLC_ALLOCA(ep_t, m + n + 1), *d = _q + m;
-	int i, j, x = 0;
-	size_t len = bn_bits(a) + 1;
-	int8_t b[RLC_FP_BITS + 1];
+#define fp2_mul_dxs(C, A, B)	fp2_mul(C, A, B)
 
-	fp2_null(l);
+/**
+ * Hooks of the Tate pairing and of the pairing with a fixed argument: the
+ * loop runs over the order of the group minus one, as the points have that
+ * order, and there are no final lines.
+ */
+/** @{ */
+#define TMPL_PP_PAR_2(A)													\
+	ep_curve_get_ord(A);													\
+	bn_sub_dig(A, A, 1);
+#define TMPL_PP_FIN_2(R, T, Q, P, M)	/* No final lines. */
+#define TMPL_PP_FIX_FIN_2(R, L, T, J, P, D, G)	/* No final lines. */
+/** @} */
 
-	if (_q == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
+TMPL_PP_MIL(2, ep);
 
-	for (j = 0; j < m + n + 1; j++) {
-		ep_null(_q[j]);
-	}
-
-	RLC_TRY {
-		fp2_new(l);
-		for (j = 0; j < m + n + 1; j++) {
-			ep_new(_q[j]);
-		}
-		for (j = 0; j < m; j++) {
-			ep_copy(t[j], p[j]);
-			ep_neg(_q[j], q[j]);
-		}
-		/* The doubling lines of the fixed pairs are evaluated at -P. */
-		for (j = 0; j < n; j++) {
-			ep_neg(d[j], s[j]);
-		}
-
-		fp2_zero(l);
-		bn_rec_naf(b, &len, a, 2);
-		for (i = len - 2; i >= 0; i--) {
-			fp2_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_k2(l, t[j], t[j], _q[j]);
-				fp2_mul(r, r, l);
-				if (b[i] > 0) {
-					pp_add_k2(l, t[j], p[j], q[j]);
-					fp2_mul(r, r, l);
-				}
-				if (b[i] < 0) {
-					ep_neg(p[j], p[j]);
-					pp_add_k2(l, t[j], p[j], q[j]);
-					ep_neg(p[j], p[j]);
-					fp2_mul(r, r, l);
-				}
-			}
-			for (j = 0; j < n; j++) {
-				for (int k = 0; k < 2; k++) {
-					const dig_t *u = (k == 0 ? d[j]->x : s[j]->x);
-					const dig_t *v = (k == 0 ? d[j]->y : s[j]->y);
-					if (k == 1 && b[i] == 0) {
-						break;
-					}
-					fp_mul(l[0], w[j][2 * (x + k)], u);
-					fp_add(l[0], l[0], w[j][2 * (x + k) + 1]);
-					fp_copy(l[1], v);
-					fp2_mul(r, r, l);
-				}
-			}
-			x += (b[i] == 0 ? 1 : 2);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(l);
-		for (j = 0; j < m + n + 1; j++) {
-			ep_free(_q[j]);
-		}
-		RLC_FREE(_q);
-	}
+/**
+ * Evaluates at a point the next line of a table of pp_map_pre_k2(), which
+ * keeps the coefficient of x_P and the constant term of each line.
+ *
+ * @param[out] l			- the line.
+ * @param[in] t				- the table.
+ * @param[in,out] j			- the index of the line in the table.
+ * @param[in] p				- the point.
+ */
+static void pp_lin_k2(fp2_t l, const fp_t *t, int *j, const ep_t p) {
+	fp_mul(l[0], t[2 * *j], p->x);
+	fp_add(l[0], l[0], t[2 * *j + 1]);
+	fp_copy(l[1], p->y);
+	(*j)++;
 }
 
 /**
@@ -632,105 +574,9 @@ void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }
 
-void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q) {
-	ep_t _p[1], _q[1], t[1];
-	bn_t n;
+TMPL_PP_MAP_MIL(2, ep, tatep);
 
-	ep_null(_p[0]);
-	ep_null(_q[0]);
-	ep_null(t[0]);
-	bn_null(n);
-
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep_new(_q[0]);
-		ep_new(t[0]);
-		bn_new(n);
-
-		ep_norm(_p[0], p);
-		ep_norm(_q[0], q);
-		ep_curve_get_ord(n);
-		/* Since p has order n, we do not have to perform last iteration. */
-		bn_sub_dig(n, n, 1);
-		fp2_set_dig(r, 1);
-
-		if (!ep_is_infty(p) && !ep_is_infty(q)) {
-			pp_mil_k2(r, t, _p, _q, 1, NULL, NULL, 0, n);
-			pp_exp_k2(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep_free(_q[0]);
-		ep_free(t[0]);
-		bn_free(n);
-	}
-}
-
-void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m),
-			*_q = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
-	bn_t n;
-	int i, j;
-
-	bn_null(n);
-
-	if (_p == NULL || _q == NULL || t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	for (i = 0; i < m; i++) {
-		ep_null(_p[i]);
-		ep_null(_q[i]);
-		ep_null(t[i]);
-	}
-
-	RLC_TRY {
-		bn_new(n);
-		for (i = 0; i < m; i++) {
-			ep_new(_p[i]);
-			ep_new(_q[i]);
-			ep_new(t[i]);
-		}
-
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep_norm(_q[j++], q[i]);
-			}
-		}
-
-		ep_curve_get_ord(n);
-		bn_sub_dig(n, n, 1);
-		fp2_set_dig(r, 1);
-		if (j > 0) {
-			pp_mil_k2(r, t, _p, _q, j, NULL, NULL, 0, n);
-			pp_exp_k2(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep_free(_q[i]);
-			ep_free(t[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-	}
-}
+TMPL_PP_MAP_SIM_MIL(2, ep, tatep);
 
 void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t0[1], t1[1];
@@ -764,7 +610,7 @@ void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q) {
 
 		if (!ep_is_infty(_p[0]) && !ep_is_infty(_q[0])) {
 			pp_mil_lit_k2(r0, t0, _p, _q, 1, n);
-			pp_mil_k2(r1, t1, _q, _p, 1, NULL, NULL, 0, n);
+			pp_mil_k2(r1, t1, _q, _p, 1, n);
 			fp2_inv(r1, r1);
 			fp2_mul(r0, r0, r1);
 			fp2_inv(r1, r0);
@@ -840,7 +686,7 @@ void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 
 		if (j > 0) {
 			pp_mil_lit_k2(r0, t0, _p, _q, j, n);
-			pp_mil_k2(r1, t1, _q, _p, j, NULL, NULL, 0, n);
+			pp_mil_k2(r1, t1, _q, _p, j, n);
 			fp2_inv(r1, r1);
 			fp2_mul(r0, r0, r1);
 			fp2_inv(r1, r0);
@@ -969,84 +815,6 @@ void pp_map_pre_k2(fp_t *t, const ep_t q) {
 	}
 }
 
-void pp_map_fix_k2(fp2_t r, const ep_t p, const fp_t *t) {
-	ep_t _p[1];
+TMPL_PP_MAP_FIX(2, fp);
 
-	ep_null(_p[0]);
-
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep_copy(_p[0], p);
-		pp_map_sim_fix_k2(r, NULL, NULL, 0, (const ep_t *)_p, &t, 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-	}
-}
-
-void pp_map_sim_fix_k2(fp2_t r, const ep_t *p, const ep_t *q, int m,
-		const ep_t *s, const fp_t **t, int n) {
-	/* One more element each, so that no allocation is empty. */
-	ep_t *_p = RLC_ALLOCA(ep_t, 3 * m + n + 1), *_q = _p + m, *u = _q + m;
-	ep_t *_s = u + m;
-	const fp_t **_t = RLC_ALLOCA(const fp_t *, n + 1);
-	bn_t a;
-	int i, mm = 0, nn = 0;
-
-	if (_p == NULL || _t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	bn_null(a);
-	for (i = 0; i < 3 * m + n + 1; i++) {
-		ep_null(_p[i]);
-	}
-
-	RLC_TRY {
-		bn_new(a);
-		for (i = 0; i < 3 * m + n + 1; i++) {
-			ep_new(_p[i]);
-		}
-
-		/* Pairs with a point at infinity contribute nothing. A table
-		 * starting with two zeros stands for the point at infinity. */
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
-				ep_norm(_p[mm], p[i]);
-				ep_norm(_q[mm++], q[i]);
-			}
-		}
-		for (i = 0; i < n; i++) {
-			if (!ep_is_infty(s[i]) &&
-					!(fp_is_zero(t[i][0]) && fp_is_zero(t[i][1]))) {
-				ep_norm(_s[nn], s[i]);
-				_t[nn++] = t[i];
-			}
-		}
-
-		fp2_set_dig(r, 1);
-		if (mm + nn > 0) {
-			ep_curve_get_ord(a);
-			bn_sub_dig(a, a, 1);
-			pp_mil_k2(r, u, _p, _q, mm, (const ep_t *)_s, _t, nn, a);
-			pp_exp_k2(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-		for (i = 0; i < 3 * m + n + 1; i++) {
-			ep_free(_p[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_t);
-	}
-}
+TMPL_PP_MAP_SIM_FIX(2, ep, fp);

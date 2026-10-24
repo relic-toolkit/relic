@@ -869,7 +869,8 @@
  * Selects how the Miller loop of degree K prepares the point of G_1 for the
  * doubling lines: its negation for affine coordinates, and for projective
  * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists
- * (K = 8 and 16).
+ * (K = 8 and 16). Degree 2 takes the negation for both, as its lines are
+ * evaluated at the point itself.
  *
  * @param[out] R		- the prepared point.
  * @param[in] P			- the point of G_1.
@@ -887,6 +888,7 @@
 	fp_neg(R->x, P->x);														\
 	fp_copy(R->y, P->y);
 #endif
+#define TMPL_PP_MIL_P_2(R, P)	ep_neg(R, P);
 #define TMPL_PP_MIL_P_8(R, P)	TMPL_PP_MIL_P4(R, P)
 #define TMPL_PP_MIL_P_12(R, P)	TMPL_PP_MIL_P6(R, P)
 #define TMPL_PP_MIL_P_16(R, P)	TMPL_PP_MIL_P4(R, P)
@@ -1321,15 +1323,17 @@
 /** @} */
 
 /**
- * Defines a template for the optimal ate pairing, including its final lines.
- * The hooks TMPL_PP_PAR_K and TMPL_PP_FIN_K handle the differences between
+ * Defines a template for a pairing computed by the Miller loop of TMPL_PP_MIL
+ * over the parameter given by TMPL_PP_PAR_K, followed by the final lines of
+ * TMPL_PP_FIN_K, as pp_map_N_kK(). The hooks handle the differences between
  * families of curves with the same embedding degree.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] N			- the name of the pairing.
  */
-#define TMPL_PP_MAP_OATEP(K, C)											\
-	void pp_map_oatep_k##K(fp##K##_t r, const ep_t p, const C##_t q) {		\
+#define TMPL_PP_MAP_MIL(K, C, N)											\
+	void pp_map_##N##_k##K(fp##K##_t r, const ep_t p, const C##_t q) {		\
 		ep_t _p[1];															\
 		C##_t t[1], _q[1];													\
 		bn_t a;																\
@@ -1371,13 +1375,15 @@
 	}
 
 /**
- * Defines a template for the product of optimal ate pairings.
+ * Defines a template for the product of pairings of TMPL_PP_MAP_MIL, as
+ * pp_map_sim_N_kK().
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] N			- the name of the pairing.
  */
-#define TMPL_PP_MAP_SIM_OATEP(K, C)										\
-	void pp_map_sim_oatep_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
+#define TMPL_PP_MAP_SIM_MIL(K, C, N)										\
+	void pp_map_sim_##N##_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
 			int m) {														\
 		ep_t *_p = RLC_ALLOCA(ep_t, m);										\
 		C##_t *t = RLC_ALLOCA(C##_t, m), *_q = RLC_ALLOCA(C##_t, m);		\
@@ -1441,6 +1447,18 @@
 			RLC_FREE(t);													\
 		}																	\
 	}
+
+/**
+ * Defines templates for the optimal ate pairing and the product of optimal
+ * ate pairings.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ */
+/** @{ */
+#define TMPL_PP_MAP_OATEP(K, C)		TMPL_PP_MAP_MIL(K, C, oatep)
+#define TMPL_PP_MAP_SIM_OATEP(K, C)	TMPL_PP_MAP_SIM_MIL(K, C, oatep)
+/** @} */
 
 /**
  * Defines the helpers of the pairing with a fixed point of G_2. A table keeps
