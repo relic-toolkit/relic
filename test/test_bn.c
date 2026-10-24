@@ -3164,21 +3164,46 @@ static int recoding(void) {
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
-		TEST_CASE("frobenius recoding is correct") {
-			/* Without a cofactor, the subscalars are signed digits in base x. */
-			for (w = 0; w < 4; w++) {
-				bn_rand(b, (w & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 4);
-				bn_rand(a, (w & 2) ? RLC_NEG : RLC_POS, 3 * (bn_bits(b) - 1));
-				bn_rec_frb(v1, 3, a, b, b, 0);
-				bn_mul(c, v1[2], b);
-				bn_add(c, c, v1[1]);
-				bn_mul(c, c, b);
-				bn_add(c, c, v1[0]);
-				TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
-			}
-		} TEST_END;
-
 #if defined(WITH_EP)
+		if (ep_param_set_any_pairf() == RLC_OK) {
+			TEST_CASE("frobenius recoding is correct") {
+				/* Without a cofactor, the subscalars are signed digits in
+				 * base x, so scalars below |x|^3 take three digits. */
+				ep_curve_get_ord(c);
+				ep_curve_frbase(b);
+				for (w = 0; w < 4; w++) {
+					bn_rand(a, (w & 1) ? RLC_NEG : RLC_POS,
+							3 * (bn_bits(b) - 1));
+					bn_rec_frb(v1, 3, a, b, c, ep_curve_get_rec(), 0);
+					bn_mul(v2[0], v1[2], b);
+					bn_add(v2[0], v2[0], v1[1]);
+					bn_mul(v2[0], v2[0], b);
+					bn_add(v2[0], v2[0], v1[0]);
+					TEST_ASSERT(bn_cmp(v2[0], a) == RLC_EQ, end);
+					/* Scalars beyond the order, of the same length or longer,
+					 * give the same digits, as they are reduced first. */
+					for (k = 0; k < 2; k++) {
+						bn_lsh(v2[0], c, k * RLC_DIG);
+						if (bn_sign(a) == RLC_NEG) {
+							bn_sub(a, a, v2[0]);
+						} else {
+							bn_add(a, a, v2[0]);
+						}
+						bn_rec_frb(v2, 3, a, b, c, ep_curve_get_rec(), 0);
+						TEST_ASSERT(bn_cmp(v2[0], v1[0]) == RLC_EQ &&
+								bn_cmp(v2[1], v1[1]) == RLC_EQ &&
+								bn_cmp(v2[2], v1[2]) == RLC_EQ, end);
+						bn_lsh(v2[0], c, k * RLC_DIG);
+						if (bn_sign(a) == RLC_NEG) {
+							bn_add(a, a, v2[0]);
+						} else {
+							bn_sub(a, a, v2[0]);
+						}
+					}
+				}
+			} TEST_END;
+		}
+
 		TEST_CASE("glv recoding is correct") {
 			if (ep_param_set_any_endom() == RLC_OK) {
 				for (size_t i = 0; i < 3; i++) {
@@ -3219,6 +3244,27 @@ static int recoding(void) {
 				bn_mod(v2[2], v2[2], v2[0]);
 				TEST_ASSERT(bn_cmp(a, v2[1]) == RLC_EQ ||
 					bn_cmp(a, v2[2]) == RLC_EQ, end);
+				/* A negative scalar gives the negated parts. */
+				bn_neg(a, a);
+				bn_rec_glv(v2[1], v2[2], a, v2[0], ep_curve_get_v1(),
+						ep_curve_get_v2());
+				bn_neg(v2[1], v2[1]);
+				bn_neg(v2[2], v2[2]);
+				TEST_ASSERT(bn_cmp(v2[1], b) == RLC_EQ &&
+						bn_cmp(v2[2], c) == RLC_EQ, end);
+				/* Scalars beyond the order, of the same length or longer, are
+				 * reduced first. */
+				bn_sub(a, v2[0], a);
+				bn_rec_glv(v2[1], v2[2], a, v2[0], ep_curve_get_v1(),
+						ep_curve_get_v2());
+				TEST_ASSERT(bn_cmp(v2[1], b) == RLC_EQ &&
+						bn_cmp(v2[2], c) == RLC_EQ, end);
+				bn_lsh(v2[1], v2[0], RLC_DIG);
+				bn_add(a, a, v2[1]);
+				bn_rec_glv(v2[1], v2[2], a, v2[0], ep_curve_get_v1(),
+						ep_curve_get_v2());
+				TEST_ASSERT(bn_cmp(v2[1], b) == RLC_EQ &&
+						bn_cmp(v2[2], c) == RLC_EQ, end);
 			}
 		} TEST_END;
 
@@ -3231,16 +3277,17 @@ static int recoding(void) {
 				bn_rec_glv(b, c, a, b, ep_curve_get_v1(), ep_curve_get_v2());
 				ep_curve_get_ord(v2[0]);
 				fp_prime_get_par(v2[1]);
-				bn_rec_sac(ptr, &l, v1, v2[1], 1, 2, bn_bits(v2[0]),
-						ep_curve_is_pairf() == EP_BN);
+				/* The recoding takes the subscalars, the first one odd. */
 				if (bn_is_even(b)) {
 					bn_add_dig(b, b, 1);
 				}
 				bn_copy(v1[0], b);
 				bn_copy(v1[1], c);
-				for (size_t i = 0; i < l; i++) {
-					TEST_ASSERT(ptr[i] == 0 || ptr[i] == 1, end);
-					TEST_ASSERT(ptr[l + i] == 0 || ptr[l + i] == 1, end);
+				bn_rec_sac(ptr, &l, v1, v2[1], 1, 2, bn_bits(v2[0]),
+						ep_curve_is_pairf() == EP_BN);
+				for (size_t j = 0; j < l; j++) {
+					TEST_ASSERT(ptr[j] == 0 || ptr[j] == 1, end);
+					TEST_ASSERT(ptr[l + j] == 0 || ptr[l + j] == 1, end);
 				}
 			}
 		} TEST_END;
