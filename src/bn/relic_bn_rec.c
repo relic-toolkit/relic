@@ -1096,33 +1096,51 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 	}
 }
 
+/**
+ * First row of n * B^(-1) for the lattice basis B of BN curves, as
+ * polynomials in x listed from the constant term up.
+ */
+static const int8_t frb_bn_l[4][4] = {
+	{ 1, 3, 2, 0 }, { 0, 1, 8, 12 }, { 0, 1, 4, 6 }, { 0, -1, -2, 0 }
+};
+
+/**
+ * Lattice basis B of BN curves [Galbraith-Scott], each entry a * x + b
+ * stored as { a, b }.
+ */
+static const int8_t frb_bn_b[4][4][2] = {
+	{ { 1, 1 }, { 1, 0 }, { 1, 0 }, { -2, 0 } },
+	{ { 2, 1 }, { -1, 0 }, { -1, -1 }, { -1, 0 } },
+	{ { 2, 0 }, { 2, 1 }, { 2, 1 }, { 2, 1 } },
+	{ { 1, -1 }, { 4, 2 }, { -2, 1 }, { 1, -1 } }
+};
+
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		int cof) {
-	int i, sk, sx;
-	size_t l;
-	bn_t u[4], v[4];
+	int c, i, j, sk, sx;
+	bn_t t, v[4];
 
+	bn_null(t);
 	for (i = 0; i < 4; i++) {
-		bn_null(u[i]);
 		bn_null(v[i]);
 	}
 
 	RLC_TRY {
+		bn_new(t);
 		for (i = 0; i < 4; i++) {
-			bn_new(u[i]);
 			bn_new(v[i]);
 		}
 
 		if (cof == 0) {
 			bn_abs(v[0], k);
-			bn_abs(u[0], x);
+			bn_abs(t, x);
 
 			sk = bn_sign(k);
 			sx = bn_sign(x);
 
 			for (i = 0; i < sub; i++) {
-				bn_mod(ki[i], v[0], u[0]);
-				bn_div(v[0], v[0], u[0]);
+				bn_mod(ki[i], v[0], t);
+				bn_div(v[0], v[0], t);
 				if ((sx == RLC_NEG) && (i % 2 != 0)) {
 					bn_neg(ki[i], ki[i]);
 				}
@@ -1131,121 +1149,56 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				}
 			}
 		} else {
-			bn_copy(v[1], x);
-			bn_copy(v[2], x);
-			bn_copy(v[3], x);
-
-			/* t = 2x^2. */
-			bn_sqr(u[3], x);
-			bn_dbl(u[3], u[3]);
-
-			/* v0 = 2x^2 + 3x + 1. */
-			bn_mul_dig(v[0], x, 3);
-			bn_add_dig(v[0], v[0], 1);
-			bn_add(v[0], v[0], u[3]);
-
-			/* v3 = -(2x^2 + x). */
-			bn_add(v[3], v[3], u[3]);
-			bn_neg(v[3], v[3]);
-
-			/* v1 = 12x^3 + 8x^2 + x, v2 = 6x^3 + 4x^2 + x. */
-			bn_dbl(u[3], u[3]);
-			bn_add(v[2], v[2], u[3]);
-			bn_dbl(u[3], u[3]);
-			bn_add(v[1], v[1], u[3]);
-			bn_rsh(u[3], u[3], 2);
-			bn_mul(u[3], u[3], x);
-			bn_mul_dig(u[3], u[3], 3);
-			bn_add(v[2], v[2], u[3]);
-			bn_dbl(u[3], u[3]);
-			bn_add(v[1], v[1], u[3]);
-
+			/* v_i = round(k * l_i / n) = floor((2 * k * l_i + n) / 2n). */
+			bn_dbl(t, n);
 			for (i = 0; i < 4; i++) {
-				bn_mul(v[i], v[i], k);
-				bn_div(v[i], v[i], n);
-				if (bn_sign(v[i]) == RLC_NEG) {
-					bn_add_dig(v[i], v[i], 1);
+				/* Evaluate l_i by Horner. */
+				bn_zero(v[i]);
+				for (j = 3; j >= 0; j--) {
+					bn_mul(v[i], v[i], x);
+					c = frb_bn_l[i][j];
+					if (c < 0) {
+						bn_sub_dig(v[i], v[i], -c);
+					} else {
+						bn_add_dig(v[i], v[i], c);
+					}
 				}
+				bn_mul(v[i], v[i], k);
+				bn_dbl(v[i], v[i]);
+				bn_add(v[i], v[i], n);
+				bn_div(v[i], v[i], t);
 			}
 
-			/* u0 = x + 1, u1 = 2x + 1, u2 = 2x, u3 = x - 1. */
-			bn_dbl(u[2], x);
-			bn_add_dig(u[1], u[2], 1);
-			bn_sub_dig(u[3], x, 1);
-			bn_add_dig(u[0], x, 1);
-			bn_copy(ki[0], k);
-			bn_zero(ki[1]);
-			bn_zero(ki[2]);
-			bn_zero(ki[3]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(ki[0], ki[0], n);
-				bn_sub(ki[0], ki[0], u[i]);
-				bn_mod(ki[0], ki[0], n);
-			}
-
-			/* u0 = x, u1 = -x, u2 = 2x + 1, u3 = 4x + 2. */
-			bn_copy(u[0], x);
-			bn_neg(u[1], x);
-			bn_dbl(u[2], x);
-			bn_add_dig(u[2], u[2], 1);
-			bn_dbl(u[3], u[2]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(ki[1], ki[1], n);
-				bn_sub(ki[1], ki[1], u[i]);
-				bn_mod(ki[1], ki[1], n);
-			}
-
-			/* u0 = x, u1 = -(x + 1), u2 = 2x + 1, u3 = -(2x - 1). */
-			bn_copy(u[0], x);
-			bn_add_dig(u[1], x, 1);
-			bn_neg(u[1], u[1]);
-			bn_dbl(u[2], x);
-			bn_add_dig(u[2], u[2], 1);
-			bn_sub_dig(u[3], u[2], 2);
-			bn_neg(u[3], u[3]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(ki[2], ki[2], n);
-				bn_sub(ki[2], ki[2], u[i]);
-				bn_mod(ki[2], ki[2], n);
-			}
-
-			/* u0 = -2x, u1 = -x, u2 = 2x + 1, u3 = x - 1. */
-			bn_dbl(u[0], x);
-			bn_neg(u[0], u[0]);
-			bn_dbl(u[2], x);
-			bn_add_dig(u[2], u[2], 1);
-			bn_sub_dig(u[3], x, 1);
-			bn_neg(u[1], x);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(ki[3], ki[3], n);
-				bn_sub(ki[3], ki[3], u[i]);
-				bn_mod(ki[3], ki[3], n);
-			}
-
-			for (i = 0; i < 4; i++) {
-				l = bn_bits(ki[i]);
-				bn_sub(ki[i], n, ki[i]);
-				if (bn_bits(ki[i]) > l) {
-					bn_sub(ki[i], ki[i], n);
-					ki[i]->sign = RLC_POS;
+			/* k_j = (k, 0, 0, 0) - sum_i v_i * B[i][j], with k aliasing k_0. */
+			for (j = 0; j < 4; j++) {
+				if (j == 0) {
+					bn_copy(ki[j], k);
 				} else {
-					ki[i]->sign = RLC_NEG;
+					bn_zero(ki[j]);
+				}
+				for (i = 0; i < 4; i++) {
+					/* t = a * x + b. */
+					c = frb_bn_b[i][j][0];
+					bn_mul_dig(t, x, c < 0 ? -c : c);
+					if (c < 0) {
+						bn_neg(t, t);
+					}
+					c = frb_bn_b[i][j][1];
+					if (c < 0) {
+						bn_sub_dig(t, t, -c);
+					} else {
+						bn_add_dig(t, t, c);
+					}
+					bn_mul(t, t, v[i]);
+					bn_sub(ki[j], ki[j], t);
 				}
 			}
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+		bn_free(t);
 		for (i = 0; i < 4; i++) {
-			bn_free(u[i]);
 			bn_free(v[i]);
 		}
 	}
