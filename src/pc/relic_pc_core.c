@@ -39,6 +39,11 @@
 
 void pc_core_init(void) {
 	gt_new(core_get()->gt_g);
+#ifdef RLC_PC_GEN
+	for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, new)(core_get()->g2_tab[i]);
+	}
+#endif
 }
 
 void pc_core_calc(void) {
@@ -58,7 +63,13 @@ void pc_core_calc(void) {
 		g1_get_gen(g1);
 		g2_get_gen(g2);
 
+#ifdef RLC_PC_GEN
+		/* Pairings with the generator of G_2 use its table. */
+		pc_map_pre(core_get()->g2_tab, g2);
+		pc_map_fix(gt, g1, core_get()->g2_tab);
+#else
 		pc_map(gt, g1, g2);
+#endif
 		gt_copy(core_get()->gt_g, gt);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -72,6 +83,11 @@ void pc_core_calc(void) {
 void pc_core_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-		gt_free(core_get()->gt_g);
+		gt_free(ctx->gt_g);
+#ifdef RLC_PC_GEN
+		for (size_t i = 0; i < RLC_PC_TABLE; i++) {
+			RLC_CAT(RLC_PC_FIELD, free)(ctx->g2_tab[i]);
+		}
+#endif
 	}
 }

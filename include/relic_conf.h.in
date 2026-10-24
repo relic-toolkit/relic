@@ -543,6 +543,9 @@
 /** Chosen pairing method over prime elliptic curves. */
 #define PP_MAP   PP_@PP_MAP@
 
+/** Build precomputation table for generator of G_2. */
+#cmakedefine PC_PRECO
+
 /** SHA-224 hash function. */
 #define MD_SH224          2
 /** SHA-256 hash function. */

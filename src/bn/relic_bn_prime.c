@@ -51,10 +51,11 @@
 
 /**
  * Number of consecutive candidates sieved at once when generating primes. The
- * small primes for the sieve are the odd ones below twice this number.
+ * small primes for the sieve are the odd ones below twice this number, at most
+ * 2^16 as they are stored in 16 bits.
  */
 #if RLC_WSIZE > 16
-#define BN_SIEVE_WINDOW	(16384)
+#define BN_SIEVE_WINDOW	(32768)
 #else
 #define BN_SIEVE_WINDOW	(1024)
 #endif

@@ -280,7 +280,7 @@
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
 			F##_add(t3, t3, t2);											\
-			F##_mul(t3, t3, C##_curve_get_b());								\
+			C##_curve_mul_b(t3, t3);										\
 			/* E = (x1 + y1)^2 - A - B. */									\
 			F##_add(t4, q->x, q->y);										\
 			F##_sqr(t4, t4);												\
@@ -533,7 +533,7 @@
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
 			F##_add(t3, t3, t2);											\
-			F##_mul(t3, t3, C##_curve_get_b());								\
+			C##_curve_mul_b(t3, t3);										\
 			/* E = (x1 + y1)^2 - A - B. */									\
 			F##_add(t4, q->x, q->y);										\
 			F##_sqr(t4, t4);												\
@@ -869,7 +869,8 @@
  * Selects how the Miller loop of degree K prepares the point of G_1 for the
  * doubling lines: its negation for affine coordinates, and for projective
  * ones (3x_P, -y_P) with sextic twists or (-x_P, y_P) with quartic twists
- * (K = 8 and 16).
+ * (K = 8 and 16). Degree 2 takes the negation for both, as its lines are
+ * evaluated at the point itself.
  *
  * @param[out] R		- the prepared point.
  * @param[in] P			- the point of G_1.
@@ -887,6 +888,7 @@
 	fp_neg(R->x, P->x);														\
 	fp_copy(R->y, P->y);
 #endif
+#define TMPL_PP_MIL_P_2(R, P)	ep_neg(R, P);
 #define TMPL_PP_MIL_P_8(R, P)	TMPL_PP_MIL_P4(R, P)
 #define TMPL_PP_MIL_P_12(R, P)	TMPL_PP_MIL_P6(R, P)
 #define TMPL_PP_MIL_P_16(R, P)	TMPL_PP_MIL_P4(R, P)
@@ -1308,9 +1310,10 @@
 
 /**
  * Selects the final lines of the optimal ate pairing of degree K, which
- * evaluate at P the lines that the loop over the parameter leaves out. Only
- * K = 54 has them: f^3 times three more lines. Degrees 12, 16 and 18 add
- * their family-specific final lines by hand.
+ * evaluate at P the lines that the loop over the parameter leaves out. Among
+ * the degrees below, only K = 54 has them: f^3 times three more lines.
+ * Degrees 12, 16 and 18 define theirs next to their other hooks, as they
+ * depend on the family of the curve.
  */
 /** @{ */
 #define TMPL_PP_FIN_8(R, T, Q, P, M)	/* No final lines. */
@@ -1320,14 +1323,17 @@
 /** @} */
 
 /**
- * Defines a template for the optimal ate pairing, including its final lines.
+ * Defines a template for a pairing computed by the Miller loop of TMPL_PP_MIL
+ * over the parameter given by TMPL_PP_PAR_K, followed by the final lines of
+ * TMPL_PP_FIN_K, as pp_map_N_kK(). The hooks handle the differences between
+ * families of curves with the same embedding degree.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
- * @param[in] T			- the family of pairing-friendly curves.
+ * @param[in] N			- the name of the pairing.
  */
-#define TMPL_PP_MAP_OATEP(K, C, T)											\
-	void pp_map_oatep_k##K(fp##K##_t r, const ep_t p, const C##_t q) {		\
+#define TMPL_PP_MAP_MIL(K, C, N)											\
+	void pp_map_##N##_k##K(fp##K##_t r, const ep_t p, const C##_t q) {		\
 		ep_t _p[1];															\
 		C##_t t[1], _q[1];													\
 		bn_t a;																\
@@ -1344,20 +1350,17 @@
 			bn_new(a);														\
 																			\
 			fp_prime_get_par(a);											\
+			TMPL_PP_PAR_##K(a)												\
 			fp##K##_set_dig(r, 1);											\
 																			\
 			ep_norm(_p[0], p);												\
 			C##_norm(_q[0], q);												\
 																			\
 			if (!ep_is_infty(_p[0]) && !C##_is_infty(_q[0])) {				\
-				switch (ep_curve_is_pairf()) {								\
-					case T:													\
-						/* r = f_{a,Q}(P). */								\
-						pp_mil_k##K(r, t, _q, _p, 1, a);					\
-						TMPL_PP_FIN_##K(r, t, _q, _p, 1)					\
-						pp_exp_k##K(r, r);									\
-						break;												\
-				}															\
+				/* r = f_{a,Q}(P). */										\
+				pp_mil_k##K(r, t, _q, _p, 1, a);							\
+				TMPL_PP_FIN_##K(r, t, _q, _p, 1)							\
+				pp_exp_k##K(r, r);											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
@@ -1372,14 +1375,15 @@
 	}
 
 /**
- * Defines a template for the product of optimal ate pairings.
+ * Defines a template for the product of pairings of TMPL_PP_MAP_MIL, as
+ * pp_map_sim_N_kK().
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
- * @param[in] T			- the family of pairing-friendly curves.
+ * @param[in] N			- the name of the pairing.
  */
-#define TMPL_PP_MAP_SIM_OATEP(K, C, T)										\
-	void pp_map_sim_oatep_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
+#define TMPL_PP_MAP_SIM_MIL(K, C, N)										\
+	void pp_map_sim_##N##_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
 			int m) {														\
 		ep_t *_p = RLC_ALLOCA(ep_t, m);										\
 		C##_t *t = RLC_ALLOCA(C##_t, m), *_q = RLC_ALLOCA(C##_t, m);		\
@@ -1418,17 +1422,14 @@
 			}																\
 																			\
 			fp_prime_get_par(a);											\
+			TMPL_PP_PAR_##K(a)												\
 			fp##K##_set_dig(r, 1);											\
 																			\
 			if (j > 0) {													\
-				switch (ep_curve_is_pairf()) {								\
-					case T:													\
-						/* r = f_{a,Q}(P). */								\
-						pp_mil_k##K(r, t, _q, _p, j, a);					\
-						TMPL_PP_FIN_##K(r, t, _q, _p, j)					\
-						pp_exp_k##K(r, r);									\
-						break;												\
-				}															\
+				/* r = f_{a,Q}(P). */										\
+				pp_mil_k##K(r, t, _q, _p, j, a);							\
+				TMPL_PP_FIN_##K(r, t, _q, _p, j)							\
+				pp_exp_k##K(r, r);											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
@@ -1444,6 +1445,386 @@
 			RLC_FREE(_p);													\
 			RLC_FREE(_q);													\
 			RLC_FREE(t);													\
+		}																	\
+	}
+
+/**
+ * Defines templates for the optimal ate pairing and the product of optimal
+ * ate pairings.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ */
+/** @{ */
+#define TMPL_PP_MAP_OATEP(K, C)		TMPL_PP_MAP_MIL(K, C, oatep)
+#define TMPL_PP_MAP_SIM_OATEP(K, C)	TMPL_PP_MAP_SIM_MIL(K, C, oatep)
+/** @} */
+
+/**
+ * Defines the helpers of the pairing with a fixed point of G_2. A table keeps
+ * two elements of the twist field per line, the coefficients of x_P and of
+ * the constant term, both divided by the coefficient of y_P, which the final
+ * exponentiation then removes. A table whose first two elements are zero
+ * stands for the point at infinity, as the constant term of a real line is
+ * not zero.
+ *
+ * The lines are linear in the coordinates of the point they are evaluated
+ * at, so a line function evaluated at the point (1, 1) gives its three
+ * coefficients, which pp_rec_kK() stores in the next entry of the table,
+ * keeping the coefficient of y_P in Y. pp_lin_kK() evaluates the next stored
+ * line at P into L, which must have been zero outside the slots of a line.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_LIN(K, F)													\
+	static void pp_rec_k##K(F##_t *t, F##_t *y, int *j,						\
+			const fp##K##_t l) {											\
+		if (*j >= RLC_PP_TABLE_K##K / 2) {									\
+			RLC_THROW(ERR_NO_BUFFER);										\
+			return;															\
+		}																	\
+		F##_copy(t[2 * *j], TMPL_PP_LX_##K(l));								\
+		F##_copy(t[2 * *j + 1], TMPL_PP_LJ_##K(l));							\
+		F##_copy(y[*j], TMPL_PP_LY_##K(l));									\
+		(*j)++;																\
+	}																		\
+																			\
+	static void pp_lin_k##K(fp##K##_t l, const F##_t *t, int *j,			\
+			const ep_t p) {													\
+		F##_mul_fp(TMPL_PP_LX_##K(l), t[2 * *j], p->x);						\
+		fp_copy(TMPL_PP_LY0_##K(l), p->y);									\
+		F##_copy(TMPL_PP_LJ_##K(l), t[2 * *j + 1]);							\
+		(*j)++;																\
+	}
+
+/**
+ * Defines a template for precomputing the lines of the optimal ate pairing
+ * with a fixed point of G_2. It runs the Miller loop of TMPL_PP_MIL on Q
+ * alone, recording each line at the point (1, 1), and then the final lines
+ * of TMPL_PP_PRE_FIN_K, before normalizing all lines with a simultaneous
+ * inversion. TMPL_PP_PAR_K adjusts the loop parameter of the family.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_PRE(K, C, F)											\
+	void pp_map_pre_k##K(F##_t *t, const C##_t q) {							\
+		F##_t *y = RLC_ALLOCA(F##_t, RLC_PP_TABLE_K##K / 2);				\
+		C##_t r, _q, n;														\
+		fp##K##_t l;														\
+		ep_t e;																\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t s[RLC_FP_BITS + 1];											\
+		int i, j = 0;														\
+																			\
+		if (y == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+																			\
+		C##_null_all(r, _q, n);												\
+		fp##K##_null(l);													\
+		ep_null(e);															\
+		bn_null(a);															\
+		for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {						\
+			F##_null(y[i]);													\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new_all(r, _q, n);											\
+			fp##K##_new(l);													\
+			ep_new(e);														\
+			bn_new(a);														\
+			for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {					\
+				F##_new(y[i]);												\
+			}																\
+																			\
+			C##_norm(_q, q);												\
+			F##_zero(t[0]);													\
+			F##_zero(t[1]);													\
+			if (!C##_is_infty(_q)) {										\
+				fp_set_dig(e->x, 1);										\
+				fp_set_dig(e->y, 1);										\
+				fp_set_dig(e->z, 1);										\
+				e->coord = EC_AFFIN;										\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(s, &len, a, 2);									\
+				C##_copy(r, _q);											\
+				C##_neg(n, _q);												\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					fp##K##_zero(l);										\
+					pp_dbl_k##K(l, r, r, e);								\
+					pp_rec_k##K(t, y, &j, l);								\
+					if (s[i] != 0) {										\
+						fp##K##_zero(l);									\
+						pp_add_k##K(l, r, s[i] > 0 ? _q : n, e);			\
+						pp_rec_k##K(t, y, &j, l);							\
+					}														\
+				}															\
+				/* For a negative parameter, T = aQ. */						\
+				if (bn_sign(a) == RLC_NEG) {								\
+					C##_neg(r, r);											\
+				}															\
+				TMPL_PP_PRE_FIN_##K(t, y, &j, l, r, _q, e)					\
+																			\
+				/* Divide each line by its coefficient of y_P. */			\
+				F##_inv_sim(y, (const F##_t *)y, j);						\
+				for (i = 0; i < j; i++) {									\
+					F##_mul(t[2 * i], t[2 * i], y[i]);						\
+					F##_mul(t[2 * i + 1], t[2 * i + 1], y[i]);				\
+				}															\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free_all(r, _q, n);											\
+			fp##K##_free(l);												\
+			ep_free(e);														\
+			bn_free(a);														\
+			for (i = 0; i < RLC_PP_TABLE_K##K / 2; i++) {					\
+				F##_free(y[i]);												\
+			}																\
+			RLC_FREE(y);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for the optimal ate pairing with a fixed point of G_2,
+ * given by the table of TMPL_PP_MAP_PRE. It replays the Miller loop over the
+ * same parameter, evaluating the stored lines at P, and then the final lines
+ * of TMPL_PP_FIX_FIN_K, before the final exponentiation. The doubling lines
+ * are evaluated at the point that TMPL_PP_MIL_P_K prepares, and the others
+ * at P.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_FIX(K, F)												\
+	void pp_map_fix_k##K(fp##K##_t r, const ep_t p, const F##_t *t) {		\
+		fp##K##_t l;														\
+		ep_t _p, d;															\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t s[RLC_FP_BITS + 1];											\
+		int i, j = 0;														\
+																			\
+		fp##K##_null(l);													\
+		ep_null_all(_p, d);													\
+		bn_null(a);															\
+																			\
+		RLC_TRY {															\
+			fp##K##_new(l);													\
+			ep_new_all(_p, d);												\
+			bn_new(a);														\
+																			\
+			fp##K##_set_dig(r, 1);											\
+			ep_norm(_p, p);													\
+			if (!ep_is_infty(_p) &&											\
+					!(F##_is_zero(t[0]) && F##_is_zero(t[1]))) {			\
+				TMPL_PP_MIL_P_##K(d, _p)									\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(s, &len, a, 2);									\
+				fp##K##_zero(l);											\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					pp_lin_k##K(l, t, &j, d);								\
+					if (j == 1) {											\
+						fp##K##_copy(r, l);									\
+					} else {												\
+						fp##K##_sqr(r, r);									\
+						fp##K##_mul_dxs(r, r, l);							\
+					}														\
+					if (s[i] != 0) {										\
+						pp_lin_k##K(l, t, &j, _p);							\
+						fp##K##_mul_dxs(r, r, l);							\
+					}														\
+				}															\
+				/* For a negative parameter, f_{a,Q} = 1/f_{|a|,Q}. */		\
+				if (bn_sign(a) == RLC_NEG) {								\
+					fp##K##_inv_cyc(r, r);									\
+				}															\
+				TMPL_PP_FIX_FIN_##K(r, l, t, &j, _p, d, 1)					\
+				pp_exp_k##K(r, r);											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			fp##K##_free(l);												\
+			ep_free_all(_p, d);												\
+			bn_free(a);														\
+		}																	\
+	}
+
+/**
+ * Defines a template for a product of optimal ate pairings in which some
+ * points of G_2 are fixed, given by the tables of TMPL_PP_MAP_PRE. All pairs
+ * share the squarings of one Miller loop and the final exponentiation: the
+ * other pairs run the point arithmetic of TMPL_PP_MIL, and the fixed ones
+ * evaluate their stored lines as in TMPL_PP_MAP_FIX. TMPL_PP_FIN_K applies
+ * the step that the family takes on the whole product and the final lines of
+ * the other pairs, and TMPL_PP_FIX_FIN_K the final lines of the fixed pairs,
+ * taking that step itself only when there are no other pairs.
+ *
+ * @param[in] K			- the embedding degree.
+ * @param[in] C			- the prefix of the twisted curve.
+ * @param[in] F			- the prefix of the twist field.
+ */
+#define TMPL_PP_MAP_SIM_FIX(K, C, F)										\
+	void pp_map_sim_fix_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
+			int m, const ep_t *s, const F##_t **t, int n) {					\
+		/* One more element each, so that no allocation is empty. */		\
+		ep_t *_p = RLC_ALLOCA(ep_t, 2 * (m + n) + 1), *e, *_s, *d;			\
+		C##_t *_q = RLC_ALLOCA(C##_t, 3 * m + 1), *u, *v;					\
+		const F##_t **_t = RLC_ALLOCA(const F##_t *, n + 1);				\
+		fp##K##_t l, h;														\
+		bn_t a;																\
+		size_t len = RLC_FP_BITS + 1;										\
+		int8_t w[RLC_FP_BITS + 1];											\
+		int i, j, k, c = 0, mm = 0, nn = 0, first = 1;						\
+																			\
+		if (_p == NULL || _q == NULL || _t == NULL) {						\
+			RLC_FREE(_p);													\
+			RLC_FREE(_q);													\
+			RLC_FREE(_t);													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		e = _p + m;															\
+		_s = e + m;															\
+		d = _s + n;															\
+		u = _q + m;															\
+		v = u + m;															\
+																			\
+		fp##K##_null_all(l, h);												\
+		bn_null(a);															\
+		for (i = 0; i < 2 * (m + n) + 1; i++) {								\
+			ep_null(_p[i]);													\
+		}																	\
+		for (i = 0; i < 3 * m + 1; i++) {									\
+			C##_null(_q[i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			fp##K##_new_all(l, h);											\
+			bn_new(a);														\
+			for (i = 0; i < 2 * (m + n) + 1; i++) {							\
+				ep_new(_p[i]);												\
+			}																\
+			for (i = 0; i < 3 * m + 1; i++) {								\
+				C##_new(_q[i]);												\
+			}																\
+																			\
+			/* Pairs with a point at infinity contribute nothing. */		\
+			for (i = 0; i < m; i++) {										\
+				if (!ep_is_infty(p[i]) && !C##_is_infty(q[i])) {			\
+					ep_norm(_p[mm], p[i]);									\
+					C##_norm(_q[mm], q[i]);									\
+					C##_copy(u[mm], _q[mm]);								\
+					C##_neg(v[mm], _q[mm]);									\
+					TMPL_PP_MIL_P_##K(e[mm], _p[mm])						\
+					mm++;													\
+				}															\
+			}																\
+			for (i = 0; i < n; i++) {										\
+				if (!ep_is_infty(s[i]) &&									\
+						!(F##_is_zero(t[i][0]) && F##_is_zero(t[i][1]))) {	\
+					ep_norm(_s[nn], s[i]);									\
+					TMPL_PP_MIL_P_##K(d[nn], _s[nn])						\
+					_t[nn++] = t[i];										\
+				}															\
+			}																\
+																			\
+			fp##K##_set_dig(r, 1);											\
+			if (mm + nn > 0) {												\
+				fp_prime_get_par(a);										\
+				TMPL_PP_PAR_##K(a)											\
+				bn_rec_naf(w, &len, a, 2);									\
+				/* The fixed pairs use their own line, as pp_lin_k##K()		\
+				 * keeps the slots that it does not write. */				\
+				fp##K##_zero(l);											\
+				fp##K##_zero(h);											\
+																			\
+				for (i = len - 2; i >= 0; i--) {							\
+					if (!first) {											\
+						fp##K##_sqr(r, r);									\
+					}														\
+					for (j = 0; j < mm; j++) {								\
+						pp_dbl_k##K(l, u[j], u[j], e[j]);					\
+						if (first) {										\
+							fp##K##_copy(r, l);								\
+							first = 0;										\
+						} else {											\
+							fp##K##_mul_dxs(r, r, l);						\
+						}													\
+					}														\
+					for (j = 0; j < nn; j++) {								\
+						k = c;												\
+						pp_lin_k##K(h, _t[j], &k, d[j]);					\
+						if (first) {										\
+							fp##K##_copy(r, h);								\
+							first = 0;										\
+						} else {											\
+							fp##K##_mul_dxs(r, r, h);						\
+						}													\
+					}														\
+					c++;													\
+					if (w[i] != 0) {										\
+						for (j = 0; j < mm; j++) {							\
+							pp_add_k##K(l, u[j], w[i] > 0 ? _q[j] : v[j],	\
+									_p[j]);									\
+							fp##K##_mul_dxs(r, r, l);						\
+						}													\
+						for (j = 0; j < nn; j++) {							\
+							k = c;											\
+							pp_lin_k##K(h, _t[j], &k, _s[j]);				\
+							fp##K##_mul_dxs(r, r, h);						\
+						}													\
+						c++;												\
+					}														\
+				}															\
+				/* For a negative parameter, f = 1/f_{|a|,Q} and T = aQ. */	\
+				if (bn_sign(a) == RLC_NEG) {								\
+					fp##K##_inv_cyc(r, r);									\
+					for (j = 0; j < mm; j++) {								\
+						C##_neg(u[j], u[j]);								\
+					}														\
+				}															\
+				if (mm > 0) {												\
+					TMPL_PP_FIN_##K(r, u, _q, _p, mm)						\
+				}															\
+				for (j = 0; j < nn; j++) {									\
+					k = c;													\
+					TMPL_PP_FIX_FIN_##K(r, h, _t[j], &k, _s[j], d[j],		\
+							mm == 0 && j == 0)								\
+				}															\
+				pp_exp_k##K(r, r);											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			fp##K##_free_all(l, h);											\
+			bn_free(a);														\
+			for (i = 0; i < 2 * (m + n) + 1; i++) {							\
+				ep_free(_p[i]);												\
+			}																\
+			for (i = 0; i < 3 * m + 1; i++) {								\
+				C##_free(_q[i]);											\
+			}																\
+			RLC_FREE(_p);													\
+			RLC_FREE(_q);													\
+			RLC_FREE(_t);													\
 		}																	\
 	}
 
@@ -1560,9 +1941,28 @@
 	}
 
 /**
+ * Selects the squaring that the Weil pairing of degree K applies to remove
+ * the factors in proper subfields that the twist introduces. Degree 2 maps
+ * G_2 with a distortion map instead, so it does not square.
+ *
+ * @param[in,out] R		- the result.
+ */
+/** @{ */
+#define TMPL_PP_WEI_2(R)		/* No squaring. */
+#define TMPL_PP_WEI_8(R)		fp8_sqr(R, R);
+#define TMPL_PP_WEI_12(R)		fp12_sqr(R, R);
+#define TMPL_PP_WEI_16(R)		fp16_sqr(R, R);
+#define TMPL_PP_WEI_18(R)		fp18_sqr(R, R);
+#define TMPL_PP_WEI_24(R)		fp24_sqr(R, R);
+#define TMPL_PP_WEI_48(R)		fp48_sqr(R, R);
+#define TMPL_PP_WEI_54(R)		fp54_sqr(R, R);
+/** @} */
+
+/**
  * Defines a template for the Weil pairing, computed as
  * (f_{n-1,P}(Q) / f_{n-1,Q}(P))^(2(p^(K/2) - 1)) to remove the factors in
- * proper subfields that the twist introduces.
+ * proper subfields that the twist introduces, or without the factor 2 when
+ * TMPL_PP_WEI_K does not square.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
@@ -1608,7 +2008,7 @@
 				fp##K##_inv_cyc(r0, r0);									\
 			}																\
 			fp##K##_mul(r, r0, r1);											\
-			fp##K##_sqr(r, r);												\
+			TMPL_PP_WEI_##K(r)												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
@@ -1691,7 +2091,7 @@
 				fp##K##_inv_cyc(r0, r0);									\
 			}																\
 			fp##K##_mul(r, r0, r1);											\
-			fp##K##_sqr(r, r);												\
+			TMPL_PP_WEI_##K(r)												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\

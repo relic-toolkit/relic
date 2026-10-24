@@ -133,7 +133,7 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 	size_t j;
 	bn_t q, tj;
 	g1_t g1;
-	g2_t g2;
+	gt_t e;
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
 
 	if (shuffle == NULL) {
@@ -144,22 +144,25 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 	bn_null(q);
 	bn_null(tj);
 	g1_null(g1);
-	g2_null(g2);
+	gt_null(e);
 
 	RLC_TRY {
 		bn_new(q);
 		bn_new(tj);
 		g1_new(g1);
-		g2_new(g2);
+		gt_new(e);
 
 		util_perm(shuffle, n);
 
+		/* e(tj * G_1, d) = e(G_1, d)^tj, so pair only once. */
+		g1_get_gen(g1);
+		pc_map(e, g1, d);
+
 		pc_get_ord(q);
-		g2_get_gen(g2);
 		for (j = 0; j < n; j++) {
 			bn_rand_mod(tj, q);
-			g1_mul_gen(g1, tj);
-			pc_map(t[j], g1, d);
+			/* The exponent is secret, so exponentiate in constant time. */
+			gt_exp_sec(t[j], e, tj);
 			g1_mul_gen(u[j], y[shuffle[j]]);
 			g1_sub(u[j], ss, u[j]);
 			g1_mul(u[j], u[j], tj);
@@ -172,7 +175,7 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 		bn_free(q);
 		bn_free(tj);
 		g1_free(g1);
-		g2_free(g2);
+		gt_free(e);
 		RLC_FREE(shuffle);
 	}
 	return result;
