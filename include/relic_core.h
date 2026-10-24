@@ -496,6 +496,10 @@ typedef struct _ctx_t {
 
 #if defined(WITH_PC)
 	gt_t gt_g;
+#if defined(RLC_PC_GEN)
+	/** The table of the generator of G_2 for pairings with it. */
+	RLC_CAT(RLC_PC_FIELD, t) g2_tab[RLC_PC_TABLE];
+#endif
 #endif
 
 #if RLC_BENCH > 0

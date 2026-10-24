@@ -293,16 +293,12 @@ int cp_bgn_mul(gt_t e[4], const g1_t c[2], const g2_t d[2]) {
 
 int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 	int i, result = RLC_ERR;
-	g1_t g;
-	g2_t h;
 	gt_t t[4];
 	bn_t n, r, s;
 
 	bn_null(n);
 	bn_null(r);
 	bn_null(s);
-	g1_null(g);
-	g2_null(h);
 	for (i = 0; i < 4; i++) {
 		gt_null(t[i]);
 	}
@@ -311,8 +307,6 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		bn_new(n);
 		bn_new(r);
 		bn_new(s);
-		g1_new(g);
-		g2_new(h);
 		for (i = 0; i < 4; i++) {
 			gt_new(t[i]);
 		}
@@ -331,8 +325,6 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		gt_mul(t[3], t[3], t[0]);
 
 		pc_get_ord(n);
-		g1_get_gen(g);
-		g2_get_gen(h);
 
 		bn_mul(r, prv->x[0], prv->y[0]);
 		bn_sub(r, r, prv->z[0]);
@@ -342,7 +334,7 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		bn_mod(s, s, n);
 		bn_mul(r, r, s);
 		bn_mod(r, r, n);
-		pc_map(t[1], g, h);
+		gt_get_gen(t[1]);
 		gt_exp(t[1], t[1], r);
 
 		gt_copy(t[2], t[1]);
@@ -366,8 +358,6 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		bn_free(n);
 		bn_free(r);
 		bn_free(s);
-		g1_free(g);
-		g2_free(h);
 		for (i = 0; i < 4; i++) {
 			gt_free(t[i]);
 		}

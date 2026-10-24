@@ -100,6 +100,90 @@ static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, int m) {
 	}
 }
 
+TMPL_PP_LIN(54, fp9);
+
+/**
+ * Records the final lines of the optimal ate pairing over SG54 curves at the
+ * point (1, 1), as pp_fin_k54() computes them: the lines through T and T and
+ * through T and 2T, and then the one through Frob^10(Q) and Frob(Q).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k54(fp9_t *t, fp9_t *y, int *j, fp54_t l, ep9_t r,
+		const ep9_t q, const ep_t e) {
+	ep9_t s, u;
+
+	ep9_null_all(s, u);
+
+	RLC_TRY {
+		ep9_new_all(s, u);
+
+		fp54_zero(l);
+		pp_dbl_k54(l, s, r, e);
+		pp_rec_k54(t, y, j, l);
+		pp_norm_k54(s, s);
+		fp54_zero(l);
+		pp_add_k54(l, r, s, e);
+		pp_rec_k54(t, y, j, l);
+		ep9_frb(u, q, 1);
+		ep9_frb(s, q, 10);
+		fp54_zero(l);
+		pp_add_k54(l, s, u, e);
+		pp_rec_k54(t, y, j, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep9_free_all(s, u);
+	}
+}
+
+/**
+ * Multiplies the result by the final lines of the optimal ate pairing over
+ * SG54 curves, stored by pp_pre_fin_k54(), as pp_fin_k54() does. If g is set,
+ * first cubes the result, which a product of pairings does only once.
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
+ */
+static void pp_fix_fin_k54(fp54_t r, fp54_t l, const fp9_t *t, int *j,
+		const ep_t p, const ep_t d, int g) {
+	if (g) {
+		/* Compute f^3, with l as scratch, zeroed again for the lines. */
+		fp54_sqr(l, r);
+		fp54_mul(r, r, l);
+		fp54_zero(l);
+	}
+	pp_lin_k54(l, t, j, d);
+	fp54_mul_dxs(r, r, l);
+	pp_lin_k54(l, t, j, p);
+	fp54_mul_dxs(r, r, l);
+	pp_lin_k54(l, t, j, p);
+	fp54_mul_dxs(r, r, l);
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, followed by the final lines of SG54 curves.
+ */
+/** @{ */
+#define TMPL_PP_PAR_54(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_54(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k54(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_54(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k54(R, L, T, J, P, D, G);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -130,6 +214,12 @@ TMPL_PP_MAP_WEILP(54, ep9);
 
 TMPL_PP_MAP_SIM_WEILP(54, ep9);
 
-TMPL_PP_MAP_OATEP(54, ep9, EP_SG54);
+TMPL_PP_MAP_OATEP(54, ep9);
 
-TMPL_PP_MAP_SIM_OATEP(54, ep9, EP_SG54);
+TMPL_PP_MAP_SIM_OATEP(54, ep9);
+
+TMPL_PP_MAP_PRE(54, ep9, fp9);
+
+TMPL_PP_MAP_FIX(54, fp9);
+
+TMPL_PP_MAP_SIM_FIX(54, ep9, fp9);

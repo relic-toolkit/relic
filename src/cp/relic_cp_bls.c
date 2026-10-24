@@ -161,30 +161,27 @@ int cp_bls_sig(g1_t s, const uint8_t *msg, size_t len, const bn_t d) {
 
 int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 	g1_t p[2];
-	g2_t r[2];
+	g2_t r[1];
 	gt_t e;
 	int result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(r[0]);
-	g2_null(r[1]);
 	gt_null(e);
 
 	RLC_TRY {
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(r[0]);
-		g2_new(r[1]);
 		gt_new(e);
 
 		g1_map(p[0], msg, len);
-		g1_copy(p[1], s);
+		g1_neg(p[1], s);
 		g2_copy(r[0], q);
-		g2_get_gen(r[1]);
-		g2_neg(r[1], r[1]);
 
-		pc_map_sim(e, p, r, 2);
+		/* Check that e(H(m), q) * e(-s, g) = 1. */
+		pc_map_sim_gen(e, p, r, 1, p[1]);
 		/* Torsion added to the signature would not change the pairing. */
 		if (gt_is_unity(e) && g1_is_valid(s) && g2_is_valid(q)) {
 			result = 1;
@@ -198,7 +195,6 @@ int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 		g1_free(p[0]);
 		g1_free(p[1]);
 		g2_free(r[0]);
-		g2_free(r[1]);
 		gt_free(e);
 	}
 	return result;
@@ -216,13 +212,10 @@ int cp_bls_agg_key(g2_t a, const g2_t q[], size_t n) {
 int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 		size_t size, const g2_t q[]) {
 	g1_t *p = RLC_ALLOCA(g1_t, size + 1);
-	g2_t *r = RLC_ALLOCA(g2_t, size + 1);
 	gt_t e;
 	int result = 0;
 
-	if (p == NULL || r == NULL) {
-		RLC_FREE(p);
-		RLC_FREE(r);
+	if (p == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return 0;
 	}
@@ -230,25 +223,20 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	gt_null(e);
 	for (size_t i = 0; i < size + 1; i++) {
 		g1_null(p[i]);
-		g2_null(r[i]);
 	}
 
 	RLC_TRY {
 		g1_new(p[0]);
-		g2_new(r[0]);
 		for (size_t i = 0; i < size; i++) {
 			g1_new(p[i + 1]);
-			g2_new(r[i + 1]);
 			g1_map(p[i + 1], m[i], l[i]);
-			g2_copy(r[i + 1], q[i]);
 		}
 		gt_new(e);
 
-		g1_copy(p[0], s);
-		g2_get_gen(r[0]);
-		g2_neg(r[0], r[0]);
+		g1_neg(p[0], s);
 
-		pc_map_sim(e, p, r, size + 1);
+		/* Check that prod e(H(m_i), q_i) * e(-s, g) = 1. */
+		pc_map_sim_gen(e, p + 1, q, size, p[0]);
 		if (gt_is_unity(e) && g1_is_valid(s)) {
 			result = 1;
 		}
@@ -269,11 +257,9 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	RLC_FINALLY {
 		for (size_t i = 0; i < size + 1; i++) {
 			g1_free(p[i]);
-			g2_free(r[i]);
 		}
 		gt_free(e);
 		RLC_FREE(p);
-		RLC_FREE(r);
 	}
 	return result;
 }

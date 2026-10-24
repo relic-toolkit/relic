@@ -87,6 +87,107 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, const ep2_t q, const ep_t p) {
 	}
 }
 
+/**
+ * Multiplies by the final lines of the optimal ate pairing over BN curves, for
+ * m pairs, after the Miller loop of pp_mil_k12().
+ *
+ * @param[in,out] r			- the result.
+ * @param[in,out] t			- the resulting points.
+ * @param[in] q				- the points of G_2.
+ * @param[in] p				- the points of G_1.
+ * @param[in] m				- the number of pairs.
+ */
+static void pp_fin_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m) {
+	if (ep_curve_is_pairf() == EP_BN) {
+		for (int i = 0; i < m; i++) {
+			pp_fin_k12_oatep(r, t[i], q[i], p[i]);
+		}
+	}
+}
+
+TMPL_PP_LIN(12, fp2);
+
+/**
+ * Records the final lines of the optimal ate pairing over BN curves, through
+ * T and Frob(Q) and then -Frob^2(Q), at the point (1, 1).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k12(fp2_t *t, fp2_t *y, int *j, fp12_t l, ep2_t r,
+		const ep2_t q, const ep_t e) {
+	ep2_t q1, q2;
+
+	if (ep_curve_is_pairf() != EP_BN) {
+		return;
+	}
+
+	ep2_null_all(q1, q2);
+
+	RLC_TRY {
+		ep2_new_all(q1, q2);
+
+		fp2_set_dig(q1->z, 1);
+		fp2_set_dig(q2->z, 1);
+		ep2_frb(q1, q, 1);
+		ep2_frb(q2, q, 2);
+		ep2_neg(q2, q2);
+
+		fp12_zero(l);
+		pp_add_k12(l, r, q1, e);
+		pp_rec_k12(t, y, j, l);
+		fp12_zero(l);
+		pp_add_k12(l, r, q2, e);
+		pp_rec_k12(t, y, j, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep2_free_all(q1, q2);
+	}
+}
+
+/**
+ * Multiplies by the final lines of the optimal ate pairing over BN curves,
+ * stored by pp_pre_fin_k12().
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ */
+static void pp_fix_fin_k12(fp12_t r, fp12_t l, const fp2_t *t, int *j,
+		const ep_t p) {
+	if (ep_curve_is_pairf() == EP_BN) {
+		pp_lin_k12(l, t, j, p);
+		fp12_mul_dxs(r, r, l);
+		pp_lin_k12(l, t, j, p);
+		fp12_mul_dxs(r, r, l);
+	}
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop parameter 6x + 2 and
+ * the final lines of BN curves.
+ */
+/** @{ */
+#define TMPL_PP_FIN_12(R, T, Q, P, M)	pp_fin_k12(R, T, Q, P, M);
+#define TMPL_PP_PAR_12(A)													\
+	if (ep_curve_is_pairf() == EP_BN) {										\
+		bn_mul_dig(A, A, 6);												\
+		bn_add_dig(A, A, 2);												\
+	}
+#define TMPL_PP_PRE_FIN_12(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k12(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_12(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k12(R, L, T, J, P);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -101,297 +202,9 @@ TMPL_PP_ADD_LIT(12, ep2, fp2);
 
 TMPL_PP_DBL_BASIC(12, ep2, fp2);
 
-void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
-	fp2_t t0, t1, t2, t3, t4, t5, t6;
-	int one = 1, zero = 0;
+TMPL_PP_DBL_PROJC(12, ep2, fp2);
 
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
-	fp2_null(t3);
-	fp2_null(t4);
-	fp2_null(t5);
-	fp2_null(t6);
-
-	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
-		fp2_new(t3);
-		fp2_new(t4);
-		fp2_new(t5);
-		fp2_new(t6);
-
-		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
-
-		/* A = x1^2. */
-		fp2_sqr(t0, q->x);
-		/* B = y1^2. */
-		fp2_sqr(t1, q->y);		
-		/* t2 = C = z1^2. */
-		fp2_sqr(t2, q->z);
-
-		/* The fast path below hardcodes b' = 1 - i, which holds for b = 2
-		 * with a D-type twist by xi = 1 + i, so check b' itself. */
-		fp_neg(t3[0], ep2_curve_get_b()[1]);
-		if (ep_curve_opt_b() == RLC_TWO &&
-				fp_cmp_dig(ep2_curve_get_b()[0], 1) == RLC_EQ &&
-				fp_cmp_dig(t3[0], 1) == RLC_EQ) {
-			/* t3 = E = 3b'C = 3C * (1 - i). */
-			fp2_dbl(t3, t2);
-			fp2_add(t2, t2, t3);
-			fp_add(t3[0], t2[0], t2[1]);
-			fp_sub(t3[1], t2[1], t2[0]);
-			/* t4 = A = (x1 * y1)/2. */
-			fp2_mul(t4, q->x, q->y);
-			fp_hlv(t4[0], t4[0]);
-			fp_hlv(t4[1], t4[1]);
-			/* t2 = F = 3E. */
-			fp2_dbl(t2, t3);
-			fp2_add(t2, t3, t2);
-			/* x3 = A * (B - F). */
-			fp2_sub(r->x, t1, t2);
-			fp2_mul(r->x, r->x, t4);
-			/* t2 = G = (B + F)/2. */
-			fp2_add(t2, t1, t2);
-			fp_hlv(t2[0], t2[0]);
-			fp_hlv(t2[1], t2[1]);
-			/* y3 = G^2 - 3E^2. */
-			fp2_sqr(t2, t2);
-			fp2_sqr(t4, t3);
-			/* t5 = y1 * z1. */
-			fp2_mul(t5, q->y, q->z);
-			fp2_dbl(r->y, t4);
-			fp2_add(r->y, r->y, t4);
-			fp2_sub(r->y, t2, r->y);
-
-			/* t2 = H = 2 * y1 * z1. */
-			fp2_dbl(t5, t5);
-			/* z3 = B * H. */
-			fp2_mul(r->z, t1, t5);
-		} else {
-			/* D = 3bC, general b. */
-			fp2_dbl(t3, t2);
-			fp2_add(t3, t3, t2);
-			ep2_curve_mul_b(t3, t3);
-			/* E = (x1 + y1)^2 - A - B. */
-			fp2_add(t4, q->x, q->y);
-			fp2_sqr(t4, t4);
-			fp2_sub(t4, t4, t0);
-			fp2_sub(t4, t4, t1);
-
-			/* F = (y1 + z1)^2 - B - C. */
-			fp2_add(t5, q->y, q->z);
-			fp2_sqr(t5, t5);
-			fp2_sub(t5, t5, t1);
-			fp2_sub(t5, t5, t2);
-
-			/* G = 3D. */
-			fp2_dbl(t6, t3);
-			fp2_add(t6, t6, t3);
-
-			/* x3 = E * (B - G). */
-			fp2_sub(r->x, t1, t6);
-			fp2_mul(r->x, r->x, t4);
-
-			/* y3 = (B + G)^2 -12D^2. */
-			fp2_add(t6, t6, t1);
-			fp2_sqr(t6, t6);
-			fp2_sqr(t2, t3);
-			fp2_dbl(r->y, t2);
-			fp2_dbl(t2, r->y);
-			fp2_dbl(r->y, t2);
-			fp2_add(r->y, r->y, t2);
-			fp2_sub(r->y, t6, r->y);
-
-			/* z3 = 4B * F. */
-			fp2_dbl(r->z, t1);
-			fp2_dbl(r->z, r->z);
-			fp2_mul(r->z, r->z, t5);
-		}
-		/* l11 = D - B. */
-		fp2_sub(l[one][one], t3, t1);
-
-		/* l10 = (3 * xp) * A. */
-		fp_mul(l[one][zero][0], p->x, t0[0]);
-		fp_mul(l[one][zero][1], p->x, t0[1]);
-
-		/* l00 = F * (-yp). */
-		fp_mul(l[zero][zero][0], t5[0], p->y);
-		fp_mul(l[zero][zero][1], t5[1], p->y);
-
-		r->coord = EC_PROJC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
-		fp2_free(t3);
-		fp2_free(t4);
-		fp2_free(t5);
-		fp2_free(t6);
-	}
-}
-
-void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
-	fp2_t t0, t1, t2, t3, t4, t5, t6;
-	dv2_t u0, u1;
-	int one = 1, zero = 0;
-
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
-	fp2_null(t3);
-	fp2_null(t4);
-	fp2_null(t5);
-	fp2_null(t6);
-	dv2_null(u0);
-	dv2_null(u1);
-
-	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
-		fp2_new(t3);
-		fp2_new(t4);
-		fp2_new(t5);
-		fp2_new(t6);
-		dv2_new(u0);
-		dv2_new(u1);
-
-		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
-
-		/* t0 = x1^2. */
-		fp2_sqr(t0, q->x);
-		/* B = y1^2. */
-		fp2_sqr(t1, q->y);
-		/* C = z1^2. */
-		fp2_sqr(t2, q->z);
-		/* t6 = B + C. */
-		fp2_add(t6, t1, t2);
-		fp2_dbl(t3, t2);
-		fp2_add(t3, t3, t2);
-
-		/* The fast path below hardcodes b' = 1 - i, which holds for b = 2
-		 * with a D-type twist by xi = 1 + i, so check b' itself. */
-		fp_neg(t4[0], ep2_curve_get_b()[1]);
-		if (ep_curve_opt_b() == RLC_TWO &&
-				fp_cmp_dig(ep2_curve_get_b()[0], 1) == RLC_EQ &&
-				fp_cmp_dig(t4[0], 1) == RLC_EQ) {
-			/* t2 = E = 3b'C = 3C * (1 - i). */
-			fp_add(t2[0], t3[0], t3[1]);
-			fp_sub(t2[1], t3[1], t3[0]);
-
-			/* t4 = A = (x1 * y1)/2. */
-			fp2_mul(t4, q->x, q->y);
-			fp_hlv(t4[0], t4[0]);
-			fp_hlv(t4[1], t4[1]);
-
-			/* H = (Y + Z)^2 - B - C. */
-			fp2_add(t5, q->y, q->z);
-			fp2_sqr(t5, t5);
-			fp2_sub(t5, t5, t6);
-
-			/* t3 = F = 3E. */
-			fp2_dbl(t3, t2);
-			fp2_add(t3, t3, t2);
-			
-			/* x3 = A * (B - F). */
-			fp2_sub(r->x, t1, t3);
-			fp2_mul(r->x, r->x, t4);
-
-			/* G = (B + F)/2. */
-			fp2_add(t3, t1, t3);
-			fp_hlv(t3[0], t3[0]);
-			fp_hlv(t3[1], t3[1]);
-
-			/* y3 = G^2 - 3E^2. */
-			fp2_sqrn_low(u0, t2);
-			fp2_addd_low(u1, u0, u0);
-			fp2_addd_low(u1, u1, u0);
-			fp2_sqrn_low(u0, t3);
-			fp2_subc_low(u0, u0, u1);
-			fp2_rdcn_low(r->y, u0);
-
-			/* z3 = B * H. */
-			fp2_mul(r->z, t1, t5);
-
-			/* l11 = E - B. */
-			fp2_sub(l[one][one], t2, t1);
-		} else {
-			/* D = 3bC, for general b. */
-			ep2_curve_mul_b(t3, t3);
-			/* E = (x1 + y1)^2 - A - B. */
-			fp2_add(t4, q->x, q->y);
-			fp2_sqr(t4, t4);
-			fp2_sub(t4, t4, t0);
-			fp2_sub(t4, t4, t1);
-
-			/* F = (y1 + z1)^2 - B - C. */
-			fp2_add(t5, q->y, q->z);
-			fp2_sqr(t5, t5);
-			fp2_sub(t5, t5, t6);
-
-			/* G = 3D. */
-			fp2_dbl(t6, t3);
-			fp2_add(t6, t6, t3);
-
-			/* x3 = E * (B - G). */
-			fp2_sub(r->x, t1, t6);
-			fp2_mul(r->x, r->x, t4);
-
-			/* y3 = (B + G)^2 - 3(2D)^2, reduced once. */
-			fp2_add(t6, t6, t1);
-			fp2_dbl(t2, t3);
-			fp2_sqrn_low(u1, t2);
-			fp2_addc_low(u0, u1, u1);
-			fp2_addc_low(u1, u0, u1);
-			fp2_sqrn_low(u0, t6);
-			fp2_subc_low(u0, u0, u1);
-			fp2_rdcn_low(r->y, u0);
-
-			/* z3 = 4B * F. */
-			fp2_dbl(r->z, t1);
-			fp2_dbl(r->z, r->z);
-			fp2_mul(r->z, r->z, t5);
-
-			/* l00 = D - B. */
-			fp2_sub(l[one][one], t3, t1);
-		}
-		/* l01 = F * (-yp). */
-		fp_mul(l[zero][zero][0], t5[0], p->y);
-		fp_mul(l[zero][zero][1], t5[1], p->y);
-
-		/* l10 = (3 * xp) * A. */
-		fp_mul(l[one][zero][0], p->x, t0[0]);
-		fp_mul(l[one][zero][1], p->x, t0[1]);
-
-		r->coord = EC_PROJC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
-		fp2_free(t3);
-		fp2_free(t4);
-		fp2_free(t5);
-		fp2_free(t6);
-		dv2_free(u0);
-		dv2_free(u1);
-	}
-}
+TMPL_PP_DBL_LAZYR(12, ep2, fp2, dv2);
 
 TMPL_PP_DBL_LIT(12, ep2, fp2);
 
@@ -405,129 +218,12 @@ TMPL_PP_MAP_WEILP(12, ep2);
 
 TMPL_PP_MAP_SIM_WEILP(12, ep2);
 
-void pp_map_oatep_k12(fp12_t r, const ep_t p, const ep2_t q) {
-	ep_t _p[1];
-	ep2_t t[1], _q[1];
-	bn_t a;
+TMPL_PP_MAP_OATEP(12, ep2);
 
-	ep_null(_p[0]);
-	ep2_null(_q[0]);
-	ep2_null(t[0]);
-	bn_null(a);
+TMPL_PP_MAP_SIM_OATEP(12, ep2);
 
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep2_new(_q[0]);
-		ep2_new(t[0]);
-		bn_new(a);
+TMPL_PP_MAP_PRE(12, ep2, fp2);
 
-		fp_prime_get_par(a);
-		fp12_set_dig(r, 1);
+TMPL_PP_MAP_FIX(12, fp2);
 
-		ep_norm(_p[0], p);
-		ep2_norm(_q[0], q);
-
-		if (!ep_is_infty(_p[0]) && !ep2_is_infty(_q[0])) {
-			switch (ep_curve_is_pairf()) {
-				case EP_BN:
-					bn_mul_dig(a, a, 6);
-					bn_add_dig(a, a, 2);
-					/* r = f_{a,Q}(P). */
-					pp_mil_k12(r, t, _q, _p, 1, a);
-					pp_fin_k12_oatep(r, t[0], _q[0], _p[0]);
-					pp_exp_k12(r, r);
-					break;
-				case EP_B12:
-					/* r = f_{a,Q}(P). */
-					pp_mil_k12(r, t, _q, _p, 1, a);
-					pp_exp_k12(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep2_free(_q[0]);
-		ep2_free(t[0]);
-		bn_free(a);
-	}
-}
-
-void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep2_t *t = RLC_ALLOCA(ep2_t, m), *_q = RLC_ALLOCA(ep2_t, m);
-	bn_t a;
-	int i, j;
-
-	if (_p == NULL || _q == NULL || t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	bn_null(a);
-	for (i = 0; i < m; i++) {
-		ep_null(_p[i]);
-		ep2_null(_q[i]);
-		ep2_null(t[i]);
-	}
-
-	RLC_TRY {
-		bn_new(a);
-		for (i = 0; i < m; i++) {
-			ep_new(_p[i]);
-			ep2_new(_q[i]);
-			ep2_new(t[i]);
-		}
-
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep2_norm(_q[j++], q[i]);
-			}
-		}
-
-		fp_prime_get_par(a);
-		fp12_set_dig(r, 1);
-
-		if (j > 0) {
-			switch (ep_curve_is_pairf()) {
-				case EP_BN:
-					bn_mul_dig(a, a, 6);
-					bn_add_dig(a, a, 2);
-					/* r = f_{a,Q}(P). */
-					pp_mil_k12(r, t, _q, _p, j, a);
-					for (i = 0; i < j; i++) {
-						pp_fin_k12_oatep(r, t[i], _q[i], _p[i]);
-					}
-					pp_exp_k12(r, r);
-					break;
-				case EP_B12:
-					/* r = f_{a,Q}(P). */
-					pp_mil_k12(r, t, _q, _p, j, a);
-					pp_exp_k12(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep2_free(_q[i]);
-			ep2_free(t[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-	}
-}
+TMPL_PP_MAP_SIM_FIX(12, ep2, fp2);

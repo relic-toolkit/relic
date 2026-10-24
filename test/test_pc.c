@@ -1648,6 +1648,9 @@ static int pairing(void) {
 	g2_t q[2];
 	gt_t e1, e2;
 	bn_t k, n;
+#ifdef RLC_PC_FIX
+	RLC_CAT(RLC_PC_FIELD, t) t[2 * RLC_PC_TABLE];
+#endif
 
 	gt_null(e1);
 	gt_null(e2);
@@ -1657,6 +1660,11 @@ static int pairing(void) {
 		g1_null(p[j]);
 		g2_null(q[j]);
 	}
+#ifdef RLC_PC_FIX
+	for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+		RLC_CAT(RLC_PC_FIELD, null)(t[j]);
+	}
+#endif
 
 	RLC_TRY {
 		gt_new(e1);
@@ -1668,6 +1676,11 @@ static int pairing(void) {
 			g1_new(p[j]);
 			g2_new(q[j]);
 		}
+#ifdef RLC_PC_FIX
+		for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+			RLC_CAT(RLC_PC_FIELD, new)(t[j]);
+		}
+#endif
 
 		pc_get_ord(n);
 
@@ -1736,6 +1749,79 @@ static int pairing(void) {
 			pc_map_sim(e1, p, q, 2);
 			TEST_ASSERT(gt_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
+
+#ifdef RLC_PC_FIX
+		TEST_CASE("pairing with fixed argument is correct") {
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			pc_map(e1, p[0], q[0]);
+			pc_map_pre(t, q[0]);
+			pc_map_fix(e2, p[0], t);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_rand(p[1]);
+			pc_map(e1, p[1], q[0]);
+			pc_map_fix(e2, p[1], t);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_set_infty(p[1]);
+			pc_map_fix(e2, p[1], t);
+			TEST_ASSERT(gt_is_unity(e2), end);
+			g2_set_infty(q[1]);
+			pc_map_pre(t, q[1]);
+			pc_map_fix(e2, p[0], t);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing with fixed arguments is correct") {
+			RLC_CAT(RLC_PC_FIELD, t) *u[2] = { t, t + RLC_PC_TABLE };
+
+			g1_rand(p[0]);
+			g1_rand(p[1]);
+			g2_rand(q[0]);
+			g2_rand(q[1]);
+			pc_map_pre(t, q[0]);
+			pc_map_pre(t + RLC_PC_TABLE, q[1]);
+			pc_map_sim(e1, p, q, 2);
+			pc_map_sim_fix(e2, NULL, NULL, 0, p, u, 2);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			pc_map_sim_fix(e2, p, q, 1, p + 1, u + 1, 1);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_get_gen(q[0]);
+			pc_map(e1, p[0], q[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_get_gen(p[0]);
+			gt_get_gen(e1);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_set_infty(p[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			g1_rand(p[1]);
+			g2_get_gen(q[1]);
+			pc_map_sim(e1, p, q, 2);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			pc_map_gen(e1, p[1]);
+			pc_map_sim_gen(e2, NULL, NULL, 0, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			/* e(P, kG) * e(-kP, G) = 1. */
+			bn_rand_mod(k, n);
+			g2_mul_gen(q[0], k);
+			g1_mul(p[1], p[0], k);
+			g1_neg(p[1], p[1]);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1751,6 +1837,11 @@ static int pairing(void) {
 		g1_free(p[j]);
 		g2_free(q[j]);
 	}
+#ifdef RLC_PC_FIX
+	for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+		RLC_CAT(RLC_PC_FIELD, free)(t[j]);
+	}
+#endif
 	return code;
 }
 

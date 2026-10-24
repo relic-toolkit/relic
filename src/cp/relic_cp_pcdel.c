@@ -100,27 +100,31 @@ int cp_cades_ask(bn_t t, g1_t t1, g2_t t2, gt_t e, const g1_t p,
 int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
 		const g2_t q) {
 	g1_t ps[3];
-	g2_t qs[3];
+	g2_t qs[2];
 	int result = RLC_OK;
 
 	for (size_t i = 0; i < 3; i++) {
 		g1_null(ps[i]);
+	}
+	for (size_t i = 0; i < 2; i++) {
 		g2_null(qs[i]);
 	}
 
 	RLC_TRY {
 		for (size_t i = 0; i < 3; i++) {
 			g1_new(ps[i]);
+		}
+		for (size_t i = 0; i < 2; i++) {
 			g2_new(qs[i]);
 		}
 
+		/* g_0 = e(t1, t2) * e(G_1, -q) * e(-p, G_2). */
 		g1_copy(ps[0], t1);
 		g1_get_gen(ps[1]);
 		g1_neg(ps[2], p);
 		g2_copy(qs[0], t2);
 		g2_neg(qs[1], q);
-		g2_get_gen(qs[2]);
-		pc_map_sim(g[0], ps, qs, 3);
+		pc_map_sim_gen(g[0], ps, qs, 2, ps[2]);
 
 		pc_map(g[1], p, q);
 	}
@@ -130,6 +134,8 @@ int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
 	RLC_FINALLY {
 		for (size_t i = 0; i < 3; i++) {
 			g1_free(ps[i]);
+		}
+		for (size_t i = 0; i < 2; i++) {
 			g2_free(qs[i]);
 		}
 	}

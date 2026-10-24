@@ -1,5 +1,9 @@
 message(STATUS "Bilinear pairings arithmetic configuration (PP module):\n")
 
+message("   ** Options for the bilinear pairing module (default = on):\n")
+
+message("      PC_PRECO=[off|on] Build precomputation table for generator of G_2.\n")
+
 message("   ** Available bilinear pairing methods (default = LAZYR;OATEP):\n")
 
 message("      Extension field arithmetic:")
@@ -23,3 +27,5 @@ endif()
 list(GET PP_METHD 0 PP_EXT)
 list(GET PP_METHD 1 PP_MAP)
 set(PP_METHD ${PP_METHD} CACHE STRING "Method for pairing over prime curves.")
+
+option(PC_PRECO "Build precomputation table for generator of G_2" on)
