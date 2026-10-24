@@ -1308,9 +1308,10 @@
 
 /**
  * Selects the final lines of the optimal ate pairing of degree K, which
- * evaluate at P the lines that the loop over the parameter leaves out. Only
- * K = 54 has them: f^3 times three more lines. Degrees 12, 16 and 18 add
- * their family-specific final lines by hand.
+ * evaluate at P the lines that the loop over the parameter leaves out. Among
+ * the degrees below, only K = 54 has them: f^3 times three more lines.
+ * Degrees 12, 16 and 18 define theirs next to their other hooks, as they
+ * depend on the family of the curve.
  */
 /** @{ */
 #define TMPL_PP_FIN_8(R, T, Q, P, M)	/* No final lines. */
@@ -1321,12 +1322,13 @@
 
 /**
  * Defines a template for the optimal ate pairing, including its final lines.
+ * The hooks TMPL_PP_PAR_K and TMPL_PP_FIN_K handle the differences between
+ * families of curves with the same embedding degree.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
- * @param[in] T			- the family of pairing-friendly curves.
  */
-#define TMPL_PP_MAP_OATEP(K, C, T)											\
+#define TMPL_PP_MAP_OATEP(K, C)											\
 	void pp_map_oatep_k##K(fp##K##_t r, const ep_t p, const C##_t q) {		\
 		ep_t _p[1];															\
 		C##_t t[1], _q[1];													\
@@ -1344,20 +1346,17 @@
 			bn_new(a);														\
 																			\
 			fp_prime_get_par(a);											\
+			TMPL_PP_PAR_##K(a)												\
 			fp##K##_set_dig(r, 1);											\
 																			\
 			ep_norm(_p[0], p);												\
 			C##_norm(_q[0], q);												\
 																			\
 			if (!ep_is_infty(_p[0]) && !C##_is_infty(_q[0])) {				\
-				switch (ep_curve_is_pairf()) {								\
-					case T:													\
-						/* r = f_{a,Q}(P). */								\
-						pp_mil_k##K(r, t, _q, _p, 1, a);					\
-						TMPL_PP_FIN_##K(r, t, _q, _p, 1)					\
-						pp_exp_k##K(r, r);									\
-						break;												\
-				}															\
+				/* r = f_{a,Q}(P). */										\
+				pp_mil_k##K(r, t, _q, _p, 1, a);							\
+				TMPL_PP_FIN_##K(r, t, _q, _p, 1)							\
+				pp_exp_k##K(r, r);											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
@@ -1376,9 +1375,8 @@
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
- * @param[in] T			- the family of pairing-friendly curves.
  */
-#define TMPL_PP_MAP_SIM_OATEP(K, C, T)										\
+#define TMPL_PP_MAP_SIM_OATEP(K, C)										\
 	void pp_map_sim_oatep_k##K(fp##K##_t r, const ep_t *p, const C##_t *q,	\
 			int m) {														\
 		ep_t *_p = RLC_ALLOCA(ep_t, m);										\
@@ -1418,17 +1416,14 @@
 			}																\
 																			\
 			fp_prime_get_par(a);											\
+			TMPL_PP_PAR_##K(a)												\
 			fp##K##_set_dig(r, 1);											\
 																			\
 			if (j > 0) {													\
-				switch (ep_curve_is_pairf()) {								\
-					case T:													\
-						/* r = f_{a,Q}(P). */								\
-						pp_mil_k##K(r, t, _q, _p, j, a);					\
-						TMPL_PP_FIN_##K(r, t, _q, _p, j)					\
-						pp_exp_k##K(r, r);									\
-						break;												\
-				}															\
+				/* r = f_{a,Q}(P). */										\
+				pp_mil_k##K(r, t, _q, _p, j, a);							\
+				TMPL_PP_FIN_##K(r, t, _q, _p, j)							\
+				pp_exp_k##K(r, r);											\
 			}																\
 		}																	\
 		RLC_CATCH_ANY {														\
