@@ -280,7 +280,7 @@
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
 			F##_add(t3, t3, t2);											\
-			F##_mul(t3, t3, C##_curve_get_b());								\
+			C##_curve_mul_b(t3, t3);										\
 			/* E = (x1 + y1)^2 - A - B. */									\
 			F##_add(t4, q->x, q->y);										\
 			F##_sqr(t4, t4);												\
@@ -533,7 +533,7 @@
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
 			F##_add(t3, t3, t2);											\
-			F##_mul(t3, t3, C##_curve_get_b());								\
+			C##_curve_mul_b(t3, t3);										\
 			/* E = (x1 + y1)^2 - A - B. */									\
 			F##_add(t4, q->x, q->y);										\
 			F##_sqr(t4, t4);												\
