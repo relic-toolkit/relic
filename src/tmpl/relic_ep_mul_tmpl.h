@@ -121,7 +121,8 @@
 			C##_curve_get_ord(n);											\
 			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
-			bn_rec_frb(_k, s, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+			bn_rec_frb(_k, s, _k[0], u, n, ep_curve_get_rec(),				\
+					ep_curve_is_pairf() == EP_BN);							\
 																			\
 			l = 0;															\
 			for (size_t i = 0; i < s; i++) {								\
@@ -243,8 +244,8 @@
 																			\
 			C##_curve_get_ord(n);											\
 			ep_curve_frbase(u);												\
-			bn_mod(_k[0], k, n);											\
-			bn_rec_frb(_k, s, _k[0], u, n, flag);							\
+			/* The decomposition runs in constant time for |k| < n. */		\
+			bn_rec_frb(_k, s, k, u, n, ep_curve_get_rec(), flag);			\
 																			\
 			C##_norm(q[0], p);												\
 			for (size_t i = 1; i < s; i++) {								\
@@ -256,8 +257,9 @@
 				bn_abs(_k[i], _k[i]);										\
 			}																\
 			for (int i = 0; i < (int)c; i++) {								\
+				/* Make it odd in constant time, as it is even if e = 1. */	\
 				even[i] = bn_is_even(_k[i * g]);							\
-				bn_add_dig(_k[i * g], _k[i * g], even[i]);					\
+				_k[i * g]->dp[0] |= even[i];								\
 			}																\
 																			\
 			for (int i = 0; i < (int)c; i++) {								\
@@ -885,9 +887,11 @@
 			C##_curve_get_ord(n);											\
 			ep_curve_frbase(u);												\
 			bn_mod(_k[0], k, n);											\
-			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+			bn_rec_frb(_k, S, _k[0], u, n, ep_curve_get_rec(),				\
+					ep_curve_is_pairf() == EP_BN);							\
 			bn_mod(_m[0], m, n);											\
-			bn_rec_frb(_m, S, _m[0], u, n, ep_curve_is_pairf() == EP_BN);	\
+			bn_rec_frb(_m, S, _m[0], u, n, ep_curve_get_rec(),				\
+					ep_curve_is_pairf() == EP_BN);							\
 																			\
 			l = 0;															\
 			for (int i = 0; i < S; i++) {									\
@@ -1059,7 +1063,8 @@
 					}														\
 																			\
 					bn_mod(_k[0], k[i], q);									\
-					bn_rec_frb(_k, S, _k[0], x, q, flag);					\
+					bn_rec_frb(_k, S, _k[0], x, q,							\
+							ep_curve_get_rec(), flag);						\
 					for (j = 0; j < S; j++) {								\
 						_l[j] = len;										\
 						bn_rec_naf(&naf[(S*i + j)*len], &_l[j], _k[j], 2);	\
@@ -1148,7 +1153,8 @@
 						C##_psi(_q[S*i + j], _q[S*i + j - 1]);				\
 					}														\
 					bn_mod(_k[0], k[i], q);									\
-					bn_rec_frb(_k, S, _k[0], x, q, flag);					\
+					bn_rec_frb(_k, S, _k[0], x, q,							\
+							ep_curve_get_rec(), flag);						\
 					for (j = 0; j < S; j++) {								\
 						_l[j] = len;										\
 						bn_rec_naf(&naf[(S*i + j)*len], &_l[j], _k[j], w);	\

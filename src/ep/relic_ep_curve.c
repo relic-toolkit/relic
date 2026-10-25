@@ -231,6 +231,9 @@ static void ep_curve_set_map(void) {
 static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
 	ctx_t *ctx = core_get();
+	bn_t x;
+
+	bn_null(x);
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
@@ -244,6 +247,21 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_norm(&(ctx->ep_g), g);
 	bn_copy(&(ctx->ep_r), r);
 	bn_copy(&(ctx->ep_h), h);
+
+	RLC_TRY {
+		bn_new(x);
+		bn_zero(&(ctx->ep_rec));
+		if (!bn_is_zero(r) && ctx->ep_is_pairf) {
+			ep_curve_frbase(x);
+			if (!bn_is_zero(x)) {
+				bn_rec_pre(&(ctx->ep_rec), x, r);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(x);
+	}
 
 #if defined(EP_PRECO)
 	ep_mul_pre((ep_t *)ep_curve_get_tab(), &(ctx->ep_g));
@@ -268,6 +286,7 @@ void ep_curve_init(void) {
 		bn_make(&(ctx->ep_v1[i]), RLC_FP_DIGS);
 		bn_make(&(ctx->ep_v2[i]), RLC_FP_DIGS);
 	}
+	bn_make(&(ctx->ep_rec), 2 * RLC_FP_DIGS + 1);
 }
 
 void ep_curve_clean(void) {
@@ -279,6 +298,7 @@ void ep_curve_clean(void) {
 			bn_clean(&(ctx->ep_v1[i]));
 			bn_clean(&(ctx->ep_v2[i]));
 		}
+		bn_clean(&(ctx->ep_rec));
 	}
 }
 
@@ -300,6 +320,10 @@ const bn_st *ep_curve_get_v1(void) {
 
 const bn_st *ep_curve_get_v2(void) {
 	return (const bn_st *)core_get()->ep_v2;
+}
+
+const bn_st *ep_curve_get_rec(void) {
+	return (const bn_st *)&(core_get()->ep_rec);
 }
 
 int ep_curve_opt_a(void) {

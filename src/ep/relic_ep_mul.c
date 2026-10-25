@@ -145,8 +145,8 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_curve_get_ord(n);
-		bn_mod(m[0], k, n);
-		bn_rec_glv(m[0], m[1], m[0], n, ep_curve_get_v1(), ep_curve_get_v2());
+		/* The decomposition runs in constant time for |k| < n. */
+		bn_rec_glv(m[0], m[1], k, n, ep_curve_get_v1(), ep_curve_get_v2());
 		for (size_t i = 0; i < 2; i++) {
 			s[i] = bn_sign(m[i]);
 			bn_abs(m[i], m[i]);

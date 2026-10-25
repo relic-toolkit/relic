@@ -322,6 +322,7 @@
 #undef bn_rec_retnaf
 #undef bn_rec_reg
 #undef bn_rec_jsf
+#undef bn_rec_pre
 #undef bn_rec_glv
 #undef bn_rec_frb
 #undef bn_rec_sac
@@ -458,6 +459,7 @@
 #define bn_rec_retnaf 	RLC_PREFIX(bn_rec_retnaf)
 #define bn_rec_reg 	RLC_PREFIX(bn_rec_reg)
 #define bn_rec_jsf 	RLC_PREFIX(bn_rec_jsf)
+#define bn_rec_pre 	RLC_PREFIX(bn_rec_pre)
 #define bn_rec_glv 	RLC_PREFIX(bn_rec_glv)
 #define bn_rec_frb 	RLC_PREFIX(bn_rec_frb)
 #define bn_rec_sac 	RLC_PREFIX(bn_rec_sac)
@@ -995,6 +997,7 @@
 #undef ep_curve_get_beta
 #undef ep_curve_get_v1
 #undef ep_curve_get_v2
+#undef ep_curve_get_rec
 #undef ep_curve_opt_a
 #undef ep_curve_opt_b
 #undef ep_curve_mul_a
@@ -1091,6 +1094,7 @@
 #define ep_curve_get_beta 	RLC_PREFIX(ep_curve_get_beta)
 #define ep_curve_get_v1 	RLC_PREFIX(ep_curve_get_v1)
 #define ep_curve_get_v2 	RLC_PREFIX(ep_curve_get_v2)
+#define ep_curve_get_rec 	RLC_PREFIX(ep_curve_get_rec)
 #define ep_curve_opt_a 	RLC_PREFIX(ep_curve_opt_a)
 #define ep_curve_opt_b 	RLC_PREFIX(ep_curve_opt_b)
 #define ep_curve_mul_a 	RLC_PREFIX(ep_curve_mul_a)

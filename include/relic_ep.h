@@ -556,6 +556,12 @@ const bn_st *ep_curve_get_v1(void);
 const bn_st *ep_curve_get_v2(void);
 
 /**
+ * Returns the constant for dividing by the base of Frobenius expansions in
+ * decompositions of scalars of the prime curve.
+ */
+const bn_st *ep_curve_get_rec(void);
+
+/**
  * Returns a optimization identifier based on the a-coefficient of the curve.
  *
  * @return the optimization identifier.

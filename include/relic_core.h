@@ -293,6 +293,9 @@ typedef struct _ctx_t {
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */
+	/** Constant for dividing by the base of Frobenius expansions in
+	 * decompositions of scalars. */
+	bn_st ep_rec;
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */

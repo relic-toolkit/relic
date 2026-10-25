@@ -38,17 +38,14 @@
 /*============================================================================*/
 
 dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	size_t i;
 	register dig_t carry, r0;
 
+	/* Propagate the carry through all digits, in constant time. */
 	carry = digit;
-	for (i = 0; i < size && carry; i++, a++, c++) {
-		r0 = (*a) + carry;
+	for (size_t i = 0; i < size; i++) {
+		r0 = a[i] + carry;
 		carry = (r0 < carry);
-		(*c) = r0;
-	}
-	for (; i < size; i++, a++, c++) {
-		(*c) = (*a);
+		c[i] = r0;
 	}
 	return carry;
 }

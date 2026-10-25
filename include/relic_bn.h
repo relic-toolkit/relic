@@ -742,7 +742,8 @@ void bn_write_bin(uint8_t *bin, size_t len, const bn_t a);
 size_t bn_size_raw(const bn_t a);
 
 /**
- * Reads a positive multiple precision integer from a digit vector.
+ * Reads a positive multiple precision integer from a digit vector, in constant
+ * time for a fixed length of the vector.
  *
  * @param[out] a			- the result.
  * @param[in] raw			- the digit vector.
@@ -751,7 +752,8 @@ size_t bn_size_raw(const bn_t a);
 void bn_read_raw(bn_t a, const dig_t *raw, size_t len);
 
 /**
- * Writes a positive multiple precision integer to a byte vector.
+ * Writes the absolute value of a multiple precision integer to a digit vector
+ * of len digits, padded with zeros, in constant time for a fixed len.
  *
  * @param[out] raw			- the digit vector.
  * @param[in] len			- the buffer capacity.
@@ -1807,9 +1809,22 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w);
 void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l);
 
 /**
- * Recodes a positive integer into two parts k0,k1 such that k = k0 + phi(k1),
- * where phi is an efficient curve endomorphism. If a negative integer is
- * given instead, its absolute value is taken.
+ * Precomputes the constant for the constant-time divisions by a small m of
+ * integers of the length of n in the Frobenius decomposition modulo n, that
+ * is, floor(2^(2 * d * RLC_DIG + t) / |m|) for n of d digits and m of t bits.
+ *
+ * @param[out] u			- the constant.
+ * @param[in] m				- the divisor.
+ * @param[in] n				- the modulus of the decompositions.
+ * @throw ERR_NO_VALID		- if the divisor is zero.
+ */
+void bn_rec_pre(bn_t u, const bn_t m, const bn_t n);
+
+/**
+ * Recodes an integer into two parts k0,k1 such that k = k0 + phi(k1) modulo
+ * the group order n, where phi is an efficient curve endomorphism. The
+ * recoding runs in constant time for |k| < n, and larger integers are first
+ * reduced modulo n in variable time.
  *
  * @param[out] k0			- the first part of the result.
  * @param[out] k1			- the second part of the result.
@@ -1822,17 +1837,21 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 		const bn_st *v2);
 
 /**
- * Recodes a scalar in subscalars according to Frobenius endomorphism.
+ * Recodes a scalar in subscalars according to Frobenius endomorphism. The
+ * recoding runs in constant time for scalars below the group order n in
+ * absolute value, and larger scalars are first reduced modulo n in variable
+ * time.
  *
  * @param[out] ki			- the recoded subscalars.
  * @param[in] sub			- the number of subscalars.
  * @param[in] k				- the scalar to recode.
  * @param[in] x				- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
+ * @param[in] u				- the constant from bn_rec_pre() for x and n.
  * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  */
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
-	int cof);
+	const bn_st *u, int cof);
 
 /**
  * Recodes subscalars in the signed aligned column representation..
