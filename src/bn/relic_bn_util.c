@@ -639,7 +639,7 @@ void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
 		/* Find the length with masks, so that it takes the same time for
 		 * every value of len digits. */
 		for (size_t i = 0; i < len; i++) {
-			nz = (raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
+			nz = (dig_t)(raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
 			used ^= (used ^ (i + 1)) & (0 - (size_t)nz);
 		}
 		/* Zero has length one. */
