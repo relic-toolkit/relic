@@ -1077,13 +1077,14 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				}
 			}
 
-			/* b_i = sign(v_i) * |v_i| * |k| / n, rounded down, is estimated
-			 * without dividing the secret as |k| * c_i shifted right by
-			 * e = (d + 1) * RLC_DIG bits, for the public constant
-			 * c_i = floor(2^e * |v_i| / n). The estimate is below
-			 * |v_i| * |k| / n by less than 1 + 2^-RLC_DIG, so the subscalars
-			 * keep the length of the exact quotients. Any estimate keeps the
-			 * decomposition valid, as the rows below are lattice vectors. */
+			/* b_i = sign(v_i) * |v_i| * |k| / n, rounded to the nearest, is
+			 * estimated without dividing the secret as |k| * c_i + 2^(e - 1)
+			 * shifted right by e = (d + 1) * RLC_DIG bits, for the public
+			 * constant c_i = floor(2^e * |v_i| / n). The estimate differs
+			 * from |v_i| * |k| / n by at most 1/2 + 2^-RLC_DIG, so the
+			 * subscalars keep the length of the rounded quotients. Any
+			 * estimate keeps the decomposition valid, as the rows below are
+			 * lattice vectors. */
 			a[d] = 0;
 			for (int i = 0; i < 4; i++) {
 				sv[i] = bn_sign(v[i]);
@@ -1092,6 +1093,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				bn_div(l[0], l[0], n);
 				bn_write_raw(c, d + 1, l[0]);
 				bn_muln_low(t, c, a, d + 1);
+				bn_add1_low(t + d, t + d, (dig_t)1 << (RLC_DIG - 1), d + 2);
 				dv_copy(b[i], t + d + 1, d);
 			}
 
