@@ -109,6 +109,44 @@ static void tnaf_hlv(bn_t r0, bn_t r1, bn_t tmp, int8_t u) {
 #define RLC_REC_DIGS		(2 * RLC_BN_DIGS + 2)
 
 /**
+ * Adds a digit to a digit vector of s digits, propagating the carry through
+ * all digits in constant time.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector.
+ * @param[in] b				- the digit to add.
+ * @param[in] s				- the number of digits.
+ */
+static void rec_add1(dig_t *c, const dig_t *a, dig_t b, size_t s) {
+	dig_t t;
+
+	for (size_t i = 0; i < s; i++) {
+		t = a[i] + b;
+		b = (t < b);
+		c[i] = t;
+	}
+}
+
+/**
+ * Negates a digit vector of s digits in two's complement if sa = 1, in
+ * constant time.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector.
+ * @param[in] sa			- the flag to negate.
+ * @param[in] s				- the number of digits.
+ */
+static void rec_sneg(dig_t *c, const dig_t *a, dig_t sa, size_t s) {
+	dig_t m = 0 - sa, t;
+
+	for (size_t i = 0; i < s; i++) {
+		t = (a[i] ^ m) + sa;
+		sa = (t < sa);
+		c[i] = t;
+	}
+}
+
+/**
  * Divides a non-negative integer a of s digits by a public modulus m of t bits
  * in constant time, computing q = floor(a / m) and r = a mod m in s + 1 digits
  * each. With mu = floor(2^(s * RLC_DIG + t) / m), the estimate
@@ -140,7 +178,7 @@ static void rec_div(dig_t *q, dig_t *r, const dig_t *a, const dig_t *m,
 	bn_subn_low(r, y, x, sz);
 	c = bn_subn_low(z, r, m, sz);
 	dv_copy_sec(r, z, sz, c ^ 1);
-	bn_add1_low(q, q, c ^ 1, sz);
+	rec_add1(q, q, c ^ 1, sz);
 }
 
 /*============================================================================*/
@@ -869,7 +907,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	dv_rshd(b1, b1, 2 * RLC_FP_DIGS + 1, d);
 	bn_rshb_low(b1, b1, 2 * RLC_FP_DIGS + 1, b);
 	bn_rsh1_low(b1, b1, 2 * RLC_FP_DIGS + 1);
-	bn_add1_low(b1, b1, r, 2 * RLC_FP_DIGS + 1);
+	rec_add1(b1, b1, r, 2 * RLC_FP_DIGS + 1);
 
 	/* b2 = (k * v20) >> (bits + 1). */
 	dv_zero(_v, 2 * RLC_FP_DIGS);
@@ -879,7 +917,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	dv_rshd(b2, b2, 2 * RLC_FP_DIGS + 1, d);
 	bn_rshb_low(b2, b2, 2 * RLC_FP_DIGS + 1, b);
 	bn_rsh1_low(b2, b2, 2 * RLC_FP_DIGS + 1);
-	bn_add1_low(b2, b2, r, 2 * RLC_FP_DIGS + 1);
+	rec_add1(b2, b2, r, 2 * RLC_FP_DIGS + 1);
 
 	/* k0 = b1 * v11 */
 	dv_zero(_v, 2 * RLC_FP_DIGS);
@@ -896,12 +934,12 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	k1->sign = v2[0].sign ^ v2[1].sign;
 
 	/* k0 = k - k0 - k1. */
-	bn_sneg_low(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-	bn_sneg_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k0->dp, k0->dp, k1->dp, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k0->dp, k0->dp, _k, 2 * RLC_FP_DIGS + 1);
 	k0->sign = k0->dp[2 * RLC_FP_DIGS] & 1;
-	bn_sneg_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
 	r = k0->sign ^ sk;
 	bn_read_raw(k0, k0->dp, 2 * RLC_FP_DIGS);
 	/* Zero has no sign. */
@@ -920,11 +958,11 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	_k[2 * RLC_FP_DIGS] = 0;
 	r = v2[0].sign ^ v2[2].sign;
 
-	bn_sneg_low(_k, _k, r ^ 1, 2 * RLC_FP_DIGS + 1);
-	bn_sneg_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(_k, _k, r ^ 1, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
 	bn_addn_low(k1->dp, k1->dp, _k, 2 * RLC_FP_DIGS + 1);
 	k1->sign = k1->dp[2 * RLC_FP_DIGS] & 1;
-	bn_sneg_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
+	rec_sneg(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
 	r = k1->sign ^ sk;
 	bn_read_raw(k1, k1->dp, 2 * RLC_FP_DIGS);
 	/* Zero has no sign. */
@@ -975,7 +1013,7 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 			bji = tj[0] & 1;
 			b[j * l + i] = bji;
 			bn_rsh1_low(tj, tj, sl);
-			bn_add1_low(tj, tj, bji & b[i], sl);
+			rec_add1(tj, tj, bji & b[i], sl);
 		}
 		b[j * l + l - 1] = tj[0] & 1;
 	}
@@ -1093,7 +1131,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				bn_div(l[0], l[0], n);
 				bn_write_raw(c, d + 1, l[0]);
 				bn_muln_low(t, c, a, d + 1);
-				bn_add1_low(t + d, t + d, (dig_t)1 << (RLC_DIG - 1), d + 2);
+				rec_add1(t + d, t + d, (dig_t)1 << (RLC_DIG - 1), d + 2);
 				dv_copy(b[i], t + d + 1, d);
 			}
 
@@ -1129,7 +1167,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 					}
 				}
 				h = c[w - 1] >> (RLC_DIG - 1);
-				bn_sneg_low(c, c, h, w);
+				rec_sneg(c, c, h, w);
 				bn_read_raw(ki[j], c, w);
 				ki[j]->sign = ((int)h ^ (sk == RLC_NEG)) &
 						((ki[j]->used > 1) | (ki[j]->dp[0] != 0));
