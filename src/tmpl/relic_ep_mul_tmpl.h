@@ -725,8 +725,8 @@
 					}														\
 					l = RLC_MAX(bn_bits(b), bn_bits(x)) + e;				\
 				}															\
-				bn_mod(_k[0], k, n);										\
-				bn_rec_frb(_k, S, _k[0], x, n,								\
+				/* The decomposition runs in constant time for |k| < n. */	\
+				bn_rec_frb(_k, S, k, x, n, ep_curve_get_rec(),				\
 						ep_curve_is_pairf() == EP_BN);						\
 				for (int i = 0; i < H; i++) {								\
 					/* k_i + k_(i + H) * (u0 + u1 * w) = a + b * w. */		\

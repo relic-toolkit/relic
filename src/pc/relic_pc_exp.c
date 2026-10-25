@@ -848,8 +848,9 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 
 		gt_get_ord(n);
 		ep_curve_frbase(x);
-		bn_mod(_b[0], b, n);
-		bn_rec_frb(_b, 2 * h, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
+		/* The decomposition runs in constant time for |b| < n. */
+		bn_rec_frb(_b, 2 * h, b, x, n, ep_curve_get_rec(),
+				ep_curve_is_pairf() == EP_BN);
 		l = 0;
 		for (int i = 0; i < h; i++) {
 			bn_zero(r[0]);

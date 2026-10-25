@@ -248,8 +248,8 @@ static void ep_tw_glv(bn_t k0, bn_t k1, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		ep_curve_get_ord(n);
-		bn_mod(k0, k, n);
-		bn_rec_glv(k0, k1, k0, n, ep_curve_get_v1(), ep_curve_get_v2());
+		/* The decomposition runs in constant time for |k| < n. */
+		bn_rec_glv(k0, k1, k, n, ep_curve_get_v1(), ep_curve_get_v2());
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
