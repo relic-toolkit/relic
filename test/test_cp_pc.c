@@ -609,6 +609,22 @@ static int bgn(void) {
 			TEST_ASSERT(in + in == t, end);
 		} TEST_END;
 
+		TEST_CASE("boneh-go-nissim decryption rejects invalid ciphertexts") {
+			TEST_ASSERT(cp_bgn_enc1(c, 3, pub) == RLC_OK, end);
+			fp_add_dig(c[0]->x, c[0]->x, 1);
+			TEST_ASSERT(g1_is_valid(c[0]) == 0, end);
+			TEST_ASSERT(cp_bgn_dec1(&out, c, prv) == RLC_ERR, end);
+			TEST_ASSERT(cp_bgn_enc2(e, 3, pub) == RLC_OK, end);
+			fp_add_dig(e[0]->x[0], e[0]->x[0], 1);
+			TEST_ASSERT(g2_is_valid(e[0]) == 0, end);
+			TEST_ASSERT(cp_bgn_dec2(&out, e, prv) == RLC_ERR, end);
+			TEST_ASSERT(cp_bgn_enc1(c, 3, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(e, 3, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_bgn_mul(g, c, e) == RLC_OK, end);
+			gt_set_unity(g[0]);
+			TEST_ASSERT(cp_bgn_dec(&out, g, prv) == RLC_ERR, end);
+		} TEST_END;
+
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
