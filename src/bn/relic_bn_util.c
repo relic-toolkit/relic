@@ -459,6 +459,15 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
+#if RLC_ALLOC == RLC_AUTO
+			/* Reject values that do not fit, as bn_mul_dig() would write past
+			 * the digits when it cannot grow them and errors are not checked. */
+			if (a->used >= RLC_BN_SIZE) {
+				bn_zero(a);
+				RLC_THROW(ERR_NO_PRECI);
+				break;
+			}
+#endif
 			bn_mul_dig(a, a, (dig_t)radix);
 			bn_add_dig(a, a, (dig_t)i);
 			j++;
@@ -635,19 +644,21 @@ void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
 
 	RLC_TRY {
 		bn_grow(a, len);
-		dv_copy(a->dp, raw, len);
-		/* Find the length with masks, so that it takes the same time for
-		 * every value of len digits. */
-		for (size_t i = 0; i < len; i++) {
-			nz = (dig_t)(raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
-			used ^= (used ^ (i + 1)) & (0 - (size_t)nz);
-		}
-		/* Zero has length one. */
-		a->used = used + (size_t)(used == 0);
-		a->sign = RLC_POS;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
+		return;
 	}
+
+	dv_copy(a->dp, raw, len);
+	/* Find the length with masks, so that it takes the same time for
+	 * every value of len digits. */
+	for (size_t i = 0; i < len; i++) {
+		nz = (dig_t)(raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
+		used ^= (used ^ (i + 1)) & (0 - (size_t)nz);
+	}
+	/* Zero has length one. */
+	a->used = used + (size_t)(used == 0);
+	a->sign = RLC_POS;
 }
 
 void bn_write_raw(dig_t *raw, size_t len, const bn_t a) {
