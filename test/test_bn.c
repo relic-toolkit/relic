@@ -367,6 +367,12 @@ static int util(void) {
 			/* Invalid digits are rejected. */
 			TEST_ERR(bn_read_str(b, "12x4", 4, 10));
 			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#if RLC_ALLOC == RLC_AUTO
+			/* Values with more digits than an integer holds are rejected. */
+			memset(str, '/', sizeof(str) - 1);
+			TEST_ERR(bn_read_str(b, str, sizeof(str) - 1, 64));
+			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#endif
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
