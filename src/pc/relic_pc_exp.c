@@ -866,7 +866,7 @@ static void gt_exp_tw_imp(gt_t c, const gt_t a, const bn_t b) {
 				}
 			}
 			len[i] = RLC_FP_BITS + 1;
-			bn_rec_etnaf(naf[i], &len[i], r[0], r[1]);
+			bn_rec_etnaf(naf[i], &len[i], r[0], r[1], 0, 1);
 			l = RLC_MAX(l, len[i]);
 		}
 

@@ -275,7 +275,7 @@ static void ep_mul_twnaf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_tw_glv(k0, k1, k);
-		bn_rec_etnaf(naf[0], &len[0], k0, k1);
+		bn_rec_etnaf(naf[0], &len[0], k0, k1, 0, 1);
 		ep_tw_tab(t, p, 3, ep_curve_get_beta());
 		ep_tw_naf(r, t, naf, len, 1, ep_curve_get_beta());
 	} RLC_CATCH_ANY {
@@ -332,7 +332,7 @@ static void ep_mul_twreg_imp(ep_t r, const ep_t p, const bn_t k) {
 			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			ep_tw_glv(k0, k1, k);
-			bn_rec_retnaf(reg[0], &c[0], len, k0, k1);
+			bn_rec_retnaf(reg[0], &c[0], len, k0, k1, 0, 1);
 			ep_tw_tab(t, p, 6, ep_curve_get_beta());
 			ep_tw_reg(r, t, reg, c, len, 1, ep_curve_get_beta());
 		}

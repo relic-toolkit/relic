@@ -239,9 +239,8 @@
 			F##_add(t0, r->z, t2);											\
 			F##_mul(r->z, r->z, t5);										\
 			F##_sub(t4, r->x, t5);											\
+			F##_sub(r->y, t1, t4);											\
 			F##_mul(t4, t0, t4);											\
-			F##_add(r->y, t5, t1);											\
-			F##_sub(r->y, r->y, r->x);										\
 			F##_mul(r->y, t2, r->y);										\
 			F##_sub(t0, t3, t0);											\
 			F##_mul(t0, t0, r->x);											\
@@ -359,9 +358,8 @@
 			F##_add(t0, r->z, t2);											\
 			F##_mul(r->z, r->z, t5);										\
 			F##_sub(t4, r->x, t5);											\
+			F##_sub(r->y, t1, t4);											\
 			F##_mul(t4, t0, t4);											\
-			F##_add(r->y, t5, t1);											\
-			F##_sub(r->y, r->y, r->x);										\
 			F##_mul(r->y, t2, r->y);										\
 			F##_sub(t0, t3, t0);											\
 			F##_mul(t0, t0, r->x);											\

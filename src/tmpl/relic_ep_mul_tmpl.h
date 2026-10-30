@@ -729,22 +729,16 @@
 				bn_rec_frb(_k, S, k, x, n, ep_curve_get_rec(),				\
 						ep_curve_is_pairf() == EP_BN);						\
 				for (int i = 0; i < H; i++) {								\
-					/* k_i + k_(i + H) * (u0 + u1 * w) = a + b * w. */		\
-					bn_mul_dig(m0, _k[i + H], d0);							\
-					if (u0 < 0) {											\
-						bn_neg(m0, m0);										\
-					}														\
-					bn_add(a, _k[i], m0);									\
-					bn_mul_dig(b, _k[i + H], d1);							\
-					if (u1 < 0) {											\
-						bn_neg(b, b);										\
-					}														\
+					/* The recodings regroup the coefficients along psi^H,	\
+					 * the regular one in constant time. */					\
 					if (reg) {												\
 						len[i] = (20000 * l + 1200) / 47549 + 1;			\
-						bn_rec_retnaf(naf[i], &c[i], len[i], a, b);			\
+						bn_rec_retnaf(naf[i], &c[i], len[i], _k[i],			\
+								_k[i + H], u0, u1);							\
 					} else {												\
 						len[i] = RLC_FP_BITS + 1;							\
-						bn_rec_etnaf(naf[i], &len[i], a, b);				\
+						bn_rec_etnaf(naf[i], &len[i], _k[i], _k[i + H],		\
+								u0, u1);									\
 					}														\
 				}															\
 				/* psi commutes with w and tau, so it maps the table of P to\

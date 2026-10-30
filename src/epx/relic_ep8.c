@@ -42,7 +42,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_ARITH(ep8, fp8);
+TMPL_EPX_ARITH(ep8, fp8);
 
 TMPL_EP_TPL_BASIC(ep8, fp8);
 

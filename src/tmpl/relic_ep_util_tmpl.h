@@ -719,16 +719,34 @@
  *
  * @param[in] C			- the curve prefix.
  * @param[in] F			- the field prefix.
+ * @param[in] DBL		- the template of the projective doubling.
  */
-#define TMPL_EP_ARITH(C, F)													\
+#define TMPL_EP_ARITH_IMP(C, F, DBL)										\
 	TMPL_EP_ADD_BASIC(C, F)													\
 	TMPL_EP_ADD_PROJC(C, F)													\
 	TMPL_EP_ADD_JACOB(C, F)													\
 	TMPL_EP_SUB(C)															\
 	TMPL_EP_DBL_BASIC(C, F)													\
-	TMPL_EP_DBL_PROJC(C, F)													\
+	DBL(C, F)																\
 	TMPL_EP_DBL_JACOB(C, F)													\
 	TMPL_EP_UTIL(C, F)														\
 	TMPL_EP_CMP(C, F)														\
 	TMPL_EP_NEG(C, F)														\
 	TMPL_EP_NORM(C, F)
+
+/**
+ * Defines a template for the point arithmetic of curves over a prime field.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_ARITH(C, F)	TMPL_EP_ARITH_IMP(C, F, TMPL_EP_DBL_PROJC)
+
+/**
+ * Defines a template for the point arithmetic of curves over an extension
+ * field, where the projective doubling trades multiplications for squarings.
+ *
+ * @param[in] C			- the curve prefix.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EPX_ARITH(C, F)	TMPL_EP_ARITH_IMP(C, F, TMPL_EPX_DBL_PROJC)

@@ -104,28 +104,14 @@
 	}
 
 /**
- * Defines a template for point doubling in projective coordinates.
- *
- * Formulas for point doubling from
- * "Complete addition formulas for prime order elliptic curves"
- * by Joost Renes, Craig Costello, and Lejla Batina
- * https://eprint.iacr.org/2015/1060.pdf
+ * Defines the doubling in projective coordinates on a = 0 curves over a prime
+ * field, from Algorithm 9 of Renes, Costello and Batina, where a squaring
+ * costs almost as much as a multiplication.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_EP_DBL_PROJC(C, F)												\
-	void C##_dbl_projc(C##_t r, const C##_t p) {							\
-		/* The formulas are complete, including for the point at infinity	\
-		 * (0 : 1 : 0). */													\
-		F##_t t0, t1, t2, t3, t4, t5;										\
-																			\
-		F##_null_all(t0, t1, t2, t3, t4, t5);								\
-																			\
-		RLC_TRY {															\
-			F##_new_all(t0, t1, t2, t3, t4, t5);							\
-																			\
-			if (C##_curve_opt_a() == RLC_ZERO) {							\
+#define TMPL_EP_DBL_PROJC_A0(C, F)											\
 				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
 				F##_sqr(t0, p->y);											\
 				F##_mul(t3, p->x, p->y);									\
@@ -154,7 +140,84 @@
 				F##_mul(r->y, t0, r->y);									\
 				F##_add(r->y, r->x, r->y);									\
 				F##_mul(r->x, t0, t3);										\
+				F##_dbl(r->x, r->x);
+
+/**
+ * Defines the doubling in projective coordinates on a = 0 curves over an
+ * extension field, where squarings are cheaper and the formula trades two
+ * multiplications for two squarings.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EPX_DBL_PROJC_A0(C, F)											\
+				/* Cost of 4M + 4S + 1m_b, from the point update of the		\
+				 * pairing doubling step: with v = 3b * Z^2,				\
+				 * X3 = 2XY(Y^2 - 3v), Y3 = (Y^2 + 3v)^2 - 12v^2 and		\
+				 * Z3 = 8Y^3 * Z. */										\
+				F##_sqr(t0, p->y);											\
+				F##_mul(t3, p->x, p->y);									\
+																			\
+				if (p->coord == EC_AFFIN) {									\
+					/* Save 1M + 1S + 1m_b if z1 = 1. */					\
+					F##_copy(t1, p->y);										\
+					F##_dbl(t2, C##_curve_get_b());							\
+					F##_add(t2, t2, C##_curve_get_b());						\
+				} else {													\
+					F##_mul(t1, p->y, p->z);								\
+					F##_sqr(t2, p->z);										\
+					C##_curve_mul_b(t2, t2);								\
+					F##_dbl(t5, t2);										\
+					F##_add(t2, t5, t2);									\
+				}															\
+				/* t4 = 3v = 9b * Z^2, the last use of p. */				\
+				F##_dbl(t4, t2);											\
+				F##_add(t4, t4, t2);										\
+				F##_mul(r->z, t0, t1);										\
+				F##_dbl(r->z, r->z);										\
+				F##_dbl(r->z, r->z);										\
+				F##_dbl(r->z, r->z);										\
+				F##_sub(t5, t0, t4);										\
+				F##_mul(r->x, t3, t5);										\
 				F##_dbl(r->x, r->x);										\
+				F##_add(t5, t0, t4);										\
+				F##_sqr(t5, t5);											\
+				F##_sqr(t2, t2);											\
+				F##_dbl(t4, t2);											\
+				F##_add(t2, t4, t2);										\
+				F##_dbl(t2, t2);											\
+				F##_dbl(t2, t2);											\
+				F##_sub(r->y, t5, t2);
+
+/**
+ * Defines a template for point doubling in projective coordinates.
+ *
+ * Formulas for point doubling from
+ * "Complete addition formulas for prime order elliptic curves"
+ * by Joost Renes, Craig Costello, and Lejla Batina
+ * https://eprint.iacr.org/2015/1060.pdf
+ * and, for a = 0, the point update of the pairing doubling step in
+ * "Faster explicit formulas for computing pairings over ordinary curves"
+ * by Diego F. Aranha, Koray Karabina, Patrick Longa, Catherine H. Gebotys
+ * and Julio Lopez, https://eprint.iacr.org/2010/526.pdf
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[in] A0		- the template of the doubling on a = 0 curves.
+ */
+#define TMPL_EP_DBL_PROJC_IMP(C, F, A0)										\
+	void C##_dbl_projc(C##_t r, const C##_t p) {							\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
+		F##_t t0, t1, t2, t3, t4, t5;										\
+																			\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
+																			\
+		RLC_TRY {															\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
+																			\
+			if (C##_curve_opt_a() == RLC_ZERO) {							\
+				A0(C, F)													\
 			} else {														\
 				F##_sqr(t0, p->x);											\
 				F##_sqr(t1, p->y);											\
@@ -240,6 +303,26 @@
 			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
+
+/**
+ * Defines a template for point doubling in projective coordinates on curves
+ * over a prime field.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_DBL_PROJC(C, F)												\
+	TMPL_EP_DBL_PROJC_IMP(C, F, TMPL_EP_DBL_PROJC_A0)
+
+/**
+ * Defines a template for point doubling in projective coordinates on curves
+ * over an extension field.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EPX_DBL_PROJC(C, F)											\
+	TMPL_EP_DBL_PROJC_IMP(C, F, TMPL_EPX_DBL_PROJC_A0)
 
 /**
  * Defines a template for point doubling in Jacobian coordinates.

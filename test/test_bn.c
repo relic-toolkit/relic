@@ -2911,6 +2911,31 @@ static void tw_tau(bn_t a, bn_t b, bn_t t) {
 }
 
 /**
+ * Multipliers u0 + u1 * w of the second coefficient in the tau-adic recodings:
+ * w, the units 1 + w, -1, -w and w^2 = -1 - w, and the non-unit 2 - w.
+ */
+static const int tw_mul[6][2] = {
+	{ 0, 1 }, { 1, 1 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { 2, -1 }
+};
+
+/**
+ * Sets x + y * w to k0 + k1 * (u0 + u1 * w) in Z[w], the element that the
+ * tau-adic recodings receive as coefficients and multiplier.
+ */
+static void tw_grp(bn_t x, bn_t y, const bn_t k0, const bn_t k1, int u0,
+		int u1) {
+	bn_mul_dig(x, k1, u0 < 0 ? -u0 : u0);
+	if (u0 < 0) {
+		bn_neg(x, x);
+	}
+	bn_add(x, x, k0);
+	bn_mul_dig(y, k1, u1 < 0 ? -u1 : u1);
+	if (u1 < 0) {
+		bn_neg(y, y);
+	}
+}
+
+/**
  * Sets x + y * w to the digit 6 * i + j of the tau-adic recodings: the unit
  * (-1)^(j / 3) * w^(j % 3) times the i-th base digit among 1, 2, 1 + tau,
  * 1 - 2tau, 2 + tau and 1 + 2tau.
@@ -3175,7 +3200,8 @@ static int recoding(void) {
 		} TEST_END;
 
 		TEST_CASE("tau-adic naf recoding is correct") {
-			for (w = 0; w < 4; w++) {
+			/* Every sign of the coefficients, with every multiplier. */
+			for (w = 0; w < 24; w++) {
 				bn_rand(v1[0], RLC_POS, RLC_BN_BITS / 2);
 				bn_rand(v1[1], RLC_POS, RLC_BN_BITS / 2);
 				if (w & 1) {
@@ -3185,7 +3211,8 @@ static int recoding(void) {
 					bn_neg(v1[1], v1[1]);
 				}
 				l = sizeof(e);
-				bn_rec_etnaf(e, &l, v1[0], v1[1]);
+				bn_rec_etnaf(e, &l, v1[0], v1[1], tw_mul[w >> 2][0],
+						tw_mul[w >> 2][1]);
 				/* Evaluate the digits in Z[w] as a + b * w, with tau = 1 - w. */
 				bn_zero(a);
 				bn_zero(b);
@@ -3197,16 +3224,20 @@ static int recoding(void) {
 						bn_add(b, b, v2[1]);
 					}
 				}
-				TEST_ASSERT(bn_cmp(a, v1[0]) == RLC_EQ &&
-						bn_cmp(b, v1[1]) == RLC_EQ, end);
+				tw_grp(v1[2], v2[2], v1[0], v1[1], tw_mul[w >> 2][0],
+						tw_mul[w >> 2][1]);
+				TEST_ASSERT(bn_cmp(a, v1[2]) == RLC_EQ &&
+						bn_cmp(b, v2[2]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
 		TEST_CASE("regular tau-adic recoding is correct") {
 			int8_t inc;
-			/* Enough digits for coordinates below 2^(RLC_BN_BITS / 2). */
+			/* Enough digits for coefficients below 2^(RLC_BN_BITS / 2) and
+			 * multipliers of absolute value below 3. */
 			size_t len = (2 * (RLC_BN_BITS / 2 + 2) * 1000 + 120) / 4754 + 1;
-			for (w = 0; w < 4; w++) {
+			/* Every sign of the coefficients, with every multiplier. */
+			for (w = 0; w < 24; w++) {
 				bn_rand(v1[0], RLC_POS, RLC_BN_BITS / 2);
 				bn_rand(v1[1], RLC_POS, RLC_BN_BITS / 2);
 				if (w & 1) {
@@ -3215,7 +3246,8 @@ static int recoding(void) {
 				if (w & 2) {
 					bn_neg(v1[1], v1[1]);
 				}
-				bn_rec_retnaf(e, &inc, len, v1[0], v1[1]);
+				bn_rec_retnaf(e, &inc, len, v1[0], v1[1], tw_mul[w >> 2][0],
+						tw_mul[w >> 2][1]);
 				/* Evaluate the digits at positions 3k in Z[w]. */
 				bn_zero(a);
 				bn_zero(b);
@@ -3230,11 +3262,13 @@ static int recoding(void) {
 				}
 				TEST_ASSERT(inc == 0 || inc == 1, end);
 				bn_sub_dig(a, a, inc);
-				TEST_ASSERT(bn_cmp(a, v1[0]) == RLC_EQ &&
-						bn_cmp(b, v1[1]) == RLC_EQ, end);
+				tw_grp(v1[2], v2[2], v1[0], v1[1], tw_mul[w >> 2][0],
+						tw_mul[w >> 2][1]);
+				TEST_ASSERT(bn_cmp(a, v1[2]) == RLC_EQ &&
+						bn_cmp(b, v2[2]) == RLC_EQ, end);
 			}
 			/* Too few digits for the coordinates. */
-			TEST_ERR(bn_rec_retnaf(e, &inc, 2, v1[0], v1[1]));
+			TEST_ERR(bn_rec_retnaf(e, &inc, 2, v1[0], v1[1], 0, 1));
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 

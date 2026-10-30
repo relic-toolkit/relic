@@ -343,17 +343,78 @@ static void tw_div3(dig_t *a, dig_t *b, size_t s) {
 }
 
 /**
- * Converts u + v * w to a + b * tau = (u + v) - v * tau, in two's complement
- * representation with s digits. The digits are read with masks, so the time
- * does not depend on the lengths of u and v.
+ * Returns the number of bits of a multiple precision integer from its length
+ * and top digit, like bn_bits() but without its branch on zero, so that a zero
+ * coefficient takes the same path as any other. The length itself is used as
+ * is, so only integers whose length is public or bounded by a public value
+ * should be given.
+ *
+ * @param[in] a				- the multiple precision integer.
+ * @return the number of bits of a.
  */
-static void tw_set(dig_t *a, dig_t *b, const bn_t u, const bn_t v, size_t s) {
-	for (size_t i = 0; i < s; i++) {
-		a[i] = (i < u->alloc ? u->dp[i] : 0) & -(dig_t)(i < u->used);
-		b[i] = (i < v->alloc ? v->dp[i] : 0) & -(dig_t)(i < v->used);
+static size_t rec_bits(const bn_t a) {
+	return (a->used - 1) * RLC_DIG + util_bits_dig(a->dp[a->used - 1]);
+}
+
+/**
+ * Returns the number of bits m such that (|u0| + |u1|) * |k1| < 2^(m + l) for
+ * every k1 below 2^l, that is, the ceiling of log2(|u0| + |u1|).
+ *
+ * @param[in] u0			- the first coordinate of the multiplier.
+ * @param[in] u1			- the coordinate of w in the multiplier.
+ * @return the number of bits that the multiplication adds.
+ */
+static size_t rec_grow(int u0, int u1) {
+	dig_t t = (dig_t)(u0 < 0 ? -u0 : u0) + (dig_t)(u1 < 0 ? -u1 : u1);
+
+	return (t > 1 ? util_bits_dig(t - 1) : 0);
+}
+
+/**
+ * Multiplies a digit vector of s digits in two's complement by a small public
+ * integer u, which is exact modulo 2^(s * RLC_DIG) also for negative vectors.
+ * The branches depend only on u.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector.
+ * @param[in] u				- the public integer.
+ * @param[in] s				- the number of digits.
+ */
+static void rec_mul_sml(dig_t *c, const dig_t *a, int u, size_t s) {
+	if (u == 0) {
+		dv_zero(c, s);
+	} else if (u == 1 || u == -1) {
+		dv_copy(c, a, s);
+	} else {
+		bn_mul1_low(c, a, (dig_t)(u < 0 ? -u : u), s);
 	}
-	rec_sneg(a, a, bn_sign(u), s);
-	rec_sneg(b, b, bn_sign(v), s);
+	if (u < 0) {
+		rec_sneg(c, c, 1, s);
+	}
+}
+
+/**
+ * Converts k0 + k1 * (u0 + u1 * w) = u + v * w, for u = k0 + u0 * k1 and
+ * v = u1 * k1, to a + b * tau = (u + v) - v * tau, in two's complement
+ * representation with s digits. The digits of k0 and k1 are read with masks,
+ * so the time does not depend on their lengths, and the branches depend only
+ * on the public u0 and u1.
+ */
+static void tw_set(dig_t *a, dig_t *b, const bn_t k0, const bn_t k1, int u0,
+		int u1, size_t s) {
+	dig_t t[RLC_BN_DIGS + 1];
+
+	for (size_t i = 0; i < s; i++) {
+		a[i] = (i < k0->alloc ? k0->dp[i] : 0) & -(dig_t)(i < k0->used);
+		t[i] = (i < k1->alloc ? k1->dp[i] : 0) & -(dig_t)(i < k1->used);
+	}
+	rec_sneg(a, a, bn_sign(k0), s);
+	rec_sneg(t, t, bn_sign(k1), s);
+	rec_mul_sml(b, t, u1, s);
+	if (u0 != 0) {
+		rec_mul_sml(t, t, u0, s);
+		bn_addn_low(a, a, t, s);
+	}
 	bn_addn_low(a, a, b, s);
 	rec_sneg(b, b, 1, s);
 }
@@ -1360,9 +1421,11 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	}
 }
 
-void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
-	/* One digit more absorbs the growth of the remainders. */
-	size_t l, s = RLC_MAX(u->used, v->used) + 1;
+void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t k0, const bn_t k1,
+		int u0, int u1) {
+	/* One digit more absorbs the growth of the remainders, and another the
+	 * multiplication by u0 + u1 * w. */
+	size_t l, s = RLC_MAX(k0->used, k1->used) + 1 + (rec_grow(u0, u1) > 0);
 	dig_t a[RLC_BN_DIGS + 1], b[RLC_BN_DIGS + 1], z;
 	int d;
 
@@ -1372,7 +1435,7 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
 		return;
 	}
 
-	tw_set(a, b, u, v, s);
+	tw_set(a, b, k0, k1, u0, u1, s);
 	for (l = 0; ; l++) {
 		z = 0;
 		for (size_t i = 0; i < s; i++) {
@@ -1407,25 +1470,26 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v) {
 	*len = l;
 }
 
-void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
-		const bn_t v) {
+void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t k0,
+		const bn_t k1, int u0, int u1) {
 	/* The remainders have absolute value below 27^(len/2) * 2 and their
 	 * coordinates grow by a few bits in the divisions. The length depends
-	 * only on len, so that the time does not depend on u and v, which must
-	 * fit with two bits to spare. */
-	size_t s = RLC_CEIL(12 * len / 5 + 8, RLC_DIG);
+	 * only on len, so that the time does not depend on k0 and k1. */
+	size_t s = RLC_CEIL(12 * len / 5 + 8, RLC_DIG), m = rec_grow(u0, u1);
 	dig_t a[RLC_BN_DIGS + 1], b[RLC_BN_DIGS + 1];
 	int d, e, g, h;
 
-	if (s > RLC_BN_DIGS + 1 || bn_bits(u) + 2 > s * RLC_DIG ||
-			bn_bits(v) + 2 > s * RLC_DIG) {
+	/* With |k0| and (|u0| + |u1|) * |k1| below 2^(s * RLC_DIG - 2), the
+	 * coordinates of the converted element fit with a bit to spare. */
+	if (s > RLC_BN_DIGS + 1 || rec_bits(k0) + 2 > s * RLC_DIG ||
+			rec_bits(k1) + m + 2 > s * RLC_DIG) {
 		memset(reg, 0, len + 1);
 		*c = 0;
 		RLC_THROW(ERR_NO_PRECI);
 		return;
 	}
 
-	tw_set(a, b, u, v, s);
+	tw_set(a, b, k0, k1, u0, u1, s);
 	/* Make a + b * tau not divisible by tau. */
 	*c = (tw_mod9(a, s) % 3 == 0);
 	tw_sub(a, b, -(int)*c, 0, s);

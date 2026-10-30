@@ -1746,42 +1746,53 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 
 /**
- * Recodes an element u + v * w of the Eisenstein integers Z[w], for a
- * primitive cube root of unity w, in width-3 \tau-adic NAF with \tau = 1 - w,
- * least significant digit first.
+ * Recodes an element k0 + k1 * (u0 + u1 * w) of the Eisenstein integers Z[w],
+ * for a primitive cube root of unity w, in width-3 \tau-adic NAF with
+ * \tau = 1 - w, least significant digit first. The multiplier u0 + u1 * w has
+ * small integer coordinates, with |u0| + |u1| below 2^(RLC_DIG - 1).
  * A nonzero digit is 1 + 6 * i + j for the unit (-1)^(j / 3) * w^(j % 3)
  * times the i-th base digit among 1, 2 and 1 + \tau, and zero digits are 0.
  *
  * @param[out] naf			- the recoded element.
  * @param[in,out] len		- the buffer capacity, then the number of digits.
- * @param[in] u				- the first coordinate.
- * @param[in] v				- the coordinate of w.
+ * @param[in] k0			- the first coefficient.
+ * @param[in] k1			- the coefficient of u0 + u1 * w.
+ * @param[in] u0			- the first coordinate of the multiplier of k1.
+ * @param[in] u1			- the coordinate of w in the multiplier of k1.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
- * @throw ERR_NO_PRECI		- if the coordinates are too large.
+ * @throw ERR_NO_PRECI		- if the coefficients are too large.
  */
-void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t u, const bn_t v);
+void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t k0, const bn_t k1,
+		int u0, int u1);
 
 /**
- * Recodes an element u + v * w of the Eisenstein integers Z[w], for a
- * primitive cube root of unity w, in constant time as a regular \tau-adic
- * expansion with \tau = 1 - w: a nonzero digit at every position multiple of
- * 3, least significant first, where reg[i] is the digit at position 3i.
+ * Recodes an element k0 + k1 * (u0 + u1 * w) of the Eisenstein integers Z[w],
+ * for a primitive cube root of unity w, as a regular \tau-adic expansion with
+ * \tau = 1 - w: a nonzero digit at every position multiple of 3, least
+ * significant first, where reg[i] is the digit at position 3i. The time does
+ * not depend on k0 and k1, whose lengths must be bounded as below, and the
+ * multiplier u0 + u1 * w is public, with |u0| + |u1| below 2^(RLC_DIG - 1).
  * Digit 6 * i + j is the unit (-1)^(j / 3) * w^(j % 3) times the i-th base
  * digit among 1, 2, 1 + \tau, 1 - 2\tau, 2 + \tau and 1 + 2\tau. The element
  * is first incremented by c in {0, 1} so that \tau does not divide it, and
  * the last digit is a unit. The number of digits len must be large enough
- * for the remainder to be a unit: with |u + v * w| + 1 < 2^l, it suffices
- * that len > 2 * (l + 0.06) / log2(27).
+ * for the remainder to be a unit: with |k0 + k1 * (u0 + u1 * w)| + 1 < 2^l,
+ * it suffices that len > 2 * (l + 0.06) / log2(27). The coefficients must
+ * also fit the working length of t = RLC_DIG * ceil((12 * len / 5 + 8) /
+ * RLC_DIG) bits: |k0| < 2^(t - 2) and (|u0| + |u1|) * |k1| < 2^(t - 2), which
+ * holds when len is chosen as above for |k0| and (|u0| + |u1|) * |k1|.
  *
  * @param[out] reg			- the recoded element, with len + 1 digits.
  * @param[out] c			- the increment.
  * @param[in] len			- the number of digits before the last.
- * @param[in] u				- the first coordinate.
- * @param[in] v				- the coordinate of w.
- * @throw ERR_NO_PRECI		- if the coordinates are too large for len.
+ * @param[in] k0			- the first coefficient.
+ * @param[in] k1			- the coefficient of u0 + u1 * w.
+ * @param[in] u0			- the first coordinate of the multiplier of k1.
+ * @param[in] u1			- the coordinate of w in the multiplier of k1.
+ * @throw ERR_NO_PRECI		- if the coefficients are too large for len.
  */
-void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t u,
-		const bn_t v);
+void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t k0,
+		const bn_t k1, int u0, int u1);
 
 /**
  * Recodes a positive integer in regular fixed-length width-w NAF. If a negative
