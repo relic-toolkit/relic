@@ -83,7 +83,7 @@
  * _Static_assert.
  *
  * @param[in] C			- the condition.
- * @param[in] N			- a name for the check, unique in the file.
+ * @param[in] N			- a name for the check, unique in the library.
  */
 #define RLC_STATIC_ASSERT(C, N)		typedef char rlc_check_##N[(C) ? 1 : -1]
 
