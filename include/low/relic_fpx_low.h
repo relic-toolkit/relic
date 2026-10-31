@@ -427,4 +427,27 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b);
  */
 void fp12_sqrn_low(dv12_t c, const fp12_t a);
 
+/**
+ * Computes the terms of a cyclotomic squaring of a dodecic extension field
+ * element: for each pair (x, y) of (a_00, a_11), (a_01, a_12) and
+ * (a_10, a_02), the products x^2 + E * y^2 and 2 * x * y, where E is the
+ * non-residue, without reduction. They go to the positions of the
+ * coefficients of the square they define: c_00 and c_11, c_02 and c_10 (with
+ * 2 * x * y times E), c_01 and c_12.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp12_sqrc_low(dv12_t c, const fp12_t a);
+
+/**
+ * Computes the terms of a compressed squaring of a dodecic extension field
+ * element, as fp12_sqrc_low() does for the pairs (a_01, a_12) and (a_10, a_02)
+ * only: c_00 and c_11 are left untouched.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp12_sqrp_low(dv12_t c, const fp12_t a);
+
 #endif /* !RLC_FPX_LOW_H */

@@ -43,6 +43,52 @@
 #include "../easy/relic_fpx_sqr_low.c"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Computes the terms of a cyclotomic squaring in Fp12 residue-wise, as
+ * fp12_sqrc_low() does, from the given pair on.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ * @param[in] first			- the first pair: 0 for all, 1 for compressed.
+ */
+static void rns_sqrc(dv12_t c, const fp12_t a, int first) {
+	/* For each pair, the positions (i, j) of x, y and of the results
+	 * x^2 + E * y^2 and 2 * x * y, the latter times E for the second pair. */
+	static const int P[3][4][2] = {
+		{{0, 0}, {1, 1}, {0, 0}, {1, 1}},
+		{{0, 1}, {1, 2}, {0, 2}, {1, 0}},
+		{{1, 0}, {0, 2}, {0, 1}, {1, 2}}
+	};
+	ctx_t *ctx = core_get();
+	rp2_t x, y, c0, c1;
+	__m512i m, u;
+	int s, q;
+
+	rns_nor(&s, &q);
+	for (size_t k = 0; k < RNS_NE; k++) {
+		m = rns_load(ctx->rns.m, k);
+		u = rns_load(ctx->rns.u, k);
+		for (int p = first; p < 3; p++) {
+			for (int l = 0; l < 2; l++) {
+				x[l] = rns_load(a[P[p][0][0]][P[p][0][1]][l], k);
+				y[l] = rns_load(a[P[p][1][0]][P[p][1][1]][l], k);
+			}
+			rp4_sqr(c0, c1, x, y, s, q, m, u);
+			if (p == 1) {
+				rp2_nor(c1, c1, s, q, m);
+			}
+			for (int l = 0; l < 2; l++) {
+				rns_store(c[P[p][2][0]][P[p][2][1]][l], k, c0[l]);
+				rns_store(c[P[p][3][0]][P[p][3][1]][l], k, c1[l]);
+			}
+		}
+	}
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -114,6 +160,14 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 			}
 		}
 	}
+}
+
+void fp12_sqrc_low(dv12_t c, const fp12_t a) {
+	rns_sqrc(c, a, 0);
+}
+
+void fp12_sqrp_low(dv12_t c, const fp12_t a) {
+	rns_sqrc(c, a, 1);
 }
 
 void fp2_sqrm_low(fp2_t c, const fp2_t a) {

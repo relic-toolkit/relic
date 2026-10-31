@@ -433,6 +433,31 @@ rlc_inline void rp6_muld(rp6_t c, const rp6_t a, const rp2_t b0,
 }
 
 /**
+ * Squares vectors of elements x + y * w of Fp4 = Fp2[w]/(w^2 - (s + i)),
+ * with i^2 = q, computing c_0 = x^2 + (s + i) * y^2 and c_1 = 2 * x * y.
+ *
+ * @param[out] c0			- the first component of the result.
+ * @param[out] c1			- the second component of the result.
+ * @param[in] x				- the first component of the vector.
+ * @param[in] y				- the second component of the vector.
+ * @param[in] s				- the integer part of the non-residue.
+ * @param[in] q				- the square of i.
+ * @param[in] m				- the moduli.
+ * @param[in] u				- the Montgomery constants of the moduli.
+ */
+rlc_inline void rp4_sqr(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
+		int s, int q, __m512i m, __m512i u) {
+	rp2_t t0, t1, t2;
+
+	rp2_mul(t0, x, x, q, m, u);
+	rp2_mul(t1, y, y, q, m, u);
+	rp2_add(t2, y, y, m);
+	rp2_mul(c1, x, t2, q, m, u);
+	rp2_nor(t1, t1, s, q, m);
+	rp2_add(c0, t0, t1, m);
+}
+
+/**
  * Extends K values to a base into vectors, as fp_rnsx_low() does, with their
  * products interleaved so that their dependency chains overlap. The values
  * xi_i stay in vectors, with zeros in the lanes that pad the source base.

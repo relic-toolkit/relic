@@ -289,4 +289,68 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 	}
 }
 
+void fp12_sqrc_low(dv12_t c, const fp12_t a) {
+	fp4_t t;
+	dv4_t u;
+
+	fp4_null(t);
+	dv4_null(u);
+
+	RLC_TRY {
+		fp4_new(t);
+		dv4_new(u);
+
+		/* (a_00 + a_11 * w)^2, where c_00 and c_11 come from. */
+		fp2_copy(t[0], a[0][0]);
+		fp2_copy(t[1], a[1][1]);
+		fp4_sqr_unr(u, t);
+		for (int j = 0; j < 2; j++) {
+			dv_copy(c[0][0][j], u[0][j], RLC_FP_DLEN);
+			dv_copy(c[1][1][j], u[1][j], RLC_FP_DLEN);
+		}
+		fp12_sqrp_low(c, a);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t);
+		dv4_free(u);
+	}
+}
+
+void fp12_sqrp_low(dv12_t c, const fp12_t a) {
+	fp4_t t;
+	dv4_t u;
+
+	fp4_null(t);
+	dv4_null(u);
+
+	RLC_TRY {
+		fp4_new(t);
+		dv4_new(u);
+
+		/* (a_01 + a_12 * w)^2, where c_02 and c_10 come from. */
+		fp2_copy(t[0], a[0][1]);
+		fp2_copy(t[1], a[1][2]);
+		fp4_sqr_unr(u, t);
+		fp2_nord_low(u[1], u[1]);
+		for (int j = 0; j < 2; j++) {
+			dv_copy(c[0][2][j], u[0][j], RLC_FP_DLEN);
+			dv_copy(c[1][0][j], u[1][j], RLC_FP_DLEN);
+		}
+		/* (a_10 + a_02 * w)^2, where c_01 and c_12 come from. */
+		fp2_copy(t[0], a[1][0]);
+		fp2_copy(t[1], a[0][2]);
+		fp4_sqr_unr(u, t);
+		for (int j = 0; j < 2; j++) {
+			dv_copy(c[0][1][j], u[0][j], RLC_FP_DLEN);
+			dv_copy(c[1][2][j], u[1][j], RLC_FP_DLEN);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t);
+		dv4_free(u);
+	}
+}
+
 #endif

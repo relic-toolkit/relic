@@ -162,10 +162,79 @@ void fp12_sqr_unr(dv12_t c, const fp12_t a) {
 
 TMPL_FPX_SQR_LAZYR(fp12, dv12, fp2, dv2, 6);
 
-TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
-		fp2_norm_low);
+void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
+	dv12_t u;
+	fp12_t t;
+	fp2_t x;
 
-TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
+	dv12_null(u);
+	fp12_null(t);
+	fp2_null(x);
+
+	RLC_TRY {
+		dv12_new(u);
+		fp12_new(t);
+		fp2_new(x);
+
+		fp12_sqrp_low(u, a);
+		/* Move the term of c_12 next to the others, to reduce them at once. */
+		dv_copy(u[1][1][0], u[1][2][0], RLC_FP_DLEN);
+		dv_copy(u[1][1][1], u[1][2][1], RLC_FP_DLEN);
+		fp2_rdcv_low(&t[0][1], &u[0][1], 4);
+		/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j. */
+		for (int j = 1; j < 3; j++) {
+			fp2_sub(x, t[0][j], a[0][j]);
+			fp2_dbl(x, x);
+			fp2_add(c[0][j], t[0][j], x);
+		}
+		fp2_add(x, t[1][0], a[1][0]);
+		fp2_dbl(x, x);
+		fp2_add(c[1][0], t[1][0], x);
+		fp2_add(x, t[1][1], a[1][2]);
+		fp2_dbl(x, x);
+		fp2_add(c[1][2], t[1][1], x);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv12_free(u);
+		fp12_free(t);
+		fp2_free(x);
+	}
+}
+
+void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
+	dv12_t u;
+	fp12_t t;
+	fp2_t x;
+
+	dv12_null(u);
+	fp12_null(t);
+	fp2_null(x);
+
+	RLC_TRY {
+		dv12_new(u);
+		fp12_new(t);
+		fp2_new(x);
+
+		fp12_sqrc_low(u, a);
+		fp2_rdcv_low((fp2_t *)t, (dv2_t *)u, 6);
+		/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j. */
+		for (int j = 0; j < 3; j++) {
+			fp2_sub(x, t[0][j], a[0][j]);
+			fp2_dbl(x, x);
+			fp2_add(c[0][j], t[0][j], x);
+			fp2_add(x, t[1][j], a[1][j]);
+			fp2_dbl(x, x);
+			fp2_add(c[1][j], t[1][j], x);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv12_free(u);
+		fp12_free(t);
+		fp2_free(x);
+	}
+}
 
 TMPL_FPX_CUB_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_muln_low,
 		fp2_sqrn_low);
