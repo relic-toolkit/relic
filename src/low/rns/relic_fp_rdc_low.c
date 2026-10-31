@@ -39,6 +39,8 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/* Only the residue-wise functions below use this, so it goes with them when
+ * FP_RNS_VEC is defined. */
 #ifndef FP_RNS_VEC
 
 /**
