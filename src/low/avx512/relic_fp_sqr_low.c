@@ -42,7 +42,7 @@
 /*============================================================================*/
 
 void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	RNS_VMAP(c, rns_vmul(V(a), V(a), m, u));
+	RNS_VMAP(c, rns_vmul(RNS_V(a), RNS_V(a), _vm, _vu));
 }
 
 void fp_sqrm_low(dig_t *c, const dig_t *a) {

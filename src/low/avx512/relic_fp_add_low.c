@@ -47,52 +47,52 @@
 /*============================================================================*/
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(V(a), V(b), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _vm));
 	return 0;
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(V(a), V(b), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _vm));
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(V(a), V(b), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _vm));
 	return 0;
 }
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(V(a), V(b), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _vm));
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(V(a), V(b), m));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _vm));
 	return 0;
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(V(a), V(b), m));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _vm));
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(V(a), V(b), m));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _vm));
 	return 0;
 }
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(V(a), V(b), m));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _vm));
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	RNS_VMAP(c, rns_vsub(_mm512_setzero_si512(), V(a), m));
+	RNS_VMAP(c, rns_vsub(_mm512_setzero_si512(), RNS_V(a), _vm));
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	RNS_VMAP(c, rns_vadd(V(a), V(a), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(a), _vm));
 	return 0;
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	RNS_VMAP(c, rns_vadd(V(a), V(a), m));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(a), _vm));
 }
 
 #endif /* FP_RDC == FP_RENUS */

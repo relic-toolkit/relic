@@ -47,7 +47,7 @@
 /*============================================================================*/
 
 void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vmul(V(a), V(b), m, u));
+	RNS_VMAP(c, rns_vmul(RNS_V(a), RNS_V(b), _vm, _vu));
 }
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {

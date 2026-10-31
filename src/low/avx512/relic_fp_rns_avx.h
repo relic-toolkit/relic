@@ -64,19 +64,19 @@
 
 /**
  * Applies a residue-wise operation to the vectors of both bases, with the
- * moduli in m and their constants in u.
+ * moduli in _vm and their constants in _vu.
  */
 #define RNS_VMAP(C, OP)														\
 	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
 	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
-		__m512i m = rns_load(_m, _k);										\
-		__m512i u = rns_load(_u, _k);										\
-		(void)u;															\
+		__m512i _vm = rns_load(_m, _k);										\
+		__m512i _vu = rns_load(_u, _k);										\
+		(void)_vu;															\
 		rns_store(C, _k, OP);												\
 	}
 
 /** Loads the current vector of an operand inside RNS_VMAP(). */
-#define V(A)		rns_load(A, _k)
+#define RNS_V(A)	rns_load(A, _k)
 
 /*============================================================================*/
 /* Private definitions                                                        */

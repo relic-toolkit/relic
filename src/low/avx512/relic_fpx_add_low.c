@@ -54,48 +54,48 @@
 	}
 
 /** Loads the current vector of a component inside RNS_VMAP2(). */
-#define V2(A)		V(A[_j])
+#define RNS_V2(A)	RNS_V(A[_j])
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void fp2_addn_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_addm_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_addd_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_addc_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_subn_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	RNS_VMAP2(c, rns_vsub(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_subm_low(fp2_t c, const fp2_t a, const fp2_t b) {
-	RNS_VMAP2(c, rns_vsub(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vsub(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vsub(V2(a), V2(b), m));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
 }
 
 void fp2_dbln_low(fp2_t c, const fp2_t a) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(a), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(a), _vm));
 }
 
 void fp2_dblm_low(fp2_t c, const fp2_t a) {
-	RNS_VMAP2(c, rns_vadd(V2(a), V2(a), m));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(a), _vm));
 }
