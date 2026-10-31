@@ -757,9 +757,7 @@
 		RLC_TRY {															\
 			D##_new(t);														\
 			X##_mul_unr(t, a, b);											\
-			for (int i = 0; i < (N); i++) {									\
-				B##_rdcn_low(((B##_t *)c)[i], ((BD##_t *)t)[i]);			\
-			}																\
+			B##_rdcv_low((B##_t *)c, (BD##_t *)t, (N));						\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -786,9 +784,7 @@
 		RLC_TRY {															\
 			D##_new(t);														\
 			X##_sqr_unr(t, a);												\
-			for (int i = 0; i < (N); i++) {									\
-				B##_rdcn_low(((B##_t *)c)[i], ((BD##_t *)t)[i]);			\
-			}																\
+			B##_rdcv_low((B##_t *)c, (BD##_t *)t, (N));						\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\

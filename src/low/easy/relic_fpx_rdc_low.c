@@ -58,3 +58,15 @@ void fp3_rdcn_low(fp3_t c, dv3_t a) {
 	fp_rdc(c[2], a[2]);
 #endif
 }
+
+void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
+	for (int i = 0; i < n; i++) {
+		fp2_rdcn_low(c[i], a[i]);
+	}
+}
+
+void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n) {
+	for (int i = 0; i < n; i++) {
+		fp3_rdcn_low(c[i], a[i]);
+	}
+}

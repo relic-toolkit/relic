@@ -215,6 +215,16 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a);
 void fp2_rdcn_low(fp2_t c, dv2_t a);
 
 /**
+ * Reduces a vector of quadratic extension elements modulo the configured prime
+ * p at once. Computes c_i = a_i mod p for 0 <= i < n.
+ *
+ * @param[out] c			- the results.
+ * @param[in] a				- the digit vectors to reduce.
+ * @param[in] n				- the number of elements.
+ */
+void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n);
+
+/**
  * Adds two cubic extension field elements of the same size.
  * Computes c = a + b.
  *
@@ -378,5 +388,15 @@ void fp3_sqrm_low(fp3_t c, const fp3_t a);
  * @param[in] a				- the digit vector to reduce.
  */
 void fp3_rdcn_low(fp3_t c, dv3_t a);
+
+/**
+ * Reduces a vector of cubic extension elements modulo the configured prime
+ * p at once. Computes c_i = a_i mod p for 0 <= i < n.
+ *
+ * @param[out] c			- the results.
+ * @param[in] a				- the digit vectors to reduce.
+ * @param[in] n				- the number of elements.
+ */
+void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n);
 
 #endif /* !RLC_FPX_LOW_H */

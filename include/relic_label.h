@@ -2337,6 +2337,7 @@
 #undef fp2_sqrn_low
 #undef fp2_sqrm_low
 #undef fp2_rdcn_low
+#undef fp2_rdcv_low
 
 #define fp2_addn_low 	RLC_PREFIX(fp2_addn_low)
 #define fp2_addm_low 	RLC_PREFIX(fp2_addm_low)
@@ -2356,6 +2357,7 @@
 #define fp2_sqrn_low 	RLC_PREFIX(fp2_sqrn_low)
 #define fp2_sqrm_low 	RLC_PREFIX(fp2_sqrm_low)
 #define fp2_rdcn_low 	RLC_PREFIX(fp2_rdcn_low)
+#define fp2_rdcv_low 	RLC_PREFIX(fp2_rdcv_low)
 
 #undef fp3_field_init
 #undef fp3_field_get_cnr
@@ -2458,6 +2460,7 @@
 #undef fp3_sqrn_low
 #undef fp3_sqrm_low
 #undef fp3_rdcn_low
+#undef fp3_rdcv_low
 
 #define fp3_addn_low 	RLC_PREFIX(fp3_addn_low)
 #define fp3_addm_low 	RLC_PREFIX(fp3_addm_low)
@@ -2476,6 +2479,7 @@
 #define fp3_sqrn_low 	RLC_PREFIX(fp3_sqrn_low)
 #define fp3_sqrm_low 	RLC_PREFIX(fp3_sqrm_low)
 #define fp3_rdcn_low 	RLC_PREFIX(fp3_rdcn_low)
+#define fp3_rdcv_low 	RLC_PREFIX(fp3_rdcv_low)
 
 #undef fp4_field_init
 #undef fp4_copy

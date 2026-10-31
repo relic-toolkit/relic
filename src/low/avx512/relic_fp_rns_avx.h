@@ -55,8 +55,11 @@
 /** Number of vectors that hold the residues of both bases. */
 #define RNS_NE		(RLC_FP_LEN / 8)
 
-/** Largest number of values reduced at once. */
-#define RNS_K		2
+/**
+ * Largest number of values reduced at once: enough independent dependency
+ * chains to keep the multipliers busy, within the 32 vector registers.
+ */
+#define RNS_K		(RNS_NB == 1 ? 8 : 4)
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -209,8 +212,9 @@ static inline __attribute__((always_inline)) void rns_vext(
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
-	/* Rows are spread over S sets of sums, to shorten dependency chains. */
-	const int S = (K == 1 ? 4 : 2);
+	/* Rows are spread over S sets of sums, to shorten dependency chains, fewer
+	 * as more values provide independent ones. */
+	const int S = (K == 1 ? 4 : (K * RNS_NB >= 8 ? 1 : 2));
 	const __m512i z = _mm512_setzero_si512();
 	__m512i l[RNS_K][4][RNS_NB], h[RNS_K][4][RNS_NB], y[RNS_NB], a, x;
 	dig_t s;
@@ -256,8 +260,8 @@ static inline __attribute__((always_inline)) void rns_vext(
 		s = (dig_t)_mm512_reduce_add_epi64(x);
 		a = _mm512_set1_epi64((s + ((dig_t)exact << 51)) >> 52);
 		for (size_t k = 0; k < RNS_NB; k++) {
-			l[j][1][k] = _mm512_madd52lo_epu64(l[j][1][k], a, y[k]);
-			h[j][1][k] = _mm512_madd52hi_epu64(h[j][1][k], a, y[k]);
+			l[j][S - 1][k] = _mm512_madd52lo_epu64(l[j][S - 1][k], a, y[k]);
+			h[j][S - 1][k] = _mm512_madd52hi_epu64(h[j][S - 1][k], a, y[k]);
 			for (int e = 1; e < S; e++) {
 				l[j][0][k] = _mm512_add_epi64(l[j][0][k], l[j][e][k]);
 				h[j][0][k] = _mm512_add_epi64(h[j][0][k], h[j][e][k]);

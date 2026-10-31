@@ -80,9 +80,7 @@
  * @param[in] A			- the element to reduce.
  */
 #define TMPL_DV_RDCN(B, BD, N, C, A)										\
-	for (int _i = 0; _i < (N); _i++) {										\
-		B##_rdcn_low(((B##_t *)(C))[_i], ((BD##_t *)(A))[_i]);				\
-	}
+	B##_rdcv_low((B##_t *)(C), (BD##_t *)(A), (N))
 
 /**
  * Computes C = A + E * v for double-precision elements made of N components
