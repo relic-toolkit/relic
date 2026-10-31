@@ -221,3 +221,44 @@ void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 		dv3_free(t);
 	}
 }
+
+/* Defining FP12_ASM leaves out the Fp12 functions, so they can be replaced. */
+#ifndef FP12_ASM
+
+void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
+	fp6_t t0, t1;
+	dv6_t u0, u1, u2;
+
+	fp6_null_all(t0, t1);
+	dv6_null_all(u0, u1, u2);
+
+	RLC_TRY {
+		fp6_new_all(t0, t1);
+		dv6_new_all(u0, u1, u2);
+
+		/* Karatsuba algorithm. */
+		fp6_mul_unr(u0, a[0], b[0]);
+		fp6_mul_unr(u1, a[1], b[1]);
+		fp6_add(t0, a[0], a[1]);
+		fp6_add(t1, b[0], b[1]);
+		fp6_mul_unr(u2, t0, t1);
+		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
+		for (int i = 0; i < 3; i++) {
+			fp2_subc_low(c[1][i], u2[i], u0[i]);
+			fp2_subc_low(c[1][i], c[1][i], u1[i]);
+		}
+		/* c_0 = a_0b_0 + v * a_1b_1, with v * (x_0, x_1, x_2) = (v^3 * x_2,
+		 * x_0, x_1). */
+		fp2_nord_low(c[0][0], u1[2]);
+		fp2_addc_low(c[0][0], u0[0], c[0][0]);
+		fp2_addc_low(c[0][1], u0[1], u1[0]);
+		fp2_addc_low(c[0][2], u0[2], u1[1]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp6_free_all(t0, t1);
+		dv6_free_all(u0, u1, u2);
+	}
+}
+
+#endif

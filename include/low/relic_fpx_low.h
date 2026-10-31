@@ -399,4 +399,22 @@ void fp3_rdcn_low(fp3_t c, dv3_t a);
  */
 void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n);
 
+/**
+ * Multiplies two dodecic extension field elements of the same size.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to multiply.
+ * @param[in] b				- the second field element to multiply.
+ */
+void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b);
+
+/**
+ * Squares a dodecic extension field element. Computes c = a * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp12_sqrn_low(dv12_t c, const fp12_t a);
+
 #endif /* !RLC_FPX_LOW_H */

@@ -37,6 +37,7 @@
 #include "relic_fp_rns_avx.h"
 
 #define FP2_ASM
+#define FP12_ASM
 
 /* Fp3 is the portable version. */
 #include "../easy/relic_fpx_sqr_low.c"
@@ -69,6 +70,48 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 			t = rns_vmul2(a0, a0, t, a1, m, u);
 		}
 		rns_store(c[0], k, t);
+	}
+}
+
+void fp12_sqrn_low(dv12_t c, const fp12_t a) {
+	ctx_t *ctx = core_get();
+	rp6_t a0, a1, u0, u1;
+	rp2_t t;
+	__m512i m, u;
+	int s, q;
+
+	rns_nor(&s, &q);
+	/* The whole square is computed residue-wise, vector by vector. */
+	for (size_t k = 0; k < RNS_NE; k++) {
+		m = rns_load(ctx->rns.m, k);
+		u = rns_load(ctx->rns.u, k);
+		for (int j = 0; j < 3; j++) {
+			for (int l = 0; l < 2; l++) {
+				a0.v[j].v[l] = rns_load(a[0][j][l], k);
+				a1.v[j].v[l] = rns_load(a[1][j][l], k);
+			}
+		}
+		/* Complex squaring, with v * (x_0, x_1, x_2) = (v^3 * x_2, x_0, x_1):
+		 * c_0 = (a_0 + a_1)(a_0 + v * a_1) - a_0a_1 - v * a_0a_1. */
+		u0 = rp6_mul(a0, a1, s, q, m, u);
+		u1 = a1;
+		u1.v[0] = rp2_nor(a1.v[2], s, q, m);
+		u1.v[1] = a1.v[0];
+		u1.v[2] = a1.v[1];
+		u1 = rp6_mul(rp6_add(a0, a1, m), rp6_add(a0, u1, m), s, q, m, u);
+		u1 = rp6_sub(u1, u0, m);
+		t = rp2_nor(u0.v[2], s, q, m);
+		u1.v[0] = rp2_sub(u1.v[0], t, m);
+		u1.v[1] = rp2_sub(u1.v[1], u0.v[0], m);
+		u1.v[2] = rp2_sub(u1.v[2], u0.v[1], m);
+		/* c_1 = 2 * a_0a_1. */
+		u0 = rp6_add(u0, u0, m);
+		for (int j = 0; j < 3; j++) {
+			for (int l = 0; l < 2; l++) {
+				rns_store(c[0][j][l], k, u1.v[j].v[l]);
+				rns_store(c[1][j][l], k, u0.v[j].v[l]);
+			}
+		}
 	}
 }
 

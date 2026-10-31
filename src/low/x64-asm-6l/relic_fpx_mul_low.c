@@ -44,7 +44,7 @@
 #define FP2_ASM
 #endif
 
-/* Fp3, and Fp2 when it is not in assembly, are the portable versions. */
+/* Fp3, Fp12, and Fp2 when it is not in assembly, are the portable versions. */
 #include "../easy/relic_fpx_mul_low.c"
 
 #ifdef FP2_ASM

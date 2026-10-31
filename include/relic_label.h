@@ -2881,6 +2881,12 @@
 #define fp12_pck_max 	RLC_PREFIX(fp12_pck_max)
 #define fp12_upk_max 	RLC_PREFIX(fp12_upk_max)
 
+#undef fp12_muln_low
+#undef fp12_sqrn_low
+
+#define fp12_muln_low 	RLC_PREFIX(fp12_muln_low)
+#define fp12_sqrn_low 	RLC_PREFIX(fp12_sqrn_low)
+
 #undef fp16_field_init
 #undef fp16_copy
 #undef fp16_copy_sec
