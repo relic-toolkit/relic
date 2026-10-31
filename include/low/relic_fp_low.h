@@ -57,9 +57,9 @@
 
 #if FP_RDC == FP_RENUS
 /**
- * Size in bits of a digit of the Residue Number System, so that R = 2^RLC_RNS_DIG
- * is the radix of the Montgomery form of residues: 52 bits with the AVX-512
- * IFMA backend, and a whole digit otherwise.
+ * Size in bits of a digit of the Residue Number System, so that the radix of
+ * the Montgomery form of residues is R = 2^RLC_RNS_DIG: 52 bits with the
+ * AVX-512 IFMA backend, and a whole digit otherwise.
  */
 #if RLC_ARITH == RLC_AVX512
 #define RLC_RNS_DIG		52

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field Legendre symbol in a Residue Number
- * System.
+ * Implementation of the low-level prime field Legendre symbol in a Residue
+ * Number System.
  *
  * @ingroup fp
  */

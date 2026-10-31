@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field additions in a Residue
- * Number System with AVX-512 IFMA, which add both components in one pass.
+ * Implementation of the low-level extension field additions in a Residue Number
+ * System with AVX-512 IFMA, which add both components in one pass.
  *
  * @ingroup fpx
  */

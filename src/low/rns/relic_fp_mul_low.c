@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field multiplication in a Residue Number
- * System.
+ * Implementation of the low-level prime field multiplication in a Residue
+ * Number System.
  *
  * @ingroup fp
  */
@@ -40,8 +40,8 @@
 /*============================================================================*/
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RLC_RNS_MAP(c, RLC_RNS_ADD(c[_i], rns_mul(a[_i], RLC_RNS_SCL(digit, _i), _m[_i],
-		_u[_i]), _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(c[_i], rns_mul(a[_i], RLC_RNS_SCL(digit, _i),
+		_m[_i], _u[_i]), _m[_i]));
 	return 0;
 }
 

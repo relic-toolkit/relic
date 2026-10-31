@@ -28,8 +28,8 @@
  *
  * An element is represented by its residues modulo the RLC_FP_RNS moduli of
  * each of two bases B and B', all primes of the form 2^RLC_RNS_BITS - c. Each
- * residue is kept in Montgomery form x_i * R mod m_i, with R = 2^RLC_RNS_DIG, so
- * that products of residues are Montgomery products. In B', an element x is
+ * residue is kept in Montgomery form x_i * R mod m_i, with R = 2^RLC_RNS_DIG,
+ * so that products of residues are Montgomery products. In B', an element x is
  * moreover stored as x / M, as in Langowski, He and Devadas (VROOM, USENIX
  * Security 2025): a product then carries 1 / M^2, so that the division by M of
  * Montgomery reduction comes for free, and the constants around the base

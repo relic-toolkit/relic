@@ -85,7 +85,8 @@ dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
 }
 
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	RLC_RNS_MAP(c, rns_mul(a[_i], RLC_RNS_SCL((dig_t)1 << bits, _i), _m[_i], _u[_i]));
+	RLC_RNS_MAP(c, rns_mul(a[_i], RLC_RNS_SCL((dig_t)1 << bits, _i), _m[_i],
+		_u[_i]));
 	return 0;
 }
 

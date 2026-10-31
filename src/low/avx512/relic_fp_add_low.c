@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field addition and subtraction in a Residue Number
- * System with AVX-512 IFMA.
+ * Implementation of the low-level prime field addition and subtraction in a
+ * Residue Number System with AVX-512 IFMA.
  *
  * @ingroup fp
  */

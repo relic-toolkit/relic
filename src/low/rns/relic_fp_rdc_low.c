@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field modular reduction and base extensions in a Residue Number
- * System.
+ * Implementation of the low-level prime field modular reduction and base
+ * extensions in a Residue Number System.
  *
  * @ingroup fp
  */
