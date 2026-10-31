@@ -87,29 +87,30 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 		u = rns_load(ctx->rns.u, k);
 		for (int j = 0; j < 3; j++) {
 			for (int l = 0; l < 2; l++) {
-				a0.v[j].v[l] = rns_load(a[0][j][l], k);
-				a1.v[j].v[l] = rns_load(a[1][j][l], k);
+				a0[j][l] = rns_load(a[0][j][l], k);
+				a1[j][l] = rns_load(a[1][j][l], k);
 			}
 		}
 		/* Complex squaring, with v * (x_0, x_1, x_2) = (v^3 * x_2, x_0, x_1):
 		 * c_0 = (a_0 + a_1)(a_0 + v * a_1) - a_0a_1 - v * a_0a_1. */
-		u0 = rp6_mul(a0, a1, s, q, m, u);
-		u1 = a1;
-		u1.v[0] = rp2_nor(a1.v[2], s, q, m);
-		u1.v[1] = a1.v[0];
-		u1.v[2] = a1.v[1];
-		u1 = rp6_mul(rp6_add(a0, a1, m), rp6_add(a0, u1, m), s, q, m, u);
-		u1 = rp6_sub(u1, u0, m);
-		t = rp2_nor(u0.v[2], s, q, m);
-		u1.v[0] = rp2_sub(u1.v[0], t, m);
-		u1.v[1] = rp2_sub(u1.v[1], u0.v[0], m);
-		u1.v[2] = rp2_sub(u1.v[2], u0.v[1], m);
+		rp6_mul(u0, a0, a1, s, q, m, u);
+		rp2_nor(t, a1[2], s, q, m);
+		rp2_add(u1[0], a0[0], t, m);
+		rp2_add(u1[1], a0[1], a1[0], m);
+		rp2_add(u1[2], a0[2], a1[1], m);
+		rp6_add(a0, a0, a1, m);
+		rp6_mul(u1, a0, u1, s, q, m, u);
+		rp6_sub(u1, u1, u0, m);
+		rp2_nor(t, u0[2], s, q, m);
+		rp2_sub(u1[0], u1[0], t, m);
+		rp2_sub(u1[1], u1[1], u0[0], m);
+		rp2_sub(u1[2], u1[2], u0[1], m);
 		/* c_1 = 2 * a_0a_1. */
-		u0 = rp6_add(u0, u0, m);
+		rp6_add(u0, u0, u0, m);
 		for (int j = 0; j < 3; j++) {
 			for (int l = 0; l < 2; l++) {
-				rns_store(c[0][j][l], k, u1.v[j].v[l]);
-				rns_store(c[1][j][l], k, u0.v[j].v[l]);
+				rns_store(c[0][j][l], k, u1[j][l]);
+				rns_store(c[1][j][l], k, u0[j][l]);
 			}
 		}
 	}

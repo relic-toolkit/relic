@@ -410,6 +410,16 @@ void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n);
 void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b);
 
 /**
+ * Multiplies a dodecic extension field element by a sparse one, as given by
+ * the lines of a pairing on the configured twist. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense field element.
+ * @param[in] b				- the sparse field element.
+ */
+void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b);
+
+/**
  * Squares a dodecic extension field element. Computes c = a * a.
  *
  * @param[out] c			- the result.

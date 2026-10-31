@@ -36,6 +36,59 @@
 #include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#ifndef FP12_ASM
+
+/**
+ * Multiplies an element of Fp6 by a sparse one, with its last component zero,
+ * without reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense element.
+ * @param[in] b				- the sparse element.
+ */
+static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) {
+	dv2_t u0, u1, u2, u3;
+	fp2_t t0, t1;
+
+	dv2_null_all(u0, u1, u2, u3);
+	fp2_null_all(t0, t1);
+
+	RLC_TRY {
+		dv2_new_all(u0, u1, u2, u3);
+		fp2_new_all(t0, t1);
+
+		fp2_muln_low(u0, a[0], b[0]);
+		fp2_muln_low(u1, a[1], b[1]);
+		fp2_addm_low(t0, a[0], a[1]);
+		fp2_addm_low(t1, b[0], b[1]);
+
+		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1 */
+		fp2_muln_low(u2, t0, t1);
+		fp2_subc_low(u2, u2, u0);
+		fp2_subc_low(c[1], u2, u1);
+
+		/* c_0 = a_0b_0 + E a_2b_1 */
+		fp2_muln_low(u2, a[2], b[1]);
+		fp2_nord_low(c[0], u2);
+		fp2_addc_low(c[0], u0, c[0]);
+
+		/* c_2 = a_0b_2 + a_1b_1 */
+		fp2_muln_low(u2, a[2], b[0]);
+		fp2_addc_low(c[2], u1, u2);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv2_free_all(u0, u1, u2, u3);
+		fp2_free_all(t0, t1);
+	}
+}
+
+#endif
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -228,5 +281,90 @@ void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 
 TMPL_FPX_MUL_UNR_QUAD(fp12_muln_low, fp12, fp6, dv12, dv6, fp2, dv2, 3, 1,
 		fp6_mul_unr);
+
+void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
+	fp6_t t0, t1;
+	dv6_t u1;
+
+	fp6_null_all(t0, t1);
+	dv6_null(u1);
+
+	RLC_TRY {
+		fp6_new_all(t0, t1);
+		dv6_new(u1);
+
+		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
+			/* Lines with their y-coefficient in the prime field are cheaper. */
+			if (fp_is_zero(b[0][0][1])) {
+				/* t0 = a_0 * b_0. */
+				fp_muln_low(c[0][0][0], a[0][0][0], b[0][0][0]);
+				fp_muln_low(c[0][0][1], a[0][0][1], b[0][0][0]);
+				fp_muln_low(c[0][1][0], a[0][1][0], b[0][0][0]);
+				fp_muln_low(c[0][1][1], a[0][1][1], b[0][0][0]);
+				fp_muln_low(c[0][2][0], a[0][2][0], b[0][0][0]);
+				fp_muln_low(c[0][2][1], a[0][2][1], b[0][0][0]);
+				/* t2 = b_0 + b_1. */
+				fp_add(t0[0][0], b[0][0][0], b[1][0][0]);
+				fp_copy(t0[0][1], b[1][0][1]);
+				fp2_copy(t0[1], b[1][1]);
+			} else {
+				/* t0 = a_0 * b_0. */
+				fp2_muln_low(c[0][0], a[0][0], b[0][0]);
+				fp2_muln_low(c[0][1], a[0][1], b[0][0]);
+				fp2_muln_low(c[0][2], a[0][2], b[0][0]);
+			
+				/* t2 = b_0 + b_1. */
+				fp2_add(t0[0], b[0][0], b[1][0]);
+				fp2_copy(t0[1], b[1][1]);
+			}
+			/* t1 = a_1 * b_1. */
+			fp6_mul_dxs_unr_lazyr(u1, a[1], b[1]);
+		} else {
+			/* t0 = a_0 * b_0. */
+			fp6_mul_dxs_unr_lazyr(c[0], a[0], b[0]);
+			/* Lines with their y-coefficient in the prime field are cheaper. */
+			if (fp_is_zero(b[1][1][1])) {
+				/* t0 = a_0 * b_0. */
+				fp_muln_low(u1[1][0], a[1][2][0], b[1][1][0]);
+				fp_muln_low(u1[1][1], a[1][2][1], b[1][1][0]);
+				fp2_nord_low(u1[0], u1[1]);
+				fp_muln_low(u1[1][0], a[1][0][0], b[1][1][0]);
+				fp_muln_low(u1[1][1], a[1][0][1], b[1][1][0]);
+				fp_muln_low(u1[2][0], a[1][1][0], b[1][1][0]);
+				fp_muln_low(u1[2][1], a[1][1][1], b[1][1][0]);
+				/* t2 = b_0 + b_1. */
+				fp2_copy(t0[0], b[0][0]);
+				fp_add(t0[1][0], b[0][1][0], b[1][1][0]);
+				fp_copy(t0[1][1], b[0][1][1]);
+			} else {
+				/* t1 = a_1 * b_1. */
+				fp2_muln_low(u1[1], a[1][2], b[1][1]);
+				fp2_nord_low(u1[0], u1[1]);
+				fp2_muln_low(u1[1], a[1][0], b[1][1]);
+				fp2_muln_low(u1[2], a[1][1], b[1][1]);
+				/* t2 = b_0 + b_1. */
+				fp2_copy(t0[0], b[0][0]);
+				fp2_add(t0[1], b[0][1], b[1][1]);
+			}
+		}
+		/* c_1 = (a_0 + a_1) * (b_0 + b_1) - a_0b_0 - a_1b_1. */
+		fp6_add(t1, a[0], a[1]);
+		fp6_mul_dxs_unr_lazyr(c[1], t1, t0);
+		for (int i = 0; i < 3; i++) {
+			fp2_subc_low(c[1][i], c[1][i], c[0][i]);
+			fp2_subc_low(c[1][i], c[1][i], u1[i]);
+		}
+		/* c_0 = a_0b_0 + v * a_1b_1. */
+		fp2_nord_low(u1[2], u1[2]);
+		fp2_addc_low(c[0][0], c[0][0], u1[2]);
+		fp2_addc_low(c[0][1], c[0][1], u1[0]);
+		fp2_addc_low(c[0][2], c[0][2], u1[1]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp6_free_all(t0, t1);
+		dv6_free(u1);
+	}
+}
 
 #endif
