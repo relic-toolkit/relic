@@ -80,12 +80,12 @@ static void rns_rsh(bn_t t, uint_t bits) {
 /*============================================================================*/
 
 dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
-	RNS_MAP(c, rns_add(a[_i], a[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], a[_i], _m[_i]));
 	return 0;
 }
 
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	RNS_MAP(c, rns_mul(a[_i], rns_scl((dig_t)1 << bits, _i), _m[_i], _u[_i]));
+	RLC_RNS_MAP(c, rns_mul(a[_i], RLC_RNS_SCL((dig_t)1 << bits, _i), _m[_i], _u[_i]));
 	return 0;
 }
 

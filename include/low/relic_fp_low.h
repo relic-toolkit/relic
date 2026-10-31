@@ -374,60 +374,47 @@ int fp_smbm_low(const dig_t *a);
 #define RLC_RNS_MASK	((dig_t)-1 >> (RLC_DIG - RLC_RNS_W))
 
 /**
- * Subtracts m from a value below 2m in constant time.
+ * Subtracts M from a value A below 2M in constant time.
  *
- * @param[in] a				- the value.
- * @param[in] m				- the modulus.
- * @return the value modulo m.
+ * @param[in] A				- the value.
+ * @param[in] M				- the modulus.
  */
-static inline dig_t rns_crt(dig_t a, dig_t m) {
-	dig_t t = a - m;
-
-	return a ^ ((a ^ t) & (0 - (dig_t)(a >= m)));
-}
+#define RLC_RNS_CRT(A, M)	((A) - (M) * (dig_t)((A) >= (M)))
 
 /**
- * Adds two residues modulo m in constant time.
+ * Adds two residues A and B modulo M in constant time.
  *
- * @param[in] a				- the first residue.
- * @param[in] b				- the second residue.
- * @param[in] m				- the modulus.
- * @return the sum.
+ * @param[in] A				- the first residue.
+ * @param[in] B				- the second residue.
+ * @param[in] M				- the modulus.
  */
-static inline dig_t rns_add(dig_t a, dig_t b, dig_t m) {
-	return rns_crt(a + b, m);
-}
+#define RLC_RNS_ADD(A, B, M)	RLC_RNS_CRT((A) + (B), M)
 
 /**
- * Subtracts two residues modulo m in constant time.
+ * Subtracts two residues A and B modulo M in constant time.
  *
- * @param[in] a				- the first residue.
- * @param[in] b				- the second residue.
- * @param[in] m				- the modulus.
- * @return the difference.
+ * @param[in] A				- the first residue.
+ * @param[in] B				- the second residue.
+ * @param[in] M				- the modulus.
  */
-static inline dig_t rns_sub(dig_t a, dig_t b, dig_t m) {
-	return a - b + m * (dig_t)(a < b);
-}
+#define RLC_RNS_SUB(A, B, M)	((A) - (B) + (M) * (dig_t)((A) < (B)))
 
 /**
- * Reduces a digit modulo m in constant time.
+ * Reduces a digit D modulo M in constant time.
  *
- * @param[in] d				- the digit.
- * @param[in] m				- the modulus.
- * @return the residue.
+ * @param[in] D				- the digit.
+ * @param[in] M				- the modulus.
  */
-static inline dig_t rns_mod(dig_t d, dig_t m) {
 #if RLC_RNS_W == RLC_DIG
-	/* A digit is below R < 3m, so two subtractions reduce it. */
-	d -= m * (dig_t)(d >= m);
-	return rns_crt(d, m);
+/* A digit is below R < 3M, so two subtractions reduce it. */
+#define RLC_RNS_MOD(D, M)													\
+	RLC_RNS_CRT((dig_t)(D) - (M) * (dig_t)((dig_t)(D) >= (M)), M)
 #else
-	/* As 2^52 = 2^52 - m mod m, with 2^52 - m < 2^26, fold the high bits. */
-	d = (d & RLC_RNS_MASK) + (d >> RLC_RNS_W) * (((dig_t)1 << RLC_RNS_W) - m);
-	return rns_crt(d, m);
+/* As 2^52 = 2^52 - M mod M, with 2^52 - M < 2^26, fold the high bits. */
+#define RLC_RNS_MOD(D, M)													\
+	RLC_RNS_CRT(((dig_t)(D) & RLC_RNS_MASK) +								\
+		((dig_t)(D) >> RLC_RNS_W) * (((dig_t)1 << RLC_RNS_W) - (M)), M)
 #endif
-}
 
 /**
  * Multiplies two residues by Montgomery multiplication: computes a * b / R
@@ -451,7 +438,7 @@ static inline dig_t rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 	RLC_MUL_DIG(qh, ql, q, m);
 	ql += l;
 	h += qh + (ql < l);
-	return rns_crt(h, m);
+	return RLC_RNS_CRT(h, m);
 #else
 	dbl_t t = (dbl_t)a * b;
 	dig_t q = ((dig_t)t * u) & RLC_RNS_MASK, h, l;
@@ -460,7 +447,7 @@ static inline dig_t rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 	t = (t + (dbl_t)q * m) >> RLC_RNS_W;
 	l = (dig_t)t & RLC_RNS_MASK;
 	h = (dig_t)(t >> RLC_RNS_W);
-	return rns_crt(l + h * (((dig_t)1 << RLC_RNS_W) - m), m);
+	return RLC_RNS_CRT(l + h * (((dig_t)1 << RLC_RNS_W) - m), m);
 #endif
 }
 
@@ -486,34 +473,26 @@ static inline dig_t rns_alpha(const dig_t *xi, size_t n, int exact) {
 }
 
 /**
- * Reduces a digit modulo the i-th modulus and converts it to Montgomery form,
+ * Reduces a digit D modulo the I-th modulus and converts it to Montgomery form,
  * as a multiplier of residues.
  *
- * @param[in] d				- the digit.
- * @param[in] i				- the index of the modulus.
- * @return the residue in Montgomery form.
+ * @param[in] D				- the digit.
+ * @param[in] I				- the index of the modulus.
  */
-static inline dig_t rns_scl(dig_t d, size_t i) {
-	ctx_t *ctx = core_get();
-	dig_t m = ctx->rns.m[i];
-
-	return rns_mul(rns_mod(d, m), ctx->rns.r2[i], m, ctx->rns.u[i]);
-}
+#define RLC_RNS_SCL(D, I)													\
+	rns_mul(RLC_RNS_MOD(D, core_get()->rns.m[I]), core_get()->rns.r2[I],	\
+		core_get()->rns.m[I], core_get()->rns.u[I])
 
 /**
- * Reduces a digit modulo the i-th modulus and converts it to the representation
- * of elements: Montgomery form, and also divided by M in B'.
+ * Converts a digit D to the representation of elements at the I-th modulus:
+ * Montgomery form, and also divided by M in B'. The Montgomery product takes
+ * any digit as its first operand.
  *
- * @param[in] d				- the digit.
- * @param[in] i				- the index of the modulus.
- * @return the residue.
+ * @param[in] D				- the digit.
+ * @param[in] I				- the index of the modulus.
  */
-static inline dig_t rns_dig(dig_t d, size_t i) {
-	ctx_t *ctx = core_get();
-
-	/* The Montgomery product takes a first operand below 2^64. */
-	return rns_mul(d, ctx->rns.e[i], ctx->rns.m[i], ctx->rns.u[i]);
-}
+#define RLC_RNS_DIG(D, I)													\
+	rns_mul(D, core_get()->rns.e[I], core_get()->rns.m[I], core_get()->rns.u[I])
 
 /**
  * Divides the residues of an element by M in B', so that the element can be
@@ -539,7 +518,7 @@ static inline void rns_wide(dig_t *c, const dig_t *a) {
  * Applies a residue-wise operation to all residues of both bases, with the
  * moduli in _m and their Montgomery constants in _u.
  */
-#define RNS_MAP(C, OP)														\
+#define RLC_RNS_MAP(C, OP)													\
 	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
 	(void)_u;																\
 	for (size_t _i = 0; _i < RLC_FP_LEN; _i++) {							\

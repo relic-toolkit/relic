@@ -20,7 +20,9 @@ message(STATUS "Byte boundary to align digit vectors (default = 1):\n")
 message("   ALIGN=1        Do not align digit vectors.")
 message("   ALIGN=2        Align digit vectors into 16-bit boundaries.")
 message("   ALIGN=8        Align digit vectors into 64-bit boundaries.")
-message("   ALIGN=16       Align digit vectors into 128-bit boundaries.\n")
+message("   ALIGN=16       Align digit vectors into 128-bit boundaries.")
+message("   ALIGN=32       Align digit vectors into 256-bit boundaries.")
+message("   ALIGN=64       Align digit vectors into 512-bit boundaries.\n")
 
 # Architecture and memory layout, under the names that the operating systems
 # report: Linux says aarch64 and armv7l where macOS says arm64 and arm.
@@ -68,6 +70,11 @@ elseif(ARCH STREQUAL "X86" AND WSIZE EQUAL 32)
 endif()
 
 if(NOT ALIGN)
-	set(ALIGN 1)
+	# The vectors of the AVX-512 backend are as long as a cache line.
+	if(ARITH STREQUAL "avx512")
+		set(ALIGN 64)
+	else()
+		set(ALIGN 1)
+	endif()
 endif(NOT ALIGN)
 set(ALIGN ${ALIGN} CACHE STRING "Boundary to align digit vectors")

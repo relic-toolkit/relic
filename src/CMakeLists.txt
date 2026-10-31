@@ -64,10 +64,18 @@ endif()
 
 if (WITH_FP)
 	list(APPEND RELIC_SRCS ${FP_SRCS})
-	# Elements in a Residue Number System have their own lower level in low/rns.
+	# Elements in a Residue Number System have their own lower level in low/rns,
+	# which a backend with ARITH_RNS may replace file by file.
 	if (FP_RDC STREQUAL "RENUS")
 		file(GLOB TEMP low/rns/relic_fp_*.c)
-		list(APPEND RELIC_SRCS ${TEMP})
+		foreach(SRC ${TEMP})
+			get_filename_component(SRC ${SRC} NAME)
+			if (ARITH_RNS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/${SRC}")
+				list(APPEND RELIC_SRCS "low/${ARITH_PATH}/${SRC}")
+			else()
+				list(APPEND RELIC_SRCS "low/rns/${SRC}")
+			endif()
+		endforeach()
 	else()
 		file(GLOB TEMP low/easy/relic_fp_*.c)
 		list(APPEND LOW_SRCS ${TEMP})
@@ -77,8 +85,9 @@ endif()
 if (WITH_FPX)
 	list(APPEND RELIC_SRCS ${FPX_SRCS})
 	file(GLOB TEMP low/easy/relic_fpx_*.c)
-	# The portable extension field code is built on the prime field lower level.
-	if (FP_RDC STREQUAL "RENUS")
+	# The portable extension field code is built on the prime field lower level,
+	# unless the backend has its own for a Residue Number System.
+	if (FP_RDC STREQUAL "RENUS" AND NOT ARITH_RNS)
 		list(APPEND RELIC_SRCS ${TEMP})
 	else()
 		list(APPEND LOW_SRCS ${TEMP})

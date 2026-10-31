@@ -130,6 +130,8 @@
 #define RLC_GMP      2
 /** GMP constant-time backend. */
 #define RLC_GMP_SEC  3
+/** AVX-512 IFMA backend for a Residue Number System. */
+#define RLC_AVX512   4
 /** Arithmetic backend. */
 #define RLC_ARITH    RLC_@ARITH@
 

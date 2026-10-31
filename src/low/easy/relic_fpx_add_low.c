@@ -38,6 +38,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/* Defining FP2_ADD_ASM leaves out the Fp2 additions, to be replaced. */
+#ifndef FP2_ADD_ASM
+
 void fp2_addn_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);
@@ -88,6 +91,8 @@ void fp2_dblm_low(fp2_t c, const fp2_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
 }
+
+#endif
 
 void fp2_norm_low(fp2_t c, const fp2_t a) {
 	fp2_t t;

@@ -193,7 +193,7 @@ void fp_rns_pre(void) {
 		for (size_t i = 0; i < n; i++) {
 			d = rns_inv(rns_bn(m, o + i), o + i);
 			ctx->rns.e[o + i] = rns_mulp(ctx->rns.r2[o + i], d, o + i);
-			ctx->rns.mi[i] = rns_scl(d, o + i);
+			ctx->rns.mi[i] = RLC_RNS_SCL(d, o + i);
 		}
 
 		/* B must exceed 2^32 * p, and B' 2^11 * p. */
@@ -206,7 +206,7 @@ void fp_rns_pre(void) {
 			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * R^3 mod m'_j. */
 			bn_div_dig(t, m, ctx->rns.m[i]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(ctx->rns.r2[o + j], rns_scl(1, o + j), o + j);
+				r3 = rns_mulp(ctx->rns.r2[o + j], RLC_RNS_SCL(1, o + j), o + j);
 				/* Times p / M^2, to give q * p as a product in B'. */
 				d = rns_mulp(rns_bn(t, o + j), rns_bn(&(ctx->prime), o + j),
 						o + j);
@@ -219,8 +219,8 @@ void fp_rns_pre(void) {
 			d = rns_inv(rns_bn(&(ctx->prime), i), i);
 			ctx->rns.nq[i] = rns_mulp(ctx->rns.m[i] - d, ctx->rns.ib[i], i);
 			/* -M' * R^3 mod m_i. */
-			r3 = rns_mulp(ctx->rns.r2[i], rns_scl(1, i), i);
-			ctx->rns.u2[i] = rns_mulp(rns_sub(0, rns_bn(mb, i), ctx->rns.m[i]),
+			r3 = rns_mulp(ctx->rns.r2[i], RLC_RNS_SCL(1, i), i);
+			ctx->rns.u2[i] = rns_mulp(RLC_RNS_SUB(0, rns_bn(mb, i), ctx->rns.m[i]),
 					r3, i);
 		}
 
@@ -230,7 +230,7 @@ void fp_rns_pre(void) {
 			/* (M'/m'_i)^{-1} mod m'_i, and (M'/m'_i) * R^3 mod m_j. */
 			bn_div_dig(t, mb, ctx->rns.m[j0]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(ctx->rns.r2[j], rns_scl(1, j), j);
+				r3 = rns_mulp(ctx->rns.r2[j], RLC_RNS_SCL(1, j), j);
 				ctx->rns.t2[i][j] = rns_mulp(rns_bn(t, j), r3, j);
 			}
 			/* Times M, as elements are divided by M in B'. */
@@ -238,10 +238,10 @@ void fp_rns_pre(void) {
 					rns_bn(m, j0), j0);
 
 			/* -M * p / M^2 * R^3 mod m'_i. */
-			r3 = rns_mulp(ctx->rns.r2[j0], rns_scl(1, j0), j0);
+			r3 = rns_mulp(ctx->rns.r2[j0], RLC_RNS_SCL(1, j0), j0);
 			d = rns_mulp(rns_bn(&(ctx->prime), j0), rns_inv(rns_bn(m, j0), j0),
 					j0);
-			ctx->rns.u1[i] = rns_mulp(rns_sub(0, d, ctx->rns.m[j0]), r3, j0);
+			ctx->rns.u1[i] = rns_mulp(RLC_RNS_SUB(0, d, ctx->rns.m[j0]), r3, j0);
 		}
 
 		/* Constants in Montgomery form: M, M^2, M/2 and M/3 modulo p. */
@@ -268,8 +268,8 @@ void fp_rns_pre(void) {
 				if (RNS_PAD(i)) {
 					continue;
 				}
-				d = rns_dig(rns_bn(t, i), i);
-				ctx->rns.kp[j][i] = (j < 2 ? rns_sub(0, d, ctx->rns.m[i]) : d);
+				d = RLC_RNS_DIG(rns_bn(t, i), i);
+				ctx->rns.kp[j][i] = (j < 2 ? RLC_RNS_SUB(0, d, ctx->rns.m[i]) : d);
 			}
 		}
 
@@ -314,9 +314,9 @@ void fp_rns_conv(dig_t *c, const bn_t a) {
 			c[i] = 0;
 			continue;
 		}
-		c[i] = rns_dig(rns_bn(a, i), i);
+		c[i] = RLC_RNS_DIG(rns_bn(a, i), i);
 		if (bn_sign(a) == RLC_NEG) {
-			c[i] = rns_sub(0, c[i], core_get()->rns.m[i]);
+			c[i] = RLC_RNS_SUB(0, c[i], core_get()->rns.m[i]);
 		}
 	}
 }
@@ -419,7 +419,7 @@ void fp_rns_set(dig_t *c, const dig_t *a) {
 			continue;
 		}
 		for (size_t k = 0; k < RLC_FP_DIGS; k++) {
-			t[i] = rns_add(t[i], rns_mul(a[k], ctx->rns.pw[i][k], m[i], u[i]),
+			t[i] = RLC_RNS_ADD(t[i], rns_mul(a[k], ctx->rns.pw[i][k], m[i], u[i]),
 					m[i]);
 		}
 	}
@@ -441,7 +441,7 @@ int fp_rns_is_zero(const dig_t *a) {
 	}
 	fp_rnsx_low(r, q, 1, 0);
 	for (size_t i = 0; i < n; i++) {
-		r[i] = rns_add(rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
+		r[i] = RLC_RNS_ADD(rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
 				r[i], m[o + i]);
 	}
 	for (int k = 0; k < 5; k++) {

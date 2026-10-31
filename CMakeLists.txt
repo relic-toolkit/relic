@@ -86,7 +86,8 @@ message(STATUS "Available arithmetic backends (default = easy):\n")
 message("   ARITH=easy     Easy-to-understand and portable, but slow backend.")
 message("   ARITH=fiat     Backend based on code generated from Fiat-Crypto.")
 message("   ARITH=gmp      Backend based on GNU Multiple Precision library.")
-message("   ARITH=gmp-sec  Same as above, but using constant-time code.\n")
+message("   ARITH=gmp-sec  Same as above, but using constant-time code.")
+message("   ARITH=avx512   AVX-512 IFMA backend for FP_METHD=RENUS.\n")
 
 message(STATUS "Available memory-allocation policies (default = AUTO):\n")
 

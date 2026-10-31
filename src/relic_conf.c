@@ -177,6 +177,8 @@ void conf_print(void) {
 	util_print("** Arithmetic backend: gmp\n\n");
 #elif RLC_ARITH == RLC_GMP_SEC
 	util_print("** Arithmetic backend: gmp-sec\n\n");
+#elif RLC_ARITH == RLC_AVX512
+	util_print("** Arithmetic backend: avx512\n\n");
 #else
 	/* Skip the prefix of the backend name. */
 	util_print("** Arithmetic backend: %s\n\n", QUOTE(RLC_ARITH) + 4);

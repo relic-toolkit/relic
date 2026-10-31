@@ -83,7 +83,7 @@ static dig_t rns_red(dig_t s2, dig_t s1, dig_t s0, dig_t m, dig_t u) {
 	RLC_MUL_DIG(h, l, q, m);
 	l += s1;
 	h += (l < s1) + s2;
-	return rns_crt(h, m);
+	return RLC_RNS_CRT(h, m);
 }
 
 #else
@@ -110,7 +110,7 @@ static dig_t rns_red(dbl_t s, dig_t m, dig_t u) {
 	s = (s + (dbl_t)q * m) >> RLC_RNS_W;
 	q = ((dig_t)s * u) & RLC_RNS_MASK;
 	s = (s + (dbl_t)q * m) >> RLC_RNS_W;
-	return rns_crt((dig_t)s, m);
+	return RLC_RNS_CRT((dig_t)s, m);
 }
 
 #endif
@@ -218,7 +218,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	/* c = (a + q * p) / M in B', as a product carries 1 / M^2 there and an
 	 * element 1 / M; and its xi_j for the exact extension. */
 	for (size_t j = 0; j < n; j++) {
-		c[o + j] = rns_add(a[o + j], r[j], m[o + j]);
+		c[o + j] = RLC_RNS_ADD(a[o + j], r[j], m[o + j]);
 		q[j] = rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
 	}
 	/* c in B, exactly, since c < 3p is far below M'/2. */

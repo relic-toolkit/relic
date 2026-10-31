@@ -40,12 +40,12 @@
 /*============================================================================*/
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RNS_MAP(c, rns_add(a[_i], rns_dig(digit, _i), _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], RLC_RNS_DIG(digit, _i), _m[_i]));
 	return 0;
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RNS_MAP(c, rns_sub(a[_i], rns_dig(digit, _i), _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], RLC_RNS_DIG(digit, _i), _m[_i]));
 	return 0;
 }
 
@@ -66,52 +66,52 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 #ifndef FP_RNS_VEC
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_add(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], b[_i], _m[_i]));
 	return 0;
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_add(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], b[_i], _m[_i]));
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_add(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], b[_i], _m[_i]));
 	return 0;
 }
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_add(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], b[_i], _m[_i]));
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_sub(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], b[_i], _m[_i]));
 	return 0;
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_sub(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], b[_i], _m[_i]));
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_sub(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], b[_i], _m[_i]));
 	return 0;
 }
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_MAP(c, rns_sub(a[_i], b[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], b[_i], _m[_i]));
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	RNS_MAP(c, rns_sub(0, a[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(0, a[_i], _m[_i]));
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	RNS_MAP(c, rns_add(a[_i], a[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], a[_i], _m[_i]));
 	return 0;
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	RNS_MAP(c, rns_add(a[_i], a[_i], _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], a[_i], _m[_i]));
 }
 
 #endif /* !FP_RNS_VEC */

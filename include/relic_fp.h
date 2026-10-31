@@ -62,10 +62,15 @@
 
 #if FP_RDC == FP_RENUS
 /**
- * Bits of the moduli of the Residue Number System of prime field elements: one
- * less than a digit.
+ * Bits of the moduli of the Residue Number System of prime field elements: 52
+ * with the AVX-512 IFMA backend, whose multipliers take 52-bit operands, and
+ * one less than a digit otherwise.
  */
+#if RLC_ARITH == RLC_AVX512
+#define RLC_RNS_BITS	52
+#else
 #define RLC_RNS_BITS	(RLC_DIG - 1)
+#endif
 
 /**
  * Number of moduli in each base of the Residue Number System. The first base,
