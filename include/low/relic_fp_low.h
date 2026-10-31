@@ -68,7 +68,7 @@
 #endif
 
 /** Mask of the low RLC_RNS_DIG bits of a digit. */
-#define RLC_RNS_MASK	((dig_t)-1 >> (RLC_DIG - RLC_RNS_DIG))
+#define RLC_RNS_MASK	RLC_MASK(RLC_RNS_DIG)
 #endif
 
 #ifdef ASM
