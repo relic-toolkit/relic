@@ -41,8 +41,6 @@
 
 #ifndef FP_RNS_VEC
 
-#if RLC_ARITH != RLC_AVX512
-
 /**
  * Reduces s2 * R^2 + s1 * R + s0 by two Montgomery reductions modulo m < R/2,
  * with R = 2^RLC_DIG: computes it divided by R^2, modulo m, in constant time.
@@ -72,35 +70,6 @@ static dig_t fp_rns_red(dig_t s2, dig_t s1, dig_t s0, dig_t m, dig_t u) {
 	return RLC_RNS_CRT(h, m);
 }
 
-#else
-
-#ifdef RLC_CONF_NODBL
-#error "52-bit moduli require double-precision digits."
-#endif
-
-/**
- * Reduces a double digit below 2^116 by two Montgomery reductions modulo
- * m < 2^52: computes it divided by 2^104, modulo m, in constant time.
- *
- * @param[in] s				- the double digit.
- * @param[in] m				- the modulus.
- * @param[in] u				- the value -m^{-1} mod 2^52.
- * @return the reduced digit.
- */
-static dig_t fp_rns_red(dbl_t s, dig_t m, dig_t u) {
-	dig_t q;
-
-	/* The first reduction leaves a value below 2^64, the second one below
-	 * m + 2^12 < 2m. */
-	q = ((dig_t)s * u) & RLC_RNS_MASK;
-	s = (s + (dbl_t)q * m) >> RLC_RNS_DIG;
-	q = ((dig_t)s * u) & RLC_RNS_MASK;
-	s = (s + (dbl_t)q * m) >> RLC_RNS_DIG;
-	return RLC_RNS_CRT((dig_t)s, m);
-}
-
-#endif
-
 #endif /* !FP_RNS_VEC */
 
 /*============================================================================*/
@@ -129,16 +98,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
 	dig_t a = fp_rns_alpha(xi, n, exact);
 
-#if RLC_ARITH == RLC_AVX512
-	for (size_t j = 0; j < n; j++) {
-		/* The n + 1 products are below 2^104 each. */
-		dbl_t s = (dbl_t)a * w[j];
-		for (size_t i = 0; i < n; i++) {
-			s += (dbl_t)xi[i] * t[i * o + j];
-		}
-		r[j] = fp_rns_red(s, m[j], u[j]);
-	}
-#elif defined(RLC_CONF_NODBL)
+#ifdef RLC_CONF_NODBL
 	dig_t h, l, s0, s1, s2;
 
 	for (size_t j = 0; j < n; j++) {
