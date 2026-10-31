@@ -40,7 +40,7 @@
 /*============================================================================*/
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RLC_RNS_MAP(c, RLC_RNS_ADD(c[_i], rns_mul(a[_i], RLC_RNS_SCL(digit, _i),
+	RLC_RNS_MAP(c, RLC_RNS_ADD(c[_i], fp_rns_mul(a[_i], RLC_RNS_SCL(digit, _i),
 		_m[_i], _u[_i]), _m[_i]));
 	return 0;
 }
@@ -49,8 +49,8 @@ void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	rlc_align dig_t t[RLC_FP_LEN];
 
 	/* a * digit / M, then times M^2 / M to undo the division by M. */
-	RLC_RNS_MAP(t, rns_mul(a[_i], RLC_RNS_SCL(digit, _i), _m[_i], _u[_i]));
-	rns_wide(t, t);
+	RLC_RNS_MAP(t, fp_rns_mul(a[_i], RLC_RNS_SCL(digit, _i), _m[_i], _u[_i]));
+	fp_rns_wide(t, t);
 	fp_rns_rdc(t, t);
 	fp_mulm_low(c, t, core_get()->conv);
 }
@@ -60,7 +60,7 @@ void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 #ifndef FP_RNS_VEC
 
 void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RLC_RNS_MAP(c, rns_mul(a[_i], b[_i], _m[_i], _u[_i]));
+	RLC_RNS_MAP(c, fp_rns_mul(a[_i], b[_i], _m[_i], _u[_i]));
 }
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {

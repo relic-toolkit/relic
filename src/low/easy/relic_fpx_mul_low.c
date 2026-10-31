@@ -133,8 +133,9 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 #endif
 
 void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
-	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN], t3[RLC_FP_DLEN];
-	rlc_align dig_t t4[RLC_FP_DLEN], t5[RLC_FP_DLEN], t6[RLC_FP_DLEN];
+	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN];
+	rlc_align dig_t t3[RLC_FP_DLEN], t4[RLC_FP_DLEN], t5[RLC_FP_DLEN];
+	rlc_align dig_t t6[RLC_FP_DLEN];
 
 	/* Karatsuba algorithm. */
 

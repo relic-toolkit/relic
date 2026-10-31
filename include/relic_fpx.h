@@ -1866,8 +1866,8 @@ void fp2_mul_integ(fp2_t c, const fp2_t a, const fp2_t b);
 void fp2_mul_art(fp2_t c, const fp2_t a);
 
 /**
- * Multiplies two pairs of quadratic extension field elements and adds the products,
- * with a single modular reduction. Computes c = a * b + d * e.
+ * Multiplies two pairs of quadratic extension field elements and adds the
+ * products, with a single modular reduction. Computes c = a * b + d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -1879,8 +1879,8 @@ void fp2_mul_add(fp2_t c, const fp2_t a, const fp2_t b, const fp2_t d,
 		const fp2_t e);
 
 /**
- * Multiplies two pairs of quadratic extension field elements and subtracts the products,
- * with a single modular reduction. Computes c = a * b - d * e.
+ * Multiplies two pairs of quadratic extension field elements and subtracts the
+ * products, with a single modular reduction. Computes c = a * b - d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -2353,8 +2353,8 @@ void fp3_mul_add(fp3_t c, const fp3_t a, const fp3_t b, const fp3_t d,
 		const fp3_t e);
 
 /**
- * Multiplies two pairs of cubic extension field elements and subtracts the products,
- * with a single modular reduction. Computes c = a * b - d * e.
+ * Multiplies two pairs of cubic extension field elements and subtracts the
+ * products, with a single modular reduction. Computes c = a * b - d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -2689,8 +2689,8 @@ void fp4_mul_lazyr(fp4_t c, const fp4_t a, const fp4_t b);
 void fp4_mul_art(fp4_t c, const fp4_t a);
 
 /**
- * Multiplies two pairs of quartic extension field elements and adds the products,
- * reducing each product. Computes c = a * b + d * e.
+ * Multiplies two pairs of quartic extension field elements and adds the
+ * products, reducing each product. Computes c = a * b + d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -2702,8 +2702,8 @@ void fp4_mul_add(fp4_t c, const fp4_t a, const fp4_t b, const fp4_t d,
 		const fp4_t e);
 
 /**
- * Multiplies two pairs of quartic extension field elements and subtracts the products,
- * reducing each product. Computes c = a * b - d * e.
+ * Multiplies two pairs of quartic extension field elements and subtracts the
+ * products, reducing each product. Computes c = a * b - d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -3295,8 +3295,8 @@ void fp8_mul_add(fp8_t c, const fp8_t a, const fp8_t b, const fp8_t d,
 		const fp8_t e);
 
 /**
- * Multiplies two pairs of octic extension field elements and subtracts the products,
- * reducing each product. Computes c = a * b - d * e.
+ * Multiplies two pairs of octic extension field elements and subtracts the
+ * products, reducing each product. Computes c = a * b - d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.
@@ -3741,8 +3741,8 @@ void fp9_mul_add(fp9_t c, const fp9_t a, const fp9_t b, const fp9_t d,
 		const fp9_t e);
 
 /**
- * Multiplies two pairs of nonic extension field elements and subtracts the products,
- * reducing each product. Computes c = a * b - d * e.
+ * Multiplies two pairs of nonic extension field elements and subtracts the
+ * products, reducing each product. Computes c = a * b - d * e.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first element of the first product.

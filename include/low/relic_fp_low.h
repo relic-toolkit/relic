@@ -53,7 +53,8 @@
 #else
 #define RLC_DV_STRIDE_N	(RLC_DV_STRIDE_B * (RLC_WSIZE / 8))
 #endif
-#define RLC_DV_STRIDE	((RLC_DV_STRIDE_N + RLC_ALIGN - 1) / RLC_ALIGN * RLC_ALIGN)
+#define RLC_DV_STRIDE														\
+	((RLC_DV_STRIDE_N + RLC_ALIGN - 1) / RLC_ALIGN * RLC_ALIGN)
 
 #if FP_RDC == FP_RENUS
 /**
@@ -139,7 +140,7 @@
  * @param[in] I				- the index of the modulus.
  */
 #define RLC_RNS_SCL(D, I)													\
-	rns_mul(RLC_RNS_MOD(D, core_get()->rns.m[I]), core_get()->rns.r2[I],	\
+	fp_rns_mul(RLC_RNS_MOD(D, core_get()->rns.m[I]), core_get()->rns.r2[I],	\
 		core_get()->rns.m[I], core_get()->rns.u[I])
 
 /**
@@ -151,7 +152,8 @@
  * @param[in] I				- the index of the modulus.
  */
 #define RLC_RNS_CONV(D, I)													\
-	rns_mul(D, core_get()->rns.e[I], core_get()->rns.m[I], core_get()->rns.u[I])
+	fp_rns_mul(D, core_get()->rns.e[I], core_get()->rns.m[I],				\
+		core_get()->rns.u[I])
 
 /**
  * Applies a residue-wise operation to all residues of both bases, with the
@@ -459,7 +461,7 @@ int fp_smbm_low(const dig_t *a);
  * @param[in] u				- the value -m^{-1} mod R.
  * @return the product.
  */
-static inline dig_t rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
+static inline dig_t fp_rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 #if RLC_ARITH != RLC_AVX512
 	dig_t h, l, qh, ql, q;
 
@@ -494,7 +496,7 @@ static inline dig_t rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
  * @param[in] exact			- the flag to round instead of truncating.
  * @return the result.
  */
-static inline dig_t rns_alpha(const dig_t *xi, size_t n, int exact) {
+static inline dig_t fp_rns_alpha(const dig_t *xi, size_t n, int exact) {
 	dig_t a0 = (dig_t)exact << (RLC_RNS_BITS - 1), a1 = 0;
 
 	for (size_t i = 0; i < n; i++) {
@@ -511,7 +513,7 @@ static inline dig_t rns_alpha(const dig_t *xi, size_t n, int exact) {
  * @param[out] c			- the result.
  * @param[in] a				- the element.
  */
-static inline void rns_wide(dig_t *c, const dig_t *a) {
+static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
 	ctx_t *ctx = core_get();
 	const size_t n = RLC_FP_RNS, o = RLC_FP_RNSO;
 	const dig_t *m = ctx->rns.m + o, *u = ctx->rns.u + o;
@@ -520,7 +522,7 @@ static inline void rns_wide(dig_t *c, const dig_t *a) {
 		c[i] = a[i];
 	}
 	for (size_t i = 0; i < n; i++) {
-		c[o + i] = rns_mul(a[o + i], ctx->rns.mi[i], m[i], u[i]);
+		c[o + i] = fp_rns_mul(a[o + i], ctx->rns.mi[i], m[i], u[i]);
 	}
 }
 

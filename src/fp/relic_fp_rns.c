@@ -65,17 +65,17 @@
  * @param[in] i				- the index of the modulus.
  * @return the product.
  */
-static dig_t rns_mulp(dig_t a, dig_t b, size_t i) {
+static dig_t fp_rns_mulp(dig_t a, dig_t b, size_t i) {
 	ctx_t *ctx = core_get();
 	dig_t m = ctx->rns.m[i], u = ctx->rns.u[i];
 
-	return rns_mul(rns_mul(a, b, m, u), ctx->rns.r2[i], m, u);
+	return fp_rns_mul(fp_rns_mul(a, b, m, u), ctx->rns.r2[i], m, u);
 }
 
 /**
  * Computes an integer modulo the i-th modulus.
  */
-static dig_t rns_bn(const bn_t a, size_t i) {
+static dig_t fp_rns_bn(const bn_t a, size_t i) {
 	dig_t d;
 
 	bn_mod_dig(&d, a, core_get()->rns.m[i]);
@@ -85,7 +85,7 @@ static dig_t rns_bn(const bn_t a, size_t i) {
 /**
  * Computes the inverse of a residue modulo the i-th modulus.
  */
-static dig_t rns_inv(dig_t a, size_t i) {
+static dig_t fp_rns_inv(dig_t a, size_t i) {
 	bn_t t, u;
 	dig_t r = 0;
 
@@ -175,7 +175,7 @@ void fp_rns_pre(void) {
 			}
 			ctx->rns.u[i] = (0 - x) & RLC_RNS_MASK;
 			bn_set_2b(t, 2 * RLC_RNS_DIG);
-			ctx->rns.r2[i] = rns_bn(t, i);
+			ctx->rns.r2[i] = fp_rns_bn(t, i);
 		}
 
 		/* M and M' as integers. */
@@ -191,8 +191,8 @@ void fp_rns_pre(void) {
 		/* Elements are multiplied by R^2 in B and by R^2 / M in B' to be
 		 * stored, and the tables of the first extension carry 1 / M^2. */
 		for (size_t i = 0; i < n; i++) {
-			d = rns_inv(rns_bn(m, o + i), o + i);
-			ctx->rns.e[o + i] = rns_mulp(ctx->rns.r2[o + i], d, o + i);
+			d = fp_rns_inv(fp_rns_bn(m, o + i), o + i);
+			ctx->rns.e[o + i] = fp_rns_mulp(ctx->rns.r2[o + i], d, o + i);
 			ctx->rns.mi[i] = RLC_RNS_SCL(d, o + i);
 		}
 
@@ -206,22 +206,25 @@ void fp_rns_pre(void) {
 			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * R^3 mod m'_j. */
 			bn_div_dig(t, m, ctx->rns.m[i]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(ctx->rns.r2[o + j], RLC_RNS_SCL(1, o + j), o + j);
-				/* Times p / M^2, to give q * p as a product in B'. */
-				d = rns_mulp(rns_bn(t, o + j), rns_bn(&(ctx->prime), o + j),
+				r3 = fp_rns_mulp(ctx->rns.r2[o + j], RLC_RNS_SCL(1, o + j),
 						o + j);
-				d = rns_mulp(d, rns_inv(rns_bn(m, o + j), o + j), o + j);
-				d = rns_mulp(d, rns_inv(rns_bn(m, o + j), o + j), o + j);
-				ctx->rns.t1[i][j] = rns_mulp(d, r3, o + j);
+				/* Times p / M^2, to give q * p as a product in B'. */
+				d = fp_rns_mulp(fp_rns_bn(t, o + j),
+						fp_rns_bn(&(ctx->prime), o + j), o + j);
+				d = fp_rns_mulp(d, fp_rns_inv(fp_rns_bn(m, o + j), o + j),
+						o + j);
+				d = fp_rns_mulp(d, fp_rns_inv(fp_rns_bn(m, o + j), o + j),
+						o + j);
+				ctx->rns.t1[i][j] = fp_rns_mulp(d, r3, o + j);
 			}
-			ctx->rns.ib[i] = rns_inv(rns_bn(t, i), i);
+			ctx->rns.ib[i] = fp_rns_inv(fp_rns_bn(t, i), i);
 			/* -p^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
-			d = rns_inv(rns_bn(&(ctx->prime), i), i);
-			ctx->rns.nq[i] = rns_mulp(ctx->rns.m[i] - d, ctx->rns.ib[i], i);
+			d = fp_rns_inv(fp_rns_bn(&(ctx->prime), i), i);
+			ctx->rns.nq[i] = fp_rns_mulp(ctx->rns.m[i] - d, ctx->rns.ib[i], i);
 			/* -M' * R^3 mod m_i. */
-			r3 = rns_mulp(ctx->rns.r2[i], RLC_RNS_SCL(1, i), i);
-			ctx->rns.u2[i] = rns_mulp(RLC_RNS_SUB(0, rns_bn(mb, i), ctx->rns.m[i]),
-					r3, i);
+			r3 = fp_rns_mulp(ctx->rns.r2[i], RLC_RNS_SCL(1, i), i);
+			ctx->rns.u2[i] = fp_rns_mulp(
+					RLC_RNS_SUB(0, fp_rns_bn(mb, i), ctx->rns.m[i]), r3, i);
 		}
 
 		for (size_t i = 0; i < n; i++) {
@@ -230,18 +233,19 @@ void fp_rns_pre(void) {
 			/* (M'/m'_i)^{-1} mod m'_i, and (M'/m'_i) * R^3 mod m_j. */
 			bn_div_dig(t, mb, ctx->rns.m[j0]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(ctx->rns.r2[j], RLC_RNS_SCL(1, j), j);
-				ctx->rns.t2[i][j] = rns_mulp(rns_bn(t, j), r3, j);
+				r3 = fp_rns_mulp(ctx->rns.r2[j], RLC_RNS_SCL(1, j), j);
+				ctx->rns.t2[i][j] = fp_rns_mulp(fp_rns_bn(t, j), r3, j);
 			}
 			/* Times M, as elements are divided by M in B'. */
-			ctx->rns.ib[j0] = rns_mulp(rns_inv(rns_bn(t, j0), j0),
-					rns_bn(m, j0), j0);
+			ctx->rns.ib[j0] = fp_rns_mulp(fp_rns_inv(fp_rns_bn(t, j0), j0),
+					fp_rns_bn(m, j0), j0);
 
 			/* -M * p / M^2 * R^3 mod m'_i. */
-			r3 = rns_mulp(ctx->rns.r2[j0], RLC_RNS_SCL(1, j0), j0);
-			d = rns_mulp(rns_bn(&(ctx->prime), j0), rns_inv(rns_bn(m, j0), j0),
+			r3 = fp_rns_mulp(ctx->rns.r2[j0], RLC_RNS_SCL(1, j0), j0);
+			d = fp_rns_mulp(fp_rns_bn(&(ctx->prime), j0),
+					fp_rns_inv(fp_rns_bn(m, j0), j0), j0);
+			ctx->rns.u1[i] = fp_rns_mulp(RLC_RNS_SUB(0, d, ctx->rns.m[j0]), r3,
 					j0);
-			ctx->rns.u1[i] = rns_mulp(RLC_RNS_SUB(0, d, ctx->rns.m[j0]), r3, j0);
 		}
 
 		/* Constants in Montgomery form: M, M^2, M/2 and M/3 modulo p. */
@@ -268,8 +272,9 @@ void fp_rns_pre(void) {
 				if (RNS_PAD(i)) {
 					continue;
 				}
-				d = RLC_RNS_CONV(rns_bn(t, i), i);
-				ctx->rns.kp[j][i] = (j < 2 ? RLC_RNS_SUB(0, d, ctx->rns.m[i]) : d);
+				d = RLC_RNS_CONV(fp_rns_bn(t, i), i);
+				ctx->rns.kp[j][i] =
+						(j < 2 ? RLC_RNS_SUB(0, d, ctx->rns.m[i]) : d);
 			}
 		}
 
@@ -298,7 +303,8 @@ void fp_rns_pre(void) {
 				if (RNS_PAD(i)) {
 					continue;
 				}
-				ctx->rns.pw[i][k] = rns_mulp(rns_bn(t, i), ctx->rns.e[i], i);
+				ctx->rns.pw[i][k] = fp_rns_mulp(fp_rns_bn(t, i), ctx->rns.e[i],
+						i);
 			}
 		}
 	} RLC_CATCH_ANY {
@@ -314,7 +320,7 @@ void fp_rns_conv(dig_t *c, const bn_t a) {
 			c[i] = 0;
 			continue;
 		}
-		c[i] = RLC_RNS_CONV(rns_bn(a, i), i);
+		c[i] = RLC_RNS_CONV(fp_rns_bn(a, i), i);
 		if (bn_sign(a) == RLC_NEG) {
 			c[i] = RLC_RNS_SUB(0, c[i], core_get()->rns.m[i]);
 		}
@@ -338,7 +344,7 @@ void fp_rns_back(bn_t c, const dig_t *a) {
 		bn_zero(c);
 		for (size_t i = 0; i < RLC_FP_RNS; i++) {
 			bn_div_dig(t, m, ctx->rns.m[i]);
-			bn_mul_dig(t, t, rns_mul(a[i], ctx->rns.ib[i], ctx->rns.m[i],
+			bn_mul_dig(t, t, fp_rns_mul(a[i], ctx->rns.ib[i], ctx->rns.m[i],
 					ctx->rns.u[i]));
 			bn_add(c, c, t);
 		}
@@ -365,7 +371,7 @@ void fp_rns_rdc(dig_t *c, const dig_t *a) {
 void fp_rns_val(bn_t c, const dig_t *a) {
 	rlc_align dig_t t[RLC_FP_LEN];
 
-	rns_wide(t, a);
+	fp_rns_wide(t, a);
 	fp_rns_rdc(t, t);
 	fp_rns_back(c, t);
 	bn_mod(c, c, &(core_get()->prime));
@@ -383,14 +389,14 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 	dig_t t[RLC_FP_DIGS + 1], a1, b;
 
 	/* r = a / M is the value of a, with |r| < 3p. */
-	rns_wide(r, a);
+	fp_rns_wide(r, a);
 	fp_rns_rdc(r, r);
 	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
 	 * r / M is tiny. */
 	for (size_t i = 0; i < n; i++) {
-		xi[i] = rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
+		xi[i] = fp_rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
 	}
-	a1 = rns_alpha(xi, n, 1);
+	a1 = fp_rns_alpha(xi, n, 1);
 	/* As |r| < 3p, the low digits of r + 3p are enough to recover it. */
 	dv_copy(s, ctx->rns.p3, l);
 	bn_mula_low(s, ctx->rns.mm, a1, l);
@@ -419,8 +425,8 @@ void fp_rns_set(dig_t *c, const dig_t *a) {
 			continue;
 		}
 		for (size_t k = 0; k < RLC_FP_DIGS; k++) {
-			t[i] = RLC_RNS_ADD(t[i], rns_mul(a[k], ctx->rns.pw[i][k], m[i], u[i]),
-					m[i]);
+			t[i] = RLC_RNS_ADD(t[i],
+					fp_rns_mul(a[k], ctx->rns.pw[i][k], m[i], u[i]), m[i]);
 		}
 	}
 	/* Times M^2 / M for Montgomery form. */
@@ -437,11 +443,12 @@ int fp_rns_is_zero(const dig_t *a) {
 	 * so a is zero modulo p if and only if r is one of -2p, -p, 0, p or 2p,
 	 * which B' tells apart without extending r back to B. */
 	for (size_t i = 0; i < n; i++) {
-		q[i] = rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
+		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
 	}
 	fp_rnsx_low(r, q, 1, 0);
 	for (size_t i = 0; i < n; i++) {
-		r[i] = RLC_RNS_ADD(rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
+		r[i] = RLC_RNS_ADD(
+				fp_rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
 				r[i], m[o + i]);
 	}
 	for (int k = 0; k < 5; k++) {

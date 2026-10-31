@@ -58,7 +58,7 @@
  * per modulus of two bases. Each base has moduli of at least min(RLC_DIG - 1,
  * 52) bits whose product exceeds 2^34 * p, padded to a multiple of 8.
  */
-#define RLC_DV_RNS		(2 * RLC_DIG *											\
+#define RLC_DV_RNS		(2 * RLC_DIG *										\
 	((FP_PRIME + 34) / RLC_MIN(RLC_DIG - 1, 52) + 8))
 #ifdef WITH_FB
 #define RLC_DV_MAX		((size_t)RLC_MAX(RLC_DV_RNS, 2 * FB_POLYN))

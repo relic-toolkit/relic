@@ -310,7 +310,7 @@ typedef struct {
 	dig_t e[2 * RLC_FP_RNSO];
 	/** Values M^{-1} mod m'_j, in Montgomery form. */
 	dig_t mi[RLC_FP_RNS];
-	/** Values (M/m_i)^{-1} mod m_i in B, and M (M'/m'_j)^{-1} mod m'_j in B'. */
+	/** Values (M/m_i)^{-1} mod m_i in B and M (M'/m'_j)^{-1} mod m'_j in B'. */
 	dig_t ib[2 * RLC_FP_RNSO];
 	/** Values -p^{-1} (M/m_i)^{-1} mod m_i in B. */
 	dig_t nq[RLC_FP_RNSO];

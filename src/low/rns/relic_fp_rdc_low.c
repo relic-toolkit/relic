@@ -68,7 +68,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
  * @param[in] u				- the value -m^{-1} mod R.
  * @return the reduced digit.
  */
-static dig_t rns_red(dig_t s2, dig_t s1, dig_t s0, dig_t m, dig_t u) {
+static dig_t fp_rns_red(dig_t s2, dig_t s1, dig_t s0, dig_t m, dig_t u) {
 	dig_t h, l, q;
 
 	/* (s2 * R^2 + s1 * R + s0 + q * m) / R, with q = s0 * u. */
@@ -101,7 +101,7 @@ static dig_t rns_red(dig_t s2, dig_t s1, dig_t s0, dig_t m, dig_t u) {
  * @param[in] u				- the value -m^{-1} mod 2^52.
  * @return the reduced digit.
  */
-static dig_t rns_red(dbl_t s, dig_t m, dig_t u) {
+static dig_t fp_rns_red(dbl_t s, dig_t m, dig_t u) {
 	dig_t q;
 
 	/* The first reduction leaves a value below 2^64, the second one below
@@ -127,7 +127,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
-	dig_t a = rns_alpha(xi, n, exact);
+	dig_t a = fp_rns_alpha(xi, n, exact);
 
 #if RLC_ARITH == RLC_AVX512
 	for (size_t j = 0; j < n; j++) {
@@ -136,7 +136,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 		for (size_t i = 0; i < n; i++) {
 			s += (dbl_t)xi[i] * t[i * o + j];
 		}
-		r[j] = rns_red(s, m[j], u[j]);
+		r[j] = fp_rns_red(s, m[j], u[j]);
 	}
 #elif defined(RLC_CONF_NODBL)
 	dig_t h, l, s0, s1, s2;
@@ -152,7 +152,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 			s1 += h;
 			s2 += (s1 < h);
 		}
-		r[j] = rns_red(s2, s1, s0, m[j], u[j]);
+		r[j] = fp_rns_red(s2, s1, s0, m[j], u[j]);
 	}
 #else
 	/* The products are below R^2 / 4, so four of them add up in a double digit
@@ -186,8 +186,8 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 			}
 		}
 		for (int k = 0; k < 4; k++) {
-			r[j + k] = rns_red(c[k], (dig_t)(acc[k] >> RLC_DIG), (dig_t)acc[k],
-					m[j + k], u[j + k]);
+			r[j + k] = fp_rns_red(c[k], (dig_t)(acc[k] >> RLC_DIG),
+					(dig_t)acc[k], m[j + k], u[j + k]);
 		}
 	}
 	for (; j < n; j++) {
@@ -198,7 +198,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 			acc += g;
 			c += (acc < g);
 		}
-		r[j] = rns_red(c, (dig_t)(acc >> RLC_DIG), (dig_t)acc, m[j], u[j]);
+		r[j] = fp_rns_red(c, (dig_t)(acc >> RLC_DIG), (dig_t)acc, m[j], u[j]);
 	}
 #endif
 }
@@ -211,7 +211,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 
 	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues. */
 	for (size_t i = 0; i < n; i++) {
-		q[i] = rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
+		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
 	}
 	/* q * p for q, or q + M, as a product in B'. */
 	fp_rnsx_low(r, q, 1, 0);
@@ -219,7 +219,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	 * element 1 / M; and its xi_j for the exact extension. */
 	for (size_t j = 0; j < n; j++) {
 		c[o + j] = RLC_RNS_ADD(a[o + j], r[j], m[o + j]);
-		q[j] = rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
+		q[j] = fp_rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
 	}
 	/* c in B, exactly, since c < 3p is far below M'/2. */
 	fp_rnsx_low(c, q, 0, 1);
