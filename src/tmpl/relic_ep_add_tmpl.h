@@ -169,15 +169,10 @@
 				F##_dbl(t5, r->y);											\
 				F##_add(r->y, r->y, t5);									\
 				C##_curve_mul_b(r->y, r->y);								\
-				F##_mul(r->x, t4, r->y);									\
-				F##_mul(t2, t3, t1);										\
-				F##_sub(r->x, t2, r->x);									\
-				F##_mul(r->y, t0, r->y);									\
-				F##_mul(t1, t1, r->z);										\
-				F##_add(r->y, t1, r->y);									\
-				F##_mul(t0, t0, t3);										\
-				F##_mul(r->z, r->z, t4);									\
-				F##_add(r->z, r->z, t0);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_sub(r->x, t3, t1, t4, r->y);						\
+				F##_mul_add(r->y, t1, r->z, t0, r->y);						\
+				F##_mul_add(r->z, r->z, t4, t0, t3);						\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 11M + 2m_b + 23a. */								\
 				if (p->coord == EC_AFFIN) {									\
@@ -208,15 +203,11 @@
 				F##_dbl(t1, t0);											\
 				F##_add(t0, t1, t0);										\
 				F##_sub(t0, t0, t2);										\
-				F##_mul(t1, t4, r->y);										\
-				F##_mul(t2, t0, r->y);										\
-				F##_mul(r->y, r->x, r->z);									\
-				F##_add(r->y, r->y, t2);									\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t1);									\
-				F##_mul(r->z, t4, r->z);									\
-				F##_mul(t1, t3, t0);										\
-				F##_add(r->z, r->z, t1);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_sub(t1, t3, r->x, t4, r->y);						\
+				F##_mul_add(r->y, r->x, r->z, t0, r->y);					\
+				F##_mul_add(r->z, t4, r->z, t3, t0);						\
+				F##_copy(r->x, t1);											\
 			} else {														\
 				/* Cost of 11M + 3m_a + 2m_3b + 17a. */						\
 				if (p->coord == EC_AFFIN) {									\
@@ -242,7 +233,6 @@
 				}															\
 				F##_sub(r->x, t1, r->z);									\
 				F##_add(r->z, t1, r->z);									\
-				F##_mul(r->y, r->x, r->z);									\
 				F##_dbl(t1, t4);											\
 				F##_add(t1, t1, t4);										\
 				C##_curve_mul_b(t4, t1);									\
@@ -252,14 +242,10 @@
 				F##_sub(t2, t0, t2);										\
 				C##_curve_mul_a(t2, t2);									\
 				F##_add(t4, t4, t2);										\
-				F##_mul(t0, t1, t4);										\
-				F##_add(r->y, r->y, t0);									\
-				F##_mul(t0, t5, t4);										\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t0);									\
-				F##_mul(t0, t3, t1);										\
-				F##_mul(r->z, t5, r->z);									\
-				F##_add(r->z, r->z, t0);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_add(r->y, r->x, r->z, t1, t4);						\
+				F##_mul_sub(r->x, t3, r->x, t5, t4);						\
+				F##_mul_add(r->z, t5, r->z, t3, t1);						\
 			}																\
 																			\
 			r->coord = EC_PROJC;												\
@@ -317,15 +303,10 @@
 				F##_dbl(t5, r->y);											\
 				F##_add(r->y, r->y, t5);									\
 				C##_curve_mul_b(r->y, r->y);								\
-				F##_mul(r->x, t4, r->y);									\
-				F##_mul(t2, t3, t1);										\
-				F##_sub(r->x, t2, r->x);									\
-				F##_mul(r->y, t0, r->y);									\
-				F##_mul(t1, t1, r->z);										\
-				F##_add(r->y, t1, r->y);									\
-				F##_mul(t0, t0, t3);										\
-				F##_mul(r->z, r->z, t4);									\
-				F##_add(r->z, r->z, t0);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_sub(r->x, t3, t1, t4, r->y);						\
+				F##_mul_add(r->y, t1, r->z, t0, r->y);						\
+				F##_mul_add(r->z, r->z, t4, t0, t3);						\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 12M + 2m_b + 29a. */								\
 				F##_add(t4, p->y, p->z);									\
@@ -355,15 +336,11 @@
 				F##_dbl(t1, t0);											\
 				F##_add(t0, t1, t0);										\
 				F##_sub(t0, t0, t2);										\
-				F##_mul(t1, t4, r->y);										\
-				F##_mul(t2, t0, r->y);										\
-				F##_mul(r->y, r->x, r->z);									\
-				F##_add(r->y, r->y, t2);									\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t1);									\
-				F##_mul(r->z, t4, r->z);									\
-				F##_mul(t1, t3, t0);										\
-				F##_add(r->z, r->z, t1);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_sub(t1, t3, r->x, t4, r->y);						\
+				F##_mul_add(r->y, r->x, r->z, t0, r->y);					\
+				F##_mul_add(r->z, t4, r->z, t3, t0);						\
+				F##_copy(r->x, t1);											\
 			} else {														\
 				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
 				F##_add(t4, p->x, p->z);									\
@@ -383,7 +360,6 @@
 				F##_add(r->z, r->x, r->z);									\
 				F##_sub(r->x, t1, r->z);									\
 				F##_add(r->z, t1, r->z);									\
-				F##_mul(r->y, r->x, r->z);									\
 				F##_dbl(t1, t4);											\
 				F##_add(t1, t1, t4);										\
 				C##_curve_mul_b(t4, t1);									\
@@ -394,14 +370,10 @@
 				F##_sub(t2, t0, t2);										\
 				C##_curve_mul_a(t2, t2);									\
 				F##_add(t4, t4, t2);										\
-				F##_mul(t0, t1, t4);										\
-				F##_add(r->y, r->y, t0);									\
-				F##_mul(t0, t5, t4);										\
-				F##_mul(r->x, t3, r->x);									\
-				F##_sub(r->x, r->x, t0);									\
-				F##_mul(t0, t3, t1);										\
-				F##_mul(r->z, t5, r->z);									\
-				F##_add(r->z, r->z, t0);									\
+				/* Sums of products are reduced once. */					\
+				F##_mul_add(r->y, r->x, r->z, t1, t4);						\
+				F##_mul_sub(r->x, t3, r->x, t5, t4);						\
+				F##_mul_add(r->z, t5, r->z, t3, t1);						\
 			}																\
 			r->coord = EC_PROJC;												\
 		} RLC_CATCH_ANY {													\

@@ -421,6 +421,29 @@ static int multiplication(void) {
 	RLC_TRY {
 		fp_new_all(a, b, c, d, e, f);
 
+		TEST_CASE("sums and differences of products are correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_rand(c);
+			fp_rand(d);
+			fp_mul(e, a, b);
+			fp_mul(f, c, d);
+			fp_add(e, e, f);
+			fp_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp_cmp(e, f) == RLC_EQ, end);
+			fp_mul(e, a, b);
+			fp_mul(f, c, d);
+			fp_sub(e, e, f);
+			fp_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp_mul(e, a, b);
+			fp_mul(f, c, a);
+			fp_sub(e, e, f);
+			fp_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication is commutative") {
 			fp_rand(a);
 			fp_rand(b);

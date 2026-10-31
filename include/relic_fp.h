@@ -1032,6 +1032,32 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b);
 void fp_mul_dig(fp_t c, const fp_t a, dig_t b);
 
 /**
+ * Multiplies two pairs of prime field elements and adds the products,
+ * with a single modular reduction. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp_mul_add(fp_t c, const fp_t a, const fp_t b, const fp_t d,
+		const fp_t e);
+
+/**
+ * Multiplies two pairs of prime field elements and subtracts the products,
+ * with a single modular reduction. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp_mul_sub(fp_t c, const fp_t a, const fp_t b, const fp_t d,
+		const fp_t e);
+
+/**
  * Squares a prime field element using Schoolbook squaring.
  *
  * @param[out] c			- the result.

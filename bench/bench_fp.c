@@ -304,6 +304,20 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_mul_add") {
+		fp_rand(a);
+		fp_rand(b);
+		BENCH_ADD(fp_mul_add(c, a, b, b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_mul_sub") {
+		fp_rand(a);
+		fp_rand(b);
+		BENCH_ADD(fp_mul_sub(c, a, b, b, a));
+	}
+	BENCH_END;
+
 #if FP_MUL == FP_BASIC || !defined(RLC_STRIP)
 	BENCH_RUN("fp_mul_basic") {
 		fp_rand(a);

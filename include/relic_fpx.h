@@ -1866,6 +1866,32 @@ void fp2_mul_integ(fp2_t c, const fp2_t a, const fp2_t b);
 void fp2_mul_art(fp2_t c, const fp2_t a);
 
 /**
+ * Multiplies two pairs of quadratic extension field elements and adds the products,
+ * with a single modular reduction. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp2_mul_add(fp2_t c, const fp2_t a, const fp2_t b, const fp2_t d,
+		const fp2_t e);
+
+/**
+ * Multiplies two pairs of quadratic extension field elements and subtracts the products,
+ * with a single modular reduction. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp2_mul_sub(fp2_t c, const fp2_t a, const fp2_t b, const fp2_t d,
+		const fp2_t e);
+
+/**
  * Multiplies a quadratic extension field element by a quadratic/cubic
  * non-residue.
  *
@@ -2314,6 +2340,32 @@ void fp3_mul_integ(fp3_t c, const fp3_t a, const fp3_t b);
 void fp3_mul_art(fp3_t c, const fp3_t a);
 
 /**
+ * Multiplies two pairs of cubic extension field elements and adds the products,
+ * with a single modular reduction. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp3_mul_add(fp3_t c, const fp3_t a, const fp3_t b, const fp3_t d,
+		const fp3_t e);
+
+/**
+ * Multiplies two pairs of cubic extension field elements and subtracts the products,
+ * with a single modular reduction. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp3_mul_sub(fp3_t c, const fp3_t a, const fp3_t b, const fp3_t d,
+		const fp3_t e);
+
+/**
  * Multiplies a cubic extension field element by a cubic non-residue.
  *
  * @param[out] c			- the result.
@@ -2635,6 +2687,32 @@ void fp4_mul_lazyr(fp4_t c, const fp4_t a, const fp4_t b);
  * @param[in] a				- the quartic extension field element to multiply.
  */
 void fp4_mul_art(fp4_t c, const fp4_t a);
+
+/**
+ * Multiplies two pairs of quartic extension field elements and adds the products,
+ * reducing each product. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp4_mul_add(fp4_t c, const fp4_t a, const fp4_t b, const fp4_t d,
+		const fp4_t e);
+
+/**
+ * Multiplies two pairs of quartic extension field elements and subtracts the products,
+ * reducing each product. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp4_mul_sub(fp4_t c, const fp4_t a, const fp4_t b, const fp4_t d,
+		const fp4_t e);
 
 /**
  * Multiplies a quartic extension field element by a power of the constant
@@ -3204,6 +3282,32 @@ void fp8_mul_lazyr(fp8_t c, const fp8_t a, const fp8_t b);
 void fp8_mul_art(fp8_t c, const fp8_t a);
 
 /**
+ * Multiplies two pairs of octic extension field elements and adds the products,
+ * reducing each product. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp8_mul_add(fp8_t c, const fp8_t a, const fp8_t b, const fp8_t d,
+		const fp8_t e);
+
+/**
+ * Multiplies two pairs of octic extension field elements and subtracts the products,
+ * reducing each product. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp8_mul_sub(fp8_t c, const fp8_t a, const fp8_t b, const fp8_t d,
+		const fp8_t e);
+
+/**
  * Multiplies an octic extension field element by a power of the constant
  * needed to compute a power of the Frobenius map.
  *
@@ -3622,6 +3726,32 @@ void fp9_mul_lazyr(fp9_t c, const fp9_t a, const fp9_t b);
  * @param[in] a				- the nonic extension field element to multiply.
  */
 void fp9_mul_art(fp9_t c, const fp9_t a);
+
+/**
+ * Multiplies two pairs of nonic extension field elements and adds the products,
+ * reducing each product. Computes c = a * b + d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp9_mul_add(fp9_t c, const fp9_t a, const fp9_t b, const fp9_t d,
+		const fp9_t e);
+
+/**
+ * Multiplies two pairs of nonic extension field elements and subtracts the products,
+ * reducing each product. Computes c = a * b - d * e.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first element of the first product.
+ * @param[in] b				- the second element of the first product.
+ * @param[in] d				- the first element of the second product.
+ * @param[in] e				- the second element of the second product.
+ */
+void fp9_mul_sub(fp9_t c, const fp9_t a, const fp9_t b, const fp9_t d,
+		const fp9_t e);
 
 /**
  * Multiples a dense nonic extension field element by a sparse element.

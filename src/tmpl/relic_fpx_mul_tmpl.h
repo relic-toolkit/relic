@@ -797,6 +797,95 @@
 	}
 
 /**
+ * Defines a template for the sum and the difference of two products with lazy
+ * reduction, adding the products before reducing them once.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ */
+#define TMPL_FPX_MUL_ADD_LAZYR(X, D)										\
+	void X##_mul_add(X##_t c, const X##_t a, const X##_t b, const X##_t d,	\
+			const X##_t e) {												\
+		D##_t t, u;															\
+																			\
+		D##_null_all(t, u);													\
+																			\
+		RLC_TRY {															\
+			D##_new_all(t, u);												\
+			X##_muln_low(t, a, b);											\
+			X##_muln_low(u, d, e);											\
+			X##_addc_low(t, t, u);											\
+			X##_rdcn_low(c, t);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			D##_free_all(t, u);												\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_sub(X##_t c, const X##_t a, const X##_t b, const X##_t d,	\
+			const X##_t e) {												\
+		D##_t t, u;															\
+																			\
+		D##_null_all(t, u);													\
+																			\
+		RLC_TRY {															\
+			D##_new_all(t, u);												\
+			X##_muln_low(t, a, b);											\
+			X##_muln_low(u, d, e);											\
+			X##_subc_low(t, t, u);											\
+			X##_rdcn_low(c, t);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			D##_free_all(t, u);												\
+		}																	\
+	}
+
+/**
+ * Defines a template for the sum and the difference of two products, reducing
+ * each product.
+ *
+ * @param[in] X			- the extension field prefix.
+ */
+#define TMPL_FPX_MUL_ADD(X)													\
+	void X##_mul_add(X##_t c, const X##_t a, const X##_t b, const X##_t d,	\
+			const X##_t e) {												\
+		X##_t t;															\
+																			\
+		X##_null(t);														\
+																			\
+		RLC_TRY {															\
+			X##_new(t);														\
+			X##_mul(t, a, b);												\
+			X##_mul(c, d, e);												\
+			X##_add(c, t, c);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free(t);													\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_sub(X##_t c, const X##_t a, const X##_t b, const X##_t d,	\
+			const X##_t e) {												\
+		X##_t t;															\
+																			\
+		X##_null(t);														\
+																			\
+		RLC_TRY {															\
+			X##_new(t);														\
+			X##_mul(t, a, b);												\
+			X##_mul(c, d, e);												\
+			X##_sub(c, t, c);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free(t);													\
+		}																	\
+	}
+
+/**
  * Defines a template for Karatsuba multiplication in a quadratic extension
  * without reduction.
  *

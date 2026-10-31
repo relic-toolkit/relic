@@ -170,6 +170,26 @@ void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
 	}
 }
 
+void fp_mul_add(fp_t c, const fp_t a, const fp_t b, const fp_t d,
+		const fp_t e) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS], u[2 * RLC_FP_DIGS];
+
+	fp_muln_low(t, a, b);
+	fp_muln_low(u, d, e);
+	fp_addc_low(t, t, u);
+	fp_rdc(c, t);
+}
+
+void fp_mul_sub(fp_t c, const fp_t a, const fp_t b, const fp_t d,
+		const fp_t e) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS], u[2 * RLC_FP_DIGS];
+
+	fp_muln_low(t, a, b);
+	fp_muln_low(u, d, e);
+	fp_subc_low(t, t, u);
+	fp_rdc(c, t);
+}
+
 void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 	size_t i;
 	dv_t t;

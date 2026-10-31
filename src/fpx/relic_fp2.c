@@ -482,6 +482,8 @@ void fp2_sqr_cyc(fp2_t c, const fp2_t a) {
 	}
 }
 
+TMPL_FPX_MUL_ADD_LAZYR(fp2, dv2);
+
 TMPL_FPX_INV_SIM(fp2);
 
 void fp2_exp(fp2_t c, const fp2_t a, const bn_t b) {

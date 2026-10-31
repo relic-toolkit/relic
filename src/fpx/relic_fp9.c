@@ -49,6 +49,8 @@ TMPL_FPX_MUL_CUBIC(fp9, fp3, fp3_mul_nor);
 
 TMPL_FPX_MUL_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_muln_low);
 
+TMPL_FPX_MUL_ADD(fp9);
+
 TMPL_FPX_MUL_LAZYR(fp9, dv9, fp3, dv3, 3);
 
 void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {

@@ -145,15 +145,14 @@
 				F##_dbl(r->z, t0);											\
 				F##_dbl(r->z, r->z);										\
 				F##_dbl(r->z, r->z);										\
-				F##_mul(r->x, t2, r->z);									\
 				F##_add(r->y, t0, t2);										\
+				F##_dbl(t4, t2);											\
+				F##_add(t4, t4, t2);										\
+				F##_sub(t4, t0, t4);										\
+				/* The sum of products is reduced once. */					\
+				F##_mul_add(r->y, t2, r->z, t4, r->y);						\
 				F##_mul(r->z, t1, r->z);									\
-				F##_dbl(t1, t2);											\
-				F##_add(t2, t1, t2);										\
-				F##_sub(t0, t0, t2);										\
-				F##_mul(r->y, t0, r->y);									\
-				F##_add(r->y, r->x, r->y);									\
-				F##_mul(r->x, t0, t3);										\
+				F##_mul(r->x, t4, t3);										\
 				F##_dbl(r->x, r->x);										\
 			} else {														\
 				F##_sqr(t0, p->x);											\

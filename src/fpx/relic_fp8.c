@@ -80,6 +80,8 @@ TMPL_FPX_MUL_QUAD(fp8, fp4, fp4_mul_art);
 
 TMPL_FPX_MUL_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1, fp4_mul_unr);
 
+TMPL_FPX_MUL_ADD(fp8);
+
 TMPL_FPX_MUL_LAZYR(fp8, dv8, fp2, dv2, 4);
 
 void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {

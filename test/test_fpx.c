@@ -361,6 +361,29 @@ static int multiplication2(void) {
 		fp2_new_all(a, b, c, d, e, f);
 		bn_new(g);
 
+		TEST_CASE("sums and differences of products are correct") {
+			fp2_rand(a);
+			fp2_rand(b);
+			fp2_rand(c);
+			fp2_rand(d);
+			fp2_mul(e, a, b);
+			fp2_mul(f, c, d);
+			fp2_add(e, e, f);
+			fp2_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp2_cmp(e, f) == RLC_EQ, end);
+			fp2_mul(e, a, b);
+			fp2_mul(f, c, d);
+			fp2_sub(e, e, f);
+			fp2_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp2_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp2_mul(e, a, b);
+			fp2_mul(f, c, a);
+			fp2_sub(e, e, f);
+			fp2_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp2_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication is commutative") {
 			fp2_rand(a);
 			fp2_rand(b);
@@ -1292,6 +1315,29 @@ static int multiplication3(void) {
 		fp3_new_all(a, b, c, d, e, f);
 		bn_new(g);
 
+		TEST_CASE("sums and differences of products are correct") {
+			fp3_rand(a);
+			fp3_rand(b);
+			fp3_rand(c);
+			fp3_rand(d);
+			fp3_mul(e, a, b);
+			fp3_mul(f, c, d);
+			fp3_add(e, e, f);
+			fp3_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp3_cmp(e, f) == RLC_EQ, end);
+			fp3_mul(e, a, b);
+			fp3_mul(f, c, d);
+			fp3_sub(e, e, f);
+			fp3_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp3_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp3_mul(e, a, b);
+			fp3_mul(f, c, a);
+			fp3_sub(e, e, f);
+			fp3_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp3_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication is commutative") {
 			fp3_rand(a);
 			fp3_rand(b);
@@ -1925,6 +1971,29 @@ static int multiplication4(void) {
 
 	RLC_TRY {
 		fp4_new_all(a, b, c, d, e, f);
+
+		TEST_CASE("sums and differences of products are correct") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_rand(c);
+			fp4_rand(d);
+			fp4_mul(e, a, b);
+			fp4_mul(f, c, d);
+			fp4_add(e, e, f);
+			fp4_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp4_cmp(e, f) == RLC_EQ, end);
+			fp4_mul(e, a, b);
+			fp4_mul(f, c, d);
+			fp4_sub(e, e, f);
+			fp4_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp4_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp4_mul(e, a, b);
+			fp4_mul(f, c, a);
+			fp4_sub(e, e, f);
+			fp4_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp4_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
 
 		TEST_CASE("multiplication is commutative") {
 			fp4_rand(a);
@@ -3060,6 +3129,29 @@ static int multiplication8(void) {
 	RLC_TRY {
 		fp8_new_all(a, b, c, d, e, f);
 
+		TEST_CASE("sums and differences of products are correct") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_rand(c);
+			fp8_rand(d);
+			fp8_mul(e, a, b);
+			fp8_mul(f, c, d);
+			fp8_add(e, e, f);
+			fp8_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp8_cmp(e, f) == RLC_EQ, end);
+			fp8_mul(e, a, b);
+			fp8_mul(f, c, d);
+			fp8_sub(e, e, f);
+			fp8_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp8_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp8_mul(e, a, b);
+			fp8_mul(f, c, a);
+			fp8_sub(e, e, f);
+			fp8_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp8_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication is commutative") {
 			fp8_rand(a);
 			fp8_rand(b);
@@ -3766,6 +3858,29 @@ static int multiplication9(void) {
 
 	RLC_TRY {
 		fp9_new_all(a, b, c, d, e, f);
+
+		TEST_CASE("sums and differences of products are correct") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_rand(c);
+			fp9_rand(d);
+			fp9_mul(e, a, b);
+			fp9_mul(f, c, d);
+			fp9_add(e, e, f);
+			fp9_mul_add(f, a, b, c, d);
+			TEST_ASSERT(fp9_cmp(e, f) == RLC_EQ, end);
+			fp9_mul(e, a, b);
+			fp9_mul(f, c, d);
+			fp9_sub(e, e, f);
+			fp9_mul_sub(f, a, b, c, d);
+			TEST_ASSERT(fp9_cmp(e, f) == RLC_EQ, end);
+			/* The result may overwrite the inputs. */
+			fp9_mul(e, a, b);
+			fp9_mul(f, c, a);
+			fp9_sub(e, e, f);
+			fp9_mul_sub(a, a, b, c, a);
+			TEST_ASSERT(fp9_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
 
 		TEST_CASE("multiplication is commutative") {
 			fp9_rand(a);
