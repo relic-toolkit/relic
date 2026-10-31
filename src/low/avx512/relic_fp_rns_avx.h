@@ -341,8 +341,8 @@ static inline rp6_t rp6_sub(rp6_t a, rp6_t b, __m512i m) {
  * Multiplies vectors of elements of Fp6 = Fp2[v]/(v^3 - (s + i)), with
  * i^2 = q, by Karatsuba multiplication.
  */
-static inline __attribute__((always_inline)) rp6_t rp6_mul(rp6_t a, rp6_t b,
-		int s, int q, __m512i m, __m512i u) {
+rlc_inline rp6_t rp6_mul(rp6_t a, rp6_t b, int s, int q, __m512i m,
+		__m512i u) {
 	rp2_t t0, t1, t2, u0, u1, u2;
 	rp6_t c;
 
@@ -378,9 +378,8 @@ static inline __attribute__((always_inline)) rp6_t rp6_mul(rp6_t a, rp6_t b,
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- the flag to round instead of truncating.
  */
-static inline __attribute__((always_inline)) void rns_vext(
-		__m512i r[][RNS_NB], const __m512i xi[][RNS_NB], const int K,
-		const int b, int exact) {
+rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
+		const int K, const int b, int exact) {
 	ctx_t *ctx = core_get();
 	const dig_t *t = (b ? ctx->rns.t1[0] : ctx->rns.t2[0]);
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
@@ -459,8 +458,8 @@ static inline __attribute__((always_inline)) void rns_vext(
  * @param[in] a				- the products.
  * @param[in] K				- the number of products, up to RNS_K.
  */
-static inline __attribute__((always_inline)) void rns_vrdc(dig_t *const c[],
-		const dig_t *const a[], const int K) {
+rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
+		const int K) {
 	ctx_t *ctx = core_get();
 	const size_t o = RLC_FP_RNSO;
 	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;

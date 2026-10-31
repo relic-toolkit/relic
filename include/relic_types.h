@@ -203,6 +203,15 @@ typedef unsigned long uint_t;
 #endif
 
 /**
+ * Specification for static functions that are always inlined.
+ */
+#if defined(__GNUC__)
+#define rlc_inline 		static inline __attribute__ ((always_inline))
+#else
+#define rlc_inline 		static inline
+#endif
+
+/**
  * Size of padding to be added so that digit vectors are aligned.
  */
 #if RLC_ALIGN > 1

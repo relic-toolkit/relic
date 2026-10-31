@@ -47,7 +47,8 @@ TMPL_FPX_ASM_DIG(fp4, fp2, 2);
 
 TMPL_FPX_MUL_QUAD(fp4, fp2, fp2_mul_nor);
 
-TMPL_FPX_MUL_UNR_QUAD(fp4, fp2, dv4, dv2, fp2, dv2, 1, 1, fp2_muln_low);
+TMPL_FPX_MUL_UNR_QUAD(fp4_mul_unr, fp4, fp2, dv4, dv2, fp2, dv2, 1, 1,
+		fp2_muln_low);
 
 TMPL_FPX_MUL_ADD(fp4);
 

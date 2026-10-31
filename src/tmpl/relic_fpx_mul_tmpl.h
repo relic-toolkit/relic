@@ -885,6 +885,7 @@
  * Defines a template for Karatsuba multiplication in a quadratic extension
  * without reduction.
  *
+ * @param[in] F			- the name of the function.
  * @param[in] X			- the extension field prefix.
  * @param[in] S			- the subfield prefix.
  * @param[in] D			- the double-precision extension field prefix.
@@ -895,8 +896,8 @@
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] MULU		- the multiplication in the subfield without reduction.
  */
-#define TMPL_FPX_MUL_UNR_QUAD(X, S, D, DS, B, BD, N, Q, MULU)				\
-	void X##_mul_unr(D##_t c, const X##_t a, const X##_t b) {				\
+#define TMPL_FPX_MUL_UNR_QUAD(F, X, S, D, DS, B, BD, N, Q, MULU)			\
+	void F(D##_t c, const X##_t a, const X##_t b) {							\
 		S##_t t0, t1;														\
 		DS##_t u0, u1, u2;													\
 																			\
@@ -929,6 +930,7 @@
 /**
  * Defines a template for squaring in a quadratic extension without reduction.
  *
+ * @param[in] F			- the name of the function.
  * @param[in] X			- the extension field prefix.
  * @param[in] S			- the subfield prefix.
  * @param[in] D			- the double-precision extension field prefix.
@@ -939,8 +941,8 @@
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] SQRU		- the squaring in the subfield without reduction.
  */
-#define TMPL_FPX_SQR_UNR_QUAD(X, S, D, DS, B, BD, N, Q, SQRU)				\
-	void X##_sqr_unr(D##_t c, const X##_t a) {								\
+#define TMPL_FPX_SQR_UNR_QUAD(F, X, S, D, DS, B, BD, N, Q, SQRU)			\
+	void F(D##_t c, const X##_t a) {										\
 		S##_t t;															\
 		DS##_t u0, u1;														\
 																			\
