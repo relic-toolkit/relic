@@ -49,16 +49,12 @@
  * Applies a residue-wise operation to both components of an element of Fp2.
  */
 #define RNS_VMAP2(C, OP)													\
-	const dig_t *_m = core_get()->rns.m;									\
 	for (int _j = 0; _j < 2; _j++) {										\
-		for (size_t _k = 0; _k < RNS_NE; _k++) {							\
-			__m512i m = rns_load(_m, _k);									\
-			rns_store(C[_j], _k, OP);										\
-		}																	\
+		RNS_VMAP(C[_j], OP);												\
 	}
 
 /** Loads the current vector of a component inside RNS_VMAP2(). */
-#define V2(A)		rns_load(A[_j], _k)
+#define V2(A)		V(A[_j])
 
 /*============================================================================*/
 /* Public definitions                                                         */
