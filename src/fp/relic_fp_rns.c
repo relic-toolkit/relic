@@ -57,6 +57,16 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/*
+ * An unreduced product of elements must fit in a temporary vector.
+ */
+RLC_STATIC_ASSERT(RLC_FP_DLEN <= RLC_DV_DIGS, rns_dv);
+
+/**
+ * Tests if the i-th residue of an element pads its base.
+ */
+#define RNS_PAD(I)		((I) % RLC_FP_RNSO >= RLC_FP_RNS)
+
 /**
  * Multiplies two plain residues modulo the i-th modulus, for precomputation.
  *
@@ -108,16 +118,6 @@ static dig_t fp_rns_inv(dig_t a, size_t i) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-/*
- * An unreduced product of elements must fit in a temporary vector.
- */
-typedef char rns_dv_check[RLC_FP_DLEN <= RLC_DV_DIGS ? 1 : -1];
-
-/**
- * Tests if the i-th residue of an element pads its base.
- */
-#define RNS_PAD(I)		((I) % RLC_FP_RNSO >= RLC_FP_RNS)
 
 void fp_rns_pre(void) {
 	ctx_t *ctx = core_get();

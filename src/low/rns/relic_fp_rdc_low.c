@@ -36,24 +36,10 @@
 #if FP_RDC == FP_RENUS
 
 /*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	(void)c;
-	(void)a;
-	(void)m;
-	/* There is no special-form reduction for elements in RNS. */
-	RLC_THROW(ERR_NO_VALID);
-}
-
-/* Defining FP_RNS_VEC leaves out the residue-wise functions, so that a backend
- * can replace them with vectorized ones. */
-#ifndef FP_RNS_VEC
-
-/*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
+
+#ifndef FP_RNS_VEC
 
 #if RLC_ARITH != RLC_AVX512
 
@@ -115,9 +101,23 @@ static dig_t fp_rns_red(dbl_t s, dig_t m, dig_t u) {
 
 #endif
 
+#endif /* !FP_RNS_VEC */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
+	(void)c;
+	(void)a;
+	(void)m;
+	/* There is no special-form reduction for elements in RNS. */
+	RLC_THROW(ERR_NO_VALID);
+}
+
+/* Defining FP_RNS_VEC leaves out the residue-wise functions, so that a backend
+ * can replace them with vectorized ones. */
+#ifndef FP_RNS_VEC
 
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	ctx_t *ctx = core_get();

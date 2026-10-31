@@ -39,20 +39,48 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 
+/*============================================================================*/
+/* Constant definitions                                                       */
+/*============================================================================*/
+
 /*
  * Each base is padded to RLC_FP_RNSO residues, a multiple of 8, so that it
  * fills whole vectors. The moduli and constants are zero in the padding, where
  * operations give zero or harmless values that never reach the residues.
  */
 
-/** Number of vectors that hold the residues of the first base, the larger. */
-#define RNS_NB		(RLC_FP_RNSO / 8)
-
-/** Number of vectors that hold the residues of the second base. */
+/** Number of vectors that hold the residues of each base. */
 #define RNS_NB		(RLC_FP_RNSO / 8)
 
 /** Number of vectors that hold the residues of both bases. */
 #define RNS_NE		(RLC_FP_LEN / 8)
+
+/** Largest number of values reduced at once. */
+#define RNS_K		2
+
+/*============================================================================*/
+/* Macro definitions                                                          */
+/*============================================================================*/
+
+/**
+ * Applies a residue-wise operation to the vectors of both bases, with the
+ * moduli in m and their constants in u.
+ */
+#define RNS_VMAP(C, OP)														\
+	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
+	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
+		__m512i m = rns_load(_m, _k);										\
+		__m512i u = rns_load(_u, _k);										\
+		(void)u;															\
+		rns_store(C, _k, OP);												\
+	}
+
+/** Loads the current vector of an operand inside RNS_VMAP(). */
+#define V(A)		rns_load(A, _k)
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
 
 /**
  * Loads the k-th vector of residues.
@@ -160,9 +188,6 @@ static inline __m512i rns_vred(__m512i l, __m512i h, __m512i m, __m512i u) {
 	t = _mm512_add_epi64(t, _mm512_srli_epi64(l, 52));
 	return rns_vcrt(t, m);
 }
-
-/** Largest number of values reduced at once. */
-#define RNS_K		2
 
 /**
  * Extends K values to a base into vectors, as fp_rnsx_low() does, with their
@@ -292,21 +317,5 @@ static inline __attribute__((always_inline)) void rns_vrdc(dig_t *const c[],
 		}
 	}
 }
-
-/**
- * Applies a residue-wise operation to the vectors of both bases, with the
- * moduli in m and their constants in u.
- */
-#define RNS_VMAP(C, OP)														\
-	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
-	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
-		__m512i m = rns_load(_m, _k);										\
-		__m512i u = rns_load(_u, _k);										\
-		(void)u;															\
-		rns_store(C, _k, OP);												\
-	}
-
-/** Loads the current vector of an operand inside RNS_VMAP(). */
-#define V(A)		rns_load(A, _k)
 
 #endif /* !RLC_FP_RNS_AVX_H */

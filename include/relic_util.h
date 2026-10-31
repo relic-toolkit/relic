@@ -79,6 +79,15 @@
 #define RLC_CEIL(A, B)			((A) / (B) + ((A) % (B) != 0))
 
 /**
+ * Stops compilation if a constant condition is false, as C99 has no
+ * _Static_assert.
+ *
+ * @param[in] C			- the condition.
+ * @param[in] N			- a name for the check, unique in the file.
+ */
+#define RLC_STATIC_ASSERT(C, N)		typedef char rlc_check_##N[(C) ? 1 : -1]
+
+/**
  * Returns a bit mask to isolate the lowest part of a digit.
  *
  * @param[in] B			- the number of bits to isolate.

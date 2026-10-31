@@ -53,6 +53,6 @@
 /*============================================================================*/
 
 /* The assembly finds c[1] of a dv2_t at RLC_DV_STRIDE bytes from c[0]. */
-typedef char rlc_dv_stride_check[sizeof(dv_t) == RLC_DV_STRIDE ? 1 : -1];
+RLC_STATIC_ASSERT(sizeof(dv_t) == RLC_DV_STRIDE, dv_stride);
 
 #endif
