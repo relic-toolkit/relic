@@ -66,16 +66,16 @@ REDEF2() {
 }
 
 REDEF_LOW() {
-	U=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
-	D=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	U=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v typedef | grep -v '^static' | grep -v '^[[:space:]]' | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "low/relic_$1_low.h" | grep "$1_" | grep -v define | grep -v @version | grep -v typedef | grep -v '^static' | grep -v '^[[:space:]]' | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
 	if [ -n "$U" ]; then
 		printf '%s\n\n%s\n\n' "$U" "$D"
 	fi
 }
 
 REDEF2_LOW() {
-	U=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
-	D=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v @version | grep -v typedef | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
+	U=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v typedef | grep -v '^static' | grep -v '^[[:space:]]' | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#undef \1/')
+	D=$(cat "low/relic_$1_low.h" | grep "$2_" | grep -v define | grep -v @version | grep -v typedef | grep -v '^static' | grep -v '^[[:space:]]' | grep -v '\\' | grep -v '\}' | grep -v '^ \*' | sed 's/const //' | sed 's/\*//' | sed -r 's/[a-z,_]+ ([a-z,_,0-9]+)\(.*/\#define \1 \tRLC_PREFIX\(\1\)/')
 	if [ -n "$U" ]; then
 		printf '%s\n\n%s\n\n' "$U" "$D"
 	fi
