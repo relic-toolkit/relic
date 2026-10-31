@@ -2885,13 +2885,11 @@
 #undef fp12_muld_low
 #undef fp12_sqrn_low
 #undef fp12_sqrc_low
-#undef fp12_sqrp_low
 
 #define fp12_muln_low 	RLC_PREFIX(fp12_muln_low)
 #define fp12_muld_low 	RLC_PREFIX(fp12_muld_low)
 #define fp12_sqrn_low 	RLC_PREFIX(fp12_sqrn_low)
 #define fp12_sqrc_low 	RLC_PREFIX(fp12_sqrc_low)
-#define fp12_sqrp_low 	RLC_PREFIX(fp12_sqrp_low)
 
 #undef fp16_field_init
 #undef fp16_copy

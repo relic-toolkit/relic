@@ -433,21 +433,13 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a);
  * (a_10, a_02), the products x^2 + E * y^2 and 2 * x * y, where E is the
  * non-residue, without reduction. They go to the positions of the
  * coefficients of the square they define: c_00 and c_11, c_02 and c_10 (with
- * 2 * x * y times E), c_01 and c_12.
+ * 2 * x * y times E), c_01 and c_12. Compressed squaring skips the first
+ * pair and leaves c_00 and c_11 untouched.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
+ * @param[in] pck			- the flag to compute compressed squaring.
  */
-void fp12_sqrc_low(dv12_t c, const fp12_t a);
-
-/**
- * Computes the terms of a compressed squaring of a dodecic extension field
- * element, as fp12_sqrc_low() does for the pairs (a_01, a_12) and (a_10, a_02)
- * only: c_00 and c_11 are left untouched.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the field element to square.
- */
-void fp12_sqrp_low(dv12_t c, const fp12_t a);
+void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck);
 
 #endif /* !RLC_FPX_LOW_H */

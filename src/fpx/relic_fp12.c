@@ -176,7 +176,7 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 		fp12_new(t);
 		fp2_new(x);
 
-		fp12_sqrp_low(u, a);
+		fp12_sqrc_low(u, a, 1);
 		/* Move the term of c_12 next to the others, to reduce them at once. */
 		dv_copy(u[1][1][0], u[1][2][0], RLC_FP_DLEN);
 		dv_copy(u[1][1][1], u[1][2][1], RLC_FP_DLEN);
@@ -216,7 +216,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 		fp12_new(t);
 		fp2_new(x);
 
-		fp12_sqrc_low(u, a);
+		fp12_sqrc_low(u, a, 0);
 		fp2_rdcv_low((fp2_t *)t, (dv2_t *)u, 6);
 		/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j. */
 		for (int j = 0; j < 3; j++) {
