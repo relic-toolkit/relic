@@ -83,10 +83,10 @@
 
 /**
  * Space taken by each base in the residues of an element: the number of moduli,
- * rounded up to a multiple of 8 with 52-bit moduli, so that each base fills
- * whole vectors of eight residues.
+ * rounded up to a multiple of 8 with the AVX-512 IFMA backend, so that each
+ * base fills whole vectors of eight residues.
  */
-#if RLC_RNS_BITS == 52
+#if RLC_ARITH == RLC_AVX512
 #define RLC_FP_RNSO		((RLC_FP_RNS + 7) / 8 * 8)
 #else
 #define RLC_FP_RNSO		RLC_FP_RNS

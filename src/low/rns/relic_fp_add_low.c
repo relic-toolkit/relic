@@ -40,12 +40,12 @@
 /*============================================================================*/
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], RLC_RNS_DIG(digit, _i), _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], RLC_RNS_CONV(digit, _i), _m[_i]));
 	return 0;
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], RLC_RNS_DIG(digit, _i), _m[_i]));
+	RLC_RNS_MAP(c, RLC_RNS_SUB(a[_i], RLC_RNS_CONV(digit, _i), _m[_i]));
 	return 0;
 }
 

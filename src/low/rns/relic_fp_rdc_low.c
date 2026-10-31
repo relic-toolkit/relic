@@ -55,7 +55,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if RLC_RNS_W == RLC_DIG
+#if RLC_ARITH != RLC_AVX512
 
 /**
  * Reduces s2 * R^2 + s1 * R + s0 by two Montgomery reductions modulo m < R/2,
@@ -107,9 +107,9 @@ static dig_t rns_red(dbl_t s, dig_t m, dig_t u) {
 	/* The first reduction leaves a value below 2^64, the second one below
 	 * m + 2^12 < 2m. */
 	q = ((dig_t)s * u) & RLC_RNS_MASK;
-	s = (s + (dbl_t)q * m) >> RLC_RNS_W;
+	s = (s + (dbl_t)q * m) >> RLC_RNS_DIG;
 	q = ((dig_t)s * u) & RLC_RNS_MASK;
-	s = (s + (dbl_t)q * m) >> RLC_RNS_W;
+	s = (s + (dbl_t)q * m) >> RLC_RNS_DIG;
 	return RLC_RNS_CRT((dig_t)s, m);
 }
 
@@ -129,7 +129,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
 	dig_t a = rns_alpha(xi, n, exact);
 
-#if RLC_RNS_W == 52
+#if RLC_ARITH == RLC_AVX512
 	for (size_t j = 0; j < n; j++) {
 		/* The n + 1 products are below 2^104 each. */
 		dbl_t s = (dbl_t)a * w[j];

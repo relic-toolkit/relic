@@ -28,7 +28,7 @@
  *
  * An element is represented by its residues modulo the RLC_FP_RNS moduli of
  * each of two bases B and B', all primes of the form 2^RLC_RNS_BITS - c. Each
- * residue is kept in Montgomery form x_i * R mod m_i, with R = 2^RLC_RNS_W, so
+ * residue is kept in Montgomery form x_i * R mod m_i, with R = 2^RLC_RNS_DIG, so
  * that products of residues are Montgomery products. In B', an element x is
  * moreover stored as x / M, as in Langowski, He and Devadas (VROOM, USENIX
  * Security 2025): a product then carries 1 / M^2, so that the division by M of
@@ -147,7 +147,7 @@ void fp_rns_pre(void) {
 		/* Pick the largest primes 2^RLC_RNS_BITS - c coprime to p, with c
 		 * below the square root of R: first for B, then for B'. */
 		while (k < n || l < n) {
-			if (c >= ((dig_t)1 << (RLC_RNS_W / 2))) {
+			if (c >= ((dig_t)1 << (RLC_RNS_DIG / 2))) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
@@ -174,7 +174,7 @@ void fp_rns_pre(void) {
 				x *= 2 - ctx->rns.m[i] * x;
 			}
 			ctx->rns.u[i] = (0 - x) & RLC_RNS_MASK;
-			bn_set_2b(t, 2 * RLC_RNS_W);
+			bn_set_2b(t, 2 * RLC_RNS_DIG);
 			ctx->rns.r2[i] = rns_bn(t, i);
 		}
 
@@ -268,7 +268,7 @@ void fp_rns_pre(void) {
 				if (RNS_PAD(i)) {
 					continue;
 				}
-				d = RLC_RNS_DIG(rns_bn(t, i), i);
+				d = RLC_RNS_CONV(rns_bn(t, i), i);
 				ctx->rns.kp[j][i] = (j < 2 ? RLC_RNS_SUB(0, d, ctx->rns.m[i]) : d);
 			}
 		}
@@ -314,7 +314,7 @@ void fp_rns_conv(dig_t *c, const bn_t a) {
 			c[i] = 0;
 			continue;
 		}
-		c[i] = RLC_RNS_DIG(rns_bn(a, i), i);
+		c[i] = RLC_RNS_CONV(rns_bn(a, i), i);
 		if (bn_sign(a) == RLC_NEG) {
 			c[i] = RLC_RNS_SUB(0, c[i], core_get()->rns.m[i]);
 		}

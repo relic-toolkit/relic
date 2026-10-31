@@ -39,10 +39,6 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 
-#if RLC_RNS_BITS != 52
-#error "The AVX-512 IFMA backend requires 52-bit moduli."
-#endif
-
 /*
  * Each base is padded to RLC_FP_RNSO residues, a multiple of 8, so that it
  * fills whole vectors. The moduli and constants are zero in the padding, where
