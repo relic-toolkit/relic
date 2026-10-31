@@ -717,8 +717,9 @@ void ep_curve_frbase(bn_t u);
  * Configures a prime elliptic curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
+ * @return RLC_OK if the curve was configured, RLC_ERR otherwise.
  */
-void ep_param_set(int param);
+int ep_param_set(int param);
 
 /**
  * Configures some set of curve parameters for the current security level.

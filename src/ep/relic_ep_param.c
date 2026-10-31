@@ -932,8 +932,9 @@ int ep_param_get(void) {
 	return core_get()->ep_id;
 }
 
-void ep_param_set(int param) {
+int ep_param_set(int param) {
 	int plain = 0, endom = 0, super = 0, pairf = 0, ctmap = 0, twist = 0;
+	int code = RLC_OK;
 	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta;
 	ep_t g;
@@ -1516,6 +1517,7 @@ void ep_param_set(int param) {
 #endif
 	}
 	RLC_CATCH_ANY {
+		code = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -1528,6 +1530,7 @@ void ep_param_set(int param) {
 		bn_free(t);
 		bn_free(h);
 	}
+	return code;
 }
 
 int ep_param_set_any(void) {
@@ -1551,29 +1554,29 @@ int ep_param_set_any(void) {
 int ep_param_set_any_plain(void) {
 	int r = RLC_OK;
 #if FP_PRIME == 160
-	ep_param_set(SECG_P160);
+	r = ep_param_set(SECG_P160);
 #elif FP_PRIME == 192
-	ep_param_set(NIST_P192);
+	r = ep_param_set(NIST_P192);
 #elif FP_PRIME == 221
-	ep_param_set(CURVE_22103);
+	r = ep_param_set(CURVE_22103);
 #elif FP_PRIME == 224
-	ep_param_set(NIST_P224);
+	r = ep_param_set(NIST_P224);
 #elif FP_PRIME == 226
-	ep_param_set(CURVE_4417);
+	r = ep_param_set(CURVE_4417);
 #elif FP_PRIME == 251
-	ep_param_set(CURVE_1174);
+	r = ep_param_set(CURVE_1174);
 #elif FP_PRIME == 255
-	ep_param_set(CURVE_25519);
+	r = ep_param_set(CURVE_25519);
 #elif FP_PRIME == 256
-	ep_param_set(NIST_P256);
+	r = ep_param_set(NIST_P256);
 #elif FP_PRIME == 382
-	ep_param_set(CURVE_67254);
+	r = ep_param_set(CURVE_67254);
 #elif FP_PRIME == 383
-	ep_param_set(CURVE_383187);
+	r = ep_param_set(CURVE_383187);
 #elif FP_PRIME == 384
-	ep_param_set(NIST_P384);
+	r = ep_param_set(NIST_P384);
 #elif FP_PRIME == 521
-	ep_param_set(NIST_P521);
+	r = ep_param_set(NIST_P521);
 #else
 	r = RLC_ERR;
 #endif
@@ -1583,71 +1586,71 @@ int ep_param_set_any_plain(void) {
 int ep_param_set_any_endom(void) {
 	int r = RLC_OK;
 #if FP_PRIME == 158
-	ep_param_set(BN_P158);
+	r = ep_param_set(BN_P158);
 #elif FP_PRIME == 160
-	ep_param_set(SECG_K160);
+	r = ep_param_set(SECG_K160);
 #elif FP_PRIME == 192
-	ep_param_set(SECG_K192);
+	r = ep_param_set(SECG_K192);
 #elif FP_PRIME == 224
-	ep_param_set(SECG_K224);
+	r = ep_param_set(SECG_K224);
 #elif FP_PRIME == 254
-	ep_param_set(BN_P254);
+	r = ep_param_set(BN_P254);
 #elif FP_PRIME == 255
-	ep_param_set(TWEEDLEDUM);
+	r = ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
-	ep_param_set(SECG_K256);
+	r = ep_param_set(SECG_K256);
 #elif FP_PRIME == 315
-	ep_param_set(B24_P315);
+	r = ep_param_set(B24_P315);
 #elif FP_PRIME == 317
-	ep_param_set(B24_P317);
+	r = ep_param_set(B24_P317);
 #elif FP_PRIME == 330
-	ep_param_set(K16_P330);
+	r = ep_param_set(K16_P330);
 #elif FP_PRIME == 354
-	ep_param_set(K18_P354);
+	r = ep_param_set(K18_P354);
 #elif FP_PRIME == 377
-	ep_param_set(B12_P377);
+	r = ep_param_set(B12_P377);
 #elif FP_PRIME == 381
 #ifdef EC_SUPER
 	r = RLC_ERR;
 #else
-	ep_param_set(B12_P381);
+	r = ep_param_set(B12_P381);
 #endif
 #elif FP_PRIME == 382
-	ep_param_set(BN_P382);
+	r = ep_param_set(BN_P382);
 #elif FP_PRIME == 383
-	ep_param_set(B12_P383);
+	r = ep_param_set(B12_P383);
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
-	ep_param_set(B12_P446);
+	r = ep_param_set(B12_P446);
 #else
-	ep_param_set(BN_P446);
+	r = ep_param_set(BN_P446);
 #endif
 #elif FP_PRIME == 455
-	ep_param_set(B12_P455);
+	r = ep_param_set(B12_P455);
 #elif FP_PRIME == 508
-	ep_param_set(K18_P508);
+	r = ep_param_set(K18_P508);
 #elif FP_PRIME == 509
-	ep_param_set(B24_P509);
+	r = ep_param_set(B24_P509);
 #elif FP_PRIME == 510
-	ep_param_set(AFG16_P510);
+	r = ep_param_set(AFG16_P510);
 #elif FP_PRIME == 544
-	ep_param_set(CP8_P544);
+	r = ep_param_set(CP8_P544);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
-	ep_param_set(B12_P638);
+	r = ep_param_set(B12_P638);
 #else
-	ep_param_set(K18_P638);
+	r = ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
 #endif
 #elif FP_PRIME == 765
-	ep_param_set(FM16_P765);
+	r = ep_param_set(FM16_P765);
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
-	ep_param_set(AFG16_P766);
+	r = ep_param_set(AFG16_P766);
 #elif FP_PRIME == 768
-	ep_param_set(FM18_P768);
+	r = ep_param_set(FM18_P768);
 #elif FP_PRIME == 1150
-	ep_param_set(B12_P1150);
+	r = ep_param_set(B12_P1150);
 #else
 	r = RLC_ERR;
 #endif
@@ -1657,11 +1660,11 @@ int ep_param_set_any_endom(void) {
 int ep_param_set_any_super(void) {
 	int r = RLC_OK;
 #if FP_PRIME == 318
-	ep_param_set(SS3_P318);
+	r = ep_param_set(SS3_P318);
 #elif FP_PRIME == 381 && defined(EC_SUPER)
-	ep_param_set(SS3_P381);
+	r = ep_param_set(SS3_P381);
 #elif FP_PRIME == 1536
-	ep_param_set(SS_P1536);
+	r = ep_param_set(SS_P1536);
 #else
 	r = RLC_ERR;
 #endif
@@ -1671,74 +1674,74 @@ int ep_param_set_any_super(void) {
 int ep_param_set_any_pairf(void) {
 	int r = RLC_OK;
 #if FP_PRIME == 158
-	ep_param_set(BN_P158);
+	r = ep_param_set(BN_P158);
 #elif FP_PRIME == 254
-	ep_param_set(BN_P254);
+	r = ep_param_set(BN_P254);
 #elif FP_PRIME == 256
-	ep_param_set(BN_P256);
+	r = ep_param_set(BN_P256);
 #elif FP_PRIME == 315
-	ep_param_set(B24_P315);
+	r = ep_param_set(B24_P315);
 #elif FP_PRIME == 317
-	ep_param_set(B24_P317);
+	r = ep_param_set(B24_P317);
 #elif FP_PRIME == 318
-	ep_param_set(SS3_P318);
+	r = ep_param_set(SS3_P318);
 #elif FP_PRIME == 330
-	ep_param_set(K16_P330);
+	r = ep_param_set(K16_P330);
 #elif FP_PRIME == 354
-	ep_param_set(K18_P354);
+	r = ep_param_set(K18_P354);
 #elif FP_PRIME == 377
-	ep_param_set(B12_P377);
+	r = ep_param_set(B12_P377);
 #elif FP_PRIME == 381
 #ifdef EC_SUPER
-	ep_param_set(SS3_P381);
+	r = ep_param_set(SS3_P381);
 #else
-	ep_param_set(B12_P381);
+	r = ep_param_set(B12_P381);
 #endif
 #elif FP_PRIME == 382
-	ep_param_set(BN_P382);
+	r = ep_param_set(BN_P382);
 #elif FP_PRIME == 383
-	ep_param_set(B12_P383);
+	r = ep_param_set(B12_P383);
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
-	ep_param_set(B12_P446);
+	r = ep_param_set(B12_P446);
 #else
-	ep_param_set(BN_P446);
+	r = ep_param_set(BN_P446);
 #endif
 #elif FP_PRIME == 455
-	ep_param_set(B12_P455);
+	r = ep_param_set(B12_P455);
 #elif FP_PRIME == 508
-	ep_param_set(K18_P508);
+	r = ep_param_set(K18_P508);
 #elif FP_PRIME == 509
-	ep_param_set(B24_P509);
+	r = ep_param_set(B24_P509);
 #elif FP_PRIME == 510
-	ep_param_set(AFG16_P510);
+	r = ep_param_set(AFG16_P510);
 #elif FP_PRIME == 544
-	ep_param_set(CP8_P544);
+	r = ep_param_set(CP8_P544);
 #elif FP_PRIME == 569
-	ep_param_set(SG54_P569);
+	r = ep_param_set(SG54_P569);
 #elif FP_PRIME == 575
-	ep_param_set(B48_P575);
+	r = ep_param_set(B48_P575);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
-	ep_param_set(B12_P638);
+	r = ep_param_set(B12_P638);
 #else
 	//ep_param_set(BN_P638);
-	ep_param_set(K18_P638);
+	r = ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
 #endif
 #elif FP_PRIME == 765
-	ep_param_set(FM16_P765);
+	r = ep_param_set(FM16_P765);
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
-	ep_param_set(AFG16_P766);
+	r = ep_param_set(AFG16_P766);
 #elif FP_PRIME == 768
-	ep_param_set(FM18_P768);
+	r = ep_param_set(FM18_P768);
 #elif FP_PRIME == 1150
-	ep_param_set(B12_P1150);
+	r = ep_param_set(B12_P1150);
 #elif FP_PRIME == 1536
-	ep_param_set(SS_P1536);
+	r = ep_param_set(SS_P1536);
 #elif FP_PRIME == 3072
-	ep_param_set(K1_P3072);
+	r = ep_param_set(K1_P3072);
 #else
 	r = RLC_ERR;
 #endif
