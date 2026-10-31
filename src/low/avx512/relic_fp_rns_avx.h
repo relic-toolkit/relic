@@ -67,7 +67,8 @@
  * moduli in _vm and their constants in _vu.
  */
 #define RNS_VMAP(C, OP)														\
-	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
+	ctx_t *_ctx = core_get();												\
+	const dig_t *_m = _ctx->rns.m, *_u = _ctx->rns.u;						\
 	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
 		__m512i _vm = rns_load(_m, _k);										\
 		__m512i _vu = rns_load(_u, _k);										\

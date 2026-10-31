@@ -160,7 +160,8 @@
  * moduli in _m and their Montgomery constants in _u.
  */
 #define RLC_RNS_MAP(C, OP)													\
-	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;			\
+	ctx_t *_ctx = core_get();												\
+	const dig_t *_m = _ctx->rns.m, *_u = _ctx->rns.u;						\
 	(void)_u;																\
 	for (size_t _i = 0; _i < RLC_FP_LEN; _i++) {							\
 		C[_i] = OP;															\

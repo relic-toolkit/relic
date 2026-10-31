@@ -47,7 +47,8 @@
 /*============================================================================*/
 
 void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
-	const dig_t *_m = core_get()->rns.m, *_u = core_get()->rns.u;
+	ctx_t *ctx = core_get();
+	const dig_t *_m = ctx->rns.m, *_u = ctx->rns.u;
 	const int q = -fp_prime_get_qnr();
 	__m512i m, u, a0, a1, b0, b1, t;
 
