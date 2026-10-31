@@ -70,8 +70,10 @@
 #if RLC_ALLOC == RLC_DYNAMIC
 #define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
 #elif defined(__GNUC__)
-/* The builtin does not depend on the C library providing alloca(). */
-#define RLC_ALLOCA(T, S)		(T*) __builtin_alloca((S) * sizeof(T))
+/* The builtin does not depend on the C library providing alloca(), and keeps
+ * the alignment of the type, which may exceed that of alloca() with ALIGN. */
+#define RLC_ALLOCA(T, S)													\
+	(T*) __builtin_alloca_with_align((S) * sizeof(T), 8 * __alignof__(T))
 #else
 #define RLC_ALLOCA(T, S)		(T*) alloca((S) * sizeof(T))
 #endif
