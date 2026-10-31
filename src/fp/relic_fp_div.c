@@ -55,6 +55,10 @@ void fp_hlv_integ(fp_t c, const fp_t a) {
 }
 
 void fp_trs(fp_t c, const fp_t a) {
+#if FP_RDC == FP_RENUS
+	/* Multiply by M/3 in Montgomery form. */
+	fp_mul(c, a, core_get()->rns.third);
+#else
 	const dig_t mask = (2 * RLC_3MASK + 1);
 	dig_t c0, c1, f0, f1;
 	fp_t t;
@@ -94,4 +98,5 @@ void fp_trs(fp_t c, const fp_t a) {
 	} RLC_FINALLY {
 		fp_free(t);
 	}
+#endif
 }

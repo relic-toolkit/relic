@@ -37,18 +37,21 @@
 /*============================================================================*/
 
 void fp_copy(fp_t c, const fp_t a) {
-	dv_copy(c, a, RLC_FP_DIGS);
+	dv_copy(c, a, RLC_FP_LEN);
 }
 
 void fp_copy_sec(fp_t c, const fp_t a, dig_t bit) {
-	dv_copy_sec(c, a, RLC_FP_DIGS, bit);
+	dv_copy_sec(c, a, RLC_FP_LEN, bit);
 }
 
 void fp_zero(fp_t a) {
-	dv_zero(a, RLC_FP_DIGS);
+	dv_zero(a, RLC_FP_LEN);
 }
 
 int fp_is_zero(const fp_t a) {
+#if FP_RDC == FP_RENUS
+	return fp_rns_is_zero(a);
+#else
 	const dig_t *p = fp_prime_get();
 	dig_t t = 0, u = 0, v = 0, c = 0;
 
@@ -63,6 +66,7 @@ int fp_is_zero(const fp_t a) {
 	/* All tests are evaluated, so that no zero is told apart by time. When 2p
 	 * does not fit the digits (c is set), a cannot be equal to it. */
 	return (!t) | (!u) | ((!v) & (!c));
+#endif
 }
 
 int fp_is_even(const fp_t a) {
@@ -88,14 +92,50 @@ int fp_is_even(const fp_t a) {
 }
 
 int fp_get_bit(const fp_t a, uint_t bit) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so take the bit of the value. */
+	int r = 0;
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		r = bn_get_bit(t, bit);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+	return r;
+#else
 	int d;
 
 	RLC_RIP(bit, d, bit);
 
 	return (a[d] >> bit) & 1;
+#endif
 }
 
 void fp_set_bit(fp_t a, uint_t bit, int value) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so set the bit of the value. */
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		bn_set_bit(t, bit, value);
+		fp_prime_conv(a, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
 	int d;
 	dig_t mask;
 
@@ -108,9 +148,28 @@ void fp_set_bit(fp_t a, uint_t bit, int value) {
 	} else {
 		a[d] &= ~mask;
 	}
+#endif
 }
 
 size_t fp_bits(const fp_t a) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so count the bits of the value. */
+	size_t r = 0;
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		r = bn_bits(t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+	return r;
+#else
 	int i = RLC_FP_DIGS - 1;
 
 	while (i > 0 && a[i] == 0) {
@@ -118,6 +177,7 @@ size_t fp_bits(const fp_t a) {
 	}
 
 	return (i << RLC_DIG_LOG) + util_bits_dig(a[i]);
+#endif
 }
 
 void fp_set_dig(fp_t c, dig_t a) {
@@ -125,6 +185,21 @@ void fp_set_dig(fp_t c, dig_t a) {
 }
 
 void fp_rand(fp_t a) {
+#if FP_RDC == FP_RENUS
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_rand_mod(t, &(core_get()->prime));
+		fp_prime_conv(a, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
 	uint_t bits, digits;
 
 	rand_bytes((uint8_t *)a, RLC_FP_DIGS * sizeof(dig_t));
@@ -138,13 +213,31 @@ void fp_rand(fp_t a) {
 	while (dv_cmp(a, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
 		fp_subm_low(a, a, fp_prime_get());
 	}
+#endif
 }
 
 void fp_norm(fp_t c, const fp_t a) {
+#if FP_RDC == FP_RENUS
+	/* The canonical representation, from the value modulo p. */
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		fp_prime_conv(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
 	fp_copy(c, a);
 	while (dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
 		fp_subn_low(c, c, fp_prime_get());
 	}
+#endif
 }
 
 void fp_print(const fp_t a) {
@@ -156,7 +249,7 @@ void fp_print(const fp_t a) {
 	RLC_TRY {
 		bn_new(t);
 
-#if FP_RDC == FP_MONTY
+#if FP_RDC == FP_MONTY || FP_RDC == FP_RENUS
 		if (a != fp_prime_get()) {
 			fp_prime_back(t, a);
 		} else {

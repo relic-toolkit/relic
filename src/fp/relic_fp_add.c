@@ -50,31 +50,27 @@ void fp_add_integ(fp_t c, const fp_t a, const fp_t b) {
 }
 
 void fp_add_dig(fp_t c, const fp_t a, dig_t b) {
-#if FP_RDC == FP_MONTY
-	if (b == 1) {
-		fp_add(c, a, core_get()->one);
-	} else {
-		fp_t t;
-
-		fp_null(t);
-
-		RLC_TRY {
-			fp_new(t);
-
-			fp_set_dig(t, b);
-			fp_add(c, a, t);
-		} RLC_CATCH_ANY {
-			RLC_THROW(ERR_CAUGHT);
-		} RLC_FINALLY {
-			fp_free(t);
-		}
-	}
-#else
+#if FP_RDC == FP_BASIC || FP_RDC == FP_QUICK || FP_RDC == FP_LOWER
+	/* Elements are integers below p, so the digit applies directly. */
 	dig_t carry;
 
 	carry = fp_add1_low(c, a, b);
 	if (carry || dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
 		carry = fp_subn_low(c, c, fp_prime_get());
+	}
+#else
+	fp_t t;
+
+	fp_null(t);
+
+	RLC_TRY {
+		fp_new(t);
+		fp_set_dig(t, b);
+		fp_add(c, a, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(t);
 	}
 #endif
 }
@@ -93,31 +89,27 @@ void fp_sub_integ(fp_t c, const fp_t a, const fp_t b) {
 }
 
 void fp_sub_dig(fp_t c, const fp_t a, dig_t b) {
-#if FP_RDC == FP_MONTY
-	if (b == 1) {
-		fp_sub(c, a, core_get()->one);
-	} else {
-		fp_t t;
-
-		fp_null(t);
-
-		RLC_TRY {
-			fp_new(t);
-
-			fp_set_dig(t, b);
-			fp_sub(c, a, t);
-		} RLC_CATCH_ANY {
-			RLC_THROW(ERR_CAUGHT);
-		} RLC_FINALLY {
-			fp_free(t);
-		}
-	}
-#else
+#if FP_RDC == FP_BASIC || FP_RDC == FP_QUICK || FP_RDC == FP_LOWER
+	/* Elements are integers below p, so the digit applies directly. */
 	dig_t carry;
 
 	carry = fp_sub1_low(c, a, b);
 	if (carry) {
 		fp_addn_low(c, c, fp_prime_get());
+	}
+#else
+	fp_t t;
+
+	fp_null(t);
+
+	RLC_TRY {
+		fp_new(t);
+		fp_set_dig(t, b);
+		fp_sub(c, a, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(t);
 	}
 #endif
 }

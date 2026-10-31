@@ -91,12 +91,12 @@ static void pp_lin_k2(fp2_t l, const fp_t *t, int *j, const ep_t p) {
 /** @{ */
 static void pp_dbl_lit_k2(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	pp_dbl_k2(l, r, p, q);
-	dv_swap_sec(l[0], l[1], RLC_FP_DIGS, 1);
+	dv_swap_sec(l[0], l[1], RLC_FP_LEN, 1);
 }
 
 static void pp_add_lit_k2(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	pp_add_k2(l, r, p, q);
-	dv_swap_sec(l[0], l[1], RLC_FP_DIGS, 1);
+	dv_swap_sec(l[0], l[1], RLC_FP_LEN, 1);
 }
 /** @} */
 

@@ -153,7 +153,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		ep_norm(t[0], p);
 		ep_neg(q, t[0]);
-		dv_copy_sec(q->y, t[0]->y, RLC_FP_DIGS, s[0] == RLC_POS);
+		dv_copy_sec(q->y, t[0]->y, RLC_FP_LEN, s[0] == RLC_POS);
 		ep_tab(t, q, RLC_WIDTH);
 
 		l = RLC_FP_BITS + 1;

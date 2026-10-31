@@ -52,7 +52,19 @@
  */
 #ifdef WITH_FP
 
+#if FP_RDC == FP_RENUS
+/*
+ * In a Residue Number System, a product of prime field elements has a digit
+ * per modulus of two bases. Each base has moduli of RLC_DIG - 1 bits whose
+ * product exceeds 2^34 * p.
+ */
+#define RLC_DV_RNS		(2 * RLC_DIG * ((FP_PRIME + 34) / (RLC_DIG - 1) + 1))
 #ifdef WITH_FB
+#define RLC_DV_MAX		((size_t)RLC_MAX(RLC_DV_RNS, 2 * FB_POLYN))
+#else
+#define RLC_DV_MAX		((size_t)RLC_DV_RNS)
+#endif
+#elif defined(WITH_FB)
 #define RLC_DV_MAX		((size_t)(2 * RLC_MAX(FP_PRIME, FB_POLYN)))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		((size_t)(2 * FP_PRIME))

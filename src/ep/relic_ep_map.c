@@ -151,7 +151,7 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		/* compare sign of y and sign of t; fix if necessary */				\
 		neg = neg != fp_is_even(PT->y);										\
 		fp_neg(t, PT->y);													\
-		dv_copy_sec(PT->y, t, RLC_FP_DIGS, neg);							\
+		dv_copy_sec(PT->y, t, RLC_FP_LEN, neg);							\
     } while (0)
 
 		/* first map invocation */

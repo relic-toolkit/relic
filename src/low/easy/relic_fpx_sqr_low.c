@@ -41,7 +41,7 @@
 #ifndef FP2_ASM
 
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
+	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN];
 
 	/* t0 = (a0 + a1). */
 #ifdef RLC_FP_ROOM
@@ -117,8 +117,8 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 #endif
 
 void fp3_sqrn_low(dv3_t c, const fp3_t a) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
-	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS];
+	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN];
+	rlc_align dig_t t3[RLC_FP_DLEN], t4[RLC_FP_DLEN];
 
 	/* t0 = a_0^2. */
 	fp_sqrn_low(t0, a[0]);

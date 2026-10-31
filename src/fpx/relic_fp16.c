@@ -163,8 +163,8 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 				fp2_subc_low(u1[1][1], u2[1][1], u2[0][1]);
 			}
 			fp2_nord_low(u1[0][0], u2[0][1]);
-			dv_copy(u1[0][1][0], u2[0][0][0], 2 * RLC_FP_DIGS);
-			dv_copy(u1[0][1][1], u2[0][0][1], 2 * RLC_FP_DIGS);
+			dv_copy(u1[0][1][0], u2[0][0][0], RLC_FP_DLEN);
+			dv_copy(u1[0][1][1], u2[0][0][1], RLC_FP_DLEN);
 		} else {
 			/* u0 = a_0 * b_0, cheaper for lines with LY in the prime field. */
 			fp4_copy(t1[0], b[0][0]);
@@ -202,12 +202,12 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0][0], u1[1][1]);
-		dv_copy(u2[0][1][0], u1[1][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[0][1][1], u1[1][0][1], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][0][0], u1[0][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][0][1], u1[0][0][1], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1][0], u1[0][1][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1][1], u1[0][1][1], 2 * RLC_FP_DIGS);
+		dv_copy(u2[0][1][0], u1[1][0][0], RLC_FP_DLEN);
+		dv_copy(u2[0][1][1], u1[1][0][1], RLC_FP_DLEN);
+		dv_copy(u2[1][0][0], u1[0][0][0], RLC_FP_DLEN);
+		dv_copy(u2[1][0][1], u1[0][0][1], RLC_FP_DLEN);
+		dv_copy(u2[1][1][0], u1[0][1][0], RLC_FP_DLEN);
+		dv_copy(u2[1][1][1], u1[0][1][1], RLC_FP_DLEN);
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
 				fp2_addc_low(t[0][i][j], u0[i][j], u2[i][j]);

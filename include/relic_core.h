@@ -267,6 +267,10 @@ typedef struct _ctx_t {
 	int sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int sps_len;
+#if FP_RDC == FP_RENUS
+	/** Precomputed values of the Residue Number System. */
+	fp_rns_st rns;
+#endif
 #endif /* WITH_FP */
 
 #ifdef WITH_EP

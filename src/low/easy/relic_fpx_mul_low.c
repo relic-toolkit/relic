@@ -43,9 +43,9 @@ void fp2_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 
 	if (digit <= 1) {
 		if (digit == 0) {
-			dv_zero(c, 2 * RLC_FP_DIGS);
+			dv_zero(c, RLC_FP_DLEN);
 		} else {
-			dv_copy(c, a, 2 * RLC_FP_DIGS);
+			dv_copy(c, a, RLC_FP_DLEN);
 		}
 		return;
 	}
@@ -68,7 +68,7 @@ void fp2_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 #ifndef FP2_ASM
 
 void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
+	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN];
 
 	/* Karatsuba algorithm. */
 
@@ -133,8 +133,8 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 #endif
 
 void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
-	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
+	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN], t3[RLC_FP_DLEN];
+	rlc_align dig_t t4[RLC_FP_DLEN], t5[RLC_FP_DLEN], t6[RLC_FP_DLEN];
 
 	/* Karatsuba algorithm. */
 

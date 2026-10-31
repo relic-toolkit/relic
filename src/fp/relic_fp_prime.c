@@ -73,6 +73,10 @@ static void fp_prime_set(const bn_t p) {
 		bn_div(t, t, &(ctx->prime));
 		ctx->rdc1 = t->dp[0];
 
+#if FP_RDC == FP_RENUS
+		/* The bases also give M mod p and M^2 mod p, in place of R. */
+		fp_rns_pre();
+#else
 		/* compute R mod p */
 		bn_set_2b(t, ctx->prime.used * RLC_DIG);
 		bn_mod(t, t, &(ctx->prime));
@@ -83,6 +87,7 @@ static void fp_prime_set(const bn_t p) {
 		bn_set_dig(t, RLC_FP_DIGS);
 		bn_lsh(t, t, RLC_DIG_LOG);
 		fp_exp(ctx->conv, r, t);
+#endif
 
 #if FP_RDC == FP_MONTY
 		/* Compute R^3 mod p for the inversion by jump division steps. */
@@ -662,6 +667,61 @@ void fp_prime_calc(void) {
 #endif
 }
 
+#if FP_RDC == FP_RENUS
+
+void fp_prime_conv(fp_t c, const bn_t a) {
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		/* Reduce a modulo the prime, then multiply by M^2 / M. */
+		bn_mod(t, a, &(core_get()->prime));
+		fp_rns_conv(c, t);
+		fp_mulm_low(c, c, core_get()->conv);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
+void fp_prime_conv_dig(fp_t c, dig_t a) {
+	bn_t t;
+
+	/* One is precomputed, and is also set before any prime is configured. */
+	if (a == 1) {
+		fp_copy(c, core_get()->one);
+		return;
+	}
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		bn_set_dig(t, a);
+		fp_rns_conv(c, t);
+		fp_mulm_low(c, c, core_get()->conv);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
+void fp_prime_back(bn_t c, const fp_t a) {
+	fp_rns_val(c, a);
+}
+
+#else
+
 void fp_prime_conv(fp_t c, const bn_t a) {
 	bn_t t;
 
@@ -697,7 +757,9 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 	ctx_t *ctx = core_get();
 
 	/* Compute a * R mod p from R mod p. */
-	if ((a >> (RLC_DIG - 1)) == 0) {
+	if (a == 1) {
+		fp_copy(c, ctx->one);
+	} else if ((a >> (RLC_DIG - 1)) == 0) {
 		fp_mul1_low(c, ctx->one, a);
 	} else {
 		/* Halve digits too large for a single reduction. */
@@ -740,3 +802,5 @@ void fp_prime_back(bn_t c, const fp_t a) {
 		dv_free(t);
 	}
 }
+
+#endif /* FP_RDC == FP_RENUS */

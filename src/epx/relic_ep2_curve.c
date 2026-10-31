@@ -660,7 +660,7 @@ void ep2_curve_mul_a(fp2_t c, const fp2_t a) {
 		case RLC_TWO:
 			fp2_dbl(c, a);
 			break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 		case RLC_TINY:
 			fp2_mul_dig(c, a, ctx->ep2_a[0][0]);
 			break;
@@ -688,7 +688,7 @@ void ep2_curve_mul_b(fp2_t c, const fp2_t a) {
 		case RLC_ONE:
 			fp2_copy(c, a);
 			break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 		case RLC_TINY:
 			fp2_mul_dig(c, a, ctx->ep2_b[0][0]);
 			break;

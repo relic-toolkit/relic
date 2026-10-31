@@ -116,8 +116,8 @@ void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[1]);
-		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u2[1][0], u1[0][0], RLC_FP_DLEN);
+		dv_copy(u2[1][1], u1[0][1], RLC_FP_DLEN);
 		for (int i = 0; i < 2; i++) {
 			fp2_addc_low(u2[i], u0[i], u2[i]);
 			fp2_rdcn_low(c[0][i], u2[i]);

@@ -156,7 +156,7 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		dv_new(t);
-		dv_zero(t, 2 * RLC_FP_DIGS);
+		dv_zero(t, RLC_FP_DLEN);
 
 		for (i = 0; i < RLC_FP_DIGS - 1; i++) {
 			t[RLC_FP_DIGS + i + 1] =
@@ -204,7 +204,7 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		dv_new(t);
-		dv_zero(t, 2 * RLC_FP_DIGS);
+		dv_zero(t, RLC_FP_DLEN);
 
 		if (RLC_FP_DIGS > 1) {
 			fp_sqr_karat_imp(t, a, RLC_FP_DIGS, FP_KARAT);

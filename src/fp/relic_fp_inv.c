@@ -276,7 +276,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			/* While u is even do. */
 			while (!(u->dp[0] & 1)) {
 				/* u = u/2. */
-				fp_rsh1_low(u->dp, u->dp);
+				bn_hlv(u, u);
 				/* If g1 is even then g1 = g1/2; else g1 = (g1 + p)/2. */
 				if (g1->dp[0] & 1) {
 					bn_add(g1, g1, p);
@@ -293,7 +293,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			/* While z divides v do. */
 			while (!(v->dp[0] & 1)) {
 				/* v = v/2. */
-				fp_rsh1_low(v->dp, v->dp);
+				bn_hlv(v, v);
 				/* If g2 is even then g2 = g2/2; else (g2 = g2 + p)/2. */
 				if (g2->dp[0] & 1) {
 					bn_add(g2, g2, p);
@@ -324,11 +324,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g1, p) != RLC_LT) {
 				bn_sub(g1, g1, p);
 			}
-#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g1);
-#else
-			dv_copy(c, g1->dp, RLC_FP_DIGS);
-#endif
 		} else {
 			while (bn_sign(g2) == RLC_NEG) {
 				bn_add(g2, g2, p);
@@ -336,11 +332,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			while (bn_cmp(g2, p) != RLC_LT) {
 				bn_sub(g2, g2, p);
 			}
-#if FP_RDC == FP_MONTY
 			fp_prime_conv(c, g2);
-#else
-			dv_copy(c, g2->dp, RLC_FP_DIGS);
-#endif
 		}
 	}
 	RLC_CATCH_ANY {
@@ -650,7 +642,12 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		/* Start from (f, g) = (p, a) and (d, e) = (0, 1). */
 		dv_copy(f, p, RLC_FP_DIGS);
+#if FP_RDC == FP_RENUS
+		/* Elements in RNS have no digits, so take those of the value. */
+		fp_rns_get(g, a);
+#else
 		dv_copy(g, a, RLC_FP_DIGS);
+#endif
 		dv_zero(d, RLC_FP_DIGS + 1);
 		dv_zero(e, RLC_FP_DIGS + 1);
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
@@ -683,6 +680,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #if FP_RDC == FP_MONTY
 		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
 		fp_mul(c, d, core_get()->inv);
+#elif FP_RDC == FP_RENUS
+		fp_rns_set(c, d);
 #else
 		fp_copy(c, d);
 #endif

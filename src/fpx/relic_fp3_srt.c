@@ -132,7 +132,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_mul(t0, t0, t1);
 
 				/* Generate root of unity, and continue algorithm. */
-				dv_copy(root, fp_prime_get_srt(), RLC_FP_DIGS);
+				dv_copy(root, fp_prime_get_srt(), RLC_FP_LEN);
 
 				fp3_sqr(t1, t0);
 				fp3_mul(t1, t1, a);

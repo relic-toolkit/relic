@@ -36,6 +36,29 @@
 /*============================================================================*/
 
 /**
+ * Bounds the size of an element after cyclotomic squarings, every 8 of them,
+ * by multiplying each prime field coefficient by one. In a Residue Number
+ * System, elements are not reduced by additions, and cyclotomic squarings
+ * compute coefficients as 3t +- 2a from the previous a, which then doubles at
+ * every squaring; after 8 of them, products stay far below the bound of the
+ * reduction. This also applies to compressed elements, coefficient-wise.
+ *
+ * @param[in] F			- the extension field prefix.
+ * @param[in,out] R		- the element.
+ * @param[in] I			- the number of squarings so far.
+ */
+#if FP_RDC == FP_RENUS
+#define TMPL_CYC_NORM(F, R, I)												\
+	if (((I) & 7) == 0) {													\
+		for (size_t _n = 0; _n < sizeof(F##_t) / sizeof(fp_t); _n++) {		\
+			fp_mul(((fp_t *)(R))[_n], ((fp_t *)(R))[_n], core_get()->one);	\
+		}																	\
+	}
+#else
+#define TMPL_CYC_NORM(F, R, I)		/* Elements are reduced by additions. */
+#endif
+
+/**
  * Defines a template for exponentiation in the cyclotomic subgroup using w-NAF,
  * for extension fields without compressed squarings.
  *
@@ -81,6 +104,7 @@
 			k = naf + l - 1;												\
 			for (int i = l - 1; i >= 0; i--, k--) {							\
 				SQR(r, r);													\
+				TMPL_CYC_NORM(F, r, i)										\
 																			\
 				if (*k > 0) {												\
 					F##_mul(r, r, t[*k / 2]);								\
@@ -165,6 +189,7 @@
 				k = naf + l - 1;											\
 				for (int i = l - 1; i >= 0; i--, k--) {						\
 					F##_sqr_cyc(r, r);										\
+					TMPL_CYC_NORM(F, r, i)									\
 																			\
 					if (*k > 0) {											\
 						F##_mul(r, r, t[*k / 2]);							\
@@ -282,6 +307,7 @@
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
 						F##_sqr_pck(t, t);									\
+						TMPL_CYC_NORM(F, t, j + 1)							\
 					}														\
 					if (b[i] < 0) {											\
 						F##_inv_cyc(u[i - 1], t);							\
@@ -301,6 +327,7 @@
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
 						F##_sqr_pck(t, t);									\
+						TMPL_CYC_NORM(F, t, j + 1)							\
 					}														\
 					if (b[i] < 0) {											\
 						F##_inv_cyc(u[i], t);								\
@@ -404,6 +431,7 @@
 			F##_set_dig(r, 1);												\
 			for (int i = l - 1; i >= 0; i--, _k--, _m--) {					\
 				SQR(r, r);													\
+				TMPL_CYC_NORM(F, r, i)										\
 																			\
 				n0 = *_k;													\
 				n1 = *_m;													\

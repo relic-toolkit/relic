@@ -4744,6 +4744,16 @@ static int cyclotomic12(void) {
 			fp12_exp_cyc(c, a, f);
 			fp12_inv_cyc(c, c);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			/* A long run of squarings, against the generic squaring. */
+			bn_set_2b(f, RLC_FP_BITS - 10);
+			bn_add_dig(f, f, 1);
+			fp12_exp_cyc(c, a, f);
+			fp12_copy(b, a);
+			for (int k = 0; k < (int)RLC_FP_BITS - 10; k++) {
+				fp12_sqr(b, b);
+			}
+			fp12_mul(b, b, a);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 			/* And exponents whose NAF is sparser, ending in -1 or 1. */
 			for (int s = -1; s <= 1; s += 2) {
 				bn_set_2b(f, RLC_FP_BITS - 1 - RLC_FP_BITS / 2);

@@ -64,14 +64,25 @@ endif()
 
 if (WITH_FP)
 	list(APPEND RELIC_SRCS ${FP_SRCS})
-	file(GLOB TEMP low/easy/relic_fp_*.c)
-	list(APPEND LOW_SRCS ${TEMP})
+	# Elements in a Residue Number System have their own lower level in low/rns.
+	if (FP_RDC STREQUAL "RENUS")
+		file(GLOB TEMP low/rns/relic_fp_*.c)
+		list(APPEND RELIC_SRCS ${TEMP})
+	else()
+		file(GLOB TEMP low/easy/relic_fp_*.c)
+		list(APPEND LOW_SRCS ${TEMP})
+	endif()
 endif()
 
 if (WITH_FPX)
 	list(APPEND RELIC_SRCS ${FPX_SRCS})
 	file(GLOB TEMP low/easy/relic_fpx_*.c)
-	list(APPEND LOW_SRCS ${TEMP})
+	# The portable extension field code is built on the prime field lower level.
+	if (FP_RDC STREQUAL "RENUS")
+		list(APPEND RELIC_SRCS ${TEMP})
+	else()
+		list(APPEND LOW_SRCS ${TEMP})
+	endif()
 endif()
 
 if (WITH_FB)

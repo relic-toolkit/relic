@@ -212,11 +212,13 @@ static int util(void) {
 			fp_rand(a);
 			fp_norm(b, a);
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+#if FP_RDC != FP_RENUS
 			/* A representative above p, when it fits, normalizes back. */
 			if (fp_addn_low(b, a, fp_prime_get()) == 0) {
 				fp_norm(b, b);
 				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			}
+#endif
 		}
 		TEST_END;
 
@@ -235,7 +237,7 @@ static int util(void) {
 			fp_neg(a, a);
 			TEST_ASSERT(fp_is_sqr(a) == 0, end);
 			/* A 2^f-root of unity, primitive when p = 1 mod 4. */
-			dv_copy(a, fp_prime_get_srt(), RLC_FP_DIGS);
+			dv_copy(a, fp_prime_get_srt(), RLC_FP_LEN);
 			for (int k = 1; k < fp_prime_get_2ad(); k++) {
 				fp_sqr(a, a);
 			}
@@ -302,7 +304,7 @@ static int addition(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
+#if FP_ADD == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -365,7 +367,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
+#if FP_ADD == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -385,7 +387,7 @@ static int subtraction(void) {
 		} TEST_END;
 #endif
 
-#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
+#if FP_ADD == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
@@ -489,7 +491,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
 
-#if FP_MUL == FP_BASIC || !defined(RLC_STRIP)
+#if FP_MUL == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -522,7 +524,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FP_KARAT > 0 || !defined(RLC_STRIP)
+#if FP_KARAT > 0 || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("karatsuba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -558,7 +560,7 @@ static int squaring(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_SQR == FP_BASIC || !defined(RLC_STRIP)
+#if FP_SQR == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -585,7 +587,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FP_KARAT > 0 || !defined(RLC_STRIP)
+#if FP_KARAT > 0 || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("karatsuba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
@@ -619,7 +621,7 @@ static int doubling_halving_trisecting(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
+#if FP_ADD == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
@@ -645,7 +647,7 @@ static int doubling_halving_trisecting(void) {
 		}
 		TEST_END;
 
-#if FP_ADD == FP_BASIC || !defined(RLC_STRIP)
+#if FP_ADD == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
@@ -682,6 +684,8 @@ static int doubling_halving_trisecting(void) {
 	fp_free_all(a, b, c);
 	return code;
 }
+
+#if FP_RDC != FP_RENUS
 
 static int shifting(void) {
 	int code = RLC_ERR;
@@ -751,6 +755,8 @@ static int shifting(void) {
 	return code;
 }
 
+#endif
+
 static int reduction(void) {
 	int code = RLC_ERR;
 	fp_t a, b;
@@ -766,14 +772,19 @@ static int reduction(void) {
 
 		TEST_CASE("modular reduction is correct") {
 			fp_rand(a);
+#if FP_RDC == FP_RENUS
+			/* The residues of p represent a multiple of p. */
+			fp_rns_conv(t, &(core_get()->prime));
+#else
 			dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
+#endif
 			/* Test if a * p mod p == 0. */
 			fp_mul(b, a, t);
 			fp_sub(t, b, t);
 			TEST_ASSERT(fp_is_zero(b) == 1 || fp_is_zero(t) == 1, end);
 		} TEST_END;
 
-#if FP_RDC == FP_BASIC || !defined(RLC_STRIP)
+#if FP_RDC == FP_BASIC || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("basic modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
@@ -782,7 +793,7 @@ static int reduction(void) {
 		} TEST_END;
 #endif
 
-#if FP_RDC == FP_MONTY || !defined(RLC_STRIP)
+#if FP_RDC == FP_MONTY || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
@@ -816,7 +827,7 @@ static int reduction(void) {
 #endif
 
 		if (fp_prime_get_sps(NULL) != NULL) {
-#if FP_RDC == FP_QUICK || !defined(RLC_STRIP)
+#if FP_RDC == FP_QUICK || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 			TEST_CASE("fast modular reduction is correct") {
 				fp_rand(a);
 				fp_muln_low(t, a, fp_prime_get());
@@ -828,7 +839,7 @@ static int reduction(void) {
 		}
 
 #if FP_RDC == FP_LOWER
-#if FP_RDC == FP_QUICK || !defined(RLC_STRIP)
+#if FP_RDC == FP_QUICK || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("lower modular reduction is correct") {
 			fp_rand(a);
 			fp_rand(b);
@@ -894,7 +905,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == FP_MONTY || !defined(RLC_STRIP)
+#if FP_INV == FP_MONTY || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("montgomery inversion is correct") {
 			do {
 				fp_rand(a);
@@ -905,7 +916,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == FP_EXGCD || !defined(RLC_STRIP)
+#if FP_INV == FP_EXGCD || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fp_rand(a);
@@ -916,7 +927,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == FP_DIVST || !defined(RLC_STRIP)
+#if FP_INV == FP_DIVST || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -1001,14 +1012,14 @@ static int symbol(void) {
 		} TEST_END;
 #endif
 
-#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
+#if FP_SMB == FP_BINAR || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("binary symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
 		} TEST_END;
 #endif
 
-#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
+#if FP_SMB == FP_DIVST || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
@@ -1309,6 +1320,140 @@ static int digit(void) {
 	return code;
 }
 
+#if FP_RDC == FP_RENUS
+
+/**
+ * Checks that c = a * b / M mod p and c < 3p, where M is the product of the
+ * first base of the Residue Number System.
+ */
+static int rns_check(const bn_t c, const bn_t ab, const bn_t m, const bn_t p) {
+	bn_t t;
+	int r;
+
+	bn_null(t);
+	bn_new(t);
+	bn_mul(t, c, m);
+	bn_sub(t, t, ab);
+	bn_mod(t, t, p);
+	r = bn_is_zero(t);
+	bn_mul_dig(t, p, 3);
+	r &= (bn_cmp(c, t) == RLC_LT) && (bn_sign(c) == RLC_POS);
+	bn_free(t);
+	return r;
+}
+
+static int rns(void) {
+	int code = RLC_ERR;
+	bn_t a, b, c, d, m, p;
+	rlc_align dig_t x[RLC_FP_LEN], y[RLC_FP_LEN], z[RLC_FP_LEN];
+	rlc_align dig_t w[RLC_FP_LEN];
+
+	bn_null_all(a, b, c, d, m, p);
+
+	RLC_TRY {
+		bn_new_all(a, b, c, d, m, p);
+
+		bn_read_raw(p, fp_prime_get(), RLC_FP_DIGS);
+		bn_set_dig(m, 1);
+		for (size_t j = 0; j < RLC_FP_RNS; j++) {
+			bn_mul_dig(m, m, core_get()->rns.m[j]);
+		}
+
+		TEST_CASE("rns conversion is consistent") {
+			bn_rand(a, RLC_POS, RLC_FP_BITS + 32);
+			fp_rns_conv(x, a);
+			fp_rns_back(b, x);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("rns montgomery multiplication is correct") {
+			bn_rand_mod(a, p);
+			bn_rand_mod(b, p);
+			fp_rns_conv(x, a);
+			fp_rns_conv(y, b);
+			fp_mulm_low(z, x, y);
+			fp_rns_back(c, z);
+			bn_mul(d, a, b);
+			TEST_ASSERT(rns_check(c, d, m, p), end);
+			/* Zero, and inputs at the bound 2^15 * p, with products up to
+			 * 2^30 * p^2. */
+			bn_zero(a);
+			fp_rns_conv(x, a);
+			fp_mulm_low(z, x, y);
+			fp_rns_back(c, z);
+			bn_zero(d);
+			TEST_ASSERT(rns_check(c, d, m, p), end);
+			bn_lsh(a, p, 15);
+			bn_sub_dig(a, a, 1);
+			fp_rns_conv(x, a);
+			fp_mulm_low(z, x, x);
+			fp_rns_back(c, z);
+			bn_sqr(d, a);
+			TEST_ASSERT(rns_check(c, d, m, p), end);
+		} TEST_END;
+
+		TEST_CASE("rns positional conversion is correct") {
+			fp_t e, f;
+			dig_t v[RLC_FP_DIGS];
+
+			fp_null_all(e, f);
+			fp_new_all(e, f);
+			/* Zero, p - 1, and a value far from reduced. */
+			fp_zero(e);
+			fp_rns_get(v, e);
+			bn_read_raw(b, v, RLC_FP_DIGS);
+			TEST_ASSERT(bn_is_zero(b), end);
+			fp_set_dig(e, 1);
+			fp_neg(e, e);
+			fp_rns_get(v, e);
+			bn_read_raw(b, v, RLC_FP_DIGS);
+			bn_sub_dig(a, p, 1);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			fp_rand(e);
+			fp_copy(f, e);
+			for (int k = 0; k < 1000; k++) {
+				fp_add(f, f, e);
+			}
+			fp_rns_get(v, f);
+			bn_read_raw(b, v, RLC_FP_DIGS);
+			fp_prime_back(a, f);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			fp_rns_set(e, v);
+			TEST_ASSERT(fp_cmp(e, f) == RLC_EQ, end);
+			fp_free_all(e, f);
+		} TEST_END;
+
+		TEST_CASE("rns lazy reduction is correct") {
+			/* A sum of 2^8 products of inputs below 2^11 * p. */
+			bn_zero(d);
+			dv_zero(w, RLC_FP_LEN);
+			for (int k = 0; k < 256; k++) {
+				bn_rand(a, RLC_POS, RLC_FP_BITS + 10);
+				bn_rand(b, RLC_POS, RLC_FP_BITS + 10);
+				fp_rns_conv(x, a);
+				fp_rns_conv(y, b);
+				fp_muln_low(z, x, y);
+				fp_addc_low(w, w, z);
+				bn_mul(c, a, b);
+				bn_add(d, d, c);
+			}
+			fp_rns_rdc(z, w);
+			fp_rns_back(c, z);
+			TEST_ASSERT(rns_check(c, d, m, p), end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free_all(a, b, c, d, m, p);
+	return code;
+}
+
+#endif
+
 int main(void) {
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -1362,15 +1507,25 @@ int main(void) {
 		return 1;
 	}
 
+#if FP_RDC != FP_RENUS
+	/* Elements in RNS have no digits to shift. */
 	if (shifting() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
+#endif
 
 	if (reduction() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
+
+#if FP_RDC == FP_RENUS
+	if (rns() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+#endif
 
 	if (inversion() != RLC_OK) {
 		core_clean();

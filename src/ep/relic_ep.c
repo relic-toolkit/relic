@@ -57,7 +57,7 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 		switch (ep_curve_opt_a()) {
 			case RLC_ZERO:
 				break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 			case RLC_MIN3:
 				fp_sub_dig(t0, t0, 3);
 				break;
@@ -83,7 +83,7 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 		switch (ep_curve_opt_b()) {
 			case RLC_ZERO:
 				break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 			case RLC_MIN3:
 				fp_sub_dig(t0, t0, 3);
 				break;

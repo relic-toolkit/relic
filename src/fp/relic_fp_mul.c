@@ -145,7 +145,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 /*============================================================================*/
 
 void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
-	dig_t t[RLC_FP_DIGS];
+	dig_t t[RLC_FP_LEN];
 
 	/* Doubling and adding beats fp_mul1_low() for digits up to 4. */
 	if (b <= 1) {
@@ -172,7 +172,7 @@ void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
 
 void fp_mul_add(fp_t c, const fp_t a, const fp_t b, const fp_t d,
 		const fp_t e) {
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[2 * RLC_FP_DIGS];
+	rlc_align dig_t t[RLC_FP_DLEN], u[RLC_FP_DLEN];
 
 	fp_muln_low(t, a, b);
 	fp_muln_low(u, d, e);
@@ -182,7 +182,7 @@ void fp_mul_add(fp_t c, const fp_t a, const fp_t b, const fp_t d,
 
 void fp_mul_sub(fp_t c, const fp_t a, const fp_t b, const fp_t d,
 		const fp_t e) {
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[2 * RLC_FP_DIGS];
+	rlc_align dig_t t[RLC_FP_DLEN], u[RLC_FP_DLEN];
 
 	fp_muln_low(t, a, b);
 	fp_muln_low(u, d, e);
@@ -200,7 +200,7 @@ void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
-		dv_zero(t, 2 * RLC_FP_DIGS);
+		dv_zero(t, RLC_FP_DLEN);
 		for (i = 0; i < RLC_FP_DIGS; i++) {
 			carry = fp_mula_low(t + i, b, *(a + i));
 			*(t + i + RLC_FP_DIGS) = carry;
@@ -249,7 +249,7 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 
-		dv_zero(t, 2 * RLC_FP_DIGS);
+		dv_zero(t, RLC_FP_DLEN);
 
 		if (RLC_FP_DIGS > 1) {
 			fp_mul_karat_imp(t, a, b, RLC_FP_DIGS, FP_KARAT);

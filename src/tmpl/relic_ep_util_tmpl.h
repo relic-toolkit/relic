@@ -439,7 +439,7 @@
  * @param[in,out] T		- the field element.
  * @param[in] V			- the coefficient (a or b).
  */
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 
 #define TMPL_EP_RHS_ADD(C, F, T, V)											\
 	switch (C##_curve_opt_##V()) {											\

@@ -56,22 +56,21 @@ int fp_cmp_dig(const fp_t a, dig_t b) {
 }
 
 int fp_cmp(const fp_t a, const fp_t b) {
-	fp_t t, u, v;
+	fp_t t;
 	int r = RLC_EQ;
 
-	fp_null_all(t, u, v);
+	fp_null(t);
 
 	RLC_TRY {
-		fp_new_all(t, u, v);
-		fp_norm(u, a);
-		fp_norm(v, b);
-		fp_sub(t, u, v);
+		fp_new(t);
+		/* The zero test accepts every representation of zero. */
+		fp_sub(t, a, b);
 		r = fp_is_zero(t) ? RLC_EQ : RLC_NE;
 	} RLC_CATCH_ANY {
 		r = RLC_NE;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp_free_all(t, u, v);
+		fp_free(t);
 	}
 
 	return r;

@@ -1,0 +1,75 @@
+/*
+ * RELIC is an Efficient LIbrary for Cryptography
+ * Copyright (c) 2026 RELIC Authors
+ *
+ * This file is part of RELIC. RELIC is legal property of its developers,
+ * whose names are not listed here. Please refer to the COPYRIGHT file
+ * for contact information.
+ *
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
+ *
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
+ */
+
+/**
+ * @file
+ *
+ * Implementation of the low-level prime field multiplication in a Residue Number
+ * System.
+ *
+ * @ingroup fp
+ */
+
+#include "relic_core.h"
+#include "relic_fp_low.h"
+
+#if FP_RDC == FP_RENUS
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	RNS_MAP(c, rns_add(c[_i], rns_mul(a[_i], rns_scl(digit, _i), _m[_i],
+		_u[_i]), _m[_i]));
+	return 0;
+}
+
+void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	rlc_align dig_t t[RLC_FP_LEN];
+
+	/* a * digit / M, then times M^2 / M to undo the division by M. */
+	RNS_MAP(t, rns_mul(a[_i], rns_scl(digit, _i), _m[_i], _u[_i]));
+	rns_wide(t, t);
+	fp_rns_rdc(t, t);
+	fp_mulm_low(c, t, core_get()->conv);
+}
+
+/* Defining FP_RNS_VEC leaves out the residue-wise functions, so that a backend
+ * can replace them with vectorized ones. */
+#ifndef FP_RNS_VEC
+
+void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	RNS_MAP(c, rns_mul(a[_i], b[_i], _m[_i], _u[_i]));
+}
+
+void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[RLC_FP_LEN];
+
+	fp_muln_low(t, a, b);
+	fp_rdcn_low(c, t);
+}
+
+#endif /* !FP_RNS_VEC */
+
+#endif /* FP_RDC == FP_RENUS */

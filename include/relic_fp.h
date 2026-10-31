@@ -60,6 +60,57 @@
  */
 #define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
+#if FP_RDC == FP_RENUS
+/**
+ * Bits of the moduli of the Residue Number System of prime field elements: one
+ * less than a digit.
+ */
+#define RLC_RNS_BITS	(RLC_DIG - 1)
+
+/**
+ * Number of moduli in each base of the Residue Number System. The first base,
+ * of the Montgomery reduction, must exceed 2^32 * p, so that sums of products
+ * below 2^30 * p^2 in absolute value can be reduced: for instance, elements up
+ * to 2^11 * p, with up to 2^8 products summed. The arithmetic stays far below
+ * this, as cyclotomic squarings are normalized every 8 of them.
+ */
+#define RLC_FP_RNS		((size_t)((RLC_FP_BITS + 32 + 2) / RLC_RNS_BITS + 1))
+
+/**
+ * Space taken by each base in the residues of an element: the number of moduli,
+ * rounded up to a multiple of 8 with 52-bit moduli, so that each base fills
+ * whole vectors of eight residues.
+ */
+#if RLC_RNS_BITS == 52
+#define RLC_FP_RNSO		((RLC_FP_RNS + 7) / 8 * 8)
+#else
+#define RLC_FP_RNSO		RLC_FP_RNS
+#endif
+
+/**
+ * Size in digits of the storage of a prime field element: its residues in both
+ * bases of the Residue Number System, with their padding.
+ */
+#define RLC_FP_LEN		(2 * RLC_FP_RNSO)
+
+/**
+ * Size in digits of the storage of an unreduced product of prime field
+ * elements, which has as many residues as an element.
+ */
+#define RLC_FP_DLEN		(2 * RLC_FP_RNSO)
+#else
+/**
+ * Size in digits of the storage of a prime field element.
+ */
+#define RLC_FP_LEN		RLC_FP_DIGS
+
+/**
+ * Size in digits of the storage of an unreduced product of prime field
+ * elements.
+ */
+#define RLC_FP_DLEN		(2 * RLC_FP_DIGS)
+#endif
+
 /*
  * Finite field identifiers.
  */
@@ -216,7 +267,12 @@ enum {
  * stored in the first positions of the vector.
  */
 #if RLC_ALLOC == RLC_AUTO
+#if FP_RDC == FP_RENUS
+typedef rlc_align dig_t fp_t[RLC_FP_LEN +
+		RLC_PAD(RLC_FP_LEN * (RLC_DIG / 8)) / (RLC_DIG / 8)];
+#else
 typedef rlc_align dig_t fp_t[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
+#endif
 #else
 typedef dig_t *fp_t;
 #endif
@@ -224,7 +280,57 @@ typedef dig_t *fp_t;
 /**
  * Represents a prime field element with automatic memory allocation.
  */
+#if FP_RDC == FP_RENUS
+typedef rlc_align dig_t fp_st[RLC_FP_LEN +
+		RLC_PAD(RLC_FP_LEN * (RLC_DIG / 8)) / (RLC_DIG / 8)];
+#else
 typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
+#endif
+
+#if FP_RDC == FP_RENUS
+/**
+ * Represents the precomputed values of the Residue Number System that holds
+ * the prime field elements: the moduli of the bases B and B', with products M
+ * and M', and the tables of the Montgomery reduction, of the conversions and of
+ * the zero test. R is the radix of the Montgomery form of residues.
+ */
+typedef struct {
+	/** Moduli of both bases. */
+	dig_t m[2 * RLC_FP_RNSO];
+	/** Values -m_i^{-1} mod R, for Montgomery form. */
+	dig_t u[2 * RLC_FP_RNSO];
+	/** Values R^2 mod m_i, for Montgomery form. */
+	dig_t r2[2 * RLC_FP_RNSO];
+	/** Factors R^2 in B and R^2 / M in B' to store elements. */
+	dig_t e[2 * RLC_FP_RNSO];
+	/** Values M^{-1} mod m'_j, in Montgomery form. */
+	dig_t mi[RLC_FP_RNS];
+	/** Values (M/m_i)^{-1} mod m_i in B, and M (M'/m'_j)^{-1} mod m'_j in B'. */
+	dig_t ib[2 * RLC_FP_RNSO];
+	/** Values -p^{-1} (M/m_i)^{-1} mod m_i in B. */
+	dig_t nq[RLC_FP_RNSO];
+	/** Values (M/m_i) * p / M^2 * R^3 mod m'_j by row i, to extend from B. */
+	dig_t t1[RLC_FP_RNS][RLC_FP_RNSO];
+	/** Values (M'/m'_j) * R^3 mod m_i by row j, to extend from B'. */
+	dig_t t2[RLC_FP_RNS][RLC_FP_RNSO];
+	/** Values -M * p / M^2 * R^3 mod m'_j. */
+	dig_t u1[RLC_FP_RNSO];
+	/** Values -M' * R^3 mod m_i. */
+	dig_t u2[RLC_FP_RNSO];
+	/** Value M/2 mod p, to halve in Montgomery form. */
+	fp_st half;
+	/** Value M/3 mod p, to divide by 3 in Montgomery form. */
+	fp_st third;
+	/** Multiples kp for -2 <= k <= 2 in both bases, to test for zero. */
+	dig_t kp[5][2 * RLC_FP_RNSO];
+	/** Values M/m_i and -M modulo 2^(RLC_DIG * (RLC_FP_DIGS + 1)). */
+	dig_t mp[RLC_FP_RNS][RLC_FP_DIGS + 1], mm[RLC_FP_DIGS + 1];
+	/** Value 3p modulo 2^(RLC_DIG * (RLC_FP_DIGS + 1)). */
+	dig_t p3[RLC_FP_DIGS + 1];
+	/** Values 2^(RLC_DIG * k) times the factors to store elements. */
+	dig_t pw[2 * RLC_FP_RNSO][RLC_FP_DIGS];
+} fp_rns_st;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -247,7 +353,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] A			- the new prime field element.
  */
 #if RLC_ALLOC == RLC_DYNAMIC
-#define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
+#define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_LEN)
 #elif RLC_ALLOC == RLC_AUTO
 #define fp_new(A)			/* empty */
 #endif
@@ -385,6 +491,8 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_rdc(C, A)		fp_rdc_monty(C, A)
 #elif FP_RDC == FP_QUICK
 #define fp_rdc(C, A)		fp_rdc_quick(C, A)
+#elif FP_RDC == FP_RENUS
+#define fp_rdc(C, A)		fp_rns_rdc(C, A)
 #elif FP_RDC == FP_LOWER
 #define fp_rdc(C, A)		fp_rdc_lower(C, A)
 #endif
@@ -604,6 +712,79 @@ void fp_prime_calc(void);
  * @param[in] a				- the multiple precision integer to import.
  */
 void fp_prime_conv(fp_t c, const bn_t a);
+
+#if FP_RDC == FP_RENUS
+
+/**
+ * Precomputes the bases and constants of the Residue Number System for the
+ * configured prime.
+ */
+void fp_rns_pre(void);
+
+/**
+ * Converts a non-negative integer smaller than the product of a base to its
+ * residues in both bases of the Residue Number System.
+ *
+ * @param[out] c			- the RLC_FP_LEN residues.
+ * @param[in] a				- the integer to convert.
+ */
+void fp_rns_conv(dig_t *c, const bn_t a);
+
+/**
+ * Converts the residues in the first base of the Residue Number System back to
+ * an integer, by the Chinese Remainder Theorem.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the RLC_FP_LEN residues.
+ */
+void fp_rns_back(bn_t c, const dig_t *a);
+
+/**
+ * Computes the value modulo p of an element in the Residue Number System.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element.
+ */
+void fp_rns_val(bn_t c, const dig_t *a);
+
+/**
+ * Converts an element in the Residue Number System to the digits of its value
+ * in [0, p), in constant time.
+ *
+ * @param[out] c			- the RLC_FP_DIGS digits.
+ * @param[in] a				- the element.
+ */
+void fp_rns_get(dig_t *c, const dig_t *a);
+
+/**
+ * Converts the digits of an integer to an element in the Residue Number System
+ * with that value modulo p, in constant time.
+ *
+ * @param[out] c			- the element.
+ * @param[in] a				- the RLC_FP_DIGS digits.
+ */
+void fp_rns_set(dig_t *c, const dig_t *a);
+
+/**
+ * Reduces an element of the Residue Number System by Montgomery reduction:
+ * computes c = a / M mod p, for M the product of the first base, as an
+ * integer smaller than 3p in absolute value. Requires |a| < 2^30 * p^2.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to reduce.
+ */
+void fp_rns_rdc(dig_t *c, const dig_t *a);
+
+/**
+ * Tests if an element of the Residue Number System is zero modulo p, in
+ * constant time.
+ *
+ * @param[in] a				- the element to test.
+ * @return 1 if the element is zero, 0 otherwise.
+ */
+int fp_rns_is_zero(const dig_t *a);
+
+#endif
 
 /**
  * Imports a single digit as a prime field element, doing the necessary

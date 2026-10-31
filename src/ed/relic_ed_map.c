@@ -138,9 +138,9 @@ static void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 			/* exceptional case: either denominator == 0 */
 			const int e4 = fp_is_zero(p->z);
 			fp_set_dig(tv5, 1);
-			dv_copy_sec(p->x, p->z, RLC_FP_DIGS, e4); /* set x to 0 */
-			dv_copy_sec(p->y, tv5, RLC_FP_DIGS, e4);
-			dv_copy_sec(p->z, tv5, RLC_FP_DIGS, e4);
+			dv_copy_sec(p->x, p->z, RLC_FP_LEN, e4); /* set x to 0 */
+			dv_copy_sec(p->y, tv5, RLC_FP_LEN, e4);
+			dv_copy_sec(p->z, tv5, RLC_FP_LEN, e4);
 		} /* e4 goes out of scope */
 
 		/* clear denominator / compute extended coordinates if necessary */

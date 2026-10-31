@@ -37,6 +37,24 @@
 /*============================================================================*/
 
 void fp_lsh(fp_t c, const fp_t a, uint_t bits) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so shift the value. */
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		bn_lsh(t, t, bits);
+		bn_mod(t, t, &(core_get()->prime));
+		fp_prime_conv(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
 	int digits;
 
 	RLC_RIP(bits, digits, bits);
@@ -60,9 +78,27 @@ void fp_lsh(fp_t c, const fp_t a, uint_t bits) {
 			break;
 	}
 
+#endif
 }
 
 void fp_rsh(fp_t c, const fp_t a, uint_t bits) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so shift the value. */
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		fp_prime_back(t, a);
+		bn_rsh(t, t, bits);
+		fp_prime_conv(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
 	int digits;
 
 	RLC_RIP(bits, digits, bits);
@@ -85,4 +121,5 @@ void fp_rsh(fp_t c, const fp_t a, uint_t bits) {
 			fp_rshb_low(c, c, bits);
 			break;
 	}
+#endif
 }

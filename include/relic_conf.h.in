@@ -226,6 +226,8 @@
 #define FP_QUICK    2
 /** Montgomery modular reduction. */
 #define FP_MONTY    3
+/** Montgomery modular reduction in a Residue Number System. */
+#define FP_RENUS    4
 /** Use implementation provided by the lower layer. */
 #define FP_LOWER    7
 /** Chosen prime field reduction method. */

@@ -281,7 +281,7 @@ void ep3_curve_mul_a(fp3_t c, const fp3_t a) {
 		case RLC_TWO:
 			fp3_dbl(c, a);
 			break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 		case RLC_TINY:
 			fp3_mul_dig(c, a, ctx->ep3_a[0][0]);
 			break;
@@ -301,7 +301,7 @@ void ep3_curve_mul_b(fp3_t c, const fp3_t a) {
 		case RLC_ONE:
 			fp3_copy(c, a);
 			break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 		case RLC_TINY:
 			fp3_mul_dig(c, a, ctx->ep3_b[0][0]);
 			break;

@@ -443,7 +443,7 @@ void ep4_curve_mul_a(fp4_t c, const fp4_t a) {
 			case RLC_TWO:
 				fp4_dbl(c, a);
 				break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 			case RLC_TINY:
 				fp4_mul_dig(c, a, ctx->ep4_a[0][0][0]);
 				break;
@@ -464,7 +464,7 @@ void ep4_curve_mul_b(fp4_t c, const fp4_t a) {
 		case RLC_ONE:
 			fp4_copy(c, a);
 			break;
-#if FP_RDC != FP_MONTY
+#if FP_RDC != FP_MONTY && FP_RDC != FP_RENUS
 		case RLC_TINY:
 			fp4_mul_dig(c, a, ctx->ep4_b[0][0][0]);
 			break;
