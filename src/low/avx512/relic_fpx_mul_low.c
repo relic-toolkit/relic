@@ -79,10 +79,12 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 }
 
 void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
+	/* The coefficient of w^e, with w^2 = v, is at [I[e]][J[e]]. */
+	static const int I[6] = { 0, 1, 0, 1, 0, 1 }, J[6] = { 0, 0, 1, 1, 2, 2 };
 	ctx_t *ctx = core_get();
-	rp6_t a0, a1, b0, b1, u0, u1, u2;
-	rp2_t t;
-	__m512i m, u;
+	const __m512i z = _mm512_setzero_si512();
+	rp2_t x[6], y[12], l[6], h[6];
+	__m512i t[12], m, u;
 	int s, q;
 
 	rns_nor(&s, &q);
@@ -90,96 +92,88 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				a0[j][l] = rns_load(a[0][j][l], k);
-				a1[j][l] = rns_load(a[1][j][l], k);
-				b0[j][l] = rns_load(b[0][j][l], k);
-				b1[j][l] = rns_load(b[1][j][l], k);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				x[e][j] = rns_load(a[I[e]][J[e]][j], k);
+				y[e][j] = rns_load(b[I[e]][J[e]][j], k);
+				l[e][j] = h[e][j] = z;
+			}
+			/* With w^6 = v^3 = s + i, products wrapping around use y * w^6. */
+			rp2_nor(y[e + 6], y[e], s, q, m);
+		}
+#pragma GCC unroll 12
+		for (int e = 0; e < 12; e++) {
+			t[e] = rns_vsub(z, rns_vsml(y[e][1], -q, m), m);
+		}
+		/* Schoolbook product in w: each output adds 12 products of residues
+		 * below m < 2^52, so the halves of the sums stay below 2^56. */
+#pragma GCC unroll 6
+		for (int e1 = 0; e1 < 6; e1++) {
+#pragma GCC unroll 6
+			for (int e2 = 0; e2 < 6; e2++) {
+				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
+				rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
 			}
 		}
-		/* Karatsuba algorithm. */
-		rp6_mul(u0, a0, b0, s, q, m, u);
-		rp6_mul(u1, a1, b1, s, q, m, u);
-		rp6_add(a0, a0, a1, m);
-		rp6_add(b0, b0, b1, m);
-		rp6_mul(u2, a0, b0, s, q, m, u);
-		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
-		rp6_add(a1, u0, u1, m);
-		rp6_sub(u2, u2, a1, m);
-		/* c_0 = a_0b_0 + v * a_1b_1, with v * (x_0, x_1, x_2) = (v^3 * x_2,
-		 * x_0, x_1). */
-		rp2_nor(t, u1[2], s, q, m);
-		rp2_add(u0[2], u0[2], u1[1], m);
-		rp2_add(u0[1], u0[1], u1[0], m);
-		rp2_add(u0[0], u0[0], t, m);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				rns_store(c[0][j][l], k, u0[j][l]);
-				rns_store(c[1][j][l], k, u2[j][l]);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				l[e][j] = rns_vred(l[e][j], h[e][j], m, u);
+				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
 	}
 }
 
 void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
+	/* The coefficient of w^e, with w^2 = v, is at [I[e]][J[e]]. */
+	static const int I[6] = { 0, 1, 0, 1, 0, 1 }, J[6] = { 0, 0, 1, 1, 2, 2 };
+	/* The nonzero coefficients of b are those of w^0, w^3 and w^1 for a
+	 * D-type twist, or w^2 for an M-type one. */
+	const int g = (ep2_curve_is_twist() == RLC_EP_DTYPE ? 1 : 2);
 	ctx_t *ctx = core_get();
-	const int d = (ep2_curve_is_twist() == RLC_EP_DTYPE);
-	rp6_t a0, a1, u0, u1, u2;
-	rp2_t b0, b1, b2, t;
-	__m512i m, u;
+	const __m512i z = _mm512_setzero_si512();
+	rp2_t x[6], y[12], l[6], h[6];
+	__m512i t[12], m, u;
 	int s, q;
 
 	rns_nor(&s, &q);
-	/* The nonzero components of b are b_00 and b_11, with b_10 for a D-type
-	 * twist and b_01 for an M-type one; the product is computed residue-wise,
-	 * vector by vector. */
+	/* The whole product is computed residue-wise, vector by vector. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				a0[j][l] = rns_load(a[0][j][l], k);
-				a1[j][l] = rns_load(a[1][j][l], k);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				x[e][j] = rns_load(a[I[e]][J[e]][j], k);
+				y[e][j] = rns_load(b[I[e]][J[e]][j], k);
+				l[e][j] = h[e][j] = z;
+			}
+			/* With w^6 = v^3 = s + i, products wrapping around use y * w^6. */
+			rp2_nor(y[e + 6], y[e], s, q, m);
+		}
+#pragma GCC unroll 12
+		for (int e = 0; e < 12; e++) {
+			t[e] = rns_vsub(z, rns_vsml(y[e][1], -q, m), m);
+		}
+		/* Schoolbook product in w over the nonzero coefficients of b: each
+		 * output adds 6 products of residues below m < 2^52. */
+#pragma GCC unroll 6
+		for (int e1 = 0; e1 < 6; e1++) {
+#pragma GCC unroll 6
+			for (int e2 = 0; e2 < 6; e2++) {
+				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
+				if (e2 == 0 || e2 == 3 || e2 == g) {
+					rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
+				}
 			}
 		}
-		for (int l = 0; l < 2; l++) {
-			b0[l] = rns_load(b[0][0][l], k);
-			b1[l] = rns_load(b[1][1][l], k);
-			b2[l] = rns_load(d ? b[1][0][l] : b[0][1][l], k);
-		}
-		if (d) {
-			/* u_0 = a_0 * b_00, u_1 = a_1 * (b_10 + b_11 * v). */
-			for (int j = 0; j < 3; j++) {
-				rp2_mul(u0[j], a0[j], b0, q, m, u);
-			}
-			rp6_muld(u1, a1, b2, b1, s, q, m, u);
-			rp2_add(b0, b0, b2, m);
-		} else {
-			/* u_0 = a_0 * (b_00 + b_01 * v), u_1 = a_1 * b_11 * v. */
-			rp6_muld(u0, a0, b0, b2, s, q, m, u);
-			rp2_mul(t, a1[2], b1, q, m, u);
-			rp2_nor(u1[0], t, s, q, m);
-			rp2_mul(u1[1], a1[0], b1, q, m, u);
-			rp2_mul(u1[2], a1[1], b1, q, m, u);
-			rp2_add(b1, b1, b2, m);
-		}
-		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1, with the components
-		 * of b_0 + b_1 now in b0 and b1. */
-		rp6_add(a0, a0, a1, m);
-		rp6_muld(u2, a0, b0, b1, s, q, m, u);
-		rp6_add(a1, u0, u1, m);
-		rp6_sub(u2, u2, a1, m);
-		/* c_0 = a_0b_0 + v * a_1b_1, with v * (x_0, x_1, x_2) = (v^3 * x_2,
-		 * x_0, x_1). */
-		rp2_nor(t, u1[2], s, q, m);
-		rp2_add(u0[2], u0[2], u1[1], m);
-		rp2_add(u0[1], u0[1], u1[0], m);
-		rp2_add(u0[0], u0[0], t, m);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				rns_store(c[0][j][l], k, u0[j][l]);
-				rns_store(c[1][j][l], k, u2[j][l]);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				l[e][j] = rns_vred(l[e][j], h[e][j], m, u);
+				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
 	}

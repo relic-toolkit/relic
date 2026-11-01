@@ -397,9 +397,8 @@ void fp2_inv(fp2_t c, const fp2_t a) {
 	RLC_TRY {
 		fp_new_all(t0, t1);
 
-		/* t0 = a_0^2, t1 = a_1^2. */
-		fp_sqr(t0, a[0]);
-		fp_sqr(t1, a[1]);
+		/* t0 = a_0^2, t1 = a_1^2, reduced together. */
+		fp_mul2(t0, a[0], a[0], t1, a[1], a[1]);
 
 		/* t1 = 1/(a_0^2 + a_1^2). */
 #ifndef FP_QNRES
@@ -425,10 +424,8 @@ void fp2_inv(fp2_t c, const fp2_t a) {
 
 		fp_inv(t1, t0);
 
-		/* c_0 = a_0/(a_0^2 + a_1^2). */
-		fp_mul(c[0], a[0], t1);
-		/* c_1 = - a_1/(a_0^2 + a_1^2). */
-		fp_mul(c[1], a[1], t1);
+		/* c_0 = a_0/(a_0^2 + a_1^2), c_1 = - a_1/(a_0^2 + a_1^2). */
+		fp_mul2(c[0], a[0], t1, c[1], a[1], t1);
 		fp_neg(c[1], c[1]);
 	}
 	RLC_CATCH_ANY {
@@ -484,7 +481,7 @@ void fp2_sqr_cyc(fp2_t c, const fp2_t a) {
 
 TMPL_FPX_MUL_ADD_LAZYR(fp2, dv2);
 
-TMPL_FPX_INV_SIM(fp2);
+TMPL_FPX_INV_SIM2(fp2);
 
 void fp2_exp(fp2_t c, const fp2_t a, const bn_t b) {
 	fp2_t t;

@@ -76,8 +76,9 @@
  * Number of moduli in each base of the Residue Number System. The first base,
  * of the Montgomery reduction, must exceed 2^32 * p, so that sums of products
  * below 2^30 * p^2 in absolute value can be reduced: for instance, elements up
- * to 2^11 * p, with up to 2^8 products summed. The arithmetic stays far below
- * this, as cyclotomic squarings are normalized every 8 of them.
+ * to 2^11 * p, with up to 2^8 products summed. The arithmetic stays below
+ * this, as cyclotomic squarings reduce their results as a whole, folded into
+ * the reductions of their products with lazy reduction or again otherwise.
  */
 #define RLC_FP_RNS		((size_t)((RLC_FP_BITS + 32 + 2) / RLC_RNS_BITS + 1))
 

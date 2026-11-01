@@ -40,7 +40,8 @@
  * approximately, and the result is computed in B' and extended back to B
  * exactly, as in Kawamura et al. (EUROCRYPT 2000). B must exceed the sums of
  * products to reduce divided by p, below 2^30 * p^2, and B' the reduced result,
- * below 3p in absolute value. The residue-wise operations, the base extensions
+ * below (RLC_FP_RNS + 1)p in absolute value, as the first extension skips its
+ * correction. The residue-wise operations, the base extensions
  * and the reduction are at the lower level, so that backends can vectorize
  * them.
  *
@@ -404,7 +405,7 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1];
 	dig_t t[RLC_FP_DIGS + 1], a1, b;
 
-	/* r = a / M is the value of a, with |r| < 3p. */
+	/* r = a / M is the value of a, with -p < r < (RLC_FP_RNS + 1)p. */
 	fp_rns_wide(r, a);
 	fp_rns_rdc(r, r);
 	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
@@ -413,14 +414,15 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 		xi[i] = fp_rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
 	}
 	a1 = fp_rns_alpha(xi, n, 1);
-	/* As |r| < 3p, the low digits of r + 3p are enough to recover it. */
+	/* The low digits of r + 3p are enough to recover it, as it is positive. */
 	dv_copy(s, ctx->rns.p3, l);
 	bn_mula_low(s, ctx->rns.mm, a1, l);
 	for (size_t i = 0; i < n; i++) {
 		bn_mula_low(s, ctx->rns.mp[i], xi[i], l);
 	}
-	/* Now 0 < s < 6p, so subtract p up to five times. */
-	for (int k = 0; k < 5; k++) {
+	/* Now 0 < s < (RLC_FP_RNS + 4)p, so subtract p up to RLC_FP_RNS + 3
+	 * times. */
+	for (size_t k = 0; k < RLC_FP_RNS + 3; k++) {
 		b = bn_subn_low(t, s, p, l - 1);
 		t[l - 1] = s[l - 1] - b;
 		b = (s[l - 1] < b);

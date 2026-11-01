@@ -98,7 +98,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
-	dig_t a = fp_rns_alpha(xi, n, exact);
+	dig_t a = (exact < 0 ? 0 : fp_rns_alpha(xi, n, exact));
 
 #ifdef RLC_CONF_NODBL
 	dig_t h, l, s0, s1, s2;
@@ -175,15 +175,16 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	for (size_t i = 0; i < n; i++) {
 		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
 	}
-	/* q * p for q, or q + M, as a product in B'. */
-	fp_rnsx_low(r, q, 1, 0);
+	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
+	 * extra kp only makes the result larger, so the extension skips alpha. */
+	fp_rnsx_low(r, q, 1, -1);
 	/* c = (a + q * p) / M in B', as a product carries 1 / M^2 there and an
 	 * element 1 / M; and its xi_j for the exact extension. */
 	for (size_t j = 0; j < n; j++) {
 		c[o + j] = RLC_RNS_ADD(a[o + j], r[j], m[o + j]);
 		q[j] = fp_rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
 	}
-	/* c in B, exactly, since c < 3p is far below M'/2. */
+	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */
 	fp_rnsx_low(c, q, 0, 1);
 }
 

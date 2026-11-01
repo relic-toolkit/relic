@@ -483,7 +483,7 @@ void fp3_inv(fp3_t c, const fp3_t a) {
 
 TMPL_FPX_MUL_ADD_LAZYR(fp3, dv3);
 
-TMPL_FPX_INV_SIM(fp3);
+TMPL_FPX_INV_SIM2(fp3);
 
 void fp3_exp(fp3_t c, const fp3_t a, const bn_t b) {
 	fp3_t t;

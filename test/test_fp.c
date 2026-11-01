@@ -1352,8 +1352,8 @@ static int digit(void) {
 #if FP_RDC == FP_RENUS
 
 /**
- * Checks that c = a * b / M mod p and c < 3p, where M is the product of the
- * first base of the Residue Number System.
+ * Checks that c = a * b / M mod p and 0 <= c < (RLC_FP_RNS + 1)p, where M
+ * is the product of the first base of the Residue Number System.
  */
 static int rns_check(const bn_t c, const bn_t ab, const bn_t m, const bn_t p) {
 	bn_t t;
@@ -1365,7 +1365,7 @@ static int rns_check(const bn_t c, const bn_t ab, const bn_t m, const bn_t p) {
 	bn_sub(t, t, ab);
 	bn_mod(t, t, p);
 	r = bn_is_zero(t);
-	bn_mul_dig(t, p, 3);
+	bn_mul_dig(t, p, RLC_FP_RNS + 1);
 	r &= (bn_cmp(c, t) == RLC_LT) && (bn_sign(c) == RLC_POS);
 	bn_free(t);
 	return r;

@@ -506,8 +506,7 @@
 
 /**
  * Defines a template for exponentiation by a digit in an extension field,
- * switching to faster arithmetic in the cyclotomic subgroup. It is only
- * expanded with the cyclotomic templates, which define TMPL_CYC_NORM().
+ * switching to faster arithmetic in the cyclotomic subgroup.
  *
  * @param[in] X			- the extension field prefix.
  */
@@ -541,7 +540,6 @@
 																			\
 				for (int i = l - 2; i >= 0; i--) {							\
 					X##_sqr_cyc(t, t);										\
-					TMPL_CYC_NORM(X, t, i)									\
 																			\
 					u = naf[i];												\
 					if (u > 0) {											\
@@ -604,6 +602,57 @@
 			for (i = n - 1; i > 0; i--) {									\
 				X##_mul(c[i], c[i - 1], u);									\
 				X##_mul(u, u, t[i]);										\
+			}																\
+			X##_copy(c[0], u);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			for (i = 0; i < n; i++) {										\
+				X##_free(t[i]);												\
+			}																\
+			X##_free(u);													\
+			RLC_FREE(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous inversion as TMPL_FPX_INV_SIM() does,
+ * reducing the two products of each step back together, for the extension
+ * fields with X##_mul2().
+ *
+ * @param[in] X			- the extension field prefix.
+ */
+#define TMPL_FPX_INV_SIM2(X)												\
+	void X##_inv_sim(X##_t *c, const X##_t *a, int n) {						\
+		int i;																\
+		X##_t u, *t = RLC_ALLOCA(X##_t, n);									\
+																			\
+		for (i = 0; i < n; i++) {											\
+			X##_null(t[i]);													\
+		}																	\
+		X##_null(u);														\
+																			\
+		RLC_TRY {															\
+			for (i = 0; i < n; i++) {										\
+				X##_new(t[i]);												\
+			}																\
+			X##_new(u);														\
+																			\
+			X##_copy(c[0], a[0]);											\
+			X##_copy(t[0], a[0]);											\
+																			\
+			for (i = 1; i < n; i++) {										\
+				X##_copy(t[i], a[i]);										\
+				X##_mul(c[i], c[i - 1], t[i]);								\
+			}																\
+																			\
+			X##_inv(u, c[n - 1]);											\
+																			\
+			/* Both products of each step are reduced together. */			\
+			for (i = n - 1; i > 0; i--) {									\
+				X##_mul2(c[i], c[i - 1], u, u, u, t[i]);					\
 			}																\
 			X##_copy(c[0], u);												\
 		}																	\

@@ -532,13 +532,14 @@ static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
  * the plain values xi_i = x_i (M/m_i)^{-1} mod m_i in the source base. When the
  * number of times M is subtracted is truncated, the result is x or x + M, where
  * M is the product of the source base; when it is rounded, the result is x for
- * |x| < M/2. The residues come out in Montgomery form, and the tables of the
- * extensions carry the constants of the reduction.
+ * |x| < M/2; when it is not subtracted at all, the result is x + kM for some
+ * 0 <= k < n, with n the number of moduli. The residues come out in Montgomery
+ * form, and the tables of the extensions carry the constants of the reduction.
  *
  * @param[out] r			- the residues in the target base.
  * @param[in] xi			- the values xi_i in the source base.
  * @param[in] b				- the target base: 0 for B, 1 for B'.
- * @param[in] exact			- the flag to round instead of truncating.
+ * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  */
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact);
 

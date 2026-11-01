@@ -74,10 +74,12 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 }
 
 void fp12_sqrn_low(dv12_t c, const fp12_t a) {
+	/* The coefficient of w^e, with w^2 = v, is at [I[e]][J[e]]. */
+	static const int I[6] = { 0, 1, 0, 1, 0, 1 }, J[6] = { 0, 0, 1, 1, 2, 2 };
 	ctx_t *ctx = core_get();
-	rp6_t a0, a1, u0, u1;
-	rp2_t t;
-	__m512i m, u;
+	const __m512i z = _mm512_setzero_si512();
+	rp2_t x[6], d[6], y[12], l[6], h[6];
+	__m512i t[12], m, u;
 	int s, q;
 
 	rns_nor(&s, &q);
@@ -85,32 +87,37 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				a0[j][l] = rns_load(a[0][j][l], k);
-				a1[j][l] = rns_load(a[1][j][l], k);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				x[e][j] = y[e][j] = rns_load(a[I[e]][J[e]][j], k);
+				l[e][j] = h[e][j] = z;
+			}
+			rp2_add(d[e], x[e], x[e], m);
+			/* With w^6 = v^3 = s + i, products wrapping around use y * w^6. */
+			rp2_nor(y[e + 6], y[e], s, q, m);
+		}
+#pragma GCC unroll 12
+		for (int e = 0; e < 12; e++) {
+			t[e] = rns_vsub(z, rns_vsml(y[e][1], -q, m), m);
+		}
+		/* Schoolbook square in w, with the products off the diagonal doubled:
+		 * each output adds at most 12 products of residues below m < 2^52, so
+		 * the halves of the sums stay below 2^56. */
+#pragma GCC unroll 6
+		for (int e1 = 0; e1 < 6; e1++) {
+#pragma GCC unroll 6
+			for (int e2 = e1; e2 < 6; e2++) {
+				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
+				rp2_mac(l[e % 6], h[e % 6], (e1 == e2 ? x[e1] : d[e1]), y[f],
+						t[f]);
 			}
 		}
-		/* Complex squaring, with v * (x_0, x_1, x_2) = (v^3 * x_2, x_0, x_1):
-		 * c_0 = (a_0 + a_1)(a_0 + v * a_1) - a_0a_1 - v * a_0a_1. */
-		rp6_mul(u0, a0, a1, s, q, m, u);
-		rp2_nor(t, a1[2], s, q, m);
-		rp2_add(u1[0], a0[0], t, m);
-		rp2_add(u1[1], a0[1], a1[0], m);
-		rp2_add(u1[2], a0[2], a1[1], m);
-		rp6_add(a0, a0, a1, m);
-		rp6_mul(u1, a0, u1, s, q, m, u);
-		rp6_sub(u1, u1, u0, m);
-		rp2_nor(t, u0[2], s, q, m);
-		rp2_sub(u1[0], u1[0], t, m);
-		rp2_sub(u1[1], u1[1], u0[0], m);
-		rp2_sub(u1[2], u1[2], u0[1], m);
-		/* c_1 = 2 * a_0a_1. */
-		rp6_add(u0, u0, u0, m);
-		for (int j = 0; j < 3; j++) {
-			for (int l = 0; l < 2; l++) {
-				rns_store(c[0][j][l], k, u1[j][l]);
-				rns_store(c[1][j][l], k, u0[j][l]);
+#pragma GCC unroll 6
+		for (int e = 0; e < 6; e++) {
+			for (int j = 0; j < 2; j++) {
+				l[e][j] = rns_vred(l[e][j], h[e][j], m, u);
+				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
 	}
@@ -125,26 +132,56 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 		{{1, 0}, {0, 2}, {0, 1}, {1, 2}}
 	};
 	ctx_t *ctx = core_get();
-	rp2_t x, y, c0, c1;
-	__m512i m, u;
+	rp2_t x, y, a0, a1, c0, c1;
+	__m512i m, u, k0, k1;
 	int s, q;
 
 	rns_nor(&s, &q);
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
+		/* k1 = 2 and k0 = -2, from the residues of one. */
+		k1 = rns_load(ctx->one, k);
+		k1 = rns_vadd(k1, k1, m);
+		k0 = rns_vsub(_mm512_setzero_si512(), k1, m);
 		for (int p = (pck ? 1 : 0); p < 3; p++) {
 			for (int l = 0; l < 2; l++) {
 				x[l] = rns_load(a[P[p][0][0]][P[p][0][1]][l], k);
 				y[l] = rns_load(a[P[p][1][0]][P[p][1][1]][l], k);
+				a0[l] = rns_load(a[P[p][2][0]][P[p][2][1]][l], k);
+				a1[l] = rns_load(a[P[p][3][0]][P[p][3][1]][l], k);
 			}
-			rp4_sqr(c0, c1, x, y, s, q, m, u);
-			if (p == 1) {
-				rp2_nor(c1, c1, s, q, m);
-			}
+			/* c_0j = 3 * t_0j - 2 * a_0j and c_1j = 3 * t_1j + 2 * a_1j,
+			 * reduced once. */
+			rp4_sqrf(c0, c1, x, y, a0, a1, k0, k1, p == 1, s, q, m, u);
 			for (int l = 0; l < 2; l++) {
 				rns_store(c[P[p][2][0]][P[p][2][1]][l], k, c0[l]);
 				rns_store(c[P[p][3][0]][P[p][3][1]][l], k, c1[l]);
+			}
+		}
+	}
+}
+
+void fp12_sqrf_low(fp12_t c, const fp12_t t, const fp12_t a, int pck) {
+	ctx_t *ctx = core_get();
+	__m512i m, x, y, z;
+
+	/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j, residue-wise. */
+	for (size_t k = 0; k < RNS_NE; k++) {
+		m = rns_load(ctx->rns.m, k);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 3; j++) {
+				/* Compressed squaring has no c_00 and c_11. */
+				if (pck && i == j) {
+					continue;
+				}
+				for (int l = 0; l < 2; l++) {
+					x = rns_load(t[i][j][l], k);
+					y = rns_load(a[i][j][l], k);
+					z = (i == 0 ? rns_vsub(x, y, m) : rns_vadd(x, y, m));
+					z = rns_vadd(z, z, m);
+					rns_store(c[i][j][l], k, rns_vadd(x, z, m));
+				}
 			}
 		}
 	}

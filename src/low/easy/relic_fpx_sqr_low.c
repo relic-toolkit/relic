@@ -327,11 +327,62 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 			dv_copy(c[0][1][j], u[0][j], RLC_FP_DLEN);
 			dv_copy(c[1][2][j], u[1][j], RLC_FP_DLEN);
 		}
+#if FP_RDC == FP_RENUS
+		/* c_0j = 3 * t_0j - 2 * a_0j and c_1j = 3 * t_1j + 2 * a_1j, with
+		 * 2 * a as a product, so that the square needs one reduction. */
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (pck && i == j) {
+					continue;
+				}
+				fp_add(t[0][0], core_get()->one, core_get()->one);
+				if (i == 0) {
+					fp_neg(t[0][0], t[0][0]);
+				}
+				for (int l = 0; l < 2; l++) {
+					rlc_align dig_t w[RLC_FP_DLEN];
+
+					fp_addc_low(w, c[i][j][l], c[i][j][l]);
+					fp_addc_low(c[i][j][l], c[i][j][l], w);
+					fp_muln_low(w, a[i][j][l], t[0][0]);
+					fp_addc_low(c[i][j][l], c[i][j][l], w);
+				}
+			}
+		}
+#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free(t);
 		dv4_free(u);
+	}
+}
+
+void fp12_sqrf_low(fp12_t c, const fp12_t t, const fp12_t a, int pck) {
+	fp2_t x;
+
+	fp2_null(x);
+
+	RLC_TRY {
+		fp2_new(x);
+
+		for (int j = 0; j < 3; j++) {
+			/* Compressed squaring has no c_00 and c_11. */
+			if (!pck || j != 0) {
+				fp2_sub(x, t[0][j], a[0][j]);
+				fp2_dbl(x, x);
+				fp2_add(c[0][j], t[0][j], x);
+			}
+			if (!pck || j != 1) {
+				fp2_add(x, t[1][j], a[1][j]);
+				fp2_dbl(x, x);
+				fp2_add(c[1][j], t[1][j], x);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp2_free(x);
 	}
 }
 

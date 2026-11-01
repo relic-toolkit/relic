@@ -72,12 +72,6 @@
  */
 typedef __m512i rp2_t[2];
 
-/**
- * Represents a vector of residues of an element of Fp6: the vectors of each
- * component.
- */
-typedef rp2_t rp6_t[3];
-
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -273,19 +267,6 @@ rlc_inline void rp2_add(rp2_t c, const rp2_t a, const rp2_t b, __m512i m) {
 }
 
 /**
- * Subtracts vectors of elements of Fp2 modulo m.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the vector to subtract from.
- * @param[in] b				- the vector to subtract.
- * @param[in] m				- the moduli.
- */
-rlc_inline void rp2_sub(rp2_t c, const rp2_t a, const rp2_t b, __m512i m) {
-	c[0] = rns_vsub(a[0], b[0], m);
-	c[1] = rns_vsub(a[1], b[1], m);
-}
-
-/**
  * Multiplies vectors of elements of Fp2 by the non-residue s + i, with
  * i^2 = q.
  *
@@ -304,156 +285,84 @@ rlc_inline void rp2_nor(rp2_t c, const rp2_t a, int s, int q, __m512i m) {
 }
 
 /**
- * Multiplies vectors of elements of Fp2, with i^2 = q, by Montgomery
- * multiplication lane-wise.
+ * Accumulates the product of vectors of elements of Fp2, with i^2 = q, into
+ * the halves of unreduced sums of products of residues, lane-wise.
  *
- * @param[out] c			- the result.
+ * @param[in,out] l			- the low halves of the sums.
+ * @param[in,out] h			- the high halves of the sums.
  * @param[in] a				- the first vector to multiply.
  * @param[in] b				- the second vector to multiply.
- * @param[in] q				- the square of i.
- * @param[in] m				- the moduli.
- * @param[in] u				- the Montgomery constants of the moduli.
+ * @param[in] t				- the product q * b_1.
  */
-rlc_inline void rp2_mul(rp2_t c, const rp2_t a, const rp2_t b, int q,
-		__m512i m, __m512i u) {
-	const __m512i z = _mm512_setzero_si512();
-	__m512i t = rns_vsub(z, rns_vsml(a[1], -q, m), m), t0, t1;
-
-	t0 = rns_vmul2(a[0], b[0], t, b[1], m, u);
-	t1 = rns_vmul2(a[0], b[1], a[1], b[0], m, u);
-	c[0] = t0;
-	c[1] = t1;
+rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
+		__m512i t) {
+	/* l_0 + h_0 += a_0 * b_0 + a_1 * q * b_1. */
+	l[0] = _mm512_madd52lo_epu64(l[0], a[0], b[0]);
+	h[0] = _mm512_madd52hi_epu64(h[0], a[0], b[0]);
+	l[0] = _mm512_madd52lo_epu64(l[0], a[1], t);
+	h[0] = _mm512_madd52hi_epu64(h[0], a[1], t);
+	/* l_1 + h_1 += a_0 * b_1 + a_1 * b_0. */
+	l[1] = _mm512_madd52lo_epu64(l[1], a[0], b[1]);
+	h[1] = _mm512_madd52hi_epu64(h[1], a[0], b[1]);
+	l[1] = _mm512_madd52lo_epu64(l[1], a[1], b[0]);
+	h[1] = _mm512_madd52hi_epu64(h[1], a[1], b[0]);
 }
 
 /**
- * Adds vectors of elements of Fp6 modulo m.
+ * Computes the folded terms of a cyclotomic squaring for a pair x + y * w in
+ * Fp4 = Fp2[w]/(w^2 - (s + i)), with i^2 = q: c_0 = 3 * (x^2 + (s + i) y^2)
+ * + k_0 * a_0 and c_1 = 6 * x * y + k_1 * a_1, where 6 * x * y is also
+ * multiplied by s + i if the flag is set. All products of a result, those by
+ * k included, are summed before a single reduction; at most 5 of them, below
+ * 2^52 each, keep the halves of the sums far below 2^57.
  *
- * @param[out] c			- the result.
- * @param[in] a				- the first vector to add.
- * @param[in] b				- the second vector to add.
- * @param[in] m				- the moduli.
- */
-rlc_inline void rp6_add(rp6_t c, const rp6_t a, const rp6_t b, __m512i m) {
-	for (int j = 0; j < 3; j++) {
-		rp2_add(c[j], a[j], b[j], m);
-	}
-}
-
-/**
- * Subtracts vectors of elements of Fp6 modulo m.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the vector to subtract from.
- * @param[in] b				- the vector to subtract.
- * @param[in] m				- the moduli.
- */
-rlc_inline void rp6_sub(rp6_t c, const rp6_t a, const rp6_t b, __m512i m) {
-	for (int j = 0; j < 3; j++) {
-		rp2_sub(c[j], a[j], b[j], m);
-	}
-}
-
-/**
- * Multiplies vectors of elements of Fp6 = Fp2[v]/(v^3 - (s + i)), with
- * i^2 = q, by Karatsuba multiplication.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first vector to multiply.
- * @param[in] b				- the second vector to multiply.
+ * @param[out] c0			- the first result.
+ * @param[out] c1			- the second result.
+ * @param[in] x				- the first component of the pair.
+ * @param[in] y				- the second component of the pair.
+ * @param[in] a0			- the element folded into the first result.
+ * @param[in] a1			- the element folded into the second result.
+ * @param[in] k0			- the constant multiplying a0.
+ * @param[in] k1			- the constant multiplying a1.
+ * @param[in] nor			- the flag to multiply 6 * x * y by s + i.
  * @param[in] s				- the integer part of the non-residue.
  * @param[in] q				- the square of i.
  * @param[in] m				- the moduli.
  * @param[in] u				- the Montgomery constants of the moduli.
  */
-rlc_inline void rp6_mul(rp6_t c, const rp6_t a, const rp6_t b, int s, int q,
-		__m512i m, __m512i u) {
-	rp2_t t0, t1, t2, u0, u1, u2, v0, v1;
-
-	rp2_mul(t0, a[0], b[0], q, m, u);
-	rp2_mul(t1, a[1], b[1], q, m, u);
-	rp2_mul(t2, a[2], b[2], q, m, u);
-	rp2_add(v0, a[1], a[2], m);
-	rp2_add(v1, b[1], b[2], m);
-	rp2_mul(u0, v0, v1, q, m, u);
-	rp2_add(v0, a[0], a[1], m);
-	rp2_add(v1, b[0], b[1], m);
-	rp2_mul(u1, v0, v1, q, m, u);
-	rp2_add(v0, a[0], a[2], m);
-	rp2_add(v1, b[0], b[2], m);
-	rp2_mul(u2, v0, v1, q, m, u);
-	/* c_0 = t_0 + v^3 * (u_0 - t_1 - t_2). */
-	rp2_add(v0, t1, t2, m);
-	rp2_sub(u0, u0, v0, m);
-	rp2_nor(u0, u0, s, q, m);
-	rp2_add(c[0], t0, u0, m);
-	/* c_1 = u_1 - t_0 - t_1 + v^3 * t_2. */
-	rp2_add(v0, t0, t1, m);
-	rp2_sub(u1, u1, v0, m);
-	rp2_nor(v0, t2, s, q, m);
-	rp2_add(c[1], u1, v0, m);
-	/* c_2 = u_2 - t_0 - t_2 + t_1. */
-	rp2_add(v0, t0, t2, m);
-	rp2_sub(u2, u2, v0, m);
-	rp2_add(c[2], u2, t1, m);
-}
-
-/**
- * Multiplies vectors of elements of Fp6 = Fp2[v]/(v^3 - (s + i)), with
- * i^2 = q, by a sparse one with its last component zero.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the dense vector.
- * @param[in] b0			- the first component of the sparse vector.
- * @param[in] b1			- the second component of the sparse vector.
- * @param[in] s				- the integer part of the non-residue.
- * @param[in] q				- the square of i.
- * @param[in] m				- the moduli.
- * @param[in] u				- the Montgomery constants of the moduli.
- */
-rlc_inline void rp6_muld(rp6_t c, const rp6_t a, const rp2_t b0,
-		const rp2_t b1, int s, int q, __m512i m, __m512i u) {
-	rp2_t t0, t1, t2, t3, t4;
-
-	rp2_mul(t0, a[0], b0, q, m, u);
-	rp2_mul(t1, a[1], b1, q, m, u);
-	rp2_add(t3, a[0], a[1], m);
-	rp2_add(t4, b0, b1, m);
-	rp2_mul(t2, t3, t4, q, m, u);
-	rp2_mul(t3, a[2], b1, q, m, u);
-	rp2_mul(t4, a[2], b0, q, m, u);
-	/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
-	rp2_sub(t2, t2, t0, m);
-	rp2_sub(c[1], t2, t1, m);
-	/* c_0 = a_0b_0 + v^3 * a_2b_1. */
-	rp2_nor(t3, t3, s, q, m);
-	rp2_add(c[0], t0, t3, m);
-	/* c_2 = a_2b_0 + a_1b_1. */
-	rp2_add(c[2], t4, t1, m);
-}
-
-/**
- * Squares vectors of elements x + y * w of Fp4 = Fp2[w]/(w^2 - (s + i)),
- * with i^2 = q, computing c_0 = x^2 + (s + i) * y^2 and c_1 = 2 * x * y.
- *
- * @param[out] c0			- the first component of the result.
- * @param[out] c1			- the second component of the result.
- * @param[in] x				- the first component of the vector.
- * @param[in] y				- the second component of the vector.
- * @param[in] s				- the integer part of the non-residue.
- * @param[in] q				- the square of i.
- * @param[in] m				- the moduli.
- * @param[in] u				- the Montgomery constants of the moduli.
- */
-rlc_inline void rp4_sqr(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
+rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
+		const rp2_t a0, const rp2_t a1, __m512i k0, __m512i k1, int nor,
 		int s, int q, __m512i m, __m512i u) {
-	rp2_t t0, t1, t2;
+	const __m512i z = _mm512_setzero_si512();
+	rp2_t x3, y3, l, h, t;
 
-	rp2_mul(t0, x, x, q, m, u);
-	rp2_mul(t1, y, y, q, m, u);
-	rp2_add(t2, y, y, m);
-	rp2_mul(c1, x, t2, q, m, u);
-	rp2_nor(t1, t1, s, q, m);
-	rp2_add(c0, t0, t1, m);
+	/* x3 = 3 * x, y3 = 3 * y and t = (s + i) * y. */
+	rp2_add(x3, x, x, m);
+	rp2_add(x3, x3, x, m);
+	rp2_add(y3, y, y, m);
+	rp2_add(y3, y3, y, m);
+	rp2_nor(t, y, s, q, m);
+	/* c0 = x3 * x + y3 * t + k0 * a0, accumulated unreduced. */
+	l[0] = _mm512_madd52lo_epu64(z, a0[0], k0);
+	h[0] = _mm512_madd52hi_epu64(z, a0[0], k0);
+	l[1] = _mm512_madd52lo_epu64(z, a0[1], k0);
+	h[1] = _mm512_madd52hi_epu64(z, a0[1], k0);
+	rp2_mac(l, h, x3, x, rns_vsub(z, rns_vsml(x[1], -q, m), m));
+	rp2_mac(l, h, y3, t, rns_vsub(z, rns_vsml(t[1], -q, m), m));
+	c0[0] = rns_vred(l[0], h[0], m, u);
+	c0[1] = rns_vred(l[1], h[1], m, u);
+	/* c1 = x3 * (2 * y) + k1 * a1, with x3 times s + i if asked. */
+	if (nor) {
+		rp2_nor(x3, x3, s, q, m);
+	}
+	rp2_add(t, y, y, m);
+	l[0] = _mm512_madd52lo_epu64(z, a1[0], k1);
+	h[0] = _mm512_madd52hi_epu64(z, a1[0], k1);
+	l[1] = _mm512_madd52lo_epu64(z, a1[1], k1);
+	h[1] = _mm512_madd52hi_epu64(z, a1[1], k1);
+	rp2_mac(l, h, x3, t, rns_vsub(z, rns_vsml(t[1], -q, m), m));
+	c1[0] = rns_vred(l[0], h[0], m, u);
+	c1[1] = rns_vred(l[1], h[1], m, u);
 }
 
 /**
@@ -465,7 +374,7 @@ rlc_inline void rp4_sqr(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
  * @param[in] xi			- the values xi_i of each value in the source base.
  * @param[in] K				- the number of values, up to RNS_K.
  * @param[in] b				- the target base: 0 for B, 1 for B'.
- * @param[in] exact			- the flag to round instead of truncating.
+ * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  */
 rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 		const int K, const int b, int exact) {
@@ -479,6 +388,7 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	const int S = (K == 1 ? 4 : (K * RNS_NB >= 4 ? 1 : 2));
 	const __m512i z = _mm512_setzero_si512();
 	__m512i l[RNS_K][4][RNS_NB], h[RNS_K][4][RNS_NB], y[RNS_NB], a, x;
+	__m512i alphas = _mm512_setzero_si512();
 	dig_t s;
 	size_t i;
 
@@ -514,16 +424,55 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y[k] = rns_load(w, k);
 	}
-	for (int j = 0; j < K; j++) {
-		x = xi[j][0];
-		for (size_t k = 1; k < RNS_NB; k++) {
-			x = _mm512_add_epi64(x, xi[j][k]);
+	if (exact >= 0 && K >= 3) {
+		/* The sums of all values at once, by a tree of transposing additions
+		 * that leaves the sum of value j in lane j. */
+		__m512i v[8], t[4];
+
+		for (int j = 0; j < 8; j++) {
+			v[j] = z;
+			if (j < K) {
+				v[j] = xi[j][0];
+				for (size_t k = 1; k < RNS_NB; k++) {
+					v[j] = _mm512_add_epi64(v[j], xi[j][k]);
+				}
+			}
 		}
-		s = (dig_t)_mm512_reduce_add_epi64(x);
-		a = _mm512_set1_epi64((s + ((dig_t)exact << 51)) >> 52);
+		for (int j = 0; j < 4; j++) {
+			t[j] = _mm512_add_epi64(
+					_mm512_unpacklo_epi64(v[2 * j], v[2 * j + 1]),
+					_mm512_unpackhi_epi64(v[2 * j], v[2 * j + 1]));
+		}
+		for (int j = 0; j < 2; j++) {
+			t[j] = _mm512_add_epi64(
+					_mm512_shuffle_i64x2(t[2 * j], t[2 * j + 1], 0x88),
+					_mm512_shuffle_i64x2(t[2 * j], t[2 * j + 1], 0xDD));
+		}
+		x = _mm512_add_epi64(_mm512_shuffle_i64x2(t[0], t[1], 0x88),
+				_mm512_shuffle_i64x2(t[0], t[1], 0xDD));
+		x = _mm512_add_epi64(x, _mm512_set1_epi64((dig_t)exact << 51));
+		alphas = _mm512_srli_epi64(x, 52);
+	}
+	for (int j = 0; j < K; j++) {
+		if (exact >= 0) {
+			if (K >= 3) {
+				a = _mm512_permutexvar_epi64(_mm512_set1_epi64(j), alphas);
+			} else {
+				x = xi[j][0];
+				for (size_t k = 1; k < RNS_NB; k++) {
+					x = _mm512_add_epi64(x, xi[j][k]);
+				}
+				s = (dig_t)_mm512_reduce_add_epi64(x);
+				a = _mm512_set1_epi64((s + ((dig_t)exact << 51)) >> 52);
+			}
+			for (size_t k = 0; k < RNS_NB; k++) {
+				l[j][S - 1][k] =
+						_mm512_madd52lo_epu64(l[j][S - 1][k], a, y[k]);
+				h[j][S - 1][k] =
+						_mm512_madd52hi_epu64(h[j][S - 1][k], a, y[k]);
+			}
+		}
 		for (size_t k = 0; k < RNS_NB; k++) {
-			l[j][S - 1][k] = _mm512_madd52lo_epu64(l[j][S - 1][k], a, y[k]);
-			h[j][S - 1][k] = _mm512_madd52hi_epu64(h[j][S - 1][k], a, y[k]);
 			for (int e = 1; e < S; e++) {
 				l[j][0][k] = _mm512_add_epi64(l[j][0][k], l[j][e][k]);
 				h[j][0][k] = _mm512_add_epi64(h[j][0][k], h[j][e][k]);
@@ -564,8 +513,9 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 					y, z);
 		}
 	}
-	/* q * p for q, or q + M, as a product in B'. */
-	rns_vext(r, q, K, 1, 0);
+	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
+	 * extra kp only makes the result larger, so the extension skips alpha. */
+	rns_vext(r, q, K, 1, -1);
 	/* c = (a + q * p) / M in B', and its xi_j for the exact extension. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m + o, k);
@@ -576,7 +526,7 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 			q[j][k] = rns_vmul(x, rns_load(ctx->rns.ib + o, k), y, z);
 		}
 	}
-	/* c in B, exactly, since c < 3p is far below M'/2. */
+	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */
 	rns_vext(r, q, K, 0, 1);
 	for (int j = 0; j < K; j++) {
 		for (size_t k = 0; k < RNS_NB; k++) {

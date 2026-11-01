@@ -37,6 +37,13 @@
 #include "relic_fpx_sqr_tmpl.h"
 #include "relic_fpx_util_tmpl.h"
 
+#if FP_RDC == FP_RENUS && FPX_RDC == FPX_LAZYR
+/* Cyclotomic squarings in Fp^12 reduce their whole results, and cost less than
+ * compressed squarings with the decompression. */
+#undef TMPL_CYC_PCK
+#define TMPL_CYC_PCK		0
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -165,76 +172,82 @@ TMPL_FPX_SQR_LAZYR(fp12, dv12, fp2, dv2, 6);
 void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 	dv12_t u;
 	fp12_t t;
-	fp2_t x;
 
 	dv12_null(u);
 	fp12_null(t);
-	fp2_null(x);
 
 	RLC_TRY {
 		dv12_new(u);
 		fp12_new(t);
-		fp2_new(x);
 
 		fp12_sqrc_low(u, a, 1);
-		/* Move the term of c_12 next to the others, to reduce them at once. */
+		/* Move the term of c_12 next to the others, to reduce them at once,
+		 * and back once reduced. */
 		dv_copy(u[1][1][0], u[1][2][0], RLC_FP_DLEN);
 		dv_copy(u[1][1][1], u[1][2][1], RLC_FP_DLEN);
 		fp2_rdcv_low(&t[0][1], &u[0][1], 4);
-		/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j. */
-		for (int j = 1; j < 3; j++) {
-			fp2_sub(x, t[0][j], a[0][j]);
-			fp2_dbl(x, x);
-			fp2_add(c[0][j], t[0][j], x);
-		}
-		fp2_add(x, t[1][0], a[1][0]);
-		fp2_dbl(x, x);
-		fp2_add(c[1][0], t[1][0], x);
-		fp2_add(x, t[1][1], a[1][2]);
-		fp2_dbl(x, x);
-		fp2_add(c[1][2], t[1][1], x);
+		fp2_copy(t[1][2], t[1][1]);
+#if FP_RDC == FP_RENUS
+		/* The terms were already combined into the square. */
+		fp2_copy(c[0][1], t[0][1]);
+		fp2_copy(c[0][2], t[0][2]);
+		fp2_copy(c[1][0], t[1][0]);
+		fp2_copy(c[1][2], t[1][2]);
+#else
+		fp12_sqrf_low(c, t, a, 1);
+#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		dv12_free(u);
 		fp12_free(t);
-		fp2_free(x);
 	}
 }
+
+#if FP_RDC == FP_RENUS
+
+void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
+	dv12_t u;
+
+	dv12_null(u);
+
+	RLC_TRY {
+		dv12_new(u);
+		/* The terms are already combined into the square. */
+		fp12_sqrc_low(u, a, 0);
+		fp2_rdcv_low((fp2_t *)c, (dv2_t *)u, 6);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv12_free(u);
+	}
+}
+
+#else
 
 void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 	dv12_t u;
 	fp12_t t;
-	fp2_t x;
 
 	dv12_null(u);
 	fp12_null(t);
-	fp2_null(x);
 
 	RLC_TRY {
 		dv12_new(u);
 		fp12_new(t);
-		fp2_new(x);
 
 		fp12_sqrc_low(u, a, 0);
 		fp2_rdcv_low((fp2_t *)t, (dv2_t *)u, 6);
-		/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j. */
-		for (int j = 0; j < 3; j++) {
-			fp2_sub(x, t[0][j], a[0][j]);
-			fp2_dbl(x, x);
-			fp2_add(c[0][j], t[0][j], x);
-			fp2_add(x, t[1][j], a[1][j]);
-			fp2_dbl(x, x);
-			fp2_add(c[1][j], t[1][j], x);
-		}
+		fp12_sqrf_low(c, t, a, 0);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		dv12_free(u);
 		fp12_free(t);
-		fp2_free(x);
 	}
 }
+
+#endif
 
 TMPL_FPX_CUB_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_muln_low,
 		fp2_sqrn_low);

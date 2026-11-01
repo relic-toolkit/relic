@@ -36,35 +36,11 @@
 /*============================================================================*/
 
 /**
- * Bounds the size of an element after cyclotomic squarings, every 8 of them,
- * by multiplying each prime field coefficient by one. In a Residue Number
- * System, elements are not reduced by additions, and cyclotomic squarings
- * compute coefficients as 3t +- 2a from the previous a, which then doubles at
- * every squaring; after 8 of them, products stay far below the bound of the
- * reduction. This also applies to compressed elements, coefficient-wise. All
- * coefficients are reduced together.
- *
- * @param[in] F			- the extension field prefix.
- * @param[in,out] R		- the element.
- * @param[in] I			- the number of squarings so far.
+ * Selects compressed squarings, with a decompression at the end, for the
+ * exponentiation by sparse exponents; an extension field may set it to zero to
+ * use cyclotomic squarings instead, when these are cheap enough.
  */
-#if FP_RDC == FP_RENUS
-#define TMPL_CYC_NORM(F, R, I)												\
-	if (((I) & 7) == 0) {													\
-		enum { _N = sizeof(F##_t) / sizeof(fp_t) };							\
-		rlc_align dig_t _t[_N][RLC_FP_DLEN];								\
-		dig_t *_c[_N], *_u[_N];												\
-																			\
-		for (int _n = 0; _n < _N; _n++) {									\
-			fp_muln_low(_t[_n], ((fp_t *)(R))[_n], core_get()->one);		\
-			_c[_n] = ((fp_t *)(R))[_n];										\
-			_u[_n] = _t[_n];												\
-		}																	\
-		fp_rdcv_low(_c, _u, _N);											\
-	}
-#else
-#define TMPL_CYC_NORM(F, R, I)		/* Elements are reduced by additions. */
-#endif
+#define TMPL_CYC_PCK		1
 
 /**
  * Defines a template for exponentiation in the cyclotomic subgroup using w-NAF,
@@ -112,7 +88,6 @@
 			k = naf + l - 1;												\
 			for (int i = l - 1; i >= 0; i--, k--) {							\
 				SQR(r, r);													\
-				TMPL_CYC_NORM(F, r, i)										\
 																			\
 				if (*k > 0) {												\
 					F##_mul(r, r, t[*k / 2]);								\
@@ -197,7 +172,6 @@
 				k = naf + l - 1;											\
 				for (int i = l - 1; i >= 0; i--, k--) {						\
 					F##_sqr_cyc(r, r);										\
-					TMPL_CYC_NORM(F, r, i)									\
 																			\
 					if (*k > 0) {											\
 						F##_mul(r, r, t[*k / 2]);							\
@@ -314,8 +288,11 @@
 				for (j = 0, i = 1; i < len; i++) {							\
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
-						F##_sqr_pck(t, t);									\
-						TMPL_CYC_NORM(F, t, j + 1)							\
+						if (TMPL_CYC_PCK) {									\
+							F##_sqr_pck(t, t);								\
+						} else {											\
+							F##_sqr_cyc(t, t);								\
+						}													\
 					}														\
 					if (b[i] < 0) {											\
 						F##_inv_cyc(u[i - 1], t);							\
@@ -324,7 +301,9 @@
 					}														\
 				}															\
 																			\
-				F##_back_cyc_sim(u, u, w - 1);								\
+				if (TMPL_CYC_PCK) {											\
+					F##_back_cyc_sim(u, u, w - 1);							\
+				}															\
 																			\
 				F##_copy(c, a);												\
 				for (i = 0; i < w - 1; i++) {								\
@@ -334,8 +313,11 @@
 				for (j = 0, i = 0; i < len; i++) {							\
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
-						F##_sqr_pck(t, t);									\
-						TMPL_CYC_NORM(F, t, j + 1)							\
+						if (TMPL_CYC_PCK) {									\
+							F##_sqr_pck(t, t);								\
+						} else {											\
+							F##_sqr_cyc(t, t);								\
+						}													\
 					}														\
 					if (b[i] < 0) {											\
 						F##_inv_cyc(u[i], t);								\
@@ -344,7 +326,9 @@
 					}														\
 				}															\
 																			\
-				F##_back_cyc_sim(u, u, w);									\
+				if (TMPL_CYC_PCK) {											\
+					F##_back_cyc_sim(u, u, w);								\
+				}															\
 																			\
 				F##_copy(c, u[0]);											\
 				for (i = 1; i < w; i++) {									\
@@ -439,7 +423,6 @@
 			F##_set_dig(r, 1);												\
 			for (int i = l - 1; i >= 0; i--, _k--, _m--) {					\
 				SQR(r, r);													\
-				TMPL_CYC_NORM(F, r, i)										\
 																			\
 				n0 = *_k;													\
 				n1 = *_m;													\
@@ -722,9 +705,9 @@
 			Z##_dbl(t1, a[1][0]);											\
 			Z##_dbl(t1, t1);												\
 			Z##_copy_sec(t1, a[0][2], f);									\
-			/* All kept coefficients zero: decompress to unity. */			\
-			f = Z##_is_zero(a[0][1]) && Z##_is_zero(a[0][2]) &&				\
-					Z##_is_zero(a[1][0]) && Z##_is_zero(a[1][2]);			\
+			/* All kept coefficients zero (f has the first): unity. */		\
+			f = f && Z##_is_zero(a[0][1]) &&								\
+					Z##_is_zero(a[0][2]) && Z##_is_zero(a[1][2]);			\
 			Z##_set_dig(t2, 1);												\
 			Z##_copy_sec(t1, t2, f);										\
 																			\
@@ -816,9 +799,9 @@
 				Z##_dbl(t1[i], a[i][1][0]);									\
 				Z##_dbl(t1[i], t1[i]);										\
 				Z##_copy_sec(t1[i], a[i][0][2], f);							\
-				/* All kept coefficients zero: decompress to unity. */		\
-				f = Z##_is_zero(a[i][0][1]) && Z##_is_zero(a[i][0][2]) &&	\
-						Z##_is_zero(a[i][1][0]) && Z##_is_zero(a[i][1][2]);	\
+				/* All kept coefficients zero (f has the first): unity. */	\
+				f = f && Z##_is_zero(a[i][0][1]) &&							\
+						Z##_is_zero(a[i][0][2]) && Z##_is_zero(a[i][1][2]);	\
 				Z##_set_dig(t2[i], 1);										\
 				Z##_copy_sec(t1[i], t2[i], f);								\
 			}																\
@@ -896,8 +879,8 @@
 			Z##_dbl(t1, a[1][0]);											\
 			Z##_dbl(t1, t1);												\
 			Z##_copy_sec(t1, a[1][1], f);									\
-			/* All kept coefficients zero: decompress to unity. */			\
-			f = Z##_is_zero(a[1][0]) && Z##_is_zero(a[1][1]) &&				\
+			/* All kept coefficients zero (f has the first): unity. */		\
+			f = f && Z##_is_zero(a[1][1]) &&								\
 					Z##_is_zero(a[2][0]) && Z##_is_zero(a[2][1]);			\
 			Z##_set_dig(t2, 1);												\
 			Z##_copy_sec(t1, t2, f);										\
@@ -989,8 +972,8 @@
 				Z##_dbl(t1[i], a[i][1][0]);									\
 				Z##_dbl(t1[i], t1[i]);										\
 				Z##_copy_sec(t1[i], a[i][1][1], f);							\
-				/* All kept coefficients zero: decompress to unity. */		\
-				f = Z##_is_zero(a[i][1][0]) && Z##_is_zero(a[i][1][1]) &&	\
+				/* All kept coefficients zero (f has the first): unity. */	\
+				f = f && Z##_is_zero(a[i][1][1]) &&							\
 						Z##_is_zero(a[i][2][0]) && Z##_is_zero(a[i][2][1]);	\
 				Z##_set_dig(t2[i], 1);										\
 				Z##_copy_sec(t1[i], t2[i], f);								\
