@@ -127,8 +127,7 @@
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
-				F##_sqr(t0, p->y);											\
-				F##_mul(t3, p->x, p->y);									\
+				F##_mul2(t0, p->y, p->y, t3, p->x, p->y);					\
 																			\
 				if (p->coord == EC_AFFIN) {									\
 					/* Save 1M + 1S + 1m_b3 if z1 = 1. */					\
@@ -136,8 +135,7 @@
 					F##_dbl(t2, C##_curve_get_b());							\
 					F##_add(t2, t2, C##_curve_get_b());						\
 				} else {													\
-					F##_mul(t1, p->y, p->z);								\
-					F##_sqr(t2, p->z);										\
+					F##_mul2(t1, p->y, p->z, t2, p->z, p->z);				\
 					F##_dbl(t5, t2);										\
 					F##_add(t5, t5, t2);									\
 					C##_curve_mul_b(t2, t5);								\
@@ -151,13 +149,10 @@
 				F##_sub(t4, t0, t4);										\
 				/* The sum of products is reduced once. */					\
 				F##_mul_add(r->y, t2, r->z, t4, r->y);						\
-				F##_mul(r->z, t1, r->z);									\
-				F##_mul(r->x, t4, t3);										\
+				F##_mul2(r->z, t1, r->z, r->x, t4, t3);						\
 				F##_dbl(r->x, r->x);										\
 			} else {														\
-				F##_sqr(t0, p->x);											\
-				F##_sqr(t1, p->y);											\
-				F##_mul(t3, p->x, p->y);									\
+				F##_mul3(t0, p->x, p->x, t1, p->y, p->y, t3, p->x, p->y);	\
 				F##_dbl(t3, t3);											\
 				F##_mul(t4, p->y, p->z);									\
 																			\
@@ -180,8 +175,7 @@
 					F##_add(r->y, r->x, r->y);								\
 					F##_sub(r->x, t1, r->y);								\
 					F##_add(r->y, t1, r->y);								\
-					F##_mul(r->y, r->x, r->y);								\
-					F##_mul(r->x, t3, r->x);								\
+					F##_mul2(r->y, r->x, r->y, r->x, t3, r->x);				\
 					C##_curve_mul_b(r->z, r->z);							\
 					F##_sub(t3, r->z, t2);									\
 					F##_sub(t3, t3, t0);									\
@@ -210,8 +204,7 @@
 					F##_add(r->y, r->x, r->y);								\
 					F##_sub(r->x, t1, r->y);								\
 					F##_add(r->y, t1, r->y);								\
-					F##_mul(r->y, r->x, r->y);								\
-					F##_mul(r->x, t3, r->x);								\
+					F##_mul2(r->y, r->x, r->y, r->x, t3, r->x);				\
 					F##_dbl(t5, r->z);										\
 					F##_add(t5, t5, r->z);									\
 					C##_curve_mul_b(r->z, t5);								\
@@ -223,23 +216,20 @@
 					F##_add(t0, t0, t2);									\
 				}															\
 				/* Common part with renamed variables. */					\
-				F##_mul(t0, t0, t3);										\
-				F##_add(r->y, r->y, t0);									\
 				F##_dbl(t2, t4);											\
-				F##_mul(t0, t2, t3);										\
-				F##_sub(r->x, r->x, t0);									\
-				F##_mul(r->z, t2, t1);										\
+				F##_mul3(t0, t0, t3, t5, t2, t3, r->z, t2, t1);				\
+				F##_add(r->y, r->y, t0);									\
+				F##_sub(r->x, r->x, t5);									\
 				F##_dbl(r->z, r->z);										\
 				F##_dbl(r->z, r->z);										\
 			}																\
-			r->coord = EC_PROJC;												\
+			r->coord = EC_PROJC;											\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
-
 /**
  * Defines a template for point doubling in Jacobian coordinates.
  *

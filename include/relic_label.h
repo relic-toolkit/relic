@@ -600,6 +600,9 @@
 #undef fp_mul_dig
 #undef fp_mul_add
 #undef fp_mul_sub
+#undef fp_mul2
+#undef fp_mul3
+#undef fp_mul_add3
 #undef fp_sqr_basic
 #undef fp_sqr_comba
 #undef fp_sqr_integ
@@ -713,6 +716,9 @@
 #define fp_mul_dig 	RLC_PREFIX(fp_mul_dig)
 #define fp_mul_add 	RLC_PREFIX(fp_mul_add)
 #define fp_mul_sub 	RLC_PREFIX(fp_mul_sub)
+#define fp_mul2 	RLC_PREFIX(fp_mul2)
+#define fp_mul3 	RLC_PREFIX(fp_mul3)
+#define fp_mul_add3 	RLC_PREFIX(fp_mul_add3)
 #define fp_sqr_basic 	RLC_PREFIX(fp_sqr_basic)
 #define fp_sqr_comba 	RLC_PREFIX(fp_sqr_comba)
 #define fp_sqr_integ 	RLC_PREFIX(fp_sqr_integ)
@@ -777,6 +783,7 @@
 #undef fp_invm_low
 #undef fp_smbm_low
 #undef fp_rnsx_low
+#undef fp_rdcv_low
 
 #define fp_add1_low 	RLC_PREFIX(fp_add1_low)
 #define fp_addn_low 	RLC_PREFIX(fp_addn_low)
@@ -808,6 +815,7 @@
 #define fp_invm_low 	RLC_PREFIX(fp_invm_low)
 #define fp_smbm_low 	RLC_PREFIX(fp_smbm_low)
 #define fp_rnsx_low 	RLC_PREFIX(fp_rnsx_low)
+#define fp_rdcv_low 	RLC_PREFIX(fp_rdcv_low)
 
 #undef fp_st
 #undef fp_t
@@ -2241,6 +2249,9 @@
 #undef fp2_mul_art
 #undef fp2_mul_add
 #undef fp2_mul_sub
+#undef fp2_mul2
+#undef fp2_mul3
+#undef fp2_mul_add3
 #undef fp2_mul_nor_basic
 #undef fp2_mul_nor_integ
 #undef fp2_mul_frb
@@ -2294,6 +2305,9 @@
 #define fp2_mul_art 	RLC_PREFIX(fp2_mul_art)
 #define fp2_mul_add 	RLC_PREFIX(fp2_mul_add)
 #define fp2_mul_sub 	RLC_PREFIX(fp2_mul_sub)
+#define fp2_mul2 	RLC_PREFIX(fp2_mul2)
+#define fp2_mul3 	RLC_PREFIX(fp2_mul3)
+#define fp2_mul_add3 	RLC_PREFIX(fp2_mul_add3)
 #define fp2_mul_nor_basic 	RLC_PREFIX(fp2_mul_nor_basic)
 #define fp2_mul_nor_integ 	RLC_PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	RLC_PREFIX(fp2_mul_frb)
@@ -2387,6 +2401,9 @@
 #undef fp3_mul_art
 #undef fp3_mul_add
 #undef fp3_mul_sub
+#undef fp3_mul2
+#undef fp3_mul3
+#undef fp3_mul_add3
 #undef fp3_mul_nor
 #undef fp3_mul_frb
 #undef fp3_mul_dig
@@ -2429,6 +2446,9 @@
 #define fp3_mul_art 	RLC_PREFIX(fp3_mul_art)
 #define fp3_mul_add 	RLC_PREFIX(fp3_mul_add)
 #define fp3_mul_sub 	RLC_PREFIX(fp3_mul_sub)
+#define fp3_mul2 	RLC_PREFIX(fp3_mul2)
+#define fp3_mul3 	RLC_PREFIX(fp3_mul3)
+#define fp3_mul_add3 	RLC_PREFIX(fp3_mul_add3)
 #define fp3_mul_nor 	RLC_PREFIX(fp3_mul_nor)
 #define fp3_mul_frb 	RLC_PREFIX(fp3_mul_frb)
 #define fp3_mul_dig 	RLC_PREFIX(fp3_mul_dig)
@@ -2506,6 +2526,9 @@
 #undef fp4_mul_art
 #undef fp4_mul_add
 #undef fp4_mul_sub
+#undef fp4_mul2
+#undef fp4_mul3
+#undef fp4_mul_add3
 #undef fp4_mul_frb
 #undef fp4_mul_dig
 #undef fp4_mul_fp
@@ -2545,6 +2568,9 @@
 #define fp4_mul_art 	RLC_PREFIX(fp4_mul_art)
 #define fp4_mul_add 	RLC_PREFIX(fp4_mul_add)
 #define fp4_mul_sub 	RLC_PREFIX(fp4_mul_sub)
+#define fp4_mul2 	RLC_PREFIX(fp4_mul2)
+#define fp4_mul3 	RLC_PREFIX(fp4_mul3)
+#define fp4_mul_add3 	RLC_PREFIX(fp4_mul_add3)
 #define fp4_mul_frb 	RLC_PREFIX(fp4_mul_frb)
 #define fp4_mul_dig 	RLC_PREFIX(fp4_mul_dig)
 #define fp4_mul_fp 	RLC_PREFIX(fp4_mul_fp)
@@ -2640,6 +2666,9 @@
 #undef fp8_mul_art
 #undef fp8_mul_add
 #undef fp8_mul_sub
+#undef fp8_mul2
+#undef fp8_mul3
+#undef fp8_mul_add3
 #undef fp8_mul_frb
 #undef fp8_mul_dig
 #undef fp8_mul_fp
@@ -2688,6 +2717,9 @@
 #define fp8_mul_art 	RLC_PREFIX(fp8_mul_art)
 #define fp8_mul_add 	RLC_PREFIX(fp8_mul_add)
 #define fp8_mul_sub 	RLC_PREFIX(fp8_mul_sub)
+#define fp8_mul2 	RLC_PREFIX(fp8_mul2)
+#define fp8_mul3 	RLC_PREFIX(fp8_mul3)
+#define fp8_mul_add3 	RLC_PREFIX(fp8_mul_add3)
 #define fp8_mul_frb 	RLC_PREFIX(fp8_mul_frb)
 #define fp8_mul_dig 	RLC_PREFIX(fp8_mul_dig)
 #define fp8_mul_fp 	RLC_PREFIX(fp8_mul_fp)
@@ -2737,6 +2769,9 @@
 #undef fp9_mul_art
 #undef fp9_mul_add
 #undef fp9_mul_sub
+#undef fp9_mul2
+#undef fp9_mul3
+#undef fp9_mul_add3
 #undef fp9_mul_dxs
 #undef fp9_sqr_unr
 #undef fp9_sqr_basic
@@ -2774,6 +2809,9 @@
 #define fp9_mul_art 	RLC_PREFIX(fp9_mul_art)
 #define fp9_mul_add 	RLC_PREFIX(fp9_mul_add)
 #define fp9_mul_sub 	RLC_PREFIX(fp9_mul_sub)
+#define fp9_mul2 	RLC_PREFIX(fp9_mul2)
+#define fp9_mul3 	RLC_PREFIX(fp9_mul3)
+#define fp9_mul_add3 	RLC_PREFIX(fp9_mul_add3)
 #define fp9_mul_dxs 	RLC_PREFIX(fp9_mul_dxs)
 #define fp9_sqr_unr 	RLC_PREFIX(fp9_sqr_unr)
 #define fp9_sqr_basic 	RLC_PREFIX(fp9_sqr_basic)

@@ -42,33 +42,6 @@
 /** Number of extension field elements whose components are gathered at once. */
 #define RNS_SIM		8
 
-/**
- * Reduces n prime field values, in batches of up to RNS_K.
- *
- * @param[out] c			- the results.
- * @param[in] a				- the values to reduce.
- * @param[in] n				- the number of values.
- */
-static void rns_vrdc_all(dig_t *const c[], const dig_t *const a[], int n) {
-	int i = 0;
-
-	for (; i + RNS_K <= n; i += RNS_K) {
-		rns_vrdc(c + i, a + i, RNS_K);
-	}
-	/* RNS_K is at least 4, so a remainder needs at most three batches. */
-	if (i + 4 <= n) {
-		rns_vrdc(c + i, a + i, 4);
-		i += 4;
-	}
-	if (i + 2 <= n) {
-		rns_vrdc(c + i, a + i, 2);
-		i += 2;
-	}
-	if (i < n) {
-		rns_vrdc(c + i, a + i, 1);
-	}
-}
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -90,7 +63,7 @@ void fp3_rdcn_low(fp3_t c, dv3_t a) {
 
 void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 	dig_t *cs[2 * RNS_SIM];
-	const dig_t *as[2 * RNS_SIM];
+	dig_t *as[2 * RNS_SIM];
 
 	for (int i = 0; i < n; i += RNS_SIM) {
 		int m = RLC_MIN(RNS_SIM, n - i);
@@ -100,13 +73,13 @@ void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 			as[2 * j] = a[i + j][0];
 			as[2 * j + 1] = a[i + j][1];
 		}
-		rns_vrdc_all(cs, as, 2 * m);
+		fp_rdcv_low(cs, as, 2 * m);
 	}
 }
 
 void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n) {
 	dig_t *cs[3 * RNS_SIM];
-	const dig_t *as[3 * RNS_SIM];
+	dig_t *as[3 * RNS_SIM];
 
 	for (int i = 0; i < n; i += RNS_SIM) {
 		int m = RLC_MIN(RNS_SIM, n - i);
@@ -116,6 +89,6 @@ void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n) {
 				as[3 * j + k] = a[i + j][k];
 			}
 		}
-		rns_vrdc_all(cs, as, 3 * m);
+		fp_rdcv_low(cs, as, 3 * m);
 	}
 }

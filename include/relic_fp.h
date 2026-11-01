@@ -1244,6 +1244,66 @@ void fp_mul_sub(fp_t c, const fp_t a, const fp_t b, const fp_t d,
 		const fp_t e);
 
 /**
+ * Multiplies two pairs of prime field elements independently, reducing the
+ * products together. Computes c0 = a0 * b0 and c1 = a1 * b1. All products are
+ * computed before any result is written, so the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp_mul2(fp_t c0, const fp_t a0, const fp_t b0, fp_t c1, const fp_t a1,
+		const fp_t b1);
+
+/**
+ * Multiplies three pairs of prime field elements independently, reducing the
+ * products together. Computes c_i = a_i * b_i for 0 <= i < 3. All products are
+ * computed before any result is written, so the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp_mul3(fp_t c0, const fp_t a0, const fp_t b0, fp_t c1, const fp_t a1,
+		const fp_t b1, fp_t c2, const fp_t a2, const fp_t b2);
+
+/**
+ * Computes three sums of two products of prime field elements independently,
+ * reducing the sums together. Computes c_i = a_i * b_i + d_i * e_i for
+ * 0 <= i < 3. All products are computed before any result is written, so the
+ * results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp_mul_add3(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
+		const fp_t e0, fp_t c1, const fp_t a1, const fp_t b1, const fp_t d1,
+		const fp_t e1, fp_t c2, const fp_t a2, const fp_t b2, const fp_t d2,
+		const fp_t e2);
+
+/**
  * Squares a prime field element using Schoolbook squaring.
  *
  * @param[out] c			- the result.

@@ -1892,6 +1892,69 @@ void fp2_mul_sub(fp2_t c, const fp2_t a, const fp2_t b, const fp2_t d,
 		const fp2_t e);
 
 /**
+ * Multiplies two pairs of quadratic extension field elements independently,
+ * reducing the products together. Computes c0 = a0 * b0 and c1 = a1 * b1. All
+ * products are computed before any result is written, so the results may alias
+ * the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp2_mul2(fp2_t c0, const fp2_t a0, const fp2_t b0, fp2_t c1,
+		const fp2_t a1, const fp2_t b1);
+
+/**
+ * Multiplies three pairs of quadratic extension field elements independently,
+ * reducing the products together. Computes c_i = a_i * b_i for 0 <= i < 3. All
+ * products are computed before any result is written, so the results may alias
+ * the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp2_mul3(fp2_t c0, const fp2_t a0, const fp2_t b0, fp2_t c1,
+		const fp2_t a1, const fp2_t b1, fp2_t c2, const fp2_t a2,
+		const fp2_t b2);
+
+/**
+ * Computes three sums of two products of quadratic extension field elements
+ * independently, reducing the sums together. Computes c_i = a_i * b_i + d_i *
+ * e_i for 0 <= i < 3. All products are computed before any result is written,
+ * so the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp2_mul_add3(fp2_t c0, const fp2_t a0, const fp2_t b0, const fp2_t d0,
+		const fp2_t e0, fp2_t c1, const fp2_t a1, const fp2_t b1,
+		const fp2_t d1, const fp2_t e1, fp2_t c2, const fp2_t a2,
+		const fp2_t b2, const fp2_t d2, const fp2_t e2);
+
+/**
  * Multiplies a quadratic extension field element by a quadratic/cubic
  * non-residue.
  *
@@ -2366,6 +2429,69 @@ void fp3_mul_sub(fp3_t c, const fp3_t a, const fp3_t b, const fp3_t d,
 		const fp3_t e);
 
 /**
+ * Multiplies two pairs of cubic extension field elements independently,
+ * reducing the products together. Computes c0 = a0 * b0 and c1 = a1 * b1. All
+ * products are computed before any result is written, so the results may alias
+ * the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp3_mul2(fp3_t c0, const fp3_t a0, const fp3_t b0, fp3_t c1,
+		const fp3_t a1, const fp3_t b1);
+
+/**
+ * Multiplies three pairs of cubic extension field elements independently,
+ * reducing the products together. Computes c_i = a_i * b_i for 0 <= i < 3. All
+ * products are computed before any result is written, so the results may alias
+ * the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp3_mul3(fp3_t c0, const fp3_t a0, const fp3_t b0, fp3_t c1,
+		const fp3_t a1, const fp3_t b1, fp3_t c2, const fp3_t a2,
+		const fp3_t b2);
+
+/**
+ * Computes three sums of two products of cubic extension field elements
+ * independently, reducing the sums together. Computes c_i = a_i * b_i + d_i *
+ * e_i for 0 <= i < 3. All products are computed before any result is written,
+ * so the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp3_mul_add3(fp3_t c0, const fp3_t a0, const fp3_t b0, const fp3_t d0,
+		const fp3_t e0, fp3_t c1, const fp3_t a1, const fp3_t b1,
+		const fp3_t d1, const fp3_t e1, fp3_t c2, const fp3_t a2,
+		const fp3_t b2, const fp3_t d2, const fp3_t e2);
+
+/**
  * Multiplies a cubic extension field element by a cubic non-residue.
  *
  * @param[out] c			- the result.
@@ -2713,6 +2839,69 @@ void fp4_mul_add(fp4_t c, const fp4_t a, const fp4_t b, const fp4_t d,
  */
 void fp4_mul_sub(fp4_t c, const fp4_t a, const fp4_t b, const fp4_t d,
 		const fp4_t e);
+
+/**
+ * Multiplies two pairs of quartic extension field elements independently,
+ * reducing each product. Computes c0 = a0 * b0 and c1 = a1 * b1. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp4_mul2(fp4_t c0, const fp4_t a0, const fp4_t b0, fp4_t c1,
+		const fp4_t a1, const fp4_t b1);
+
+/**
+ * Multiplies three pairs of quartic extension field elements independently,
+ * reducing each product. Computes c_i = a_i * b_i for 0 <= i < 3. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp4_mul3(fp4_t c0, const fp4_t a0, const fp4_t b0, fp4_t c1,
+		const fp4_t a1, const fp4_t b1, fp4_t c2, const fp4_t a2,
+		const fp4_t b2);
+
+/**
+ * Computes three sums of two products of quartic extension field elements
+ * independently, reducing each product. Computes c_i = a_i * b_i + d_i * e_i
+ * for 0 <= i < 3. All products are computed before any result is written, so
+ * the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp4_mul_add3(fp4_t c0, const fp4_t a0, const fp4_t b0, const fp4_t d0,
+		const fp4_t e0, fp4_t c1, const fp4_t a1, const fp4_t b1,
+		const fp4_t d1, const fp4_t e1, fp4_t c2, const fp4_t a2,
+		const fp4_t b2, const fp4_t d2, const fp4_t e2);
 
 /**
  * Multiplies a quartic extension field element by a power of the constant
@@ -3308,6 +3497,69 @@ void fp8_mul_sub(fp8_t c, const fp8_t a, const fp8_t b, const fp8_t d,
 		const fp8_t e);
 
 /**
+ * Multiplies two pairs of octic extension field elements independently,
+ * reducing each product. Computes c0 = a0 * b0 and c1 = a1 * b1. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp8_mul2(fp8_t c0, const fp8_t a0, const fp8_t b0, fp8_t c1,
+		const fp8_t a1, const fp8_t b1);
+
+/**
+ * Multiplies three pairs of octic extension field elements independently,
+ * reducing each product. Computes c_i = a_i * b_i for 0 <= i < 3. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp8_mul3(fp8_t c0, const fp8_t a0, const fp8_t b0, fp8_t c1,
+		const fp8_t a1, const fp8_t b1, fp8_t c2, const fp8_t a2,
+		const fp8_t b2);
+
+/**
+ * Computes three sums of two products of octic extension field elements
+ * independently, reducing each product. Computes c_i = a_i * b_i + d_i * e_i
+ * for 0 <= i < 3. All products are computed before any result is written, so
+ * the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp8_mul_add3(fp8_t c0, const fp8_t a0, const fp8_t b0, const fp8_t d0,
+		const fp8_t e0, fp8_t c1, const fp8_t a1, const fp8_t b1,
+		const fp8_t d1, const fp8_t e1, fp8_t c2, const fp8_t a2,
+		const fp8_t b2, const fp8_t d2, const fp8_t e2);
+
+/**
  * Multiplies an octic extension field element by a power of the constant
  * needed to compute a power of the Frobenius map.
  *
@@ -3752,6 +4004,69 @@ void fp9_mul_add(fp9_t c, const fp9_t a, const fp9_t b, const fp9_t d,
  */
 void fp9_mul_sub(fp9_t c, const fp9_t a, const fp9_t b, const fp9_t d,
 		const fp9_t e);
+
+/**
+ * Multiplies two pairs of nonic extension field elements independently,
+ * reducing each product. Computes c0 = a0 * b0 and c1 = a1 * b1. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ */
+void fp9_mul2(fp9_t c0, const fp9_t a0, const fp9_t b0, fp9_t c1,
+		const fp9_t a1, const fp9_t b1);
+
+/**
+ * Multiplies three pairs of nonic extension field elements independently,
+ * reducing each product. Computes c_i = a_i * b_i for 0 <= i < 3. All products
+ * are computed before any result is written, so the results may alias the
+ * inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product.
+ * @param[in] b0			- the second element of the first product.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the second product.
+ * @param[in] b1			- the second element of the second product.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the third product.
+ * @param[in] b2			- the second element of the third product.
+ */
+void fp9_mul3(fp9_t c0, const fp9_t a0, const fp9_t b0, fp9_t c1,
+		const fp9_t a1, const fp9_t b1, fp9_t c2, const fp9_t a2,
+		const fp9_t b2);
+
+/**
+ * Computes three sums of two products of nonic extension field elements
+ * independently, reducing each product. Computes c_i = a_i * b_i + d_i * e_i
+ * for 0 <= i < 3. All products are computed before any result is written, so
+ * the results may alias the inputs.
+ *
+ * @param[out] c0			- the first result.
+ * @param[in] a0			- the first element of the first product of c0.
+ * @param[in] b0			- the second element of the first product of c0.
+ * @param[in] d0			- the first element of the second product of c0.
+ * @param[in] e0			- the second element of the second product of c0.
+ * @param[out] c1			- the second result.
+ * @param[in] a1			- the first element of the first product of c1.
+ * @param[in] b1			- the second element of the first product of c1.
+ * @param[in] d1			- the first element of the second product of c1.
+ * @param[in] e1			- the second element of the second product of c1.
+ * @param[out] c2			- the third result.
+ * @param[in] a2			- the first element of the first product of c2.
+ * @param[in] b2			- the second element of the first product of c2.
+ * @param[in] d2			- the first element of the second product of c2.
+ * @param[in] e2			- the second element of the second product of c2.
+ */
+void fp9_mul_add3(fp9_t c0, const fp9_t a0, const fp9_t b0, const fp9_t d0,
+		const fp9_t e0, fp9_t c1, const fp9_t a1, const fp9_t b1,
+		const fp9_t d1, const fp9_t e1, fp9_t c2, const fp9_t a2,
+		const fp9_t b2, const fp9_t d2, const fp9_t e2);
 
 /**
  * Multiples a dense nonic extension field element by a sparse element.

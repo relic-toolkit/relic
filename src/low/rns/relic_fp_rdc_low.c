@@ -187,6 +187,12 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	fp_rnsx_low(c, q, 0, 1);
 }
 
+void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n) {
+	for (int i = 0; i < n; i++) {
+		fp_rdcn_low(c[i], a[i]);
+	}
+}
+
 #endif /* !FP_RNS_VEC */
 
 #endif /* FP_RDC == FP_RENUS */

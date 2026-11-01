@@ -542,6 +542,16 @@ static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
  */
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact);
 
+/**
+ * Reduces n digit vectors modulo the configured prime p at once. Computes
+ * c_i = a_i mod p for 0 <= i < n.
+ *
+ * @param[out] c			- the results.
+ * @param[in] a				- the digit vectors to reduce.
+ * @param[in] n				- the number of digit vectors.
+ */
+void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n);
+
 #endif /* FP_RDC == FP_RENUS */
 
 #endif /* ASM */

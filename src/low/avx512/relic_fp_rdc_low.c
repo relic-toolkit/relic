@@ -76,4 +76,39 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	rns_vrdc(cs, as, 1);
 }
 
+void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n) {
+	const dig_t *const *b = (const dig_t *const *)a;
+	int i = 0;
+
+	for (; i + RNS_K <= n; i += RNS_K) {
+		rns_vrdc(c + i, b + i, RNS_K);
+	}
+	/* The remainder goes in a single batch of its own size. It is below RNS_K,
+	 * so the sizes above 4 are capped only to keep unused code in bounds when
+	 * RNS_K is 4. */
+	switch (n - i) {
+		case 1:
+			rns_vrdc(c + i, b + i, 1);
+			break;
+		case 2:
+			rns_vrdc(c + i, b + i, 2);
+			break;
+		case 3:
+			rns_vrdc(c + i, b + i, 3);
+			break;
+		case 4:
+			rns_vrdc(c + i, b + i, 4);
+			break;
+		case 5:
+			rns_vrdc(c + i, b + i, RLC_MIN(5, RNS_K));
+			break;
+		case 6:
+			rns_vrdc(c + i, b + i, RLC_MIN(6, RNS_K));
+			break;
+		case 7:
+			rns_vrdc(c + i, b + i, RLC_MIN(7, RNS_K));
+			break;
+	}
+}
+
 #endif /* FP_RDC == FP_RENUS */

@@ -838,6 +838,133 @@
 		} RLC_FINALLY {														\
 			D##_free_all(t, u);												\
 		}																	\
+	}																		\
+																			\
+	void X##_mul2(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
+			const X##_t a1, const X##_t b1) {								\
+		D##_t t[2];															\
+		X##_t r[2];															\
+																			\
+		for (int _i = 0; _i < 2; _i++) {									\
+			D##_null(t[_i]);												\
+			X##_null(r[_i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			for (int _i = 0; _i < 2; _i++) {								\
+				D##_new(t[_i]);												\
+				X##_new(r[_i]);												\
+			}																\
+			if (a0 == b0) {													\
+				X##_sqrn_low(t[0], a0);										\
+			} else {														\
+				X##_muln_low(t[0], a0, b0);									\
+			}																\
+			if (a1 == b1) {													\
+				X##_sqrn_low(t[1], a1);										\
+			} else {														\
+				X##_muln_low(t[1], a1, b1);									\
+			}																\
+			X##_rdcv_low(r, t, 2);											\
+			X##_copy(c0, r[0]);												\
+			X##_copy(c1, r[1]);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			for (int _i = 0; _i < 2; _i++) {								\
+				D##_free(t[_i]);											\
+				X##_free(r[_i]);											\
+			}																\
+		}																	\
+	}																		\
+																			\
+	void X##_mul3(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
+			const X##_t a1, const X##_t b1, X##_t c2, const X##_t a2,		\
+			const X##_t b2) {												\
+		D##_t t[3];															\
+		X##_t r[3];															\
+																			\
+		for (int _i = 0; _i < 3; _i++) {									\
+			D##_null(t[_i]);												\
+			X##_null(r[_i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			for (int _i = 0; _i < 3; _i++) {								\
+				D##_new(t[_i]);												\
+				X##_new(r[_i]);												\
+			}																\
+			if (a0 == b0) {													\
+				X##_sqrn_low(t[0], a0);										\
+			} else {														\
+				X##_muln_low(t[0], a0, b0);									\
+			}																\
+			if (a1 == b1) {													\
+				X##_sqrn_low(t[1], a1);										\
+			} else {														\
+				X##_muln_low(t[1], a1, b1);									\
+			}																\
+			if (a2 == b2) {													\
+				X##_sqrn_low(t[2], a2);										\
+			} else {														\
+				X##_muln_low(t[2], a2, b2);									\
+			}																\
+			X##_rdcv_low(r, t, 3);											\
+			X##_copy(c0, r[0]);												\
+			X##_copy(c1, r[1]);												\
+			X##_copy(c2, r[2]);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			for (int _i = 0; _i < 3; _i++) {								\
+				D##_free(t[_i]);											\
+				X##_free(r[_i]);											\
+			}																\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_add3(X##_t c0, const X##_t a0, const X##_t b0,				\
+			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
+			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
+			const X##_t a2, const X##_t b2, const X##_t d2,					\
+			const X##_t e2) {												\
+		D##_t t[3], u;														\
+		X##_t r[3];															\
+																			\
+		D##_null(u);														\
+		for (int _i = 0; _i < 3; _i++) {									\
+			D##_null(t[_i]);												\
+			X##_null(r[_i]);												\
+		}																	\
+																			\
+		RLC_TRY {															\
+			D##_new(u);														\
+			for (int _i = 0; _i < 3; _i++) {								\
+				D##_new(t[_i]);												\
+				X##_new(r[_i]);												\
+			}																\
+			X##_muln_low(t[0], a0, b0);										\
+			X##_muln_low(u, d0, e0);										\
+			X##_addc_low(t[0], t[0], u);									\
+			X##_muln_low(t[1], a1, b1);										\
+			X##_muln_low(u, d1, e1);										\
+			X##_addc_low(t[1], t[1], u);									\
+			X##_muln_low(t[2], a2, b2);										\
+			X##_muln_low(u, d2, e2);										\
+			X##_addc_low(t[2], t[2], u);									\
+			X##_rdcv_low(r, t, 3);											\
+			X##_copy(c0, r[0]);												\
+			X##_copy(c1, r[1]);												\
+			X##_copy(c2, r[2]);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			D##_free(u);													\
+			for (int _i = 0; _i < 3; _i++) {								\
+				D##_free(t[_i]);											\
+				X##_free(r[_i]);											\
+			}																\
+		}																	\
 	}
 
 /**
@@ -880,6 +1007,88 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			X##_free(t);													\
+		}																	\
+	}																		\
+																			\
+	void X##_mul2(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
+			const X##_t a1, const X##_t b1) {								\
+		X##_t r0;															\
+																			\
+		X##_null(r0);														\
+																			\
+		RLC_TRY {															\
+			X##_new(r0);													\
+			if (a0 == b0) {													\
+				X##_sqr(r0, a0);											\
+			} else {														\
+				X##_mul(r0, a0, b0);										\
+			}																\
+			if (a1 == b1) {													\
+				X##_sqr(c1, a1);											\
+			} else {														\
+				X##_mul(c1, a1, b1);										\
+			}																\
+			X##_copy(c0, r0);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free(r0);													\
+		}																	\
+	}																		\
+																			\
+	void X##_mul3(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
+			const X##_t a1, const X##_t b1, X##_t c2, const X##_t a2,		\
+			const X##_t b2) {												\
+		X##_t r0, r1;														\
+																			\
+		X##_null_all(r0, r1);												\
+																			\
+		RLC_TRY {															\
+			X##_new_all(r0, r1);											\
+			if (a0 == b0) {													\
+				X##_sqr(r0, a0);											\
+			} else {														\
+				X##_mul(r0, a0, b0);										\
+			}																\
+			if (a1 == b1) {													\
+				X##_sqr(r1, a1);											\
+			} else {														\
+				X##_mul(r1, a1, b1);										\
+			}																\
+			if (a2 == b2) {													\
+				X##_sqr(c2, a2);											\
+			} else {														\
+				X##_mul(c2, a2, b2);										\
+			}																\
+			X##_copy(c0, r0);												\
+			X##_copy(c1, r1);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free_all(r0, r1);											\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_add3(X##_t c0, const X##_t a0, const X##_t b0,				\
+			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
+			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
+			const X##_t a2, const X##_t b2, const X##_t d2,					\
+			const X##_t e2) {												\
+		X##_t r0, r1;														\
+																			\
+		X##_null_all(r0, r1);												\
+																			\
+		RLC_TRY {															\
+			X##_new_all(r0, r1);											\
+			X##_mul_add(r0, a0, b0, d0, e0);								\
+			X##_mul_add(r1, a1, b1, d1, e1);								\
+			X##_mul_add(c2, a2, b2, d2, e2);								\
+			X##_copy(c0, r0);												\
+			X##_copy(c1, r1);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free_all(r0, r1);											\
 		}																	\
 	}
 
