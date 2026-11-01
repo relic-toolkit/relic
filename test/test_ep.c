@@ -300,6 +300,10 @@ static int addition(void) {
 			ep_add(d, a, b);
 			ep_add(e, b, a);
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+			/* The result may also be the second operand. */
+			ep_copy(e, b);
+			ep_add(e, a, e);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("point addition is associative") {

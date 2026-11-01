@@ -276,6 +276,10 @@ static int test_##C##_addition(void) {										\
 			C##_add(d, a, b);												\
 			C##_add(e, b, a);												\
 			TEST_ASSERT(C##_cmp(d, e) == RLC_EQ, end);						\
+			/* The result may also be the second operand. */				\
+			C##_copy(e, b);													\
+			C##_add(e, a, e);												\
+			TEST_ASSERT(C##_cmp(d, e) == RLC_EQ, end);						\
 		} TEST_END;															\
 																			\
 		TEST_CASE("point addition is associative") {						\

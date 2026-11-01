@@ -111,3 +111,30 @@
 					((BD##_t *)(E))[_j]);									\
 		}																	\
 	}
+
+/**
+ * Computes C = E * v for a double-precision element made of N components in a
+ * base field, as TMPL_DV_NADD() does with A = 0: the components move one power
+ * of v up, and the top one wraps around times the non-residue.
+ *
+ * @param[in] B			- the base field prefix.
+ * @param[in] BD		- the double-precision base field prefix.
+ * @param[in] N			- the number of components.
+ * @param[in] Q			- the number of outer components.
+ * @param[out] C		- the result.
+ * @param[in] E			- the element to multiply.
+ */
+#define TMPL_DV_NOR(B, BD, N, Q, C, E)										\
+	for (int _p = 0; _p < (N); _p++) {										\
+		int _i = (_p % (Q)) * ((N) / (Q)) + _p / (Q);						\
+		int _j = (((_p + (N) - 1) % (N)) % (Q)) * ((N) / (Q)) +				\
+				((_p + (N) - 1) % (N)) / (Q);								\
+		if (_p == 0) {														\
+			B##_nord_low(((BD##_t *)(C))[_i], ((BD##_t *)(E))[_j]);			\
+		} else {															\
+			for (size_t _l = 0; _l < sizeof(BD##_t) / sizeof(dv_t); _l++) {	\
+				dv_copy(((BD##_t *)(C))[_i][_l], ((BD##_t *)(E))[_j][_l],	\
+						RLC_DV_DIGS);										\
+			}																\
+		}																	\
+	}

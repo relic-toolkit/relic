@@ -245,7 +245,7 @@ void fp48_sqr_unr(dv48_t c, const fp48_t a) {
 
 TMPL_FPX_SQR_LAZYR(fp48, dv48, fp2, dv2, 24);
 
-TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr, fp8_mul_art);
+TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
 
 TMPL_SQR_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
 

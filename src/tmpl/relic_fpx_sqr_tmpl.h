@@ -115,17 +115,6 @@
 #endif
 
 /**
- * Zeroes a double-precision element in an extension field.
- *
- * @param[in] D			- the prefix of the double-precision type.
- * @param[out] U		- the element.
- */
-#define TMPL_CYC_ZERO(D, U)													\
-	for (size_t _n = 0; _n < sizeof(D##_t) / sizeof(dv_t); _n++) {			\
-		dv_zero(((dv_t *)(U))[_n], RLC_DV_DIGS);							\
-	}
-
-/**
  * Defines a template for cyclotomic squaring in an extension field built as
  * quadratic over cubic.
  *
@@ -486,9 +475,8 @@
  * @param[in] N			- the number of base field components in the subfield.
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] SQRU		- the squaring in the subfield without reduction.
- * @param[in] NOR		- the multiplication by the non-residue in the subfield.
  */
-#define TMPL_SQR_PCK_LAZYR_QC(X, Z, D, B, BD, N, Q, SQRU, NOR)				\
+#define TMPL_SQR_PCK_LAZYR_QC(X, Z, D, B, BD, N, Q, SQRU)					\
 	void X##_sqr_pck_lazyr(X##_t c, const X##_t a) {						\
 		Z##_t t;															\
 		D##_t u0, u1, u2, u3, u4, u5, u6;									\
@@ -516,8 +504,7 @@
 			/* c_10 = 3 * 2 * a_01 * a_12 * v + 2 * a_10. */				\
 			TMPL_DV_ADDC(B, BD, N, u1, u0, u1);								\
 			TMPL_DV_SUBC(B, BD, N, u2, u2, u1);								\
-			TMPL_CYC_ZERO(D, u0);											\
-			TMPL_DV_NADD(B, BD, N, Q, u6, u0, u2);							\
+			TMPL_DV_NOR(B, BD, N, Q, u6, u2);								\
 			TMPL_CYC_FOLD(Z, B, BD, N, c[1][0], u6, a[1][0], 1, t);			\
 			/* c_01 = 3 * (a_10^2 + a_02^2 * v) - 2 * a_01. */				\
 			TMPL_DV_NADD(B, BD, N, Q, u6, u3, u4);							\
@@ -594,9 +581,8 @@
  * @param[in] N			- the number of base field components in the subfield.
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] SQRU		- the squaring in the subfield without reduction.
- * @param[in] NOR		- the multiplication by the non-residue in the subfield.
  */
-#define TMPL_SQR_PCK_LAZYR_CQ(X, Z, D, B, BD, N, Q, SQRU, NOR)				\
+#define TMPL_SQR_PCK_LAZYR_CQ(X, Z, D, B, BD, N, Q, SQRU)					\
 	void X##_sqr_pck_lazyr(X##_t c, const X##_t a) {						\
 		Z##_t t;															\
 		D##_t u0, u1, u2, u3, u4, u5, u6;									\
@@ -624,8 +610,7 @@
 			/* c_10 = 3 * 2 * a_20 * a_21 * v + 2 * a_10. */				\
 			TMPL_DV_ADDC(B, BD, N, u1, u0, u1);								\
 			TMPL_DV_SUBC(B, BD, N, u2, u2, u1);								\
-			TMPL_CYC_ZERO(D, u0);											\
-			TMPL_DV_NADD(B, BD, N, Q, u6, u0, u2);							\
+			TMPL_DV_NOR(B, BD, N, Q, u6, u2);								\
 			TMPL_CYC_FOLD(Z, B, BD, N, c[1][0], u6, a[1][0], 1, t);			\
 			/* c_20 = 3 * (a_10^2 + a_11^2 * v) - 2 * a_20. */				\
 			TMPL_DV_NADD(B, BD, N, Q, u6, u3, u4);							\

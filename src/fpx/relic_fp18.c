@@ -251,8 +251,7 @@ TMPL_FPX_SQR_UNR_QUAD(fp18_sqr_unr, fp18, fp9, dv18, dv9, fp3, dv3, 3, 1,
 
 TMPL_FPX_SQR_LAZYR(fp18, dv18, fp3, dv3, 6);
 
-TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
-		fp3_mul_nor);
+TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 
 TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 

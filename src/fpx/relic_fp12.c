@@ -219,8 +219,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 
 #else
 
-TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
-		fp2_mul_nor);
+TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 
 TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 

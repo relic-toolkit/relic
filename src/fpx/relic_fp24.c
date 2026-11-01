@@ -196,7 +196,7 @@ TMPL_FPX_SQR_UNR_CUBIC(fp24, fp8, dv24, dv8, fp2, dv2, 4, 2,
 
 TMPL_FPX_SQR_LAZYR(fp24, dv24, fp2, dv2, 12);
 
-TMPL_SQR_PCK_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr, fp4_mul_art);
+TMPL_SQR_PCK_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
 TMPL_SQR_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 

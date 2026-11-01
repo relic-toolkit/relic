@@ -339,9 +339,10 @@
 				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
 				F##_add(t4, p->x, p->z);									\
 				F##_add(t5, q->x, q->z);									\
-				/* Read q before r overwrites it, as r may alias q. */		\
-				F##_add(r->y, p->y, p->z);									\
+				/* Read q and p before r overwrites them, as r may alias	\
+				 * either: x of both is already in t4 and t5. */			\
 				F##_add(r->x, q->y, q->z);									\
+				F##_add(r->y, p->y, p->z);									\
 				F##_mul3(t2, p->z, q->z, t4, t4, t5, t5, r->y, r->x);		\
 				F##_add(r->x, t0, t2);										\
 				F##_sub(t4, t4, r->x);										\
