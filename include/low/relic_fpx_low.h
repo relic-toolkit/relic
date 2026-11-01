@@ -445,17 +445,4 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a);
  */
 void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck);
 
-/**
- * Finishes a cyclotomic squaring of a dodecic extension field element from
- * the reduced terms t computed by fp12_sqrc_low(), in the same positions:
- * computes c_0j = 3 * t_0j - 2 * a_0j and c_1j = 3 * t_1j + 2 * a_1j.
- * Compressed squaring leaves c_00 and c_11 untouched.
- *
- * @param[out] c			- the result.
- * @param[in] t				- the reduced terms of the square.
- * @param[in] a				- the field element to square.
- * @param[in] pck			- the flag to finish a compressed squaring.
- */
-void fp12_sqrf_low(fp12_t c, const fp12_t t, const fp12_t a, int pck);
-
 #endif /* !RLC_FPX_LOW_H */

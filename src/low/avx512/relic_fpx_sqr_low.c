@@ -162,31 +162,6 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 	}
 }
 
-void fp12_sqrf_low(fp12_t c, const fp12_t t, const fp12_t a, int pck) {
-	ctx_t *ctx = core_get();
-	__m512i m, x, y, z;
-
-	/* c_0j = 3 * t_0j - 2 * a_0j, c_1j = 3 * t_1j + 2 * a_1j, residue-wise. */
-	for (size_t k = 0; k < RNS_NE; k++) {
-		m = rns_load(ctx->rns.m, k);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 3; j++) {
-				/* Compressed squaring has no c_00 and c_11. */
-				if (pck && i == j) {
-					continue;
-				}
-				for (int l = 0; l < 2; l++) {
-					x = rns_load(t[i][j][l], k);
-					y = rns_load(a[i][j][l], k);
-					z = (i == 0 ? rns_vsub(x, y, m) : rns_vadd(x, y, m));
-					z = rns_vadd(z, z, m);
-					rns_store(c[i][j][l], k, rns_vadd(x, z, m));
-				}
-			}
-		}
-	}
-}
-
 void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 	rlc_align dv2_t t;
 

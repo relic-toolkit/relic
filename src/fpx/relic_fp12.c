@@ -169,6 +169,8 @@ void fp12_sqr_unr(dv12_t c, const fp12_t a) {
 
 TMPL_FPX_SQR_LAZYR(fp12, dv12, fp2, dv2, 6);
 
+#if FP_RDC == FP_RENUS
+
 void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 	dv12_t u;
 	fp12_t t;
@@ -180,22 +182,16 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 		dv12_new(u);
 		fp12_new(t);
 
+		/* The terms are already combined into the square. */
 		fp12_sqrc_low(u, a, 1);
-		/* Move the term of c_12 next to the others, to reduce them at once,
-		 * and back once reduced. */
+		/* Move the term of c_12 next to the others, to reduce them at once. */
 		dv_copy(u[1][1][0], u[1][2][0], RLC_FP_DLEN);
 		dv_copy(u[1][1][1], u[1][2][1], RLC_FP_DLEN);
 		fp2_rdcv_low(&t[0][1], &u[0][1], 4);
-		fp2_copy(t[1][2], t[1][1]);
-#if FP_RDC == FP_RENUS
-		/* The terms were already combined into the square. */
 		fp2_copy(c[0][1], t[0][1]);
 		fp2_copy(c[0][2], t[0][2]);
 		fp2_copy(c[1][0], t[1][0]);
-		fp2_copy(c[1][2], t[1][2]);
-#else
-		fp12_sqrf_low(c, t, a, 1);
-#endif
+		fp2_copy(c[1][2], t[1][1]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -203,8 +199,6 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 		fp12_free(t);
 	}
 }
-
-#if FP_RDC == FP_RENUS
 
 void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 	dv12_t u;
@@ -225,27 +219,10 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 
 #else
 
-void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
-	dv12_t u;
-	fp12_t t;
+TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
+		fp2_mul_nor);
 
-	dv12_null(u);
-	fp12_null(t);
-
-	RLC_TRY {
-		dv12_new(u);
-		fp12_new(t);
-
-		fp12_sqrc_low(u, a, 0);
-		fp2_rdcv_low((fp2_t *)t, (dv2_t *)u, 6);
-		fp12_sqrf_low(c, t, a, 0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv12_free(u);
-		fp12_free(t);
-	}
-}
+TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 
 #endif
 

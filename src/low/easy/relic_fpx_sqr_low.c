@@ -358,32 +358,4 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 	}
 }
 
-void fp12_sqrf_low(fp12_t c, const fp12_t t, const fp12_t a, int pck) {
-	fp2_t x;
-
-	fp2_null(x);
-
-	RLC_TRY {
-		fp2_new(x);
-
-		for (int j = 0; j < 3; j++) {
-			/* Compressed squaring has no c_00 and c_11. */
-			if (!pck || j != 0) {
-				fp2_sub(x, t[0][j], a[0][j]);
-				fp2_dbl(x, x);
-				fp2_add(c[0][j], t[0][j], x);
-			}
-			if (!pck || j != 1) {
-				fp2_add(x, t[1][j], a[1][j]);
-				fp2_dbl(x, x);
-				fp2_add(c[1][j], t[1][j], x);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free(x);
-	}
-}
-
 #endif
