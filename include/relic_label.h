@@ -160,9 +160,7 @@
 #define dv_t			RLC_PREFIX(dv_t)
 
 #undef dv_print
-#undef dv_zero
 #undef dv_is_zero
-#undef dv_copy
 #undef dv_copy_sec
 #undef dv_swap_sec
 #undef dv_cmp
@@ -175,9 +173,7 @@
 #undef dv_rshd
 
 #define dv_print 	RLC_PREFIX(dv_print)
-#define dv_zero 	RLC_PREFIX(dv_zero)
 #define dv_is_zero 	RLC_PREFIX(dv_is_zero)
-#define dv_copy 	RLC_PREFIX(dv_copy)
 #define dv_copy_sec 	RLC_PREFIX(dv_copy_sec)
 #define dv_swap_sec 	RLC_PREFIX(dv_swap_sec)
 #define dv_cmp 	RLC_PREFIX(dv_cmp)

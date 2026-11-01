@@ -37,6 +37,8 @@
 #ifndef RLC_DV_H
 #define RLC_DV_H
 
+#include <string.h>
+
 #include "relic_bn.h"
 #include "relic_conf.h"
 #include "relic_types.h"
@@ -174,7 +176,10 @@ void dv_print(const dig_t *a, size_t digits);
  * @param[out] a			- the temporary digit vector to assign.
  * @param[in] digits		- the number of words to initialize with zero.
  */
-void dv_zero(dig_t *a, size_t digits);
+rlc_inline void dv_zero(dig_t *a, size_t digits) {
+	/* Inline, so that constant sizes compile to a few stores. */
+	memset(a, 0, digits * sizeof(dig_t));
+}
 
 /**
  * Returns whether a digit vector is zero.
@@ -192,7 +197,10 @@ int dv_is_zero(const dig_t *a, size_t digits);
  * @param[in] a				- the source.
  * @param[in] digits		- the number of digits to copy.
  */
-void dv_copy(dig_t *c, const dig_t *a, size_t digits);
+rlc_inline void dv_copy(dig_t *c, const dig_t *a, size_t digits) {
+	/* Inline, so that constant sizes compile to a few moves. */
+	memcpy(c, a, digits * sizeof(dig_t));
+}
 
 /**
  * Conditionally copies some digits from a digit vector to another digit vector.

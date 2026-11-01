@@ -137,6 +137,14 @@ static inline __m512i rns_vsub(__m512i a, __m512i b, __m512i m) {
 }
 
 /**
+ * Negates residues below m modulo m, lane-wise, as m - a in (0, m]: a factor of
+ * a product only needs to fit in 52 bits, so the correction of m is skipped.
+ */
+static inline __m512i rns_vneg(__m512i a, __m512i m) {
+	return _mm512_sub_epi64(m, a);
+}
+
+/**
  * Multiplies residues below m < 2^52 by Montgomery multiplication, computing
  * a * b / 2^52 mod m lane-wise.
  */
@@ -254,19 +262,6 @@ static inline void rns_nor(int *s, int *q) {
 }
 
 /**
- * Adds vectors of elements of Fp2 modulo m.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first vector to add.
- * @param[in] b				- the second vector to add.
- * @param[in] m				- the moduli.
- */
-rlc_inline void rp2_add(rp2_t c, const rp2_t a, const rp2_t b, __m512i m) {
-	c[0] = rns_vadd(a[0], b[0], m);
-	c[1] = rns_vadd(a[1], b[1], m);
-}
-
-/**
  * Multiplies vectors of elements of Fp2 by the non-residue s + i, with
  * i^2 = q.
  *
@@ -312,9 +307,10 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
  * Computes the folded terms of a cyclotomic squaring for a pair x + y * w in
  * Fp4 = Fp2[w]/(w^2 - (s + i)), with i^2 = q: c_0 = 3 * (x^2 + (s + i) y^2)
  * + k_0 * a_0 and c_1 = 6 * x * y + k_1 * a_1, where 6 * x * y is also
- * multiplied by s + i if the flag is set. All products of a result, those by
- * k included, are summed before a single reduction; at most 5 of them, below
- * 2^52 each, keep the halves of the sums far below 2^57.
+ * multiplied by s + i if the flag is set. The products of x and y are summed
+ * without reduction and scaled by 3 or 6 there, then those by k are added:
+ * at most 4 products, below 2^52 each, times 6, plus one more, keep the halves
+ * of the sums below 2^57, and each result needs a single reduction.
  *
  * @param[out] c0			- the first result.
  * @param[out] c1			- the second result.
@@ -334,35 +330,35 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 		const rp2_t a0, const rp2_t a1, __m512i k0, __m512i k1, int nor,
 		int s, int q, __m512i m, __m512i u) {
 	const __m512i z = _mm512_setzero_si512();
-	rp2_t x3, y3, l, h, t;
+	rp2_t l, h, t;
 
-	/* x3 = 3 * x, y3 = 3 * y and t = (s + i) * y. */
-	rp2_add(x3, x, x, m);
-	rp2_add(x3, x3, x, m);
-	rp2_add(y3, y, y, m);
-	rp2_add(y3, y3, y, m);
+	/* t = (s + i) * y. */
 	rp2_nor(t, y, s, q, m);
-	/* c0 = x3 * x + y3 * t + k0 * a0, accumulated unreduced. */
-	l[0] = _mm512_madd52lo_epu64(z, a0[0], k0);
-	h[0] = _mm512_madd52hi_epu64(z, a0[0], k0);
-	l[1] = _mm512_madd52lo_epu64(z, a0[1], k0);
-	h[1] = _mm512_madd52hi_epu64(z, a0[1], k0);
-	rp2_mac(l, h, x3, x, rns_vsub(z, rns_vsml(x[1], -q, m), m));
-	rp2_mac(l, h, y3, t, rns_vsub(z, rns_vsml(t[1], -q, m), m));
-	c0[0] = rns_vred(l[0], h[0], m, u);
-	c0[1] = rns_vred(l[1], h[1], m, u);
-	/* c1 = x3 * (2 * y) + k1 * a1, with x3 times s + i if asked. */
-	if (nor) {
-		rp2_nor(x3, x3, s, q, m);
+	/* c0 = 3 * (x * x + y * t) + k0 * a0. */
+	l[0] = h[0] = l[1] = h[1] = z;
+	rp2_mac(l, h, x, x, rns_vneg(rns_vsml(x[1], -q, m), m));
+	rp2_mac(l, h, y, t, rns_vneg(rns_vsml(t[1], -q, m), m));
+	for (int j = 0; j < 2; j++) {
+		l[j] = _mm512_add_epi64(l[j], _mm512_slli_epi64(l[j], 1));
+		h[j] = _mm512_add_epi64(h[j], _mm512_slli_epi64(h[j], 1));
+		l[j] = _mm512_madd52lo_epu64(l[j], a0[j], k0);
+		h[j] = _mm512_madd52hi_epu64(h[j], a0[j], k0);
+		c0[j] = rns_vred(l[j], h[j], m, u);
 	}
-	rp2_add(t, y, y, m);
-	l[0] = _mm512_madd52lo_epu64(z, a1[0], k1);
-	h[0] = _mm512_madd52hi_epu64(z, a1[0], k1);
-	l[1] = _mm512_madd52lo_epu64(z, a1[1], k1);
-	h[1] = _mm512_madd52hi_epu64(z, a1[1], k1);
-	rp2_mac(l, h, x3, t, rns_vsub(z, rns_vsml(t[1], -q, m), m));
-	c1[0] = rns_vred(l[0], h[0], m, u);
-	c1[1] = rns_vred(l[1], h[1], m, u);
+	/* c1 = 6 * x * y + k1 * a1, with y times s + i if asked. */
+	if (!nor) {
+		t[0] = y[0];
+		t[1] = y[1];
+	}
+	l[0] = h[0] = l[1] = h[1] = z;
+	rp2_mac(l, h, x, t, rns_vneg(rns_vsml(t[1], -q, m), m));
+	for (int j = 0; j < 2; j++) {
+		l[j] = _mm512_add_epi64(l[j], _mm512_slli_epi64(l[j], 1));
+		h[j] = _mm512_add_epi64(h[j], _mm512_slli_epi64(h[j], 1));
+		l[j] = _mm512_madd52lo_epu64(_mm512_slli_epi64(l[j], 1), a1[j], k1);
+		h[j] = _mm512_madd52hi_epu64(_mm512_slli_epi64(h[j], 1), a1[j], k1);
+		c1[j] = rns_vred(l[j], h[j], m, u);
+	}
 }
 
 /**

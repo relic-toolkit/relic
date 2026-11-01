@@ -63,7 +63,7 @@ void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 		/* c_1 = a_0 * b_1 + a_1 * b_0. */
 		rns_store(c[1], k, rns_vmul2(a0, b1, a1, b0, m, u));
 		/* c_0 = a_0 * b_0 + u^2 * a_1 * b_1, with u^2 = -q. */
-		t = rns_vsub(_mm512_setzero_si512(), a1, m);
+		t = rns_vneg(a1, m);
 		if (q == 1) {
 			t = rns_vmul2(a0, b0, t, b1, m, u);
 		} else {
@@ -104,7 +104,7 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 		}
 #pragma GCC unroll 12
 		for (int e = 0; e < 12; e++) {
-			t[e] = rns_vsub(z, rns_vsml(y[e][1], -q, m), m);
+			t[e] = rns_vneg(rns_vsml(y[e][1], -q, m), m);
 		}
 		/* Schoolbook product in w: each output adds 12 products of residues
 		 * below m < 2^52, so the halves of the sums stay below 2^56. */
@@ -155,7 +155,7 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
 		}
 #pragma GCC unroll 12
 		for (int e = 0; e < 12; e++) {
-			t[e] = rns_vsub(z, rns_vsml(y[e][1], -q, m), m);
+			t[e] = rns_vneg(rns_vsml(y[e][1], -q, m), m);
 		}
 		/* Schoolbook product in w over the nonzero coefficients of b: each
 		 * output adds 6 products of residues below m < 2^52. */
