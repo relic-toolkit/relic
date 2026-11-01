@@ -418,6 +418,38 @@
 #define TMPL_PP_RDCV_fp9(C, A, N)	TMPL_DV_RDCN(fp3, dv3, 3 * (N), C, A)
 
 /**
+ * Reduces N double-precision elements of an extension field into destinations
+ * given by pointers. In a Residue Number System, all their prime field
+ * components are reduced together, as reductions are cheaper in batches;
+ * otherwise, each element is reduced by itself.
+ *
+ * @param[in] F			- the extension field prefix.
+ * @param[out] C		- the pointers to the destinations.
+ * @param[in] U			- the elements to reduce.
+ * @param[in] N			- the number of elements.
+ */
+#if FP_RDC == FP_RENUS
+#define TMPL_PP_RDCP(F, C, U, N)											\
+	{																		\
+		enum { _M = sizeof(F##_t) / sizeof(fp_t) };							\
+		dig_t *_c[(N) * _M], *_a[(N) * _M];									\
+																			\
+		for (int _i = 0; _i < (N); _i++) {									\
+			for (int _k = 0; _k < _M; _k++) {								\
+				_c[_i * _M + _k] = ((fp_t *)(C)[_i])[_k];					\
+				_a[_i * _M + _k] = ((dv_t *)(U)[_i])[_k];					\
+			}																\
+		}																	\
+		fp_rdcv_low(_c, _a, (N) * _M);										\
+	}
+#else
+#define TMPL_PP_RDCP(F, C, U, N)											\
+	for (int _i = 0; _i < (N); _i++) {										\
+		TMPL_PP_RDCN_##F((C)[_i], (U)[_i]);									\
+	}
+#endif
+
+/**
  * Multiplies an element of the twist field F by a prime field element without
  * reduction, coefficient by coefficient.
  */
@@ -443,7 +475,7 @@
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4;											\
 		D##_t u[5];															\
-		F##_t v[5];															\
+		fp_t *v[5];															\
 		fp_t w;																\
 																			\
 		TMPL_PP_TWIST_##K													\
@@ -451,7 +483,6 @@
 		F##_null_all(t0, t1, t2, t3, t4);									\
 		for (int _i = 0; _i < 5; _i++) {									\
 			D##_null(u[_i]);												\
-			F##_null(v[_i]);												\
 		}																	\
 		fp_null(w);															\
 																			\
@@ -459,16 +490,17 @@
 			F##_new_all(t0, t1, t2, t3, t4);								\
 			for (int _i = 0; _i < 5; _i++) {								\
 				D##_new(u[_i]);												\
-				F##_new(v[_i]);												\
 			}																\
 			fp_new(w);														\
 																			\
 			/* B = t0 = x1 - x2 * z1 and A = t1 = y1 - y2 * z1. */			\
 			TMPL_PP_MULN_##F(u[0], r->z, q->x);								\
 			TMPL_PP_MULN_##F(u[1], r->z, q->y);								\
-			TMPL_PP_RDCV_##F(v, u, 2);										\
-			F##_sub(t0, r->x, v[0]);										\
-			F##_sub(t1, r->y, v[1]);										\
+			v[0] = (fp_t *)t0;												\
+			v[1] = (fp_t *)t1;												\
+			TMPL_PP_RDCP(F, v, u, 2);										\
+			F##_sub(t0, r->x, t0);											\
+			F##_sub(t1, r->y, t1);											\
 																			\
 			/* D = B^2, C = A^2 and the line, which only needs A and B. */	\
 			TMPL_PP_SQRN_##F(u[0], t0);										\
@@ -481,36 +513,38 @@
 			fp_neg(w, p->x);												\
 			TMPL_PP_MULFPN(F, u[3], t1, w);									\
 			TMPL_PP_MULFPN(F, u[4], t0, p->y);								\
-			TMPL_PP_RDCV_##F(v, u, 5);										\
-			F##_copy(t2, v[0]);												\
-			F##_copy(t3, v[1]);												\
-			F##_copy(TMPL_PP_LJ_##K(l), v[2]);								\
+			v[0] = (fp_t *)t2;												\
+			v[1] = (fp_t *)t3;												\
+			v[2] = (fp_t *)TMPL_PP_LJ_##K(l);								\
+			v[3] = (fp_t *)TMPL_PP_LX_##K(l);								\
+			v[4] = (fp_t *)TMPL_PP_LY_##K(l);								\
+			TMPL_PP_RDCP(F, v, u, 5);										\
 			TMPL_PP_ART_##K(l)												\
-			F##_copy(TMPL_PP_LX_##K(l), v[3]);								\
-			F##_copy(TMPL_PP_LY_##K(l), v[4]);								\
 																			\
 			/* G = x1 * D, E = B^3 = B * D and F = E + z1 * C. */			\
 			TMPL_PP_MULN_##F(u[0], r->x, t2);								\
 			TMPL_PP_MULN_##F(u[1], t0, t2);									\
 			TMPL_PP_MULN_##F(u[2], r->z, t3);								\
 			TMPL_PP_ADDC_##F(u[2], u[2], u[1]);								\
-			TMPL_PP_RDCV_##F(v, u, 3);										\
+			v[0] = (fp_t *)t2;												\
+			v[1] = (fp_t *)t3;												\
+			v[2] = (fp_t *)t4;												\
+			TMPL_PP_RDCP(F, v, u, 3);										\
 			/* H = F - 2 * G, as F already includes E. */					\
-			F##_sub(t4, v[2], v[0]);										\
-			F##_sub(t4, t4, v[0]);											\
-			F##_copy(t3, v[1]);												\
+			F##_sub(t4, t4, t2);											\
+			F##_sub(t4, t4, t2);											\
 																			\
 			/* y3 = A * (G - H) - y1 * E, x3 = B * H and z3 = z1 * E. */	\
-			F##_sub(t2, v[0], t4);											\
+			F##_sub(t2, t2, t4);											\
 			TMPL_PP_MULN_##F(u[0], t1, t2);									\
 			TMPL_PP_MULN_##F(u[1], t3, r->y);								\
 			TMPL_PP_SUBC_##F(u[0], u[0], u[1]);								\
 			TMPL_PP_MULN_##F(u[1], t0, t4);									\
 			TMPL_PP_MULN_##F(u[2], r->z, t3);								\
-			TMPL_PP_RDCV_##F(v, u, 3);										\
-			F##_copy(r->y, v[0]);											\
-			F##_copy(r->x, v[1]);											\
-			F##_copy(r->z, v[2]);											\
+			v[0] = (fp_t *)r->y;											\
+			v[1] = (fp_t *)r->x;											\
+			v[2] = (fp_t *)r->z;											\
+			TMPL_PP_RDCP(F, v, u, 3);										\
 																			\
 			r->coord = EC_PROJC;											\
 		}																	\
@@ -521,7 +555,6 @@
 			F##_free_all(t0, t1, t2, t3, t4);								\
 			for (int _i = 0; _i < 5; _i++) {								\
 				D##_free(u[_i]);											\
-				F##_free(v[_i]);											\
 			}																\
 			fp_free(w);														\
 		}																	\
@@ -543,21 +576,19 @@
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 		D##_t u[5];															\
-		F##_t v[5];															\
+		fp_t *w[5];															\
 																			\
 		TMPL_PP_TWIST_##K													\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
 		for (int _i = 0; _i < 5; _i++) {									\
 			D##_null(u[_i]);												\
-			F##_null(v[_i]);												\
 		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
 			for (int _i = 0; _i < 5; _i++) {								\
 				D##_new(u[_i]);												\
-				F##_new(v[_i]);												\
 			}																\
 																			\
 			/* A = x1^2, B = y1^2, C = z1^2, (x1 + y1)^2 and (y1 + z1)^2. */\
@@ -568,15 +599,17 @@
 			TMPL_PP_SQRN_##F(u[2], q->z);									\
 			TMPL_PP_SQRN_##F(u[3], t4);										\
 			TMPL_PP_SQRN_##F(u[4], t5);										\
-			TMPL_PP_RDCV_##F(v, u, 5);										\
-			F##_copy(t0, v[0]);												\
-			F##_copy(t1, v[1]);												\
-			F##_copy(t2, v[2]);												\
+			w[0] = (fp_t *)t0;												\
+			w[1] = (fp_t *)t1;												\
+			w[2] = (fp_t *)t2;												\
+			w[3] = (fp_t *)t4;												\
+			w[4] = (fp_t *)t5;												\
+			TMPL_PP_RDCP(F, w, u, 5);										\
 			/* E = (x1 + y1)^2 - A - B. */									\
-			F##_sub(t4, v[3], t0);											\
+			F##_sub(t4, t4, t0);											\
 			F##_sub(t4, t4, t1);											\
 			/* F = (y1 + z1)^2 - B - C. */									\
-			F##_sub(t5, v[4], t1);											\
+			F##_sub(t5, t5, t1);											\
 			F##_sub(t5, t5, t2);											\
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
@@ -607,12 +640,12 @@
 			/* l11 = D - B. */												\
 			F##_sub(TMPL_PP_LJ_##K(l), t3, t1);								\
 			TMPL_PP_ART_##K(l)												\
-			TMPL_PP_RDCV_##F(v, u, 5);										\
-			F##_copy(r->x, v[0]);											\
-			F##_copy(r->y, v[1]);											\
-			F##_copy(r->z, v[2]);											\
-			F##_copy(TMPL_PP_LX_##K(l), v[3]);								\
-			F##_copy(TMPL_PP_LY_##K(l), v[4]);								\
+			w[0] = (fp_t *)r->x;											\
+			w[1] = (fp_t *)r->y;											\
+			w[2] = (fp_t *)r->z;											\
+			w[3] = (fp_t *)TMPL_PP_LX_##K(l);								\
+			w[4] = (fp_t *)TMPL_PP_LY_##K(l);								\
+			TMPL_PP_RDCP(F, w, u, 5);										\
 																			\
 			r->coord = EC_PROJC;											\
 		}																	\
@@ -623,7 +656,6 @@
 			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 			for (int _i = 0; _i < 5; _i++) {								\
 				D##_free(u[_i]);											\
-				F##_free(v[_i]);											\
 			}																\
 		}																	\
 	}

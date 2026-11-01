@@ -405,10 +405,10 @@ static int multiplication2(void) {
 			fp2_rand(b);
 			fp2_rand(c);
 			fp2_rand(d);
-			fp2_mul_add(e, a, b, c, d);
+			fp2_mul_sub(e, a, b, c, d);
 			fp2_mul_add(f, b, c, d, a);
 			fp2_mul_add(h, c, d, a, b);
-			fp2_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp2_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp2_cmp(a, e) == RLC_EQ && fp2_cmp(b, f) == RLC_EQ &&
 					fp2_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;
@@ -1388,10 +1388,10 @@ static int multiplication3(void) {
 			fp3_rand(b);
 			fp3_rand(c);
 			fp3_rand(d);
-			fp3_mul_add(e, a, b, c, d);
+			fp3_mul_sub(e, a, b, c, d);
 			fp3_mul_add(f, b, c, d, a);
 			fp3_mul_add(h, c, d, a, b);
-			fp3_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp3_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp3_cmp(a, e) == RLC_EQ && fp3_cmp(b, f) == RLC_EQ &&
 					fp3_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;
@@ -2074,10 +2074,10 @@ static int multiplication4(void) {
 			fp4_rand(b);
 			fp4_rand(c);
 			fp4_rand(d);
-			fp4_mul_add(e, a, b, c, d);
+			fp4_mul_sub(e, a, b, c, d);
 			fp4_mul_add(f, b, c, d, a);
 			fp4_mul_add(h, c, d, a, b);
-			fp4_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp4_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp4_cmp(a, e) == RLC_EQ && fp4_cmp(b, f) == RLC_EQ &&
 					fp4_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;
@@ -3260,10 +3260,10 @@ static int multiplication8(void) {
 			fp8_rand(b);
 			fp8_rand(c);
 			fp8_rand(d);
-			fp8_mul_add(e, a, b, c, d);
+			fp8_mul_sub(e, a, b, c, d);
 			fp8_mul_add(f, b, c, d, a);
 			fp8_mul_add(h, c, d, a, b);
-			fp8_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp8_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp8_cmp(a, e) == RLC_EQ && fp8_cmp(b, f) == RLC_EQ &&
 					fp8_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;
@@ -4019,10 +4019,10 @@ static int multiplication9(void) {
 			fp9_rand(b);
 			fp9_rand(c);
 			fp9_rand(d);
-			fp9_mul_add(e, a, b, c, d);
+			fp9_mul_sub(e, a, b, c, d);
 			fp9_mul_add(f, b, c, d, a);
 			fp9_mul_add(h, c, d, a, b);
-			fp9_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp9_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp9_cmp(a, e) == RLC_EQ && fp9_cmp(b, f) == RLC_EQ &&
 					fp9_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;

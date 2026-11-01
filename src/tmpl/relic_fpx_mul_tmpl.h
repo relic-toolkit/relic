@@ -569,11 +569,44 @@
 	}
 
 /**
+ * Computes two products of extension field elements with X##_mul2(), which
+ * may reduce them together.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[out] C0		- the first result.
+ * @param[in] A0		- the first element of the first product.
+ * @param[in] B0		- the second element of the first product.
+ * @param[out] C1		- the second result.
+ * @param[in] A1		- the first element of the second product.
+ * @param[in] B1		- the second element of the second product.
+ */
+#define TMPL_FPX_MUL2_BAT(X, C0, A0, B0, C1, A1, B1)						\
+	X##_mul2(C0, A0, B0, C1, A1, B1)
+
+/**
+ * Computes two products of extension field elements one after the other, for
+ * fields without X##_mul2(). The second product must not read C0.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[out] C0		- the first result.
+ * @param[in] A0		- the first element of the first product.
+ * @param[in] B0		- the second element of the first product.
+ * @param[out] C1		- the second result.
+ * @param[in] A1		- the first element of the second product.
+ * @param[in] B1		- the second element of the second product.
+ */
+#define TMPL_FPX_MUL2_SEQ(X, C0, A0, B0, C1, A1, B1)						\
+	X##_mul(C0, A0, B0);													\
+	X##_mul(C1, A1, B1)
+
+/**
  * Defines a template for simultaneous inversion in an extension field.
  *
  * @param[in] X			- the extension field prefix.
+ * @param[in] MUL2		- the computation of the two products of each step
+ * 						back, TMPL_FPX_MUL2_BAT or TMPL_FPX_MUL2_SEQ.
  */
-#define TMPL_FPX_INV_SIM(X)													\
+#define TMPL_FPX_INV_SIM(X, MUL2)											\
 	void X##_inv_sim(X##_t *c, const X##_t *a, int n) {						\
 		int i;																\
 		X##_t u, *t = RLC_ALLOCA(X##_t, n);									\
@@ -600,59 +633,7 @@
 			X##_inv(u, c[n - 1]);											\
 																			\
 			for (i = n - 1; i > 0; i--) {									\
-				X##_mul(c[i], c[i - 1], u);									\
-				X##_mul(u, u, t[i]);										\
-			}																\
-			X##_copy(c[0], u);												\
-		}																	\
-		RLC_CATCH_ANY {														\
-			RLC_THROW(ERR_CAUGHT);											\
-		}																	\
-		RLC_FINALLY {														\
-			for (i = 0; i < n; i++) {										\
-				X##_free(t[i]);												\
-			}																\
-			X##_free(u);													\
-			RLC_FREE(t);													\
-		}																	\
-	}
-
-/**
- * Defines a template for simultaneous inversion as TMPL_FPX_INV_SIM() does,
- * reducing the two products of each step back together, for the extension
- * fields with X##_mul2().
- *
- * @param[in] X			- the extension field prefix.
- */
-#define TMPL_FPX_INV_SIM2(X)												\
-	void X##_inv_sim(X##_t *c, const X##_t *a, int n) {						\
-		int i;																\
-		X##_t u, *t = RLC_ALLOCA(X##_t, n);									\
-																			\
-		for (i = 0; i < n; i++) {											\
-			X##_null(t[i]);													\
-		}																	\
-		X##_null(u);														\
-																			\
-		RLC_TRY {															\
-			for (i = 0; i < n; i++) {										\
-				X##_new(t[i]);												\
-			}																\
-			X##_new(u);														\
-																			\
-			X##_copy(c[0], a[0]);											\
-			X##_copy(t[0], a[0]);											\
-																			\
-			for (i = 1; i < n; i++) {										\
-				X##_copy(t[i], a[i]);										\
-				X##_mul(c[i], c[i - 1], t[i]);								\
-			}																\
-																			\
-			X##_inv(u, c[n - 1]);											\
-																			\
-			/* Both products of each step are reduced together. */			\
-			for (i = n - 1; i > 0; i--) {									\
-				X##_mul2(c[i], c[i - 1], u, u, u, t[i]);					\
+				MUL2(X, c[i], c[i - 1], u, u, u, t[i]);						\
 			}																\
 			X##_copy(c[0], u);												\
 		}																	\
@@ -1053,7 +1034,7 @@
 																			\
 	TMPL_FPX_MULV_LAZYR(X, D)												\
 																			\
-	void X##_mul_add3(X##_t c0, const X##_t a0, const X##_t b0,				\
+	void X##_mul_sub_add2(X##_t c0, const X##_t a0, const X##_t b0,			\
 			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
 			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
 			const X##_t a2, const X##_t b2, const X##_t d2,					\
@@ -1075,7 +1056,7 @@
 			}																\
 			X##_muln_low(t[0], a0, b0);										\
 			X##_muln_low(u, d0, e0);										\
-			X##_addc_low(t[0], t[0], u);									\
+			X##_subc_low(t[0], t[0], u);									\
 			X##_muln_low(t[1], a1, b1);										\
 			X##_muln_low(u, d1, e1);										\
 			X##_addc_low(t[1], t[1], u);									\
@@ -1142,7 +1123,7 @@
 																			\
 	TMPL_FPX_MULV(X)														\
 																			\
-	void X##_mul_add3(X##_t c0, const X##_t a0, const X##_t b0,				\
+	void X##_mul_sub_add2(X##_t c0, const X##_t a0, const X##_t b0,			\
 			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
 			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
 			const X##_t a2, const X##_t b2, const X##_t d2,					\
@@ -1153,7 +1134,7 @@
 																			\
 		RLC_TRY {															\
 			X##_new_all(r0, r1);											\
-			X##_mul_add(r0, a0, b0, d0, e0);								\
+			X##_mul_sub(r0, a0, b0, d0, e0);								\
 			X##_mul_add(r1, a1, b1, d1, e1);								\
 			X##_mul_add(c2, a2, b2, d2, e2);								\
 			X##_copy(c0, r0);												\

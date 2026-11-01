@@ -36,13 +36,6 @@
 /*============================================================================*/
 
 /**
- * Selects compressed squarings, with a decompression at the end, for the
- * exponentiation by sparse exponents; an extension field may set it to zero to
- * use cyclotomic squarings instead, when these are cheap enough.
- */
-#define TMPL_CYC_PCK		1
-
-/**
  * Defines a template for exponentiation in the cyclotomic subgroup using w-NAF,
  * for extension fields without compressed squarings.
  *
@@ -251,11 +244,13 @@
 
 /**
  * Defines a template for exponentiation in the cyclotomic subgroup by a sparse
- * exponent, using compressed squarings and simultaneous decompression.
+ * exponent, using compressed squarings and simultaneous decompression, or
+ * cyclotomic squarings when these are cheap enough.
  *
  * @param[in] F			- the extension field prefix.
+ * @param[in] PCK		- the flag to use compressed squarings.
  */
-#define TMPL_EXP_CYC_SPS(F)													\
+#define TMPL_EXP_CYC_SPS(F, PCK)											\
 	void F##_exp_cyc_sps(F##_t c, const F##_t a, const int *b, size_t len,	\
 			int sign) {														\
 		size_t i, j, k, w = len;											\
@@ -288,7 +283,7 @@
 				for (j = 0, i = 1; i < len; i++) {							\
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
-						if (TMPL_CYC_PCK) {									\
+						if (PCK) {											\
 							F##_sqr_pck(t, t);								\
 						} else {											\
 							F##_sqr_cyc(t, t);								\
@@ -301,7 +296,7 @@
 					}														\
 				}															\
 																			\
-				if (TMPL_CYC_PCK) {											\
+				if (PCK) {													\
 					F##_back_cyc_sim(u, u, w - 1);							\
 				}															\
 																			\
@@ -313,7 +308,7 @@
 				for (j = 0, i = 0; i < len; i++) {							\
 					k = (b[i] < 0 ? -b[i] : b[i]);							\
 					for (; j < k; j++) {									\
-						if (TMPL_CYC_PCK) {									\
+						if (PCK) {											\
 							F##_sqr_pck(t, t);								\
 						} else {											\
 							F##_sqr_cyc(t, t);								\
@@ -326,7 +321,7 @@
 					}														\
 				}															\
 																			\
-				if (TMPL_CYC_PCK) {											\
+				if (PCK) {													\
 					F##_back_cyc_sim(u, u, w);								\
 				}															\
 																			\
@@ -1361,8 +1356,10 @@
  * @param[in] S			- the subfield used in compression, of degree k/6.
  * @param[in] M			- the multiplication by the non-residue in S.
  * @param[in] T			- the shape of the tower (QC or CQ).
+ * @param[in] PCK		- the flag to use compressed squarings in the
+ * 						exponentiation by sparse exponents.
  */
-#define TMPL_FPX_CYC(X, H, S, M, T)											\
+#define TMPL_FPX_CYC(X, H, S, M, T, PCK)									\
 	TMPL_FPX_INV_##T(X, H, H##_mul_art)										\
 	TMPL_FPX_INV_CYC_##T(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
@@ -1374,7 +1371,7 @@
 	TMPL_FPX_CUB_CYC_##T(X, S, M)											\
 	TMPL_EXP_CYC(X)															\
 	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)										\
-	TMPL_EXP_CYC_SPS(X)														\
+	TMPL_EXP_CYC_SPS(X, PCK)												\
 	TMPL_FPX_PCK_##T(X, S)													\
 	TMPL_FPX_UPK_##T(X, S)													\
 	TMPL_FPX_PCK_MAX_##T(X, H)
@@ -1391,7 +1388,7 @@
  */
 #define TMPL_FPX_CYC_T2(X, H)												\
 	TMPL_FPX_INV_QUAD(X, H, H##_mul_art)									\
-	TMPL_FPX_INV_SIM(X)														\
+	TMPL_FPX_INV_SIM(X, TMPL_FPX_MUL2_SEQ)									\
 	TMPL_FPX_INV_CYC_QUAD(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
 	TMPL_FPX_EXP_DIG(X)														\

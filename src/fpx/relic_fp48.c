@@ -252,7 +252,7 @@ TMPL_SQR_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
 TMPL_FPX_CUB_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_mul_unr,
 		fp8_sqr_unr);
 
-TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC);
+TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC, 1);
 
 void fp48_frb(fp48_t c, const fp48_t a, int i) {
 	/* Cost of 52 multiplication in Fp^2 per Frobenius. */

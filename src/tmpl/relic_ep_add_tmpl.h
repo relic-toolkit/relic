@@ -166,10 +166,9 @@
 				F##_dbl(t5, r->y);											\
 				F##_add(r->y, r->y, t5);									\
 				C##_curve_mul_b(r->y, r->y);								\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t5, r->y);											\
-				F##_mul_add3(r->x, t3, t1, t4, t5,							\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, t1, t4, r->y,					\
 					r->y, t1, r->z, t0, r->y, r->z, r->z, t4, t0, t3);		\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 11M + 2m_b + 23a. */								\
@@ -200,10 +199,9 @@
 				F##_dbl(t1, t0);											\
 				F##_add(t0, t1, t0);										\
 				F##_sub(t0, t0, t2);										\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t1, r->y);											\
-				F##_mul_add3(r->x, t3, r->x, t4, t1,						\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, r->x, t4, r->y,					\
 					r->y, r->x, r->z, t0, r->y, r->z, t4, r->z, t3, t0);	\
 			} else {														\
 				/* Cost of 11M + 3m_a + 2m_3b + 17a. */						\
@@ -238,11 +236,10 @@
 				F##_sub(t2, t0, t2);										\
 				C##_curve_mul_a(t2, t2);									\
 				F##_add(t4, t4, t2);										\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t2, t4);											\
-				F##_mul_add3(r->y, r->x, r->z, t1, t4,						\
-					r->x, t3, r->x, t5, t2, r->z, t5, r->z, t3, t1);		\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, r->x, t5, t4,					\
+					r->y, r->x, r->z, t1, t4, r->z, t5, r->z, t3, t1);		\
 			}																\
 																			\
 			r->coord = EC_PROJC;											\
@@ -297,10 +294,9 @@
 				F##_dbl(t5, r->y);											\
 				F##_add(r->y, r->y, t5);									\
 				C##_curve_mul_b(r->y, r->y);								\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t5, r->y);											\
-				F##_mul_add3(r->x, t3, t1, t4, t5,							\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, t1, t4, r->y,					\
 					r->y, t1, r->z, t0, r->y, r->z, r->z, t4, t0, t3);		\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 12M + 2m_b + 29a. */								\
@@ -330,10 +326,9 @@
 				F##_dbl(t1, t0);											\
 				F##_add(t0, t1, t0);										\
 				F##_sub(t0, t0, t2);										\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t1, r->y);											\
-				F##_mul_add3(r->x, t3, r->x, t4, t1,						\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, r->x, t4, r->y,					\
 					r->y, r->x, r->z, t0, r->y, r->z, t4, r->z, t3, t0);	\
 			} else {														\
 				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
@@ -365,11 +360,10 @@
 				F##_sub(t2, t0, t2);										\
 				C##_curve_mul_a(t2, t2);									\
 				F##_add(t4, t4, t2);										\
-				/* Sums of products are reduced together; a negated			\
-				 * factor gives the difference. */							\
-				F##_neg(t2, t4);											\
-				F##_mul_add3(r->y, r->x, r->z, t1, t4,						\
-					r->x, t3, r->x, t5, t2, r->z, t5, r->z, t3, t1);		\
+				/* The difference and the sums of products are reduced		\
+				 * together. */												\
+				F##_mul_sub_add2(r->x, t3, r->x, t5, t4,					\
+					r->y, r->x, r->z, t1, t4, r->z, t5, r->z, t3, t1);		\
 			}																\
 			r->coord = EC_PROJC;											\
 		} RLC_CATCH_ANY {													\

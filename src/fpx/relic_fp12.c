@@ -40,8 +40,9 @@
 #if FP_RDC == FP_RENUS && FPX_RDC == FPX_LAZYR
 /* Cyclotomic squarings in Fp^12 reduce their whole results, and cost less than
  * compressed squarings with the decompression. */
-#undef TMPL_CYC_PCK
-#define TMPL_CYC_PCK		0
+#define FP12_CYC_PCK		0
+#else
+#define FP12_CYC_PCK		1
 #endif
 
 /*============================================================================*/
@@ -228,7 +229,7 @@ TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 TMPL_FPX_CUB_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_muln_low,
 		fp2_sqrn_low);
 
-TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
+TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC, FP12_CYC_PCK);
 
 void fp12_frb(fp12_t c, const fp12_t a, int i) {
 	ctx_t *ctx = core_get();

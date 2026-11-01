@@ -467,10 +467,10 @@ static int multiplication(void) {
 			fp_rand(b);
 			fp_rand(c);
 			fp_rand(d);
-			fp_mul_add(e, a, b, c, d);
+			fp_mul_sub(e, a, b, c, d);
 			fp_mul_add(f, b, c, d, a);
 			fp_mul_add(h, c, d, a, b);
-			fp_mul_add3(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
+			fp_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
 			TEST_ASSERT(fp_cmp(a, e) == RLC_EQ && fp_cmp(b, f) == RLC_EQ &&
 					fp_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;

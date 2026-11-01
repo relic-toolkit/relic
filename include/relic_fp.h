@@ -1276,10 +1276,10 @@ void fp_mul3(fp_t c0, const fp_t a0, const fp_t b0, fp_t c1, const fp_t a1,
 		const fp_t b1, fp_t c2, const fp_t a2, const fp_t b2);
 
 /**
- * Computes three sums of two products of prime field elements independently,
- * reducing the sums together. Computes c_i = a_i * b_i + d_i * e_i for
- * 0 <= i < 3. All products are computed before any result is written, so the
- * results may alias the inputs.
+ * Computes a difference and two sums of two products of prime field elements
+ * independently, reducing them together. Computes c_0 = a_0 * b_0 - d_0 * e_0
+ * and c_i = a_i * b_i + d_i * e_i for i = 1, 2. All products are computed
+ * before any result is written, so the results may alias the inputs.
  *
  * @param[out] c0			- the first result.
  * @param[in] a0			- the first element of the first product of c0.
@@ -1297,7 +1297,7 @@ void fp_mul3(fp_t c0, const fp_t a0, const fp_t b0, fp_t c1, const fp_t a1,
  * @param[in] d2			- the first element of the second product of c2.
  * @param[in] e2			- the second element of the second product of c2.
  */
-void fp_mul_add3(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
+void fp_mul_sub_add2(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
 		const fp_t e0, fp_t c1, const fp_t a1, const fp_t b1, const fp_t d1,
 		const fp_t e1, fp_t c2, const fp_t a2, const fp_t b2, const fp_t d2,
 		const fp_t e2);

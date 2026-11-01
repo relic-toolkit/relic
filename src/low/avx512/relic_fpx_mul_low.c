@@ -92,6 +92,8 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
+		/* Loops are unrolled fully, so that all indices are constants and the
+		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
@@ -143,6 +145,8 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		u = rns_load(ctx->rns.u, k);
+		/* Loops are unrolled fully, so that all indices are constants and the
+		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {

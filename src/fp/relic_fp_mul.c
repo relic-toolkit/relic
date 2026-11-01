@@ -249,7 +249,7 @@ void fp_mul3(fp_t c0, const fp_t a0, const fp_t b0, fp_t c1, const fp_t a1,
 #endif
 }
 
-void fp_mul_add3(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
+void fp_mul_sub_add2(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
 		const fp_t e0, fp_t c1, const fp_t a1, const fp_t b1, const fp_t d1,
 		const fp_t e1, fp_t c2, const fp_t a2, const fp_t b2, const fp_t d2,
 		const fp_t e2) {
@@ -260,7 +260,7 @@ void fp_mul_add3(fp_t c0, const fp_t a0, const fp_t b0, const fp_t d0,
 
 	fp_muln_low(t[0], a0, b0);
 	fp_muln_low(u, d0, e0);
-	fp_addc_low(t[0], t[0], u);
+	fp_subc_low(t[0], t[0], u);
 	fp_muln_low(t[1], a1, b1);
 	fp_muln_low(u, d1, e1);
 	fp_addc_low(t[1], t[1], u);

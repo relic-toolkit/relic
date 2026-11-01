@@ -113,7 +113,7 @@ TMPL_SQR_PCK_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
 TMPL_SQR_CYC_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
-TMPL_FPX_CYC(fp54, fp18, fp9, fp9_mul_art, CQ);
+TMPL_FPX_CYC(fp54, fp18, fp9, fp9_mul_art, CQ, 1);
 
 void fp54_frb(fp54_t c, const fp54_t a, int i) {
 	/* Since w^18 = u, w^(p - 1) = u^((p - p mod 18)/18) * t^((p mod 18 - 1)/6)
