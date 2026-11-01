@@ -185,28 +185,27 @@ static inline __m512i rns_vmul2(__m512i a, __m512i b, __m512i c, __m512i d,
 }
 
 /**
- * Reduces h * 2^52 + l by two Montgomery reductions modulo m < 2^52, for l
- * and h below 2^57: computes it divided by 2^104, modulo m, lane-wise.
+ * Reduces h * 2^52 + l by one Montgomery reduction modulo m = 2^52 - c, for l
+ * and h below 2^57, then brings the result below m with 2^52 = c mod m:
+ * computes it divided by 2^52, modulo m, lane-wise.
  */
 static inline __m512i rns_vred(__m512i l, __m512i h, __m512i m, __m512i u) {
 	const __m512i z = _mm512_setzero_si512();
 	const __m512i mask = _mm512_set1_epi64(RLC_RNS_MASK);
+	const __m512i c = _mm512_sub_epi64(_mm512_set1_epi64(RLC_RNS_MASK + 1), m);
 	__m512i q, t;
 
 	h = _mm512_add_epi64(h, _mm512_srli_epi64(l, 52));
 	l = _mm512_and_si512(l, mask);
-	/* The first reduction leaves t below 2^58. */
+	/* The reduction leaves t below 2^58. */
 	q = _mm512_madd52lo_epu64(z, l, u);
 	l = _mm512_madd52lo_epu64(l, q, m);
 	t = _mm512_madd52hi_epu64(h, q, m);
 	t = _mm512_add_epi64(t, _mm512_srli_epi64(l, 52));
-	/* The second one leaves a value below m + 2^6 < 2m. */
-	l = _mm512_and_si512(t, mask);
-	h = _mm512_srli_epi64(t, 52);
-	q = _mm512_madd52lo_epu64(z, l, u);
-	l = _mm512_madd52lo_epu64(l, q, m);
-	t = _mm512_madd52hi_epu64(h, q, m);
-	t = _mm512_add_epi64(t, _mm512_srli_epi64(l, 52));
+	/* The low 52 bits plus c times the high ones are below 2^52 + 2^6 * c,
+	 * which is less than 2m for the small c of the moduli. */
+	t = _mm512_madd52lo_epu64(_mm512_and_si512(t, mask),
+			_mm512_srli_epi64(t, 52), c);
 	return rns_vcrt(t, m);
 }
 
@@ -477,7 +476,7 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
 	/* Rows are spread over S sets of sums, to shorten dependency chains, fewer
 	 * as more values provide independent ones. */
-	const int S = (K == 1 ? 4 : (K * RNS_NB >= 8 ? 1 : 2));
+	const int S = (K == 1 ? 4 : (K * RNS_NB >= 4 ? 1 : 2));
 	const __m512i z = _mm512_setzero_si512();
 	__m512i l[RNS_K][4][RNS_NB], h[RNS_K][4][RNS_NB], y[RNS_NB], a, x;
 	dig_t s;

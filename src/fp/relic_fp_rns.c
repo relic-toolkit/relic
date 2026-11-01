@@ -248,6 +248,22 @@ void fp_rns_pre(void) {
 					j0);
 		}
 
+#if RLC_ARITH == RLC_AVX512
+		/* The vectorized extensions reduce their sums with one Montgomery
+		 * reduction instead of two, so their tables carry one factor R less. */
+		for (size_t i = 0; i < n; i++) {
+			const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
+
+			for (size_t j = 0; j < n; j++) {
+				ctx->rns.t1[i][j] =
+						fp_rns_mul(ctx->rns.t1[i][j], 1, m[o + j], u[o + j]);
+				ctx->rns.t2[i][j] = fp_rns_mul(ctx->rns.t2[i][j], 1, m[j], u[j]);
+			}
+			ctx->rns.u1[i] = fp_rns_mul(ctx->rns.u1[i], 1, m[o + i], u[o + i]);
+			ctx->rns.u2[i] = fp_rns_mul(ctx->rns.u2[i], 1, m[i], u[i]);
+		}
+#endif
+
 		/* Constants in Montgomery form: M, M^2, M/2 and M/3 modulo p. */
 		bn_mod(t, m, &(ctx->prime));
 		fp_rns_conv(ctx->one, t);

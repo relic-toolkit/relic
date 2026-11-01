@@ -41,7 +41,8 @@
  * System, elements are not reduced by additions, and cyclotomic squarings
  * compute coefficients as 3t +- 2a from the previous a, which then doubles at
  * every squaring; after 8 of them, products stay far below the bound of the
- * reduction. This also applies to compressed elements, coefficient-wise.
+ * reduction. This also applies to compressed elements, coefficient-wise. All
+ * coefficients are reduced together.
  *
  * @param[in] F			- the extension field prefix.
  * @param[in,out] R		- the element.
@@ -50,9 +51,16 @@
 #if FP_RDC == FP_RENUS
 #define TMPL_CYC_NORM(F, R, I)												\
 	if (((I) & 7) == 0) {													\
-		for (size_t _n = 0; _n < sizeof(F##_t) / sizeof(fp_t); _n++) {		\
-			fp_mul(((fp_t *)(R))[_n], ((fp_t *)(R))[_n], core_get()->one);	\
+		enum { _N = sizeof(F##_t) / sizeof(fp_t) };							\
+		rlc_align dig_t _t[_N][RLC_FP_DLEN];								\
+		dig_t *_c[_N], *_u[_N];												\
+																			\
+		for (int _n = 0; _n < _N; _n++) {									\
+			fp_muln_low(_t[_n], ((fp_t *)(R))[_n], core_get()->one);		\
+			_c[_n] = ((fp_t *)(R))[_n];										\
+			_u[_n] = _t[_n];												\
 		}																	\
+		fp_rdcv_low(_c, _u, _N);											\
 	}
 #else
 #define TMPL_CYC_NORM(F, R, I)		/* Elements are reduced by additions. */
@@ -792,16 +800,16 @@
 				/* If f, t0 = 2 * g4 * g5, t1 = g3. */						\
 				Z##_copy(t2[i], a[i][0][1]);								\
 				Z##_copy_sec(t2[i], a[i][1][2], f);							\
-				/* t0 = g4^2. */											\
-				Z##_mul(t0[i], a[i][0][1], t2[i]);							\
-				Z##_dbl(t2[i], t0[i]);										\
-				Z##_copy_sec(t0[i], t2[i], f);								\
+				/* t0 = g4^2 and t2 = g5^2, reduced together. */			\
+				Z##_mul2(t0[i], a[i][0][1], t2[i],							\
+						t2[i], a[i][1][2], a[i][1][2]);						\
+				Z##_dbl(t1[i], t0[i]);										\
+				Z##_copy_sec(t0[i], t1[i], f);								\
 				/* t1 = 3 * g4^2 - 2 * g3. */								\
 				Z##_sub(t1[i], t0[i], a[i][0][2]);							\
 				Z##_dbl(t1[i], t1[i]);										\
 				Z##_add(t1[i], t1[i], t0[i]);								\
 				/* t0 = E * g5^2 + t1. */									\
-				Z##_sqr(t2[i], a[i][1][2]);									\
 				NOR(t0[i], t2[i]);											\
 				Z##_add(t0[i], t0[i], t1[i]);								\
 				/* t1 = (4 * g2). */										\
@@ -819,20 +827,17 @@
 			Z##_inv_sim(t1, t1, n);											\
 																			\
 			for (int i = 0; i < n; i++) {									\
-				/* t0 = g1. */												\
-				Z##_mul(c[i][1][1], t0[i], t1[i]);							\
-																			\
-				/* t1 = g3 * g4. */											\
-				Z##_mul(t1[i], a[i][0][2], a[i][0][1]);						\
+				/* g1 = t0 * t1, with t1 = g3 * g4 and t0 = g2 * g5. */		\
+				Z##_mul3(c[i][1][1], t0[i], t1[i],							\
+						t1[i], a[i][0][2], a[i][0][1],						\
+						t0[i], a[i][1][0], a[i][1][2]);						\
 				/* t2 = 2 * g1^2 - 3 * g3 * g4. */							\
 				Z##_sqr(t2[i], c[i][1][1]);									\
 				Z##_sub(t2[i], t2[i], t1[i]);								\
 				Z##_dbl(t2[i], t2[i]);										\
 				Z##_sub(t2[i], t2[i], t1[i]);								\
-				/* t1 = g2 * g5. */											\
-				Z##_mul(t1[i], a[i][1][0], a[i][1][2]);						\
 				/* t2 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */		\
-				Z##_add(t2[i], t2[i], t1[i]);								\
+				Z##_add(t2[i], t2[i], t0[i]);								\
 				NOR(c[i][0][0], t2[i]);										\
 				fp_add_dig(((fp_t *)c[i][0][0])[0], ((fp_t *)c[i][0][0])[0],\
 						1);													\

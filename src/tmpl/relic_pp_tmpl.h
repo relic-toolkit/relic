@@ -378,7 +378,8 @@
  * Selects the operations on unreduced elements of the twist field F used by
  * the lazy-reduced line functions: multiplication (MULN) and squaring (SQRN)
  * without reduction, addition (ADDC) and subtraction (SUBC) of unreduced
- * elements, and modular reduction (RDCN).
+ * elements, and modular reduction of one element (RDCN) or of N elements at
+ * once (RDCV).
  */
 /** @{ */
 #define TMPL_PP_MULN_fp2(C, A, B)	fp2_muln_low(C, A, B)
@@ -386,36 +387,51 @@
 #define TMPL_PP_ADDC_fp2(C, A, B)	fp2_addc_low(C, A, B)
 #define TMPL_PP_SUBC_fp2(C, A, B)	fp2_subc_low(C, A, B)
 #define TMPL_PP_RDCN_fp2(C, A)		fp2_rdcn_low(C, A)
+#define TMPL_PP_RDCV_fp2(C, A, N)	fp2_rdcv_low(C, A, N)
 
 #define TMPL_PP_MULN_fp3(C, A, B)	fp3_muln_low(C, A, B)
 #define TMPL_PP_SQRN_fp3(C, A)		fp3_sqrn_low(C, A)
 #define TMPL_PP_ADDC_fp3(C, A, B)	fp3_addc_low(C, A, B)
 #define TMPL_PP_SUBC_fp3(C, A, B)	fp3_subc_low(C, A, B)
 #define TMPL_PP_RDCN_fp3(C, A)		fp3_rdcn_low(C, A)
+#define TMPL_PP_RDCV_fp3(C, A, N)	fp3_rdcv_low(C, A, N)
 
 #define TMPL_PP_MULN_fp4(C, A, B)	fp4_mul_unr(C, A, B)
 #define TMPL_PP_SQRN_fp4(C, A)		fp4_sqr_unr(C, A)
 #define TMPL_PP_ADDC_fp4(C, A, B)	TMPL_DV_ADDC(fp2, dv2, 2, C, A, B)
 #define TMPL_PP_SUBC_fp4(C, A, B)	TMPL_DV_SUBC(fp2, dv2, 2, C, A, B)
 #define TMPL_PP_RDCN_fp4(C, A)		TMPL_DV_RDCN(fp2, dv2, 2, C, A)
+#define TMPL_PP_RDCV_fp4(C, A, N)	TMPL_DV_RDCN(fp2, dv2, 2 * (N), C, A)
 
 #define TMPL_PP_MULN_fp8(C, A, B)	fp8_mul_unr(C, A, B)
 #define TMPL_PP_SQRN_fp8(C, A)		fp8_sqr_unr(C, A)
 #define TMPL_PP_ADDC_fp8(C, A, B)	TMPL_DV_ADDC(fp2, dv2, 4, C, A, B)
 #define TMPL_PP_SUBC_fp8(C, A, B)	TMPL_DV_SUBC(fp2, dv2, 4, C, A, B)
 #define TMPL_PP_RDCN_fp8(C, A)		TMPL_DV_RDCN(fp2, dv2, 4, C, A)
+#define TMPL_PP_RDCV_fp8(C, A, N)	TMPL_DV_RDCN(fp2, dv2, 4 * (N), C, A)
 
 #define TMPL_PP_MULN_fp9(C, A, B)	fp9_mul_unr(C, A, B)
 #define TMPL_PP_SQRN_fp9(C, A)		fp9_sqr_unr(C, A)
 #define TMPL_PP_ADDC_fp9(C, A, B)	TMPL_DV_ADDC(fp3, dv3, 3, C, A, B)
 #define TMPL_PP_SUBC_fp9(C, A, B)	TMPL_DV_SUBC(fp3, dv3, 3, C, A, B)
 #define TMPL_PP_RDCN_fp9(C, A)		TMPL_DV_RDCN(fp3, dv3, 3, C, A)
+#define TMPL_PP_RDCV_fp9(C, A, N)	TMPL_DV_RDCN(fp3, dv3, 3 * (N), C, A)
+
+/**
+ * Multiplies an element of the twist field F by a prime field element without
+ * reduction, coefficient by coefficient.
+ */
+#define TMPL_PP_MULFPN(F, C, A, B)											\
+	for (int _k = 0; _k < (int)(sizeof(F##_t) / sizeof(fp_t)); _k++) {		\
+		fp_muln_low(((dv_t *)(C))[_k], ((fp_t *)(A))[_k], B);				\
+	}
 /** @} */
 
 /**
  * Defines a template for adding two points of a sextic twist, the first in
  * projective coordinates, and evaluating the line through them at a point,
- * with lazy reduction: each difference of two products is reduced once.
+ * with lazy reduction: each difference of two products is reduced once, and
+ * the independent values of each step are reduced together.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
@@ -425,84 +441,97 @@
 #define TMPL_PP_ADD_LAZYR(K, C, F, D)										\
 	void pp_add_k##K##_projc_lazyr(fp##K##_t l, C##_t r, const C##_t q,		\
 			const ep_t p) {													\
-		F##_t t0, t1, t2, t3;												\
-		D##_t u0, u1;														\
-		fp_t u;																\
+		F##_t t0, t1, t2, t3, t4;											\
+		D##_t u[5];															\
+		F##_t v[5];															\
+		fp_t w;																\
 																			\
 		TMPL_PP_TWIST_##K													\
 																			\
-		F##_null_all(t0, t1, t2, t3);										\
-		D##_null_all(u0, u1);												\
-		fp_null(u);															\
+		F##_null_all(t0, t1, t2, t3, t4);									\
+		for (int _i = 0; _i < 5; _i++) {									\
+			D##_null(u[_i]);												\
+			F##_null(v[_i]);												\
+		}																	\
+		fp_null(w);															\
 																			\
 		RLC_TRY {															\
-			F##_new_all(t0, t1, t2, t3);									\
-			D##_new_all(u0, u1);											\
-			fp_new(u);														\
+			F##_new_all(t0, t1, t2, t3, t4);								\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_new(u[_i]);												\
+				F##_new(v[_i]);												\
+			}																\
+			fp_new(w);														\
 																			\
-			/* B = t0 = x1 - x2 * z1. */									\
-			F##_mul(t0, r->z, q->x);										\
-			F##_sub(t0, r->x, t0);											\
-			/* A = t1 = y1 - y2 * z1. */									\
-			F##_mul(t1, r->z, q->y);										\
-			F##_sub(t1, r->y, t1);											\
+			/* B = t0 = x1 - x2 * z1 and A = t1 = y1 - y2 * z1. */			\
+			TMPL_PP_MULN_##F(u[0], r->z, q->x);								\
+			TMPL_PP_MULN_##F(u[1], r->z, q->y);								\
+			TMPL_PP_RDCV_##F(v, u, 2);										\
+			F##_sub(t0, r->x, v[0]);										\
+			F##_sub(t1, r->y, v[1]);										\
 																			\
-			/* D = B^2. */													\
-			F##_sqr(t2, t0);												\
-			/* G = x1 * D. */												\
-			F##_mul(r->x, r->x, t2);										\
-			/* E = B^3. */													\
-			F##_mul(t2, t2, t0);											\
-			/* C = A^2. */													\
-			F##_sqr(t3, t1);												\
-			/* F = E + z1 * C. */											\
-			F##_mul(t3, t3, r->z);											\
-			F##_add(t3, t2, t3);											\
-																			\
-			/* H = E + F - 2 * G. */										\
-			F##_sub(t3, t3, r->x);											\
-			F##_sub(t3, t3, r->x);											\
-			/* y3 = A * (G - H) - y1 * E, reduced once. */					\
-			F##_sub(r->x, r->x, t3);										\
-			TMPL_PP_MULN_##F(u0, t1, r->x);									\
-			TMPL_PP_MULN_##F(u1, t2, r->y);									\
-			TMPL_PP_SUBC_##F(u1, u0, u1);									\
-			TMPL_PP_RDCN_##F(r->y, u1);										\
-			/* x3 = B * H. */												\
-			F##_mul(r->x, t0, t3);											\
-			/* z3 = z1 * E. */												\
-			F##_mul(r->z, r->z, t2);										\
-																			\
-			/* l10 = - (A * xp). */											\
-			fp_neg(u, p->x);												\
-			F##_mul_fp(TMPL_PP_LX_##K(l), t1, u);							\
-																			\
-			/* l11 = J = A * x2 - B * y2, reduced once. */					\
-			TMPL_PP_MULN_##F(u0, q->x, t1);									\
-			TMPL_PP_MULN_##F(u1, q->y, t0);									\
-			TMPL_PP_SUBC_##F(u0, u0, u1);									\
-			TMPL_PP_RDCN_##F(TMPL_PP_LJ_##K(l), u0);						\
+			/* D = B^2, C = A^2 and the line, which only needs A and B. */	\
+			TMPL_PP_SQRN_##F(u[0], t0);										\
+			TMPL_PP_SQRN_##F(u[1], t1);										\
+			/* l11 = J = A * x2 - B * y2. */								\
+			TMPL_PP_MULN_##F(u[2], q->x, t1);								\
+			TMPL_PP_MULN_##F(u[3], q->y, t0);								\
+			TMPL_PP_SUBC_##F(u[2], u[2], u[3]);								\
+			/* l10 = - (A * xp) and l00 = B * yp. */						\
+			fp_neg(w, p->x);												\
+			TMPL_PP_MULFPN(F, u[3], t1, w);									\
+			TMPL_PP_MULFPN(F, u[4], t0, p->y);								\
+			TMPL_PP_RDCV_##F(v, u, 5);										\
+			F##_copy(t2, v[0]);												\
+			F##_copy(t3, v[1]);												\
+			F##_copy(TMPL_PP_LJ_##K(l), v[2]);								\
 			TMPL_PP_ART_##K(l)												\
+			F##_copy(TMPL_PP_LX_##K(l), v[3]);								\
+			F##_copy(TMPL_PP_LY_##K(l), v[4]);								\
 																			\
-			/* l00 = B * yp. */												\
-			F##_mul_fp(TMPL_PP_LY_##K(l), t0, p->y);						\
+			/* G = x1 * D, E = B^3 = B * D and F = E + z1 * C. */			\
+			TMPL_PP_MULN_##F(u[0], r->x, t2);								\
+			TMPL_PP_MULN_##F(u[1], t0, t2);									\
+			TMPL_PP_MULN_##F(u[2], r->z, t3);								\
+			TMPL_PP_ADDC_##F(u[2], u[2], u[1]);								\
+			TMPL_PP_RDCV_##F(v, u, 3);										\
+			/* H = F - 2 * G, as F already includes E. */					\
+			F##_sub(t4, v[2], v[0]);										\
+			F##_sub(t4, t4, v[0]);											\
+			F##_copy(t3, v[1]);												\
 																			\
-			r->coord = EC_PROJC;												\
+			/* y3 = A * (G - H) - y1 * E, x3 = B * H and z3 = z1 * E. */	\
+			F##_sub(t2, v[0], t4);											\
+			TMPL_PP_MULN_##F(u[0], t1, t2);									\
+			TMPL_PP_MULN_##F(u[1], t3, r->y);								\
+			TMPL_PP_SUBC_##F(u[0], u[0], u[1]);								\
+			TMPL_PP_MULN_##F(u[1], t0, t4);									\
+			TMPL_PP_MULN_##F(u[2], r->z, t3);								\
+			TMPL_PP_RDCV_##F(v, u, 3);										\
+			F##_copy(r->y, v[0]);											\
+			F##_copy(r->x, v[1]);											\
+			F##_copy(r->z, v[2]);											\
+																			\
+			r->coord = EC_PROJC;											\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free_all(t0, t1, t2, t3);									\
-			D##_free_all(u0, u1);											\
-			fp_free(u);														\
+			F##_free_all(t0, t1, t2, t3, t4);								\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_free(u[_i]);											\
+				F##_free(v[_i]);											\
+			}																\
+			fp_free(w);														\
 		}																	\
 	}
 
 /**
  * Defines a template for doubling a point of a sextic twist in projective
  * coordinates and evaluating the tangent line at a point, with lazy
- * reduction: y3 = (B + G)^2 - 3(2D)^2 is reduced once.
+ * reduction: y3 = (B + G)^2 - 3(2D)^2 is reduced once, and the independent
+ * values of each step are reduced together.
  *
  * @param[in] K			- the embedding degree.
  * @param[in] C			- the prefix of the twisted curve.
@@ -513,73 +542,89 @@
 	void pp_dbl_k##K##_projc_lazyr(fp##K##_t l, C##_t r, const C##_t q,		\
 			const ep_t p) {													\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
-		D##_t u0, u1;														\
+		D##_t u[5];															\
+		F##_t v[5];															\
 																			\
 		TMPL_PP_TWIST_##K													\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
-		D##_null_all(u0, u1);												\
+		for (int _i = 0; _i < 5; _i++) {									\
+			D##_null(u[_i]);												\
+			F##_null(v[_i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
-			D##_new_all(u0, u1);											\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_new(u[_i]);												\
+				F##_new(v[_i]);												\
+			}																\
 																			\
-			/* A = x1^2. */													\
-			F##_sqr(t0, q->x);												\
-			/* B = y1^2. */													\
-			F##_sqr(t1, q->y);												\
-			/* C = z1^2. */													\
-			F##_sqr(t2, q->z);												\
+			/* A = x1^2, B = y1^2, C = z1^2, (x1 + y1)^2 and (y1 + z1)^2. */\
+			F##_add(t4, q->x, q->y);										\
+			F##_add(t5, q->y, q->z);										\
+			TMPL_PP_SQRN_##F(u[0], q->x);									\
+			TMPL_PP_SQRN_##F(u[1], q->y);									\
+			TMPL_PP_SQRN_##F(u[2], q->z);									\
+			TMPL_PP_SQRN_##F(u[3], t4);										\
+			TMPL_PP_SQRN_##F(u[4], t5);										\
+			TMPL_PP_RDCV_##F(v, u, 5);										\
+			F##_copy(t0, v[0]);												\
+			F##_copy(t1, v[1]);												\
+			F##_copy(t2, v[2]);												\
+			/* E = (x1 + y1)^2 - A - B. */									\
+			F##_sub(t4, v[3], t0);											\
+			F##_sub(t4, t4, t1);											\
+			/* F = (y1 + z1)^2 - B - C. */									\
+			F##_sub(t5, v[4], t1);											\
+			F##_sub(t5, t5, t2);											\
 			/* D = 3bC, with b from the twisted curve. */					\
 			F##_dbl(t3, t2);												\
 			F##_add(t3, t3, t2);											\
 			C##_curve_mul_b(t3, t3);										\
-			/* E = (x1 + y1)^2 - A - B. */									\
-			F##_add(t4, q->x, q->y);										\
-			F##_sqr(t4, t4);												\
-			F##_sub(t4, t4, t0);											\
-			F##_sub(t4, t4, t1);											\
-			/* F = (y1 + z1)^2 - B - C. */									\
-			F##_add(t5, q->y, q->z);										\
-			F##_sqr(t5, t5);												\
-			F##_sub(t5, t5, t1);											\
-			F##_sub(t5, t5, t2);											\
 			/* G = 3D. */													\
 			F##_dbl(t6, t3);												\
 			F##_add(t6, t6, t3);											\
-			/* x3 = E * (B - G). */											\
-			F##_sub(r->x, t1, t6);											\
-			F##_mul(r->x, r->x, t4);										\
-			/* y3 = (B + G)^2 - 3(2D)^2, reduced once. */					\
-			F##_add(t6, t6, t1);											\
-			F##_dbl(t2, t3);												\
-			TMPL_PP_SQRN_##F(u1, t2);										\
-			TMPL_PP_ADDC_##F(u0, u1, u1);									\
-			TMPL_PP_ADDC_##F(u1, u0, u1);									\
-			TMPL_PP_SQRN_##F(u0, t6);										\
-			TMPL_PP_SUBC_##F(u0, u0, u1);									\
-			TMPL_PP_RDCN_##F(r->y, u0);										\
-			/* z3 = 4B * F. */												\
-			F##_dbl(r->z, t1);												\
-			F##_dbl(r->z, r->z);											\
-			F##_mul(r->z, r->z, t5);										\
 																			\
+			/* x3 = E * (B - G). */											\
+			F##_sub(t2, t1, t6);											\
+			TMPL_PP_MULN_##F(u[0], t2, t4);									\
+			/* y3 = (B + G)^2 - 3(2D)^2. */									\
+			F##_dbl(t2, t3);												\
+			TMPL_PP_SQRN_##F(u[2], t2);										\
+			TMPL_PP_ADDC_##F(u[1], u[2], u[2]);								\
+			TMPL_PP_ADDC_##F(u[2], u[1], u[2]);								\
+			F##_add(t6, t6, t1);											\
+			TMPL_PP_SQRN_##F(u[1], t6);										\
+			TMPL_PP_SUBC_##F(u[1], u[1], u[2]);								\
+			/* z3 = 4B * F. */												\
+			F##_dbl(t2, t1);												\
+			F##_dbl(t2, t2);												\
+			TMPL_PP_MULN_##F(u[2], t2, t5);									\
+			/* l10 = (3 * xp) * A and l00 = F * (-yp). */					\
+			TMPL_PP_MULFPN(F, u[3], t0, p->x);								\
+			TMPL_PP_MULFPN(F, u[4], t5, p->y);								\
 			/* l11 = D - B. */												\
 			F##_sub(TMPL_PP_LJ_##K(l), t3, t1);								\
 			TMPL_PP_ART_##K(l)												\
-			/* l10 = (3 * xp) * A. */										\
-			F##_mul_fp(TMPL_PP_LX_##K(l), t0, p->x);						\
-			/* l00 = F * (-yp). */											\
-			F##_mul_fp(TMPL_PP_LY_##K(l), t5, p->y);						\
+			TMPL_PP_RDCV_##F(v, u, 5);										\
+			F##_copy(r->x, v[0]);											\
+			F##_copy(r->y, v[1]);											\
+			F##_copy(r->z, v[2]);											\
+			F##_copy(TMPL_PP_LX_##K(l), v[3]);								\
+			F##_copy(TMPL_PP_LY_##K(l), v[4]);								\
 																			\
-			r->coord = EC_PROJC;												\
+			r->coord = EC_PROJC;											\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
 			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
-			D##_free_all(u0, u1);											\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_free(u[_i]);											\
+				F##_free(v[_i]);											\
+			}																\
 		}																	\
 	}
 
