@@ -40,6 +40,25 @@
 /*============================================================================*/
 
 /**
+ * Builds the table of the odd multiples P, 3P, ..., (2^(W - 1) - 1)P for a
+ * w-NAF multiplication, without normalizing them.
+ *
+ * @param[in] C			- the curve.
+ * @param[out] T		- the table.
+ * @param[in] P			- the point to multiply.
+ * @param[in] W			- the window width.
+ */
+#define TMPL_EC_MUL_TAB(C, T, P, W)											\
+	if (W > 2) {															\
+		C##_dbl(T[0], P);													\
+		C##_add(T[1], T[0], P);												\
+		for (int _i = 2; _i < (1 << (W - 2)); _i++) {						\
+			C##_add(T[_i], T[_i - 1], T[0]);								\
+		}																	\
+	}																		\
+	C##_copy(T[0], P)
+
+/**
  * Defines a template for point multiplication using the binary method.
  *
  * @param[in] C			- the curve.
