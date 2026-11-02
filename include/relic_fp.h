@@ -75,11 +75,18 @@
 
 /**
  * Logarithm of the bound on sums of products that the Residue Number System
- * reduces, as a multiple of p^2: 16 with the AVX-512 IFMA backend, to keep its
- * bases in whole vectors of 50-bit moduli, and 30 otherwise.
+ * reduces, as a multiple of p^2: 30, or with the AVX-512 IFMA backend as much
+ * of it as fits the vectors of eight 50-bit moduli that a room of 16 needs,
+ * which is 16 for primes of 381 bits and 30 for most other sizes. Lazy sums of
+ * products must stay within this bound: at 381 bits, the arithmetic of the
+ * library reaches about 2^15.96 * p^2, as measured over its tests.
  */
 #if RLC_ARITH == RLC_AVX512
-#define RLC_FP_RNS_ROOM	16
+/** Lanes of the moduli that a room of 16 needs, in whole vectors of eight. */
+#define RLC_FP_RNS_LANES													\
+	(((RLC_FP_BITS + 16 + 3 + RLC_RNS_BITS - 1) / RLC_RNS_BITS + 7) / 8 * 8)
+#define RLC_FP_RNS_ROOM														\
+	RLC_MIN(30, RLC_FP_RNS_LANES * RLC_RNS_BITS - RLC_FP_BITS - 3)
 #else
 #define RLC_FP_RNS_ROOM	30
 #endif
@@ -317,9 +324,9 @@ typedef struct {
 	dig_t m[2 * RLC_FP_RNSO];
 	/** Values -m_i^{-1} mod R, for Montgomery form. */
 	dig_t u[2 * RLC_FP_RNSO];
-	/** Values m_i^{-1} mod R, for Montgomery form with the low halves
-	 * cancelling. */
-	dig_t v[2 * RLC_FP_RNSO];
+	/** Values m_i^{-1} mod R, the opposites of u, for the vector Montgomery
+	 * reduction that cancels low halves; kept to save their negation. */
+	dig_t iv[2 * RLC_FP_RNSO];
 	/** Values R^2 mod m_i, for Montgomery form. */
 	dig_t r2[2 * RLC_FP_RNSO];
 	/** Factors R^2 in B and R^2 / M in B' to store elements. */

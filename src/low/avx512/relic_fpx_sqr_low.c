@@ -48,30 +48,30 @@
 
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	ctx_t *ctx = core_get();
-	const dig_t *_m = ctx->rns.m, *_u = ctx->rns.v;
+	const dig_t *_m = ctx->rns.m, *_i = ctx->rns.iv;
 	const int q = -fp_prime_get_qnr();
-	__m512i m, u, a0, a1, t;
+	__m512i m, v, a0, a1, t;
 
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(_m, k);
-		u = rns_load(_u, k);
+		v = rns_load(_i, k);
 		a0 = rns_load(a[0], k);
 		a1 = rns_load(a[1], k);
 		/* c_1 = 2 * a_0 * a_1: a factor below 2m gives a product below
 		 * 2m^2 / 2^52 + m < 2m, so the sum needs no correction. */
-		rns_store(c[1], k, rns_vmul(_mm512_add_epi64(a0, a0), a1, m, u));
+		rns_store(c[1], k, rns_vmul(_mm512_add_epi64(a0, a0), a1, m, v));
 		/* c_0 = a_0^2 + u^2 * a_1^2, with u^2 = -q. */
 		if (q == 1) {
 			/* (a_0 + a_1)(a_0 - a_1 + m), with factors below 2m and a product
 			 * below 4m^2 / 2^52 + m < 2m. */
 			t = rns_vmul(_mm512_add_epi64(a0, a1),
-					_mm512_add_epi64(_mm512_sub_epi64(a0, a1), m), m, u);
+					_mm512_add_epi64(_mm512_sub_epi64(a0, a1), m), m, v);
 		} else {
 			t = _mm512_setzero_si512();
 			for (int i = 0; i < q; i++) {
 				t = rns_vsub(t, a1, m);
 			}
-			t = rns_vmul2(a0, a0, t, a1, m, u);
+			t = rns_vmul2(a0, a0, t, a1, m, v);
 		}
 		rns_store(c[0], k, t);
 	}
@@ -83,14 +83,14 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 	ctx_t *ctx = core_get();
 	const __m512i z = _mm512_setzero_si512();
 	rp2_t x[6], y[12], l[6], h[6];
-	__m512i t[12], m, u;
+	__m512i t[12], m, v;
 	int s, q;
 
 	rns_nor(&s, &q);
 	/* The whole square is computed residue-wise, vector by vector. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.v, k);
+		v = rns_load(ctx->rns.iv, k);
 		/* Loops are unrolled fully, so that all indices are constants and the
 		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
@@ -134,8 +134,8 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
-				l[e][j] = rns_vcrt(rns_vmon(l[e][j], h[e][j], m, u),
-						_mm512_slli_epi64(m, 2));
+				l[e][j] = rns_vcrt(rns_vmon(l[e][j], h[e][j], m, v),
+						rns_vdv(m));
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
@@ -152,13 +152,13 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 	};
 	ctx_t *ctx = core_get();
 	rp2_t x, y, a0, a1, c0, c1;
-	__m512i m, u, k0, k1;
+	__m512i m, v, k0, k1;
 	int s, q;
 
 	rns_nor(&s, &q);
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.v, k);
+		v = rns_load(ctx->rns.iv, k);
 		/* k1 = 2 and k0 = -2, from the residues of one. */
 		k1 = rns_load(ctx->one, k);
 		k1 = rns_vadd(k1, k1, m);
@@ -177,7 +177,7 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 			}
 			/* c_0j = 3 * t_0j - 2 * a_0j and c_1j = 3 * t_1j + 2 * a_1j,
 			 * reduced once. */
-			rp4_sqrf(c0, c1, x, y, a0, a1, k0, k1, p == 1, s, q, m, u);
+			rp4_sqrf(c0, c1, x, y, a0, a1, k0, k1, p == 1, s, q, m, v);
 			for (int l = 0; l < 2; l++) {
 				rns_store(c[P[p][2][0]][P[p][2][1]][l], k, c0[l]);
 				rns_store(c[P[p][3][0]][P[p][3][1]][l], k, c1[l]);

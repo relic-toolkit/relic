@@ -77,11 +77,15 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 }
 
 /**
- * Reduces a batch of k values, for 1 <= k <= RNS_K, with the batch size known
- * at compile time in each case. The sizes above 4 are capped only to keep
- * unused code in bounds when RNS_K is 4.
+ * Reduces k values in batches of at most RNS_K, with the batch size known at
+ * compile time in each case. Sizes above RNS_K go in full batches first, so
+ * the cap on the sizes above 4, which keeps unused code in bounds when RNS_K
+ * is 4, never drops values.
  */
 static void rns_vrdck(dig_t *const c[], const dig_t *const a[], int k) {
+	for (; k > RNS_K; k -= RNS_K, c += RNS_K, a += RNS_K) {
+		rns_vrdc(c, a, RNS_K);
+	}
 	switch (k) {
 		case 1:
 			rns_vrdc(c, a, 1);

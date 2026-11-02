@@ -56,12 +56,12 @@ void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _mm512_slli_epi64(_vm, 2)));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), rns_vdv(_vm)));
 	return 0;
 }
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), _mm512_slli_epi64(_vm, 2)));
+	RNS_VMAP(c, rns_vadd(RNS_V(a), RNS_V(b), rns_vdv(_vm)));
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
@@ -74,12 +74,12 @@ void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _mm512_slli_epi64(_vm, 2)));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), rns_vdv(_vm)));
 	return 0;
 }
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), _mm512_slli_epi64(_vm, 2)));
+	RNS_VMAP(c, rns_vsub(RNS_V(a), RNS_V(b), rns_vdv(_vm)));
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {

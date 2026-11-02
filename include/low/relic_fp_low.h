@@ -126,16 +126,15 @@
 #define RLC_RNS_MOD(D, M)													\
 	RLC_RNS_CRT((dig_t)(D) - (M) * (dig_t)((dig_t)(D) >= (M)), M)
 #else
-/* As 2^52 = 2^52 - 4M mod M, with 2^52 - 4M < 2^28, fold the high bits; the
- * result is below 4M + 2^40, so three subtractions bring it below M. */
+/* As 2^52 = K mod M for K = 2^52 - 4M, fold the high bits: the moduli are
+ * 2^50 - c with c below 2^26, so K = 4c is below 2^28, and the result is below
+ * 2^52 + 2^12 * K < 4M + 2^28 + 2^40 < 5M, which three subtractions bring
+ * below M. */
 #define RLC_RNS_MOD(D, M)													\
-	RLC_RNS_FIX(((dig_t)(D) & RLC_RNS_MASK) +								\
+	fp_rns_fix(((dig_t)(D) & RLC_RNS_MASK) +								\
 		((dig_t)(D) >> RLC_RNS_DIG) * RLC_RNS_K(M), M)
 /** The residue of 2^52 modulo a 50-bit modulus M, as 2^52 - 4M. */
 #define RLC_RNS_K(M)	(((dig_t)1 << RLC_RNS_DIG) - ((dig_t)(M) << 2))
-/** Brings A below 5M down below M, with three subtractions. */
-#define RLC_RNS_FIX(A, M)													\
-	RLC_RNS_CRT(RLC_RNS_CRT(RLC_RNS_CRT((A), 2 * (M)), M), M)
 #endif
 
 /**
@@ -457,6 +456,26 @@ int fp_smbm_low(const dig_t *a);
 
 #if FP_RDC == FP_RENUS
 
+#if RLC_ARITH == RLC_AVX512
+/* The folds above assume a modulus search with c below 2^26 = 2^(52 / 2). */
+RLC_STATIC_ASSERT(RLC_RNS_DIG / 2 + 2 + (RLC_DIG - RLC_RNS_DIG) + 1 <
+		RLC_RNS_BITS, rns_fold);
+
+/**
+ * Brings a value below 5m down below m with three subtractions, in constant
+ * time: the folds of 50-bit moduli leave values below 5m.
+ *
+ * @param[in] a				- the value.
+ * @param[in] m				- the modulus.
+ * @return the value modulo m.
+ */
+static inline dig_t fp_rns_fix(dig_t a, dig_t m) {
+	a = RLC_RNS_CRT(a, 2 * m);
+	a = RLC_RNS_CRT(a, m);
+	return RLC_RNS_CRT(a, m);
+}
+#endif
+
 /**
  * Multiplies two residues by Montgomery multiplication: computes a * b / R
  * mod m in constant time. The first residue may be any digit, and the second
@@ -488,7 +507,7 @@ static inline dig_t fp_rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 	t = (t + (dbl_t)q * m) >> RLC_RNS_DIG;
 	l = (dig_t)t & RLC_RNS_MASK;
 	h = (dig_t)(t >> RLC_RNS_DIG);
-	return RLC_RNS_FIX(l + h * RLC_RNS_K(m), m);
+	return fp_rns_fix(l + h * RLC_RNS_K(m), m);
 #endif
 }
 

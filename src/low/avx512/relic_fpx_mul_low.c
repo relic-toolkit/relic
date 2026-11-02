@@ -49,29 +49,29 @@
 
 void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	ctx_t *ctx = core_get();
-	const dig_t *_m = ctx->rns.m, *_u = ctx->rns.v;
+	const dig_t *_m = ctx->rns.m, *_i = ctx->rns.iv;
 	const int q = -fp_prime_get_qnr();
-	__m512i m, u, a0, a1, b0, b1, t;
+	__m512i m, v, a0, a1, b0, b1, t;
 
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(_m, k);
-		u = rns_load(_u, k);
+		v = rns_load(_i, k);
 		a0 = rns_load(a[0], k);
 		a1 = rns_load(a[1], k);
 		b0 = rns_load(b[0], k);
 		b1 = rns_load(b[1], k);
 		/* c_1 = a_0 * b_1 + a_1 * b_0. */
-		rns_store(c[1], k, rns_vmul2(a0, b1, a1, b0, m, u));
+		rns_store(c[1], k, rns_vmul2(a0, b1, a1, b0, m, v));
 		/* c_0 = a_0 * b_0 + u^2 * a_1 * b_1, with u^2 = -q. */
 		t = rns_vneg(a1, m);
 		if (q == 1) {
-			t = rns_vmul2(a0, b0, t, b1, m, u);
+			t = rns_vmul2(a0, b0, t, b1, m, v);
 		} else {
-			t = rns_vmul(t, b1, m, u);
-			b1 = rns_vmul(a0, b0, m, u);
+			t = rns_vmul(t, b1, m, v);
+			b1 = rns_vmul(a0, b0, m, v);
 			/* The products are below 2m, and their sums are kept below 4m. */
 			for (int i = 0; i < q; i++) {
-				b1 = rns_vadd(b1, t, _mm512_slli_epi64(m, 2));
+				b1 = rns_vadd(b1, t, rns_vdv(m));
 			}
 			t = b1;
 		}
@@ -85,14 +85,14 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 	ctx_t *ctx = core_get();
 	const __m512i z = _mm512_setzero_si512();
 	rp2_t x[6], y[12], l[6], h[6];
-	__m512i t[12], m, u;
+	__m512i t[12], m, v;
 	int s, q;
 
 	rns_nor(&s, &q);
 	/* The whole product is computed residue-wise, vector by vector. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.v, k);
+		v = rns_load(ctx->rns.iv, k);
 		/* Loops are unrolled fully, so that all indices are constants and the
 		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
@@ -123,7 +123,7 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
-				l[e][j] = rns_vmon(l[e][j], h[e][j], m, u);
+				l[e][j] = rns_vmon(l[e][j], h[e][j], m, v);
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
@@ -139,14 +139,14 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
 	ctx_t *ctx = core_get();
 	const __m512i z = _mm512_setzero_si512();
 	rp2_t x[6], y[12], l[6], h[6];
-	__m512i t[12], m, u;
+	__m512i t[12], m, v;
 	int s, q;
 
 	rns_nor(&s, &q);
 	/* The whole product is computed residue-wise, vector by vector. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.v, k);
+		v = rns_load(ctx->rns.iv, k);
 		/* Loops are unrolled fully, so that all indices are constants and the
 		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
@@ -179,7 +179,7 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
-				l[e][j] = rns_vmon(l[e][j], h[e][j], m, u);
+				l[e][j] = rns_vmon(l[e][j], h[e][j], m, v);
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}

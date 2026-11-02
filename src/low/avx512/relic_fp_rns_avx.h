@@ -80,15 +80,15 @@ typedef __m512i rp2_t[2];
 
 /**
  * Applies a residue-wise operation to the vectors of both bases, with the
- * moduli in _vm and their constants in _vu.
+ * moduli in _vm and their inverses modulo 2^52 in _vi.
  */
 #define RNS_VMAP(C, OP)														\
 	ctx_t *_ctx = core_get();												\
-	const dig_t *_m = _ctx->rns.m, *_u = _ctx->rns.v;						\
+	const dig_t *_m = _ctx->rns.m, *_i = _ctx->rns.iv;						\
 	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
 		__m512i _vm = rns_load(_m, _k);										\
-		__m512i _vu = rns_load(_u, _k);										\
-		(void)_vu;															\
+		__m512i _vi = rns_load(_i, _k);										\
+		(void)_vi;															\
 		rns_store(C, _k, OP);												\
 	}
 
@@ -112,6 +112,36 @@ static inline __m512i rns_load(const dig_t *a, size_t k) {
 static inline void rns_store(dig_t *c, size_t k, __m512i a) {
 	_mm512_storeu_si512(c + 8 * k, a);
 }
+
+/**
+ * Returns the bound 4m on the residues of products without reduction, below
+ * 2^52 as the moduli are below 2^50: they still fit the multipliers, and their
+ * sums and differences are brought back below it.
+ */
+static inline __m512i rns_vdv(__m512i m) {
+	return _mm512_slli_epi64(m, 2);
+}
+
+/**
+ * Returns the number of halvings for rns_vpeel() that bring residues below
+ * b / 4 times m down to at most m: the smallest s with b <= 4 * 2^s.
+ */
+static inline int rns_halvings(int b) {
+	int s = 0;
+
+	while ((4 << s) < b) {
+		s++;
+	}
+	return s;
+}
+
+/**
+ * Bound on the outputs of a base extension without correction, as a multiple
+ * of m / 4: RLC_FP_RNS products of residues at most m give at most
+ * RLC_FP_RNS * m / 4, the Montgomery reduction adds m, and the correction by
+ * alpha, below RLC_FP_RNS * m / 2^52, a little more.
+ */
+#define RNS_EXT_BOUND	(RLC_FP_RNS + 4 + 1)
 
 /**
  * Subtracts m from values below 2m, lane-wise.
@@ -337,13 +367,13 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
  * @param[in] s				- the integer part of the non-residue.
  * @param[in] q				- the square of i.
  * @param[in] m				- the moduli.
- * @param[in] u				- the inverses of the moduli modulo 2^52.
+ * @param[in] v				- the inverses of the moduli modulo 2^52.
  */
 rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 		const rp2_t a0, const rp2_t a1, __m512i k0, __m512i k1, int nor,
-		int s, int q, __m512i m, __m512i u) {
+		int s, int q, __m512i m, __m512i v) {
 	const __m512i z = _mm512_setzero_si512();
-	const __m512i m2 = _mm512_slli_epi64(m, 1), m4 = _mm512_slli_epi64(m, 2);
+	const __m512i m2 = _mm512_slli_epi64(m, 1), m4 = rns_vdv(m);
 	rp2_t x3, y3, t, l, h;
 	__m512i n;
 
@@ -360,18 +390,20 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 		rp2_nor(t, y, s, q, m);
 		n = rns_vneg(rns_vsml(t[1], -q, m), m);
 	}
-	/* c0 = 3x * x + 3y * t + k0 * a0: at most 4.75m / 4 + m before the
-	 * correction. */
+	/* c0 = 3x * x + 3y * t + k0 * a0: products of 3m * m, 3m * 2m and m * m
+	 * add up to 19m^2, below 4.75m * 2^52, so the result is at most 5.75m
+	 * before the correction. */
 	l[0] = h[0] = l[1] = h[1] = z;
 	rp2_mac(l, h, x3, x, rns_vneg(rns_vsml(x[1], -q, m), m));
 	rp2_mac(l, h, y3, t, n);
 	for (int j = 0; j < 2; j++) {
 		l[j] = _mm512_madd52lo_epu64(l[j], a0[j], k0);
 		h[j] = _mm512_madd52hi_epu64(h[j], a0[j], k0);
-		c0[j] = rns_vcrt(rns_vmon(l[j], h[j], m, u), m4);
+		c0[j] = rns_vcrt(rns_vmon(l[j], h[j], m, v), m4);
 	}
 	/* c1 = 3x * 2t' + k1 * a1, for t' = (s + i) * y if asked and y otherwise,
-	 * with 2t' below 4m: at most 7.25m before the correction. */
+	 * with 2t' below 4m: products of 3m * 4m and m * m add up to 25m^2, below
+	 * 6.25m * 2^52, so the result is at most 7.25m before the correction. */
 	if (!nor) {
 		t[0] = y[0];
 		t[1] = y[1];
@@ -388,7 +420,7 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 	for (int j = 0; j < 2; j++) {
 		l[j] = _mm512_madd52lo_epu64(l[j], a1[j], k1);
 		h[j] = _mm512_madd52hi_epu64(h[j], a1[j], k1);
-		c1[j] = rns_vcrt(rns_vmon(l[j], h[j], m, u), m4);
+		c1[j] = rns_vcrt(rns_vmon(l[j], h[j], m, v), m4);
 	}
 }
 
@@ -403,7 +435,7 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  * @param[in] full			- 1 to bring the residues down to at most m, 0 to
- * 							leave them below (RLC_FP_RNS / 4 + 2) * m.
+ * 							leave them below RNS_EXT_BOUND / 4 times m.
  */
 rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 		const int K, const int b, int exact, int full) {
@@ -411,7 +443,7 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	const dig_t *t = (b ? ctx->rns.t1[0] : ctx->rns.t2[0]);
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
-	const dig_t *u = ctx->rns.v + (b ? RLC_FP_RNSO : 0);
+	const dig_t *iv = ctx->rns.iv + (b ? RLC_FP_RNSO : 0);
 	/* Rows are spread over S sets of sums, to shorten dependency chains, fewer
 	 * as more values provide independent ones. */
 	const int S = (K == 1 ? 4 : (K * RNS_NB >= 4 ? 1 : 2));
@@ -512,12 +544,11 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	}
 	for (size_t k = 0; k < RNS_NB; k++) {
 		x = rns_load(m, k);
-		a = rns_load(u, k);
+		a = rns_load(iv, k);
 		for (int j = 0; j < K; j++) {
-			/* RLC_FP_RNS products and the small correction by alpha give at
-			 * most (RLC_FP_RNS / 4 + 1) * m and a little more. */
+			/* The outputs are below RNS_EXT_BOUND / 4 times m. */
 			r[j][k] = rns_vred(l[j][0][k], h[j][0][k], x, a,
-					full ? (RLC_FP_RNS < 12 ? 2 : 3) : 0);
+					full ? rns_halvings(RNS_EXT_BOUND) : 0);
 		}
 	}
 }
@@ -534,14 +565,14 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 		const int K) {
 	ctx_t *ctx = core_get();
 	const size_t o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.v;
+	const dig_t *m = ctx->rns.m, *iv = ctx->rns.iv;
 	__m512i q[RNS_K][RNS_NB], r[RNS_K][RNS_NB], x, y, z;
 
 	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues; the padding
 	 * lanes are zero, as are their constants. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m, k);
-		z = rns_load(u, k);
+		z = rns_load(iv, k);
 		for (int j = 0; j < K; j++) {
 			/* For a below 4m, the product is at most 2m. */
 			q[j][k] = rns_vpeel(rns_vmul(rns_load(a[j], k),
@@ -554,11 +585,11 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 	/* c = (a + q * p) / M in B', and its xi_j for the exact extension. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m + o, k);
-		z = rns_load(u + o, k);
+		z = rns_load(iv + o, k);
 		for (int j = 0; j < K; j++) {
-			/* Below 4m and (RLC_FP_RNS / 4 + 1) * m and a little more. */
+			/* Below 4m plus the bound of the extension. */
 			x = _mm512_add_epi64(rns_load(a[j] + o, k), r[j][k]);
-			x = rns_vpeel(x, y, RLC_FP_RNS < 12 ? 3 : 4);
+			x = rns_vpeel(x, y, rns_halvings(16 + RNS_EXT_BOUND));
 			rns_store(c[j] + o, k, x);
 			q[j][k] = rns_vpeel(rns_vmul(x, rns_load(ctx->rns.ib + o, k),
 					y, z), y, 1);
