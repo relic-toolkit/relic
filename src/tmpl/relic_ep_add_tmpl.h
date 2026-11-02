@@ -37,6 +37,35 @@
 /*============================================================================*/
 
 /**
+ * Hands the addition in projective coordinates with a first point not in
+ * affine coordinates to a backend that computes it, on curves with a = 0, for
+ * each curve prefix.
+ *
+ * @param[out] R		- the result.
+ * @param[in] P			- the first point to add.
+ * @param[in] Q			- the second point to add.
+ */
+#if FP_RDC == FP_RENUS && RLC_ARITH == RLC_AVX512
+#include "relic_ep_low.h"
+#define TMPL_EP_ADD_LOW_ep(R, P, Q)											\
+	if (ep_curve_opt_a() == RLC_ZERO && P->coord != EC_AFFIN) {				\
+		if (Q->coord == EC_AFFIN) {											\
+			ep_addm_low(R, P, Q);											\
+		} else {															\
+			ep_addp_low(R, P, Q);											\
+		}																	\
+		return;																\
+	}
+#else
+#define TMPL_EP_ADD_LOW_ep(R, P, Q)
+#endif
+#define TMPL_EP_ADD_LOW_ep2(R, P, Q)
+#define TMPL_EP_ADD_LOW_ep3(R, P, Q)
+#define TMPL_EP_ADD_LOW_ep4(R, P, Q)
+#define TMPL_EP_ADD_LOW_ep8(R, P, Q)
+#define TMPL_EP_ADD_LOW_ep9(R, P, Q)
+
+/**
  * Defines a template for point addition in affine coordinates, with and
  * without returning the slope.
  *
@@ -293,6 +322,7 @@
 		void *w[6];															\
 		const void *a[6], *b[6];											\
 																			\
+		TMPL_EP_ADD_LOW_##C(r, p, q);										\
 		if (q->coord == EC_AFFIN) {											\
 			C##_add_projc_mix(r, p, q);										\
 			return;															\

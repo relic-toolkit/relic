@@ -1205,6 +1205,14 @@
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
 
+#undef ep_dblp_low
+#undef ep_addp_low
+#undef ep_addm_low
+
+#define ep_dblp_low 	RLC_PREFIX(ep_dblp_low)
+#define ep_addp_low 	RLC_PREFIX(ep_addp_low)
+#define ep_addm_low 	RLC_PREFIX(ep_addm_low)
+
 #undef ed_st
 #undef ed_t
 #define ed_st 		RLC_PREFIX(ed_st)

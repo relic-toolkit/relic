@@ -37,6 +37,30 @@
 /*============================================================================*/
 
 /**
+ * Hands the doubling in projective coordinates of a point not in affine
+ * coordinates to a backend that computes it, on curves with a = 0, for each
+ * curve prefix.
+ *
+ * @param[out] R		- the result.
+ * @param[in] P			- the point to double.
+ */
+#if FP_RDC == FP_RENUS && RLC_ARITH == RLC_AVX512
+#include "relic_ep_low.h"
+#define TMPL_EP_DBL_LOW_ep(R, P)											\
+	if (ep_curve_opt_a() == RLC_ZERO && P->coord != EC_AFFIN) {				\
+		ep_dblp_low(R, P);													\
+		return;																\
+	}
+#else
+#define TMPL_EP_DBL_LOW_ep(R, P)
+#endif
+#define TMPL_EP_DBL_LOW_ep2(R, P)
+#define TMPL_EP_DBL_LOW_ep3(R, P)
+#define TMPL_EP_DBL_LOW_ep4(R, P)
+#define TMPL_EP_DBL_LOW_ep8(R, P)
+#define TMPL_EP_DBL_LOW_ep9(R, P)
+
+/**
  * Defines a template for point doubling in affine coordinates, with and
  * without returning the slope.
  *
@@ -125,6 +149,7 @@
 		void *w[4];															\
 		const void *a[4], *b[4];											\
 																			\
+		TMPL_EP_DBL_LOW_##C(r, p);											\
 		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 		for (int _i = 0; _i < 4; _i++) {									\
 			D##_null(u[_i]);												\

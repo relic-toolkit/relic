@@ -139,6 +139,7 @@ echo "#define ep_st			RLC_PREFIX(ep_st)"
 echo "#define ep_t			RLC_PREFIX(ep_t)"
 echo
 REDEF ep
+REDEF_LOW ep
 
 echo "#undef ed_st"
 echo "#undef ed_t"

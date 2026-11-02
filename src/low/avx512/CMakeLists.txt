@@ -1,15 +1,11 @@
 # The lower level of prime field arithmetic in a Residue Number System, the
 # addition, multiplication and squaring in Fp2, the multiplication and squaring
-# in Fp12, and the reduction in Fp2 and Fp3 are vectorized; all else comes from
-# the portable backend.
+# in Fp12, the reduction in Fp2 and Fp3, and the doubling and additions of
+# points on prime curves are vectorized; all else comes from the portable
+# backend.
 set(INHERIT "easy")
 set(ARITH_RNS ON)
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/relic_fp_add_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fp_mul_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fp_rdc_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fp_sqr_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fpx_add_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fpx_mul_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fpx_rdc_low.c
-	${CMAKE_CURRENT_LIST_DIR}/relic_fpx_sqr_low.c
+# Every source of the backend uses the vector instructions.
+file(GLOB AVX512_SRCS ${CMAKE_CURRENT_LIST_DIR}/*.c)
+set_source_files_properties(${AVX512_SRCS}
 	PROPERTIES COMPILE_OPTIONS "-mavx512f;-mavx512ifma")
