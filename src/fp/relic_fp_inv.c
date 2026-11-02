@@ -620,7 +620,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 void fp_inv_jmpds(fp_t c, const fp_t a) {
 	const dig_t *p = fp_prime_get();
-	dig_t mask, carry;
+	dig_t mask, carry, v[RLC_FP_DIGS];
 	dis_t m[4];
 	dv_t f, g, d, e, t;
 	int s;
@@ -630,10 +630,21 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dis_t zeta = -1;
 #endif
 
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS have no digits, so take those of the value in [0, p),
+	 * which are also the cheapest to test for zero. */
+	fp_rns_get(v, a);
+	if (dv_is_zero_sec(v, RLC_FP_DIGS)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+#else
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
+	dv_copy(v, a, RLC_FP_DIGS);
+#endif
 
 	dv_null_all(f, g, d, e, t);
 
@@ -642,12 +653,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		/* Start from (f, g) = (p, a) and (d, e) = (0, 1). */
 		dv_copy(f, p, RLC_FP_DIGS);
-#if FP_RDC == FP_RENUS
-		/* Elements in RNS have no digits, so take those of the value. */
-		fp_rns_get(g, a);
-#else
-		dv_copy(g, a, RLC_FP_DIGS);
-#endif
+		dv_copy(g, v, RLC_FP_DIGS);
 		dv_zero(d, RLC_FP_DIGS + 1);
 		dv_zero(e, RLC_FP_DIGS + 1);
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;

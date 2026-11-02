@@ -57,17 +57,6 @@
 	((RLC_DV_STRIDE_N + RLC_ALIGN - 1) / RLC_ALIGN * RLC_ALIGN)
 
 #if FP_RDC == FP_RENUS
-/**
- * Size in bits of a digit of the Residue Number System, so that the radix of
- * the Montgomery form of residues is R = 2^RLC_RNS_DIG: 52 bits with the
- * AVX-512 IFMA backend, and a whole digit otherwise.
- */
-#if RLC_ARITH == RLC_AVX512
-#define RLC_RNS_DIG		52
-#else
-#define RLC_RNS_DIG		RLC_DIG
-#endif
-
 /** Mask of the low RLC_RNS_DIG bits of a digit. */
 #define RLC_RNS_MASK	RLC_MASK(RLC_RNS_DIG)
 #endif
@@ -567,6 +556,15 @@ static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  */
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact);
+
+/**
+ * Computes the residues of an integer as stored in elements, at most m each,
+ * from its digits of RLC_RNS_DIG bits and the table of their weights.
+ *
+ * @param[out] c			- the residues.
+ * @param[in] a				- the RLC_FP_DIGS digits of the integer.
+ */
+void fp_rnsi_low(dig_t *c, const dig_t *a);
 
 /**
  * Reduces n digit vectors modulo the configured prime p at once. Computes

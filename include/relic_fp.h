@@ -61,16 +61,20 @@
 #define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
 #if FP_RDC == FP_RENUS
-/**
- * Bits of the moduli of the Residue Number System of prime field elements: 50
- * with the AVX-512 IFMA backend, whose multipliers take 52-bit operands, so
- * that sums of a few residues or products still fit them, and one less than a
- * digit otherwise.
+/*
+ * Sizes in bits of the moduli of the Residue Number System of prime field
+ * elements, RLC_RNS_BITS, and of its digits, RLC_RNS_DIG, so that the radix of
+ * the Montgomery form of residues is R = 2^RLC_RNS_DIG. The AVX-512 IFMA
+ * backend has 52-bit multipliers and 50-bit moduli, so that sums of a few
+ * residues or products still fit them; otherwise, the digits are whole and the
+ * moduli one bit shorter.
  */
 #if RLC_ARITH == RLC_AVX512
 #define RLC_RNS_BITS	50
+#define RLC_RNS_DIG		52
 #else
 #define RLC_RNS_BITS	(RLC_DIG - 1)
+#define RLC_RNS_DIG		RLC_DIG
 #endif
 
 /**
@@ -111,6 +115,12 @@
 #else
 #define RLC_FP_RNSO		RLC_FP_RNS
 #endif
+
+/**
+ * Number of digits of RLC_RNS_DIG bits in an integer of RLC_FP_DIGS digits,
+ * which are multiplied by tables to convert it to the Residue Number System.
+ */
+#define RLC_FP_RNS_DIGS	RLC_CEIL(RLC_FP_DIGS * RLC_DIG, RLC_RNS_DIG)
 
 /**
  * Size in digits of the storage of a prime field element: its residues in both
@@ -355,8 +365,8 @@ typedef struct {
 	dig_t mp[RLC_FP_RNS][RLC_FP_DIGS + 1], mm[RLC_FP_DIGS + 1];
 	/** Value 3p modulo 2^(RLC_DIG * (RLC_FP_DIGS + 1)). */
 	dig_t p3[RLC_FP_DIGS + 1];
-	/** Values 2^(RLC_DIG * k) times the factors to store elements. */
-	dig_t pw[2 * RLC_FP_RNSO][RLC_FP_DIGS];
+	/** Values 2^(RLC_RNS_DIG * k) times the factors to store elements. */
+	dig_t pw[RLC_FP_RNS_DIGS][2 * RLC_FP_RNSO];
 } fp_rns_st;
 #endif
 

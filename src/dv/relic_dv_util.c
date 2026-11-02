@@ -54,6 +54,15 @@ int dv_is_zero(const dig_t *a, size_t digits) {
 	return 1;
 }
 
+int dv_is_zero_sec(const dig_t *a, size_t digits) {
+	dig_t t = 0;
+
+	for (size_t i = 0; i < digits; i++) {
+		t |= a[i];
+	}
+	return (t == 0);
+}
+
 void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit) {
 	dig_t mask, t;
 

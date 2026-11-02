@@ -144,7 +144,7 @@ void fp_rns_pre(void) {
 		dv_zero(ctx->rns.t1[0], n * o);
 		dv_zero(ctx->rns.t2[0], n * o);
 		dv_zero(ctx->rns.kp[0], 5 * 2 * o);
-		dv_zero(ctx->rns.pw[0], 2 * o * RLC_FP_DIGS);
+		dv_zero(ctx->rns.pw[0], RLC_FP_RNS_DIGS * 2 * o);
 
 		/* Pick the largest primes 2^RLC_RNS_BITS - c coprime to p, with c
 		 * below the square root of R: first for B, then for B'. */
@@ -316,13 +316,13 @@ void fp_rns_pre(void) {
 				ctx->rns.mp[i][k] = (k < t->used ? t->dp[k] : 0);
 			}
 		}
-		for (size_t k = 0; k < RLC_FP_DIGS; k++) {
-			bn_set_2b(t, RLC_DIG * k);
+		for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
+			bn_set_2b(t, RLC_RNS_DIG * k);
 			for (size_t i = 0; i < 2 * o; i++) {
 				if (RNS_PAD(i)) {
 					continue;
 				}
-				ctx->rns.pw[i][k] = fp_rns_mulp(fp_rns_bn(t, i), ctx->rns.e[i],
+				ctx->rns.pw[k][i] = fp_rns_mulp(fp_rns_bn(t, i), ctx->rns.e[i],
 						i);
 			}
 		}
@@ -404,8 +404,9 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 	const size_t n = RLC_FP_RNS, l = RLC_FP_DIGS + 1;
 	const dig_t *m = ctx->rns.m, *u = ctx->rns.u, *p = fp_prime_get();
 	rlc_align dig_t r[RLC_FP_LEN];
-	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1];
-	dig_t t[RLC_FP_DIGS + 1], a1, b;
+	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1], t[RLC_FP_DIGS + 1], a1, b, q;
+	dbl_t lo, hi, d, e;
+	int k;
 
 	/* r = a / M is the value of a, with -p < r < (RLC_FP_RNS + 1)p. */
 	fp_rns_wide(r, a);
@@ -416,41 +417,53 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 		xi[i] = fp_rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
 	}
 	a1 = fp_rns_alpha(xi, n, 1);
-	/* The low digits of r + 3p are enough to recover it, as it is positive. */
-	dv_copy(s, ctx->rns.p3, l);
-	bn_mula_low(s, ctx->rns.mm, a1, l);
-	for (size_t i = 0; i < n; i++) {
-		bn_mula_low(s, ctx->rns.mp[i], xi[i], l);
+	/* The low digits of r + 3p are enough to recover it, as it is positive.
+	 * The multipliers are single digits, so sum them column by column, with
+	 * the high halves of the products carried to the next column. */
+	d = 0;
+	for (size_t j = 0; j < l; j++) {
+		lo = d + ctx->rns.p3[j];
+		e = (dbl_t)a1 * ctx->rns.mm[j];
+		lo += (dig_t)e;
+		hi = e >> RLC_DIG;
+		for (size_t i = 0; i < n; i++) {
+			e = (dbl_t)xi[i] * ctx->rns.mp[i][j];
+			lo += (dig_t)e;
+			hi += e >> RLC_DIG;
+		}
+		s[j] = (dig_t)lo;
+		d = (lo >> RLC_DIG) + hi;
 	}
-	/* Now 0 < s < (RLC_FP_RNS + 4)p, so subtract p up to RLC_FP_RNS + 3
-	 * times. */
-	for (size_t k = 0; k < RLC_FP_RNS + 3; k++) {
-		b = bn_subn_low(t, s, p, l - 1);
-		t[l - 1] = s[l - 1] - b;
-		b = (s[l - 1] < b);
-		dv_copy_sec(s, t, l, b ^ 1);
+	/* Now 0 < s < (RLC_FP_RNS + 4)p, so subtract 2^k p where it fits, for
+	 * 2^k at most RLC_FP_RNS + 3 from the largest down. */
+	for (k = 0; (2 << k) <= RLC_FP_RNS + 3; k++);
+	for (; k >= 0; k--) {
+		b = 0;
+		for (size_t j = 0; j < l; j++) {
+			q = (j < l - 1 ? p[j] << k : 0);
+			if (j > 0 && k > 0) {
+				q |= p[j - 1] >> (RLC_DIG - k);
+			}
+			d = (dbl_t)s[j] - q - b;
+			t[j] = (dig_t)d;
+			b = (dig_t)(d >> RLC_DIG) & 1;
+		}
+		/* Keep the difference unless it wrapped around. */
+		q = b - 1;
+		for (size_t j = 0; j < l; j++) {
+			s[j] = (t[j] & q) | (s[j] & ~q);
+		}
 	}
 	dv_copy(c, s, RLC_FP_DIGS);
 }
 
 void fp_rns_set(dig_t *c, const dig_t *a) {
-	ctx_t *ctx = core_get();
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
 	rlc_align dig_t t[RLC_FP_LEN];
 
-	/* The residues of sum a_k 2^(RLC_DIG * k), stored as elements. */
-	for (size_t i = 0; i < RLC_FP_LEN; i++) {
-		t[i] = 0;
-		if (RNS_PAD(i)) {
-			continue;
-		}
-		for (size_t k = 0; k < RLC_FP_DIGS; k++) {
-			t[i] = RLC_RNS_ADD(t[i],
-					fp_rns_mul(a[k], ctx->rns.pw[i][k], m[i], u[i]), m[i]);
-		}
-	}
+	/* The residues of a, stored as an element. */
+	fp_rnsi_low(t, a);
 	/* Times M^2 / M for Montgomery form. */
-	fp_mulm_low(c, t, ctx->conv);
+	fp_mulm_low(c, t, core_get()->conv);
 }
 
 int fp_rns_is_zero(const dig_t *a) {

@@ -46,6 +46,36 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void fp_rnsi_low(dig_t *c, const dig_t *a) {
+	ctx_t *ctx = core_get();
+	const __m512i z = _mm512_setzero_si512();
+	/* Each digit times a weight at most m has its top bits below m, so the
+	 * sum of all is at most (RLC_FP_RNS_DIGS + 1) * m once reduced. */
+	const int s = rns_halvings(4 * (RLC_FP_RNS_DIGS + 1));
+	__m512i w[RLC_FP_RNS_DIGS];
+
+	for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
+		size_t j = k * RLC_RNS_DIG / RLC_DIG, b = k * RLC_RNS_DIG % RLC_DIG;
+		dig_t x = a[j] >> b;
+
+		if (b + RLC_RNS_DIG > RLC_DIG && j + 1 < RLC_FP_DIGS) {
+			x |= a[j + 1] << (RLC_DIG - b);
+		}
+		w[k] = _mm512_set1_epi64(x & RLC_RNS_MASK);
+	}
+	for (size_t i = 0; i < RNS_NE; i++) {
+		__m512i l = z, h = z, m = rns_load(ctx->rns.m, i);
+
+		for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
+			__m512i y = rns_load(ctx->rns.pw[k], i);
+			l = _mm512_madd52lo_epu64(l, w[k], y);
+			h = _mm512_madd52hi_epu64(h, w[k], y);
+		}
+		rns_store(c, i, rns_vpeel(rns_vmon(l, h, m, rns_load(ctx->rns.iv, i)),
+				m, s));
+	}
+}
+
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const size_t n = RLC_FP_RNS;
 	__m512i x[1][RNS_NB], v[1][RNS_NB];

@@ -153,19 +153,23 @@ static int zero(void) {
 		TEST_CASE("zero test is consistent") {
 			dv_zero(a, RLC_DV_DIGS);
 			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 1, end);
+			TEST_ASSERT(dv_is_zero_sec(a, RLC_DV_DIGS) == 1, end);
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			a[0] |= 1;
 			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+			TEST_ASSERT(dv_is_zero_sec(a, RLC_DV_DIGS) == 0, end);
 		}
 		TEST_END;
 
 		TEST_CASE("zero test finds a digit set anywhere") {
-			for (size_t i = 0; i < RLC_DV_DIGS; i++) {
+			for (size_t j = 0; j < RLC_DV_DIGS; j++) {
 				dv_zero(a, RLC_DV_DIGS);
-				a[i] = 1;
+				a[j] = 1;
 				TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+				TEST_ASSERT(dv_is_zero_sec(a, RLC_DV_DIGS) == 0, end);
 				/* and the same digit is invisible to a shorter test */
-				TEST_ASSERT(dv_is_zero(a, i) == 1, end);
+				TEST_ASSERT(dv_is_zero(a, j) == 1, end);
+				TEST_ASSERT(dv_is_zero_sec(a, j) == 1, end);
 			}
 		}
 		TEST_END;
@@ -173,6 +177,7 @@ static int zero(void) {
 		TEST_CASE("zero test of no digits is trivially true") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			TEST_ASSERT(dv_is_zero(a, 0) == 1, end);
+			TEST_ASSERT(dv_is_zero_sec(a, 0) == 1, end);
 		}
 		TEST_END;
 	} RLC_CATCH_ANY {

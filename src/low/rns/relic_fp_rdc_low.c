@@ -90,6 +90,20 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
  * can replace them with vectorized ones. */
 #ifndef FP_RNS_VEC
 
+void fp_rnsi_low(dig_t *c, const dig_t *a) {
+	ctx_t *ctx = core_get();
+	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
+
+	/* The digits are whole, as RLC_RNS_DIG is RLC_DIG. */
+	for (size_t i = 0; i < RLC_FP_LEN; i++) {
+		c[i] = 0;
+		for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
+			c[i] = RLC_RNS_ADD(c[i],
+					fp_rns_mul(a[k], ctx->rns.pw[k][i], m[i], u[i]), m[i]);
+		}
+	}
+}
+
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	ctx_t *ctx = core_get();
 	/* From B to B' with the first table, from B' to B with the second. */

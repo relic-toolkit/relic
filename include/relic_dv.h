@@ -191,6 +191,15 @@ rlc_inline void dv_zero(dig_t *a, size_t digits) {
 int dv_is_zero(const dig_t *a, size_t digits);
 
 /**
+ * Tests a digit vector for zero in constant time.
+ *
+ * @param[in] a				- the digit vector to test.
+ * @param[in] digits		- the number of words to test.
+ * @return 1 if every word is zero, 0 otherwise.
+ */
+int dv_is_zero_sec(const dig_t *a, size_t digits);
+
+/**
  * Copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.

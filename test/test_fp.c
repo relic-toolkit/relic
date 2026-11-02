@@ -910,6 +910,11 @@ static int inversion(void) {
 			fp_set_dig(a, 1);
 			fp_inv(b, a);
 			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
+			/* Zero has no inverse, and the output is left untouched. */
+			fp_zero(a);
+			TEST_ERR(fp_inv(b, a));
+			TEST_ASSERT(err_get_code() == RLC_ERR &&
+					fp_cmp_dig(b, 1) == RLC_EQ, end);
 		} TEST_END;
 
 #if FP_INV == FP_BASIC || !defined(RLC_STRIP)

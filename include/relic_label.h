@@ -161,6 +161,7 @@
 
 #undef dv_print
 #undef dv_is_zero
+#undef dv_is_zero_sec
 #undef dv_copy_sec
 #undef dv_swap_sec
 #undef dv_cmp
@@ -174,6 +175,7 @@
 
 #define dv_print 	RLC_PREFIX(dv_print)
 #define dv_is_zero 	RLC_PREFIX(dv_is_zero)
+#define dv_is_zero_sec 	RLC_PREFIX(dv_is_zero_sec)
 #define dv_copy_sec 	RLC_PREFIX(dv_copy_sec)
 #define dv_swap_sec 	RLC_PREFIX(dv_swap_sec)
 #define dv_cmp 	RLC_PREFIX(dv_cmp)
@@ -779,6 +781,7 @@
 #undef fp_invm_low
 #undef fp_smbm_low
 #undef fp_rnsx_low
+#undef fp_rnsi_low
 #undef fp_rdcv_low
 
 #define fp_add1_low 	RLC_PREFIX(fp_add1_low)
@@ -811,6 +814,7 @@
 #define fp_invm_low 	RLC_PREFIX(fp_invm_low)
 #define fp_smbm_low 	RLC_PREFIX(fp_smbm_low)
 #define fp_rnsx_low 	RLC_PREFIX(fp_rnsx_low)
+#define fp_rnsi_low 	RLC_PREFIX(fp_rnsi_low)
 #define fp_rdcv_low 	RLC_PREFIX(fp_rdcv_low)
 
 #undef fp_st
