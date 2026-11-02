@@ -237,11 +237,7 @@ TMPL_EP_TPL_PROJC(ep, fp);
 TMPL_EP_TPL_JACOB(ep, fp);
 
 void ep_psi(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
+	/* The point at infinity keeps z = 0, so it needs no special case. */
 	if (r != p) {
 		ep_copy(r, p);
 	}

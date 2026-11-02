@@ -200,14 +200,16 @@
 	void C##_tab(C##_t *t, const C##_t p, int w) {							\
 		if (w > 2) {														\
 			C##_dbl(t[0], p);												\
-			C##_norm(t[0], t[0]);											\
-			C##_add(t[1], p, t[0]);											\
+			/* Keep 2P projective and normalize the whole table at once. */	\
+			C##_add(t[1], t[0], p);											\
 			for (int i = 2; i < (1 << (w - 2)); i++) {						\
 				C##_add(t[i], t[i - 1], t[0]);								\
 			}																\
-			C##_norm_sim(t + 1, (const C##_t *)t + 1, (1 << (w - 2)) - 1);	\
+			C##_copy(t[0], p);												\
+			C##_norm_sim(t, (const C##_t *)t, 1 << (w - 2));				\
+		} else {															\
+			C##_norm(t[0], p);												\
 		}																	\
-		C##_norm(t[0], p);													\
 	}																		\
 																			\
 	void C##_print(const C##_t p) {											\
@@ -224,11 +226,7 @@
  */
 #define TMPL_EP_NEG(C, F)													\
 	void C##_neg(C##_t r, const C##_t p) {									\
-		if (C##_is_infty(p)) {												\
-			C##_set_infty(r);												\
-			return;															\
-		}																	\
-																			\
+		/* The point at infinity keeps z = 0. */							\
 		if (r != p) {														\
 			F##_copy(r->x, p->x);											\
 			F##_copy(r->z, p->z);											\
