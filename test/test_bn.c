@@ -367,6 +367,12 @@ static int util(void) {
 			/* Invalid digits are rejected. */
 			TEST_ERR(bn_read_str(b, "12x4", 4, 10));
 			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#if RLC_ALLOC == RLC_AUTO
+			/* Values with more digits than an integer holds are rejected. */
+			memset(str, '/', sizeof(str) - 1);
+			TEST_ERR(bn_read_str(b, str, sizeof(str) - 1, 64));
+			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#endif
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
@@ -3165,7 +3171,9 @@ static int recoding(void) {
 		} TEST_END;
 
 #if defined(WITH_EP)
-		if (ep_param_set_any_pairf() == RLC_OK) {
+		/* Curves without a twist have no Frobenius recoding. */
+		if (ep_param_set_any_pairf() == RLC_OK &&
+				ep_curve_is_pairf() != EP_SS2 && ep_curve_is_pairf() != EP_K1) {
 			TEST_CASE("frobenius recoding is correct") {
 				/* Without a cofactor, the subscalars are signed digits in
 				 * base x, so scalars below |x|^3 take three digits. */
