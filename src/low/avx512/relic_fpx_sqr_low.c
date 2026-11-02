@@ -77,6 +77,22 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	}
 }
 
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
+	rlc_align dv2_t t;
+
+	dv2_null(t);
+
+	RLC_TRY {
+		dv2_new(t);
+		fp2_sqrn_low(t, a);
+		fp2_rdcn_low(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv2_free(t);
+	}
+}
+
 void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 	/* The coefficient of w^e, with w^2 = v, is at [I[e]][J[e]]. */
 	static const int I[6] = { 0, 1, 0, 1, 0, 1 }, J[6] = { 0, 0, 1, 1, 2, 2 };
@@ -185,21 +201,5 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 				rns_store(c[P[p][3][0]][P[p][3][1]][l], k, c1[l]);
 			}
 		}
-	}
-}
-
-void fp2_sqrm_low(fp2_t c, const fp2_t a) {
-	rlc_align dv2_t t;
-
-	dv2_null(t);
-
-	RLC_TRY {
-		dv2_new(t);
-		fp2_sqrn_low(t, a);
-		fp2_rdcn_low(c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv2_free(t);
 	}
 }
