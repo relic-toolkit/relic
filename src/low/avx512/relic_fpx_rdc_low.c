@@ -94,18 +94,22 @@ void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 
 #if RLC_ALLOC == RLC_AUTO
 	/* The coefficients of an element of Fp^12 are contiguous, so they are
-	 * reduced from strides, in the batches that fp_rdcv_low() would use. */
+	 * reduced from strides, in two batches of 6 when they fit, which are
+	 * faster than 8 and 4. */
 	if (n == 6) {
 		const size_t s = sizeof(fp_t) / sizeof(dig_t);
 		const size_t t = sizeof(dv_t) / sizeof(dig_t);
 		dig_t *x = c[0][0];
 		const dig_t *y = a[0][0];
 
-		rns_vrdcs(x, s, y, t, RLC_MIN(8, RNS_K));
-		if (RNS_K < 8) {
+		if (RNS_K >= 6) {
+			rns_vrdcs(x, s, y, t, RLC_MIN(6, RNS_K));
+			rns_vrdcs(x + 6 * s, s, y + 6 * t, t, RLC_MIN(6, RNS_K));
+		} else {
+			rns_vrdcs(x, s, y, t, 4);
 			rns_vrdcs(x + 4 * s, s, y + 4 * t, t, 4);
+			rns_vrdcs(x + 8 * s, s, y + 8 * t, t, 4);
 		}
-		rns_vrdcs(x + 8 * s, s, y + 8 * t, t, 4);
 		return;
 	}
 #endif
