@@ -615,7 +615,7 @@ static int bgn(void) {
 			TEST_ASSERT(g1_is_valid(c[0]) == 0, end);
 			TEST_ASSERT(cp_bgn_dec1(&out, c, prv) == RLC_ERR, end);
 			TEST_ASSERT(cp_bgn_enc2(e, 3, pub) == RLC_OK, end);
-			fp_add_dig(e[0]->x[0], e[0]->x[0], 1);
+			fp_add_dig(RLC_G2_BASEF(e[0]->x), RLC_G2_BASEF(e[0]->x), 1);
 			TEST_ASSERT(g2_is_valid(e[0]) == 0, end);
 			TEST_ASSERT(cp_bgn_dec2(&out, e, prv) == RLC_ERR, end);
 			TEST_ASSERT(cp_bgn_enc1(c, 3, pub) == RLC_OK, end);

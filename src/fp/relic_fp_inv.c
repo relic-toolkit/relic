@@ -252,14 +252,14 @@ static void binar_approx(dig_t *x, dig_t *y, const dig_t *a, const dig_t *b) {
 	/* Select the top digit nonzero in either integer, and the one below. */
 	for (size_t i = 1; i < RLC_FP_DIGS; i++) {
 		w = a[i] | b[i];
-		c = 0 - ((w | (0 - w)) >> (RLC_DIG - 1));
+		c = 0 - (dig_t)((dig_t)(w | (0 - w)) >> (RLC_DIG - 1));
 		ah = (a[i] & c) | (ah & ~c);
 		al = (a[i - 1] & c) | (al & ~c);
 		bh = (b[i] & c) | (bh & ~c);
 		bl = (b[i - 1] & c) | (bl & ~c);
 	}
 	w = ah | bh;
-	c = 0 - ((w | (0 - w)) >> (RLC_DIG - 1));
+	c = 0 - (dig_t)((dig_t)(w | (0 - w)) >> (RLC_DIG - 1));
 	/* Align the top bit of the larger one, never shifting by RLC_DIG. */
 	n = arch_lzcnt(w | (~c & 1));
 	ah = (ah << n) | ((al >> 1) >> (RLC_DIG - 1 - n));
