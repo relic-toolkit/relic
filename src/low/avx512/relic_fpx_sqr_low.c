@@ -110,29 +110,31 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 		 * doubled, then those on it are added. Each output adds at most 6
 		 * products of residues at most m < 2^50 off the diagonal and 2 on it,
 		 * so the halves of the sums stay below 2^56, and the result is at most
-		 * 14m / 4 + m, brought below 4m by one correction. */
-		RLC_UNROLL(6)
-		for (int e1 = 0; e1 < 6; e1++) {
-			RLC_UNROLL(6)
-			for (int e2 = e1 + 1; e2 < 6; e2++) {
-				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
-				rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
-			}
-		}
+		 * 14m / 4 + m, brought below 4m by one correction. Outputs are computed
+		 * one at a time, so that only their sums stay in registers. */
 		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
+			RLC_UNROLL(6)
+			for (int e1 = 0; e1 < 6; e1++) {
+				RLC_UNROLL(6)
+				for (int e2 = e1 + 1; e2 < 6; e2++) {
+					int f = e2 + (e1 + e2 < 6 ? 0 : 6);
+					if ((e1 + e2) % 6 == e) {
+						rp2_mac(l[e], h[e], x[e1], y[f], t[f]);
+					}
+				}
+			}
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = _mm512_slli_epi64(l[e][j], 1);
 				h[e][j] = _mm512_slli_epi64(h[e][j], 1);
 			}
-		}
-		RLC_UNROLL(6)
-		for (int e1 = 0; e1 < 6; e1++) {
-			int e = 2 * e1, f = e1 + (e < 6 ? 0 : 6);
-			rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
-		}
-		RLC_UNROLL(6)
-		for (int e = 0; e < 6; e++) {
+			RLC_UNROLL(6)
+			for (int e1 = 0; e1 < 6; e1++) {
+				int f = e1 + (2 * e1 < 6 ? 0 : 6);
+				if ((2 * e1) % 6 == e) {
+					rp2_mac(l[e], h[e], x[e1], y[f], t[f]);
+				}
+			}
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = rns_vcrt(rns_vmon(l[e][j], h[e][j], m, v),
 						rns_vdv(m));

@@ -111,17 +111,15 @@ void fp12_muln_low(dv12_t c, const fp12_t a, const fp12_t b) {
 		}
 		/* Schoolbook product in w: each output adds 12 products of residues at
 		 * most m < 2^50, so the halves of the sums stay below 2^56, and the
-		 * result is at most 12m / 4 + m = 4m with no correction. */
-		RLC_UNROLL(6)
-		for (int e1 = 0; e1 < 6; e1++) {
-			RLC_UNROLL(6)
-			for (int e2 = 0; e2 < 6; e2++) {
-				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
-				rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
-			}
-		}
+		 * result is at most 12m / 4 + m = 4m with no correction. Outputs are
+		 * computed one at a time, so that only their sums stay in registers. */
 		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
+			RLC_UNROLL(6)
+			for (int e1 = 0; e1 < 6; e1++) {
+				int e2 = (e - e1 + 6) % 6, f = e2 + (e1 + e2 < 6 ? 0 : 6);
+				rp2_mac(l[e], h[e], x[e1], y[f], t[f]);
+			}
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = rns_vmon(l[e][j], h[e][j], m, v);
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
@@ -165,19 +163,17 @@ void fp12_muld_low(dv12_t c, const fp12_t a, const fp12_t b) {
 		}
 		/* Schoolbook product in w over the nonzero coefficients of b: each
 		 * output adds 6 products of residues at most m < 2^50, and the result
-		 * is at most 6m / 4 + m < 4m with no correction. */
-		RLC_UNROLL(6)
-		for (int e1 = 0; e1 < 6; e1++) {
-			RLC_UNROLL(6)
-			for (int e2 = 0; e2 < 6; e2++) {
-				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
-				if (e2 == 0 || e2 == 3 || e2 == g) {
-					rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
-				}
-			}
-		}
+		 * is at most 6m / 4 + m < 4m with no correction. Outputs are computed
+		 * one at a time, so that only their sums stay in registers. */
 		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
+			RLC_UNROLL(6)
+			for (int e1 = 0; e1 < 6; e1++) {
+				int e2 = (e - e1 + 6) % 6, f = e2 + (e1 + e2 < 6 ? 0 : 6);
+				if (e2 == 0 || e2 == 3 || e2 == g) {
+					rp2_mac(l[e], h[e], x[e1], y[f], t[f]);
+				}
+			}
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = rns_vmon(l[e][j], h[e][j], m, v);
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
