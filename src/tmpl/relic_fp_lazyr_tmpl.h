@@ -72,7 +72,7 @@
 		enum { _M = sizeof(F##_t) / (sizeof(fp_t)) };						\
 		dig_t *_c[(N) * _M], *_a[(N) * _M];									\
 																			\
-		_Pragma("GCC unroll 8")												\
+		RLC_UNROLL(8)														\
 		for (int _i = 0; _i < (N); _i++) {									\
 			for (int _k = 0; _k < _M; _k++) {								\
 				/* An element of the prime field is its only component. */	\
@@ -86,7 +86,7 @@
 	}
 #else
 #define TMPL_LAZYR_RDCP(F, C, U, N)											\
-	_Pragma("GCC unroll 8")													\
+	RLC_UNROLL(8)															\
 	for (int _i = 0; _i < (N); _i++) {										\
 		TMPL_LAZYR_RDCN_##F((C)[_i], (U)[_i]);								\
 	}
@@ -114,7 +114,7 @@
  */
 #if FP_RDC == FP_RENUS
 #define TMPL_LAZYR_MULP(F, C, A, B, U, K, N)								\
-	_Pragma("GCC unroll 8")													\
+	RLC_UNROLL(8)															\
 	for (int _j = (K); _j < (N); _j++) {									\
 		if ((A)[_j] == (B)[_j]) {											\
 			TMPL_LAZYR_SQRN_##F((U)[_j], (A)[_j]);							\
@@ -126,7 +126,7 @@
 #else
 #define TMPL_LAZYR_MULP(F, C, A, B, U, K, N)								\
 	TMPL_LAZYR_RDCP(F, C, U, K);											\
-	_Pragma("GCC unroll 8")													\
+	RLC_UNROLL(8)															\
 	for (int _j = (K); _j < (N); _j++) {									\
 		if ((A)[_j] == (B)[_j]) {											\
 			F##_sqr((C)[_j], (void *)(A)[_j]);								\

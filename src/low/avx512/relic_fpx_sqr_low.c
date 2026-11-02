@@ -93,7 +93,7 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 		v = rns_load(ctx->rns.iv, k);
 		/* Loops are unrolled fully, so that all indices are constants and the
 		 * sums stay in registers: GCC and clang do not unroll them alone. */
-#pragma GCC unroll 6
+		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
 				x[e][j] = y[e][j] = rns_load(a[I[e]][J[e]][j], k);
@@ -102,7 +102,7 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 			/* With w^6 = v^3 = s + i, products wrapping around use y * w^6. */
 			rp2_nor(y[e + 6], y[e], s, q, m);
 		}
-#pragma GCC unroll 12
+		RLC_UNROLL(12)
 		for (int e = 0; e < 12; e++) {
 			t[e] = rns_vneg(rns_vsml(y[e][1], -q, m), m);
 		}
@@ -111,27 +111,27 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 		 * products of residues at most m < 2^50 off the diagonal and 2 on it,
 		 * so the halves of the sums stay below 2^56, and the result is at most
 		 * 14m / 4 + m, brought below 4m by one correction. */
-#pragma GCC unroll 6
+		RLC_UNROLL(6)
 		for (int e1 = 0; e1 < 6; e1++) {
-#pragma GCC unroll 6
+			RLC_UNROLL(6)
 			for (int e2 = e1 + 1; e2 < 6; e2++) {
 				int e = e1 + e2, f = e2 + (e < 6 ? 0 : 6);
 				rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
 			}
 		}
-#pragma GCC unroll 6
+		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = _mm512_slli_epi64(l[e][j], 1);
 				h[e][j] = _mm512_slli_epi64(h[e][j], 1);
 			}
 		}
-#pragma GCC unroll 6
+		RLC_UNROLL(6)
 		for (int e1 = 0; e1 < 6; e1++) {
 			int e = 2 * e1, f = e1 + (e < 6 ? 0 : 6);
 			rp2_mac(l[e % 6], h[e % 6], x[e1], y[f], t[f]);
 		}
-#pragma GCC unroll 6
+		RLC_UNROLL(6)
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
 				l[e][j] = rns_vcrt(rns_vmon(l[e][j], h[e][j], m, v),
@@ -163,7 +163,7 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 		k1 = rns_load(ctx->one, k);
 		k1 = rns_vadd(k1, k1, m);
 		k0 = rns_vneg(k1, m);
-#pragma GCC unroll 3
+		RLC_UNROLL(3)
 		for (int p = 0; p < 3; p++) {
 			/* Compressed squaring skips the first pair. */
 			if (pck && p == 0) {

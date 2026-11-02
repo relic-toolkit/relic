@@ -79,6 +79,26 @@
 #define RLC_CEIL(A, B)			((A) / (B) + ((A) % (B) != 0))
 
 /**
+ * Asks the compiler to unroll the next loop completely for up to N iterations,
+ * where it accepts such a request, and does nothing otherwise. It can be used
+ * inside macros, unlike a pragma directive.
+ *
+ * @param[in] N			- the number of iterations.
+ */
+#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 8)
+#define RLC_UNROLL(N)			RLC_PRAGMA(GCC unroll N)
+#else
+#define RLC_UNROLL(N)			/* empty */
+#endif
+
+/**
+ * Turns its tokens into a pragma directive.
+ *
+ * @param[in] X			- the directive.
+ */
+#define RLC_PRAGMA(X)			_Pragma(#X)
+
+/**
  * Stops compilation if a constant condition is false, by _Static_assert in C11
  * and by an array of negative size before it.
  *
