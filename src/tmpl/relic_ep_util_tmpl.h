@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ec_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -198,17 +199,12 @@
 	}																		\
 																			\
 	void C##_tab(C##_t *t, const C##_t p, int w) {							\
+		/* Keep 2P projective and normalize the whole table at once. */		\
+		TMPL_EC_MUL_TAB(C, t, p, w);										\
 		if (w > 2) {														\
-			C##_dbl(t[0], p);												\
-			/* Keep 2P projective and normalize the whole table at once. */	\
-			C##_add(t[1], t[0], p);											\
-			for (int i = 2; i < (1 << (w - 2)); i++) {						\
-				C##_add(t[i], t[i - 1], t[0]);								\
-			}																\
-			C##_copy(t[0], p);												\
 			C##_norm_sim(t, (const C##_t *)t, 1 << (w - 2));				\
 		} else {															\
-			C##_norm(t[0], p);												\
+			C##_norm(t[0], t[0]);											\
 		}																	\
 	}																		\
 																			\

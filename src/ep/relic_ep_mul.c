@@ -63,11 +63,11 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		s1 = bn_sign(k1);
 
 		if (s0 == RLC_POS) {
-			ep_tab(t, p, RLC_WIDTH);
+			ep_copy(q, p);
 		} else {
 			ep_neg(q, p);
-			ep_tab(t, q, RLC_WIDTH);
 		}
+		TMPL_EP_MUL_TAB(ep, t, q, RLC_WIDTH);
 
 		l0 = l1 = RLC_FP_BITS + 1;
 		bn_rec_naf(naf0, &l0, k0, RLC_WIDTH);

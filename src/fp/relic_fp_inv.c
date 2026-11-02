@@ -303,8 +303,8 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 
 void fp_inv_binar(fp_t c, const fp_t a) {
 	const dig_t *p = fp_prime_get();
-	dig_t mask, carry, x, y, t0, t1, v[RLC_FP_DIGS];
-	dis_t m[4];
+	dig_t mask, carry, x, y, t0, t1, lt, v[RLC_FP_DIGS];
+	dis_t m[4], u0, v0, u1, v1;
 	dv_t f, g, d, e, t;
 
 #if FP_RDC == FP_RENUS
@@ -340,29 +340,36 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 		/* The number of steps only depends on the prime size. */
 		for (int i = 0; i < BINAR_ITERS; i++) {
 			binar_approx(&x, &y, f, g);
-			m[0] = m[3] = 1;
-			m[1] = m[2] = 0;
+			/* The rows of the matrix stay in registers during the steps. */
+			u0 = v1 = 1;
+			v0 = u1 = 0;
 			for (int j = 0; j < BINAR_STEPS; j++) {
-				/* t0 is all ones if x is odd, t1 if also x < y. */
+				/* t0 is all ones if x is odd, lt if x < y, t1 if both. */
 				t0 = 0 - (x & 1);
-				t1 = (0 - (dig_t)(x < y)) & t0;
-				/* Swap if x is odd and x < y, then subtract y if x is odd. */
-				carry = t1 & (x ^ y);
-				x ^= carry;
-				y ^= carry;
-				carry = t1 & (dig_t)(m[0] ^ m[2]);
-				m[0] ^= (dis_t)carry;
-				m[2] ^= (dis_t)carry;
-				carry = t1 & (dig_t)(m[1] ^ m[3]);
-				m[1] ^= (dis_t)carry;
-				m[3] ^= (dis_t)carry;
-				x = (x - (y & t0)) >> 1;
-				m[0] -= m[2] & (dis_t)t0;
-				m[1] -= m[3] & (dis_t)t0;
+				lt = 0 - (dig_t)(x < y);
+				t1 = lt & t0;
+				/* When x is odd, x becomes |x - y| and y the smaller one,
+				 * both computed at once to shorten the dependency chain. */
+				carry = x - y;
+				carry ^= (carry ^ (y - x)) & lt;
+				y ^= (x ^ y) & t1;
+				x = (x ^ ((x ^ carry) & t0)) >> 1;
+				carry = t1 & (dig_t)(u0 ^ u1);
+				u0 ^= (dis_t)carry;
+				u1 ^= (dis_t)carry;
+				carry = t1 & (dig_t)(v0 ^ v1);
+				v0 ^= (dis_t)carry;
+				v1 ^= (dis_t)carry;
+				u0 -= u1 & (dis_t)t0;
+				v0 -= v1 & (dis_t)t0;
 				/* Halve x by doubling the second row instead. */
-				m[2] += m[2];
-				m[3] += m[3];
+				u1 += u1;
+				v1 += v1;
 			}
+			m[0] = u0;
+			m[1] = v0;
+			m[2] = u1;
+			m[3] = v1;
 			/* Apply the steps to (f, g) and (d, e), dividing by 2^s. */
 			inv_apply(f, g, d, e, m, BINAR_STEPS);
 			/* Keep f and g nonnegative, negating d and e along, and bring d
