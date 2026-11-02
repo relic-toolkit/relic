@@ -3171,7 +3171,9 @@ static int recoding(void) {
 		} TEST_END;
 
 #if defined(WITH_EP)
-		if (ep_param_set_any_pairf() == RLC_OK) {
+		/* Curves without a twist have no Frobenius recoding. */
+		if (ep_param_set_any_pairf() == RLC_OK &&
+				ep_curve_is_pairf() != EP_SS2 && ep_curve_is_pairf() != EP_K1) {
 			TEST_CASE("frobenius recoding is correct") {
 				/* Without a cofactor, the subscalars are signed digits in
 				 * base x, so scalars below |x|^3 take three digits. */
