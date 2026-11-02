@@ -228,6 +228,20 @@ static inline __m512i rns_vmul(__m512i a, __m512i b, __m512i m, __m512i v) {
 }
 
 /**
+ * Multiplies residues by a constant as rns_vmul() does, given also bv = b * v
+ * mod 2^52: the quotient q = (a * b mod 2^52) * v mod 2^52 is then a * bv mod
+ * 2^52, computed alongside the product instead of after it, and the low half
+ * of the product is not needed, as it cancels exactly.
+ */
+static inline __m512i rns_vmulc(__m512i a, __m512i b, __m512i bv, __m512i m) {
+	const __m512i z = _mm512_setzero_si512();
+	__m512i q = _mm512_madd52lo_epu64(z, a, bv);
+
+	return _mm512_sub_epi64(_mm512_madd52hi_epu64(z, a, b),
+			_mm512_madd52hi_epu64(_mm512_sub_epi64(z, m), q, m));
+}
+
+/**
  * Adds two products of residues at most m before a single Montgomery
  * reduction, computing (a * b + c * d) / 2^52 mod m lane-wise, at most
  * 3m / 2: for products without reduction.
@@ -569,18 +583,18 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 		const int K) {
 	ctx_t *ctx = core_get();
 	const size_t o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m, *iv = ctx->rns.iv;
+	const dig_t *m = ctx->rns.m;
 	__m512i q[RNS_K][RNS_NB], r[RNS_K][RNS_NB], x, y, z;
 
 	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues; the padding
 	 * lanes are zero, as are their constants. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m, k);
-		z = rns_load(iv, k);
+		z = rns_load(ctx->rns.nqv, k);
 		for (int j = 0; j < K; j++) {
 			/* For a below 4m, the product is at most 2m. */
-			q[j][k] = rns_vpeel(rns_vmul(rns_load(a[j], k),
-					rns_load(ctx->rns.nq, k), y, z), y, 1);
+			q[j][k] = rns_vpeel(rns_vmulc(rns_load(a[j], k),
+					rns_load(ctx->rns.nq, k), z, y), y, 1);
 		}
 	}
 	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
@@ -589,7 +603,7 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 	/* c = (a + q * p) / M in B', and its xi_j for the exact extension. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m + o, k);
-		z = rns_load(iv + o, k);
+		z = rns_load(ctx->rns.ibv, k);
 		for (int j = 0; j < K; j++) {
 			/* Below 4m plus the bound of the extension. */
 			x = _mm512_add_epi64(rns_load(a[j] + o, k), r[j][k]);
@@ -600,8 +614,8 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 				x = rns_vcrt(x, _mm512_slli_epi64(y, i));
 			}
 			rns_store(c[j] + o, k, rns_vpeel(x, y, 2));
-			q[j][k] = rns_vpeel(rns_vmul(x, rns_load(ctx->rns.ib + o, k),
-					y, z), y, 1);
+			q[j][k] = rns_vpeel(rns_vmulc(x, rns_load(ctx->rns.ib + o, k),
+					z, y), y, 1);
 		}
 	}
 	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */

@@ -42,6 +42,33 @@
 /** Number of extension field elements whose components are gathered at once. */
 #define RNS_SIM		8
 
+#if RLC_ALLOC == RLC_AUTO
+
+/**
+ * Reduces K values that lie at fixed strides, as rns_vrdc() does: the pointers
+ * are computed from the strides, so they need no arrays in memory once the
+ * reduction is inlined.
+ *
+ * @param[out] c			- the first result.
+ * @param[in] s				- the stride of the results, in digits.
+ * @param[in] a				- the first value to reduce.
+ * @param[in] t				- the stride of the values, in digits.
+ * @param[in] K				- the number of values, up to RNS_K.
+ */
+rlc_inline void rns_vrdcs(dig_t *c, size_t s, const dig_t *a, size_t t,
+		const int K) {
+	dig_t *u[RNS_K];
+	const dig_t *w[RNS_K];
+
+	for (int j = 0; j < K; j++) {
+		u[j] = c + j * s;
+		w[j] = a + j * t;
+	}
+	rns_vrdc(u, w, K);
+}
+
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -64,6 +91,24 @@ void fp3_rdcn_low(fp3_t c, dv3_t a) {
 void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 	dig_t *cs[2 * RNS_SIM];
 	dig_t *as[2 * RNS_SIM];
+
+#if RLC_ALLOC == RLC_AUTO
+	/* The coefficients of an element of Fp^12 are contiguous, so they are
+	 * reduced from strides, in the batches that fp_rdcv_low() would use. */
+	if (n == 6) {
+		const size_t s = sizeof(fp_t) / sizeof(dig_t);
+		const size_t t = sizeof(dv_t) / sizeof(dig_t);
+		dig_t *x = c[0][0];
+		const dig_t *y = a[0][0];
+
+		rns_vrdcs(x, s, y, t, RLC_MIN(8, RNS_K));
+		if (RNS_K < 8) {
+			rns_vrdcs(x + 4 * s, s, y + 4 * t, t, 4);
+		}
+		rns_vrdcs(x + 8 * s, s, y + 8 * t, t, 4);
+		return;
+	}
+#endif
 
 	for (int i = 0; i < n; i += RNS_SIM) {
 		int m = RLC_MIN(RNS_SIM, n - i);

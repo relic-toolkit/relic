@@ -139,6 +139,8 @@ void fp_rns_pre(void) {
 		dv_zero(ctx->rns.e, 2 * o);
 		dv_zero(ctx->rns.ib, 2 * o);
 		dv_zero(ctx->rns.nq, o);
+		dv_zero(ctx->rns.nqv, o);
+		dv_zero(ctx->rns.ibv, o);
 		dv_zero(ctx->rns.u1, o);
 		dv_zero(ctx->rns.u2, o);
 		dv_zero(ctx->rns.t1[0], n * o);
@@ -264,6 +266,11 @@ void fp_rns_pre(void) {
 			}
 			ctx->rns.u1[i] = fp_rns_mul(ctx->rns.u1[i], 1, m[o + i], u[o + i]);
 			ctx->rns.u2[i] = fp_rns_mul(ctx->rns.u2[i], 1, m[i], u[i]);
+			/* The quotients of the Montgomery reductions of products by nq
+			 * and ib are their other factors times these values mod R. */
+			ctx->rns.nqv[i] = (ctx->rns.nq[i] * ctx->rns.iv[i]) & RLC_RNS_MASK;
+			ctx->rns.ibv[i] =
+					(ctx->rns.ib[o + i] * ctx->rns.iv[o + i]) & RLC_RNS_MASK;
 		}
 #endif
 

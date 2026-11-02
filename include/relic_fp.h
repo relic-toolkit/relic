@@ -347,6 +347,11 @@ typedef struct {
 	dig_t ib[2 * RLC_FP_RNSO];
 	/** Values -p^{-1} (M/m_i)^{-1} mod m_i in B. */
 	dig_t nq[RLC_FP_RNSO];
+	/** Values nq_i * m_i^{-1} mod R, so that the vector products by nq get the
+	 * quotients of their Montgomery reductions with one multiplication. */
+	dig_t nqv[RLC_FP_RNSO];
+	/** Values ib_j * m'_j^{-1} mod R in B', likewise for the products by ib. */
+	dig_t ibv[RLC_FP_RNSO];
 	/** Values (M/m_i) * p / M^2 * R^3 mod m'_j by row i, to extend from B. */
 	dig_t t1[RLC_FP_RNS][RLC_FP_RNSO];
 	/** Values (M'/m'_j) * R^3 mod m_i by row j, to extend from B'. */
