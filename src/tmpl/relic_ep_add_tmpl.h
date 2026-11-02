@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_fpx_lazyr_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -125,19 +126,49 @@
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
+ * @param[in] D			- the prefix of unreduced field elements.
  */
-#define TMPL_EP_ADD_PROJC(C, F)												\
+#define TMPL_EP_ADD_PROJC(C, F, D)											\
 	static void C##_add_projc_mix(C##_t r, const C##_t p, const C##_t q) {	\
 		F##_t t0, t1, t2, t3, t4, t5;										\
+		D##_t u[5];															\
+		void *w[5];															\
+		const void *a[5], *b[5];											\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5);								\
+		for (int _i = 0; _i < 5; _i++) {									\
+			D##_null(u[_i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5);							\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_new(u[_i]);												\
+			}																\
 																			\
+			/* x1 * x2, y1 * y2 and (x1 + y1) * (x2 + y2), with y2 * z1 and	\
+			 * x2 * z1 for a = 0 and z1 != 1, reduced together. */			\
 			F##_add(t3, q->x, q->y);										\
 			F##_add(t4, p->x, p->y);										\
-			F##_mul3(t0, p->x, q->x, t1, p->y, q->y, t3, t3, t4);			\
+			a[0] = p->x;													\
+			b[0] = q->x;													\
+			a[1] = p->y;													\
+			b[1] = q->y;													\
+			a[2] = t3;														\
+			b[2] = t4;														\
+			a[3] = q->y;													\
+			a[4] = q->x;													\
+			b[3] = b[4] = p->z;												\
+			w[0] = t0;														\
+			w[1] = t1;														\
+			w[2] = t3;														\
+			w[3] = t2;														\
+			w[4] = t5;														\
+			if (C##_curve_opt_a() == RLC_ZERO && p->coord != EC_AFFIN) {	\
+				TMPL_LAZYR_MULP(F, w, a, b, u, 0, 5);						\
+			} else {														\
+				TMPL_LAZYR_MULP(F, w, a, b, u, 0, 3);						\
+			}																\
 			F##_add(t4, t0, t1);											\
 			F##_sub(t3, t3, t4);											\
 																			\
@@ -152,8 +183,7 @@
 					F##_add(r->z, t1, t5);									\
 					F##_sub(t1, t1, t5);									\
 				} else {													\
-					F##_mul2(t4, q->y, p->z, t5, q->x, p->z);				\
-					F##_add(t4, t4, p->y);									\
+					F##_add(t4, t2, p->y);									\
 					F##_add(r->y, t5, p->x);								\
 					F##_dbl(t2, p->z);										\
 					F##_add(t2, t2, p->z);									\
@@ -249,37 +279,75 @@
 		}																	\
 		RLC_FINALLY {														\
 			F##_free_all(t0, t1, t2, t3, t4, t5);							\
+			for (int _i = 0; _i < 5; _i++) {								\
+				D##_free(u[_i]);											\
+			}																\
 		}																	\
 	}																		\
 																			\
 	void C##_add_projc(C##_t r, const C##_t p, const C##_t q) {				\
 		/* The formulas are complete, including for the point at infinity	\
 		 * (0 : 1 : 0). */													\
-		F##_t t0, t1, t2, t3, t4, t5;										\
+		F##_t t0, t1, t2, t3, t4, t5, t6, t7;								\
+		D##_t u[6];															\
+		void *w[6];															\
+		const void *a[6], *b[6];											\
 																			\
 		if (q->coord == EC_AFFIN) {											\
 			C##_add_projc_mix(r, p, q);										\
 			return;															\
 		}																	\
 																			\
-		F##_null_all(t0, t1, t2, t3, t4, t5);								\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6, t7);						\
+		for (int _i = 0; _i < 6; _i++) {									\
+			D##_null(u[_i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
-			F##_new_all(t0, t1, t2, t3, t4, t5);							\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6, t7);					\
+			for (int _i = 0; _i < 6; _i++) {								\
+				D##_new(u[_i]);												\
+			}																\
 																			\
+			/* x1 * x2, y1 * y2, (x1 + y1) * (x2 + y2), z1 * z2,			\
+			 * (y1 + z1) * (y2 + z2) and (x1 + z1) * (x2 + z2), reduced		\
+			 * together. The sums are in temporaries, as r may alias p		\
+			 * or q. */														\
 			F##_add(t3, p->x, p->y);										\
-			F##_add(t4, q->x, q->y);										\
-			F##_mul3(t0, p->x, q->x, t1, p->y, q->y, t3, t3, t4);			\
-			F##_add(t4, t0, t1);											\
-			F##_sub(t3, t3, t4);											\
+			F##_add(t2, q->x, q->y);										\
+			F##_add(t4, p->y, p->z);										\
+			F##_add(t5, q->y, q->z);										\
+			F##_add(t6, p->x, p->z);										\
+			F##_add(t7, q->x, q->z);										\
+			a[0] = p->x;													\
+			b[0] = q->x;													\
+			a[1] = p->y;													\
+			b[1] = q->y;													\
+			a[2] = t3;														\
+			b[2] = t2;														\
+			a[3] = p->z;													\
+			b[3] = q->z;													\
+			a[4] = t4;														\
+			b[4] = t5;														\
+			a[5] = t6;														\
+			b[5] = t7;														\
+			w[0] = t0;														\
+			w[1] = t1;														\
+			w[2] = t3;														\
+			w[3] = t2;														\
+			if (C##_curve_opt_a() == RLC_ZERO ||							\
+					C##_curve_opt_a() == RLC_MIN3) {						\
+				w[4] = t4;													\
+				w[5] = r->x;												\
+			} else {														\
+				w[4] = t5;													\
+				w[5] = t4;													\
+			}																\
+			TMPL_LAZYR_MULP(F, w, a, b, u, 0, 6);							\
+			F##_add(t6, t0, t1);											\
+			F##_sub(t3, t3, t6);											\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 12M + 2m_3b + 19a. */							\
-				F##_add(t4, p->y, p->z);									\
-				F##_add(t5, q->y, q->z);									\
-				/* Read q before r overwrites it, as r may alias q. */		\
-				F##_add(r->y, q->x, q->z);									\
-				F##_add(r->x, p->x, p->z);									\
-				F##_mul3(t2, p->z, q->z, t4, t4, t5, r->x, r->x, r->y);		\
 				F##_add(t5, t1, t2);										\
 				F##_sub(t4, t4, t5);										\
 				F##_add(r->y, t0, t2);										\
@@ -300,12 +368,6 @@
 					r->y, t1, r->z, t0, r->y, r->z, r->z, t4, t0, t3);		\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 12M + 2m_b + 29a. */								\
-				F##_add(t4, p->y, p->z);									\
-				F##_add(t5, q->y, q->z);									\
-				/* Read q before r overwrites it, as r may alias q. */		\
-				F##_add(r->y, q->x, q->z);									\
-				F##_add(r->x, p->x, p->z);									\
-				F##_mul3(t2, p->z, q->z, t4, t4, t5, r->x, r->x, r->y);		\
 				F##_add(t5, t1, t2);										\
 				F##_sub(t4, t4, t5);										\
 				F##_add(r->y, t0, t2);										\
@@ -332,13 +394,6 @@
 					r->y, r->x, r->z, t0, r->y, r->z, t4, r->z, t3, t0);	\
 			} else {														\
 				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
-				F##_add(t4, p->x, p->z);									\
-				F##_add(t5, q->x, q->z);									\
-				/* Read q and p before r overwrites them, as r may alias	\
-				 * either: x of both is already in t4 and t5. */			\
-				F##_add(r->x, q->y, q->z);									\
-				F##_add(r->y, p->y, p->z);									\
-				F##_mul3(t2, p->z, q->z, t4, t4, t5, t5, r->y, r->x);		\
 				F##_add(r->x, t0, t2);										\
 				F##_sub(t4, t4, r->x);										\
 				F##_add(r->x, t1, t2);										\
@@ -369,7 +424,10 @@
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free_all(t0, t1, t2, t3, t4, t5);							\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6, t7);					\
+			for (int _i = 0; _i < 6; _i++) {								\
+				D##_free(u[_i]);											\
+			}																\
 		}																	\
 	}																		\
 /**

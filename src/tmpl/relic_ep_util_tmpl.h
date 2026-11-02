@@ -717,14 +717,15 @@
  *
  * @param[in] C			- the curve prefix.
  * @param[in] F			- the field prefix.
+ * @param[in] D			- the prefix of unreduced field elements.
  */
-#define TMPL_EP_ARITH(C, F)													\
+#define TMPL_EP_ARITH(C, F, D)												\
 	TMPL_EP_ADD_BASIC(C, F)													\
-	TMPL_EP_ADD_PROJC(C, F)													\
+	TMPL_EP_ADD_PROJC(C, F, D)												\
 	TMPL_EP_ADD_JACOB(C, F)													\
 	TMPL_EP_SUB(C)															\
 	TMPL_EP_DBL_BASIC(C, F)													\
-	TMPL_EP_DBL_PROJC(C, F)													\
+	TMPL_EP_DBL_PROJC(C, F, D)												\
 	TMPL_EP_DBL_JACOB(C, F)													\
 	TMPL_EP_UTIL(C, F)														\
 	TMPL_EP_CMP(C, F)														\

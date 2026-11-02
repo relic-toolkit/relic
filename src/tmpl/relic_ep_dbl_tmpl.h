@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_fpx_lazyr_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -113,29 +114,47 @@
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
+ * @param[in] D			- the prefix of unreduced field elements.
  */
-#define TMPL_EP_DBL_PROJC(C, F)												\
+#define TMPL_EP_DBL_PROJC(C, F, D)											\
 	void C##_dbl_projc(C##_t r, const C##_t p) {							\
 		/* The formulas are complete, including for the point at infinity	\
 		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
+		D##_t u[4];															\
+		void *w[4];															\
+		const void *a[4], *b[4];											\
 																			\
 		F##_null_all(t0, t1, t2, t3, t4, t5);								\
+		for (int _i = 0; _i < 4; _i++) {									\
+			D##_null(u[_i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			F##_new_all(t0, t1, t2, t3, t4, t5);							\
+			for (int _i = 0; _i < 4; _i++) {								\
+				D##_new(u[_i]);												\
+			}																\
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
-				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
-				F##_mul2(t0, p->y, p->y, t3, p->x, p->y);					\
-																			\
+				/* Cost of 6M + 2S + 1m_3b + 9a, with the products of each	\
+				 * step reduced together. */								\
+				/* y1^2, x1 * y1, y1 * z1 and z1^2, reduced together. */	\
+				a[0] = b[0] = b[1] = a[2] = p->y;							\
+				a[1] = p->x;												\
+				a[3] = b[2] = b[3] = p->z;									\
+				w[0] = t0;													\
+				w[1] = t3;													\
+				w[2] = t1;													\
+				w[3] = t2;													\
 				if (p->coord == EC_AFFIN) {									\
 					/* Save 1M + 1S + 1m_b3 if z1 = 1. */					\
+					TMPL_LAZYR_MULP(F, w, a, b, u, 0, 2);					\
 					F##_copy(t1, p->y);										\
 					F##_dbl(t2, C##_curve_get_b());							\
 					F##_add(t2, t2, C##_curve_get_b());						\
 				} else {													\
-					F##_mul2(t1, p->y, p->z, t2, p->z, p->z);				\
+					TMPL_LAZYR_MULP(F, w, a, b, u, 0, 4);					\
 					F##_dbl(t5, t2);										\
 					F##_add(t5, t5, t2);									\
 					C##_curve_mul_b(t2, t5);								\
@@ -147,9 +166,18 @@
 				F##_dbl(t4, t2);											\
 				F##_add(t4, t4, t2);										\
 				F##_sub(t4, t0, t4);										\
-				/* The sum of products is reduced once. */					\
-				F##_mul_add(r->y, t2, r->z, t4, r->y);						\
-				F##_mul2(r->z, t1, r->z, r->x, t4, t3);						\
+				/* y3 = t2 * z3 + t4 * y3, z3 = t1 * z3 and x3 = t4 * t3. */\
+				TMPL_LAZYR_MULN_##F(u[0], t2, r->z);						\
+				TMPL_LAZYR_MULN_##F(u[1], t4, r->y);						\
+				TMPL_LAZYR_ADDC_##F(u[0], u[0], u[1]);						\
+				a[1] = t1;													\
+				b[1] = r->z;												\
+				a[2] = t4;													\
+				b[2] = t3;													\
+				w[0] = r->y;												\
+				w[1] = r->z;												\
+				w[2] = r->x;												\
+				TMPL_LAZYR_MULP(F, w, a, b, u, 1, 3);						\
 				F##_dbl(r->x, r->x);										\
 			} else {														\
 				F##_mul3(t0, p->x, p->x, t1, p->y, p->y, t3, p->x, p->y);	\
@@ -228,6 +256,9 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			F##_free_all(t0, t1, t2, t3, t4, t5);							\
+			for (int _i = 0; _i < 4; _i++) {								\
+				D##_free(u[_i]);											\
+			}																\
 		}																	\
 	}																		\
 /**

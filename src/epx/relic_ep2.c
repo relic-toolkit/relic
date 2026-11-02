@@ -39,7 +39,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_ARITH(ep2, fp2);
+TMPL_EP_ARITH(ep2, fp2, dv2);
 
 TMPL_EP_RHS(ep2, fp2);
 

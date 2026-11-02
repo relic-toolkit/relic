@@ -450,7 +450,6 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 	const __m512i z = _mm512_setzero_si512();
 	__m512i l[RNS_K][4][RNS_NB], h[RNS_K][4][RNS_NB], y[RNS_NB], a, x;
 	__m512i alphas = _mm512_setzero_si512();
-	dig_t s;
 	size_t i;
 
 	for (int j = 0; j < K; j++) {
@@ -520,13 +519,18 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 			if (K >= 3) {
 				a = _mm512_permutexvar_epi64(_mm512_set1_epi64(j), alphas);
 			} else {
+				/* The sum in every lane, by swapping halves, quarters and
+				 * pairs of lanes, without leaving the vectors. */
 				x = xi[j][0];
 				for (size_t k = 1; k < RNS_NB; k++) {
 					x = _mm512_add_epi64(x, xi[j][k]);
 				}
-				s = (dig_t)_mm512_reduce_add_epi64(x);
-				s += (dig_t)exact << (RLC_RNS_BITS - 1);
-				a = _mm512_set1_epi64(s >> RLC_RNS_BITS);
+				x = _mm512_add_epi64(x, _mm512_shuffle_i64x2(x, x, 0x4E));
+				x = _mm512_add_epi64(x, _mm512_shuffle_i64x2(x, x, 0xB1));
+				x = _mm512_add_epi64(x, _mm512_shuffle_epi32(x, 0x4E));
+				x = _mm512_add_epi64(x,
+						_mm512_set1_epi64((dig_t)exact << (RLC_RNS_BITS - 1)));
+				a = _mm512_srli_epi64(x, RLC_RNS_BITS);
 			}
 			for (size_t k = 0; k < RNS_NB; k++) {
 				l[j][S - 1][k] =
@@ -589,8 +593,13 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 		for (int j = 0; j < K; j++) {
 			/* Below 4m plus the bound of the extension. */
 			x = _mm512_add_epi64(rns_load(a[j] + o, k), r[j][k]);
-			x = rns_vpeel(x, y, rns_halvings(16 + RNS_EXT_BOUND));
-			rns_store(c[j] + o, k, x);
+			/* The product only needs a factor below 4m, so it starts
+			 * once x is there, and the rest of the peel is off the
+			 * critical path. */
+			for (int i = rns_halvings(16 + RNS_EXT_BOUND) - 1; i >= 2; i--) {
+				x = rns_vcrt(x, _mm512_slli_epi64(y, i));
+			}
+			rns_store(c[j] + o, k, rns_vpeel(x, y, 2));
 			q[j][k] = rns_vpeel(rns_vmul(x, rns_load(ctx->rns.ib + o, k),
 					y, z), y, 1);
 		}

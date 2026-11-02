@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EP_ARITH(ep, fp);
+TMPL_EP_ARITH(ep, fp, dv);
 
 void ep_rhs(fp_t rhs, const fp_t x) {
 	fp_t t0;

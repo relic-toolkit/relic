@@ -395,9 +395,12 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 				fp_dbl(c, c);
 			}
 			break;
+#if FP_RDC != FP_RENUS
+		/* In RNS, the product by the stored b is cheaper. */
 		case RLC_TINY:
 			fp_mul_dig(c, a, ctx->ep_b_dig);
 			break;
+#endif
 		default:
 			fp_mul(c, a, ctx->ep_b);
 			break;
