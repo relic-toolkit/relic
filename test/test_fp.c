@@ -1389,7 +1389,8 @@ static int rns(void) {
 		}
 
 		TEST_CASE("rns conversion is consistent") {
-			bn_rand(a, RLC_POS, RLC_FP_BITS + 32);
+			/* B exceeds 2^(RLC_FP_RNS_ROOM + 2) * p, so this is below B/2. */
+			bn_rand(a, RLC_POS, RLC_FP_BITS + RLC_FP_RNS_ROOM + 1);
 			fp_rns_conv(x, a);
 			fp_rns_back(b, x);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
@@ -1404,15 +1405,15 @@ static int rns(void) {
 			fp_rns_back(c, z);
 			bn_mul(d, a, b);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
-			/* Zero, and inputs at the bound 2^15 * p, with products up to
-			 * 2^30 * p^2. */
+			/* Zero, and inputs at the bound 2^(RLC_FP_RNS_ROOM / 2) * p, with
+			 * products up to 2^RLC_FP_RNS_ROOM * p^2. */
 			bn_zero(a);
 			fp_rns_conv(x, a);
 			fp_mulm_low(z, x, y);
 			fp_rns_back(c, z);
 			bn_zero(d);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
-			bn_lsh(a, p, 15);
+			bn_lsh(a, p, RLC_FP_RNS_ROOM / 2);
 			bn_sub_dig(a, a, 1);
 			fp_rns_conv(x, a);
 			fp_mulm_low(z, x, x);
@@ -1453,12 +1454,15 @@ static int rns(void) {
 		} TEST_END;
 
 		TEST_CASE("rns lazy reduction is correct") {
-			/* A sum of 2^8 products of inputs below 2^11 * p. */
+			/* A sum of 2^8 products of inputs below
+			 * 2^((RLC_FP_RNS_ROOM - 8) / 2) * p. */
+			const int bits = RLC_FP_BITS + (RLC_FP_RNS_ROOM - 8) / 2 - 1;
+
 			bn_zero(d);
 			dv_zero(w, RLC_FP_LEN);
 			for (int k = 0; k < 256; k++) {
-				bn_rand(a, RLC_POS, RLC_FP_BITS + 10);
-				bn_rand(b, RLC_POS, RLC_FP_BITS + 10);
+				bn_rand(a, RLC_POS, bits);
+				bn_rand(b, RLC_POS, bits);
 				fp_rns_conv(x, a);
 				fp_rns_conv(y, b);
 				fp_muln_low(z, x, y);

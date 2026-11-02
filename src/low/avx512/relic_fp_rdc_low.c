@@ -58,9 +58,9 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 				(__mmask8)((1 << l) - 1), xi + 8 * k);
 	}
 	if (b) {
-		rns_vext(v, x, 1, 1, exact);
+		rns_vext(v, x, 1, 1, exact, 1);
 	} else {
-		rns_vext(v, x, 1, 0, exact);
+		rns_vext(v, x, 1, 0, exact, 1);
 	}
 	for (size_t k = 0; 8 * k < n; k++) {
 		l = n - 8 * k;
@@ -76,38 +76,55 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	rns_vrdc(cs, as, 1);
 }
 
+/**
+ * Reduces a batch of k values, for 1 <= k <= RNS_K, with the batch size known
+ * at compile time in each case. The sizes above 4 are capped only to keep
+ * unused code in bounds when RNS_K is 4.
+ */
+static void rns_vrdck(dig_t *const c[], const dig_t *const a[], int k) {
+	switch (k) {
+		case 1:
+			rns_vrdc(c, a, 1);
+			break;
+		case 2:
+			rns_vrdc(c, a, 2);
+			break;
+		case 3:
+			rns_vrdc(c, a, 3);
+			break;
+		case 4:
+			rns_vrdc(c, a, 4);
+			break;
+		case 5:
+			rns_vrdc(c, a, RLC_MIN(5, RNS_K));
+			break;
+		case 6:
+			rns_vrdc(c, a, RLC_MIN(6, RNS_K));
+			break;
+		case 7:
+			rns_vrdc(c, a, RLC_MIN(7, RNS_K));
+			break;
+		case 8:
+			rns_vrdc(c, a, RLC_MIN(8, RNS_K));
+			break;
+	}
+}
+
 void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n) {
 	const dig_t *const *b = (const dig_t *const *)a;
 	int i = 0;
 
-	for (; i + RNS_K <= n; i += RNS_K) {
+	for (; n - i > RNS_K + 3; i += RNS_K) {
 		rns_vrdc(c + i, b + i, RNS_K);
 	}
-	/* The remainder goes in a single batch of its own size. It is below RNS_K,
-	 * so the sizes above 4 are capped only to keep unused code in bounds when
-	 * RNS_K is 4. */
-	switch (n - i) {
-		case 1:
-			rns_vrdc(c + i, b + i, 1);
-			break;
-		case 2:
-			rns_vrdc(c + i, b + i, 2);
-			break;
-		case 3:
-			rns_vrdc(c + i, b + i, 3);
-			break;
-		case 4:
-			rns_vrdc(c + i, b + i, 4);
-			break;
-		case 5:
-			rns_vrdc(c + i, b + i, RLC_MIN(5, RNS_K));
-			break;
-		case 6:
-			rns_vrdc(c + i, b + i, RLC_MIN(6, RNS_K));
-			break;
-		case 7:
-			rns_vrdc(c + i, b + i, RLC_MIN(7, RNS_K));
-			break;
+	/* A few values beyond a full batch go in two batches of about half, as
+	 * small batches cost more per value. */
+	if (n - i > RNS_K) {
+		rns_vrdck(c + i, b + i, (n - i) / 2);
+		i += (n - i) / 2;
+	}
+	if (n - i > 0) {
+		rns_vrdck(c + i, b + i, n - i);
 	}
 }
 

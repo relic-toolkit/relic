@@ -69,11 +69,11 @@ void fp2_addm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 }
 
 void fp2_addd_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _mm512_slli_epi64(_vm, 2)));
 }
 
 void fp2_addc_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
+	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(b), _mm512_slli_epi64(_vm, 2)));
 }
 
 void fp2_subn_low(fp2_t c, const fp2_t a, const fp2_t b) {
@@ -85,11 +85,11 @@ void fp2_subm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 }
 
 void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _mm512_slli_epi64(_vm, 2)));
 }
 
 void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b) {
-	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
+	RNS_VMAP2(c, rns_vsub(RNS_V2(a), RNS_V2(b), _mm512_slli_epi64(_vm, 2)));
 }
 
 void fp2_dbln_low(fp2_t c, const fp2_t a) {

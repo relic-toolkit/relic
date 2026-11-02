@@ -62,23 +62,37 @@
 
 #if FP_RDC == FP_RENUS
 /**
- * Bits of the moduli of the Residue Number System of prime field elements: 52
- * with the AVX-512 IFMA backend, whose multipliers take 52-bit operands, and
- * one less than a digit otherwise.
+ * Bits of the moduli of the Residue Number System of prime field elements: 50
+ * with the AVX-512 IFMA backend, whose multipliers take 52-bit operands, so
+ * that sums of a few residues or products still fit them, and one less than a
+ * digit otherwise.
  */
 #if RLC_ARITH == RLC_AVX512
-#define RLC_RNS_BITS	52
+#define RLC_RNS_BITS	50
 #else
 #define RLC_RNS_BITS	(RLC_DIG - 1)
 #endif
 
 /**
- * Number of moduli in each base of the Residue Number System. The first base,
- * of the Montgomery reduction, must exceed 2^32 * p, so that sums of products
- * below 2^30 * p^2 in absolute value can be reduced: for instance, elements up
- * to 2^11 * p, with up to 2^8 products summed.
+ * Logarithm of the bound on sums of products that the Residue Number System
+ * reduces, as a multiple of p^2: 16 with the AVX-512 IFMA backend, to keep its
+ * bases in whole vectors of 50-bit moduli, and 30 otherwise.
  */
-#define RLC_FP_RNS		((size_t)((RLC_FP_BITS + 32 + 2) / RLC_RNS_BITS + 1))
+#if RLC_ARITH == RLC_AVX512
+#define RLC_FP_RNS_ROOM	16
+#else
+#define RLC_FP_RNS_ROOM	30
+#endif
+
+/**
+ * Number of moduli in each base of the Residue Number System. The first base,
+ * of the Montgomery reduction, must exceed 2^(RLC_FP_RNS_ROOM + 2) * p, so that
+ * sums of products below 2^RLC_FP_RNS_ROOM * p^2 in absolute value can be
+ * reduced: for instance, with RLC_FP_RNS_ROOM = 30, elements up to 2^11 * p,
+ * with up to 2^8 products summed.
+ */
+#define RLC_FP_RNS		((size_t)((RLC_FP_BITS + RLC_FP_RNS_ROOM + 3 +		\
+		RLC_RNS_BITS - 1) / RLC_RNS_BITS))
 
 /**
  * Space taken by each base in the residues of an element: the number of moduli,
@@ -303,6 +317,9 @@ typedef struct {
 	dig_t m[2 * RLC_FP_RNSO];
 	/** Values -m_i^{-1} mod R, for Montgomery form. */
 	dig_t u[2 * RLC_FP_RNSO];
+	/** Values m_i^{-1} mod R, for Montgomery form with the low halves
+	 * cancelling. */
+	dig_t v[2 * RLC_FP_RNSO];
 	/** Values R^2 mod m_i, for Montgomery form. */
 	dig_t r2[2 * RLC_FP_RNSO];
 	/** Factors R^2 in B and R^2 / M in B' to store elements. */

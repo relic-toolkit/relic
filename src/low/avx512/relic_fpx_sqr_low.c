@@ -48,7 +48,7 @@
 
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	ctx_t *ctx = core_get();
-	const dig_t *_m = ctx->rns.m, *_u = ctx->rns.u;
+	const dig_t *_m = ctx->rns.m, *_u = ctx->rns.v;
 	const int q = -fp_prime_get_qnr();
 	__m512i m, u, a0, a1, t;
 
@@ -57,11 +57,15 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 		u = rns_load(_u, k);
 		a0 = rns_load(a[0], k);
 		a1 = rns_load(a[1], k);
-		/* c_1 = 2 * a_0 * a_1. */
-		rns_store(c[1], k, rns_vmul(rns_vadd(a0, a0, m), a1, m, u));
+		/* c_1 = 2 * a_0 * a_1: a factor below 2m gives a product below
+		 * 2m^2 / 2^52 + m < 2m, so the sum needs no correction. */
+		rns_store(c[1], k, rns_vmul(_mm512_add_epi64(a0, a0), a1, m, u));
 		/* c_0 = a_0^2 + u^2 * a_1^2, with u^2 = -q. */
 		if (q == 1) {
-			t = rns_vmul(rns_vadd(a0, a1, m), rns_vsub(a0, a1, m), m, u);
+			/* (a_0 + a_1)(a_0 - a_1 + m), with factors below 2m and a product
+			 * below 4m^2 / 2^52 + m < 2m. */
+			t = rns_vmul(_mm512_add_epi64(a0, a1),
+					_mm512_add_epi64(_mm512_sub_epi64(a0, a1), m), m, u);
 		} else {
 			t = _mm512_setzero_si512();
 			for (int i = 0; i < q; i++) {
@@ -86,7 +90,7 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 	/* The whole square is computed residue-wise, vector by vector. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.u, k);
+		u = rns_load(ctx->rns.v, k);
 		/* Loops are unrolled fully, so that all indices are constants and the
 		 * sums stay in registers: GCC and clang do not unroll them alone. */
 #pragma GCC unroll 6
@@ -104,8 +108,9 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 		}
 		/* Schoolbook square in w: the products off the diagonal are summed and
 		 * doubled, then those on it are added. Each output adds at most 6
-		 * products of residues below m < 2^52 off the diagonal and 2 on it, so
-		 * the halves of the sums stay below 2^56. */
+		 * products of residues at most m < 2^50 off the diagonal and 2 on it,
+		 * so the halves of the sums stay below 2^56, and the result is at most
+		 * 14m / 4 + m, brought below 4m by one correction. */
 #pragma GCC unroll 6
 		for (int e1 = 0; e1 < 6; e1++) {
 #pragma GCC unroll 6
@@ -129,7 +134,8 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a) {
 #pragma GCC unroll 6
 		for (int e = 0; e < 6; e++) {
 			for (int j = 0; j < 2; j++) {
-				l[e][j] = rns_vred(l[e][j], h[e][j], m, u);
+				l[e][j] = rns_vcrt(rns_vmon(l[e][j], h[e][j], m, u),
+						_mm512_slli_epi64(m, 2));
 				rns_store(c[I[e]][J[e]][j], k, l[e][j]);
 			}
 		}
@@ -152,12 +158,17 @@ void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck) {
 	rns_nor(&s, &q);
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
-		u = rns_load(ctx->rns.u, k);
+		u = rns_load(ctx->rns.v, k);
 		/* k1 = 2 and k0 = -2, from the residues of one. */
 		k1 = rns_load(ctx->one, k);
 		k1 = rns_vadd(k1, k1, m);
 		k0 = rns_vneg(k1, m);
-		for (int p = (pck ? 1 : 0); p < 3; p++) {
+#pragma GCC unroll 3
+		for (int p = 0; p < 3; p++) {
+			/* Compressed squaring skips the first pair. */
+			if (pck && p == 0) {
+				continue;
+			}
 			for (int l = 0; l < 2; l++) {
 				x[l] = rns_load(a[P[p][0][0]][P[p][0][1]][l], k);
 				y[l] = rns_load(a[P[p][1][0]][P[p][1][1]][l], k);

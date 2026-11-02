@@ -25,8 +25,10 @@
  * @file
  *
  * Vector arithmetic for the lower level of a Residue Number System with
- * AVX-512 IFMA: eight 52-bit residues per vector, multiplied with the 52-bit
- * multiply-add instructions.
+ * AVX-512 IFMA: eight residues per vector, multiplied with the 52-bit
+ * multiply-add instructions. The moduli are below 2^50, so that residues and
+ * sums of a few of them, below 4m, still fit the multipliers: stored elements
+ * keep residues at most m, and products without reduction below 4m.
  *
  * @ingroup fp
  */
@@ -82,7 +84,7 @@ typedef __m512i rp2_t[2];
  */
 #define RNS_VMAP(C, OP)														\
 	ctx_t *_ctx = core_get();												\
-	const dig_t *_m = _ctx->rns.m, *_u = _ctx->rns.u;						\
+	const dig_t *_m = _ctx->rns.m, *_u = _ctx->rns.v;						\
 	for (size_t _k = 0; _k < RNS_NE; _k++) {								\
 		__m512i _vm = rns_load(_m, _k);										\
 		__m512i _vu = rns_load(_u, _k);										\
@@ -137,78 +139,89 @@ static inline __m512i rns_vsub(__m512i a, __m512i b, __m512i m) {
 }
 
 /**
- * Negates residues below m modulo m, lane-wise, as m - a in (0, m]: a factor of
- * a product only needs to fit in 52 bits, so the correction of m is skipped.
+ * Negates residues at most m modulo m, lane-wise, as m - a in [0, m]: a factor
+ * of a product only needs to fit in 52 bits, so the correction is skipped.
  */
 static inline __m512i rns_vneg(__m512i a, __m512i m) {
 	return _mm512_sub_epi64(m, a);
 }
 
 /**
- * Multiplies residues below m < 2^52 by Montgomery multiplication, computing
- * a * b / 2^52 mod m lane-wise.
+ * Computes h + l / 2^52 + m - (q * m) / 2^52, for q = l * m^{-1} mod 2^52, as
+ * one Montgomery reduction of h * 2^52 + l modulo m, lane-wise: the low halves
+ * of the sum and of q * m cancel exactly, so the result is (h * 2^52 + l) /
+ * 2^52 mod m, in (h', h' + m] for h' the top bits of the sum. With moduli below
+ * 2^50, the top bits of a product of residues at most m are below m / 4, so k
+ * products summed give a result at most (k / 4 + 1) * m.
+ *
+ * @param[in] l				- the low halves, below 2^63 in total.
+ * @param[in] h				- the high halves, below 2^63 in total.
+ * @param[in] m				- the moduli.
+ * @param[in] v				- the inverses of the moduli modulo 2^52.
  */
-static inline __m512i rns_vmul(__m512i a, __m512i b, __m512i m, __m512i u) {
+static inline __m512i rns_vmon(__m512i l, __m512i h, __m512i m, __m512i v) {
 	const __m512i z = _mm512_setzero_si512();
-	__m512i l, h, q;
+	__m512i q;
 
-	l = _mm512_madd52lo_epu64(z, a, b);
-	h = _mm512_madd52hi_epu64(z, a, b);
-	q = _mm512_madd52lo_epu64(z, l, u);
-	/* l + (q * m mod 2^52) is 0 or 2^52, and its carry goes into h. */
-	l = _mm512_madd52lo_epu64(l, q, m);
-	h = _mm512_madd52hi_epu64(h, q, m);
 	h = _mm512_add_epi64(h, _mm512_srli_epi64(l, 52));
-	return rns_vcrt(h, m);
+	q = _mm512_madd52lo_epu64(z, l, v);
+	/* The accumulator -m gives h - (q * m) / 2^52 + m. */
+	return _mm512_sub_epi64(h,
+			_mm512_madd52hi_epu64(_mm512_sub_epi64(z, m), q, m));
 }
 
 /**
- * Adds two products of residues below m < 2^52 before a single Montgomery
- * reduction, computing (a * b + c * d) / 2^52 mod m lane-wise.
+ * Brings residues at most 2^s * m down to at most m, lane-wise, subtracting
+ * 2^(s - 1) * m, ..., 2 * m and m where that does not wrap around.
+ *
+ * @param[in] a				- the residues.
+ * @param[in] m				- the moduli.
+ * @param[in] s				- the number of halvings of the bound.
+ */
+static inline __m512i rns_vpeel(__m512i a, __m512i m, int s) {
+	for (int i = s - 1; i >= 0; i--) {
+		a = rns_vcrt(a, _mm512_slli_epi64(m, i));
+	}
+	return a;
+}
+
+/**
+ * Multiplies residues by Montgomery multiplication, computing a * b / 2^52
+ * mod m lane-wise, at most 2^(2t - 2) * m + m for inputs at most 2^t * m: for
+ * products without reduction, which stay below 2^52, and below 4m.
+ */
+static inline __m512i rns_vmul(__m512i a, __m512i b, __m512i m, __m512i v) {
+	const __m512i z = _mm512_setzero_si512();
+
+	return rns_vmon(_mm512_madd52lo_epu64(z, a, b),
+			_mm512_madd52hi_epu64(z, a, b), m, v);
+}
+
+/**
+ * Adds two products of residues at most m before a single Montgomery
+ * reduction, computing (a * b + c * d) / 2^52 mod m lane-wise, at most
+ * 3m / 2: for products without reduction.
  */
 static inline __m512i rns_vmul2(__m512i a, __m512i b, __m512i c, __m512i d,
-		__m512i m, __m512i u) {
+		__m512i m, __m512i v) {
 	const __m512i z = _mm512_setzero_si512();
-	const __m512i mask = _mm512_set1_epi64(RLC_RNS_MASK);
-	__m512i l, h, q;
+	__m512i l, h;
 
 	l = _mm512_madd52lo_epu64(z, a, b);
 	h = _mm512_madd52hi_epu64(z, a, b);
 	l = _mm512_madd52lo_epu64(l, c, d);
 	h = _mm512_madd52hi_epu64(h, c, d);
-	h = _mm512_add_epi64(h, _mm512_srli_epi64(l, 52));
-	l = _mm512_and_si512(l, mask);
-	q = _mm512_madd52lo_epu64(z, l, u);
-	l = _mm512_madd52lo_epu64(l, q, m);
-	h = _mm512_madd52hi_epu64(h, q, m);
-	h = _mm512_add_epi64(h, _mm512_srli_epi64(l, 52));
-	/* The sum is below 2m^2, so the result is below 2m^2 / 2^52 + m < 3m. */
-	return rns_vcrt(rns_vcrt(h, m), m);
+	return rns_vmon(l, h, m, v);
 }
 
 /**
- * Reduces h * 2^52 + l by one Montgomery reduction modulo m = 2^52 - c, for l
- * and h below 2^57, then brings the result below m with 2^52 = c mod m:
- * computes it divided by 2^52, modulo m, lane-wise.
+ * Reduces h * 2^52 + l by one Montgomery reduction modulo m and brings the
+ * result down to at most m, lane-wise, given that it is at most 2^s * m: for
+ * k products of residues at most m, the smallest s with k / 4 + 1 <= 2^s.
  */
-static inline __m512i rns_vred(__m512i l, __m512i h, __m512i m, __m512i u) {
-	const __m512i z = _mm512_setzero_si512();
-	const __m512i mask = _mm512_set1_epi64(RLC_RNS_MASK);
-	const __m512i c = _mm512_sub_epi64(_mm512_set1_epi64(RLC_RNS_MASK + 1), m);
-	__m512i q, t;
-
-	h = _mm512_add_epi64(h, _mm512_srli_epi64(l, 52));
-	l = _mm512_and_si512(l, mask);
-	/* The reduction leaves t below 2^58. */
-	q = _mm512_madd52lo_epu64(z, l, u);
-	l = _mm512_madd52lo_epu64(l, q, m);
-	t = _mm512_madd52hi_epu64(h, q, m);
-	t = _mm512_add_epi64(t, _mm512_srli_epi64(l, 52));
-	/* The low 52 bits plus c times the high ones are below 2^52 + 2^6 * c,
-	 * which is less than 2m for the small c of the moduli. */
-	t = _mm512_madd52lo_epu64(_mm512_and_si512(t, mask),
-			_mm512_srli_epi64(t, 52), c);
-	return rns_vcrt(t, m);
+static inline __m512i rns_vred(__m512i l, __m512i h, __m512i m, __m512i v,
+		int s) {
+	return rns_vpeel(rns_vmon(l, h, m, v), m, s);
 }
 
 /**
@@ -307,10 +320,10 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
  * Computes the folded terms of a cyclotomic squaring for a pair x + y * w in
  * Fp4 = Fp2[w]/(w^2 - (s + i)), with i^2 = q: c_0 = 3 * (x^2 + (s + i) y^2)
  * + k_0 * a_0 and c_1 = 6 * x * y + k_1 * a_1, where 6 * x * y is also
- * multiplied by s + i if the flag is set. The products of x and y are summed
- * without reduction and scaled by 3 or 6 there, then those by k are added:
- * at most 4 products, below 2^52 each, times 6, plus one more, keep the halves
- * of the sums below 2^57, and each result needs a single reduction.
+ * multiplied by s + i if the flag is set. All products of a result are summed
+ * before a single reduction. Products take factors below 4m, so the factors
+ * 3x, 3y, 2y and, for s + i = 1 + i, (s + i) * y need no corrections; the
+ * results are below 4m, as products without reduction.
  *
  * @param[out] c0			- the first result.
  * @param[out] c1			- the second result.
@@ -324,40 +337,58 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
  * @param[in] s				- the integer part of the non-residue.
  * @param[in] q				- the square of i.
  * @param[in] m				- the moduli.
- * @param[in] u				- the Montgomery constants of the moduli.
+ * @param[in] u				- the inverses of the moduli modulo 2^52.
  */
 rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 		const rp2_t a0, const rp2_t a1, __m512i k0, __m512i k1, int nor,
 		int s, int q, __m512i m, __m512i u) {
 	const __m512i z = _mm512_setzero_si512();
-	rp2_t l, h, t;
+	const __m512i m2 = _mm512_slli_epi64(m, 1), m4 = _mm512_slli_epi64(m, 2);
+	rp2_t x3, y3, t, l, h;
+	__m512i n;
 
-	/* t = (s + i) * y. */
-	rp2_nor(t, y, s, q, m);
-	/* c0 = 3 * (x * x + y * t) + k0 * a0. */
-	l[0] = h[0] = l[1] = h[1] = z;
-	rp2_mac(l, h, x, x, rns_vneg(rns_vsml(x[1], -q, m), m));
-	rp2_mac(l, h, y, t, rns_vneg(rns_vsml(t[1], -q, m), m));
 	for (int j = 0; j < 2; j++) {
-		l[j] = _mm512_add_epi64(l[j], _mm512_slli_epi64(l[j], 1));
-		h[j] = _mm512_add_epi64(h[j], _mm512_slli_epi64(h[j], 1));
+		x3[j] = _mm512_add_epi64(x[j], _mm512_add_epi64(x[j], x[j]));
+		y3[j] = _mm512_add_epi64(y[j], _mm512_add_epi64(y[j], y[j]));
+	}
+	/* t = (s + i) * y, below 2m, and n = q * t_1. */
+	if (s == 1 && q == -1) {
+		t[0] = _mm512_add_epi64(_mm512_sub_epi64(y[0], y[1]), m);
+		t[1] = _mm512_add_epi64(y[0], y[1]);
+		n = _mm512_sub_epi64(m2, t[1]);
+	} else {
+		rp2_nor(t, y, s, q, m);
+		n = rns_vneg(rns_vsml(t[1], -q, m), m);
+	}
+	/* c0 = 3x * x + 3y * t + k0 * a0: at most 4.75m / 4 + m before the
+	 * correction. */
+	l[0] = h[0] = l[1] = h[1] = z;
+	rp2_mac(l, h, x3, x, rns_vneg(rns_vsml(x[1], -q, m), m));
+	rp2_mac(l, h, y3, t, n);
+	for (int j = 0; j < 2; j++) {
 		l[j] = _mm512_madd52lo_epu64(l[j], a0[j], k0);
 		h[j] = _mm512_madd52hi_epu64(h[j], a0[j], k0);
-		c0[j] = rns_vred(l[j], h[j], m, u);
+		c0[j] = rns_vcrt(rns_vmon(l[j], h[j], m, u), m4);
 	}
-	/* c1 = 6 * x * y + k1 * a1, with y times s + i if asked. */
+	/* c1 = 3x * 2t' + k1 * a1, for t' = (s + i) * y if asked and y otherwise,
+	 * with 2t' below 4m: at most 7.25m before the correction. */
 	if (!nor) {
 		t[0] = y[0];
 		t[1] = y[1];
 	}
+	t[0] = _mm512_add_epi64(t[0], t[0]);
+	t[1] = _mm512_add_epi64(t[1], t[1]);
+	if (q == -1) {
+		n = _mm512_sub_epi64(m4, t[1]);
+	} else {
+		n = rns_vneg(rns_vsml(rns_vcrt(rns_vcrt(t[1], m2), m), -q, m), m);
+	}
 	l[0] = h[0] = l[1] = h[1] = z;
-	rp2_mac(l, h, x, t, rns_vneg(rns_vsml(t[1], -q, m), m));
+	rp2_mac(l, h, x3, t, n);
 	for (int j = 0; j < 2; j++) {
-		l[j] = _mm512_add_epi64(l[j], _mm512_slli_epi64(l[j], 1));
-		h[j] = _mm512_add_epi64(h[j], _mm512_slli_epi64(h[j], 1));
-		l[j] = _mm512_madd52lo_epu64(_mm512_slli_epi64(l[j], 1), a1[j], k1);
-		h[j] = _mm512_madd52hi_epu64(_mm512_slli_epi64(h[j], 1), a1[j], k1);
-		c1[j] = rns_vred(l[j], h[j], m, u);
+		l[j] = _mm512_madd52lo_epu64(l[j], a1[j], k1);
+		h[j] = _mm512_madd52hi_epu64(h[j], a1[j], k1);
+		c1[j] = rns_vcrt(rns_vmon(l[j], h[j], m, u), m4);
 	}
 }
 
@@ -371,14 +402,16 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
  * @param[in] K				- the number of values, up to RNS_K.
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
+ * @param[in] full			- 1 to bring the residues down to at most m, 0 to
+ * 							leave them below (RLC_FP_RNS / 4 + 2) * m.
  */
 rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
-		const int K, const int b, int exact) {
+		const int K, const int b, int exact, int full) {
 	ctx_t *ctx = core_get();
 	const dig_t *t = (b ? ctx->rns.t1[0] : ctx->rns.t2[0]);
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
-	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
+	const dig_t *u = ctx->rns.v + (b ? RLC_FP_RNSO : 0);
 	/* Rows are spread over S sets of sums, to shorten dependency chains, fewer
 	 * as more values provide independent ones. */
 	const int S = (K == 1 ? 4 : (K * RNS_NB >= 4 ? 1 : 2));
@@ -415,8 +448,8 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 			}
 		}
 	}
-	/* alpha = (sum xi_i + exact * 2^51) / 2^52 comes last, so that computing
-	 * it overlaps the products; the sum is below RLC_FP_RNS * 2^52. */
+	/* alpha = (sum xi_i + exact * 2^49) / 2^50 comes last, so that computing
+	 * it overlaps the products; the sum is below RLC_FP_RNS * 2^50. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y[k] = rns_load(w, k);
 	}
@@ -446,8 +479,9 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 		}
 		x = _mm512_add_epi64(_mm512_shuffle_i64x2(t[0], t[1], 0x88),
 				_mm512_shuffle_i64x2(t[0], t[1], 0xDD));
-		x = _mm512_add_epi64(x, _mm512_set1_epi64((dig_t)exact << 51));
-		alphas = _mm512_srli_epi64(x, 52);
+		x = _mm512_add_epi64(x,
+				_mm512_set1_epi64((dig_t)exact << (RLC_RNS_BITS - 1)));
+		alphas = _mm512_srli_epi64(x, RLC_RNS_BITS);
 	}
 	for (int j = 0; j < K; j++) {
 		if (exact >= 0) {
@@ -459,7 +493,8 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 					x = _mm512_add_epi64(x, xi[j][k]);
 				}
 				s = (dig_t)_mm512_reduce_add_epi64(x);
-				a = _mm512_set1_epi64((s + ((dig_t)exact << 51)) >> 52);
+				s += (dig_t)exact << (RLC_RNS_BITS - 1);
+				a = _mm512_set1_epi64(s >> RLC_RNS_BITS);
 			}
 			for (size_t k = 0; k < RNS_NB; k++) {
 				l[j][S - 1][k] =
@@ -479,7 +514,10 @@ rlc_inline void rns_vext(__m512i r[][RNS_NB], const __m512i xi[][RNS_NB],
 		x = rns_load(m, k);
 		a = rns_load(u, k);
 		for (int j = 0; j < K; j++) {
-			r[j][k] = rns_vred(l[j][0][k], h[j][0][k], x, a);
+			/* RLC_FP_RNS products and the small correction by alpha give at
+			 * most (RLC_FP_RNS / 4 + 1) * m and a little more. */
+			r[j][k] = rns_vred(l[j][0][k], h[j][0][k], x, a,
+					full ? (RLC_FP_RNS < 12 ? 2 : 3) : 0);
 		}
 	}
 }
@@ -496,7 +534,7 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 		const int K) {
 	ctx_t *ctx = core_get();
 	const size_t o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
+	const dig_t *m = ctx->rns.m, *u = ctx->rns.v;
 	__m512i q[RNS_K][RNS_NB], r[RNS_K][RNS_NB], x, y, z;
 
 	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues; the padding
@@ -505,25 +543,29 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 		y = rns_load(m, k);
 		z = rns_load(u, k);
 		for (int j = 0; j < K; j++) {
-			q[j][k] = rns_vmul(rns_load(a[j], k), rns_load(ctx->rns.nq, k),
-					y, z);
+			/* For a below 4m, the product is at most 2m. */
+			q[j][k] = rns_vpeel(rns_vmul(rns_load(a[j], k),
+					rns_load(ctx->rns.nq, k), y, z), y, 1);
 		}
 	}
 	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
 	 * extra kp only makes the result larger, so the extension skips alpha. */
-	rns_vext(r, q, K, 1, -1);
+	rns_vext(r, q, K, 1, -1, 0);
 	/* c = (a + q * p) / M in B', and its xi_j for the exact extension. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m + o, k);
 		z = rns_load(u + o, k);
 		for (int j = 0; j < K; j++) {
-			x = rns_vadd(rns_load(a[j] + o, k), r[j][k], y);
+			/* Below 4m and (RLC_FP_RNS / 4 + 1) * m and a little more. */
+			x = _mm512_add_epi64(rns_load(a[j] + o, k), r[j][k]);
+			x = rns_vpeel(x, y, RLC_FP_RNS < 12 ? 3 : 4);
 			rns_store(c[j] + o, k, x);
-			q[j][k] = rns_vmul(x, rns_load(ctx->rns.ib + o, k), y, z);
+			q[j][k] = rns_vpeel(rns_vmul(x, rns_load(ctx->rns.ib + o, k),
+					y, z), y, 1);
 		}
 	}
 	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */
-	rns_vext(r, q, K, 0, 1);
+	rns_vext(r, q, K, 0, 1, 1);
 	for (int j = 0; j < K; j++) {
 		for (size_t k = 0; k < RNS_NB; k++) {
 			rns_store(c[j], k, r[j][k]);

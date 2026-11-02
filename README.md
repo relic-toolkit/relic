@@ -37,6 +37,8 @@ Instructions for building the library can be found in the [Wiki](https://github.
 
 To reduce code size, configure with `-DSTRIP=on`. This compiles the library with `-ffunction-sections -fdata-sections` and drops precomputed tables of algorithms that were not selected. Unused functions are then removed at link time, which only happens for static linking: applications linking against `librelic_s.a` must pass `-Wl,--gc-sections` (or `-Wl,-dead_strip` on macOS, `/OPT:REF` with MSVC) to their own linker. The shared library is not reduced.
 
+Prime field arithmetic can also run in a Residue Number System, selected with `RENUS` as the reduction method in `FP_METHD`. The preset `preset/x64-pbc-bls12-381-rns.sh` builds the portable version, and `preset/x64-pbc-bls12-381-avx512.sh` builds the AVX-512 IFMA backend (`-DARITH=avx512`), which needs a processor with AVX-512 IFMA, such as Intel Ice Lake or AMD Zen 4 and later. Both build with GCC or clang, for example `CC=clang preset/x64-pbc-bls12-381-avx512.sh`.
+
 For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp_pc` testing binary, and entries with prefix `cp_amore_* (1)` (for the sequential version), `cp_amore_* (AGGS)` (for the batch version) in the output of the `bench_cp_pc` benchmarking binary. You can change the parameter `AGGS` in the source code to adjust the number of pairings.
 
 ### Support

@@ -134,6 +134,7 @@ void fp_rns_pre(void) {
 		/* The residues that pad each base are zero in all tables. */
 		dv_zero(ctx->rns.m, 2 * o);
 		dv_zero(ctx->rns.u, 2 * o);
+		dv_zero(ctx->rns.v, 2 * o);
 		dv_zero(ctx->rns.r2, 2 * o);
 		dv_zero(ctx->rns.e, 2 * o);
 		dv_zero(ctx->rns.ib, 2 * o);
@@ -175,6 +176,7 @@ void fp_rns_pre(void) {
 				x *= 2 - ctx->rns.m[i] * x;
 			}
 			ctx->rns.u[i] = (0 - x) & RLC_RNS_MASK;
+			ctx->rns.v[i] = x & RLC_RNS_MASK;
 			bn_set_2b(t, 2 * RLC_RNS_DIG);
 			ctx->rns.r2[i] = fp_rns_bn(t, i);
 		}
@@ -197,8 +199,8 @@ void fp_rns_pre(void) {
 			ctx->rns.mi[i] = RLC_RNS_SCL(d, o + i);
 		}
 
-		/* B must exceed 2^32 * p, and B' 2^11 * p. */
-		if (bn_bits(m) < bn_bits(&(ctx->prime)) + 32 + 2 ||
+		/* B must exceed 2^(RLC_FP_RNS_ROOM + 2) * p, and B' 2^11 * p. */
+		if (bn_bits(m) < bn_bits(&(ctx->prime)) + RLC_FP_RNS_ROOM + 2 + 1 ||
 				bn_bits(mb) < bn_bits(&(ctx->prime)) + 11 + 2) {
 			RLC_THROW(ERR_NO_VALID);
 		}

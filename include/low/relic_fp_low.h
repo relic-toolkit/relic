@@ -126,10 +126,16 @@
 #define RLC_RNS_MOD(D, M)													\
 	RLC_RNS_CRT((dig_t)(D) - (M) * (dig_t)((dig_t)(D) >= (M)), M)
 #else
-/* As 2^52 = 2^52 - M mod M, with 2^52 - M < 2^26, fold the high bits. */
+/* As 2^52 = 2^52 - 4M mod M, with 2^52 - 4M < 2^28, fold the high bits; the
+ * result is below 4M + 2^40, so three subtractions bring it below M. */
 #define RLC_RNS_MOD(D, M)													\
-	RLC_RNS_CRT(((dig_t)(D) & RLC_RNS_MASK) +								\
-		((dig_t)(D) >> RLC_RNS_DIG) * (((dig_t)1 << RLC_RNS_DIG) - (M)), M)
+	RLC_RNS_FIX(((dig_t)(D) & RLC_RNS_MASK) +								\
+		((dig_t)(D) >> RLC_RNS_DIG) * RLC_RNS_K(M), M)
+/** The residue of 2^52 modulo a 50-bit modulus M, as 2^52 - 4M. */
+#define RLC_RNS_K(M)	(((dig_t)1 << RLC_RNS_DIG) - ((dig_t)(M) << 2))
+/** Brings A below 5M down below M, with three subtractions. */
+#define RLC_RNS_FIX(A, M)													\
+	RLC_RNS_CRT(RLC_RNS_CRT(RLC_RNS_CRT((A), 2 * (M)), M), M)
 #endif
 
 /**
@@ -482,7 +488,7 @@ static inline dig_t fp_rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 	t = (t + (dbl_t)q * m) >> RLC_RNS_DIG;
 	l = (dig_t)t & RLC_RNS_MASK;
 	h = (dig_t)(t >> RLC_RNS_DIG);
-	return RLC_RNS_CRT(l + h * (((dig_t)1 << RLC_RNS_DIG) - m), m);
+	return RLC_RNS_FIX(l + h * RLC_RNS_K(m), m);
 #endif
 }
 
