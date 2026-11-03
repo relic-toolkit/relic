@@ -321,6 +321,7 @@
 #undef bn_rec_etnaf
 #undef bn_rec_retnaf
 #undef bn_rec_reg
+#undef bn_rec_aln
 #undef bn_rec_jsf
 #undef bn_rec_pre
 #undef bn_rec_glv
@@ -458,6 +459,7 @@
 #define bn_rec_etnaf 	RLC_PREFIX(bn_rec_etnaf)
 #define bn_rec_retnaf 	RLC_PREFIX(bn_rec_retnaf)
 #define bn_rec_reg 	RLC_PREFIX(bn_rec_reg)
+#define bn_rec_aln 	RLC_PREFIX(bn_rec_aln)
 #define bn_rec_jsf 	RLC_PREFIX(bn_rec_jsf)
 #define bn_rec_pre 	RLC_PREFIX(bn_rec_pre)
 #define bn_rec_glv 	RLC_PREFIX(bn_rec_glv)

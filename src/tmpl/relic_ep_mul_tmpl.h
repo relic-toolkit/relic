@@ -84,6 +84,17 @@
 		RLC_MIN((size_t)S, (size_t)ep_curve_frdim()) : (size_t)S)
 
 /**
+ * Builds the table of a w-NAF multiplication: projective with complete
+ * formulas, where an addition costs little more than a mixed one and that
+ * saves an inversion, normalized otherwise.
+ */
+#if EP_ADD == EP_PROJC
+#define TMPL_EP_MUL_TAB(C, T, P, W)		TMPL_EC_MUL_TAB(C, T, P, W)
+#else
+#define TMPL_EP_MUL_TAB(C, T, P, W)		C##_tab(T, P, W)
+#endif
+
+/**
  * Defines a template for point multiplication using the GLS endomorphism. The
  * scalar is decomposed in S subscalars, each recoded in w-NAF form and
  * processed by interleaving.
@@ -142,7 +153,7 @@
 					if (bn_sign(_k[0]) == RLC_NEG) {						\
 						C##_neg(q, q);										\
 					}														\
-					C##_tab(t[0], q, w);									\
+					TMPL_EP_MUL_TAB(C, t[0], q, w);							\
 				} else if (ep_curve_is_pairf() == EP_K16 ||					\
 						ep_curve_is_pairf() == EP_AFG16) {					\
 					/* Minimize use of endomorphism when it's expensive. */	\
@@ -150,7 +161,7 @@
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
 						C##_neg(q, q);										\
 					}														\
-					C##_tab(t[i], q, w);									\
+					TMPL_EP_MUL_TAB(C, t[i], q, w);							\
 				} else {													\
 					for (int j = 0; j < (1 << (w - 2)); j++) {				\
 						C##_psi(t[i][j], t[i - 1][j]);						\

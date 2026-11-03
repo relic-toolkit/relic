@@ -123,6 +123,12 @@ int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv) {
 	g1_t s, t, u;
 	int i, result = RLC_ERR;
 
+	/* The ciphertext must be valid points, or invalid-curve and small-subgroup
+	 * points could leak the private key through the recovered message. */
+	if (!g1_is_valid(in[0]) || !g1_is_valid(in[1])) {
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(r);
 	g1_null(s);
@@ -222,6 +228,12 @@ int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv) {
 	g2_t s, t, u;
 	int i, result = RLC_ERR;
 
+	/* The ciphertext must be valid points, or invalid-curve and small-subgroup
+	 * points could leak the private key through the recovered message. */
+	if (!g2_is_valid(in[0]) || !g2_is_valid(in[1])) {
+		return RLC_ERR;
+	}
+
 	bn_null(n);
 	bn_null(r);
 	g2_null(s);
@@ -295,6 +307,14 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 	int i, result = RLC_ERR;
 	gt_t t[4];
 	bn_t n, r, s;
+
+	/* The ciphertext must be valid elements, or small-subgroup elements could
+	 * leak the private key through the recovered message. */
+	for (i = 0; i < 4; i++) {
+		if (!gt_is_valid(in[i])) {
+			return RLC_ERR;
+		}
+	}
 
 	bn_null(n);
 	bn_null(r);

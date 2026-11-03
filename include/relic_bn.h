@@ -1808,6 +1808,22 @@ void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t k0,
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w);
 
 /**
+ * Recodes a nonnegative integer in fixed-length base 2^(w - 1), with each digit
+ * zero or of the sign of the digit at the same position of a regular recoding,
+ * as for sign-aligned multi-scalar multiplication. If a negative integer is
+ * given instead, its absolute value is taken.
+ *
+ * @param[out] b			- the recoded integer.
+ * @param[in] len			- the number of digits, as in the regular recoding.
+ * @param[in] k				- the integer to recode.
+ * @param[in] a				- the regular recoding that gives the signs.
+ * @param[in] w				- the window size in bits.
+ * @throw ERR_NO_VALID		- if the integer does not fit the digits.
+ */
+void bn_rec_aln(int8_t *b, size_t len, const bn_t k, const int8_t *a,
+		size_t w);
+
+/**
  * Recodes of a pair of positive integers in Joint Sparse Form. If negative
  * integers are given instead, takes their absolute value.
  *

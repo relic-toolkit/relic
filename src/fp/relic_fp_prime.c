@@ -301,9 +301,12 @@ int fp_prime_get_2ad(void) {
 }
 
 void fp_prime_set_dense(const bn_t p) {
-	fp_prime_set(p);
 #if FP_RDC == FP_QUICK || FP_RDC == FP_LOWER
+	/* The reduction needs a prime in special form, even to set the prime. */
+	(void)p;
 	RLC_THROW(ERR_NO_CONFIG);
+#else
+	fp_prime_set(p);
 #endif
 }
 

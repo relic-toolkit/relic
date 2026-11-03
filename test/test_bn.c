@@ -367,6 +367,12 @@ static int util(void) {
 			/* Invalid digits are rejected. */
 			TEST_ERR(bn_read_str(b, "12x4", 4, 10));
 			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#if RLC_ALLOC == RLC_AUTO
+			/* Values with more digits than an integer holds are rejected. */
+			memset(str, '/', sizeof(str) - 1);
+			TEST_ERR(bn_read_str(b, str, sizeof(str) - 1, 64));
+			TEST_ASSERT(err_get_code() == RLC_ERR && bn_is_zero(b), end);
+#endif
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
@@ -3272,6 +3278,36 @@ static int recoding(void) {
 			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		} TEST_END;
 
+		TEST_CASE("sign-aligned recoding is correct") {
+			/* Align a second integer to the signs of a regular recoding. */
+			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
+			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+			if (bn_is_even(a)) {
+				bn_add_dig(a, a, 1);
+			}
+			for (w = 2; w <= 8; w++) {
+				l = RLC_BN_BITS + 1;
+				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2 + w, w);
+				bn_rec_aln(e + RLC_BN_BITS + 1, l, c, e, w);
+				bn_zero(b);
+				for (k = l - 1; k >= 0; k--) {
+					int8_t f = e[RLC_BN_BITS + 1 + k];
+
+					TEST_ASSERT(f == 0 || (f < 0) == (e[k] < 0), end);
+					bn_lsh(b, b, w - 1);
+					if (f > 0) {
+						bn_add_dig(b, b, f);
+					} else {
+						bn_sub_dig(b, b, -f);
+					}
+				}
+				TEST_ASSERT(bn_cmp(c, b) == RLC_EQ, end);
+			}
+			/* Integers that do not fit the digits are rejected. */
+			bn_set_2b(c, RLC_BN_BITS / 2 + 2 * RLC_DIG);
+			TEST_ERR(bn_rec_aln(e + RLC_BN_BITS + 1, l, c, e, 4));
+		} TEST_END;
+
 		TEST_CASE("jsf recoding is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -3303,7 +3339,9 @@ static int recoding(void) {
 		} TEST_END;
 
 #if defined(WITH_EP)
-		if (ep_param_set_any_pairf() == RLC_OK) {
+		/* Curves without a twist have no Frobenius recoding. */
+		if (ep_param_set_any_pairf() == RLC_OK &&
+				ep_curve_is_pairf() != EP_SS2 && ep_curve_is_pairf() != EP_K1) {
 			TEST_CASE("frobenius recoding is correct") {
 				/* Without a cofactor, the subscalars are signed digits in
 				 * base x, so scalars below |x|^3 take three digits. */
