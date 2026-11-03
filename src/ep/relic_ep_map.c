@@ -185,28 +185,11 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 	}
 }
 
-/**
- * Tests if the SwiftEC map supports the current curve: it needs a = 0 or
- * b = 0, an ordinary curve and a square root of -3 in the prime field.
- *
- * @return 1 if the SwiftEC map supports the curve, 0 otherwise.
- */
-static int ep_map_swift_valid(void) {
-	return !ep_curve_is_super() && fp_prime_get_mod18() % 3 != 2 &&
-			(ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO);
-}
-
 static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_t h[8], t1, t2, v, w, y, x1, x2, x3, d[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
 	uint8_t s;
-
-	if (!ep_map_swift_valid()) {
-		RLC_THROW(ERR_NO_VALID);
-		ep_set_infty(p);
-		return;
-	}
 
 	bn_null(k);
 	fp_null(v);
@@ -512,8 +495,10 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r;
 
-	/* Fall back to SSWU on curves not supported by SwiftEC. */
-	if (!ep_map_swift_valid()) {
+	/* Fall back to SSWU on curves not supported by SwiftEC, which needs an
+	 * ordinary curve with a = 0 or b = 0 and p = 1 mod 3. */
+	if (ep_curve_is_super() || fp_prime_get_mod18() % 3 == 2 ||
+			(ep_curve_opt_a() != RLC_ZERO && ep_curve_opt_b() != RLC_ZERO)) {
 		ep_map_sswum(p, msg, len);
 		return;
 	}
@@ -562,7 +547,8 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 	ep_map_basic_impl(p, uniform_bytes, len);
 #else
 #if EP_MAP == EP_SWIFT
-	if (ep_map_swift_valid()) {
+	if (!ep_curve_is_super() && fp_prime_get_mod18() % 3 != 2 &&
+			(ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO)) {
 		ep_map_swift_impl(p, uniform_bytes, len);
 		return;
 	}
