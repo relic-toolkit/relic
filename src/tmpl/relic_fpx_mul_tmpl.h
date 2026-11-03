@@ -32,6 +32,7 @@
 
 #include "relic_core.h"
 #include "relic_fpx_dv_tmpl.h"
+#include "relic_fpx_lazyr_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -569,10 +570,12 @@
 	}
 
 /**
- * Computes two products of extension field elements with X##_mul2(), which
- * may reduce them together.
+ * Computes two products of extension field elements, reduced together in a
+ * Residue Number System (BAT), or one after the other for fields without
+ * operations on unreduced elements (SEQ). The second product must not read C0.
  *
  * @param[in] X			- the extension field prefix.
+ * @param[out] U		- the scratch for two unreduced elements.
  * @param[out] C0		- the first result.
  * @param[in] A0		- the first element of the first product.
  * @param[in] B0		- the second element of the first product.
@@ -580,47 +583,41 @@
  * @param[in] A1		- the first element of the second product.
  * @param[in] B1		- the second element of the second product.
  */
-#define TMPL_FPX_MUL2_BAT(X, C0, A0, B0, C1, A1, B1)						\
-	X##_mul2(C0, A0, B0, C1, A1, B1)
-
-/**
- * Computes two products of extension field elements one after the other, for
- * fields without X##_mul2(). The second product must not read C0.
- *
- * @param[in] X			- the extension field prefix.
- * @param[out] C0		- the first result.
- * @param[in] A0		- the first element of the first product.
- * @param[in] B0		- the second element of the first product.
- * @param[out] C1		- the second result.
- * @param[in] A1		- the first element of the second product.
- * @param[in] B1		- the second element of the second product.
- */
-#define TMPL_FPX_MUL2_SEQ(X, C0, A0, B0, C1, A1, B1)						\
+/** @{ */
+#define TMPL_FPX_MUL2_BAT(X, U, C0, A0, B0, C1, A1, B1)						\
+	TMPL_LAZYR_MULP(X, TMPL_LAZYR_DSTS(C0, C1), TMPL_LAZYR_PTRS(A0, A1),	\
+		TMPL_LAZYR_PTRS(B0, B1), U, 2)
+#define TMPL_FPX_MUL2_SEQ(X, U, C0, A0, B0, C1, A1, B1)						\
 	X##_mul(C0, A0, B0);													\
 	X##_mul(C1, A1, B1)
+/** @} */
 
 /**
  * Defines a template for simultaneous inversion in an extension field.
  *
  * @param[in] X			- the extension field prefix.
+ * @param[in] D			- the double-precision extension field prefix.
  * @param[in] MUL2		- the computation of the two products of each step
  * 						back, TMPL_FPX_MUL2_BAT or TMPL_FPX_MUL2_SEQ.
  */
-#define TMPL_FPX_INV_SIM(X, MUL2)											\
+#define TMPL_FPX_INV_SIM(X, D, MUL2)										\
 	void X##_inv_sim(X##_t *c, const X##_t *a, int n) {						\
 		int i;																\
 		X##_t u, *t = RLC_ALLOCA(X##_t, n);									\
+		D##_t v[2];															\
 																			\
 		for (i = 0; i < n; i++) {											\
 			X##_null(t[i]);													\
 		}																	\
 		X##_null(u);														\
+		D##_null_all(v[0], v[1]);											\
 																			\
 		RLC_TRY {															\
 			for (i = 0; i < n; i++) {										\
 				X##_new(t[i]);												\
 			}																\
 			X##_new(u);														\
+			D##_new_all(v[0], v[1]);										\
 																			\
 			X##_copy(c[0], a[0]);											\
 			X##_copy(t[0], a[0]);											\
@@ -633,7 +630,7 @@
 			X##_inv(u, c[n - 1]);											\
 																			\
 			for (i = n - 1; i > 0; i--) {									\
-				MUL2(X, c[i], c[i - 1], u, u, u, t[i]);						\
+				MUL2(X, v, c[i], c[i - 1], u, u, u, t[i]);					\
 			}																\
 			X##_copy(c[0], u);												\
 		}																	\
@@ -645,6 +642,7 @@
 				X##_free(t[i]);												\
 			}																\
 			X##_free(u);													\
+			D##_free_all(v[0], v[1]);										\
 			RLC_FREE(t);													\
 		}																	\
 	}
@@ -930,168 +928,6 @@
 	}
 
 /**
- * Defines a template for two and three products at once, reducing each product
- * by the multiplication.
- *
- * @param[in] X			- the extension field prefix.
- */
-#define TMPL_FPX_MULV(X)													\
-	void X##_mul2(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
-			const X##_t a1, const X##_t b1) {								\
-		X##_t r0;															\
-																			\
-		X##_null(r0);														\
-																			\
-		RLC_TRY {															\
-			X##_new(r0);													\
-			if (a0 == b0) {													\
-				X##_sqr(r0, a0);											\
-			} else {														\
-				X##_mul(r0, a0, b0);										\
-			}																\
-			if (a1 == b1) {													\
-				X##_sqr(c1, a1);											\
-			} else {														\
-				X##_mul(c1, a1, b1);										\
-			}																\
-			X##_copy(c0, r0);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			X##_free(r0);													\
-		}																	\
-	}																		\
-																			\
-	void X##_mul3(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
-			const X##_t a1, const X##_t b1, X##_t c2, const X##_t a2,		\
-			const X##_t b2) {												\
-		X##_t r0, r1;														\
-																			\
-		X##_null_all(r0, r1);												\
-																			\
-		RLC_TRY {															\
-			X##_new_all(r0, r1);											\
-			if (a0 == b0) {													\
-				X##_sqr(r0, a0);											\
-			} else {														\
-				X##_mul(r0, a0, b0);										\
-			}																\
-			if (a1 == b1) {													\
-				X##_sqr(r1, a1);											\
-			} else {														\
-				X##_mul(r1, a1, b1);										\
-			}																\
-			if (a2 == b2) {													\
-				X##_sqr(c2, a2);											\
-			} else {														\
-				X##_mul(c2, a2, b2);										\
-			}																\
-			X##_copy(c0, r0);												\
-			X##_copy(c1, r1);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			X##_free_all(r0, r1);											\
-		}																	\
-	}
-
-/**
- * Defines a template for two and three products at once with lazy reduction.
- * In a Residue Number System, they are reduced together, as reductions are
- * cheaper in batches; otherwise, each is reduced by the multiplication.
- *
- * @param[in] X			- the extension field prefix.
- * @param[in] D			- the double-precision extension field prefix.
- */
-#if FP_RDC == FP_RENUS
-#define TMPL_FPX_MULV_LAZYR(X, D)											\
-	void X##_mul2(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
-			const X##_t a1, const X##_t b1) {								\
-		D##_t t[2];															\
-		X##_t r[2];															\
-																			\
-		for (int _i = 0; _i < 2; _i++) {									\
-			D##_null(t[_i]);												\
-			X##_null(r[_i]);												\
-		}																	\
-																			\
-		RLC_TRY {															\
-			for (int _i = 0; _i < 2; _i++) {								\
-				D##_new(t[_i]);												\
-				X##_new(r[_i]);												\
-			}																\
-			if (a0 == b0) {													\
-				X##_sqrn_low(t[0], a0);										\
-			} else {														\
-				X##_muln_low(t[0], a0, b0);									\
-			}																\
-			if (a1 == b1) {													\
-				X##_sqrn_low(t[1], a1);										\
-			} else {														\
-				X##_muln_low(t[1], a1, b1);									\
-			}																\
-			X##_rdcv_low(r, t, 2);											\
-			X##_copy(c0, r[0]);												\
-			X##_copy(c1, r[1]);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			for (int _i = 0; _i < 2; _i++) {								\
-				D##_free(t[_i]);											\
-				X##_free(r[_i]);											\
-			}																\
-		}																	\
-	}																		\
-																			\
-	void X##_mul3(X##_t c0, const X##_t a0, const X##_t b0, X##_t c1,		\
-			const X##_t a1, const X##_t b1, X##_t c2, const X##_t a2,		\
-			const X##_t b2) {												\
-		D##_t t[3];															\
-		X##_t r[3];															\
-																			\
-		for (int _i = 0; _i < 3; _i++) {									\
-			D##_null(t[_i]);												\
-			X##_null(r[_i]);												\
-		}																	\
-																			\
-		RLC_TRY {															\
-			for (int _i = 0; _i < 3; _i++) {								\
-				D##_new(t[_i]);												\
-				X##_new(r[_i]);												\
-			}																\
-			if (a0 == b0) {													\
-				X##_sqrn_low(t[0], a0);										\
-			} else {														\
-				X##_muln_low(t[0], a0, b0);									\
-			}																\
-			if (a1 == b1) {													\
-				X##_sqrn_low(t[1], a1);										\
-			} else {														\
-				X##_muln_low(t[1], a1, b1);									\
-			}																\
-			if (a2 == b2) {													\
-				X##_sqrn_low(t[2], a2);										\
-			} else {														\
-				X##_muln_low(t[2], a2, b2);									\
-			}																\
-			X##_rdcv_low(r, t, 3);											\
-			X##_copy(c0, r[0]);												\
-			X##_copy(c1, r[1]);												\
-			X##_copy(c2, r[2]);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			for (int _i = 0; _i < 3; _i++) {								\
-				D##_free(t[_i]);											\
-				X##_free(r[_i]);											\
-			}																\
-		}																	\
-	}
-#else
-#define TMPL_FPX_MULV_LAZYR(X, D)	TMPL_FPX_MULV(X)
-#endif
-
-/**
  * Defines a template for the sum and the difference of two products with lazy
  * reduction, adding the products before reducing them once.
  *
@@ -1135,52 +971,6 @@
 		} RLC_FINALLY {														\
 			D##_free_all(t, u);												\
 		}																	\
-	}																		\
-																			\
-	TMPL_FPX_MULV_LAZYR(X, D)												\
-																			\
-	void X##_mul_sub_add2(X##_t c0, const X##_t a0, const X##_t b0,			\
-			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
-			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
-			const X##_t a2, const X##_t b2, const X##_t d2,					\
-			const X##_t e2) {												\
-		D##_t t[3], u;														\
-		X##_t r[3];															\
-																			\
-		D##_null(u);														\
-		for (int _i = 0; _i < 3; _i++) {									\
-			D##_null(t[_i]);												\
-			X##_null(r[_i]);												\
-		}																	\
-																			\
-		RLC_TRY {															\
-			D##_new(u);														\
-			for (int _i = 0; _i < 3; _i++) {								\
-				D##_new(t[_i]);												\
-				X##_new(r[_i]);												\
-			}																\
-			X##_muln_low(t[0], a0, b0);										\
-			X##_muln_low(u, d0, e0);										\
-			X##_subc_low(t[0], t[0], u);									\
-			X##_muln_low(t[1], a1, b1);										\
-			X##_muln_low(u, d1, e1);										\
-			X##_addc_low(t[1], t[1], u);									\
-			X##_muln_low(t[2], a2, b2);										\
-			X##_muln_low(u, d2, e2);										\
-			X##_addc_low(t[2], t[2], u);									\
-			X##_rdcv_low(r, t, 3);											\
-			X##_copy(c0, r[0]);												\
-			X##_copy(c1, r[1]);												\
-			X##_copy(c2, r[2]);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			D##_free(u);													\
-			for (int _i = 0; _i < 3; _i++) {								\
-				D##_free(t[_i]);											\
-				X##_free(r[_i]);											\
-			}																\
-		}																	\
 	}
 
 /**
@@ -1223,31 +1013,6 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			X##_free(t);													\
-		}																	\
-	}																		\
-																			\
-	TMPL_FPX_MULV(X)														\
-																			\
-	void X##_mul_sub_add2(X##_t c0, const X##_t a0, const X##_t b0,			\
-			const X##_t d0, const X##_t e0, X##_t c1, const X##_t a1,		\
-			const X##_t b1, const X##_t d1, const X##_t e1, X##_t c2,		\
-			const X##_t a2, const X##_t b2, const X##_t d2,					\
-			const X##_t e2) {												\
-		X##_t r0, r1;														\
-																			\
-		X##_null_all(r0, r1);												\
-																			\
-		RLC_TRY {															\
-			X##_new_all(r0, r1);											\
-			X##_mul_sub(r0, a0, b0, d0, e0);								\
-			X##_mul_add(r1, a1, b1, d1, e1);								\
-			X##_mul_add(c2, a2, b2, d2, e2);								\
-			X##_copy(c0, r0);												\
-			X##_copy(c1, r1);												\
-		} RLC_CATCH_ANY {													\
-			RLC_THROW(ERR_CAUGHT);											\
-		} RLC_FINALLY {														\
-			X##_free_all(r0, r1);											\
 		}																	\
 	}
 

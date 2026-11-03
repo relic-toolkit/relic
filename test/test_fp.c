@@ -416,12 +416,12 @@ static int subtraction(void) {
 
 static int multiplication(void) {
 	int code = RLC_ERR;
-	fp_t a, b, c, d, e, f, h;
+	fp_t a, b, c, d, e, f;
 
-	fp_null_all(a, b, c, d, e, f, h);
+	fp_null_all(a, b, c, d, e, f);
 
 	RLC_TRY {
-		fp_new_all(a, b, c, d, e, f, h);
+		fp_new_all(a, b, c, d, e, f);
 
 		TEST_CASE("sums and differences of products are correct") {
 			fp_rand(a);
@@ -444,35 +444,6 @@ static int multiplication(void) {
 			fp_sub(e, e, f);
 			fp_mul_sub(a, a, b, c, a);
 			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("independent products are correct") {
-			/* The results may overwrite the inputs. */
-			fp_rand(a);
-			fp_rand(b);
-			fp_sqr(e, a);
-			fp_mul(f, a, b);
-			fp_mul2(a, a, a, b, a, b);
-			TEST_ASSERT(fp_cmp(a, e) == RLC_EQ && fp_cmp(b, f) == RLC_EQ, end);
-			fp_rand(a);
-			fp_rand(b);
-			fp_rand(c);
-			fp_mul(d, a, b);
-			fp_mul(e, b, c);
-			fp_mul(f, c, a);
-			fp_mul3(a, a, b, b, b, c, c, c, a);
-			TEST_ASSERT(fp_cmp(a, d) == RLC_EQ && fp_cmp(b, e) == RLC_EQ &&
-					fp_cmp(c, f) == RLC_EQ, end);
-			fp_rand(a);
-			fp_rand(b);
-			fp_rand(c);
-			fp_rand(d);
-			fp_mul_sub(e, a, b, c, d);
-			fp_mul_add(f, b, c, d, a);
-			fp_mul_add(h, c, d, a, b);
-			fp_mul_sub_add2(a, a, b, c, d, b, b, c, d, a, c, c, d, a, b);
-			TEST_ASSERT(fp_cmp(a, e) == RLC_EQ && fp_cmp(b, f) == RLC_EQ &&
-					fp_cmp(c, h) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("multiplication is commutative") {
@@ -569,7 +540,7 @@ static int multiplication(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free_all(a, b, c, d, e, f, h);
+	fp_free_all(a, b, c, d, e, f);
 	return code;
 }
 

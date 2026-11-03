@@ -93,46 +93,144 @@
 #endif
 
 /**
- * Reduces K unreduced elements of a field and computes N - K products of pairs
- * of elements, into destinations given by pointers to them: the first K
- * destinations receive the reductions of the first K elements of U, and the
- * others the products of the factors with the same indices, squaring when both
- * factors are the same. In a Residue Number System, all N are reduced
- * together, as reductions are cheaper in batches; otherwise, each is computed
- * by itself, the products with the fused multiplications of the field, so
- * destinations must not be later factors. Factors may be pointers to constant
- * elements, which the field functions take without qualifiers when elements
- * are allocated dynamically.
+ * Builds the lists taken by the batches below: pointers to destinations
+ * (DSTS), pointers to factors (PTRS) and signs (SGNS).
+ *
+ * @param[in] ...		- the elements of the list.
+ */
+/** @{ */
+#define TMPL_LAZYR_DSTS(...)	((void *[]){ __VA_ARGS__ })
+#define TMPL_LAZYR_PTRS(...)	((const void *[]){ __VA_ARGS__ })
+#define TMPL_LAZYR_SGNS(...)	((const int[]){ __VA_ARGS__ })
+/** @} */
+
+/**
+ * Multiplies two elements of a field, without reduction (MULN) or with the
+ * fused multiplication of the field (MULM), squaring when both factors are the
+ * same. Factors may be pointers to constant elements, which the field functions
+ * take without qualifiers when elements are allocated dynamically.
+ *
+ * @param[in] F			- the field prefix.
+ * @param[out] C		- the result.
+ * @param[in] A			- the pointer to the first factor.
+ * @param[in] B			- the pointer to the second factor.
+ */
+/** @{ */
+#define TMPL_LAZYR_MULN(F, C, A, B)											\
+	if ((A) == (B)) {														\
+		TMPL_LAZYR_SQRN_##F(C, A);											\
+	} else {																\
+		TMPL_LAZYR_MULN_##F(C, A, B);										\
+	}
+#define TMPL_LAZYR_MULM(F, C, A, B)											\
+	if ((A) == (B)) {														\
+		F##_sqr(C, (void *)(A));											\
+	} else {																\
+		F##_mul(C, (void *)(A), (void *)(B));								\
+	}
+/** @} */
+
+/**
+ * Computes the sum with index J of TMPL_LAZYR_ADDP without reduction.
+ *
+ * @param[in] F			- the field prefix.
+ * @param[in] A			- the pointers to the first factors of the products.
+ * @param[in] B			- the pointers to the second factors of the products.
+ * @param[in] S			- the signs of the second products.
+ * @param[in] D			- the pointers to the first factors of the second
+ * 						products.
+ * @param[in] E			- the pointers to the second factors of the second
+ * 						products.
+ * @param[out] U		- the unreduced sums.
+ * @param[out] T		- the scratch for one unreduced element.
+ * @param[in] J			- the index of the sum.
+ */
+#define TMPL_LAZYR_ADDN(F, A, B, S, D, E, U, T, J)							\
+	TMPL_LAZYR_MULN(F, (U)[J], (A)[J], (B)[J]);								\
+	if ((S)[J] != 0) {														\
+		TMPL_LAZYR_MULN(F, T, (D)[J], (E)[J]);								\
+		if ((S)[J] > 0) {													\
+			TMPL_LAZYR_ADDC_##F((U)[J], (U)[J], T);							\
+		} else {															\
+			TMPL_LAZYR_SUBC_##F((U)[J], (U)[J], T);							\
+		}																	\
+	}
+
+/**
+ * Computes N sums of products of elements of a field into destinations given
+ * by pointers to them: the destination with index i receives
+ * A[i] * B[i] + S[i] * D[i] * E[i], for a sign S[i] in {-1, 0, 1}. In a Residue
+ * Number System, all N are reduced together, as reductions are cheaper in
+ * batches. Otherwise, the sums with nonzero signs are computed before any
+ * destination is written and reduced each by itself, and then the single
+ * products are computed with the fused multiplication of the field, so their
+ * destinations must not be later factors.
+ *
+ * @param[in] F			- the field prefix.
+ * @param[out] C		- the pointers to the destinations.
+ * @param[in] A			- the pointers to the first factors of the products.
+ * @param[in] B			- the pointers to the second factors of the products.
+ * @param[in] S			- the signs of the second products.
+ * @param[in] D			- the pointers to the first factors of the second
+ * 						products.
+ * @param[in] E			- the pointers to the second factors of the second
+ * 						products.
+ * @param[out] U		- the scratch for N unreduced elements.
+ * @param[out] T		- the scratch for one more unreduced element.
+ * @param[in] N			- the number of destinations.
+ */
+#if FP_RDC == FP_RENUS
+#define TMPL_LAZYR_ADDP(F, C, A, B, S, D, E, U, T, N)						\
+	RLC_UNROLL(8)															\
+	for (int _j = 0; _j < (N); _j++) {										\
+		TMPL_LAZYR_ADDN(F, A, B, S, D, E, U, T, _j);						\
+	}																		\
+	TMPL_LAZYR_RDCP(F, C, U, N)
+#else
+#define TMPL_LAZYR_ADDP(F, C, A, B, S, D, E, U, T, N)						\
+	RLC_UNROLL(8)															\
+	for (int _j = 0; _j < (N); _j++) {										\
+		if ((S)[_j] != 0) {													\
+			TMPL_LAZYR_ADDN(F, A, B, S, D, E, U, T, _j);					\
+		}																	\
+	}																		\
+	RLC_UNROLL(8)															\
+	for (int _j = 0; _j < (N); _j++) {										\
+		if ((S)[_j] != 0) {													\
+			TMPL_LAZYR_RDCN_##F((C)[_j], (U)[_j]);							\
+		}																	\
+	}																		\
+	RLC_UNROLL(8)															\
+	for (int _j = 0; _j < (N); _j++) {										\
+		if ((S)[_j] == 0) {													\
+			TMPL_LAZYR_MULM(F, (C)[_j], (A)[_j], (B)[_j]);					\
+		}																	\
+	}
+#endif
+
+/**
+ * Computes N products of pairs of elements of a field into destinations given
+ * by pointers to them, as TMPL_LAZYR_ADDP with all signs zero.
  *
  * @param[in] F			- the field prefix.
  * @param[out] C		- the pointers to the destinations.
  * @param[in] A			- the pointers to the first factors.
  * @param[in] B			- the pointers to the second factors.
- * @param[in,out] U		- the unreduced elements, and scratch for the rest.
- * @param[in] K			- the number of unreduced elements.
+ * @param[out] U		- the scratch for N unreduced elements.
  * @param[in] N			- the number of destinations.
  */
 #if FP_RDC == FP_RENUS
-#define TMPL_LAZYR_MULP(F, C, A, B, U, K, N)								\
+#define TMPL_LAZYR_MULP(F, C, A, B, U, N)									\
 	RLC_UNROLL(8)															\
-	for (int _j = (K); _j < (N); _j++) {									\
-		if ((A)[_j] == (B)[_j]) {											\
-			TMPL_LAZYR_SQRN_##F((U)[_j], (A)[_j]);							\
-		} else {															\
-			TMPL_LAZYR_MULN_##F((U)[_j], (A)[_j], (B)[_j]);					\
-		}																	\
+	for (int _j = 0; _j < (N); _j++) {										\
+		TMPL_LAZYR_MULN(F, (U)[_j], (A)[_j], (B)[_j]);						\
 	}																		\
 	TMPL_LAZYR_RDCP(F, C, U, N)
 #else
-#define TMPL_LAZYR_MULP(F, C, A, B, U, K, N)								\
-	TMPL_LAZYR_RDCP(F, C, U, K);											\
+#define TMPL_LAZYR_MULP(F, C, A, B, U, N)									\
 	RLC_UNROLL(8)															\
-	for (int _j = (K); _j < (N); _j++) {									\
-		if ((A)[_j] == (B)[_j]) {											\
-			F##_sqr((C)[_j], (void *)(A)[_j]);								\
-		} else {															\
-			F##_mul((C)[_j], (void *)(A)[_j], (void *)(B)[_j]);				\
-		}																	\
+	for (int _j = 0; _j < (N); _j++) {										\
+		TMPL_LAZYR_MULM(F, (C)[_j], (A)[_j], (B)[_j]);						\
 	}
 #endif
 

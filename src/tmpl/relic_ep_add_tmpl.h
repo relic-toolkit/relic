@@ -194,9 +194,9 @@
 			w[3] = t2;														\
 			w[4] = t5;														\
 			if (C##_curve_opt_a() == RLC_ZERO && p->coord != EC_AFFIN) {	\
-				TMPL_LAZYR_MULP(F, w, a, b, u, 0, 5);						\
+				TMPL_LAZYR_MULP(F, w, a, b, u, 5);							\
 			} else {														\
-				TMPL_LAZYR_MULP(F, w, a, b, u, 0, 3);						\
+				TMPL_LAZYR_MULP(F, w, a, b, u, 3);							\
 			}																\
 			F##_add(t4, t0, t1);											\
 			F##_sub(t3, t3, t4);											\
@@ -227,8 +227,12 @@
 				C##_curve_mul_b(r->y, r->y);								\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, t1, t4, r->y,					\
-					r->y, t1, r->z, t0, r->y, r->z, r->z, t4, t0, t3);		\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, t1, r->z),							\
+					TMPL_LAZYR_PTRS(t1, r->z, t4),							\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t4, t0, t0),							\
+					TMPL_LAZYR_PTRS(r->y, r->y, t3), u, u[3], 3);			\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 11M + 2m_b + 23a. */								\
 				if (p->coord == EC_AFFIN) {									\
@@ -240,7 +244,9 @@
 				} else {													\
 					F##_dbl(t2, p->z);										\
 					F##_add(t2, t2, p->z);									\
-					F##_mul2(t4, q->y, p->z, t5, q->x, p->z);				\
+					TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(t4, t5),				\
+						TMPL_LAZYR_PTRS(q->y, q->x),						\
+						TMPL_LAZYR_PTRS(p->z, p->z), u, 2);					\
 					F##_add(t4, t4, p->y);									\
 					F##_add(r->y, t5, p->x);								\
 					C##_curve_mul_b(r->z, p->z);							\
@@ -260,8 +266,12 @@
 				F##_sub(t0, t0, t2);										\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, r->x, t4, r->y,					\
-					r->y, r->x, r->z, t0, r->y, r->z, t4, r->z, t3, t0);	\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, r->x, t4),							\
+					TMPL_LAZYR_PTRS(r->x, r->z, r->z),						\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t4, t0, t3),							\
+					TMPL_LAZYR_PTRS(r->y, r->y, t0), u, u[3], 3);			\
 			} else {														\
 				/* Cost of 11M + 3m_a + 2m_3b + 17a. */						\
 				if (p->coord == EC_AFFIN) {									\
@@ -275,7 +285,9 @@
 					F##_add(r->z, r->z, r->y);								\
 				} else {													\
 					C##_curve_mul_a(t2, p->z);								\
-					F##_mul2(t4, q->x, p->z, t5, q->y, p->z);				\
+					TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(t4, t5),				\
+						TMPL_LAZYR_PTRS(q->x, q->y),						\
+						TMPL_LAZYR_PTRS(p->z, p->z), u, 2);					\
 					F##_add(t4, t4, p->x);									\
 					F##_add(t5, t5, p->y);									\
 					F##_dbl(r->x, p->z);									\
@@ -297,8 +309,12 @@
 				F##_add(t4, t4, t2);										\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, r->x, t5, t4,					\
-					r->y, r->x, r->z, t1, t4, r->z, t5, r->z, t3, t1);		\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, r->x, t5),							\
+					TMPL_LAZYR_PTRS(r->x, r->z, r->z),						\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t5, t1, t3),							\
+					TMPL_LAZYR_PTRS(t4, t4, t1), u, u[3], 3);				\
 			}																\
 																			\
 			r->coord = EC_PROJC;											\
@@ -373,7 +389,7 @@
 				w[4] = t5;													\
 				w[5] = t4;													\
 			}																\
-			TMPL_LAZYR_MULP(F, w, a, b, u, 0, 6);							\
+			TMPL_LAZYR_MULP(F, w, a, b, u, 6);								\
 			F##_add(t6, t0, t1);											\
 			F##_sub(t3, t3, t6);											\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
@@ -394,8 +410,12 @@
 				C##_curve_mul_b(r->y, r->y);								\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, t1, t4, r->y,					\
-					r->y, t1, r->z, t0, r->y, r->z, r->z, t4, t0, t3);		\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, t1, r->z),							\
+					TMPL_LAZYR_PTRS(t1, r->z, t4),							\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t4, t0, t0),							\
+					TMPL_LAZYR_PTRS(r->y, r->y, t3), u, u[3], 3);			\
 			} else if (C##_curve_opt_a() == RLC_MIN3) {						\
 				/* Cost of 12M + 2m_b + 29a. */								\
 				F##_add(t5, t1, t2);										\
@@ -420,8 +440,12 @@
 				F##_sub(t0, t0, t2);										\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, r->x, t4, r->y,					\
-					r->y, r->x, r->z, t0, r->y, r->z, t4, r->z, t3, t0);	\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, r->x, t4),							\
+					TMPL_LAZYR_PTRS(r->x, r->z, r->z),						\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t4, t0, t3),							\
+					TMPL_LAZYR_PTRS(r->y, r->y, t0), u, u[3], 3);			\
 			} else {														\
 				/* Cost of 12M + 3m_a + 2_m3b + 23a. */						\
 				F##_add(r->x, t0, t2);										\
@@ -447,8 +471,12 @@
 				F##_add(t4, t4, t2);										\
 				/* The difference and the sums of products are reduced		\
 				 * together. */												\
-				F##_mul_sub_add2(r->x, t3, r->x, t5, t4,					\
-					r->y, r->x, r->z, t1, t4, r->z, t5, r->z, t3, t1);		\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->x, r->y, r->z),		\
+					TMPL_LAZYR_PTRS(t3, r->x, t5),							\
+					TMPL_LAZYR_PTRS(r->x, r->z, r->z),						\
+					TMPL_LAZYR_SGNS(-1, 1, 1),								\
+					TMPL_LAZYR_PTRS(t5, t1, t3),							\
+					TMPL_LAZYR_PTRS(t4, t4, t1), u, u[3], 3);				\
 			}																\
 			r->coord = EC_PROJC;											\
 		} RLC_CATCH_ANY {													\

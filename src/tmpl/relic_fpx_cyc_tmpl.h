@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_fpx_lazyr_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -744,12 +745,14 @@
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] DZ		- the double-precision prefix of that subfield.
  * @param[in] NOR		- the multiplication by the non-residue in the subfield.
  */
-#define TMPL_FPX_BACK_CYC_SIM_QC(X, Z, NOR)									\
+#define TMPL_FPX_BACK_CYC_SIM_QC(X, Z, DZ, NOR)								\
 	void X##_back_cyc_sim(X##_t c[], const X##_t a[], int n) {				\
 	    Z##_t *t = RLC_ALLOCA(Z##_t, n * 3);								\
 	    Z##_t *t0 = t + 0 * n, *t1 = t + 1 * n, *t2 = t + 2 * n;			\
+		DZ##_t u[3];														\
 																			\
 		if (n == 0) {														\
 			RLC_FREE(t);													\
@@ -765,6 +768,7 @@
 			Z##_null(t1[i]);												\
 			Z##_null(t2[i]);												\
 		}																	\
+		DZ##_null_all(u[0], u[1], u[2]);									\
 																			\
 		RLC_TRY {															\
 			for (int i = 0; i < n; i++) {									\
@@ -772,6 +776,7 @@
 				Z##_new(t1[i]);												\
 				Z##_new(t2[i]);												\
 			}																\
+			DZ##_new_all(u[0], u[1], u[2]);									\
 																			\
 			for (int i = 0; i < n; i++) {									\
 				int f = Z##_is_zero(a[i][1][0]);							\
@@ -779,8 +784,9 @@
 				Z##_copy(t2[i], a[i][0][1]);								\
 				Z##_copy_sec(t2[i], a[i][1][2], f);							\
 				/* t0 = g4^2 and t2 = g5^2, reduced together. */			\
-				Z##_mul2(t0[i], a[i][0][1], t2[i],							\
-						t2[i], a[i][1][2], a[i][1][2]);						\
+				TMPL_LAZYR_MULP(Z, TMPL_LAZYR_DSTS(t0[i], t2[i]),			\
+					TMPL_LAZYR_PTRS(a[i][0][1], a[i][1][2]),				\
+					TMPL_LAZYR_PTRS(t2[i], a[i][1][2]), u, 2);				\
 				Z##_dbl(t1[i], t0[i]);										\
 				Z##_copy_sec(t0[i], t1[i], f);								\
 				/* t1 = 3 * g4^2 - 2 * g3. */								\
@@ -806,9 +812,9 @@
 																			\
 			for (int i = 0; i < n; i++) {									\
 				/* g1 = t0 * t1, with t1 = g3 * g4 and t0 = g2 * g5. */		\
-				Z##_mul3(c[i][1][1], t0[i], t1[i],							\
-						t1[i], a[i][0][2], a[i][0][1],						\
-						t0[i], a[i][1][0], a[i][1][2]);						\
+				TMPL_LAZYR_MULP(Z, TMPL_LAZYR_DSTS(c[i][1][1], t1[i], t0[i]), \
+					TMPL_LAZYR_PTRS(t0[i], a[i][0][2], a[i][1][0]),			\
+					TMPL_LAZYR_PTRS(t1[i], a[i][0][1], a[i][1][2]), u, 3);	\
 				/* t2 = 2 * g1^2 - 3 * g3 * g4. */							\
 				Z##_sqr(t2[i], c[i][1][1]);									\
 				Z##_sub(t2[i], t2[i], t1[i]);								\
@@ -833,6 +839,7 @@
 				Z##_free(t1[i]);											\
 				Z##_free(t2[i]);											\
 			}																\
+			DZ##_free_all(u[0], u[1], u[2]);								\
 			RLC_FREE(t);													\
 		}																	\
 	}
@@ -917,12 +924,14 @@
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] DZ		- the double-precision prefix of that subfield.
  * @param[in] NOR		- the multiplication by the non-residue in the subfield.
  */
-#define TMPL_FPX_BACK_CYC_SIM_CQ(X, Z, NOR)									\
+#define TMPL_FPX_BACK_CYC_SIM_CQ(X, Z, DZ, NOR)								\
 	void X##_back_cyc_sim(X##_t c[], const X##_t a[], int n) {				\
 	    Z##_t *t = RLC_ALLOCA(Z##_t, n * 3);								\
 	    Z##_t *t0 = t + 0 * n, *t1 = t + 1 * n, *t2 = t + 2 * n;			\
+		DZ##_t u[3];														\
 																			\
 		if (n == 0) {														\
 			RLC_FREE(t);													\
@@ -938,6 +947,7 @@
 			Z##_null(t1[i]);												\
 			Z##_null(t2[i]);												\
 		}																	\
+		DZ##_null_all(u[0], u[1], u[2]);									\
 																			\
 		RLC_TRY {															\
 			for (int i = 0; i < n; i++) {									\
@@ -945,22 +955,24 @@
 				Z##_new(t1[i]);												\
 				Z##_new(t2[i]);												\
 			}																\
+			DZ##_new_all(u[0], u[1], u[2]);									\
 																			\
 			for (int i = 0; i < n; i++) {									\
 				int f = Z##_is_zero(a[i][1][0]);							\
 				/* If f, t0 = 2 * g4 * g5, t1 = g3. */						\
 				Z##_copy(t2[i], a[i][2][0]);								\
 				Z##_copy_sec(t2[i], a[i][2][1], f);							\
-				/* t0 = g4^2. */											\
-				Z##_mul(t0[i], a[i][2][0], t2[i]);							\
-				Z##_dbl(t2[i], t0[i]);										\
-				Z##_copy_sec(t0[i], t2[i], f);								\
+				/* t0 = g4^2 and t2 = g5^2, reduced together. */			\
+				TMPL_LAZYR_MULP(Z, TMPL_LAZYR_DSTS(t0[i], t2[i]),			\
+					TMPL_LAZYR_PTRS(a[i][2][0], a[i][2][1]),				\
+					TMPL_LAZYR_PTRS(t2[i], a[i][2][1]), u, 2);				\
+				Z##_dbl(t1[i], t0[i]);										\
+				Z##_copy_sec(t0[i], t1[i], f);								\
 				/* t1 = 3 * g4^2 - 2 * g3. */								\
 				Z##_sub(t1[i], t0[i], a[i][1][1]);							\
 				Z##_dbl(t1[i], t1[i]);										\
 				Z##_add(t1[i], t1[i], t0[i]);								\
 				/* t0 = E * g5^2 + t1. */									\
-				Z##_sqr(t2[i], a[i][2][1]);									\
 				NOR(t0[i], t2[i]);											\
 				Z##_add(t0[i], t0[i], t1[i]);								\
 				/* t1 = (4 * g2). */										\
@@ -978,20 +990,17 @@
 			Z##_inv_sim(t1, t1, n);											\
 																			\
 			for (int i = 0; i < n; i++) {									\
-				/* t0 = g1. */												\
-				Z##_mul(c[i][0][1], t0[i], t1[i]);							\
-																			\
-				/* t1 = g3 * g4. */											\
-				Z##_mul(t1[i], a[i][1][1], a[i][2][0]);						\
+				/* g1 = t0 * t1, with t1 = g3 * g4 and t0 = g2 * g5. */		\
+				TMPL_LAZYR_MULP(Z, TMPL_LAZYR_DSTS(c[i][0][1], t1[i], t0[i]), \
+					TMPL_LAZYR_PTRS(t0[i], a[i][1][1], a[i][1][0]),			\
+					TMPL_LAZYR_PTRS(t1[i], a[i][2][0], a[i][2][1]), u, 3);	\
 				/* t2 = 2 * g1^2 - 3 * g3 * g4. */							\
 				Z##_sqr(t2[i], c[i][0][1]);									\
 				Z##_sub(t2[i], t2[i], t1[i]);								\
 				Z##_dbl(t2[i], t2[i]);										\
 				Z##_sub(t2[i], t2[i], t1[i]);								\
-				/* t1 = g2 * g5. */											\
-				Z##_mul(t1[i], a[i][1][0], a[i][2][1]);						\
 				/* t2 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */		\
-				Z##_add(t2[i], t2[i], t1[i]);								\
+				Z##_add(t2[i], t2[i], t0[i]);								\
 				NOR(c[i][0][0], t2[i]);										\
 				fp_add_dig(((fp_t *)c[i][0][0])[0], ((fp_t *)c[i][0][0])[0],\
 						1);													\
@@ -1009,6 +1018,7 @@
 				Z##_free(t1[i]);											\
 				Z##_free(t2[i]);											\
 			}																\
+			DZ##_free_all(u[0], u[1], u[2]);								\
 			RLC_FREE(t);													\
 		}																	\
 	}
@@ -1354,12 +1364,13 @@
  * @param[in] X			- the extension field prefix.
  * @param[in] H			- the subfield of half the degree.
  * @param[in] S			- the subfield used in compression, of degree k/6.
+ * @param[in] DS		- the double-precision prefix of that subfield.
  * @param[in] M			- the multiplication by the non-residue in S.
  * @param[in] T			- the shape of the tower (QC or CQ).
  * @param[in] PCK		- the flag to use compressed squarings in the
  * 						exponentiation by sparse exponents.
  */
-#define TMPL_FPX_CYC(X, H, S, M, T, PCK)									\
+#define TMPL_FPX_CYC(X, H, S, DS, M, T, PCK)								\
 	TMPL_FPX_INV_##T(X, H, H##_mul_art)										\
 	TMPL_FPX_INV_CYC_##T(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
@@ -1367,7 +1378,7 @@
 	TMPL_FPX_CONV_CYC(X, (int)(sizeof(S##_t) / sizeof(fp_t)))				\
 	TMPL_FPX_TEST_CYC(X, (int)(sizeof(S##_t) / sizeof(fp_t)))				\
 	TMPL_FPX_BACK_CYC_##T(X, S, M)											\
-	TMPL_FPX_BACK_CYC_SIM_##T(X, S, M)										\
+	TMPL_FPX_BACK_CYC_SIM_##T(X, S, DS, M)									\
 	TMPL_FPX_CUB_CYC_##T(X, S, M)											\
 	TMPL_EXP_CYC(X)															\
 	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)										\
@@ -1385,10 +1396,11 @@
  *
  * @param[in] X			- the extension field prefix.
  * @param[in] H			- the subfield of half the degree.
+ * @param[in] D			- the double-precision extension field prefix.
  */
-#define TMPL_FPX_CYC_T2(X, H)												\
+#define TMPL_FPX_CYC_T2(X, H, D)											\
 	TMPL_FPX_INV_QUAD(X, H, H##_mul_art)									\
-	TMPL_FPX_INV_SIM(X, TMPL_FPX_MUL2_SEQ)									\
+	TMPL_FPX_INV_SIM(X, D, TMPL_FPX_MUL2_SEQ)								\
 	TMPL_FPX_INV_CYC_QUAD(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
 	TMPL_FPX_EXP_DIG(X)														\

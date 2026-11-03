@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fp_lazyr_tmpl.h"
 #include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
 #include "relic_fpx_util_tmpl.h"
@@ -391,18 +392,21 @@ void fp2_sqr_integ(fp2_t c, const fp2_t a) {
 
 void fp2_inv(fp2_t c, const fp2_t a) {
 	fp_t t0, t1;
+	dv_t u[3];
 
 	fp_null_all(t0, t1);
+	dv_null_all(u[0], u[1], u[2]);
 
 	RLC_TRY {
 		fp_new_all(t0, t1);
+		dv_new_all(u[0], u[1], u[2]);
 
-		/* t0 = a_0^2, t1 = a_1^2, reduced together. */
-		fp_mul2(t0, a[0], a[0], t1, a[1], a[1]);
-
-		/* t1 = 1/(a_0^2 + a_1^2). */
 #ifndef FP_QNRES
 		if (fp_prime_get_qnr() != -1) {
+			/* t0 = a_0^2, t1 = a_1^2, reduced together. */
+			TMPL_LAZYR_MULP(fp, TMPL_LAZYR_DSTS(t0, t1),
+				TMPL_LAZYR_PTRS(a[0], a[1]), TMPL_LAZYR_PTRS(a[0], a[1]),
+				u, 2);
 			if (fp_prime_get_qnr() == -2) {
 				fp_dbl(t1, t1);
 				fp_add(t0, t0, t1);
@@ -415,17 +419,21 @@ void fp2_inv(fp2_t c, const fp2_t a) {
 					fp_sub(t0, t0, t1);
 				}
 			}
-		} else {
-			fp_add(t0, t0, t1);
-		}
-#else
-		fp_add(t0, t0, t1);
+		} else
 #endif
+		{
+			/* t0 = a_0^2 + a_1^2, reduced once. */
+			TMPL_LAZYR_ADDP(fp, TMPL_LAZYR_DSTS(t0), TMPL_LAZYR_PTRS(a[0]),
+				TMPL_LAZYR_PTRS(a[0]), TMPL_LAZYR_SGNS(1),
+				TMPL_LAZYR_PTRS(a[1]), TMPL_LAZYR_PTRS(a[1]), u, u[2], 1);
+		}
 
+		/* t1 = 1/(a_0^2 + a_1^2). */
 		fp_inv(t1, t0);
 
 		/* c_0 = a_0/(a_0^2 + a_1^2), c_1 = - a_1/(a_0^2 + a_1^2). */
-		fp_mul2(c[0], a[0], t1, c[1], a[1], t1);
+		TMPL_LAZYR_MULP(fp, TMPL_LAZYR_DSTS(c[0], c[1]),
+			TMPL_LAZYR_PTRS(a[0], a[1]), TMPL_LAZYR_PTRS(t1, t1), u, 2);
 		fp_neg(c[1], c[1]);
 	}
 	RLC_CATCH_ANY {
@@ -433,6 +441,7 @@ void fp2_inv(fp2_t c, const fp2_t a) {
 	}
 	RLC_FINALLY {
 		fp_free_all(t0, t1);
+		dv_free_all(u[0], u[1], u[2]);
 	}
 }
 
@@ -481,7 +490,7 @@ void fp2_sqr_cyc(fp2_t c, const fp2_t a) {
 
 TMPL_FPX_MUL_ADD_LAZYR(fp2, dv2);
 
-TMPL_FPX_INV_SIM(fp2, TMPL_FPX_MUL2_BAT);
+TMPL_FPX_INV_SIM(fp2, dv2, TMPL_FPX_MUL2_BAT);
 
 void fp2_exp(fp2_t c, const fp2_t a, const bn_t b) {
 	fp2_t t;

@@ -174,12 +174,12 @@
 				w[3] = t2;													\
 				if (p->coord == EC_AFFIN) {									\
 					/* Save 1M + 1S + 1m_b3 if z1 = 1. */					\
-					TMPL_LAZYR_MULP(F, w, a, b, u, 0, 2);					\
+					TMPL_LAZYR_MULP(F, w, a, b, u, 2);						\
 					F##_copy(t1, p->y);										\
 					F##_dbl(t2, C##_curve_get_b());							\
 					F##_add(t2, t2, C##_curve_get_b());						\
 				} else {													\
-					TMPL_LAZYR_MULP(F, w, a, b, u, 0, 4);					\
+					TMPL_LAZYR_MULP(F, w, a, b, u, 4);						\
 					F##_dbl(t5, t2);										\
 					F##_add(t5, t5, t2);									\
 					C##_curve_mul_b(t2, t5);								\
@@ -192,20 +192,17 @@
 				F##_add(t4, t4, t2);										\
 				F##_sub(t4, t0, t4);										\
 				/* y3 = t2 * z3 + t4 * y3, z3 = t1 * z3 and x3 = t4 * t3. */\
-				TMPL_LAZYR_MULN_##F(u[0], t2, r->z);						\
-				TMPL_LAZYR_MULN_##F(u[1], t4, r->y);						\
-				TMPL_LAZYR_ADDC_##F(u[0], u[0], u[1]);						\
-				a[1] = t1;													\
-				b[1] = r->z;												\
-				a[2] = t4;													\
-				b[2] = t3;													\
-				w[0] = r->y;												\
-				w[1] = r->z;												\
-				w[2] = r->x;												\
-				TMPL_LAZYR_MULP(F, w, a, b, u, 1, 3);						\
+				TMPL_LAZYR_ADDP(F, TMPL_LAZYR_DSTS(r->y, r->z, r->x),		\
+					TMPL_LAZYR_PTRS(t2, t1, t4),							\
+					TMPL_LAZYR_PTRS(r->z, r->z, t3),						\
+					TMPL_LAZYR_SGNS(1, 0, 0),								\
+					TMPL_LAZYR_PTRS(t4, NULL, NULL),						\
+					TMPL_LAZYR_PTRS(r->y, NULL, NULL), u, u[3], 3);			\
 				F##_dbl(r->x, r->x);										\
 			} else {														\
-				F##_mul3(t0, p->x, p->x, t1, p->y, p->y, t3, p->x, p->y);	\
+				TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(t0, t1, t3),				\
+					TMPL_LAZYR_PTRS(p->x, p->y, p->x),						\
+					TMPL_LAZYR_PTRS(p->x, p->y, p->y), u, 3);				\
 				F##_dbl(t3, t3);											\
 				F##_mul(t4, p->y, p->z);									\
 																			\
@@ -228,7 +225,9 @@
 					F##_add(r->y, r->x, r->y);								\
 					F##_sub(r->x, t1, r->y);								\
 					F##_add(r->y, t1, r->y);								\
-					F##_mul2(r->y, r->x, r->y, r->x, t3, r->x);				\
+					TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(r->y, r->x),			\
+						TMPL_LAZYR_PTRS(r->x, t3),							\
+						TMPL_LAZYR_PTRS(r->y, r->x), u, 2);					\
 					C##_curve_mul_b(r->z, r->z);							\
 					F##_sub(t3, r->z, t2);									\
 					F##_sub(t3, t3, t0);									\
@@ -257,7 +256,9 @@
 					F##_add(r->y, r->x, r->y);								\
 					F##_sub(r->x, t1, r->y);								\
 					F##_add(r->y, t1, r->y);								\
-					F##_mul2(r->y, r->x, r->y, r->x, t3, r->x);				\
+					TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(r->y, r->x),			\
+						TMPL_LAZYR_PTRS(r->x, t3),							\
+						TMPL_LAZYR_PTRS(r->y, r->x), u, 2);					\
 					F##_dbl(t5, r->z);										\
 					F##_add(t5, t5, r->z);									\
 					C##_curve_mul_b(r->z, t5);								\
@@ -270,7 +271,9 @@
 				}															\
 				/* Common part with renamed variables. */					\
 				F##_dbl(t2, t4);											\
-				F##_mul3(t0, t0, t3, t5, t2, t3, r->z, t2, t1);				\
+				TMPL_LAZYR_MULP(F, TMPL_LAZYR_DSTS(t0, t5, r->z),			\
+					TMPL_LAZYR_PTRS(t0, t2, t2),							\
+					TMPL_LAZYR_PTRS(t3, t3, t1), u, 3);						\
 				F##_add(r->y, r->y, t0);									\
 				F##_sub(r->x, r->x, t5);									\
 				F##_dbl(r->z, r->z);										\

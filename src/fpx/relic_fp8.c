@@ -199,7 +199,7 @@ void fp8_sqr_cyc(fp8_t c, const fp8_t a) {
 	}
 }
 
-TMPL_FPX_CYC_T2(fp8, fp4);
+TMPL_FPX_CYC_T2(fp8, fp4, dv8);
 
 void fp8_frb(fp8_t c, const fp8_t a, int i) {
 	/* Cost of four multiplication in Fp^2 per Frobenius. */
