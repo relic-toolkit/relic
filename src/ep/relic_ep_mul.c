@@ -40,20 +40,23 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, n0, n1, s0, s1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
 	bn_t n, m, k0, k1;
-	ep_t q, t[2][1 << (RLC_WIDTH - 2)];
+	ep_t q, t[1 << (RLC_WIDTH - 2)];
+	fp_t c[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	bn_null_all(n, m, k0, k1);
 	ep_null(q);
 	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-		ep_null_all(t[0][i], t[1][i]);
+		ep_null(t[i]);
+		fp_null(c[i]);
 	}
 
 	RLC_TRY {
 		bn_new_all(n, m, k0, k1);
 		ep_new(q);
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_new_all(t[0][i], t[1][i]);
+			ep_new(t[i]);
+			fp_new(c[i]);
 		}
 
 		ep_curve_get_ord(n);
@@ -67,13 +70,15 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		} else {
 			ep_neg(q, p);
 		}
-		TMPL_EP_MUL_TAB(ep, t[0], q, RLC_WIDTH);
-		/* The table of k1 is the image of the table of k0 under psi, with the
-		 * sign of k1 relative to that of k0. */
+		TMPL_EP_MUL_TAB(ep, t, q, RLC_WIDTH);
+		/* The image under psi of a table entry only changes one coordinate,
+		 * psi(x, y) = (beta * x, y) for a = 0 and (-x, beta * y) otherwise,
+		 * so keep that coordinate and read the images without products. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_psi(t[1][i], t[0][i]);
-			if (s0 != s1) {
-				ep_neg(t[1][i], t[1][i]);
+			if (ep_curve_opt_a() == RLC_ZERO) {
+				fp_mul(c[i], t[i]->x, ep_curve_get_beta());
+			} else {
+				fp_mul(c[i], t[i]->y, ep_curve_get_beta());
 			}
 		}
 
@@ -92,16 +97,26 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 			n0 = *t0;
 			n1 = *t1;
 			if (n0 > 0) {
-				ep_add(r, r, t[0][n0 / 2]);
+				ep_add(r, r, t[n0 / 2]);
 			}
 			if (n0 < 0) {
-				ep_sub(r, r, t[0][-n0 / 2]);
+				ep_sub(r, r, t[-n0 / 2]);
 			}
-			if (n1 > 0) {
-				ep_add(r, r, t[1][n1 / 2]);
-			}
-			if (n1 < 0) {
-				ep_sub(r, r, t[1][-n1 / 2]);
+			if (n1 != 0) {
+				/* psi of the entry, with the sign of k1 relative to k0. */
+				n1 = (n1 < 0 ? -n1 : n1) / 2;
+				ep_copy(q, t[n1]);
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_copy(q->x, c[n1]);
+				} else {
+					fp_neg(q->x, q->x);
+					fp_copy(q->y, c[n1]);
+				}
+				if ((s0 != s1) ^ (*t1 < 0)) {
+					ep_sub(r, r, q);
+				} else {
+					ep_add(r, r, q);
+				}
 			}
 		}
 		/* Convert r to affine coordinates. */
@@ -114,7 +129,8 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_free_all(n, m, k0, k1);
 		ep_free(q);
 		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
-			ep_free_all(t[0][i], t[1][i]);
+			ep_free(t[i]);
+			fp_free(c[i]);
 		}
 	}
 }

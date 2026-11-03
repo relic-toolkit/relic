@@ -308,7 +308,7 @@
 				break;														\
 			}																\
 		}																	\
-		if (i == n) {														\
+		if (i >= n) {														\
 			for (i = 0; i < n && r != t; i++) {								\
 				C##_copy(r[i], t[i]);										\
 			}																\
