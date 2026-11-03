@@ -99,16 +99,16 @@
 #if FP_RDC == FP_RENUS
 #define TMPL_CYC_NORM(F, R)													\
 	{																		\
-		enum { _N = sizeof(F##_t) / sizeof(fp_t) };							\
-		rlc_align dig_t _t[_N][RLC_FP_DLEN];								\
-		dig_t *_c[_N], *_u[_N];												\
+		enum { _num = sizeof(F##_t) / sizeof(fp_t) };						\
+		rlc_align dig_t _t[_num][RLC_FP_DLEN];								\
+		dig_t *_c[_num], *_u[_num];											\
 																			\
-		for (int _n = 0; _n < _N; _n++) {									\
+		for (int _n = 0; _n < _num; _n++) {									\
 			fp_muln_low(_t[_n], ((fp_t *)(R))[_n], core_get()->one);		\
 			_c[_n] = ((fp_t *)(R))[_n];										\
 			_u[_n] = _t[_n];												\
 		}																	\
-		fp_rdcv_low(_c, _u, _N);											\
+		fp_rdcv_low(_c, _u, _num);											\
 	}
 #else
 #define TMPL_CYC_NORM(F, R)		/* Elements are reduced by additions. */

@@ -684,7 +684,7 @@
  */
 #define TMPL_FPX_SQR_CYC_UNR(F, X, D, Z, DZ, Y, DY, B, BD, N, Q, SQRU, L)	\
 	void F(D##_t c, const X##_t a) {										\
-		static const int _P[3][4][2] = TMPL_CYC_PAIRS_##L;					\
+		static const int _pairs[3][4][2] = TMPL_CYC_PAIRS_##L;				\
 		const size_t _n = sizeof(DZ##_t) / sizeof(dv_t);					\
 		Y##_t t;															\
 		DY##_t u;															\
@@ -700,11 +700,11 @@
 			fp_new(k);														\
 																			\
 			for (int _p = 0; _p < 3; _p++) {								\
-				int _i = _P[_p][2][0], _j = _P[_p][2][1];					\
-				int _r = _P[_p][3][0], _s = _P[_p][3][1];					\
+				int _i = _pairs[_p][2][0], _j = _pairs[_p][2][1];			\
+				int _r = _pairs[_p][3][0], _s = _pairs[_p][3][1];			\
 																			\
-				Z##_copy(t[0], a[_P[_p][0][0]][_P[_p][0][1]]);				\
-				Z##_copy(t[1], a[_P[_p][1][0]][_P[_p][1][1]]);				\
+				Z##_copy(t[0], a[_pairs[_p][0][0]][_pairs[_p][0][1]]);		\
+				Z##_copy(t[1], a[_pairs[_p][1][0]][_pairs[_p][1][1]]);		\
 				/* (x + y * w)^2 gives x^2 + v * y^2 and 2 * x * y. */		\
 				SQRU(u, t);													\
 				for (size_t _l = 0; _l < _n; _l++) {						\
@@ -725,7 +725,8 @@
 			 * reduction. */												\
 			for (int _p = 0; _p < 3; _p++) {								\
 				for (int _r = 0; _r < 2; _r++) {							\
-					int _i = _P[_p][2 + _r][0], _j = _P[_p][2 + _r][1];		\
+					int _i = _pairs[_p][2 + _r][0];							\
+					int _j = _pairs[_p][2 + _r][1];							\
 					dv_t *_c = (dv_t *)c[_i][_j];							\
 					const fp_t *_a = (const fp_t *)a[_i][_j];				\
 																			\
