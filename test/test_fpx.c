@@ -7168,6 +7168,12 @@ static int exponentiation24(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp24_exp(c, a, d);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			/* Higher powers agree with repeated Frobenius. */
+			for (int j = 2; j < 24; j++) {
+				fp24_frb(b, b, 1);
+				fp24_frb(c, a, j);
+				TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -8073,6 +8079,12 @@ static int exponentiation48(void) {
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp48_exp(c, a, d);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			/* Higher powers agree with repeated Frobenius. */
+			for (int j = 2; j < 48; j++) {
+				fp48_frb(b, b, 1);
+				fp48_frb(c, a, j);
+				TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
