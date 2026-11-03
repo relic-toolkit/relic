@@ -1249,7 +1249,8 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve using the
- * SwiftEC approach.
+ * SwiftEC approach. Curves not supported by SwiftEC, which needs a = 0 or
+ * b = 0, an ordinary curve and p = 1 mod 3, fall back to ep_map_sswum().
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.

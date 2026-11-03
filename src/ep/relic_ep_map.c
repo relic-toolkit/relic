@@ -346,44 +346,40 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 				fp_mul(x3, x3, d[2]);
 			}
 		} else {
-			/* This is the SwiftEC case per se. */
-			if (ep_curve_opt_a() != RLC_ZERO) {
-				RLC_THROW(ERR_NO_VALID);
+			/* This is the SwiftEC case per se, with a = 0. */
+			/* h_0 = t1^3, h1 = t2^2, h2 = h0 + b - h1, h3 = 2h1 + h2. */
+			fp_sqr(h[0], t1);
+			fp_mul(h[0], h[0], t1);
+			fp_sqr(h[1], t2);
+			fp_add(h[2], h[0], ctx->ep_b);
+			fp_sub(h[2], h[2], h[1]);
+			fp_dbl(h[3], h[1]);
+			fp_add(h[3], h[3], h[2]);
+			/* h6 = t1\tau, v = h7 = h2h6, h8 = 2h6t2.*/
+			fp_mul(x3, t1, ctx->ep_map_c[4]);
+			fp_mul(v, h[2], x3);
+			fp_mul(x3, x3, t2);
+			fp_dbl(x3, x3);
+
+			/* n1 = h8(h7 - t1h3), n2 = 2h3^2, d1 = 2h3h8*/
+			fp_mul(x1, t1, h[3]);
+			fp_sub(x1, v, x1);
+			fp_mul(x1, x1, x3);
+			fp_dbl(y, h[3]);
+			fp_sqr(y, y);
+			fp_mul(w, h[3], x3);
+			fp_dbl(w, w);
+
+			if (fp_is_zero(w)) {
+				ep_set_infty(p);
 			} else {
-				/* h_0 = t1^3, h1 = t2^2, h2 = h0 + b - h1, h3 = 2h1 + h2. */
-				fp_sqr(h[0], t1);
-				fp_mul(h[0], h[0], t1);
-				fp_sqr(h[1], t2);
-				fp_add(h[2], h[0], ctx->ep_b);
-				fp_sub(h[2], h[2], h[1]);
-				fp_dbl(h[3], h[1]);
-				fp_add(h[3], h[3], h[2]);
-				/* h6 = t1\tau, v = h7 = h2h6, h8 = 2h6t2.*/
-				fp_mul(x3, t1, ctx->ep_map_c[4]);
-				fp_mul(v, h[2], x3);
-				fp_mul(x3, x3, t2);
-				fp_dbl(x3, x3);
-
-				/* n1 = h8(h7 - t1h3), n2 = 2h3^2, d1 = 2h3h8*/
-				fp_mul(x1, t1, h[3]);
-				fp_sub(x1, v, x1);
-				fp_mul(x1, x1, x3);
-				fp_dbl(y, h[3]);
-				fp_sqr(y, y);
-				fp_mul(w, h[3], x3);
-				fp_dbl(w, w);
-
-				if (fp_is_zero(w)) {
-					ep_set_infty(p);
-				} else {
-					fp_inv(w, w);
-					fp_mul(p->x, x1, w);
-					fp_add(x2, t1, p->x);
-					fp_neg(x2, x2);
-					fp_mul(x3, y, w);
-					fp_sqr(x3, x3);
-					fp_add(x3, x3, t1);
-				}
+				fp_inv(w, w);
+				fp_mul(p->x, x1, w);
+				fp_add(x2, t1, p->x);
+				fp_neg(x2, x2);
+				fp_mul(x3, y, w);
+				fp_sqr(x3, x3);
+				fp_add(x3, x3, t1);
 			}
 		}
 
@@ -497,18 +493,19 @@ void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm + 1);
-	ctx_t *ctx = core_get();
+	uint8_t *r;
 
-	if (ep_curve_is_super()) {
-		RLC_FREE(r); 
-		RLC_THROW(ERR_NO_CONFIG);
+	/* Fall back to SSWU on curves not supported by SwiftEC, which needs an
+	 * ordinary curve with a = 0 or b = 0 and p = 1 mod 3. */
+	if (ep_curve_is_super() || fp_prime_get_mod18() % 3 == 2 ||
+			(ep_curve_opt_a() != RLC_ZERO && ep_curve_opt_b() != RLC_ZERO)) {
+		ep_map_sswum(p, msg, len);
 		return;
 	}
 
-	if (ctx->mod18 % 3 == 2) {
-		RLC_FREE(r); 
-		RLC_THROW(ERR_NO_CONFIG);
+	r = RLC_ALLOCA(uint8_t, 2 * elm + 1);
+	if (r == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
@@ -548,9 +545,15 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 
 #if EP_MAP == EP_BASIC
 	ep_map_basic_impl(p, uniform_bytes, len);
-#elif EP_MAP == EP_SWIFT
-	ep_map_swift_impl(p, uniform_bytes, len);
-#elif EP_MAP == EP_SSWUM
+#else
+#if EP_MAP == EP_SWIFT
+	if (!ep_curve_is_super() && fp_prime_get_mod18() % 3 != 2 &&
+			(ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO)) {
+		ep_map_swift_impl(p, uniform_bytes, len);
+		return;
+	}
+	/* Fall back to SSWU on curves not supported by SwiftEC. */
+#endif
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 			(ep_curve_opt_b() != RLC_ZERO);
