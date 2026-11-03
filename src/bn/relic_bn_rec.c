@@ -104,6 +104,47 @@ static void tnaf_hlv(bn_t r0, bn_t r1, bn_t tmp, int8_t u) {
 #define MOD_CMASK	(MOD_2TC - 1)
 
 /**
+ * Integer t that corresponds to tau in the tau-adic NAF of width w, indexed by
+ * the curve parameter u = -1 or u = 1 and then by w.
+ */
+static const uint8_t tnaf_t[2][9] = {
+	{ 0, 0, 2, 2, 10, 26, 26, 90, 90 },
+	{ 0, 0, 2, 6, 6, 6, 38, 38, 166 }
+};
+
+/**
+ * Constants alpha_i = beta_i + gama_i * tau of the tau-adic NAF of width w, for
+ * w = 2, ..., 8. The 2^(w - 2) constants of width w start at 2^(w - 2) - 1, and
+ * gama_i is the stored value times the curve parameter u.
+ */
+static const int8_t tnaf_beta[127] = {
+	1,
+	1, 1,
+	1, -3, -1, 1,
+	1, -3, -1, 1, -3, -1, 1, 1,
+	1, 3, 5, -5, -3, -1, 1, 1, 3, 5, -3, -3, -1, 1, 3, 5,
+	1, 3, 5, 7, -5, -3, -1, 1, 3, 5, -3, -1, 1, 3, 1, -7, -5, -3, -1, 1, 3, 5,
+	7, -5, -3, -1, 1, 3, 5, 7, -1, 1,
+	1, 3, 5, 7, -5, -3, -1, 1, 3, 5, 7, 9, -3, -1, 1, 3, 5, 7, 9, 11, -7, -5,
+	-3, -1, 1, -11, -9, -7, -5, -3, -1, 1, 3, -9, -7, -5, -3, -1, 1, 3, 5, -7,
+	-5, -3, -1, 1, 3, 5, 7, 9, -3, -1, 1, 3, 5, 7, 9, 11, -1, 1, 3, 5, 7, 9
+};
+
+static const int8_t tnaf_gama[127] = {
+	0,
+	0, -1,
+	0, 1, 1, 1,
+	0, 1, 1, 1, 2, 2, 2, -3,
+	0, 0, 0, 2, 2, 2, 2, -3, -3, -3, 4, -1, -1, -1, -1, -1,
+	0, 0, 0, 0, -3, -3, -3, -3, -3, -3, 4, 4, 4, 4, -6, 1, 1, 1, 1, 1, 1, 1, 1,
+	-2, -2, -2, -2, -2, -2, -2, 5, 5,
+	0, 0, 0, 0, -3, -3, -3, -3, -3, -3, -3, -3, -6, -6, -6, -6, -6, -6, -6, -6,
+	8, 8, 8, 8, 8, 5, 5, 5, 5, 5, 5, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -4, -4, -4, -4, -4, -4, -4, -4, -7, -7, -7, -7, -7,
+	-7
+};
+
+/**
  * Number of digits in the fixed-length arithmetic of the decompositions.
  */
 #define RLC_REC_DIGS		(2 * RLC_BN_DIGS + 2)
@@ -180,6 +221,62 @@ static void rec_div(dig_t *q, dig_t *r, const dig_t *a, const dig_t *m,
 	dv_copy_sec(r, z, sz, c ^ 1);
 	rec_add1(q, q, c ^ 1, sz);
 }
+
+/**
+ * Returns the number of bits m such that (|u0| + |u1|) * |k1| < 2^(m + l) for
+ * every k1 below 2^l, that is, the ceiling of log2(|u0| + |u1|).
+ *
+ * @param[in] u0			- the first coordinate of the multiplier.
+ * @param[in] u1			- the coordinate of w in the multiplier.
+ * @return the number of bits that the multiplication adds.
+ */
+static size_t rec_grow(int u0, int u1) {
+	dig_t t = (dig_t)(u0 < 0 ? -u0 : u0) + (dig_t)(u1 < 0 ? -u1 : u1);
+
+	return (t > 1 ? util_bits_dig(t - 1) : 0);
+}
+
+/**
+ * Multiplies a digit vector of s digits in two's complement by a small public
+ * integer u, which is exact modulo 2^(s * RLC_DIG) also for negative vectors.
+ * The branches depend only on u.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector.
+ * @param[in] u				- the public integer.
+ * @param[in] s				- the number of digits.
+ */
+static void rec_mul_int(dig_t *c, const dig_t *a, int u, size_t s) {
+	if (u == 0) {
+		dv_zero(c, s);
+	} else if (u == 1 || u == -1) {
+		dv_copy(c, a, s);
+	} else {
+		bn_mul1_low(c, a, (dig_t)(u < 0 ? -u : u), s);
+	}
+	if (u < 0) {
+		rec_sneg(c, c, 1, s);
+	}
+}
+
+/**
+ * First row of n * B^(-1) for the lattice basis B of BN curves, as
+ * polynomials in x listed from the constant term up.
+ */
+static const int8_t frb_bn_l[4][4] = {
+	{ 1, 3, 2, 0 }, { 0, 1, 8, 12 }, { 0, 1, 4, 6 }, { 0, -1, -2, 0 }
+};
+
+/**
+ * Lattice basis B of BN curves [Galbraith-Scott], each entry a * x + b
+ * stored as { a, b }.
+ */
+static const int8_t frb_bn_b[4][4][2] = {
+	{ { 1, 1 }, { 1, 0 }, { 1, 0 }, { -2, 0 } },
+	{ { 2, 1 }, { -1, 0 }, { -1, -1 }, { -1, 0 } },
+	{ { 2, 0 }, { 2, 1 }, { 2, 1 }, { 2, 1 } },
+	{ { 1, -1 }, { 4, 2 }, { -2, 1 }, { 1, -1 } }
+};
 
 /**
  * Digits g + h * tau of the tau-adic recodings in Z[w], where w is a primitive
@@ -290,12 +387,13 @@ static void tw_sub(dig_t *a, dig_t *b, int g, int h, size_t s) {
  */
 static void tw_div(dig_t *a, dig_t *b, size_t s) {
 	const dig_t e = RLC_DMASK / 3 * 2 + 1;
-	dig_t c = 0, n = 1, r = 0, h, l, q, t;
+	dig_t c = 0, n = 1, r = 0, h, q, t;
 
 	for (size_t i = 0; i < s; i++) {
 		q = (a[i] - r) * e;
-		RLC_MUL_DIG(h, l, q, 3);
-		r = h + (a[i] < r);
+		/* The borrow is the high digit of 3q = 2q + q. */
+		h = (dig_t)(q << 1);
+		r = (q >> (RLC_DIG - 1)) + ((dig_t)(h + q) < h) + (a[i] < r);
 		t = a[i] + c;
 		c = (t < c);
 		t += b[i];
@@ -304,7 +402,6 @@ static void tw_div(dig_t *a, dig_t *b, size_t s) {
 		b[i] = ~q + n;
 		n = (b[i] < n);
 	}
-	(void)l;
 }
 
 /**
@@ -313,8 +410,8 @@ static void tw_div(dig_t *a, dig_t *b, size_t s) {
  * from the least significant digit up as above.
  */
 static void tw_div3(dig_t *a, dig_t *b, size_t s) {
-	const dig_t e = RLC_DMASK / 3 * 2 + 1, f = e * e;
-	dig_t c0 = 0, c1 = 0, c2 = 0, n = 1, r0 = 0, r1 = 0, h, l, t, u, v;
+	const dig_t e = RLC_DMASK / 3 * 2 + 1, f = (dig_t)(e * e);
+	dig_t c0 = 0, c1 = 0, c2 = 0, n = 1, r0 = 0, r1 = 0, h, t, u, v;
 
 	for (size_t i = 0; i < s; i++) {
 		/* t = a + b, u = a + 2b and v = 2a + 3b. */
@@ -331,65 +428,14 @@ static void tw_div3(dig_t *a, dig_t *b, size_t s) {
 		v += t;
 		c2 += (v < t);
 		a[i] = (u - r0) * e;
-		RLC_MUL_DIG(h, l, a[i], 3);
-		r0 = h + (u < r0);
+		/* The borrows are the high digits of 3a = 2a + a and 9t = 8t + t. */
+		h = (dig_t)(a[i] << 1);
+		r0 = (a[i] >> (RLC_DIG - 1)) + ((dig_t)(h + a[i]) < h) + (u < r0);
 		t = (v - r1) * f;
-		RLC_MUL_DIG(h, l, t, 9);
-		r1 = h + (v < r1);
+		h = (dig_t)(t << 3);
+		r1 = (t >> (RLC_DIG - 3)) + ((dig_t)(h + t) < h) + (v < r1);
 		b[i] = ~t + n;
 		n = (b[i] < n);
-	}
-	(void)l;
-}
-
-/**
- * Returns the number of bits of a multiple precision integer from its length
- * and top digit, like bn_bits() but without its branch on zero, so that a zero
- * coefficient takes the same path as any other. The length itself is used as
- * is, so only integers whose length is public or bounded by a public value
- * should be given.
- *
- * @param[in] a				- the multiple precision integer.
- * @return the number of bits of a.
- */
-static size_t rec_bits(const bn_t a) {
-	return (a->used - 1) * RLC_DIG + util_bits_dig(a->dp[a->used - 1]);
-}
-
-/**
- * Returns the number of bits m such that (|u0| + |u1|) * |k1| < 2^(m + l) for
- * every k1 below 2^l, that is, the ceiling of log2(|u0| + |u1|).
- *
- * @param[in] u0			- the first coordinate of the multiplier.
- * @param[in] u1			- the coordinate of w in the multiplier.
- * @return the number of bits that the multiplication adds.
- */
-static size_t rec_grow(int u0, int u1) {
-	dig_t t = (dig_t)(u0 < 0 ? -u0 : u0) + (dig_t)(u1 < 0 ? -u1 : u1);
-
-	return (t > 1 ? util_bits_dig(t - 1) : 0);
-}
-
-/**
- * Multiplies a digit vector of s digits in two's complement by a small public
- * integer u, which is exact modulo 2^(s * RLC_DIG) also for negative vectors.
- * The branches depend only on u.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the digit vector.
- * @param[in] u				- the public integer.
- * @param[in] s				- the number of digits.
- */
-static void rec_mul_sml(dig_t *c, const dig_t *a, int u, size_t s) {
-	if (u == 0) {
-		dv_zero(c, s);
-	} else if (u == 1 || u == -1) {
-		dv_copy(c, a, s);
-	} else {
-		bn_mul1_low(c, a, (dig_t)(u < 0 ? -u : u), s);
-	}
-	if (u < 0) {
-		rec_sneg(c, c, 1, s);
 	}
 }
 
@@ -410,9 +456,9 @@ static void tw_set(dig_t *a, dig_t *b, const bn_t k0, const bn_t k1, int u0,
 	}
 	rec_sneg(a, a, bn_sign(k0), s);
 	rec_sneg(t, t, bn_sign(k1), s);
-	rec_mul_sml(b, t, u1, s);
+	rec_mul_int(b, t, u1, s);
 	if (u0 != 0) {
-		rec_mul_sml(t, t, u0, s);
+		rec_mul_int(t, t, u0, s);
 		bn_addn_low(a, a, t, s);
 	}
 	bn_addn_low(a, a, b, s);
@@ -515,134 +561,19 @@ void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w) {
 
 void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 		size_t w) {
-	if (u == -1) {
-		switch (w) {
-			case 2:
-			case 3:
-				*t = 2;
-				break;
-			case 4:
-				*t = 10;
-				break;
-			case 5:
-			case 6:
-				*t = 26;
-				break;
-			case 7:
-			case 8:
-				*t = 90;
-				break;
-		}
-	} else {
-		switch (w) {
-			case 2:
-				*t = 2;
-				break;
-			case 3:
-			case 4:
-			case 5:
-				*t = 6;
-				break;
-			case 6:
-			case 7:
-				*t = 38;
-				break;
-			case 8:
-				*t = 166;
-				break;
-		}
+	size_t n;
+
+	if (w < 2 || w > 8) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
-	beta[0] = 1;
-	gama[0] = 0;
-
-	if (w >= 3) {
-		beta[1] = 1;
-		gama[1] = (int8_t)-u;
-	}
-
-	if (w >= 4) {
-		beta[1] = -3;
-		beta[2] = -1;
-		beta[3] = 1;
-		gama[1] = gama[2] = gama[3] = (int8_t)u;
-	}
-
-	if (w >= 5) {
-		beta[4] = -3;
-		beta[5] = -1;
-		beta[6] = beta[7] = 1;
-		gama[4] = gama[5] = gama[6] = (int8_t)(2 * u);
-		gama[7] = (int8_t)(-3 * u);
-	}
-
-	if (w >= 6) {
-		beta[1] = beta[8] = beta[14] = 3;
-		beta[2] = beta[9] = beta[15] = 5;
-		beta[3] = -5;
-		beta[4] = beta[10] = beta[11] = -3;
-		beta[5] = beta[12] = -1;
-		beta[6] = beta[7] = beta[13] = 1;
-		gama[1] = gama[2] = 0;
-		gama[3] = gama[4] = gama[5] = gama[6] = (int8_t)(2 * u);
-		gama[7] = gama[8] = gama[9] = (int8_t)(-3 * u);
-		gama[10] = (int8_t)(4 * u);
-		gama[11] = gama[12] = gama[13] = (int8_t)(-u);
-		gama[14] = gama[15] = (int8_t)(-u);
-	}
-
-	if (w >= 7) {
-		beta[3] = beta[22] = beta[29] = 7;
-		beta[4] = beta[16] = beta[23] = -5;
-		beta[5] = beta[10] = beta[17] = beta[24] = -3;
-		beta[6] = beta[11] = beta[18] = beta[25] = beta[30] = -1;
-		beta[7] = beta[12] = beta[14] = beta[19] = beta[26] = beta[31] = 1;
-		beta[8] = beta[13] = beta[20] = beta[27] = 3;
-		beta[9] = beta[21] = beta[28] = 5;
-		beta[15] = -7;
-		gama[3] = 0;
-		gama[4] = gama[5] = gama[6] = (int8_t)(-3 * u);
-		gama[11] = gama[12] = gama[13] = (int8_t)(4 * u);
-		gama[14] = (int8_t)(-6 * u);
-		gama[15] = gama[16] = gama[17] = gama[18] = (int8_t)u;
-		gama[19] = gama[20] = gama[21] = gama[22] = (int8_t)u;
-		gama[23] = gama[24] = gama[25] = gama[26] = (int8_t)(-2 * u);
-		gama[27] = gama[28] = gama[29] = (int8_t)(-2 * u);
-		gama[30] = gama[31] = (int8_t)(5 * u);
-	}
-
-	if (w == 8) {
-		beta[10] = beta[17] = beta[48] = beta[55] = beta[62] = 7;
-		beta[11] = beta[18] = beta[49] = beta[56] = beta[63] = 9;
-		beta[12] = beta[22] = beta[29] = -3;
-		beta[36] = beta[43] = beta[50] = -3;
-		beta[13] = beta[23] = beta[30] = beta[37] = -1;
-		beta[44] = beta[51] = beta[58] = -1;
-		beta[14] = beta[24] = beta[31] = beta[38] = 1;
-		beta[45] = beta[52] = beta[59] = 1;
-		beta[15] = beta[32] = beta[39] = beta[46] = beta[53] = beta[60] = 3;
-		beta[16] = beta[40] = beta[47] = beta[54] = beta[61] = 5;
-		beta[19] = beta[57] = 11;
-		beta[20] = beta[27] = beta[34] = beta[41] = -7;
-		beta[21] = beta[28] = beta[35] = beta[42] = -5;
-		beta[25] = -11;
-		beta[26] = beta[33] = -9;
-		gama[10] = gama[11] = (int8_t)(-3 * u);
-		gama[12] = gama[13] = gama[14] = gama[15] = (int8_t)(-6 * u);
-		gama[16] = gama[17] = gama[18] = gama[19] = (int8_t)(-6 * u);
-		gama[20] = gama[21] = gama[22] = (int8_t)(8 * u);
-		gama[23] = gama[24] = (int8_t)(8 * u);
-		gama[25] = gama[26] = gama[27] = gama[28] = (int8_t)(5 * u);
-		gama[29] = gama[30] = gama[31] = gama[32] = (int8_t)(5 * u);
-		gama[33] = gama[34] = gama[35] = gama[36] = (int8_t)(2 * u);
-		gama[37] = gama[38] = gama[39] = gama[40] = (int8_t)(2 * u);
-		gama[41] = gama[42] = gama[43] = gama[44] = (int8_t)(-1 * u);
-		gama[45] = gama[46] = gama[47] = gama[48] = (int8_t)(-1 * u);
-		gama[49] = (int8_t)(-1 * u);
-		gama[50] = gama[51] = gama[52] = gama[53] = (int8_t)(-4 * u);
-		gama[54] = gama[55] = gama[56] = gama[57] = (int8_t)(-4 * u);
-		gama[58] = gama[59] = gama[60] = (int8_t)(-7 * u);
-		gama[61] = gama[62] = gama[63] = (int8_t)(-7 * u);
+	/* The constants of width w start at 2^(w - 2) - 1. */
+	n = (size_t)1 << (w - 2);
+	*t = tnaf_t[u == 1][w];
+	for (size_t i = 0; i < n; i++) {
+		beta[i] = tnaf_beta[n - 1 + i];
+		gama[i] = (int8_t)(u * tnaf_gama[n - 1 + i]);
 	}
 }
 
@@ -1285,25 +1216,6 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 	RLC_FREE(t);
 }
 
-/**
- * First row of n * B^(-1) for the lattice basis B of BN curves, as
- * polynomials in x listed from the constant term up.
- */
-static const int8_t frb_bn_l[4][4] = {
-	{ 1, 3, 2, 0 }, { 0, 1, 8, 12 }, { 0, 1, 4, 6 }, { 0, -1, -2, 0 }
-};
-
-/**
- * Lattice basis B of BN curves [Galbraith-Scott], each entry a * x + b
- * stored as { a, b }.
- */
-static const int8_t frb_bn_b[4][4][2] = {
-	{ { 1, 1 }, { 1, 0 }, { 1, 0 }, { -2, 0 } },
-	{ { 2, 1 }, { -1, 0 }, { -1, -1 }, { -1, 0 } },
-	{ { 2, 0 }, { 2, 1 }, { 2, 1 }, { 2, 1 } },
-	{ { 1, -1 }, { 4, 2 }, { -2, 1 }, { 1, -1 } }
-};
-
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		const bn_st *u, int cof) {
 	/* Constant-time for |k| < n: |k| is decomposed with fixed lengths and
@@ -1507,8 +1419,8 @@ void bn_rec_retnaf(int8_t *reg, int8_t *c, size_t len, const bn_t k0,
 
 	/* With |k0| and (|u0| + |u1|) * |k1| below 2^(s * RLC_DIG - 2), the
 	 * coordinates of the converted element fit with a bit to spare. */
-	if (s > RLC_BN_DIGS + 1 || rec_bits(k0) + 2 > s * RLC_DIG ||
-			rec_bits(k1) + m + 2 > s * RLC_DIG) {
+	if (s > RLC_BN_DIGS + 1 || bn_bits(k0) + 2 > s * RLC_DIG ||
+			bn_bits(k1) + m + 2 > s * RLC_DIG) {
 		memset(reg, 0, len + 1);
 		*c = 0;
 		RLC_THROW(ERR_NO_PRECI);

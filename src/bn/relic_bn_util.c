@@ -158,16 +158,12 @@ int bn_is_even(const bn_t a) {
 }
 
 size_t bn_bits(const bn_t a) {
-	uint_t bits;
-
-	if (bn_is_zero(a)) {
+	/* A zero top digit has no bits, so only an empty integer is special, and
+	 * zero takes the same path as any other integer. */
+	if (a->used == 0) {
 		return 0;
 	}
-
-	/* Bits in lower digits. */
-	bits = (a->used - 1) * RLC_DIG;
-
-	return bits + util_bits_dig(a->dp[a->used - 1]);
+	return (a->used - 1) * RLC_DIG + util_bits_dig(a->dp[a->used - 1]);
 }
 
 int bn_get_bit(const bn_t a, uint_t bit) {
