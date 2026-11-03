@@ -1569,6 +1569,18 @@ static int hashing(void) {
 #endif
 			}
 		}
+		if (ep_curve_is_super() || fp_prime_get_mod18() % 3 == 2 ||
+				(ep_curve_opt_a() != RLC_ZERO && ep_curve_opt_b() != RLC_ZERO)) {
+#if EP_MAP == EP_SWIFT || !defined(RLC_STRIP)
+			TEST_CASE("swift point hashing falls back to sswu") {
+				rand_bytes(msg, ep_map_rnd_size());
+				ep_map_swift(a, msg, ep_map_rnd_size());
+				ep_map_sswum(b, msg, ep_map_rnd_size());
+				TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			}
+			TEST_END;
+#endif
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
