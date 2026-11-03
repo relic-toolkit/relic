@@ -52,9 +52,12 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	rlc_align dig_t t[RLC_FP_LEN];
+	dig_t *const cs[1] = { c };
+	const dig_t *const ts[1] = { t };
 
+	/* The reduction is inlined, so the products need not leave registers. */
 	fp_muln_low(t, a, b);
-	fp_rdcn_low(c, t);
+	rns_vrdc(cs, ts, 1);
 }
 
 #endif /* FP_RDC == FP_RENUS */
