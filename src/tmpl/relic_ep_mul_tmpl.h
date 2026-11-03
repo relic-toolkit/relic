@@ -84,9 +84,10 @@
 		RLC_MIN((size_t)S, (size_t)ep_curve_frdim()) : (size_t)S)
 
 /**
- * Builds the table of a w-NAF multiplication: projective with complete
- * formulas, where an addition costs little more than a mixed one and that
- * saves an inversion, normalized otherwise.
+ * Builds the table of a w-NAF multiplication over the prime field: projective
+ * with complete formulas, where an addition costs little more than a mixed one
+ * and that saves an inversion, normalized otherwise. Over extension fields the
+ * tables are always normalized, where the cheaper mixed additions pay off.
  */
 #if EP_ADD == EP_PROJC
 #define TMPL_EP_MUL_TAB(C, T, P, W)		TMPL_EC_MUL_TAB(C, T, P, W)
@@ -105,6 +106,8 @@
 #define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		size_t l, _l[S], w = RLC_WIDTH;										\
+		const int psi = (ep_curve_is_pairf() == EP_K16 ||					\
+				ep_curve_is_pairf() == EP_AFG16);							\
 		size_t s = TMPL_EP_MUL_DIM(S);										\
 		bn_t n, _k[S], u;													\
 		int8_t naf[S][RLC_FP_BITS + 1];										\
@@ -153,15 +156,18 @@
 					if (bn_sign(_k[0]) == RLC_NEG) {						\
 						C##_neg(q, q);										\
 					}														\
-					TMPL_EP_MUL_TAB(C, t[0], q, w);							\
-				} else if (ep_curve_is_pairf() == EP_K16 ||					\
-						ep_curve_is_pairf() == EP_AFG16) {					\
+					if (psi) {												\
+						TMPL_EC_MUL_TAB(C, t[0], q, w);						\
+					} else {												\
+						C##_tab(t[0], q, w);								\
+					}														\
+				} else if (psi) {											\
 					/* Minimize use of endomorphism when it's expensive. */	\
 					C##_psi(q, t[i - 1][0]);								\
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
 						C##_neg(q, q);										\
 					}														\
-					TMPL_EP_MUL_TAB(C, t[i], q, w);							\
+					TMPL_EC_MUL_TAB(C, t[i], q, w);							\
 				} else {													\
 					for (int j = 0; j < (1 << (w - 2)); j++) {				\
 						C##_psi(t[i][j], t[i - 1][j]);						\
@@ -169,6 +175,15 @@
 							C##_neg(t[i][j], t[i][j]);						\
 						}													\
 					}														\
+				}															\
+			}																\
+			/* One inversion normalizes the tables built without the		\
+			 * endomorphism, which are contiguous at the full width. */		\
+			if (psi && w > 2) {												\
+				C##_norm_sim(t[0], (const C##_t *)t[0], s << (w - 2));		\
+			} else if (psi) {												\
+				for (size_t i = 0; i < s; i++) {							\
+					C##_norm(t[i][0], t[i][0]);								\
 				}															\
 			}																\
 																			\
@@ -337,7 +352,9 @@
 
 /**
  * Builds the table for the i-th subscalar of a simultaneous GLS
- * multiplication, applying the endomorphism to the previous table.
+ * multiplication, applying the endomorphism to the previous table. The tables
+ * of both points are interleaved, so consecutive tables of one point are 2E
+ * points apart, and the first one is left projective.
  *
  * @param[in] C			- the curve prefix.
  * @param[out] T		- the tables, each with E points.
@@ -354,12 +371,12 @@
 		if (bn_sign(K[0]) == RLC_NEG) {										\
 			C##_neg(V, V);													\
 		}																	\
-		C##_tab(T, V, W);													\
+		TMPL_EC_MUL_TAB(C, T, V, W);										\
 	} else {																\
 		for (size_t _j = 0; _j < E; _j++) {									\
-			C##_psi(T[I * E + _j], T[(I - 1) * E + _j]);					\
+			C##_psi(T[2 * I * E + _j], T[2 * (I - 1) * E + _j]);			\
 			if (bn_sign(K[I]) != bn_sign(K[I - 1])) {						\
-				C##_neg(T[I * E + _j], T[I * E + _j]);						\
+				C##_neg(T[2 * I * E + _j], T[2 * I * E + _j]);				\
 			}																\
 		}																	\
 	}
@@ -377,7 +394,7 @@
 		size_t l, _l[S], w = RLC_WIDTH, e;									\
 		bn_t _k[S], _m[S], n, u;											\
 		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
-		C##_t _p[S << (RLC_WIDTH - 2)], _q[S << (RLC_WIDTH - 2)], v;		\
+		C##_t t[2 * S << (RLC_WIDTH - 2)], *_p = t, *_q, v;					\
 																			\
 		bn_null_all(n, u);													\
 		C##_null(v);														\
@@ -385,9 +402,8 @@
 			bn_null(_k[i]);													\
 			bn_null(_m[i]);													\
 		}																	\
-		for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {					\
-			C##_null(_p[i]);												\
-			C##_null(_q[i]);												\
+		for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {				\
+			C##_null(t[i]);													\
 		}																	\
 																			\
 		RLC_TRY {															\
@@ -397,9 +413,8 @@
 				bn_new(_k[i]);												\
 				bn_new(_m[i]);												\
 			}																\
-			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
-				C##_new(_p[i]);												\
-				C##_new(_q[i]);												\
+			for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {			\
+				C##_new(t[i]);												\
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
@@ -424,6 +439,7 @@
 				w = 2;														\
 			}																\
 			e = (1 << (w - 2));												\
+			_q = t + e;														\
 																			\
 			l = 0;															\
 			for (int i = 0; i < S; i++) {									\
@@ -435,28 +451,33 @@
 				l = RLC_MAX(l, _l[i]);										\
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _p, _k, p, v, i, e, w);		\
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
+				/* One inversion normalizes the first tables. */			\
+				if (i == 0 && w > 2) {										\
+					C##_norm_sim(t, (const C##_t *)t, 2 * e);				\
+				}															\
 			}																\
 			/* Normalize if the endomorphism returns projective points. */	\
-			if (_p[e]->coord != EC_AFFIN) {									\
-				C##_norm_sim(_p + e, (const C##_t *)_p + e, (S - 1) * e);	\
-				C##_norm_sim(_q + e, (const C##_t *)_q + e, (S - 1) * e);	\
+			if (t[2 * e]->coord != EC_AFFIN) {								\
+				C##_norm_sim(t + 2 * e, (const C##_t *)t + 2 * e,			\
+						2 * (S - 1) * e);									\
 			}																\
 																			\
 			C##_set_infty(r);												\
 			for (int i = l - 1; i >= 0; i--) {								\
 				C##_dbl(r, r);												\
 				for (int j = 0; j < S; j++) {								\
+					const size_t o = 2 * j * e;								\
 					if (naf0[j][i] > 0) {									\
-						C##_add(r, r, _p[j * e + naf0[j][i] / 2]);			\
+						C##_add(r, r, _p[o + naf0[j][i] / 2]);				\
 					}														\
 					if (naf0[j][i] < 0) {									\
-						C##_sub(r, r, _p[j * e - naf0[j][i] / 2]);			\
+						C##_sub(r, r, _p[o - naf0[j][i] / 2]);				\
 					}														\
 					if (naf1[j][i] > 0) {									\
-						C##_add(r, r, _q[j * e + naf1[j][i] / 2]);			\
+						C##_add(r, r, _q[o + naf1[j][i] / 2]);				\
 					}														\
 					if (naf1[j][i] < 0) {									\
-						C##_sub(r, r, _q[j * e - naf1[j][i] / 2]);			\
+						C##_sub(r, r, _q[o - naf1[j][i] / 2]);				\
 					}														\
 				}															\
 			}																\
@@ -472,9 +493,8 @@
 				bn_free(_k[i]);												\
 				bn_free(_m[i]);												\
 			}																\
-			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
-				C##_free(_p[i]);											\
-				C##_free(_q[i]);											\
+			for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {			\
+				C##_free(t[i]);												\
 			}																\
 		}																	\
 	}
