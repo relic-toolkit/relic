@@ -121,23 +121,30 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 
 TMPL_EC_MUL_NAF_IMP(ep, RLC_FP_BITS);
 
+/* Joint table of a * P0 + b * P1 for odd a < 4 and 0 <= b < 4, at index
+ * 2 * b + (a - 1) / 2: a scan of a larger table costs more than it saves.
+ * Method from "Optimizing and securing GLV multiplication over BLS
+ * pairings-friendly curves" by Faraoun and El Mrabet at DCC 2025, which
+ * adapts "2DT-GLS: Faster and exception-free scalar multiplication in the
+ * GLS254 binary curve" by Aardal and Aranha at SAC 2022. */
+#define EP_GLV_TAB		8
+
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
-	int8_t reg[2][RLC_FP_BITS + 1], s[2], b[2], c0, c1, n0, n1;
+	int8_t ru[RLC_FP_BITS + 1], rv[RLC_FP_BITS + 1], s[2], b, c, n0, n1;
 	bn_t n, m[2];
-	ep_t q, t[1 << (RLC_WIDTH - 2)], u, w;
+	ep_t q, p1, t[EP_GLV_TAB], u;
 	size_t l;
 
 	bn_null_all(n, m[0], m[1]);
-	ep_null_all(q, u, w);
-	for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+	ep_null_all(q, p1, u);
+	for (size_t i = 0; i < EP_GLV_TAB; i++) {
 		ep_null(t[i]);
 	}
 
 	RLC_TRY {
 		bn_new_all(n, m[0], m[1]);
-		ep_new_all(q, u, w);
-
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		ep_new_all(q, p1, u);
+		for (size_t i = 0; i < EP_GLV_TAB; i++) {
 			ep_new(t[i]);
 		}
 
@@ -147,65 +154,57 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		for (size_t i = 0; i < 2; i++) {
 			s[i] = bn_sign(m[i]);
 			bn_abs(m[i], m[i]);
-			b[i] = bn_is_even(m[i]);
-			m[i]->dp[0] |= b[i];
 		}
+		/* The regular recoding needs an odd integer, so m[0] + 1 is taken
+		 * when m[0] is even and P0 is subtracted at the end. */
+		b = bn_is_even(m[0]);
+		m[0]->dp[0] |= b;
 
+		/* P0 = s0 * P and P1 = s1 * psi(P), the former kept in t[0]. */
 		ep_norm(t[0], p);
 		ep_neg(q, t[0]);
-		dv_copy_sec(q->y, t[0]->y, RLC_FP_DIGS, s[0] == RLC_POS);
-		ep_tab(t, q, RLC_WIDTH);
+		dv_copy_sec(t[0]->y, q->y, RLC_FP_DIGS, s[0] != RLC_POS);
+		ep_psi(p1, t[0]);
+		ep_neg(q, p1);
+		dv_copy_sec(p1->y, q->y, RLC_FP_DIGS, s[0] != s[1]);
 
+		ep_dbl(q, t[0]);
+		ep_add(t[1], t[0], q);
+		for (size_t i = 2; i < EP_GLV_TAB; i++) {
+			ep_add(t[i], t[i - 2], p1);
+		}
+		ep_norm_sim(t, (const ep_t *)t, EP_GLV_TAB);
+
+		/* Odd digits of m[0] and digits of m[1] with matching signs. */
 		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg[0], &l, m[0], bn_bits(n) >> 1, RLC_WIDTH);
-		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg[1], &l, m[1], bn_bits(n) >> 1, RLC_WIDTH);
+		bn_rec_reg(ru, &l, m[0], (bn_bits(n) >> 1) + 2, 3);
+		bn_rec_aln(rv, l, m[1], ru, 3);
 
 		fp_set_dig(u->z, 1);
-		fp_set_dig(w->z, 1);
-		u->coord = w->coord = EC_AFFIN;
+		u->coord = EC_AFFIN;
 		ep_set_infty(r);
 		for (int i = l - 1; i >= 0; i--) {
-			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {
-				ep_dbl(r, r);
-			}
+			ep_dbl(r, r);
+			ep_dbl(r, r);
 
-			n0 = reg[0][i];
-			c0 = (n0 >> 7);
-			n0 = ((n0 ^ c0) - c0) >> 1;
-			n1 = reg[1][i];
-			c1 = (n1 >> 7);
-			n1 = ((n1 ^ c1) - c1) >> 1;
-
-			for (int j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+			c = ru[i] >> 7;
+			n0 = ((ru[i] ^ c) - c) >> 1;
+			n1 = (rv[i] ^ c) - c;
+			n0 += 2 * n1;
+			for (int j = 0; j < EP_GLV_TAB; j++) {
 				fp_copy_sec(u->x, t[j]->x, j == n0);
-				fp_copy_sec(w->x, t[j]->x, j == n1);
 				fp_copy_sec(u->y, t[j]->y, j == n0);
-				fp_copy_sec(w->y, t[j]->y, j == n1);
 			}
 			ep_neg(q, u);
-			fp_copy_sec(q->y, u->y, c0 == 0);
-			ep_add(r, r, q);
-
-			ep_psi(w, w);
-			ep_neg(q, w);
-			fp_copy_sec(w->y, q->y, (c1 != 0) ^ (s[0] != s[1]));
-			ep_add(r, r, w);
+			fp_copy_sec(u->y, q->y, c != 0);
+			ep_add(r, r, u);
 		}
 
-		/* t[0] has an unmodified copy of p. */
+		/* t[0] has P0. */
 		ep_sub(u, r, t[0]);
-		fp_copy_sec(r->x, u->x, b[0]);
-		fp_copy_sec(r->y, u->y, b[0]);
-		fp_copy_sec(r->z, u->z, b[0]);
-
-		ep_psi(w, t[0]);
-		ep_neg(q, w);
-		fp_copy_sec(q->y, w->y, s[0] == s[1]);
-		ep_sub(u, r, q);
-		fp_copy_sec(r->x, u->x, b[1]);
-		fp_copy_sec(r->y, u->y, b[1]);
-		fp_copy_sec(r->z, u->z, b[1]);
+		fp_copy_sec(r->x, u->x, b);
+		fp_copy_sec(r->y, u->y, b);
+		fp_copy_sec(r->z, u->z, b);
 
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
@@ -215,8 +214,8 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free_all(n, m[0], m[1]);
-		ep_free_all(q, u, w);
-		for (size_t i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
+		ep_free_all(q, p1, u);
+		for (size_t i = 0; i < EP_GLV_TAB; i++) {
 			ep_free(t[i]);
 		}
 	}

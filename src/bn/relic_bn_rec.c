@@ -775,6 +775,40 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	RLC_FREE(t);
 }
 
+void bn_rec_aln(int8_t *b, size_t len, const bn_t k, const int8_t *a,
+		size_t w) {
+	/* The last digit only takes the carry, so k fits the others. */
+	size_t d = RLC_CEIL(len * (w - 1), RLC_DIG);
+	dig_t mask = RLC_MASK(w - 1), *t = (dig_t *)RLC_ALLOCA(dig_t, d);
+	const int h = 1 << (w - 1);
+	int c = 0;
+
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (len == 0 || bn_bits(k) > (len - 1) * (w - 1)) {
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	bn_write_raw(t, d, k);
+	for (size_t i = 0; i < len; i++) {
+		/* A digit e becomes negative as e - 2^(w - 1), carrying 1 to the next
+		 * one, unless it is zero; a positive digit equal to 2^(w - 1) after
+		 * the carry becomes zero, also carrying 1. */
+		int e = (int)(t[0] & mask) + c;
+		int neg = -(a[i] < 0), nz = -(e != 0), ov = -(e == h);
+
+		b[i] = (int8_t)(((e - h) & nz & neg) | (e & ~ov & ~neg));
+		c = ((nz & neg) | (ov & ~neg)) & 1;
+		bn_rshb_low(t, t, d, w - 1);
+	}
+	RLC_FREE(t);
+}
+
 void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 	bn_t n0, n1;
 	dig_t l0, l1;
