@@ -446,6 +446,16 @@ void fp16_sqrn_low(dv16_t c, const fp16_t a);
 void fp24_muln_low(dv24_t c, const fp24_t a, const fp24_t b);
 
 /**
+ * Multiplies a 24-degree extension field element by a sparse one, with zero
+ * coefficient of w or w^2. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense field element.
+ * @param[in] b				- the sparse field element.
+ */
+void fp24_muld_low(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
  * Squares a 24-degree extension field element. Computes c = a * a.
  *
  * @param[out] c			- the result.

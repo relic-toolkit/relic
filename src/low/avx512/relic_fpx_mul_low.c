@@ -54,9 +54,10 @@
 /**
  * Defines the product without reduction of two elements of an extension field
  * in the basis w^e of D coefficients over Fp2, with w^D the non-residue of Fp2,
- * computed residue-wise as fp12_muln_low() does: each output adds 2D products
- * of residues at most m, so it is at most (D / 2 + 1) * m before the
- * corrections that bring it below 4m.
+ * computed residue-wise as fp12_muln_low() does: each output adds 2n products
+ * of residues at most m, for the n <= D coefficients of b that it uses, so it
+ * is at most (n / 2 + 1) * m before the corrections that bring it below 4m.
+ * Sparse products skip the coefficients of b with all residues zero.
  *
  * @param[in] F			- the name of the function.
  * @param[in] X			- the extension field prefix.
@@ -64,15 +65,26 @@
  * @param[in] D			- the number of coefficients over Fp2.
  * @param[in] D2		- twice the number of coefficients.
  * @param[in] CO		- the macro giving the coefficient of w^e.
+ * @param[in] S			- the flag to skip the zero coefficients of b.
  */
-#define RNS_FLAT_MULN(F, X, DX, D, D2, CO)									\
+#define RNS_FLAT_MULN(F, X, DX, D, D2, CO, S)								\
 	void F(DX##_t c, const X##_t a, const X##_t b) {						\
 		ctx_t *ctx = core_get();											\
 		const __m512i z = _mm512_setzero_si512();							\
 		rp2_t x[D], y[D2], l, h;											\
 		__m512i t[D2], m, v;												\
-		int s, q;															\
+		unsigned u = ~0U;													\
+		int s, q, n = D;													\
 																			\
+		if (S) {															\
+			/* Bit e of u is set if b uses the coefficient of w^e. */		\
+			for (int e = u = n = 0; e < D; e++) {							\
+				if (!rp2_is_zero(CO(b, e))) {								\
+					u |= 1U << e;											\
+					n++;													\
+				}															\
+			}																\
+		}																	\
 		rns_nor(&s, &q);													\
 		for (size_t k = 0; k < RNS_NE; k++) {								\
 			m = rns_load(ctx->rns.m, k);									\
@@ -99,11 +111,13 @@
 				for (int e1 = 0; e1 < D; e1++) {							\
 					int e2 = (e - e1 + D) % D;								\
 					int f = e2 + (e1 + e2 < D ? 0 : D);						\
-					rp2_mac(l, h, x[e1], y[f], t[f]);						\
+					if ((u >> e2) & 1) {									\
+						rp2_mac(l, h, x[e1], y[f], t[f]);					\
+					}														\
 				}															\
 				for (int j = 0; j < 2; j++) {								\
 					l[j] = rns_vpeel(rns_vmon(l[j], h[j], m, v),			\
-							rns_vdv(m), rns_halvings(D / 2 + 1));			\
+							rns_vdv(m), rns_halvings(n / 2 + 1));			\
 					rns_store(CO(c, e)[j], k, l[j]);						\
 				}															\
 			}																\
@@ -311,8 +325,10 @@ void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	}
 }
 
-RNS_FLAT_MULN(fp8_muln_low, fp8, dv8, 4, 8, RNS_CO8)
+RNS_FLAT_MULN(fp8_muln_low, fp8, dv8, 4, 8, RNS_CO8, 0)
 
-RNS_FLAT_MULN(fp16_muln_low, fp16, dv16, 8, 16, RNS_CO16)
+RNS_FLAT_MULN(fp16_muln_low, fp16, dv16, 8, 16, RNS_CO16, 0)
 
-RNS_FLAT_MULN(fp24_muln_low, fp24, dv24, 12, 24, RNS_CO24)
+RNS_FLAT_MULN(fp24_muln_low, fp24, dv24, 12, 24, RNS_CO24, 0)
+
+RNS_FLAT_MULN(fp24_muld_low, fp24, dv24, 12, 24, RNS_CO24, 1)

@@ -393,6 +393,24 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
 }
 
 /**
+ * Tests if all residues of an element of Fp2 are zero, as they are for the
+ * coefficients that sparse elements leave out. Other representations of zero
+ * are not detected.
+ *
+ * @param[in] a				- the element to test.
+ * @return 1 if all residues are zero, 0 otherwise.
+ */
+rlc_inline int rp2_is_zero(const fp2_t a) {
+	__m512i t = _mm512_setzero_si512();
+
+	for (size_t k = 0; k < RNS_NE; k++) {
+		t = _mm512_or_si512(t, rns_load(a[0], k));
+		t = _mm512_or_si512(t, rns_load(a[1], k));
+	}
+	return _mm512_test_epi64_mask(t, t) == 0;
+}
+
+/**
  * Computes the folded terms of a cyclotomic squaring for a pair x + y * w in
  * Fp4 = Fp2[w]/(w^2 - (s + i)), with i^2 = q: c_0 = 3 * (x^2 + (s + i) y^2)
  * + k_0 * a_0 and c_1 = 6 * x * y + k_1 * a_1, where 6 * x * y is also

@@ -155,6 +155,7 @@ void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t s0, s1;
 	dv24_t t0, t1, u;
 	dv48_t r;
+	int z = 1;
 
 	fp24_null_all(s0, s1);
 	dv24_null_all(t0, t1, u);
@@ -170,10 +171,18 @@ void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 		 * t = a_1 * LY. Then a_1 * b_1 = w * t, c_0 = a_0b_0 + w^2 * t and
 		 * c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - w * t. */
 		fp24_add(s0, a[0], a[1]);
-		/* Lines with LY in the prime field are cheaper. */
-		fp8_copy(s1[0], b[1][1]);
-		fp_zero(s1[0][0][0][0]);
-		if (fp8_is_zero(s1[0])) {
+		/* Lines with LY in the prime field are cheaper. They leave the other
+		 * coordinates with zero digits, which is faster to test than zero. */
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					if (i + j + k > 0) {
+						z &= dv_is_zero(b[1][1][i][j][k], RLC_FP_LEN);
+					}
+				}
+			}
+		}
+		if (z) {
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 2; j++) {
 					for (int k = 0; k < 2; k++) {
@@ -286,24 +295,67 @@ TMPL_FPX_CUB_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_mul_unr,
 TMPL_FPX_CYC(fp48, fp24, fp8, dv8, fp8_mul_art, QC, FP48_CYC_PCK);
 
 void fp48_frb(fp48_t c, const fp48_t a, int i) {
-	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
-	fp48_copy(c, a);
-	for (; i % 48 > 0; i--) {
-		fp24_frb(c[0], c[0], 1);
-		fp24_frb(c[1], c[1], 1);
-		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 2; k++) {
-				for (int l = 0; l < 2; l++) {
-					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 4);
+	ctx_t *ctx = core_get();
+	int e, m3 = fp_prime_get_mod18() % 3;
+	fp2_t t;
+
+	fp2_null(t);
+
+	RLC_TRY {
+		fp2_new(t);
+
+		fp48_copy(c, a);
+		i = i % 48;
+		/* Cost of 52 multiplication in Fp^2 per Frobenius, up to a multiple
+		 * of 8 in the power. */
+		for (; i % 8 > 0; i--) {
+			fp24_frb(c[0], c[0], 1);
+			fp24_frb(c[1], c[1], 1);
+			for (int j = 0; j < 3; j++) {
+				for (int k = 0; k < 2; k++) {
+					for (int l = 0; l < 2; l++) {
+						fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 4);
+					}
+					if (fp_prime_get_mod8() == 3) {
+						fp4_mul_art(c[1][j][k], c[1][j][k]);
+					}
 				}
-				if (fp_prime_get_mod8() == 3) {
-					fp4_mul_art(c[1][j][k], c[1][j][k]);
+				if ((fp_prime_get_mod8() % 4) == 3) {
+					fp8_mul_art(c[1][j], c[1][j]);
 				}
-			}
-			if ((fp_prime_get_mod8() % 4) == 3) {
-				fp8_mul_art(c[1][j], c[1][j]);
 			}
 		}
+		/* The power p^(8m) fixes Fp^8 and maps t^e, for t^24 the non-residue
+		 * of Fp^2, to its product by z^(me), for the sixth root of unity z
+		 * with z^3 = -1 of the even powers in Fp^12: t^(e(p^8 - 1)) is
+		 * z^(e(p^2 + 1)(p^4 + 1) / 4) and (p^2 + 1)(p^4 + 1) / 4 = 1 mod 6.
+		 * The coefficient of t^j * w^k in Fp^8, with w = t^2, takes
+		 * e = j + 2k. */
+		for (int j = 0; j < 2 && i > 0; j++) {
+			for (int k = 0; k < 3; k++) {
+				e = ((i / 8) * (j + 2 * k)) % 6;
+				for (int l = 0; l < 4 && e % 3 != 0; l++) {
+					if (m3 == 1) {
+						fp2_mul_fp(c[j][k][l / 2][l % 2],
+								c[j][k][l / 2][l % 2], ctx->fp2_p0[e % 3 - 1]);
+					} else {
+						fp_copy(t[0], ctx->fp2_pz[e % 3 - 1][0]);
+						fp_copy(t[1], ctx->fp2_pz[e % 3 - 1][1]);
+						fp2_mul(c[j][k][l / 2][l % 2], c[j][k][l / 2][l % 2],
+								t);
+					}
+				}
+				if (e >= 3) {
+					fp8_neg(c[j][k], c[j][k]);
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp2_free(t);
 	}
 }
 

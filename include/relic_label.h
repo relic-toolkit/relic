@@ -3188,10 +3188,12 @@
 #define fp24_upk 	RLC_PREFIX(fp24_upk)
 
 #undef fp24_muln_low
+#undef fp24_muld_low
 #undef fp24_sqrn_low
 #undef fp24_sqrc_low
 
 #define fp24_muln_low 	RLC_PREFIX(fp24_muln_low)
+#define fp24_muld_low 	RLC_PREFIX(fp24_muld_low)
 #define fp24_sqrn_low 	RLC_PREFIX(fp24_sqrn_low)
 #define fp24_sqrc_low 	RLC_PREFIX(fp24_sqrc_low)
 
