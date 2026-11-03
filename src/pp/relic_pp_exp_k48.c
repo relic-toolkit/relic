@@ -74,94 +74,36 @@ void pp_exp_k48(fp48_t c, fp48_t a) {
 		 * k10 = xk11, k9 = xk10, k8 = xk9 , k7 = xk8 - k15, k6 = xk7, k5 = xk6,
 		 * k4 = xk5, k3 = xk4, k2 = xk3, k1 = xk2 , k0 = xk1 + 3 */
 
-		/* t2 = c^k15, t3 = t2^p^15. */
+		/* t2 = c^k15. */
 		fp48_exp_cyc_sps(t0, c, b, l, bn_sign(x));
 		fp48_inv_cyc(t1, c);
 		fp48_mul(t0, t0, t1);
 		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
 		fp48_inv_cyc(t2, t0);
 		fp48_mul(t2, t1, t2);
-		/* t3 = c^3 (for handling part of k0). */
-		fp48_sqr_cyc(t3, c);
-		fp48_mul(c, c, t3);
-		fp48_frb(t3, t2, 15);
-		fp48_mul(c, c, t3);
 
-		/* t0 = c^k14, t3 = t0^p^14. */
-		fp48_exp_cyc_sps(t0, t2, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 14);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^x13, t3 = t1^p^13. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 13);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^x12, t3 = t0^p^12. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 12);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^x11, t3 = t0^p^11. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 11);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^x10, t3 = t1^p^10. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 10);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^x9, t3 = t0^p^9. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 9);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^x8, t3 = t1^p^8. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 8);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^(xk8 - k15), t3 = t1^p^7. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
+		/* Horner's rule in p takes one Frobenius per term instead of up to
+		 * 15: t3 accumulates the terms from k15 down, t0 holds c^k(i+1) and
+		 * t2 holds c^-k15. */
+		fp48_copy(t0, t2);
+		fp48_copy(t3, t2);
 		fp48_inv_cyc(t2, t2);
-		fp48_mul(t1, t1, t2);
-		fp48_frb(t3, t1, 7);
-		fp48_mul(c, c, t3);
+		for (int i = 14; i >= 0; i--) {
+			/* t1 = c^(xk(i+1)), which is c^ki but for k7 = xk8 - k15 and
+			 * k0 = xk1 + 3. */
+			fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
+			if (i == 7) {
+				fp48_mul(t1, t1, t2);
+			}
+			fp48_frb(t3, t3, 1);
+			fp48_mul(t3, t3, t1);
+			fp48_copy(t0, t1);
+		}
 
-		/* t0 = c^xk7, t3 = t0^p^6. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 6);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^xk6, t3 = t1^p^5. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 5);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^xk5, t3 = t0^p^4. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 4);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^xk4, t3 = t0^p^3. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 3);
-		fp48_mul(c, c, t3);
-
-		/* t0 = c^xk3, t3 = t0^p^2. */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
-		fp48_frb(t3, t0, 2);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^xk2, t3 = t1^p. */
-		fp48_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
-		fp48_frb(t3, t1, 1);
-		fp48_mul(c, c, t3);
-
-		/* t1 = c^(xk1). */
-		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
+		/* c = c^3 * t3, which completes k0. */
+		fp48_sqr_cyc(t0, c);
 		fp48_mul(c, c, t0);
+		fp48_mul(c, c, t3);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
