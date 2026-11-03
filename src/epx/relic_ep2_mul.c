@@ -156,7 +156,7 @@ TMPL_EP_MUL_TW_REG(ep2, fp2, 0);
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EPX_MUL(ep2, fp2, 4, 1, WNAF);
+TMPL_EPX_MUL(ep2, fp2, 4, 1, WNAF, 1);
 
 TMPL_EP_MUL_TW_GLS(ep2, fp2, 4, 2);
 

@@ -413,7 +413,7 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EPX_MUL(ep4, fp4, 8, 2, WNAF);
+TMPL_EPX_MUL(ep4, fp4, 8, 2, WNAF, 0);
 
 TMPL_EP_MUL_TW_TAB(ep4, fp4, 0);
 

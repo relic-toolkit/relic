@@ -404,7 +404,7 @@ static void ep3_mul_cof_fm18(ep3_t r, const ep3_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EPX_MUL(ep3, fp3, 6, 1, OWN);
+TMPL_EPX_MUL(ep3, fp3, 6, 1, OWN, 0);
 
 TMPL_EP_MUL_TW_TAB(ep3, fp3, 0);
 
