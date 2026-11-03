@@ -38,6 +38,17 @@
 #include "relic_fp_rns_avx.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Largest b for which a doubling computes 3b * Z by lane-wise modular
+ * additions, so that 3b * Z^2 joins the first batch of products. The chain of
+ * additions grows with the bits of 3b, so larger b keep the separate step.
+ */
+#define EP_LOW_B		16
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -46,6 +57,7 @@
 
 void ep_dblp_low(ep_t r, const ep_t p) {
 	ctx_t *ctx = core_get();
+	const int b = (ctx->ep_b_dig <= EP_LOW_B ? 3 * (int)ctx->ep_b_dig : 0);
 	fp_t t0, t1, t2, t3, t5;
 	dv_t u[4];
 	dig_t *c[4], *a[4];
@@ -54,7 +66,8 @@ void ep_dblp_low(ep_t r, const ep_t p) {
 	for (int i = 0; i < 4; i++) {
 		a[i] = u[i];
 	}
-	/* Y^2, X * Y, Y * Z and Z^2. */
+	/* Y^2, X * Y, Y * Z and Z^2, or 3b * Z^2 for a small b, with 3b * Z by
+	 * lane-wise additions, which saves a step between the batches. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
 		v = rns_load(ctx->rns.iv, k);
@@ -64,20 +77,22 @@ void ep_dblp_low(ep_t r, const ep_t p) {
 		rns_store(u[0], k, rns_vmul(y, y, m, v));
 		rns_store(u[1], k, rns_vmul(x, y, m, v));
 		rns_store(u[2], k, rns_vmul(y, z, m, v));
-		rns_store(u[3], k, rns_vmul(z, z, m, v));
+		rns_store(u[3], k, rns_vmul(z, b ? rns_vsml(z, b, m) : z, m, v));
 	}
 	c[0] = t0;
 	c[1] = t3;
 	c[2] = t1;
 	c[3] = t2;
-	fp_rdcv_low(c, a, 4);
-	/* 3b * Z^2. */
-	for (size_t k = 0; k < RNS_NE; k++) {
-		m = rns_load(ctx->rns.m, k);
-		z = rns_load(t2, k);
-		rns_store(t5, k, rns_vadd(rns_vadd(z, z, m), z, m));
+	RNS_RDCV(c, a, 4);
+	/* 3b * Z^2 otherwise. */
+	if (b == 0) {
+		for (size_t k = 0; k < RNS_NE; k++) {
+			m = rns_load(ctx->rns.m, k);
+			z = rns_load(t2, k);
+			rns_store(t5, k, rns_vadd(rns_vadd(z, z, m), z, m));
+		}
+		ep_curve_mul_b(t2, t5);
 	}
-	ep_curve_mul_b(t2, t5);
 	/* y3 = t2 * z3 + t4 * (t0 + t2), z3 = t1 * z3 and x3 = 2 * t4 * t3 for
 	 * z3 = 8 * t0 and t4 = t0 - 3 * t2. */
 	for (size_t k = 0; k < RNS_NE; k++) {
@@ -98,7 +113,7 @@ void ep_dblp_low(ep_t r, const ep_t p) {
 	c[0] = r->y;
 	c[1] = r->z;
 	c[2] = r->x;
-	fp_rdcv_low(c, a, 3);
+	RNS_RDCV(c, a, 3);
 	r->coord = EC_PROJC;
 }
 
@@ -139,7 +154,7 @@ void ep_addp_low(ep_t r, const ep_t p, const ep_t q) {
 	c[3] = t3;
 	c[4] = t4;
 	c[5] = t5;
-	fp_rdcv_low(c, a, 6);
+	RNS_RDCV(c, a, 6);
 	/* 3 * z1 * z2 and 3 * (x1 * z2 + x2 * z1), both multiplied by b. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
@@ -174,7 +189,7 @@ void ep_addp_low(ep_t r, const ep_t p, const ep_t q) {
 	c[0] = r->x;
 	c[1] = r->y;
 	c[2] = r->z;
-	fp_rdcv_low(c, a, 3);
+	RNS_RDCV(c, a, 3);
 	r->coord = EC_PROJC;
 }
 
@@ -209,7 +224,7 @@ void ep_addm_low(ep_t r, const ep_t p, const ep_t q) {
 	c[2] = t3;
 	c[3] = t2;
 	c[4] = t5;
-	fp_rdcv_low(c, a, 5);
+	RNS_RDCV(c, a, 5);
 	/* 3 * z1 and 3 * (x2 * z1 + x1), both multiplied by b. */
 	for (size_t k = 0; k < RNS_NE; k++) {
 		m = rns_load(ctx->rns.m, k);
@@ -244,7 +259,7 @@ void ep_addm_low(ep_t r, const ep_t p, const ep_t q) {
 	c[0] = r->x;
 	c[1] = r->y;
 	c[2] = r->z;
-	fp_rdcv_low(c, a, 3);
+	RNS_RDCV(c, a, 3);
 	r->coord = EC_PROJC;
 }
 

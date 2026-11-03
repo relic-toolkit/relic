@@ -659,4 +659,24 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 	}
 }
 
+/**
+ * Reduces N values as fp_rdcv_low() does, for N known at compile time, so that
+ * the reduction is inlined with the pointers as constants: in one batch up to
+ * RNS_K values, in two of about half otherwise. The sizes are bounded by RNS_K
+ * in both branches, so that the compiler sees no batch larger than the
+ * reduction takes.
+ *
+ * @param[out] C			- the pointers to the results.
+ * @param[in] A				- the pointers to the values to reduce.
+ * @param[in] N				- the number of values, up to 2 * RNS_K.
+ */
+#define RNS_RDCV(C, A, N)													\
+	if ((N) <= RNS_K) {														\
+		rns_vrdc(C, (const dig_t *const *)(A), RLC_MIN(N, RNS_K));			\
+	} else {																\
+		rns_vrdc(C, (const dig_t *const *)(A), RLC_MIN((N) / 2, RNS_K));	\
+		rns_vrdc((C) + (N) / 2, (const dig_t *const *)(A) + (N) / 2,		\
+				RLC_MIN((N) - (N) / 2, RNS_K));								\
+	}
+
 #endif /* !RLC_FP_RNS_AVX_H */

@@ -244,52 +244,34 @@ void bn_rec_slw(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 }
 
 void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w) {
-	int i, l;
-	bn_t t;
-	dig_t t0, mask;
-	int8_t u_i;
+	size_t i, l = bn_bits(k);
+	int c = 0, u, h = 1 << (w - 1);
 
-	if (*len < (bn_bits(k) + 1)) {
+	if (*len < l + 1) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
-	bn_null(t);
+	memset(naf, 0, *len);
 
-	RLC_TRY {
-		bn_new(t);
-		bn_abs(t, k);
-
-		mask = RLC_MASK(w);
-		l = (1 << w);
-
-		memset(naf, 0, *len);
-
-		i = 0;
-		while (!bn_is_zero(t)) {
-			if (!bn_is_even(t)) {
-				bn_get_dig(&t0, t);
-				u_i = t0 & mask;
-				if (u_i > l / 2) {
-					u_i = (int8_t)(u_i - l);
-				}
-				bn_sub_dis(t, t, u_i);
-				*naf = u_i;
-			} else {
-				*naf = 0;
-			}
-			bn_hlv(t, t);
-			i++;
-			naf++;
+	/* Scans the bits of |k| upwards with the carry c of the negative digits.
+	 * A digit starts where the bit differs from the carry: the next w bits
+	 * plus the carry make an odd u, taken as u - 2^w with a carry when above
+	 * 2^(w - 1), and the w - 1 digits after it are zero. A carry out of the top
+	 * bit gives one last digit at position l, hence the l + 1 digits. */
+	*len = 0;
+	for (i = 0; i <= l; i++) {
+		u = c;
+		if (i < l) {
+			u += (uint8_t)get_bits(k, i, RLC_MIN(i + w, l) - 1);
 		}
-		*len = i;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(t);
+		if (u & 1) {
+			c = (u > h);
+			naf[i] = (int8_t)(u - (c << w));
+			*len = i + 1;
+			i += w - 1;
+		}
 	}
 }
 
