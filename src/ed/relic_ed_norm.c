@@ -87,7 +87,7 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 			break;
 		}
 	}
-	if (i == n) {
+	if (i >= n) {
 		for (i = 0; i < n && r != t; i++) {
 			ed_copy(r[i], t[i]);
 		}
