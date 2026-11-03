@@ -106,6 +106,8 @@
 #define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		size_t l, _l[S], w = RLC_WIDTH;										\
+		const int psi = (ep_curve_is_pairf() == EP_K16 ||					\
+				ep_curve_is_pairf() == EP_AFG16);							\
 		size_t s = TMPL_EP_MUL_DIM(S);										\
 		bn_t n, _k[S], u;													\
 		int8_t naf[S][RLC_FP_BITS + 1];										\
@@ -154,15 +156,18 @@
 					if (bn_sign(_k[0]) == RLC_NEG) {						\
 						C##_neg(q, q);										\
 					}														\
-					C##_tab(t[0], q, w);									\
-				} else if (ep_curve_is_pairf() == EP_K16 ||					\
-						ep_curve_is_pairf() == EP_AFG16) {					\
+					if (psi) {												\
+						TMPL_EC_MUL_TAB(C, t[0], q, w);						\
+					} else {												\
+						C##_tab(t[0], q, w);								\
+					}														\
+				} else if (psi) {											\
 					/* Minimize use of endomorphism when it's expensive. */	\
 					C##_psi(q, t[i - 1][0]);								\
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
 						C##_neg(q, q);										\
 					}														\
-					C##_tab(t[i], q, w);									\
+					TMPL_EC_MUL_TAB(C, t[i], q, w);							\
 				} else {													\
 					for (int j = 0; j < (1 << (w - 2)); j++) {				\
 						C##_psi(t[i][j], t[i - 1][j]);						\
@@ -170,6 +175,15 @@
 							C##_neg(t[i][j], t[i][j]);						\
 						}													\
 					}														\
+				}															\
+			}																\
+			/* One inversion normalizes the tables built without the		\
+			 * endomorphism, which are contiguous at the full width. */		\
+			if (psi && w > 2) {												\
+				C##_norm_sim(t[0], (const C##_t *)t[0], s << (w - 2));		\
+			} else if (psi) {												\
+				for (size_t i = 0; i < s; i++) {							\
+					C##_norm(t[i][0], t[i][0]);								\
 				}															\
 			}																\
 																			\

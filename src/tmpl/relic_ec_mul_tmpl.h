@@ -875,23 +875,28 @@
 			const C##_t q, const bn_t m) {									\
 		int i;																\
 		int8_t naf0[B + 1], naf1[B + 1], n0, n1, *u, *v;					\
-		C##_t t0[1 << (RLC_WIDTH - 2)];										\
-		C##_t t1[1 << (RLC_WIDTH - 2)];										\
+		C##_t t[2 << (RLC_WIDTH - 2)];										\
+		C##_t *t0 = t, *t1 = t + (1 << (RLC_WIDTH - 2));					\
 		size_t l, l0, l1;													\
 																			\
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {						\
-			C##_null(t0[i]);												\
-			C##_null(t1[i]);												\
+		for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {						\
+			C##_null(t[i]);													\
 		}																	\
 																			\
 		RLC_TRY {															\
 			/* Compute the precomputation tables. */						\
-			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {					\
-				C##_new(t0[i]);												\
-				C##_new(t1[i]);												\
+			for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {					\
+				C##_new(t[i]);												\
 			}																\
-			C##_tab(t0, p, RLC_WIDTH);										\
-			C##_tab(t1, q, RLC_WIDTH);										\
+			TMPL_EC_MUL_TAB(C, t0, p, RLC_WIDTH);							\
+			TMPL_EC_MUL_TAB(C, t1, q, RLC_WIDTH);							\
+			/* One inversion normalizes both tables. */						\
+			if (RLC_WIDTH > 2) {											\
+				C##_norm_sim(t, (const C##_t *)t, 2 << (RLC_WIDTH - 2));	\
+			} else {														\
+				C##_norm(t0[0], t0[0]);										\
+				C##_norm(t1[0], t1[0]);										\
+			}																\
 																			\
 			/* Compute the w-NAF representations of k and m. */				\
 			l0 = l1 = B + 1;												\
@@ -939,9 +944,8 @@
 		}																	\
 		RLC_FINALLY {														\
 			/* Free the precomputation tables. */							\
-			for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {					\
-				C##_free(t0[i]);											\
-				C##_free(t1[i]);											\
+			for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {					\
+				C##_free(t[i]);												\
 			}																\
 		}																	\
 	}
