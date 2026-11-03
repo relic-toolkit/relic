@@ -37,6 +37,14 @@
 #include "relic_fpx_sqr_tmpl.h"
 #include "relic_fpx_util_tmpl.h"
 
+#if FP_RDC == FP_RENUS && FPX_RDC == FPX_LAZYR
+/* Cyclotomic squarings in Fp^24 reduce their whole results, and cost less than
+ * compressed squarings with the decompression. */
+#define FP24_CYC_PCK		0
+#else
+#define FP24_CYC_PCK		1
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -201,9 +209,32 @@ TMPL_FPX_SQR_LAZYR(fp24, dv24, fp2, dv2, 12);
 
 TMPL_SQR_PCK_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
+#if FP_RDC == FP_RENUS
+
+void fp24_sqr_cyc_lazyr(fp24_t c, const fp24_t a) {
+	dv24_t u;
+
+	dv24_null(u);
+
+	RLC_TRY {
+		dv24_new(u);
+		/* The terms are already combined into the square. */
+		fp24_sqrc_low(u, a);
+		fp2_rdcv_low((fp2_t *)c, (dv2_t *)u, 12);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv24_free(u);
+	}
+}
+
+#else
+
 TMPL_SQR_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
-TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ, 1);
+#endif
+
+TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ, FP24_CYC_PCK);
 
 void fp24_frb(fp24_t c, const fp24_t a, int i) {
 	/* Cost of 20 multiplication in Fp^2 per Frobenius. */

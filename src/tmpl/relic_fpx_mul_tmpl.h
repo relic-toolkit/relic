@@ -650,6 +650,111 @@
 	}
 
 /**
+ * Gives the pairs of coefficients that cyclotomic squaring combines, in an
+ * extension field built as quadratic over cubic (QC) or cubic over quadratic
+ * (CQ): for each pair, the positions of x and y and of the coefficients that
+ * x^2 + v * y^2 and 2 * x * y define, the latter times v for the second pair.
+ */
+/** @{ */
+#define TMPL_CYC_PAIRS_QC	{ { {0, 0}, {1, 1}, {0, 0}, {1, 1} },			\
+	{ {0, 1}, {1, 2}, {0, 2}, {1, 0} }, { {1, 0}, {0, 2}, {0, 1}, {1, 2} } }
+#define TMPL_CYC_PAIRS_CQ	{ { {0, 0}, {0, 1}, {0, 0}, {0, 1} },			\
+	{ {2, 0}, {2, 1}, {1, 1}, {1, 0} }, { {1, 0}, {1, 1}, {2, 0}, {2, 1} } }
+/** @} */
+
+/**
+ * Defines a template for the terms of a cyclotomic squaring without reduction,
+ * as fp12_sqrc_low() computes them: each pair (x, y) is squared as x + y * w
+ * in the quadratic extension of the subfield, and the results go to the
+ * coefficients they define. In a Residue Number System, the terms t are
+ * combined with a into the whole unreduced square, c_0 = 3 * t_0 - 2 * a_0 and
+ * c_1 = 3 * t_1 + 2 * a_1, so that each squaring is reduced once.
+ *
+ * @param[in] F			- the name of the function.
+ * @param[in] X			- the extension field prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] DZ		- the double-precision subfield prefix.
+ * @param[in] Y			- the prefix of the quadratic extension of the subfield.
+ * @param[in] DY		- the double-precision prefix of that extension.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD		- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components in the subfield.
+ * @param[in] Q			- the number of outer components in the subfield.
+ * @param[in] SQRU		- the squaring in that extension without reduction.
+ * @param[in] L			- the layout of the field, QC or CQ.
+ */
+#define TMPL_FPX_SQR_CYC_UNR(F, X, D, Z, DZ, Y, DY, B, BD, N, Q, SQRU, L)	\
+	void F(D##_t c, const X##_t a) {										\
+		static const int _P[3][4][2] = TMPL_CYC_PAIRS_##L;					\
+		const size_t _n = sizeof(DZ##_t) / sizeof(dv_t);					\
+		Y##_t t;															\
+		DY##_t u;															\
+		fp_t k;																\
+																			\
+		Y##_null(t);														\
+		DY##_null(u);														\
+		fp_null(k);															\
+																			\
+		RLC_TRY {															\
+			Y##_new(t);														\
+			DY##_new(u);													\
+			fp_new(k);														\
+																			\
+			for (int _p = 0; _p < 3; _p++) {								\
+				int _i = _P[_p][2][0], _j = _P[_p][2][1];					\
+				int _r = _P[_p][3][0], _s = _P[_p][3][1];					\
+																			\
+				Z##_copy(t[0], a[_P[_p][0][0]][_P[_p][0][1]]);				\
+				Z##_copy(t[1], a[_P[_p][1][0]][_P[_p][1][1]]);				\
+				/* (x + y * w)^2 gives x^2 + v * y^2 and 2 * x * y. */		\
+				SQRU(u, t);													\
+				for (size_t _l = 0; _l < _n; _l++) {						\
+					dv_copy(((dv_t *)c[_i][_j])[_l], ((dv_t *)u[0])[_l],	\
+							RLC_FP_DLEN);									\
+				}															\
+				if (_p == 1) {												\
+					TMPL_DV_NOR(B, BD, N, Q, c[_r][_s], u[1]);				\
+				} else {													\
+					for (size_t _l = 0; _l < _n; _l++) {					\
+						dv_copy(((dv_t *)c[_r][_s])[_l], ((dv_t *)u[1])[_l],\
+								RLC_FP_DLEN);								\
+					}														\
+				}															\
+			}																\
+			/* c_0 = 3 * t_0 - 2 * a_0 and c_1 = 3 * t_1 + 2 * a_1 for each	\
+			 * pair, with 2 * a as a product, so that the square needs one	\
+			 * reduction. */												\
+			for (int _p = 0; _p < 3; _p++) {								\
+				for (int _r = 0; _r < 2; _r++) {							\
+					int _i = _P[_p][2 + _r][0], _j = _P[_p][2 + _r][1];		\
+					dv_t *_c = (dv_t *)c[_i][_j];							\
+					const fp_t *_a = (const fp_t *)a[_i][_j];				\
+																			\
+					fp_add(k, core_get()->one, core_get()->one);			\
+					if (_r == 0) {											\
+						fp_neg(k, k);										\
+					}														\
+					for (size_t _l = 0; _l < _n; _l++) {					\
+						rlc_align dig_t _w[RLC_FP_DLEN];					\
+																			\
+						fp_addc_low(_w, _c[_l], _c[_l]);					\
+						fp_addc_low(_c[_l], _c[_l], _w);					\
+						fp_muln_low(_w, _a[_l], k);							\
+						fp_addc_low(_c[_l], _c[_l], _w);					\
+					}														\
+				}															\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Y##_free(t);													\
+			DY##_free(u);													\
+			fp_free(k);														\
+		}																	\
+	}
+
+/**
  * Defines a template for testing quadratic residuosity in an extension field
  * of degree K, by testing the norm in the prime field.
  *

@@ -226,6 +226,17 @@ TMPL_FPX_SQR_UNR_QUAD(fp16_sqrn_low, fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
 TMPL_FPX_SQR_UNR_CUBIC(fp24_sqrn_low, fp24, fp8, dv24, dv8, fp2, dv2, 4, 2,
 		fp8_sqr_unr, fp8_mul_unr, 8);
 
+TMPL_FPX_SQR_CYC_UNR(fp24_sqrc_low, fp24, dv24, fp4, dv4, fp8, dv8, fp2, dv2,
+		2, 1, fp8_sqr_unr, CQ);
+
+#endif
+
+/* Defining FP48_ASM leaves out the Fp48 functions, so they can be replaced. */
+#ifndef FP48_ASM
+
+TMPL_FPX_SQR_CYC_UNR(fp48_sqrc_low, fp48, dv48, fp8, dv8, fp16, dv16, fp2,
+		dv2, 4, 2, fp16_sqr_unr, QC);
+
 #endif
 
 /* Defining FP12_ASM leaves out the Fp12 functions, so they can be replaced. */

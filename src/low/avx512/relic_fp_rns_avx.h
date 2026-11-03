@@ -96,11 +96,13 @@ typedef __m512i rp2_t[2];
 #define RNS_V(A)	rns_load(A, _k)
 
 /**
- * Gives the coefficient of w^e over Fp2 of an element of Fp8, Fp16 or Fp24,
- * where w is the generator adjoined last and w^4, w^8 or w^12 is the
- * non-residue of Fp2: the towers multiply the exponents of their generators.
+ * Gives the coefficient of w^e over Fp2 of an element of Fp4, Fp8, Fp16 or
+ * Fp24, where w is the generator adjoined last and w^2, w^4, w^8 or w^12 is
+ * the non-residue of Fp2: the towers multiply the exponents of their
+ * generators.
  */
 /** @{ */
+#define RNS_CO4(A, E)		(A)[(E)]
 #define RNS_CO8(A, E)		(A)[(E) % 2][(E) / 2]
 #define RNS_CO16(A, E)		(A)[(E) % 2][((E) / 2) % 2][(E) / 4]
 #define RNS_CO24(A, E)		(A)[(E) % 3][((E) / 3) % 2][(E) / 6]

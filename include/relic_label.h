@@ -3225,9 +3225,11 @@
 
 #undef fp24_muln_low
 #undef fp24_sqrn_low
+#undef fp24_sqrc_low
 
 #define fp24_muln_low 	RLC_PREFIX(fp24_muln_low)
 #define fp24_sqrn_low 	RLC_PREFIX(fp24_sqrn_low)
+#define fp24_sqrc_low 	RLC_PREFIX(fp24_sqrc_low)
 
 #undef fp48_copy
 #undef fp48_copy_sec
@@ -3324,6 +3326,10 @@
 #define fp48_upk 	RLC_PREFIX(fp48_upk)
 #define fp48_pck_max 	RLC_PREFIX(fp48_pck_max)
 #define fp48_upk_max 	RLC_PREFIX(fp48_upk_max)
+
+#undef fp48_sqrc_low
+
+#define fp48_sqrc_low 	RLC_PREFIX(fp48_sqrc_low)
 
 #undef fp54_copy
 #undef fp54_copy_sec

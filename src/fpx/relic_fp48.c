@@ -37,6 +37,14 @@
 #include "relic_fpx_sqr_tmpl.h"
 #include "relic_fpx_util_tmpl.h"
 
+#if FP_RDC == FP_RENUS && FPX_RDC == FPX_LAZYR
+/* Cyclotomic squarings in Fp^48 reduce their whole results, and cost less than
+ * compressed squarings with the decompression. */
+#define FP48_CYC_PCK		0
+#else
+#define FP48_CYC_PCK		1
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -247,12 +255,35 @@ TMPL_FPX_SQR_LAZYR(fp48, dv48, fp2, dv2, 24);
 
 TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
 
+#if FP_RDC == FP_RENUS
+
+void fp48_sqr_cyc_lazyr(fp48_t c, const fp48_t a) {
+	dv48_t u;
+
+	dv48_null(u);
+
+	RLC_TRY {
+		dv48_new(u);
+		/* The terms are already combined into the square. */
+		fp48_sqrc_low(u, a);
+		fp2_rdcv_low((fp2_t *)c, (dv2_t *)u, 24);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv48_free(u);
+	}
+}
+
+#else
+
 TMPL_SQR_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
+
+#endif
 
 TMPL_FPX_CUB_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_mul_unr,
 		fp8_sqr_unr);
 
-TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC, 1);
+TMPL_FPX_CYC(fp48, fp24, fp8, fp8_mul_art, QC, FP48_CYC_PCK);
 
 void fp48_frb(fp48_t c, const fp48_t a, int i) {
 	/* Cost of 52 multiplication in Fp^2 per Frobenius. */

@@ -499,4 +499,28 @@ void fp12_sqrn_low(dv12_t c, const fp12_t a);
  */
 void fp12_sqrc_low(dv12_t c, const fp12_t a, int pck);
 
+/**
+ * Computes the terms of a cyclotomic squaring of a 24-degree extension field
+ * element, as fp12_sqrc_low() does with coefficients in Fp4: for each pair
+ * (x, y) of (a_00, a_01), (a_20, a_21) and (a_10, a_11), the products
+ * x^2 + v * y^2 and 2 * x * y, where v is the generator of Fp4, go to c_00
+ * and c_01, c_11 and c_10 (with 2 * x * y times v), c_20 and c_21. In a
+ * Residue Number System, they are combined with a into the whole unreduced
+ * square, so that each squaring is reduced once.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp24_sqrc_low(dv24_t c, const fp24_t a);
+
+/**
+ * Computes the terms of a cyclotomic squaring of a 48-degree extension field
+ * element, as fp12_sqrc_low() does with coefficients in Fp8 and v the
+ * generator of Fp8 as the non-residue.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp48_sqrc_low(dv48_t c, const fp48_t a);
+
 #endif /* !RLC_FPX_LOW_H */
