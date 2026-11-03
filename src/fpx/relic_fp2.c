@@ -310,6 +310,9 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 		case 2:
 			fp2_mul(c, c, ctx->fp2_p2[j - 1]);
 			break;
+		case 3:
+			fp2_mul(c, c, ctx->fp2_p3[j - 1]);
+			break;
 	}
 #else
 	fp2_t t;
@@ -327,6 +330,10 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 			case 2:
 				fp_copy(t[0], ctx->fp2_p2[j - 1][0]);
 				fp_copy(t[1], ctx->fp2_p2[j - 1][1]);
+				break;
+			case 3:
+				fp_copy(t[0], ctx->fp2_p3[j - 1][0]);
+				fp_copy(t[1], ctx->fp2_p3[j - 1][1]);
 				break;
 		}
 

@@ -488,6 +488,7 @@ typedef struct _ctx_t {
 	fp2_st fp2_pz[2];
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[4];
+	fp2_st fp2_p3[5];
 	int frb3[3];
 	/** Integer part of the cubic non-residue in the cubic extension. */
 	dis_t cnr3;

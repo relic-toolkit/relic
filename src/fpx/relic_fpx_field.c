@@ -133,6 +133,22 @@ void fp2_field_init(void) {
 			fp2_mul(t1, t1, t0);
 			fp_copy(ctx->fp2_p0[0], t1[0]);
 			fp_sqr(ctx->fp2_p0[1], t1[0]);
+
+			/* The cube of Frobenius is its square after Frobenius, so it
+			 * multiplies the conjugate of the coefficient of x^j by g_j and
+			 * then by z^j: store h_j = g_j * z^j, with z^3 = -1. */
+			for (int j = 0; j < 5; j++) {
+				fp_copy(t1[0], ctx->fp2_p1[j][0]);
+				fp_copy(t1[1], ctx->fp2_p1[j][1]);
+				if ((j + 1) % 3 != 0) {
+					fp2_mul_fp(t1, t1, ctx->fp2_p0[(j + 1) % 3 - 1]);
+				}
+				if (j + 1 >= 3) {
+					fp2_neg(t1, t1);
+				}
+				fp_copy(ctx->fp2_p3[j][0], t1[0]);
+				fp_copy(ctx->fp2_p3[j][1], t1[1]);
+			}
 		} else {
 			/* For p = 5 mod 6, g_j = g_1^j * QNR^(j - 1). */
 			fp2_set_dig(t2, 1);

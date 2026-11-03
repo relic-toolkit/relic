@@ -233,7 +233,7 @@ TMPL_FPX_CYC(fp12, fp6, fp2, dv2, fp2_mul_nor, QC, FP12_CYC_PCK);
 
 void fp12_frb(fp12_t c, const fp12_t a, int i) {
 	ctx_t *ctx = core_get();
-	int e, m3 = fp_prime_get_mod18() % 3;
+	int e, f, m3 = fp_prime_get_mod18() % 3;
 	fp2_t t;
 
 	fp2_null(t);
@@ -244,19 +244,27 @@ void fp12_frb(fp12_t c, const fp12_t a, int i) {
 		fp12_copy(c, a);
 		i = i % 12;
 		if (i % 2 == 1) {
-			/* Cost of five multiplications in Fp^2 for an odd power. */
-			fp6_frb(c[0], c[0], 1);
-			fp2_frb(c[1][0], c[1][0], 1);
-			fp2_frb(c[1][1], c[1][1], 1);
-			fp2_frb(c[1][2], c[1][2], 1);
-			fp2_mul_frb(c[1][0], c[1][0], 1, 1);
-			fp2_mul_frb(c[1][1], c[1][1], 1, 3);
-			fp2_mul_frb(c[1][2], c[1][2], 1, 5);
+			/* Cost of five multiplications in Fp^2 for an odd power, all that
+			 * the cube takes for p = 1 mod 6 when using its own constants. */
+			f = (i == 3 && m3 == 1 ? 3 : 1);
+			for (int j = 0; j < 6; j++) {
+				fp2_frb(c[j % 2][j / 2], c[j % 2][j / 2], 1);
+			}
+			for (int j = 1; j < 6; j++) {
+				fp2_mul_frb(c[j % 2][j / 2], c[j % 2][j / 2], f, j);
+			}
 			if (m3 == 2) {
-				/* For p = 2 mod 3, the Frobenius swaps w and w^5. */
+				/* For p = 2 mod 3, the Frobenius swaps v and v^2, and w and
+				 * w^5. */
+				fp2_copy(t, c[0][1]);
+				fp2_copy(c[0][1], c[0][2]);
+				fp2_copy(c[0][2], t);
 				fp2_copy(t, c[1][0]);
 				fp2_copy(c[1][0], c[1][2]);
 				fp2_copy(c[1][2], t);
+			}
+			if (f == 3) {
+				i = 1;
 			}
 		}
 		/* The power p^(2m) maps the coefficient of w^j to its product by
