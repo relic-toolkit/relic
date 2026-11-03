@@ -201,11 +201,7 @@
 	void C##_tab(C##_t *t, const C##_t p, int w) {							\
 		/* Keep 2P projective and normalize the whole table at once. */		\
 		TMPL_EC_MUL_TAB(C, t, p, w);										\
-		if (w > 2) {														\
-			C##_norm_sim(t, (const C##_t *)t, 1 << (w - 2));				\
-		} else {															\
-			C##_norm(t[0], t[0]);											\
-		}																	\
+		TMPL_EC_MUL_NORM(C, t, 1, w);										\
 	}																		\
 																			\
 	void C##_print(const C##_t p) {											\
@@ -304,8 +300,22 @@
 																			\
 	void C##_norm_sim(C##_t *r, const C##_t *t, int n) {					\
 		int i;																\
-		F##_t* a = RLC_ALLOCA(F##_t, n);									\
+		F##_t* a;															\
 																			\
+		/* There is nothing to invert when all points are affine. */		\
+		for (i = 0; i < n; i++) {											\
+			if (!C##_is_infty(t[i]) && t[i]->coord != EC_AFFIN) {			\
+				break;														\
+			}																\
+		}																	\
+		if (i == n) {														\
+			for (i = 0; i < n && r != t; i++) {								\
+				C##_copy(r[i], t[i]);										\
+			}																\
+			return;															\
+		}																	\
+																			\
+		a = RLC_ALLOCA(F##_t, n);											\
 		if (a == NULL) {													\
 			RLC_THROW(ERR_NO_MEMORY);										\
 			return;															\
