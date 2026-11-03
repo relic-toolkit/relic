@@ -49,14 +49,26 @@
  * @param[in] W			- the window width.
  */
 #define TMPL_EC_MUL_TAB(C, T, P, W)											\
-	if (W > 2) {															\
-		C##_dbl(T[0], P);													\
-		C##_add(T[1], T[0], P);												\
-		for (int _i = 2; _i < (1 << (W - 2)); _i++) {						\
-			C##_add(T[_i], T[_i - 1], T[0]);								\
+	if ((W) > 2) {															\
+		C##_dbl((T)[0], P);													\
+		C##_add((T)[1], (T)[0], P);											\
+		for (int _i = 2; _i < (1 << ((W) - 2)); _i++) {						\
+			C##_add((T)[_i], (T)[_i - 1], (T)[0]);							\
 		}																	\
 	}																		\
-	C##_copy(T[0], P)
+	C##_copy((T)[0], P)
+
+/**
+ * Normalizes N contiguous tables built by TMPL_EC_MUL_TAB with one
+ * simultaneous inversion, which is skipped when all points are affine.
+ *
+ * @param[in] C			- the curve.
+ * @param[in,out] T		- the tables.
+ * @param[in] N			- the number of tables.
+ * @param[in] W			- the window width.
+ */
+#define TMPL_EC_MUL_NORM(C, T, N, W)										\
+	C##_norm_sim(T, (const C##_t *)(T), (N) << ((W) - 2))
 
 /**
  * Defines a template for point multiplication using the binary method.
@@ -891,12 +903,7 @@
 			TMPL_EC_MUL_TAB(C, t0, p, RLC_WIDTH);							\
 			TMPL_EC_MUL_TAB(C, t1, q, RLC_WIDTH);							\
 			/* One inversion normalizes both tables. */						\
-			if (RLC_WIDTH > 2) {											\
-				C##_norm_sim(t, (const C##_t *)t, 2 << (RLC_WIDTH - 2));	\
-			} else {														\
-				C##_norm(t0[0], t0[0]);										\
-				C##_norm(t1[0], t1[0]);										\
-			}																\
+			TMPL_EC_MUL_NORM(C, t, 2, RLC_WIDTH);							\
 																			\
 			/* Compute the w-NAF representations of k and m. */				\
 			l0 = l1 = B + 1;												\

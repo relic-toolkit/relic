@@ -88,15 +88,8 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 		TMPL_EC_MUL_TAB(ep, tab0, p, RLC_WIDTH);
 		TMPL_EC_MUL_TAB(ep, tab1, q, RLC_WIDTH);
-#if EP_ADD != EP_PROJC
-		/* One inversion normalizes both tables. */
-		if (RLC_WIDTH > 2) {
-			ep_norm_sim(tab, (const ep_t *)tab, 2 << (RLC_WIDTH - 2));
-		} else {
-			ep_norm(tab0[0], tab0[0]);
-			ep_norm(tab1[0], tab1[0]);
-		}
-#endif
+		/* One inversion normalizes both tables, unless they stay projective. */
+		TMPL_EP_MUL_NORM(ep, tab, 2, RLC_WIDTH);
 
 		/* Compute the w-NAF representations of the subscalars. */
 		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;
