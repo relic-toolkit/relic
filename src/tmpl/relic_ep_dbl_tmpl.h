@@ -51,10 +51,16 @@
 		ep_dblp_low(R, P);													\
 		return;																\
 	}
+#include "relic_epx_low.h"
+#define TMPL_EP_DBL_LOW_ep2(R, P)											\
+	if (ep2_curve_opt_a() == RLC_ZERO && P->coord != EC_AFFIN) {			\
+		ep2_dblp_low(R, P);													\
+		return;																\
+	}
 #else
 #define TMPL_EP_DBL_LOW_ep(R, P)
-#endif
 #define TMPL_EP_DBL_LOW_ep2(R, P)
+#endif
 #define TMPL_EP_DBL_LOW_ep3(R, P)
 #define TMPL_EP_DBL_LOW_ep4(R, P)
 #define TMPL_EP_DBL_LOW_ep8(R, P)

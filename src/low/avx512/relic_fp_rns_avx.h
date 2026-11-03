@@ -393,6 +393,102 @@ rlc_inline void rp2_mac(rp2_t l, rp2_t h, const rp2_t a, const rp2_t b,
 }
 
 /**
+ * Loads the k-th vectors of an element of Fp2.
+ */
+rlc_inline void rp2_load(rp2_t c, const fp2_t a, size_t k) {
+	c[0] = rns_load(a[0], k);
+	c[1] = rns_load(a[1], k);
+}
+
+/**
+ * Stores the k-th vectors of an element of Fp2.
+ */
+rlc_inline void rp2_store(fp2_t c, size_t k, const rp2_t a) {
+	rns_store(c[0], k, a[0]);
+	rns_store(c[1], k, a[1]);
+}
+
+/**
+ * Stores the k-th vectors of an element of Fp2 without reduction.
+ */
+rlc_inline void rp2_stored(dv2_t c, size_t k, const rp2_t a) {
+	rns_store(c[0], k, a[0]);
+	rns_store(c[1], k, a[1]);
+}
+
+/**
+ * Adds vectors of elements of Fp2 modulo m, lane-wise.
+ */
+rlc_inline void rp2_add(rp2_t c, const rp2_t a, const rp2_t b, __m512i m) {
+	c[0] = rns_vadd(a[0], b[0], m);
+	c[1] = rns_vadd(a[1], b[1], m);
+}
+
+/**
+ * Subtracts vectors of elements of Fp2 modulo m, lane-wise.
+ */
+rlc_inline void rp2_sub(rp2_t c, const rp2_t a, const rp2_t b, __m512i m) {
+	c[0] = rns_vsub(a[0], b[0], m);
+	c[1] = rns_vsub(a[1], b[1], m);
+}
+
+/**
+ * Multiplies vectors of elements of Fp2 by k * (s + d * i), for a small
+ * nonnegative integer k, the non-residue s + i, with i^2 = q, or its conjugate,
+ * lane-wise. The results are at most m.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the vector to multiply.
+ * @param[in] k				- the integer.
+ * @param[in] s				- the integer part of the non-residue.
+ * @param[in] q				- the square of i.
+ * @param[in] d				- 1 for the non-residue, -1 for its conjugate.
+ * @param[in] m				- the moduli.
+ */
+rlc_inline void rp2_mulk(rp2_t c, const rp2_t a, int k, int s, int q, int d,
+		__m512i m) {
+	rp2_t t;
+
+	if (d == 1) {
+		rp2_nor(t, a, s, q, m);
+	} else {
+		/* (a_0 + a_1 * i) * (s - i) = (s * a_0 - q * a_1) +
+		 * (s * a_1 - a_0) * i, with q < 0. */
+		t[0] = rns_vadd(rns_vsml(a[0], s, m), rns_vsml(a[1], -q, m), m);
+		t[1] = rns_vsub(rns_vsml(a[1], s, m), a[0], m);
+	}
+	c[0] = rns_vsml(t[0], k, m);
+	c[1] = rns_vsml(t[1], k, m);
+}
+
+/**
+ * Multiplies vectors of elements of Fp2, with i^2 = q, and adds the product of
+ * two more if asked, with one Montgomery reduction per component: for factors
+ * at most m, the results are at most 2m, as products without reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first vector to multiply.
+ * @param[in] b				- the second vector to multiply.
+ * @param[in] d				- the third vector to multiply, or NULL.
+ * @param[in] e				- the fourth vector to multiply, or NULL.
+ * @param[in] q				- the square of i.
+ * @param[in] m				- the moduli.
+ * @param[in] v				- the inverses of the moduli modulo 2^52.
+ */
+rlc_inline void rp2_mul(rp2_t c, const rp2_t a, const rp2_t b, const __m512i *d,
+		const __m512i *e, int q, __m512i m, __m512i v) {
+	const __m512i z = _mm512_setzero_si512();
+	rp2_t l = { z, z }, h = { z, z };
+
+	rp2_mac(l, h, a, b, rns_vneg(rns_vsml(b[1], -q, m), m));
+	if (d != NULL) {
+		rp2_mac(l, h, d, e, rns_vneg(rns_vsml(e[1], -q, m), m));
+	}
+	c[0] = rns_vmon(l[0], h[0], m, v);
+	c[1] = rns_vmon(l[1], h[1], m, v);
+}
+
+/**
  * Tests if all residues of an element of Fp2 are zero, as they are for the
  * coefficients that sparse elements leave out. Other representations of zero
  * are not detected.
@@ -680,21 +776,28 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 /**
  * Reduces N values as fp_rdcv_low() does, for N known at compile time, so that
  * the reduction is inlined with the pointers as constants: in one batch up to
- * RNS_K values, in two of about half otherwise. The sizes are bounded by RNS_K
- * in both branches, so that the compiler sees no batch larger than the
- * reduction takes.
+ * RNS_K values, in two of about half up to 2 * RNS_K, and in three of about a
+ * third otherwise. The sizes are bounded by RNS_K in all branches, so that the
+ * compiler sees no batch larger than the reduction takes.
  *
  * @param[out] C			- the pointers to the results.
  * @param[in] A				- the pointers to the values to reduce.
- * @param[in] N				- the number of values, up to 2 * RNS_K.
+ * @param[in] N				- the number of values, up to 3 * RNS_K.
  */
 #define RNS_RDCV(C, A, N)													\
 	if ((N) <= RNS_K) {														\
 		rns_vrdc(C, (const dig_t *const *)(A), RLC_MIN(N, RNS_K));			\
-	} else {																\
+	} else if ((N) <= 2 * RNS_K) {											\
 		rns_vrdc(C, (const dig_t *const *)(A), RLC_MIN((N) / 2, RNS_K));	\
 		rns_vrdc((C) + (N) / 2, (const dig_t *const *)(A) + (N) / 2,		\
 				RLC_MIN((N) - (N) / 2, RNS_K));								\
+	} else {																\
+		rns_vrdc(C, (const dig_t *const *)(A), RLC_MIN((N) / 3, RNS_K));	\
+		rns_vrdc((C) + (N) / 3, (const dig_t *const *)(A) + (N) / 3,		\
+				RLC_MIN((N) / 3, RNS_K));									\
+		rns_vrdc((C) + 2 * ((N) / 3),										\
+				(const dig_t *const *)(A) + 2 * ((N) / 3),					\
+				RLC_MIN((N) - 2 * ((N) / 3), RNS_K));						\
 	}
 
 #endif /* !RLC_FP_RNS_AVX_H */

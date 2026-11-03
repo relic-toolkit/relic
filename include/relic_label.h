@@ -1624,6 +1624,14 @@
 #define ep2_pck 	RLC_PREFIX(ep2_pck)
 #define ep2_upk 	RLC_PREFIX(ep2_upk)
 
+#undef ep2_dblp_low
+#undef ep2_addp_low
+#undef ep2_addm_low
+
+#define ep2_dblp_low 	RLC_PREFIX(ep2_dblp_low)
+#define ep2_addp_low 	RLC_PREFIX(ep2_addp_low)
+#define ep2_addm_low 	RLC_PREFIX(ep2_addm_low)
+
 #undef ep3_st
 #undef ep3_t
 #define ep3_st		RLC_PREFIX(ep3_st)

@@ -161,6 +161,7 @@ echo "#define ep2_st		RLC_PREFIX(ep2_st)"
 echo "#define ep2_t			RLC_PREFIX(ep2_t)"
 echo
 REDEF2 epx ep2
+REDEF2_LOW epx ep2
 
 echo "#undef ep3_st"
 echo "#undef ep3_t"

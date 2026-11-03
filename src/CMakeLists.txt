@@ -115,6 +115,11 @@ endif()
 
 if (WITH_EPX)
 	list(APPEND RELIC_SRCS ${EPX_SRCS})
+	# A backend for a Residue Number System may vectorize point operations.
+	if (FP_RDC STREQUAL "RENUS" AND ARITH_RNS AND
+			EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/relic_epx_low.c")
+		list(APPEND RELIC_SRCS "low/${ARITH_PATH}/relic_epx_low.c")
+	endif()
 endif()
 
 if (WITH_EB)

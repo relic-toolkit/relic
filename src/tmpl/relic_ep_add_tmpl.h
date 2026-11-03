@@ -56,10 +56,20 @@
 		}																	\
 		return;																\
 	}
+#include "relic_epx_low.h"
+#define TMPL_EP_ADD_LOW_ep2(R, P, Q)										\
+	if (ep2_curve_opt_a() == RLC_ZERO && P->coord != EC_AFFIN) {			\
+		if (Q->coord == EC_AFFIN) {											\
+			ep2_addm_low(R, P, Q);											\
+		} else {															\
+			ep2_addp_low(R, P, Q);											\
+		}																	\
+		return;																\
+	}
 #else
 #define TMPL_EP_ADD_LOW_ep(R, P, Q)
-#endif
 #define TMPL_EP_ADD_LOW_ep2(R, P, Q)
+#endif
 #define TMPL_EP_ADD_LOW_ep3(R, P, Q)
 #define TMPL_EP_ADD_LOW_ep4(R, P, Q)
 #define TMPL_EP_ADD_LOW_ep8(R, P, Q)
