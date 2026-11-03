@@ -375,8 +375,9 @@
  * image under tau. The table is normalized with one simultaneous inversion,
  * unless P is set and the formulas are complete: then it stays projective,
  * where an addition costs little more than a mixed one, and P is the faster
- * choice over the base field. The images under w are computed when
- * needed, as w(x, y) = (beta * x, y) and w^2(x, y) = (-x - beta * x, y). The
+ * choice over the base field. The images under w follow from
+ * w(x, y) = (beta * x, y) and w^2(x, y) = (-x - beta * x, y), with beta * x
+ * computed once for each entry, so reading them costs no multiplication. The
  * NAF reads the k-th table at entries 6k to 6k + 5 and the regular method at
  * entries 12k to 12k + 11.
  *
@@ -479,11 +480,24 @@
 		int d, f, j, first = 1;												\
 		size_t l = 0;														\
 		C##_t q;															\
+		F##_t *bx = RLC_ALLOCA(F##_t, 6 * e);								\
 																			\
+		if (bx == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
 		C##_null(q);														\
+		for (int i = 0; i < 6 * e; i++) {									\
+			F##_null(bx[i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			C##_new(q);														\
+			/* beta * x for each entry, so the images under w are free. */	\
+			for (int i = 0; i < 6 * e; i++) {								\
+				F##_new(bx[i]);												\
+				TMPL_EP_MUL_TW_BETA_##F(bx[i], t[i]->x, beta);				\
+			}																\
 																			\
 			for (int i = 0; i < e; i++) {									\
 				l = RLC_MAX(l, len[i]);										\
@@ -507,11 +521,11 @@
 						/* w(x, y) = (beta * x, y) and						\
 						 * w^2(x, y) = (-x - beta * x, y). */				\
 						C##_copy(q, t[6 * k + j]);							\
-						if (f != 0) {										\
-							TMPL_EP_MUL_TW_BETA_##F(q->x, q->x, beta);		\
+						if (f == 1) {										\
+							F##_copy(q->x, bx[6 * k + j]);					\
 						}													\
 						if (f == 2) {										\
-							F##_add(q->x, q->x, t[6 * k + j]->x);			\
+							F##_add(q->x, q->x, bx[6 * k + j]);				\
 							F##_neg(q->x, q->x);							\
 						}													\
 						if (((d % 6) / 3) ^ (m & 1)) {						\
@@ -532,6 +546,10 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			C##_free(q);													\
+			for (int i = 0; i < 6 * e; i++) {								\
+				F##_free(bx[i]);											\
+			}																\
+			RLC_FREE(bx);													\
 		}																	\
 	}
 
@@ -554,11 +572,24 @@
 		int d, f, g, top = 3 * len;											\
 		dig_t s;															\
 		C##_t q, u;															\
+		F##_t *bx = RLC_ALLOCA(F##_t, 12 * e);								\
 																			\
+		if (bx == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
 		C##_null_all(q, u);													\
+		for (int i = 0; i < 12 * e; i++) {									\
+			F##_null(bx[i]);												\
+		}																	\
 																			\
 		RLC_TRY {															\
 			C##_new_all(q, u);												\
+			/* beta * x for each entry, so the images under w are free. */	\
+			for (int i = 0; i < 12 * e; i++) {								\
+				F##_new(bx[i]);												\
+				TMPL_EP_MUL_TW_BETA_##F(bx[i], t[i]->x, beta);				\
+			}																\
 																			\
 			/* Horner's rule in base 3 as in the NAF, now with a digit at	\
 			 * every position multiple of 3, read in constant time from the	\
@@ -584,18 +615,18 @@
 						s = ((g * 11) >> 5) ^ (m & 1);						\
 						f = g - 3 * ((g * 11) >> 5) + m % 3;				\
 						f -= 3 & -(f >= 3);									\
-						/* Select x and y in the entries of the right		\
-						 * parity, then w^f(x) as w(x) = beta * x and		\
+						/* Select x, beta * x and y in the entries of the	\
+						 * right parity, then w^f(x) as w(x) = beta * x and	\
 						 * w^2(x) = -x - w(x). */							\
 						for (int j = 0; j < 6; j++) {						\
 							int o = 12 * k + j + 6 * (i - 2 * m);			\
 							F##_copy_sec(u->x, t[o]->x, j == d);			\
+							F##_copy_sec(q->x, bx[o], j == d);				\
 							F##_copy_sec(u->y, t[o]->y, j == d);			\
 							if (P && EP_ADD == EP_PROJC) {					\
 								F##_copy_sec(u->z, t[o]->z, j == d);		\
 							}												\
 						}													\
-						TMPL_EP_MUL_TW_BETA_##F(q->x, u->x, beta);			\
 						F##_add(q->y, u->x, q->x);							\
 						F##_neg(q->y, q->y);								\
 						F##_copy_sec(u->x, q->x, f == 1);					\
@@ -624,6 +655,10 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			C##_free_all(q, u);												\
+			for (int i = 0; i < 12 * e; i++) {								\
+				F##_free(bx[i]);											\
+			}																\
+			RLC_FREE(bx);													\
 		}																	\
 	}
 

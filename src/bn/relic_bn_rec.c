@@ -346,16 +346,31 @@ static const int8_t tw_reg_h[54] = {
  * modulo 9 has period 3 in i for every digit size.
  */
 static int tw_mod9(const dig_t *a, size_t s) {
-	const dig_t d = (RLC_DMASK % 9 + 1) % 9, w[3] = { 1, d, d * d % 9 };
-	dig_t r = 0;
+	const size_t d = (RLC_DMASK % 9 + 1) % 9, w[3] = { 1, d, d * d % 9 };
+	size_t r = 0;
 
-	/* Reducing at every step keeps r small for every digit size. */
+	/* Each term is below 64, so a single reduction at the end suffices. */
 	for (size_t i = 0; i < s; i++) {
-		r = (r + (a[i] % 9) * w[i % 3]) % 9;
+		r += (a[i] % 9) * w[i % 3];
 	}
 	/* Subtract 2^(s * RLC_DIG) for negative integers. */
 	r += (a[s - 1] >> (RLC_DIG - 1)) * (9 - w[s % 3]);
 	return r % 9;
+}
+
+/**
+ * Reduces modulo 3 an integer of s digits in two's complement representation.
+ * The weight 2^(i * RLC_DIG) of every digit is 1 modulo 3, as RLC_DIG is even.
+ */
+static int tw_mod3(const dig_t *a, size_t s) {
+	size_t r = 0;
+
+	for (size_t i = 0; i < s; i++) {
+		r += a[i] % 3;
+	}
+	/* Subtract 2^(s * RLC_DIG) = 1 modulo 3 for negative integers. */
+	r += 2 * (a[s - 1] >> (RLC_DIG - 1));
+	return r % 3;
 }
 
 /**
@@ -1394,12 +1409,19 @@ void bn_rec_etnaf(int8_t *naf, size_t *len, const bn_t k0, const bn_t k1,
 			tw_div(a, b, s);
 		} else {
 			/* A digit is followed by two zeros. */
-			d = tw_naf[3 * d + tw_mod9(b, s) % 3];
+			d = tw_naf[3 * d + tw_mod3(b, s)];
 			tw_sub(a, b, tw_g[d], tw_h[d], s);
 			naf[l] = d + 1;
 			naf[l + 1] = naf[l + 2] = 0;
 			l += 2;
 			tw_div3(a, b, s);
+		}
+		/* Drop the top digit while the two top digits only extend the sign
+		 * of the rest, keeping one digit for the growth of the remainders. */
+		while (s > 2 && a[s - 1] == a[s - 2] && b[s - 1] == b[s - 2] &&
+				a[s - 2] == (dig_t)0 - (a[s - 3] >> (RLC_DIG - 1)) &&
+				b[s - 2] == (dig_t)0 - (b[s - 3] >> (RLC_DIG - 1))) {
+			s--;
 		}
 	}
 	while (l > 0 && naf[l - 1] == 0) {
