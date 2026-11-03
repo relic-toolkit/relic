@@ -86,8 +86,8 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_new_all(tab0[i], tab1[i]);
 		}
-		TMPL_EP_MUL_TAB(ep, tab0, p, RLC_WIDTH, 1);
-		TMPL_EP_MUL_TAB(ep, tab1, q, RLC_WIDTH, 1);
+		TMPL_EP_MUL_TAB(ep, tab0, p, RLC_WIDTH);
+		TMPL_EP_MUL_TAB(ep, tab1, q, RLC_WIDTH);
 
 		/* Compute the w-NAF representations of the subscalars. */
 		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;

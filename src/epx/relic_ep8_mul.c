@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EPX_MUL(ep8, fp8, 16, 4, WNAF, 0);
+TMPL_EPX_MUL(ep8, fp8, 16, 4, WNAF);
 
 TMPL_EP_MUL_TW_TAB(ep8, fp8, 0);
 

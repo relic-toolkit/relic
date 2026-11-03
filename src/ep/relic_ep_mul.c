@@ -67,7 +67,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		} else {
 			ep_neg(q, p);
 		}
-		TMPL_EP_MUL_TAB(ep, t, q, RLC_WIDTH, 1);
+		TMPL_EP_MUL_TAB(ep, t, q, RLC_WIDTH);
 
 		l0 = l1 = RLC_FP_BITS + 1;
 		bn_rec_naf(naf0, &l0, k0, RLC_WIDTH);

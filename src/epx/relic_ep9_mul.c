@@ -154,7 +154,7 @@ static void ep9_mul_cof_sg54(ep9_t r, const ep9_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_EPX_MUL(ep9, fp9, 10, 2, WNAF, 0);
+TMPL_EPX_MUL(ep9, fp9, 10, 2, WNAF);
 
 TMPL_EP_MUL_TW_TAB(ep9, fp9, 0);
 

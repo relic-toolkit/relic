@@ -84,23 +84,16 @@
 		RLC_MIN((size_t)S, (size_t)ep_curve_frdim()) : (size_t)S)
 
 /**
- * Builds the table of a w-NAF multiplication. With complete formulas and X set,
- * it stays projective, where an addition costs little more than a mixed one
- * and that saves an inversion, which pays off over the base field and its
- * quadratic extension; it is normalized otherwise.
- *
- * @param[in] C			- the curve.
- * @param[out] T		- the table.
- * @param[in] P			- the point to multiply.
- * @param[in] W			- the window width.
- * @param[in] X			- the flag to keep the table projective.
+ * Builds the table of a w-NAF multiplication over the prime field: projective
+ * with complete formulas, where an addition costs little more than a mixed one
+ * and that saves an inversion, normalized otherwise. Over extension fields the
+ * tables are always normalized, where the cheaper mixed additions pay off.
  */
-#define TMPL_EP_MUL_TAB(C, T, P, W, X)										\
-	if ((X) && EP_ADD == EP_PROJC) {										\
-		TMPL_EC_MUL_TAB(C, T, P, W);										\
-	} else {																\
-		C##_tab(T, P, W);													\
-	}
+#if EP_ADD == EP_PROJC
+#define TMPL_EP_MUL_TAB(C, T, P, W)		TMPL_EC_MUL_TAB(C, T, P, W)
+#else
+#define TMPL_EP_MUL_TAB(C, T, P, W)		C##_tab(T, P, W)
+#endif
 
 /**
  * Defines a template for point multiplication using the GLS endomorphism. The
@@ -109,9 +102,8 @@
  *
  * @param[in] C			- the curve.
  * @param[in] S			- the number of subscalars.
- * @param[in] X			- the flag to keep the tables projective.
  */
-#define TMPL_EP_MUL_GLS_IMP(C, S, X)										\
+#define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
 		size_t l, _l[S], w = RLC_WIDTH;										\
 		size_t s = TMPL_EP_MUL_DIM(S);										\
@@ -162,7 +154,7 @@
 					if (bn_sign(_k[0]) == RLC_NEG) {						\
 						C##_neg(q, q);										\
 					}														\
-					TMPL_EP_MUL_TAB(C, t[0], q, w, X);						\
+					C##_tab(t[0], q, w);									\
 				} else if (ep_curve_is_pairf() == EP_K16 ||					\
 						ep_curve_is_pairf() == EP_AFG16) {					\
 					/* Minimize use of endomorphism when it's expensive. */	\
@@ -170,7 +162,7 @@
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
 						C##_neg(q, q);										\
 					}														\
-					TMPL_EP_MUL_TAB(C, t[i], q, w, X);						\
+					C##_tab(t[i], q, w);									\
 				} else {													\
 					for (int j = 0; j < (1 << (w - 2)); j++) {				\
 						C##_psi(t[i][j], t[i - 1][j]);						\
@@ -843,7 +835,9 @@
 
 /**
  * Builds the table for the i-th subscalar of a simultaneous GLS
- * multiplication, applying the endomorphism to the previous table.
+ * multiplication, applying the endomorphism to the previous table. The tables
+ * of both points are interleaved, so consecutive tables of one point are 2E
+ * points apart, and the first one is left projective.
  *
  * @param[in] C			- the curve prefix.
  * @param[out] T		- the tables, each with E points.
@@ -853,20 +847,19 @@
  * @param[in] I			- the index of the subscalar.
  * @param[in] E			- the number of points in each table.
  * @param[in] W			- the window width.
- * @param[in] X			- the flag to keep the tables projective.
  */
-#define TMPL_EP_MUL_SIM_ENDOM_TAB(C, T, K, P, V, I, E, W, X)				\
+#define TMPL_EP_MUL_SIM_ENDOM_TAB(C, T, K, P, V, I, E, W)					\
 	if (I == 0) {															\
 		C##_norm(V, P);														\
 		if (bn_sign(K[0]) == RLC_NEG) {										\
 			C##_neg(V, V);													\
 		}																	\
-		TMPL_EP_MUL_TAB(C, T, V, W, X);										\
+		TMPL_EC_MUL_TAB(C, T, V, W);										\
 	} else {																\
 		for (size_t _j = 0; _j < E; _j++) {									\
-			C##_psi(T[I * E + _j], T[(I - 1) * E + _j]);					\
+			C##_psi(T[2 * I * E + _j], T[2 * (I - 1) * E + _j]);			\
 			if (bn_sign(K[I]) != bn_sign(K[I - 1])) {						\
-				C##_neg(T[I * E + _j], T[I * E + _j]);						\
+				C##_neg(T[2 * I * E + _j], T[2 * I * E + _j]);				\
 			}																\
 		}																	\
 	}
@@ -877,15 +870,14 @@
  *
  * @param[in] C			- the curve.
  * @param[in] S			- the number of subscalars.
- * @param[in] X			- the flag to keep the tables projective.
  */
-#define TMPL_EP_MUL_SIM_ENDOM_GLS(C, S, X)									\
+#define TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)										\
 	static void C##_mul_sim_endom(C##_t r, const C##_t p, const bn_t k,		\
 			const C##_t q, const bn_t m) {									\
 		size_t l, _l[S], w = RLC_WIDTH, e;									\
 		bn_t _k[S], _m[S], n, u;											\
 		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
-		C##_t _p[S << (RLC_WIDTH - 2)], _q[S << (RLC_WIDTH - 2)], v;		\
+		C##_t t[2 * S << (RLC_WIDTH - 2)], *_p = t, *_q, v;					\
 																			\
 		bn_null_all(n, u);													\
 		C##_null(v);														\
@@ -893,9 +885,8 @@
 			bn_null(_k[i]);													\
 			bn_null(_m[i]);													\
 		}																	\
-		for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {					\
-			C##_null(_p[i]);												\
-			C##_null(_q[i]);												\
+		for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {				\
+			C##_null(t[i]);													\
 		}																	\
 																			\
 		RLC_TRY {															\
@@ -905,9 +896,8 @@
 				bn_new(_k[i]);												\
 				bn_new(_m[i]);												\
 			}																\
-			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
-				C##_new(_p[i]);												\
-				C##_new(_q[i]);												\
+			for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {			\
+				C##_new(t[i]);												\
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
@@ -932,6 +922,7 @@
 				w = 2;														\
 			}																\
 			e = (1 << (w - 2));												\
+			_q = t + e;														\
 																			\
 			l = 0;															\
 			for (int i = 0; i < S; i++) {									\
@@ -941,30 +932,35 @@
 				_l[i] = RLC_FP_BITS + 1;									\
 				bn_rec_naf(naf1[i], &_l[i], _m[i], w);						\
 				l = RLC_MAX(l, _l[i]);										\
-				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _p, _k, p, v, i, e, w, X);		\
-				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w, X);		\
+				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _p, _k, p, v, i, e, w);		\
+				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
+				/* One inversion normalizes the first tables. */			\
+				if (i == 0 && w > 2) {										\
+					C##_norm_sim(t, (const C##_t *)t, 2 * e);				\
+				}															\
 			}																\
 			/* Normalize if the endomorphism returns projective points. */	\
-			if (_p[e]->coord != EC_AFFIN) {									\
-				C##_norm_sim(_p + e, (const C##_t *)_p + e, (S - 1) * e);	\
-				C##_norm_sim(_q + e, (const C##_t *)_q + e, (S - 1) * e);	\
+			if (t[2 * e]->coord != EC_AFFIN) {								\
+				C##_norm_sim(t + 2 * e, (const C##_t *)t + 2 * e,			\
+						2 * (S - 1) * e);									\
 			}																\
 																			\
 			C##_set_infty(r);												\
 			for (int i = l - 1; i >= 0; i--) {								\
 				C##_dbl(r, r);												\
 				for (int j = 0; j < S; j++) {								\
+					const size_t o = 2 * j * e;								\
 					if (naf0[j][i] > 0) {									\
-						C##_add(r, r, _p[j * e + naf0[j][i] / 2]);			\
+						C##_add(r, r, _p[o + naf0[j][i] / 2]);				\
 					}														\
 					if (naf0[j][i] < 0) {									\
-						C##_sub(r, r, _p[j * e - naf0[j][i] / 2]);			\
+						C##_sub(r, r, _p[o - naf0[j][i] / 2]);				\
 					}														\
 					if (naf1[j][i] > 0) {									\
-						C##_add(r, r, _q[j * e + naf1[j][i] / 2]);			\
+						C##_add(r, r, _q[o + naf1[j][i] / 2]);				\
 					}														\
 					if (naf1[j][i] < 0) {									\
-						C##_sub(r, r, _q[j * e - naf1[j][i] / 2]);			\
+						C##_sub(r, r, _q[o - naf1[j][i] / 2]);				\
 					}														\
 				}															\
 			}																\
@@ -980,9 +976,8 @@
 				bn_free(_k[i]);												\
 				bn_free(_m[i]);												\
 			}																\
-			for (int i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
-				C##_free(_p[i]);											\
-				C##_free(_q[i]);											\
+			for (int i = 0; i < (2 * S << (RLC_WIDTH - 2)); i++) {			\
+				C##_free(t[i]);												\
 			}																\
 		}																	\
 	}
@@ -1312,7 +1307,7 @@
  * implementation defined before the bundle.
  */
 #define TMPL_EP_MUL_GLS_IMP_WNAF	TMPL_EP_MUL_GLS_IMP
-#define TMPL_EP_MUL_GLS_IMP_OWN(C, S, X)	/* Provided by the curve. */
+#define TMPL_EP_MUL_GLS_IMP_OWN(C, S)	/* Provided by the curve. */
 
 /**
  * Defines a template for all point multiplications of an elliptic curve over
@@ -1324,14 +1319,13 @@
  * @param[in] S			- the dimension of the GLS decomposition.
  * @param[in] T			- the number of groups for regular recoding.
  * @param[in] G			- the GLS multiplication, WNAF or OWN.
- * @param[in] X			- the flag to keep the w-NAF tables projective.
  */
-#define TMPL_EPX_MUL(C, F, S, T, G, X)										\
-	TMPL_EP_MUL_GLS_IMP_##G(C, S, X)										\
+#define TMPL_EPX_MUL(C, F, S, T, G)											\
+	TMPL_EP_MUL_GLS_IMP_##G(C, S)											\
 	TMPL_EP_MUL_REG_GLS(C, F, S, T)											\
 	TMPL_EC_MUL_NAF_IMP(C, RLC_FP_BITS)										\
 	TMPL_EC_MUL_REG_IMP(C, RLC_FP_BITS)										\
-	TMPL_EP_MUL_SIM_ENDOM_GLS(C, S, X)										\
+	TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)											\
 	TMPL_EC_MUL_SIM_PLAIN(C, RLC_FP_BITS)									\
 	TMPL_EC_MUL_BASIC(C)													\
 	TMPL_EC_MUL_MONTY(C)													\
