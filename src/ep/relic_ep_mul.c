@@ -233,9 +233,9 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 TMPL_EC_MUL_REG_IMP(ep, RLC_FP_BITS);
 
-TMPL_EP_MUL_TW_TAB(ep, fp);
+TMPL_EP_MUL_TW_TAB(ep, fp, 1);
 TMPL_EP_MUL_TW_NAF(ep, fp);
-TMPL_EP_MUL_TW_REG(ep, fp);
+TMPL_EP_MUL_TW_REG(ep, fp, 1);
 
 /**
  * Decomposes k modulo the order n as k0 + k1 * w, for the cube root of unity

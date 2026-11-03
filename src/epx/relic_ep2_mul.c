@@ -146,11 +146,11 @@ static void ep2_mul_cof_b12(ep2_t r, const ep2_t p) {
 	}
 }
 
-TMPL_EP_MUL_TW_TAB(ep2, fp2);
+TMPL_EP_MUL_TW_TAB(ep2, fp2, 0);
 
 TMPL_EP_MUL_TW_NAF(ep2, fp2);
 
-TMPL_EP_MUL_TW_REG(ep2, fp2);
+TMPL_EP_MUL_TW_REG(ep2, fp2, 0);
 
 /*============================================================================*/
 /* Public definitions                                                         */

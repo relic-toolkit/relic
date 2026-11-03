@@ -40,11 +40,11 @@
 
 TMPL_EPX_MUL(ep8, fp8, 16, 4, WNAF);
 
-TMPL_EP_MUL_TW_TAB(ep8, fp8);
+TMPL_EP_MUL_TW_TAB(ep8, fp8, 0);
 
 TMPL_EP_MUL_TW_NAF(ep8, fp8);
 
-TMPL_EP_MUL_TW_REG(ep8, fp8);
+TMPL_EP_MUL_TW_REG(ep8, fp8, 0);
 
 TMPL_EP_MUL_TW_GLS(ep8, fp8, 16, 8);
 

@@ -415,11 +415,11 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 
 TMPL_EPX_MUL(ep4, fp4, 8, 2, WNAF);
 
-TMPL_EP_MUL_TW_TAB(ep4, fp4);
+TMPL_EP_MUL_TW_TAB(ep4, fp4, 0);
 
 TMPL_EP_MUL_TW_NAF(ep4, fp4);
 
-TMPL_EP_MUL_TW_REG(ep4, fp4);
+TMPL_EP_MUL_TW_REG(ep4, fp4, 0);
 
 TMPL_EP_MUL_TW_GLS(ep4, fp4, 8, 4);
 

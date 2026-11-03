@@ -358,15 +358,19 @@
  * y^2 = x^3 - 27b and the isomorphism back that multiplies X by c1 = 1 - beta
  * and Z by c3 = (1 - beta)^3. The formula is complete. In the table of 2s
  * entries, entry i < s is the i-th base digit times P and entry s + i is its
- * image under tau, in affine coordinates. The images under w are computed when
+ * image under tau. The table is normalized with one simultaneous inversion,
+ * unless P is set and the formulas are complete: then it stays projective,
+ * where an addition costs little more than a mixed one, and P is the faster
+ * choice over the base field. The images under w are computed when
  * needed, as w(x, y) = (beta * x, y) and w^2(x, y) = (-x - beta * x, y). The
  * NAF reads the k-th table at entries 6k to 6k + 5 and the regular method at
  * entries 12k to 12k + 11.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
+ * @param[in] P			- the flag to keep the table projective.
  */
-#define TMPL_EP_MUL_TW_TAB(C, F)											\
+#define TMPL_EP_MUL_TW_TAB(C, F, P)											\
 	static void C##_tw_tau(C##_t r, const C##_t p, const F##_t c1,			\
 			const F##_t c3) {												\
 		F##_t t0, t1, t2, t3, t4;											\
@@ -435,7 +439,9 @@
 			for (int i = 2; i < s; i++) {									\
 				C##_tw_tau(t[s + i], t[i], c1, c3);							\
 			}																\
-			C##_norm_sim(t + 1, (const C##_t *)t + 1, 2 * s - 1);			\
+			if (!(P && EP_ADD == EP_PROJC)) {								\
+				C##_norm_sim(t + 1, (const C##_t *)t + 1, 2 * s - 1);		\
+			}																\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
@@ -525,8 +531,9 @@
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
+ * @param[in] P			- the flag of a projective table from C##_tw_tab().
  */
-#define TMPL_EP_MUL_TW_REG(C, F)											\
+#define TMPL_EP_MUL_TW_REG(C, F, P)											\
 	static void C##_tw_reg(C##_t r, C##_t *t,								\
 			int8_t reg[][RLC_FP_BITS + 1], const int8_t *c, int len,		\
 			int e, const F##_t beta) {										\
@@ -543,7 +550,7 @@
 			 * every position multiple of 3, read in constant time from the	\
 			 * table by scanning it. */										\
 			F##_set_dig(u->z, 1);											\
-			u->coord = EC_AFFIN;											\
+			u->coord = (P && EP_ADD == EP_PROJC ? EC_PROJC : EC_AFFIN);		\
 			for (int m = top / 2; m >= 0; m--) {							\
 				if (m < top / 2) {											\
 					C##_tpl(r, r);											\
@@ -567,9 +574,12 @@
 						 * parity, then w^f(x) as w(x) = beta * x and		\
 						 * w^2(x) = -x - w(x). */							\
 						for (int j = 0; j < 6; j++) {						\
-							int o = j + 6 * (i - 2 * m);					\
-							F##_copy_sec(u->x, t[12 * k + o]->x, j == d);	\
-							F##_copy_sec(u->y, t[12 * k + o]->y, j == d);	\
+							int o = 12 * k + j + 6 * (i - 2 * m);			\
+							F##_copy_sec(u->x, t[o]->x, j == d);			\
+							F##_copy_sec(u->y, t[o]->y, j == d);			\
+							if (P && EP_ADD == EP_PROJC) {					\
+								F##_copy_sec(u->z, t[o]->z, j == d);		\
+							}												\
 						}													\
 						TMPL_EP_MUL_TW_BETA_##F(q->x, u->x, beta);			\
 						F##_add(q->y, u->x, q->x);							\
