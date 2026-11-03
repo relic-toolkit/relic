@@ -1239,6 +1239,7 @@
  * Defines a template for Chung-Hasan squaring in a cubic extension without
  * reduction.
  *
+ * @param[in] F			- the name of the function.
  * @param[in] X			- the extension field prefix.
  * @param[in] S			- the subfield prefix.
  * @param[in] D			- the double-precision extension field prefix.
@@ -1251,8 +1252,8 @@
  * @param[in] MULU		- the multiplication in the subfield without reduction.
  * @param[in] H			- the number of prime field coefficients in the subfield.
  */
-#define TMPL_FPX_SQR_UNR_CUBIC(X, S, D, DS, B, BD, N, Q, SQRU, MULU, H)		\
-	void X##_sqr_unr(D##_t c, const X##_t a) {								\
+#define TMPL_FPX_SQR_UNR_CUBIC(F, X, S, D, DS, B, BD, N, Q, SQRU, MULU, H)	\
+	void F(D##_t c, const X##_t a) {										\
 		S##_t t0, t1, t2;													\
 		DS##_t u0, u1, u2, u3, u4, u5;										\
 																			\
@@ -1300,6 +1301,7 @@
  * Defines a template for Karatsuba multiplication in a cubic extension without
  * reduction.
  *
+ * @param[in] F			- the name of the function.
  * @param[in] X			- the extension field prefix.
  * @param[in] S			- the subfield prefix.
  * @param[in] D			- the double-precision extension field prefix.
@@ -1310,8 +1312,8 @@
  * @param[in] Q			- the number of outer components in the subfield.
  * @param[in] MULU		- the multiplication in the subfield without reduction.
  */
-#define TMPL_FPX_MUL_UNR_CUBIC(X, S, D, DS, B, BD, N, Q, MULU)				\
-	void X##_mul_unr(D##_t c, const X##_t a, const X##_t b) {				\
+#define TMPL_FPX_MUL_UNR_CUBIC(F, X, S, D, DS, B, BD, N, Q, MULU)			\
+	void F(D##_t c, const X##_t a, const X##_t b) {							\
 		S##_t t0, t1;														\
 		DS##_t u0, u1, u2, u3, u4;											\
 																			\

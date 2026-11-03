@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -116,6 +117,9 @@ void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 
 #endif
 
+/* Defining FP3_ASM leaves out the Fp3 functions, so they can be replaced. */
+#ifndef FP3_ASM
+
 void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[RLC_FP_DLEN], t1[RLC_FP_DLEN], t2[RLC_FP_DLEN];
 	rlc_align dig_t t3[RLC_FP_DLEN], t4[RLC_FP_DLEN];
@@ -197,6 +201,32 @@ void fp3_sqrm_low(fp3_t c, const fp3_t a) {
 		dv3_free(t);
 	}
 }
+
+#endif
+
+/* Defining FP8_ASM leaves out the Fp8 functions, so they can be replaced. */
+#ifndef FP8_ASM
+
+TMPL_FPX_SQR_UNR_QUAD(fp8_sqrn_low, fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
+		fp4_sqr_unr);
+
+#endif
+
+/* Defining FP16_ASM leaves out the Fp16 functions, so they can be replaced. */
+#ifndef FP16_ASM
+
+TMPL_FPX_SQR_UNR_QUAD(fp16_sqrn_low, fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
+		fp8_sqr_unr);
+
+#endif
+
+/* Defining FP24_ASM leaves out the Fp24 functions, so they can be replaced. */
+#ifndef FP24_ASM
+
+TMPL_FPX_SQR_UNR_CUBIC(fp24_sqrn_low, fp24, fp8, dv24, dv8, fp2, dv2, 4, 2,
+		fp8_sqr_unr, fp8_mul_unr, 8);
+
+#endif
 
 /* Defining FP12_ASM leaves out the Fp12 functions, so they can be replaced. */
 #ifndef FP12_ASM

@@ -38,10 +38,77 @@
 #include "relic_fp_rns_avx.h"
 
 #define FP2_ASM
+#define FP3_ASM
+#define FP8_ASM
 #define FP12_ASM
+#define FP16_ASM
+#define FP24_ASM
 
-/* Fp3 and the multiplication by a digit are the portable versions. */
+/* The multiplication by a digit is the portable version. */
 #include "../easy/relic_fpx_mul_low.c"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Defines the product without reduction of two elements of an extension field
+ * in the basis w^e of D coefficients over Fp2, with w^D the non-residue of Fp2,
+ * computed residue-wise as fp12_muln_low() does: each output adds 2D products
+ * of residues at most m, so it is at most (D / 2 + 1) * m before the
+ * corrections that bring it below 4m.
+ *
+ * @param[in] F			- the name of the function.
+ * @param[in] X			- the extension field prefix.
+ * @param[in] DX		- the prefix of unreduced extension field elements.
+ * @param[in] D			- the number of coefficients over Fp2.
+ * @param[in] D2		- twice the number of coefficients.
+ * @param[in] CO		- the macro giving the coefficient of w^e.
+ */
+#define RNS_FLAT_MULN(F, X, DX, D, D2, CO)									\
+	void F(DX##_t c, const X##_t a, const X##_t b) {						\
+		ctx_t *ctx = core_get();											\
+		const __m512i z = _mm512_setzero_si512();							\
+		rp2_t x[D], y[D2], l, h;											\
+		__m512i t[D2], m, v;												\
+		int s, q;															\
+																			\
+		rns_nor(&s, &q);													\
+		for (size_t k = 0; k < RNS_NE; k++) {								\
+			m = rns_load(ctx->rns.m, k);									\
+			v = rns_load(ctx->rns.iv, k);									\
+			RLC_UNROLL(D)													\
+			for (int e = 0; e < D; e++) {									\
+				for (int j = 0; j < 2; j++) {								\
+					x[e][j] = rns_load(CO(a, e)[j], k);						\
+					y[e][j] = rns_load(CO(b, e)[j], k);						\
+				}															\
+				/* Products wrapping around use y * w^D. */					\
+				rp2_nor(y[e + D], y[e], s, q, m);							\
+			}																\
+			RLC_UNROLL(D2)													\
+			for (int e = 0; e < D2; e++) {									\
+				t[e] = rns_vneg(rns_vsml(y[e][1], -q, m), m);				\
+			}																\
+			/* Outputs are computed one at a time, so that only their sums	\
+			 * stay in registers. */										\
+			RLC_UNROLL(D)													\
+			for (int e = 0; e < D; e++) {									\
+				l[0] = l[1] = h[0] = h[1] = z;								\
+				RLC_UNROLL(D)												\
+				for (int e1 = 0; e1 < D; e1++) {							\
+					int e2 = (e - e1 + D) % D;								\
+					int f = e2 + (e1 + e2 < D ? 0 : D);						\
+					rp2_mac(l, h, x[e1], y[f], t[f]);						\
+				}															\
+				for (int j = 0; j < 2; j++) {								\
+					l[j] = rns_vpeel(rns_vmon(l[j], h[j], m, v),			\
+							rns_vdv(m), rns_halvings(D / 2 + 1));			\
+					rns_store(CO(c, e)[j], k, l[j]);						\
+				}															\
+			}																\
+		}																	\
+	}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -197,3 +264,55 @@ void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 		dv2_free(t);
 	}
 }
+
+void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
+	ctx_t *ctx = core_get();
+	const dig_t *_m = ctx->rns.m, *_i = ctx->rns.iv;
+	const int w = fp_prime_get_cnr();
+	__m512i m, v, a0, a1, a2, b0, b1, b2, t1, t2;
+
+	for (size_t k = 0; k < RNS_NE; k++) {
+		m = rns_load(_m, k);
+		v = rns_load(_i, k);
+		a0 = rns_load(a[0], k);
+		a1 = rns_load(a[1], k);
+		a2 = rns_load(a[2], k);
+		b0 = rns_load(b[0], k);
+		b1 = rns_load(b[1], k);
+		b2 = rns_load(b[2], k);
+		/* t_i = w * a_i for the products wrapping around, with u^3 = w. */
+		t1 = rns_vsml(a1, (w < 0 ? -w : w), m);
+		t2 = rns_vsml(a2, (w < 0 ? -w : w), m);
+		if (w < 0) {
+			t1 = rns_vneg(t1, m);
+			t2 = rns_vneg(t2, m);
+		}
+		/* Schoolbook product: each output adds 3 products of residues at
+		 * most m, so it is at most 7m / 4 with no correction. */
+		rns_store(c[0], k, rns_vmul3(a0, b0, t1, b2, t2, b1, m, v));
+		rns_store(c[1], k, rns_vmul3(a0, b1, a1, b0, t2, b2, m, v));
+		rns_store(c[2], k, rns_vmul3(a0, b2, a1, b1, a2, b0, m, v));
+	}
+}
+
+void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
+	rlc_align dv3_t t;
+
+	dv3_null(t);
+
+	RLC_TRY {
+		dv3_new(t);
+		fp3_muln_low(t, a, b);
+		fp3_rdcn_low(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv3_free(t);
+	}
+}
+
+RNS_FLAT_MULN(fp8_muln_low, fp8, dv8, 4, 8, RNS_CO8)
+
+RNS_FLAT_MULN(fp16_muln_low, fp16, dv16, 8, 16, RNS_CO16)
+
+RNS_FLAT_MULN(fp24_muln_low, fp24, dv24, 12, 24, RNS_CO24)

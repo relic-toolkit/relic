@@ -47,7 +47,8 @@ TMPL_FPX_ASM_DIG(fp9, fp3, 3);
 
 TMPL_FPX_MUL_CUBIC(fp9, fp3, fp3_mul_nor);
 
-TMPL_FPX_MUL_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_muln_low);
+TMPL_FPX_MUL_UNR_CUBIC(fp9_mul_unr, fp9, fp3, dv9, dv3, fp3, dv3, 1, 1,
+		fp3_muln_low);
 
 TMPL_FPX_MUL_ADD(fp9);
 
@@ -102,8 +103,8 @@ TMPL_FPX_MUL_ART_CUBIC(fp9, fp3, fp3_mul_nor);
 
 TMPL_FPX_SQR_CUBIC(fp9, fp3, fp3_mul_nor, 3);
 
-TMPL_FPX_SQR_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
-		fp3_muln_low, 3);
+TMPL_FPX_SQR_UNR_CUBIC(fp9_sqr_unr, fp9, fp3, dv9, dv3, fp3, dv3, 1, 1,
+		fp3_sqrn_low, fp3_muln_low, 3);
 
 TMPL_FPX_SQR_LAZYR(fp9, dv9, fp3, dv3, 3);
 

@@ -2751,6 +2751,12 @@
 #define fp8_is_sqr 	RLC_PREFIX(fp8_is_sqr)
 #define fp8_srt 	RLC_PREFIX(fp8_srt)
 
+#undef fp8_muln_low
+#undef fp8_sqrn_low
+
+#define fp8_muln_low 	RLC_PREFIX(fp8_muln_low)
+#define fp8_sqrn_low 	RLC_PREFIX(fp8_sqrn_low)
+
 #undef fp9_copy
 #undef fp9_copy_sec
 #undef fp9_zero
@@ -3023,6 +3029,12 @@
 #define fp16_is_sqr 	RLC_PREFIX(fp16_is_sqr)
 #define fp16_srt 	RLC_PREFIX(fp16_srt)
 
+#undef fp16_muln_low
+#undef fp16_sqrn_low
+
+#define fp16_muln_low 	RLC_PREFIX(fp16_muln_low)
+#define fp16_sqrn_low 	RLC_PREFIX(fp16_sqrn_low)
+
 #undef fp18_copy
 #undef fp18_copy_sec
 #undef fp18_zero
@@ -3208,6 +3220,12 @@
 #define fp24_exp_cyc_sps 	RLC_PREFIX(fp24_exp_cyc_sps)
 #define fp24_pck 	RLC_PREFIX(fp24_pck)
 #define fp24_upk 	RLC_PREFIX(fp24_upk)
+
+#undef fp24_muln_low
+#undef fp24_sqrn_low
+
+#define fp24_muln_low 	RLC_PREFIX(fp24_muln_low)
+#define fp24_sqrn_low 	RLC_PREFIX(fp24_sqrn_low)
 
 #undef fp48_copy
 #undef fp48_copy_sec

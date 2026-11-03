@@ -400,6 +400,60 @@ void fp3_rdcn_low(fp3_t c, dv3_t a);
 void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n);
 
 /**
+ * Multiplies two octic extension field elements of the same size.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to multiply.
+ * @param[in] b				- the second field element to multiply.
+ */
+void fp8_muln_low(dv8_t c, const fp8_t a, const fp8_t b);
+
+/**
+ * Squares an octic extension field element. Computes c = a * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp8_sqrn_low(dv8_t c, const fp8_t a);
+
+/**
+ * Multiplies two sextadecic extension field elements of the same size.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to multiply.
+ * @param[in] b				- the second field element to multiply.
+ */
+void fp16_muln_low(dv16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Squares a sextadecic extension field element. Computes c = a * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp16_sqrn_low(dv16_t c, const fp16_t a);
+
+/**
+ * Multiplies two 24-degree extension field elements of the same size.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to multiply.
+ * @param[in] b				- the second field element to multiply.
+ */
+void fp24_muln_low(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Squares a 24-degree extension field element. Computes c = a * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to square.
+ */
+void fp24_sqrn_low(dv24_t c, const fp24_t a);
+
+/**
  * Multiplies two dodecic extension field elements of the same size.
  * Computes c = a * b.
  *

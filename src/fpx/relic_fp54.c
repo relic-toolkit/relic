@@ -47,7 +47,8 @@ TMPL_FPX_BIN_CQ(fp54, fp18, fp9, 54);
 
 TMPL_FPX_MUL_CUBIC(fp54, fp18, fp18_mul_art);
 
-TMPL_FPX_MUL_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2, fp18_mul_unr);
+TMPL_FPX_MUL_UNR_CUBIC(fp54_mul_unr, fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
+		fp18_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp54, dv54, fp3, dv3, 18);
 
@@ -104,7 +105,7 @@ TMPL_SQR_CYC_CQ(fp54, fp9, fp9_mul_art);
 
 TMPL_SQR_PCK_CQ(fp54, fp9, fp9_mul_art);
 
-TMPL_FPX_SQR_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
+TMPL_FPX_SQR_UNR_CUBIC(fp54_sqr_unr, fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
 		fp18_sqr_unr, fp18_mul_unr, 18);
 
 TMPL_FPX_SQR_LAZYR(fp54, dv54, fp3, dv3, 18);

@@ -67,6 +67,54 @@ rlc_inline void rns_vrdcs(dig_t *c, size_t s, const dig_t *a, size_t t,
 	rns_vrdc(u, w, K);
 }
 
+/**
+ * Reduces n values that lie at fixed strides, in balanced batches of at most
+ * RNS_K values, with the batch size known at compile time in each case: the
+ * coefficients of extension field elements are contiguous.
+ *
+ * @param[out] c			- the first result.
+ * @param[in] s				- the stride of the results, in digits.
+ * @param[in] a				- the first value to reduce.
+ * @param[in] t				- the stride of the values, in digits.
+ * @param[in] n				- the number of values.
+ */
+static void rns_vrdcv(dig_t *c, size_t s, const dig_t *a, size_t t, int n) {
+	for (int b = RLC_CEIL(n, RNS_K); n > 0; b--) {
+		/* Sizes above RNS_K never occur, so the caps only keep unused code
+		 * in bounds when RNS_K is 4. */
+		int k = RLC_CEIL(n, b);
+		switch (k) {
+			case 1:
+				rns_vrdcs(c, s, a, t, 1);
+				break;
+			case 2:
+				rns_vrdcs(c, s, a, t, 2);
+				break;
+			case 3:
+				rns_vrdcs(c, s, a, t, 3);
+				break;
+			case 4:
+				rns_vrdcs(c, s, a, t, 4);
+				break;
+			case 5:
+				rns_vrdcs(c, s, a, t, RLC_MIN(5, RNS_K));
+				break;
+			case 6:
+				rns_vrdcs(c, s, a, t, RLC_MIN(6, RNS_K));
+				break;
+			case 7:
+				rns_vrdcs(c, s, a, t, RLC_MIN(7, RNS_K));
+				break;
+			default:
+				rns_vrdcs(c, s, a, t, RLC_MIN(8, RNS_K));
+				break;
+		}
+		c += k * s;
+		a += k * t;
+		n -= k;
+	}
+}
+
 #endif
 
 /*============================================================================*/
@@ -81,11 +129,10 @@ void fp2_rdcn_low(fp2_t c, dv2_t a) {
 }
 
 void fp3_rdcn_low(fp3_t c, dv3_t a) {
-	dig_t *const cs[2] = { c[0], c[1] }, *const cs1[1] = { c[2] };
-	const dig_t *const as[2] = { a[0], a[1] }, *const as1[1] = { a[2] };
+	dig_t *const cs[3] = { c[0], c[1], c[2] };
+	const dig_t *const as[3] = { a[0], a[1], a[2] };
 
-	rns_vrdc(cs, as, 2);
-	rns_vrdc(cs1, as1, 1);
+	rns_vrdc(cs, as, 3);
 }
 
 void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
@@ -93,25 +140,10 @@ void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 	dig_t *as[2 * RNS_SIM];
 
 #if RLC_ALLOC == RLC_AUTO
-	/* The coefficients of an element of Fp^12 are contiguous, so they are
-	 * reduced from strides, in two batches of 6 when they fit, which are
-	 * faster than 8 and 4. */
-	if (n == 6) {
-		const size_t s = sizeof(fp_t) / sizeof(dig_t);
-		const size_t t = sizeof(dv_t) / sizeof(dig_t);
-		dig_t *x = c[0][0];
-		const dig_t *y = a[0][0];
-
-		if (RNS_K >= 6) {
-			rns_vrdcs(x, s, y, t, RLC_MIN(6, RNS_K));
-			rns_vrdcs(x + 6 * s, s, y + 6 * t, t, RLC_MIN(6, RNS_K));
-		} else {
-			rns_vrdcs(x, s, y, t, 4);
-			rns_vrdcs(x + 4 * s, s, y + 4 * t, t, 4);
-			rns_vrdcs(x + 8 * s, s, y + 8 * t, t, 4);
-		}
-		return;
-	}
+	/* The coefficients are contiguous, so they are reduced from strides. */
+	rns_vrdcv(c[0][0], sizeof(fp_t) / sizeof(dig_t), a[0][0],
+			sizeof(dv_t) / sizeof(dig_t), 2 * n);
+	return;
 #endif
 
 	for (int i = 0; i < n; i += RNS_SIM) {
@@ -129,6 +161,13 @@ void fp2_rdcv_low(fp2_t *c, dv2_t *a, int n) {
 void fp3_rdcv_low(fp3_t *c, dv3_t *a, int n) {
 	dig_t *cs[3 * RNS_SIM];
 	dig_t *as[3 * RNS_SIM];
+
+#if RLC_ALLOC == RLC_AUTO
+	/* The coefficients are contiguous, so they are reduced from strides. */
+	rns_vrdcv(c[0][0], sizeof(fp_t) / sizeof(dig_t), a[0][0],
+			sizeof(dv_t) / sizeof(dig_t), 3 * n);
+	return;
+#endif
 
 	for (int i = 0; i < n; i += RNS_SIM) {
 		int m = RLC_MIN(RNS_SIM, n - i);

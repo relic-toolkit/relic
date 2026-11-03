@@ -218,6 +218,9 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 
 #endif
 
+/* Defining FP3_ADD_ASM leaves out the Fp3 additions, to be replaced. */
+#ifndef FP3_ADD_ASM
+
 void fp3_addn_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);
@@ -277,6 +280,8 @@ void fp3_dblm_low(fp3_t c, const fp3_t a) {
 	fp_dblm_low(c[1], a[1]);
 	fp_dblm_low(c[2], a[2]);
 }
+
+#endif
 
 void fp3_nord_low(dv3_t c, dv3_t a) {
 	dv3_t t, u;

@@ -95,6 +95,17 @@ typedef __m512i rp2_t[2];
 /** Loads the current vector of an operand inside RNS_VMAP(). */
 #define RNS_V(A)	rns_load(A, _k)
 
+/**
+ * Gives the coefficient of w^e over Fp2 of an element of Fp8, Fp16 or Fp24,
+ * where w is the generator adjoined last and w^4, w^8 or w^12 is the
+ * non-residue of Fp2: the towers multiply the exponents of their generators.
+ */
+/** @{ */
+#define RNS_CO8(A, E)		(A)[(E) % 2][(E) / 2]
+#define RNS_CO16(A, E)		(A)[(E) % 2][((E) / 2) % 2][(E) / 4]
+#define RNS_CO24(A, E)		(A)[(E) % 3][((E) / 3) % 2][(E) / 6]
+/** @} */
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -255,6 +266,25 @@ static inline __m512i rns_vmul2(__m512i a, __m512i b, __m512i c, __m512i d,
 	h = _mm512_madd52hi_epu64(z, a, b);
 	l = _mm512_madd52lo_epu64(l, c, d);
 	h = _mm512_madd52hi_epu64(h, c, d);
+	return rns_vmon(l, h, m, v);
+}
+
+/**
+ * Adds three products of residues at most m before a single Montgomery
+ * reduction, computing (a * b + c * d + e * f) / 2^52 mod m lane-wise, at most
+ * 7m / 4: for products without reduction.
+ */
+static inline __m512i rns_vmul3(__m512i a, __m512i b, __m512i c, __m512i d,
+		__m512i e, __m512i f, __m512i m, __m512i v) {
+	const __m512i z = _mm512_setzero_si512();
+	__m512i l, h;
+
+	l = _mm512_madd52lo_epu64(z, a, b);
+	h = _mm512_madd52hi_epu64(z, a, b);
+	l = _mm512_madd52lo_epu64(l, c, d);
+	h = _mm512_madd52hi_epu64(h, c, d);
+	l = _mm512_madd52lo_epu64(l, e, f);
+	h = _mm512_madd52hi_epu64(h, e, f);
 	return rns_vmon(l, h, m, v);
 }
 

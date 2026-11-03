@@ -78,8 +78,9 @@ TMPL_FPX_ASM_DIG(fp8, fp4, 2);
 
 TMPL_FPX_MUL_QUAD(fp8, fp4, fp4_mul_art);
 
-TMPL_FPX_MUL_UNR_QUAD(fp8_mul_unr, fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
-		fp4_mul_unr);
+void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
+	fp8_muln_low(c, a, b);
+}
 
 TMPL_FPX_MUL_ADD(fp8);
 
@@ -168,8 +169,9 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 
 TMPL_FPX_SQR_QUAD(fp8, fp4, fp4_mul_art);
 
-TMPL_FPX_SQR_UNR_QUAD(fp8_sqr_unr, fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
-		fp4_sqr_unr);
+void fp8_sqr_unr(dv8_t c, const fp8_t a) {
+	fp8_sqrn_low(c, a);
+}
 
 TMPL_FPX_SQR_LAZYR(fp8, dv8, fp2, dv2, 4);
 

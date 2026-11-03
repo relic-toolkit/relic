@@ -37,8 +37,9 @@
 #include "relic_fp_rns_avx.h"
 
 #define FP2_ADD_ASM
+#define FP3_ADD_ASM
 
-/* Fp3, and the products by the non-residue, are the portable versions. */
+/* The products by the non-residues are the portable versions. */
 #include "../easy/relic_fpx_add_low.c"
 
 /*============================================================================*/
@@ -55,6 +56,15 @@
 
 /** Loads the current vector of a component inside RNS_VMAP2(). */
 #define RNS_V2(A)	RNS_V(A[_j])
+
+/**
+ * Applies a residue-wise operation to the three components of an element of
+ * Fp3, with RNS_V2() loading the current vector of a component.
+ */
+#define RNS_VMAP3(C, OP)													\
+	for (int _j = 0; _j < 3; _j++) {										\
+		RNS_VMAP(C[_j], OP);												\
+	}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -98,4 +108,44 @@ void fp2_dbln_low(fp2_t c, const fp2_t a) {
 
 void fp2_dblm_low(fp2_t c, const fp2_t a) {
 	RNS_VMAP2(c, rns_vadd(RNS_V2(a), RNS_V2(a), _vm));
+}
+
+void fp3_addn_low(fp3_t c, const fp3_t a, const fp3_t b) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
+}
+
+void fp3_addm_low(fp3_t c, const fp3_t a, const fp3_t b) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(b), _vm));
+}
+
+void fp3_addd_low(dv3_t c, dv3_t a, dv3_t b) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(b), rns_vdv(_vm)));
+}
+
+void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(b), rns_vdv(_vm)));
+}
+
+void fp3_subn_low(fp3_t c, const fp3_t a, const fp3_t b) {
+	RNS_VMAP3(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
+}
+
+void fp3_subm_low(fp3_t c, const fp3_t a, const fp3_t b) {
+	RNS_VMAP3(c, rns_vsub(RNS_V2(a), RNS_V2(b), _vm));
+}
+
+void fp3_subd_low(dv3_t c, dv3_t a, dv3_t b) {
+	RNS_VMAP3(c, rns_vsub(RNS_V2(a), RNS_V2(b), rns_vdv(_vm)));
+}
+
+void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
+	RNS_VMAP3(c, rns_vsub(RNS_V2(a), RNS_V2(b), rns_vdv(_vm)));
+}
+
+void fp3_dbln_low(fp3_t c, const fp3_t a) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(a), _vm));
+}
+
+void fp3_dblm_low(fp3_t c, const fp3_t a) {
+	RNS_VMAP3(c, rns_vadd(RNS_V2(a), RNS_V2(a), _vm));
 }
