@@ -3140,6 +3140,36 @@ static int recoding(void) {
 			TEST_ASSERT(err_get_code() == RLC_ERR && l == 0, end);
 		} TEST_END;
 
+		TEST_CASE("sign-aligned recoding is correct") {
+			/* Align a second integer to the signs of a regular recoding. */
+			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
+			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+			if (bn_is_even(a)) {
+				bn_add_dig(a, a, 1);
+			}
+			for (w = 2; w <= 8; w++) {
+				l = RLC_BN_BITS + 1;
+				bn_rec_reg(e, &l, a, RLC_BN_BITS / 2 + w, w);
+				bn_rec_aln(e + RLC_BN_BITS + 1, l, c, e, w);
+				bn_zero(b);
+				for (k = l - 1; k >= 0; k--) {
+					int8_t f = e[RLC_BN_BITS + 1 + k];
+
+					TEST_ASSERT(f == 0 || (f < 0) == (e[k] < 0), end);
+					bn_lsh(b, b, w - 1);
+					if (f > 0) {
+						bn_add_dig(b, b, f);
+					} else {
+						bn_sub_dig(b, b, -f);
+					}
+				}
+				TEST_ASSERT(bn_cmp(c, b) == RLC_EQ, end);
+			}
+			/* Integers that do not fit the digits are rejected. */
+			bn_set_2b(c, RLC_BN_BITS / 2 + 2 * RLC_DIG);
+			TEST_ERR(bn_rec_aln(e + RLC_BN_BITS + 1, l, c, e, 4));
+		} TEST_END;
+
 		TEST_CASE("jsf recoding is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
