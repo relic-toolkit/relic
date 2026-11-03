@@ -535,7 +535,7 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 	const __m512i z = _mm512_setzero_si512();
 	const __m512i m2 = _mm512_slli_epi64(m, 1), m4 = rns_vdv(m);
 	rp2_t x3, y3, t, l, h;
-	__m512i n;
+	__m512i n, n2, t2;
 
 	for (int j = 0; j < 2; j++) {
 		x3[j] = _mm512_add_epi64(x[j], _mm512_add_epi64(x[j], x[j]));
@@ -554,7 +554,16 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 	 * add up to 19m^2, below 4.75m * 2^52, so the result is at most 5.75m
 	 * before the correction. */
 	l[0] = h[0] = l[1] = h[1] = z;
-	rp2_mac(l, h, x3, x, rns_vneg(rns_vsml(x[1], -q, m), m));
+	/* The square 3x * x takes its cross term 6 * x_0 * x_1 as one product of
+	 * 3x_0 and 2x_1, which adds up to the same bound. */
+	t2 = _mm512_add_epi64(x[1], x[1]);
+	n2 = rns_vneg(rns_vsml(x[1], -q, m), m);
+	l[0] = _mm512_madd52lo_epu64(l[0], x3[0], x[0]);
+	h[0] = _mm512_madd52hi_epu64(h[0], x3[0], x[0]);
+	l[0] = _mm512_madd52lo_epu64(l[0], x3[1], n2);
+	h[0] = _mm512_madd52hi_epu64(h[0], x3[1], n2);
+	l[1] = _mm512_madd52lo_epu64(l[1], x3[0], t2);
+	h[1] = _mm512_madd52hi_epu64(h[1], x3[0], t2);
 	rp2_mac(l, h, y3, t, n);
 	for (int j = 0; j < 2; j++) {
 		l[j] = _mm512_madd52lo_epu64(l[j], a0[j], k0);
