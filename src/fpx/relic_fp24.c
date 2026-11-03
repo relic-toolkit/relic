@@ -390,35 +390,61 @@ TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ);
 
 void fp24_frb(fp24_t c, const fp24_t a, int i) {
 	ctx_t *ctx = core_get();
-	int e;
+	int e, m3 = fp_prime_get_mod18() % 3;
+	fp2_t t;
 
-	fp24_copy(c, a);
-	i = i % 24;
-	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
-	for (; i % 8 > 0; i--) {
-		fp8_frb(c[0], c[0], 1);
-		fp8_frb(c[1], c[1], 1);
-		fp8_frb(c[2], c[2], 1);
-		for (int j = 0; j < 2; j++) {
-			for (int l = 0; l < 2; l++) {
-				fp2_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
-				fp2_mul_frb(c[2][j][l], c[2][j][l], 1, 1);
+	fp2_null(t);
+
+	RLC_TRY {
+		fp2_new(t);
+
+		fp24_copy(c, a);
+		i = i % 24;
+		/* Cost of 20 multiplication in Fp^2 per Frobenius, up to a multiple
+		 * of 4 in the power. */
+		for (; i % 4 > 0; i--) {
+			fp8_frb(c[0], c[0], 1);
+			fp8_frb(c[1], c[1], 1);
+			fp8_frb(c[2], c[2], 1);
+			for (int j = 0; j < 2; j++) {
+				for (int l = 0; l < 2; l++) {
+					fp2_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
+					fp2_mul_frb(c[2][j][l], c[2][j][l], 1, 1);
+				}
+				if ((fp_prime_get_mod8() % 4) == 3) {
+					fp4_mul_art(c[1][j], c[1][j]);
+				}
 			}
-			if ((fp_prime_get_mod8() % 4) == 3) {
-				fp4_mul_art(c[1][j], c[1][j]);
+		}
+		/* The power p^(4m) fixes Fp^4 and maps w^e, for w^12 the non-residue
+		 * of Fp^2, to its product by z^(me), for the sixth root of unity z
+		 * with z^3 = -1 of the even powers in Fp^12: w^(e(p^4 - 1)) is
+		 * z^(e(p^2 + 1) / 2) and (p^2 + 1) / 2 = 1 mod 6. The coefficient of
+		 * w^j * s^k in Fp^4, with s = w^3, takes e = j + 3k. */
+		for (int j = 0; j < 3 && i > 0; j++) {
+			for (int k = 0; k < 2; k++) {
+				e = ((i / 4) * (j + 3 * k)) % 6;
+				for (int l = 0; l < 2 && e % 3 != 0; l++) {
+					if (m3 == 1) {
+						fp2_mul_fp(c[j][k][l], c[j][k][l],
+								ctx->fp2_p0[e % 3 - 1]);
+					} else {
+						fp_copy(t[0], ctx->fp2_pz[e % 3 - 1][0]);
+						fp_copy(t[1], ctx->fp2_pz[e % 3 - 1][1]);
+						fp2_mul(c[j][k][l], c[j][k][l], t);
+					}
+				}
+				if (e >= 3) {
+					fp4_neg(c[j][k], c[j][k]);
+				}
 			}
 		}
 	}
-	/* The power p^8 fixes Fp^8 and maps w to rho * w, for the cube root of
-	 * unity rho = z^2 in Fp, where z^3 = -1, so that rho^2 = -z. */
-	for (int j = 1; j < 3; j++) {
-		e = (j * (i / 8)) % 3;
-		if (e > 0) {
-			fp8_mul_fp(c[j], c[j], ctx->fp2_p0[2 - e]);
-		}
-		if (e == 2) {
-			fp8_neg(c[j], c[j]);
-		}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp2_free(t);
 	}
 }
 

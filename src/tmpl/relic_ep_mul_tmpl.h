@@ -86,13 +86,17 @@
 /**
  * Builds the table of a w-NAF multiplication over the prime field: projective
  * with complete formulas, where an addition costs little more than a mixed one
- * and that saves an inversion, normalized otherwise. Over extension fields the
- * tables are always normalized, where the cheaper mixed additions pay off.
+ * and that saves an inversion, normalized otherwise. TMPL_EP_MUL_NORM applies
+ * the same rule to N contiguous tables built by TMPL_EC_MUL_TAB. Over extension
+ * fields the tables are normalized, where the cheaper mixed additions pay off,
+ * except on curves that build one table per subscalar.
  */
 #if EP_ADD == EP_PROJC
 #define TMPL_EP_MUL_TAB(C, T, P, W)		TMPL_EC_MUL_TAB(C, T, P, W)
+#define TMPL_EP_MUL_NORM(C, T, N, W)	/* The tables stay projective. */
 #else
 #define TMPL_EP_MUL_TAB(C, T, P, W)		C##_tab(T, P, W)
+#define TMPL_EP_MUL_NORM(C, T, N, W)	TMPL_EC_MUL_NORM(C, T, N, W)
 #endif
 
 /**
@@ -105,21 +109,21 @@
  */
 #define TMPL_EP_MUL_GLS_IMP(C, S)											\
 	static void C##_mul_gls_imp(C##_t r, const C##_t p, const bn_t k) {		\
-		size_t l, _l[S], w = RLC_WIDTH;										\
+		size_t l, _l[S], w = RLC_WIDTH, e;									\
 		const int psi = (ep_curve_is_pairf() == EP_K16 ||					\
 				ep_curve_is_pairf() == EP_AFG16);							\
 		size_t s = TMPL_EP_MUL_DIM(S);										\
 		bn_t n, _k[S], u;													\
 		int8_t naf[S][RLC_FP_BITS + 1];										\
-		C##_t q, t[S][1 << (RLC_WIDTH - 2)];								\
+		C##_t q, t[S << (RLC_WIDTH - 2)];									\
 																			\
 		bn_null_all(n, u);													\
 		C##_null(q);														\
 		for (size_t i = 0; i < S; i++) {									\
 			bn_null(_k[i]);													\
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {			\
-				C##_null(t[i][j]);											\
-			}																\
+		}																	\
+		for (size_t i = 0; i < (S << (RLC_WIDTH - 2)); i++) {				\
+			C##_null(t[i]);													\
 		}																	\
 																			\
 		RLC_TRY {															\
@@ -127,9 +131,9 @@
 			C##_new(q);														\
 			for (size_t i = 0; i < S; i++) {								\
 				bn_new(_k[i]);												\
-				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {		\
-					C##_new(t[i][j]);										\
-				}															\
+			}																\
+			for (size_t i = 0; i < (S << (RLC_WIDTH - 2)); i++) {			\
+				C##_new(t[i]);												\
 			}																\
 																			\
 			C##_curve_get_ord(n);											\
@@ -145,6 +149,8 @@
 			if (l < bn_bits(u) / 2) {										\
 				w = 2;														\
 			}																\
+			/* The tables are 2^(w - 2) points apart, so contiguous. */		\
+			e = 1 << (w - 2);												\
 																			\
 			l = 0;															\
 			for (size_t i = 0; i < s; i++) {								\
@@ -157,33 +163,26 @@
 						C##_neg(q, q);										\
 					}														\
 					if (psi) {												\
-						TMPL_EC_MUL_TAB(C, t[0], q, w);						\
+						TMPL_EP_MUL_TAB(C, t, q, w);						\
 					} else {												\
-						C##_tab(t[0], q, w);								\
+						C##_tab(t, q, w);									\
 					}														\
 				} else if (psi) {											\
-					/* Minimize use of endomorphism when it's expensive. */	\
-					C##_psi(q, t[i - 1][0]);								\
+					/* Minimize use of endomorphism when it's expensive.	\
+					 * With one table per subscalar, the tables follow the	\
+					 * rule of the prime field. */							\
+					C##_psi(q, t[(i - 1) * e]);								\
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {				\
 						C##_neg(q, q);										\
 					}														\
-					TMPL_EC_MUL_TAB(C, t[i], q, w);							\
+					TMPL_EP_MUL_TAB(C, t + i * e, q, w);					\
 				} else {													\
-					for (int j = 0; j < (1 << (w - 2)); j++) {				\
-						C##_psi(t[i][j], t[i - 1][j]);						\
+					for (size_t j = 0; j < e; j++) {						\
+						C##_psi(t[i * e + j], t[(i - 1) * e + j]);			\
 						if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {			\
-							C##_neg(t[i][j], t[i][j]);						\
+							C##_neg(t[i * e + j], t[i * e + j]);			\
 						}													\
 					}														\
-				}															\
-			}																\
-			/* One inversion normalizes the tables built without the		\
-			 * endomorphism, which are contiguous at the full width. */		\
-			if (psi && w > 2) {												\
-				C##_norm_sim(t[0], (const C##_t *)t[0], s << (w - 2));		\
-			} else if (psi) {												\
-				for (size_t i = 0; i < s; i++) {							\
-					C##_norm(t[i][0], t[i][0]);								\
 				}															\
 			}																\
 																			\
@@ -196,10 +195,10 @@
 																			\
 				for (size_t i = 0; i < s; i++) {							\
 					if (naf[i][j] > 0) {									\
-						C##_add(r, r, t[i][naf[i][j] / 2]);					\
+						C##_add(r, r, t[i * e + naf[i][j] / 2]);			\
 					}														\
 					if (naf[i][j] < 0) {									\
-						C##_sub(r, r, t[i][-naf[i][j] / 2]);				\
+						C##_sub(r, r, t[i * e - naf[i][j] / 2]);			\
 					}														\
 				}															\
 			}																\
@@ -215,9 +214,9 @@
 			C##_free(q);													\
 			for (size_t i = 0; i < S; i++) {								\
 				bn_free(_k[i]);												\
-				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {		\
-					C##_free(t[i][j]);										\
-				}															\
+			}																\
+			for (size_t i = 0; i < (S << (RLC_WIDTH - 2)); i++) {			\
+				C##_free(t[i]);												\
 			}																\
 		}																	\
 	}
@@ -949,8 +948,8 @@
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _p, _k, p, v, i, e, w);		\
 				TMPL_EP_MUL_SIM_ENDOM_TAB(C, _q, _m, q, v, i, e, w);		\
 				/* One inversion normalizes the first tables. */			\
-				if (i == 0 && w > 2) {										\
-					C##_norm_sim(t, (const C##_t *)t, 2 * e);				\
+				if (i == 0) {												\
+					TMPL_EC_MUL_NORM(C, t, 2, w);							\
 				}															\
 			}																\
 			/* Normalize if the endomorphism returns projective points. */	\
