@@ -643,7 +643,8 @@
 				RLC_FREE(naf);												\
 			}																\
 		} else {															\
-			const int w = RLC_MAX(2, util_bits_dig(n) - 2);					\
+			/* The digits of bn_rec_naf fit in int8_t only up to w = 8. */	\
+			const int w = RLC_MIN(8, RLC_MAX(2, util_bits_dig(n) - 2));		\
 			const size_t c = (1 << (w - 2));								\
 			C##_t s, t, u, v, *_p = RLC_ALLOCA(C##_t, c);					\
 			C##_t *_q = RLC_ALLOCA(C##_t, S * n);							\

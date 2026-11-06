@@ -297,7 +297,9 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_FREE(naf);
 		}
 	} else {
-		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
+		/* The digits of bn_rec_naf fit in int8_t only up to w = 8. */
+		const int w = RLC_MIN(8, RLC_MAX(2, util_bits_dig(n) - 2));
+		const int c = (1 << (w - 2));
 		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, c);
 		ep_t *_q = RLC_ALLOCA(ep_t, 2 * n);
 
