@@ -41,6 +41,13 @@
 #define SIM_LOT		40
 #endif
 
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_ARM
+#define WIDE_LOT	0
+#else
+/* Enough points for windows wider than 8 bits in the bucket method. */
+#define WIDE_LOT	1024
+#endif
+
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -1374,6 +1381,41 @@ static int simultaneous(void) {
 			ep_mul_sim_dig(r, p, d, 0);
 			TEST_ASSERT(ep_is_infty(r), end);
 		} TEST_END;
+
+		if (WIDE_LOT > 0) {
+			TEST_ONCE("simultaneous multiplication of many points is correct") {
+				ep_t *q = RLC_ALLOCA(ep_t, WIDE_LOT);
+				bn_t *s = RLC_ALLOCA(bn_t, WIDE_LOT);
+				int ok = (q != NULL && s != NULL);
+				if (ok) {
+					ep_rand(r);
+					for (int j = 0; j < WIDE_LOT; j++) {
+						ep_null(q[j]);
+						bn_null(s[j]);
+						ep_new(q[j]);
+						bn_new(s[j]);
+						ep_copy(q[j], r);
+						bn_set_dig(s[j], 1);
+					}
+					/* Bit 8 of 257 lies inside the first window of the scalar. */
+					bn_lsh(s[0], s[0], 8);
+					bn_add_dig(s[0], s[0], 1);
+					ep_mul_sim_lot(p[0], q, s, WIDE_LOT);
+					/* The result must be (257 + WIDE_LOT - 1) * r. */
+					bn_set_dig(k[0], WIDE_LOT / 256 + 1);
+					bn_lsh(k[0], k[0], 8);
+					ep_mul(p[1], r, k[0]);
+					ok = (ep_cmp(p[0], p[1]) == RLC_EQ);
+					for (int j = 0; j < WIDE_LOT; j++) {
+						ep_free(q[j]);
+						bn_free(s[j]);
+					}
+				}
+				RLC_FREE(q);
+				RLC_FREE(s);
+				TEST_ASSERT(ok, end);
+			} TEST_END;
+		}
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

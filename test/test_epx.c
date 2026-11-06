@@ -34,6 +34,13 @@
 #include "relic.h"
 #include "relic_test.h"
 
+#if RLC_ARCH == RLC_AVR || RLC_ARCH == RLC_MSP || RLC_ARCH == RLC_ARM
+#define WIDE_LOT	0
+#else
+/* Enough points for windows wider than 8 bits in the bucket method. */
+#define WIDE_LOT	1024
+#endif
+
 /**
  * Defines the tests for an elliptic curve over an extension field: memory,
  * utilities, arithmetic, multiplication methods, hashing and endomorphisms.
@@ -1026,6 +1033,40 @@ static int test_##C##_simultaneous(void) {									\
 			C##_mul_sim_lot(p[16], p, k, 16);								\
 			TEST_ASSERT(C##_cmp(p[16], r) == RLC_EQ, end);					\
 		} TEST_END;															\
+		if (WIDE_LOT > 0) {													\
+			TEST_ONCE("simultaneous multiplication of many points is correct") {\
+				C##_t *q = RLC_ALLOCA(C##_t, WIDE_LOT);						\
+				bn_t *s = RLC_ALLOCA(bn_t, WIDE_LOT);						\
+				int ok = (q != NULL && s != NULL);							\
+				if (ok) {													\
+					C##_rand(r);											\
+					for (int j = 0; j < WIDE_LOT; j++) {					\
+						C##_null(q[j]);										\
+						bn_null(s[j]);										\
+						C##_new(q[j]);										\
+						bn_new(s[j]);										\
+						C##_copy(q[j], r);									\
+						bn_set_dig(s[j], 1);								\
+					}														\
+					/* Bit 8 of 257 lies inside the first window. */		\
+					bn_lsh(s[0], s[0], 8);									\
+					bn_add_dig(s[0], s[0], 1);								\
+					C##_mul_sim_lot(p[0], q, s, WIDE_LOT);					\
+					/* The result must be (257 + WIDE_LOT - 1) * r. */		\
+					bn_set_dig(k[0], WIDE_LOT / 256 + 1);					\
+					bn_lsh(k[0], k[0], 8);									\
+					C##_mul(p[1], r, k[0]);									\
+					ok = (C##_cmp(p[0], p[1]) == RLC_EQ);					\
+					for (int j = 0; j < WIDE_LOT; j++) {					\
+						C##_free(q[j]);										\
+						bn_free(s[j]);										\
+					}														\
+				}															\
+				RLC_FREE(q);												\
+				RLC_FREE(s);												\
+				TEST_ASSERT(ok, end);										\
+			} TEST_END;														\
+		}																	\
 	}																		\
 	RLC_CATCH_ANY {															\
 		util_print("FATAL ERROR!\n");										\
