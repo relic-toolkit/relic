@@ -996,17 +996,21 @@ int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub);
 
 /**
- * Generates a key pair for Timed RSA, from "Dual-Timed Cryptosystems". Samples
- * x in Z_Lambda^* for the Carmichael function Lambda of an RSA modulus n and
- * sets e = x^theta and d = x^(-tau) mod Lambda, so that e^tau * d^theta = 1 mod
- * Lambda. The encryption key holds only n and e, and the decryption key only n
- * and d, as both together reveal a multiple of Lambda.
+ * Generates a key pair for Timed RSA, from "Dual-Timed Cryptosystems". The
+ * modulus n = pq has safe primes p = 2p' + 1 and q = 2q' + 1 with
+ * gcd(tau * theta, (p' - 1)(q' - 1)) = 1, so that powers by tau and theta
+ * permute Z_Lambda^* for the Carmichael function Lambda = 2p'q' of n. Samples
+ * x in Z_Lambda^* and sets e = x^theta and d = x^(-tau) mod Lambda, so that
+ * e^tau * d^theta = 1 mod Lambda and both exponents are uniform in Z_Lambda^*.
+ * The encryption key holds only n and e, and the decryption key only n and d,
+ * as both together reveal a multiple of Lambda. As |Z_Lambda^*| is even, both
+ * delays must be odd; an even delay can be rounded up at the cost of one step.
  *
  * @param[out] ek			- the encryption key.
  * @param[out] dk			- the decryption key.
  * @param[in] bits			- the length of the modulus in bits.
- * @param[in] tau			- the encryption hardness, at least one.
- * @param[in] theta			- the decryption hardness, at least one.
+ * @param[in] tau			- the encryption hardness, odd.
+ * @param[in] theta			- the decryption hardness, odd.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);

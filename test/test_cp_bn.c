@@ -351,8 +351,8 @@ static int rsa(void) {
 	return code;
 }
 
-/* Modulus length for timed RSA keys with a given exponent, which fits the
- * PSEP2 seed and tag of 24 and 40 bytes and a message of 10 bytes. */
+/* Short modulus length for timed RSA keys, which fits the PSEP2 seed and tag
+ * of 24 and 40 bytes and a message of 10 bytes. */
 #define TRSA_BITS	(8 * (24 + 40 + 2 + 10) + 32)
 
 static int trsa(void) {
@@ -363,7 +363,7 @@ static int trsa(void) {
 	size_t il, ol;
 	bn_t e;
 	/* Plain RSA, timed encryption, timed decryption and both delays. */
-	const size_t tau[4] = { 1, 3, 1, 2 }, theta[4] = { 1, 1, 3, 3 };
+	const size_t tau[4] = { 1, 3, 1, 3 }, theta[4] = { 1, 1, 3, 3 };
 
 	bn_null(e);
 	rsa_null(ek);
@@ -416,13 +416,16 @@ static int trsa(void) {
 				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, zero, ek,
 						tau[j]) == RLC_ERR, end);
 			}
+			/* Both delays must be odd. */
+			TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, 2, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, 1, 2) == RLC_ERR, end);
 		} TEST_END;
 
 		/* The encoding has n - 1 bits, so it starts with 0 to 7 zero bits. */
 		TEST_CASE("timed rsa is correct with a modulus of any length") {
 			for (int j = 1; j < 8; j += 2) {
-				TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS - j, 1,
-						1) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_gen(ek, dk, TRSA_BITS - j, 1, 1) == RLC_OK,
+						end);
 				il = sizeof(in);
 				rand_bytes(in, il);
 				ol = sizeof(out);

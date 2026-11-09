@@ -1315,9 +1315,11 @@ int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 
 int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 	bn_t p, q, l, t, x;
-	int result = RLC_OK;
+	int err = 0, result = RLC_OK;
 
-	if (ek == NULL || dk == NULL || bits < 16 || tau == 0 || theta == 0) {
+	/* Both delays are odd, as |Z_Lambda^*| is even. */
+	if (ek == NULL || dk == NULL || bits < 32 || (tau & 1) == 0 ||
+			(theta & 1) == 0) {
 		return RLC_ERR;
 	}
 
@@ -1326,21 +1328,31 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 	RLC_TRY {
 		bn_new_all(p, q, l, t, x);
 
-		/* Generate different primes p and q with n = pq of exactly the
-		 * requested length. */
+		/* Generate different safe primes p = 2p' + 1 and q = 2q' + 1 with
+		 * gcd(tau * theta, (p' - 1)(q' - 1)) = 1, checked on each prime, and
+		 * n = pq of the requested length. */
+		bn_set_dig(l, 1);
+		trsa_set(t, tau);
+		trsa_set(x, theta);
+		bn_mul(x, x, t);
 		do {
-			bn_gen_prime(p, bits / 2);
-			bn_gen_prime(q, bits - bits / 2);
+			err = (trsa_gen_prime(p, bits / 2, 2, l, x) != RLC_OK ||
+					trsa_gen_prime(q, bits - bits / 2, 2, l, x) != RLC_OK);
 			bn_mul(ek->crt->n, p, q);
-		} while (bn_cmp(p, q) == RLC_EQ || bn_bits(ek->crt->n) != bits);
+		} while (!err && (bn_cmp(p, q) == RLC_EQ ||
+				bn_bits(ek->crt->n) != bits));
+		if (err) {
+			RLC_THROW(ERR_CAUGHT);
+		}
 		bn_copy(dk->crt->n, ek->crt->n);
 
-		/* Lambda = lcm(p - 1, q - 1). */
+		/* Lambda = lcm(p - 1, q - 1) = 2p'q'. */
 		bn_sub_dig(p, p, 1);
 		bn_sub_dig(q, q, 1);
 		bn_lcm(l, p, q);
 
-		/* Sample x in Z_Lambda^* and set e = x^theta, d = x^(-tau). */
+		/* Sample x in Z_Lambda^* and set e = x^theta, d = x^(-tau), both
+		 * uniform in Z_Lambda^* as the powers by theta and -tau permute it. */
 		do {
 			do {
 				bn_rand_mod(x, l);
