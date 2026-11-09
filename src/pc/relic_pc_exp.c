@@ -185,7 +185,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 			if (bn_sign(k == 0 ? b : d) == RLC_NEG) {
 				bn_neg(_b[k * f], _b[k * f]);
 			}
-			bn_rec_frb(_b + k * f, f, _b[k * f], u, n,
+			bn_rec_frb(_b + k * f, f, _b[k * f], u, n, ep_curve_get_rec(),
 					ep_curve_is_pairf() == EP_BN);
 		}
 
@@ -349,7 +349,8 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 		ep_curve_frbase(u);
 		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
-		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_get_rec(),
+				ep_curve_is_pairf() == EP_BN);
 
 		gt_copy(q[0], a);
 		for (size_t i = 1; i < f; i++) {
@@ -484,8 +485,9 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 
 		ep_curve_frbase(u);
 		gt_get_ord(n);
-		bn_mod(_b[0], b, n);
-		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+		/* The decomposition runs in constant time for |b| < n. */
+		bn_rec_frb(_b, f, b, u, n, ep_curve_get_rec(),
+				ep_curve_is_pairf() == EP_BN);
 
 		gt_copy(q[0], a);
 		for (size_t i = 1; i < f; i++) {
@@ -497,8 +499,9 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			bn_abs(_b[i], _b[i]);
 		}
 		for (size_t i = 0; i < d; i++) {
+			/* Make it odd in constant time, as it is even if e = 1. */
 			e[i] = bn_is_even(_b[i * f / d]);
-			bn_add_dig(_b[i * f / d], _b[i * f / d], e[i]);
+			_b[i * f / d]->dp[0] |= e[i];
 		}
 		
 		for (size_t i = 0; i < d; i++) {
@@ -628,16 +631,18 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 		ep_curve_frbase(u);
 		gt_get_ord(n);
-		bn_abs(_b[0], b);
-		bn_mod(_b[0], _b[0], n);
-		if (bn_sign(b) == RLC_NEG) {
-			bn_neg(_b[0], _b[0]);
-		}
 		if (f > 1) {
-			bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+			/* The decomposition runs in constant time for |b| < n. */
+			bn_rec_frb(_b, f, b, u, n, ep_curve_get_rec(),
+					ep_curve_is_pairf() == EP_BN);
 			len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
 		} else {
 			/* Without a decomposition, recode the full exponent. */
+			bn_abs(_b[0], b);
+			bn_mod(_b[0], _b[0], n);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(_b[0], _b[0]);
+			}
 			len = bn_bits(n);
 		}
 

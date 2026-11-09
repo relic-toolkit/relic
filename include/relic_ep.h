@@ -552,6 +552,12 @@ const bn_st *ep_curve_get_v1(void);
 const bn_st *ep_curve_get_v2(void);
 
 /**
+ * Returns the constant for dividing by the base of Frobenius expansions in
+ * decompositions of scalars of the prime curve.
+ */
+const bn_st *ep_curve_get_rec(void);
+
+/**
  * Returns a optimization identifier based on the a-coefficient of the curve.
  *
  * @return the optimization identifier.
@@ -711,8 +717,9 @@ void ep_curve_frbase(bn_t u);
  * Configures a prime elliptic curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
+ * @return RLC_OK if the curve was configured, RLC_ERR otherwise.
  */
-void ep_param_set(int param);
+int ep_param_set(int param);
 
 /**
  * Configures some set of curve parameters for the current security level.
@@ -1242,7 +1249,8 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve using the
- * SwiftEC approach.
+ * SwiftEC approach. Curves not supported by SwiftEC, which needs a = 0 or
+ * b = 0, an ordinary curve and p = 1 mod 3, fall back to ep_map_sswum().
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.

@@ -54,15 +54,15 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
 	bn_t n, k0, k1, m0, m1;
 	ep_t v;
-	ep_t tab0[1 << (RLC_WIDTH - 2)];
-	ep_t tab1[1 << (RLC_WIDTH - 2)];
+	ep_t tab[2 << (RLC_WIDTH - 2)];
+	ep_t *tab0 = tab, *tab1 = tab + (1 << (RLC_WIDTH - 2));
 	size_t l, l0, l1, l2, l3;
 
 	bn_null_all(n, k0, k1, m0, m1);
 	ep_null(v);
 
-	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-		ep_null_all(tab0[i], tab1[i]);
+	for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+		ep_null(tab[i]);
 	}
 
 	RLC_TRY {
@@ -83,11 +83,13 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_abs(m1, m1);
 
 		/* Compute the precomputation tables. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep_new_all(tab0[i], tab1[i]);
+		for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+			ep_new(tab[i]);
 		}
-		ep_tab(tab0, p, RLC_WIDTH);
-		ep_tab(tab1, q, RLC_WIDTH);
+		TMPL_EC_MUL_TAB(ep, tab0, p, RLC_WIDTH);
+		TMPL_EC_MUL_TAB(ep, tab1, q, RLC_WIDTH);
+		/* One inversion normalizes both tables, unless they stay projective. */
+		TMPL_EP_MUL_NORM(ep, tab, 2, RLC_WIDTH);
 
 		/* Compute the w-NAF representations of the subscalars. */
 		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;
@@ -196,8 +198,8 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		ep_free(v);
 
 		/* Free the precomputation tables. */
-		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
-			ep_free_all(tab0[i], tab1[i]);
+		for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+			ep_free(tab[i]);
 		}
 	}
 }
@@ -295,7 +297,9 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_FREE(naf);
 		}
 	} else {
-		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
+		/* The digits of bn_rec_naf fit in int8_t only up to w = 8. */
+		const int w = RLC_MIN(8, RLC_MAX(2, util_bits_dig(n) - 2));
+		const int c = (1 << (w - 2));
 		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, c);
 		ep_t *_q = RLC_ALLOCA(ep_t, 2 * n);
 

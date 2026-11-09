@@ -68,7 +68,8 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		ep_curve_frbase(u);
 		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_get_rec(),
+				ep_curve_is_pairf() == EP_BN);
 		even = bn_is_even(_k[0]);
 		bn_add_dig(_k[0], _k[0], even);
 		ep3_norm(q[0], p);

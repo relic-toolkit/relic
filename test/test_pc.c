@@ -1593,6 +1593,20 @@ int exponentiation(void) {
 			gt_exp(b, a, d);
 			gt_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			/* Exponents beyond the order, of the same length or longer, are
+			 * reduced first. */
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			for (int j = 0; j < 2; j++) {
+				bn_lsh(e, n, j * RLC_DIG);
+				bn_add(e, e, d);
+				gt_exp(c, a, e);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+				bn_neg(e, e);
+				gt_exp(c, a, e);
+				gt_inv(c, c);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

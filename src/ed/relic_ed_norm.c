@@ -78,8 +78,23 @@ void ed_norm(ed_t r, const ed_t p) {
 }
 
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
-	fp_t* a = RLC_ALLOCA(fp_t, n);
+	int i;
+	fp_t* a;
 
+	/* There is nothing to invert when all points are affine. */
+	for (i = 0; i < n; i++) {
+		if (!ed_is_infty(t[i]) && t[i]->coord != EC_AFFIN) {
+			break;
+		}
+	}
+	if (i >= n) {
+		for (i = 0; i < n && r != t; i++) {
+			ed_copy(r[i], t[i]);
+		}
+		return;
+	}
+
+	a = RLC_ALLOCA(fp_t, n);
 	if (a == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;

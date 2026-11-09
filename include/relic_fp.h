@@ -1138,7 +1138,8 @@ void fp_rdc_lower(fp_t c, dv_t a);
 void fp_inv_basic(fp_t c, const fp_t a);
 
 /**
- * Inverts a prime field element using the binary method.
+ * Inverts a prime field element in constant time using the optimized binary
+ * GCD of Pornin, on approximations of the operands.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.

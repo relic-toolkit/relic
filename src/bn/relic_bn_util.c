@@ -459,6 +459,15 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
+#if RLC_ALLOC == RLC_AUTO
+			/* Reject values that do not fit, as bn_mul_dig() would write past
+			 * the digits when it cannot grow them and errors are not checked. */
+			if (a->used >= RLC_BN_SIZE) {
+				bn_zero(a);
+				RLC_THROW(ERR_NO_PRECI);
+				break;
+			}
+#endif
 			bn_mul_dig(a, a, (dig_t)radix);
 			bn_add_dig(a, a, (dig_t)i);
 			j++;
@@ -625,31 +634,44 @@ size_t bn_size_raw(const bn_t a) {
 }
 
 void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
+	size_t used = 0;
+	dig_t nz;
+
+	if (len == 0) {
+		bn_zero(a);
+		return;
+	}
+
 	RLC_TRY {
 		bn_grow(a, len);
-		a->used = len;
-		a->sign = RLC_POS;
-		dv_copy(a->dp, raw, len);
-		bn_trim(a);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
+		return;
 	}
+
+	dv_copy(a->dp, raw, len);
+	/* Find the length with masks, so that it takes the same time for
+	 * every value of len digits. */
+	for (size_t i = 0; i < len; i++) {
+		nz = (dig_t)(raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
+		used ^= (used ^ (i + 1)) & (0 - (size_t)nz);
+	}
+	/* Zero has length one. */
+	a->used = used + (size_t)(used == 0);
+	a->sign = RLC_POS;
 }
 
 void bn_write_raw(dig_t *raw, size_t len, const bn_t a) {
-	size_t i, size;
-
-	size = a->used;
+	size_t size = a->used;
 
 	if (len < size) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
-	for (i = 0; i < size; i++) {
-		raw[i] = a->dp[i];
-	}
-	for (; i < len; i++) {
-		raw[i] = 0;
+	/* Copy with masks, so that it takes the same time for every length of
+	 * the integer up to len digits. */
+	for (size_t i = 0; i < len; i++) {
+		raw[i] = (i < a->alloc ? a->dp[i] : 0) & (0 - (dig_t)(i < size));
 	}
 }

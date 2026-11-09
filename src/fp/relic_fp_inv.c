@@ -49,6 +49,20 @@
  */
 #define JMPDS_STEPS			(RLC_DIG - 4)
 
+/*
+ * Number of steps in each round of the optimized binary GCD (Pornin, "Optimized
+ * Binary GCD for Modular Inversion", https://eprint.iacr.org/2020/972), on
+ * approximations of a digit that keep k - 1 low bits and k + 1 high bits for
+ * k = RLC_DIG / 2.
+ */
+#define BINAR_STEPS			(RLC_DIG / 2 - 1)
+
+/*
+ * Number of rounds of the optimized binary GCD, as 2 * len(p) - 1 steps
+ * suffice for any modulus p < 2^FP_PRIME.
+ */
+#define BINAR_ITERS			RLC_CEIL(2 * FP_PRIME - 1, BINAR_STEPS)
+
 /**
  * Performs s <= JMPDS_STEPS half-delta division steps (Bernstein and Yang,
  * TCHES 2019) on the lowest digits of f and g, with zeta = -(delta + 1/2) as in
@@ -219,6 +233,43 @@ static void inv_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	e[i] = (dis_t)e0 >> s;
 }
 
+/**
+ * Computes approximations of two nonnegative integers below 2^(RLC_DIG *
+ * RLC_FP_DIGS) in a digit each, in constant time: their k - 1 low bits, and
+ * their k + 1 bits below the top bit of the larger one, or the integers
+ * themselves if they fit in a digit.
+ *
+ * @param[out] x			- the approximation of the first integer.
+ * @param[out] y			- the approximation of the second integer.
+ * @param[in] a				- the first integer.
+ * @param[in] b				- the second integer.
+ */
+static void binar_approx(dig_t *x, dig_t *y, const dig_t *a, const dig_t *b) {
+	const int k = RLC_DIG / 2;
+	dig_t ah = 0, al = 0, bh = 0, bl = 0, c, w;
+	int n;
+
+	/* Select the top digit nonzero in either integer, and the one below. */
+	for (size_t i = 1; i < RLC_FP_DIGS; i++) {
+		w = a[i] | b[i];
+		c = 0 - (dig_t)((dig_t)(w | (0 - w)) >> (RLC_DIG - 1));
+		ah = (a[i] & c) | (ah & ~c);
+		al = (a[i - 1] & c) | (al & ~c);
+		bh = (b[i] & c) | (bh & ~c);
+		bl = (b[i - 1] & c) | (bl & ~c);
+	}
+	w = ah | bh;
+	c = 0 - (dig_t)((dig_t)(w | (0 - w)) >> (RLC_DIG - 1));
+	/* Align the top bit of the larger one, never shifting by RLC_DIG. */
+	n = arch_lzcnt(w | (~c & 1));
+	ah = (ah << n) | ((al >> 1) >> (RLC_DIG - 1 - n));
+	bh = (bh << n) | ((bl >> 1) >> (RLC_DIG - 1 - n));
+	ah = (a[0] & RLC_MASK(k - 1)) | ((ah >> (RLC_DIG - k - 1)) << (k - 1));
+	bh = (b[0] & RLC_MASK(k - 1)) | ((bh >> (RLC_DIG - k - 1)) << (k - 1));
+	*x = (ah & c) | (a[0] & ~c);
+	*y = (bh & c) | (b[0] & ~c);
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -251,103 +302,108 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 }
 
 void fp_inv_binar(fp_t c, const fp_t a) {
-	bn_t u, v, g1, g2, p;
-
-	bn_null_all(u, v, g1, g2, p);
+	const dig_t *p = fp_prime_get();
+	dig_t mask, carry, x, y, t0, t1, lt;
+	dis_t m[4], u0, v0, u1, v1;
+	dv_t f, g, d, e, t;
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
+	dv_null_all(f, g, d, e, t);
+
 	RLC_TRY {
-		bn_new_all(u, v, g1, g2, p);
+		dv_new_all(f, g, d, e, t);
 
-		/* u = a, v = p, g1 = 1, g2 = 0. */
-		fp_prime_back(u, a);
-		p->used = RLC_FP_DIGS;
-		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_copy(v, p);
-		bn_set_dig(g1, 1);
-		bn_zero(g2);
+		/* Start from (f, g) = (a, p) and (d, e) = (1, 0), with f = d * a and
+		 * g = e * a modulo p, both nonnegative. */
+		dv_copy(f, a, RLC_FP_DIGS);
+		dv_copy(g, p, RLC_FP_DIGS);
+		dv_zero(d, RLC_FP_DIGS + 1);
+		dv_zero(e, RLC_FP_DIGS + 1);
+		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
+		d[0] = 1;
 
-		/* While (u != 1 && v != 1). */
-		while (1) {
-			/* While u is even do. */
-			while (!(u->dp[0] & 1)) {
-				/* u = u/2. */
-				fp_rsh1_low(u->dp, u->dp);
-				/* If g1 is even then g1 = g1/2; else g1 = (g1 + p)/2. */
-				if (g1->dp[0] & 1) {
-					bn_add(g1, g1, p);
+		/* The number of steps only depends on the prime size. */
+		for (int i = 0; i < BINAR_ITERS; i++) {
+			binar_approx(&x, &y, f, g);
+			/* The rows of the matrix stay in registers during the steps. */
+			u0 = v1 = 1;
+			v0 = u1 = 0;
+			for (int j = 0; j < BINAR_STEPS; j++) {
+				/* t0 is all ones if x is odd, lt if x < y, t1 if both. */
+				t0 = 0 - (x & 1);
+				lt = 0 - (dig_t)(x < y);
+				t1 = lt & t0;
+				/* When x is odd, x becomes |x - y| and y the smaller one,
+				 * both computed at once to shorten the dependency chain. */
+				carry = x - y;
+				carry ^= (carry ^ (y - x)) & lt;
+				y ^= (x ^ y) & t1;
+				x = (x ^ ((x ^ carry) & t0)) >> 1;
+				carry = t1 & (dig_t)(u0 ^ u1);
+				u0 ^= (dis_t)carry;
+				u1 ^= (dis_t)carry;
+				carry = t1 & (dig_t)(v0 ^ v1);
+				v0 ^= (dis_t)carry;
+				v1 ^= (dis_t)carry;
+				u0 -= u1 & (dis_t)t0;
+				v0 -= v1 & (dis_t)t0;
+				/* Halve x by doubling the second row instead. */
+				u1 += u1;
+				v1 += v1;
+			}
+			m[0] = u0;
+			m[1] = v0;
+			m[2] = u1;
+			m[3] = v1;
+			/* Apply the steps to (f, g) and (d, e), dividing by 2^s. */
+			inv_apply(f, g, d, e, m, BINAR_STEPS);
+			/* Keep f and g nonnegative, negating d and e along, and bring d
+			 * and e back from (-2p, 2p) to (-2p, p). */
+			for (int k = 0; k < 2; k++) {
+				dig_t *w = (k == 0 ? f : g), *z = (k == 0 ? d : e);
+
+				mask = 0 - RLC_SIGN(w[RLC_FP_DIGS]);
+				carry = mask & 1;
+				for (size_t j = 0; j <= RLC_FP_DIGS; j++) {
+					w[j] = (w[j] ^ mask) + carry;
+					carry = (w[j] < carry);
 				}
-				bn_hlv(g1, g1);
-			}
-
-			while (u->dp[u->used - 1] == 0) {
-				u->used--;
-			}
-			if (u->used == 1 && u->dp[0] == 1)
-				break;
-
-			/* While z divides v do. */
-			while (!(v->dp[0] & 1)) {
-				/* v = v/2. */
-				fp_rsh1_low(v->dp, v->dp);
-				/* If g2 is even then g2 = g2/2; else (g2 = g2 + p)/2. */
-				if (g2->dp[0] & 1) {
-					bn_add(g2, g2, p);
+				carry = mask & 1;
+				for (size_t j = 0; j <= RLC_FP_DIGS; j++) {
+					z[j] = (z[j] ^ mask) + carry;
+					carry = (z[j] < carry);
 				}
-				bn_hlv(g2, g2);
-			}
-
-			while (v->dp[v->used - 1] == 0) {
-				v->used--;
-			}
-			if (v->used == 1 && v->dp[0] == 1)
-				break;
-
-			/* If u > v then u = u - v, g1 = g1 - g2. */
-			if (bn_cmp(u, v) == RLC_GT) {
-				bn_sub(u, u, v);
-				bn_sub(g1, g1, g2);
-			} else {
-				bn_sub(v, v, u);
-				bn_sub(g2, g2, g1);
+				carry = bn_subn_low(t, z, p, RLC_FP_DIGS);
+				t[RLC_FP_DIGS] = z[RLC_FP_DIGS] - carry;
+				dv_copy_sec(z, t, RLC_FP_DIGS + 1,
+						RLC_SIGN(t[RLC_FP_DIGS]) ^ 1);
 			}
 		}
-		/* If u == 1 then return g1; else return g2. */
-		if (bn_cmp_dig(u, 1) == RLC_EQ) {
-			while (bn_sign(g1) == RLC_NEG) {
-				bn_add(g1, g1, p);
+
+		/* Now g = 1, so 1/a = e; bring it from (-2p, p) to [0, p). */
+		for (int k = 0; k < 2; k++) {
+			mask = 0 - RLC_SIGN(e[RLC_FP_DIGS]);
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
+				t[j] = p[j] & mask;
 			}
-			while (bn_cmp(g1, p) != RLC_LT) {
-				bn_sub(g1, g1, p);
-			}
-#if FP_RDC == FP_MONTY
-			fp_prime_conv(c, g1);
-#else
-			dv_copy(c, g1->dp, RLC_FP_DIGS);
-#endif
-		} else {
-			while (bn_sign(g2) == RLC_NEG) {
-				bn_add(g2, g2, p);
-			}
-			while (bn_cmp(g2, p) != RLC_LT) {
-				bn_sub(g2, g2, p);
-			}
-#if FP_RDC == FP_MONTY
-			fp_prime_conv(c, g2);
-#else
-			dv_copy(c, g2->dp, RLC_FP_DIGS);
-#endif
+			e[RLC_FP_DIGS] += bn_addn_low(e, e, t, RLC_FP_DIGS);
 		}
+#if FP_RDC == FP_MONTY
+		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
+		fp_mul(c, e, core_get()->inv);
+#else
+		fp_copy(c, e);
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(u, v, g1, g2, p);
+		dv_free_all(f, g, d, e, t);
 	}
 }
 

@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ec_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -198,16 +199,9 @@
 	}																		\
 																			\
 	void C##_tab(C##_t *t, const C##_t p, int w) {							\
-		if (w > 2) {														\
-			C##_dbl(t[0], p);												\
-			C##_norm(t[0], t[0]);											\
-			C##_add(t[1], p, t[0]);											\
-			for (int i = 2; i < (1 << (w - 2)); i++) {						\
-				C##_add(t[i], t[i - 1], t[0]);								\
-			}																\
-			C##_norm_sim(t + 1, (const C##_t *)t + 1, (1 << (w - 2)) - 1);	\
-		}																	\
-		C##_norm(t[0], p);													\
+		/* Keep 2P projective and normalize the whole table at once. */		\
+		TMPL_EC_MUL_TAB(C, t, p, w);										\
+		TMPL_EC_MUL_NORM(C, t, 1, w);										\
 	}																		\
 																			\
 	void C##_print(const C##_t p) {											\
@@ -306,8 +300,22 @@
 																			\
 	void C##_norm_sim(C##_t *r, const C##_t *t, int n) {					\
 		int i;																\
-		F##_t* a = RLC_ALLOCA(F##_t, n);									\
+		F##_t* a;															\
 																			\
+		/* There is nothing to invert when all points are affine. */		\
+		for (i = 0; i < n; i++) {											\
+			if (!C##_is_infty(t[i]) && t[i]->coord != EC_AFFIN) {			\
+				break;														\
+			}																\
+		}																	\
+		if (i >= n) {														\
+			for (i = 0; i < n && r != t; i++) {								\
+				C##_copy(r[i], t[i]);										\
+			}																\
+			return;															\
+		}																	\
+																			\
+		a = RLC_ALLOCA(F##_t, n);											\
 		if (a == NULL) {													\
 			RLC_THROW(ERR_NO_MEMORY);										\
 			return;															\
