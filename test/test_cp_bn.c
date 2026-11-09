@@ -383,7 +383,7 @@ static int trsa(void) {
 
 		TEST_CASE("timed rsa encryption/decryption is correct") {
 			for (int j = 0; j < 4; j++) {
-				TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, tau[j],
+				TEST_ASSERT(cp_trsa_gen(ek, dk, TRSA_BITS, tau[j],
 						theta[j]) == RLC_OK, end);
 				il = sizeof(in);
 				rand_bytes(in, il);
@@ -417,8 +417,8 @@ static int trsa(void) {
 						tau[j]) == RLC_ERR, end);
 			}
 			/* Both delays must be odd. */
-			TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, 2, 1) == RLC_ERR, end);
-			TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, 1, 2) == RLC_ERR, end);
+			TEST_ASSERT(cp_trsa_gen(ek, dk, TRSA_BITS, 2, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_trsa_gen(ek, dk, TRSA_BITS, 1, 2) == RLC_ERR, end);
 		} TEST_END;
 
 		/* The encoding has n - 1 bits, so it starts with 0 to 7 zero bits. */
