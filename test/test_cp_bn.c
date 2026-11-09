@@ -351,13 +351,15 @@ static int rsa(void) {
 	return code;
 }
 
-/* Modulus length for timed RSA keys with a given exponent. */
-#define TRSA_BITS	(8 * (2 * RLC_MD_LEN + 2 + 10) + 32)
+/* Modulus length for timed RSA keys with a given exponent, which fits the
+ * PSEP2 seed and tag of 24 and 40 bytes and a message of 10 bytes. */
+#define TRSA_BITS	(8 * (24 + 40 + 2 + 10) + 32)
 
 static int trsa(void) {
 	int code = RLC_ERR;
 	rsa_t ek, dk, pub, prv;
-	uint8_t in[10], out[RLC_BN_BITS / 8 + 1], lab[4] = { 1, 2, 3, 4 };
+	uint8_t in[10], out[RLC_BN_BITS / 8 + 1], lab[CP_TRSA_LAB];
+	uint8_t zero[CP_TRSA_LAB] = { 0 };
 	size_t il, ol;
 	bn_t e;
 	/* Plain RSA, timed encryption, timed decryption and both delays. */
@@ -376,6 +378,9 @@ static int trsa(void) {
 		rsa_new(pub);
 		rsa_new(prv);
 
+		rand_bytes(lab, sizeof(lab));
+		lab[0] |= 1;
+
 		TEST_CASE("timed rsa encryption/decryption is correct") {
 			for (int j = 0; j < 4; j++) {
 				TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS, tau[j],
@@ -383,47 +388,66 @@ static int trsa(void) {
 				il = sizeof(in);
 				rand_bytes(in, il);
 				ol = sizeof(out);
-				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab),
-						ek, tau[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, sizeof(lab),
-						dk, theta[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, ek,
+						tau[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, dk,
+						theta[j]) == RLC_OK, end);
 				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 				ol = sizeof(out);
-				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab),
-						ek, tau[j], oaepp) == RLC_OK, end);
-				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, sizeof(lab),
-						dk, theta[j], oaepp) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, NULL, ek,
+						tau[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, NULL, dk,
+						theta[j]) == RLC_OK, end);
 				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 				/* A different label or hardness does not decrypt. */
 				ol = sizeof(out);
-				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab),
-						ek, tau[j]) == RLC_OK, end);
-				TEST_ASSERT(cp_trsa_dec(in, &il, out, ol, lab, 3, dk,
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, ek,
+						tau[j]) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(in, &il, out, ol, NULL, dk,
 						theta[j]) == RLC_ERR, end);
-				TEST_ASSERT(cp_trsa_dec(in, &il, out, ol, lab, sizeof(lab), dk,
+				lab[CP_TRSA_LAB - 1] ^= 1;
+				TEST_ASSERT(cp_trsa_dec(in, &il, out, ol, lab, dk,
+						theta[j]) == RLC_ERR, end);
+				lab[CP_TRSA_LAB - 1] ^= 1;
+				TEST_ASSERT(cp_trsa_dec(in, &il, out, ol, lab, dk,
 						theta[j] + 1) == RLC_ERR, end);
+				/* The zero label stands for no label and is rejected. */
+				ol = sizeof(out);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, zero, ek,
+						tau[j]) == RLC_ERR, end);
 			}
 		} TEST_END;
 
-		TEST_CASE("timed rsa without delays is rsa-oaep") {
+		/* The encoding has n - 1 bits, so it starts with 0 to 7 zero bits. */
+		TEST_CASE("timed rsa is correct with a modulus of any length") {
+			for (int j = 1; j < 8; j += 2) {
+				TEST_ASSERT(cp_trsa_gen(ek, dk, RLC_BN_BITS - j, 1,
+						1) == RLC_OK, end);
+				il = sizeof(in);
+				rand_bytes(in, il);
+				ol = sizeof(out);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, ek,
+						1) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, dk,
+						1) == RLC_OK, end);
+				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("timed rsa without delays works with rsa keys") {
 			TEST_ASSERT(cp_rsa_gen(pub, prv, RLC_BN_BITS) == RLC_OK, end);
 			il = sizeof(in);
 			rand_bytes(in, il);
 			ol = sizeof(out);
-			TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, NULL, 0, pub,
+			TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, pub,
 					1) == RLC_OK, end);
-			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv) == RLC_OK, end);
-			TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
-			ol = sizeof(out);
-			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub, oaepp) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, NULL, 0, prv, 1,
-					oaepp) == RLC_OK, end);
+			TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, prv,
+					1) == RLC_OK, end);
 			TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 		} TEST_END;
 
 		/* Keys from Cunningham chains are slow to generate, so make one per
-		 * length with the smallest modulus that fits OAEP and the message. */
+		 * length with the smallest modulus that fits PSEP2 and the message. */
 		bn_set_2b(e, 16);
 		bn_add_dig(e, e, 1);
 		TEST_ONCE("timed rsa with a given exponent is correct") {
@@ -434,10 +458,10 @@ static int trsa(void) {
 				il = sizeof(in);
 				rand_bytes(in, il);
 				ol = sizeof(out);
-				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, sizeof(lab),
-						ek, 2) == RLC_OK, end);
-				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, sizeof(lab),
-						dk, 3) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, ek,
+						2) == RLC_OK, end);
+				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, dk,
+						3) == RLC_OK, end);
 				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 			}
 			/* Only chains of length 2 or 3 are supported. */

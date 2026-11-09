@@ -131,7 +131,7 @@ static void rsa(void) {
 
 static void trsa(void) {
 	rsa_t ek, dk;
-	uint8_t in[10], new[10], lab[4] = { 1, 2, 3, 4 };
+	uint8_t in[10], new[10], lab[CP_TRSA_LAB];
 	uint8_t out[RLC_BN_BITS / 8 + 1];
 	size_t out_len, new_len;
 	bn_t e;
@@ -144,6 +144,9 @@ static void trsa(void) {
 	rsa_new(ek);
 	rsa_new(dk);
 
+	rand_bytes(lab, sizeof(lab));
+	lab[0] |= 1;
+
 	/* Costs grow linearly with tau and theta, so measure few steps. A single
 	 * step of encryption uses a ladder, as the key is then secret. */
 	BENCH_ONE("cp_trsa_gen", cp_trsa_gen(ek, dk, RLC_BN_BITS, 1, 1), 1);
@@ -151,41 +154,21 @@ static void trsa(void) {
 	BENCH_RUN("cp_trsa_enc (tau = 1)") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, sizeof(in));
-		BENCH_ADD(cp_trsa_enc(out, &out_len, in, sizeof(in), lab,
-				sizeof(lab), ek, 1));
+		BENCH_ADD(cp_trsa_enc(out, &out_len, in, sizeof(in), lab, ek, 1));
 	} BENCH_END;
 
 	BENCH_RUN("cp_trsa_enc (tau = 2)") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, sizeof(in));
-		BENCH_ADD(cp_trsa_enc(out, &out_len, in, sizeof(in), lab,
-				sizeof(lab), ek, 2));
+		BENCH_ADD(cp_trsa_enc(out, &out_len, in, sizeof(in), lab, ek, 2));
 	} BENCH_END;
 
 	BENCH_RUN("cp_trsa_dec (theta = 1)") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = sizeof(new);
 		rand_bytes(in, sizeof(in));
-		cp_trsa_enc(out, &out_len, in, sizeof(in), lab, sizeof(lab), ek, 1);
-		BENCH_ADD(cp_trsa_dec(new, &new_len, out, out_len, lab,
-				sizeof(lab), dk, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_trsa_enc (oaepp, tau = 1)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		rand_bytes(in, sizeof(in));
-		BENCH_ADD(cp_trsa_enc(out, &out_len, in, sizeof(in), lab,
-				sizeof(lab), ek, 1, oaepp));
-	} BENCH_END;
-
-	BENCH_RUN("cp_trsa_dec (oaepp, theta = 1)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len = sizeof(new);
-		rand_bytes(in, sizeof(in));
-		cp_trsa_enc(out, &out_len, in, sizeof(in), lab, sizeof(lab), ek, 1,
-				oaepp);
-		BENCH_ADD(cp_trsa_dec(new, &new_len, out, out_len, lab,
-				sizeof(lab), dk, 1, oaepp));
+		cp_trsa_enc(out, &out_len, in, sizeof(in), lab, ek, 1);
+		BENCH_ADD(cp_trsa_dec(new, &new_len, out, out_len, lab, dk, 1));
 	} BENCH_END;
 
 	/* Moduli from Cunningham chains are slow to find, so time a single one. */

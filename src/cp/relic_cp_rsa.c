@@ -46,26 +46,24 @@
 #define RSA_OAEP_LEN		(2 * RLC_MD_LEN + 2)
 
 /**
+ * Length of the random seed of PSEP2 in bytes, k0 = 192 bits.
+ */
+#define RSA_PSEP_K0			(24)
+
+/**
+ * Length of the tag of PSEP2 in bytes, k1 = 320 bits.
+ */
+#define RSA_PSEP_K1			(40)
+
+/**
+ * Length of the minimum padding of PSEP2 encryption in bytes.
+ */
+#define RSA_PSEP_LEN		(RSA_PSEP_K0 + RSA_PSEP_K1 + 2)
+
+/**
  * Returns 1 if a byte is zero and 0 otherwise, in constant time.
  */
 #define RSA_IS_ZERO(B)		((uint32_t)((uint32_t)(B) - 1) >> 31)
-
-/**
- * Encodes a message m with a label l into a block em of k bytes.
- */
-typedef int (*rsa_enc_pad_t)(uint8_t *em, size_t k, const uint8_t *m,
-		size_t m_len, const uint8_t *l, size_t l_len);
-
-/**
- * Decodes a message m with a label l from a block em of k bytes.
- */
-typedef int (*rsa_dec_pad_t)(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
-		const uint8_t *l, size_t l_len);
-
-/**
- * Encodes or verifies a hash h in a block em of em_bits bits.
- */
-typedef int (*rsa_sig_pad_t)(uint8_t *em, size_t em_bits, const uint8_t *h);
 
 /**
  * Computes the private-key operation c = a^d mod n. The input is blinded with
@@ -254,16 +252,10 @@ static const uint8_t *hash_id(size_t *len) {
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most k - 11.
- * @param[in] l				- the label, unused as the encoding has none.
- * @param[in] l_len			- the label length in bytes, unused.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
-		const uint8_t *l, size_t l_len) {
+static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t ps_len = k - m_len - 3;
-
-	(void)l;
-	(void)l_len;
 
 	em[0] = 0x00;
 	em[1] = 0x02;
@@ -286,17 +278,11 @@ static int pkcs1_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
- * @param[in] l				- the label, unused as the encoding has none.
- * @param[in] l_len			- the label length in bytes, unused.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int pkcs1_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
-		const uint8_t *l, size_t l_len) {
+static int pkcs1_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	uint32_t good, found = 0, zero, sel;
 	size_t idx = 0;
-
-	(void)l;
-	(void)l_len;
 
 	good = RSA_IS_ZERO(em[0]) & RSA_IS_ZERO(em[1] ^ 0x02);
 	for (size_t i = 2; i < k; i++) {
@@ -368,21 +354,17 @@ static int pkcs1_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 }
 
 /**
- * Encodes a message for encryption with EME-OAEP and a label:
- * EM = 00 | maskedSeed | maskedDB, with DB = lHash | PS | 01 | M and lHash the
- * hash of the label.
+ * Encodes a message for encryption with EME-OAEP and an empty label:
+ * EM = 00 | maskedSeed | maskedDB, with DB = lHash | PS | 01 | M.
  *
  * @param[out] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most
  * 							  k - 2 * RLC_MD_LEN - 2.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
-		const uint8_t *l, size_t l_len) {
+static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t db_len = k - RLC_MD_LEN - 1;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -393,7 +375,7 @@ static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
 	}
 
 	em[0] = 0x00;
-	md_map(db, l, l_len);
+	md_map(db, NULL, 0);
 	memset(db + RLC_MD_LEN, 0, db_len - m_len - RLC_MD_LEN - 1);
 	db[db_len - m_len - 1] = 0x01;
 	memcpy(db + db_len - m_len, m, m_len);
@@ -413,19 +395,16 @@ static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
 }
 
 /**
- * Decodes a message encoded with EME-OAEP and a label, in constant time up to
- * the result. The encoded message is unmasked in place.
+ * Decodes a message encoded with EME-OAEP and an empty label, in constant time
+ * up to the result. The encoded message is unmasked in place.
  *
  * @param[out] m			- the message.
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in,out] em		- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
-		const uint8_t *l, size_t l_len) {
+static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	size_t db_len = k - RLC_MD_LEN - 1, idx = 0;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN, h[RLC_MD_LEN], diff = 0;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
@@ -446,7 +425,7 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
 	}
 	RLC_FREE(mask);
 
-	md_map(h, l, l_len);
+	md_map(h, NULL, 0);
 	for (size_t i = 0; i < RLC_MD_LEN; i++) {
 		diff |= db[i] ^ h[i];
 	}
@@ -477,23 +456,19 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
  * EM = 00 | s | t, with s = (G(r) XOR X) | H'(r | X), t = H(s) XOR r and
  * X = PS | 01 | M, for a random r of RLC_MD_LEN bytes. The three functions are
  * instantiated with the chosen hash function and MGF1, separated by a prefix:
- * G(r) = MGF(00 | r), H'(r | X) = Hash(01 | r | X | L) and H(s) = MGF(02 | s),
- * where the label L binds context to the tag and is empty by default.
+ * G(r) = MGF(00 | r), H'(r | X) = Hash(01 | r | X) and H(s) = MGF(02 | s).
  *
  * @param[out] em			- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
  * @param[in] m				- the message.
  * @param[in] m_len			- the message length in bytes, at most
  * 							  k - 2 * RLC_MD_LEN - 2.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
-		const uint8_t *l, size_t l_len) {
+static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1;
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN];
-	uint8_t *buf = RLC_ALLOCA(uint8_t, k + l_len);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k);
 
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -507,14 +482,11 @@ static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
 	memcpy(s + x_len - m_len, m, m_len);
 	rand_bytes(r, RLC_MD_LEN);
 
-	/* s = (G(r) XOR X) | H'(r | X | L). */
+	/* s = (G(r) XOR X) | H'(r | X). */
 	buf[0] = 0x01;
 	memcpy(buf + 1, r, RLC_MD_LEN);
 	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
-	if (l_len > 0) {
-		memcpy(buf + 1 + RLC_MD_LEN + x_len, l, l_len);
-	}
-	md_map(s + x_len, buf, 1 + RLC_MD_LEN + x_len + l_len);
+	md_map(s + x_len, buf, 1 + RLC_MD_LEN + x_len);
 	buf[0] = 0x00;
 	md_mgf(buf + 1 + RLC_MD_LEN, x_len, buf, 1 + RLC_MD_LEN);
 	for (size_t i = 0; i < x_len; i++) {
@@ -534,22 +506,19 @@ static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len,
 }
 
 /**
- * Decodes a message encoded with OAEP+ and a label, in constant time up to the
- * result. The encoded message is unmasked in place.
+ * Decodes a message encoded with OAEP+, in constant time up to the result. The
+ * encoded message is unmasked in place.
  *
  * @param[out] m			- the message.
  * @param[in,out] m_len		- the buffer capacity and the message length.
  * @param[in,out] em		- the encoded message.
  * @param[in] k				- the length of the encoded message in bytes.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
-		const uint8_t *l, size_t l_len) {
+static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	size_t x_len = k - 2 * RLC_MD_LEN - 1, s_len = k - RLC_MD_LEN - 1, idx = 0;
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN], h[RLC_MD_LEN];
-	uint8_t *buf = RLC_ALLOCA(uint8_t, k + l_len), diff = 0;
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k), diff = 0;
 	uint32_t good, found = 0, bad = 0, one, zero, sel;
 
 	if (buf == NULL) {
@@ -573,14 +542,11 @@ static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k,
 		s[i] ^= buf[1 + RLC_MD_LEN + i];
 	}
 
-	/* Check the tag H'(r | X | L). */
+	/* Check the tag H'(r | X). */
 	buf[0] = 0x01;
 	memcpy(buf + 1, r, RLC_MD_LEN);
 	memcpy(buf + 1 + RLC_MD_LEN, s, x_len);
-	if (l_len > 0) {
-		memcpy(buf + 1 + RLC_MD_LEN + x_len, l, l_len);
-	}
-	md_map(h, buf, 1 + RLC_MD_LEN + x_len + l_len);
+	md_map(h, buf, 1 + RLC_MD_LEN + x_len);
 	RLC_FREE(buf);
 	for (size_t i = 0; i < RLC_MD_LEN; i++) {
 		diff |= h[i] ^ s[x_len + i];
@@ -714,7 +680,8 @@ static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const rsa_t pub, size_t pad_len, rsa_enc_pad_t pad) {
+		size_t in_len, const rsa_t pub, size_t pad_len,
+		int (*pad)(uint8_t *, size_t, const uint8_t *, size_t)) {
 	bn_t m;
 	size_t k;
 	uint8_t *em;
@@ -740,7 +707,7 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 	RLC_TRY {
 		bn_new(m);
 
-		if (pad(em, k, in, in_len, NULL, 0) == RLC_OK) {
+		if (pad(em, k, in, in_len) == RLC_OK) {
 			bn_read_bin(m, em, k);
 			bn_mxp(m, m, pub->e, pub->crt->n);
 			bn_write_bin(out, k, m);
@@ -773,7 +740,8 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const rsa_t prv, size_t pad_len, rsa_dec_pad_t pad) {
+		size_t in_len, const rsa_t prv, size_t pad_len,
+		int (*pad)(uint8_t *, size_t *, uint8_t *, size_t)) {
 	bn_t m;
 	size_t k;
 	uint8_t *em;
@@ -805,7 +773,7 @@ static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 			result = RLC_ERR;
 		} else {
 			bn_write_bin(em, k, m);
-			result = pad(out, out_len, em, k, NULL, 0);
+			result = pad(out, out_len, em, k);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -834,7 +802,7 @@ static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
  */
 static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t prv, int pss,
-		rsa_sig_pad_t pad) {
+		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
 	bn_t m;
 	size_t k, em_bits;
 	uint8_t h[RLC_MD_LEN], *em;
@@ -906,7 +874,7 @@ static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
  */
 static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t pub, int pss,
-		rsa_sig_pad_t pad) {
+		int (*pad)(uint8_t *, size_t, const uint8_t *)) {
 	bn_t m;
 	size_t k, em_bits;
 	uint8_t h[RLC_MD_LEN], *em;
@@ -961,145 +929,204 @@ static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 }
 
 /**
- * Encrypts with Timed RSA, computing c = x^(e^tau) for the encoded message x
- * by tau sequential exponentiations with the exponent in the encryption key.
+ * Computes one of the three random oracles of PSEP2 with SHAKE256, separated
+ * by a prefix byte: out = SHAKE256(pre | a | b | c), for fields of fixed length.
  *
- * @param[out] out			- the output buffer.
- * @param[in, out] out_len	- the buffer capacity and number of bytes written.
- * @param[in] in			- the input buffer.
- * @param[in] in_len		- the number of bytes to encrypt.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
- * @param[in] ek			- the encryption key.
- * @param[in] tau			- the number of sequential exponentiations.
- * @param[in] pad			- the encoding function.
+ * @param[out] out			- the output.
+ * @param[in] out_len		- the output length in bytes.
+ * @param[in] pre			- the prefix that selects the oracle.
+ * @param[in] a				- the first field.
+ * @param[in] a_len			- the length of the first field in bytes.
+ * @param[in] b				- the second field, or NULL for none.
+ * @param[in] b_len			- the length of the second field in bytes.
+ * @param[in] c				- the third field, or NULL for none.
+ * @param[in] c_len			- the length of the third field in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int trsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
-		size_t tau, rsa_enc_pad_t pad) {
-	bn_t m;
-	size_t k;
-	uint8_t *em;
-	int result = RLC_OK;
+static int psep_hash(uint8_t *out, size_t out_len, uint8_t pre,
+		const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len,
+		const uint8_t *c, size_t c_len) {
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + a_len + b_len + c_len);
 
-	if (ek == NULL || tau == 0 || (l == NULL && l_len > 0) ||
-			bn_cmp_dig(ek->e, 1) != RLC_GT) {
-		return RLC_ERR;
-	}
-
-	k = bn_size_bin(ek->crt->n);
-	if (in_len + RSA_OAEP_LEN > k || *out_len < k) {
-		return RLC_ERR;
-	}
-
-	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
+	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
-	bn_null(m);
+	buf[0] = pre;
+	memcpy(buf + 1, a, a_len);
+	if (b_len > 0) {
+		memcpy(buf + 1 + a_len, b, b_len);
+	}
+	if (c_len > 0) {
+		memcpy(buf + 1 + a_len + b_len, c, c_len);
+	}
+	md_shake256(out, out_len, buf, 1 + a_len + b_len + c_len);
 
-	RLC_TRY {
-		bn_new(m);
+	RLC_FREE(buf);
+	return RLC_OK;
+}
 
-		if (pad(em, k, in, in_len, l, l_len) == RLC_OK) {
-			bn_read_bin(m, em, k);
-			/* A key without delay is kept secret, so use a ladder for it. */
-			if (tau == 1) {
-				bn_mxp_monty(m, m, ek->e, ek->crt->n);
-			} else {
-				for (size_t i = 0; i < tau; i++) {
-					bn_mxp(m, m, ek->e, ek->crt->n);
-				}
-			}
-			bn_write_bin(out, k, m);
-			*out_len = k;
-		} else {
+/**
+ * Encodes a message with PSEP2, from "Optimal Signcryption from Any Trapdoor
+ * Permutation" by Dodis, Freedman, Jarecki and Walfish (ePrint 2004/020), as a
+ * Feistel S-Pad. For an n-bit modulus N and k = n - 1, computes the k-bit
+ * string y = w | s from z = X | r, with t = H1(z), w = H2(N, l, t) XOR z and
+ * s = H3(w) XOR t, for a random r of k0 bits and a tag t of k1 bits. The block
+ * X = PS | 01 | M fills the remaining k - k0 - k1 bits. The oracles are
+ * H1(z) = SHAKE256(01 | z), H2(N, l, t) = SHAKE256(02 | N | l | t) and
+ * H3(w) = SHAKE256(03 | w), with every field of fixed length.
+ *
+ * @param[out] em			- the encoded message, as many bytes as N.
+ * @param[in] n				- the modulus.
+ * @param[in] m				- the message.
+ * @param[in] m_len			- the message length in bytes, at most as many
+ * 							  bytes as N minus RSA_PSEP_LEN.
+ * @param[in] l				- the label of CP_TRSA_LAB bytes.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+static int psep_enc(uint8_t *em, const bn_t n, const uint8_t *m,
+		size_t m_len, const uint8_t *l) {
+	size_t k = bn_size_bin(n), w_len = k - RSA_PSEP_K1;
+	size_t x_len = w_len - RSA_PSEP_K0;
+	uint8_t *w = em, *s = em + w_len, t[RSA_PSEP_K1];
+	uint8_t top = (uint8_t)((1 << ((bn_bits(n) - 1) % 8)) - 1);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k + w_len);
+	int result = RLC_OK;
+
+	if (buf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	/* z = X | r, with X = PS | 01 | M and a nonempty PS. */
+	memset(w, 0, x_len - m_len - 1);
+	w[x_len - m_len - 1] = 0x01;
+	memcpy(w + x_len - m_len, m, m_len);
+	rand_bytes(w + x_len, RSA_PSEP_K0);
+
+	/* t = H1(z), and w = H2(N, l, t) XOR z truncated to k - k1 bits. */
+	bn_write_bin(buf, k, n);
+	if (psep_hash(t, RSA_PSEP_K1, 0x01, w, w_len, NULL, 0, NULL, 0) != RLC_OK ||
+			psep_hash(buf + k, w_len, 0x02, buf, k, l, CP_TRSA_LAB, t,
+			RSA_PSEP_K1) != RLC_OK) {
+		result = RLC_ERR;
+	} else {
+		buf[k] &= top;
+		for (size_t i = 0; i < w_len; i++) {
+			w[i] ^= buf[k + i];
+		}
+
+		/* s = H3(w) XOR t. */
+		if (psep_hash(s, RSA_PSEP_K1, 0x03, w, w_len, NULL, 0, NULL,
+				0) != RLC_OK) {
 			result = RLC_ERR;
+		} else {
+			for (size_t i = 0; i < RSA_PSEP_K1; i++) {
+				s[i] ^= t[i];
+			}
 		}
 	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
 
+	RLC_FREE(buf);
 	return result;
 }
 
 /**
- * Decrypts with Timed RSA, computing x = c^(d^theta) by theta sequential
- * exponentiations with the exponent in the decryption key, and decoding x.
+ * Decodes a message encoded with PSEP2, in constant time up to the result.
+ * Rejects an encoded message of k bits or more, and one whose tag t differs
+ * from H1(z). The encoded message is unmasked in place.
  *
- * @param[out] out			- the output buffer.
- * @param[in, out] out_len	- the buffer capacity and number of bytes written.
- * @param[in] in			- the input buffer.
- * @param[in] in_len		- the number of bytes to decrypt.
- * @param[in] l				- the label.
- * @param[in] l_len			- the label length in bytes, zero for no label.
- * @param[in] dk			- the decryption key.
- * @param[in] theta			- the number of sequential exponentiations.
- * @param[in] pad			- the decoding function.
+ * @param[out] m			- the message.
+ * @param[in,out] m_len		- the buffer capacity and the message length.
+ * @param[in,out] em		- the encoded message, as many bytes as N.
+ * @param[in] n				- the modulus.
+ * @param[in] l				- the label of CP_TRSA_LAB bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-static int trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
-		size_t theta, rsa_dec_pad_t pad) {
-	bn_t m;
-	size_t k;
-	uint8_t *em;
-	int result = RLC_OK;
+static int psep_dec(uint8_t *m, size_t *m_len, uint8_t *em, const bn_t n,
+		const uint8_t *l) {
+	size_t k = bn_size_bin(n), w_len = k - RSA_PSEP_K1;
+	size_t x_len = w_len - RSA_PSEP_K0, idx = 0;
+	uint8_t *w = em, *s = em + w_len, t[RSA_PSEP_K1], h[RSA_PSEP_K1];
+	uint8_t top = (uint8_t)((1 << ((bn_bits(n) - 1) % 8)) - 1), diff = 0;
+	uint8_t *buf = RLC_ALLOCA(uint8_t, k + w_len);
+	uint32_t good, found = 0, bad = 0, one, zero, sel;
 
-	if (dk == NULL || theta == 0 || (l == NULL && l_len > 0) ||
-			bn_cmp_dig(dk->d, 1) != RLC_GT) {
-		return RLC_ERR;
-	}
-
-	k = bn_size_bin(dk->crt->n);
-	if (in_len != k || k < RSA_OAEP_LEN) {
-		return RLC_ERR;
-	}
-
-	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
+	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
-	bn_null(m);
+	/* Reject y >= 2^k. */
+	good = RSA_IS_ZERO(em[0] & ~top);
 
-	RLC_TRY {
-		bn_new(m);
+	/* t = H3(w) XOR s, and z = H2(N, l, t) XOR w, stored over w. */
+	bn_write_bin(buf, k, n);
+	if (psep_hash(t, RSA_PSEP_K1, 0x03, w, w_len, NULL, 0, NULL, 0) != RLC_OK) {
+		RLC_FREE(buf);
+		return RLC_ERR;
+	}
+	for (size_t i = 0; i < RSA_PSEP_K1; i++) {
+		t[i] ^= s[i];
+	}
+	if (psep_hash(buf + k, w_len, 0x02, buf, k, l, CP_TRSA_LAB, t,
+			RSA_PSEP_K1) != RLC_OK) {
+		RLC_FREE(buf);
+		return RLC_ERR;
+	}
+	buf[k] &= top;
+	for (size_t i = 0; i < w_len; i++) {
+		w[i] ^= buf[k + i];
+	}
+	RLC_FREE(buf);
 
-		bn_read_bin(m, in, in_len);
-		if (bn_cmp(m, dk->crt->n) != RLC_LT) {
-			result = RLC_ERR;
-		} else {
-			/* A key without delay is kept secret, so use a ladder for it. */
-			if (theta == 1) {
-				bn_mxp_monty(m, m, dk->d, dk->crt->n);
-			} else {
-				for (size_t i = 0; i < theta; i++) {
-					bn_mxp(m, m, dk->d, dk->crt->n);
-				}
-			}
-			bn_write_bin(em, k, m);
-			result = pad(out, out_len, em, k, l, l_len);
-		}
+	/* Check that t = H1(z). */
+	if (psep_hash(h, RSA_PSEP_K1, 0x01, w, w_len, NULL, 0, NULL, 0) != RLC_OK) {
+		return RLC_ERR;
 	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
+	for (size_t i = 0; i < RSA_PSEP_K1; i++) {
+		diff |= h[i] ^ t[i];
 	}
-	RLC_FINALLY {
-		bn_free(m);
-		RLC_FREE(em);
-	}
+	good &= RSA_IS_ZERO(diff);
 
-	return result;
+	/* Find the 01 separator in X, rejecting any other nonzero byte before. */
+	for (size_t i = 0; i < x_len; i++) {
+		one = RSA_IS_ZERO(w[i] ^ 0x01);
+		zero = RSA_IS_ZERO(w[i]);
+		sel = one & (found ^ 1);
+		idx = RLC_SEL(idx, i, (size_t)sel);
+		bad |= (found ^ 1) & (zero ^ 1) & (one ^ 1);
+		found |= one;
+	}
+	good &= found & (bad ^ 1);
+
+	if (!good || x_len - idx - 1 > *m_len) {
+		return RLC_ERR;
+	}
+	*m_len = x_len - idx - 1;
+	memcpy(m, w + idx + 1, *m_len);
+	return RLC_OK;
+}
+
+/**
+ * Checks a label of Timed RSA, which is CP_TRSA_LAB bytes long and nonzero,
+ * and replaces a missing one by zeros.
+ *
+ * @param[in] l				- the label, or NULL for none.
+ * @return the label to encode, or NULL if it is invalid.
+ */
+static const uint8_t *trsa_lab(const uint8_t *l) {
+	static const uint8_t zero[CP_TRSA_LAB] = { 0 };
+	uint8_t acc = 0;
+
+	if (l == NULL) {
+		return zero;
+	}
+	for (size_t i = 0; i < CP_TRSA_LAB; i++) {
+		acc |= l[i];
+	}
+	return (acc == 0 ? NULL : l);
 }
 
 /**
@@ -1406,26 +1433,114 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
 	return result;
 }
 
-int cp_trsa_enc_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
-		size_t tau) {
-	return trsa_enc(out, out_len, in, in_len, l, l_len, ek, tau, oaep_enc);
+int cp_trsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, const rsa_t ek, size_t tau) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
+
+	l = trsa_lab(l);
+	if (ek == NULL || tau == 0 || l == NULL ||
+			bn_cmp_dig(ek->e, 1) != RLC_GT) {
+		return RLC_ERR;
+	}
+
+	k = bn_size_bin(ek->crt->n);
+	if (in_len + RSA_PSEP_LEN > k || *out_len < k) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		if (psep_enc(em, ek->crt->n, in, in_len, l) == RLC_OK) {
+			bn_read_bin(m, em, k);
+			/* A key without delay is kept secret, so use a ladder for it. */
+			if (tau == 1) {
+				bn_mxp_monty(m, m, ek->e, ek->crt->n);
+			} else {
+				for (size_t i = 0; i < tau; i++) {
+					bn_mxp(m, m, ek->e, ek->crt->n);
+				}
+			}
+			bn_write_bin(out, k, m);
+			*out_len = k;
+		} else {
+			result = RLC_ERR;
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
 }
 
-int cp_trsa_enc_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t ek,
-		size_t tau) {
-	return trsa_enc(out, out_len, in, in_len, l, l_len, ek, tau, oaepp_enc);
-}
+int cp_trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *l, const rsa_t dk, size_t theta) {
+	bn_t m;
+	size_t k;
+	uint8_t *em;
+	int result = RLC_OK;
 
-int cp_trsa_dec_oaep(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
-		size_t theta) {
-	return trsa_dec(out, out_len, in, in_len, l, l_len, dk, theta, oaep_dec);
-}
+	l = trsa_lab(l);
+	if (dk == NULL || theta == 0 || l == NULL ||
+			bn_cmp_dig(dk->d, 1) != RLC_GT) {
+		return RLC_ERR;
+	}
 
-int cp_trsa_dec_oaepp(uint8_t *out, size_t *out_len, const uint8_t *in,
-		size_t in_len, const uint8_t *l, size_t l_len, const rsa_t dk,
-		size_t theta) {
-	return trsa_dec(out, out_len, in, in_len, l, l_len, dk, theta, oaepp_dec);
+	k = bn_size_bin(dk->crt->n);
+	if (in_len != k || k < RSA_PSEP_LEN) {
+		return RLC_ERR;
+	}
+
+	em = RLC_ALLOCA(uint8_t, k);
+	if (em == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	bn_null(m);
+
+	RLC_TRY {
+		bn_new(m);
+
+		bn_read_bin(m, in, in_len);
+		if (bn_cmp(m, dk->crt->n) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			/* A key without delay is kept secret, so use a ladder for it. */
+			if (theta == 1) {
+				bn_mxp_monty(m, m, dk->d, dk->crt->n);
+			} else {
+				for (size_t i = 0; i < theta; i++) {
+					bn_mxp(m, m, dk->d, dk->crt->n);
+				}
+			}
+			bn_write_bin(em, k, m);
+			result = psep_dec(out, out_len, em, dk->crt->n, l);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(m);
+		RLC_FREE(em);
+	}
+
+	return result;
 }
