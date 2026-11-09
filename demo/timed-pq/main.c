@@ -29,9 +29,8 @@
  * and theta rounds to open, plus a 1/eta fraction of the other delay.
  *
  * The time-asymmetric functions are MinRoot over the 2048-bit safe prime of
- * RFC 3526, the AEAD is AES-256-GCM and the random oracles H1 and H2 are
- * SHAKE256. The KEM is a classical stand-in, so this prototype is NOT
- * post-quantum: a DHKEM-style KEM from ECDH replaces ML-KEM.
+ * RFC 3526, the KEM is ML-KEM-1024 (mlkem.c), the AEAD is AES-256-GCM and the
+ * random oracles H1 and H2 are SHAKE256, as suggested in the paper.
  *
  * Usage: ./main [tau] [theta]
  */
@@ -42,6 +41,7 @@
 #include <time.h>
 
 #include "relic.h"
+#include "mlkem.h"
 
 /** Security parameter in bytes, the length of labels and keys. */
 #define LAM			32
@@ -52,8 +52,8 @@
 /** Length of an element of F_p in bytes. */
 #define FP_LEN		(2048 / 8)
 
-/** Length of a compressed point in bytes, with room for any curve. */
-#define CT_MAX		(2 * RLC_FP_BYTES + 1)
+/** Length of a KEM ciphertext in bytes. */
+#define CT_MAX		MLKEM_CT_LEN
 
 /** Length of the AEAD ciphertext: the message and a GCM tag. */
 #define AE_MAX		(MSG_MAX + RLC_BC_LEN)
@@ -98,13 +98,6 @@ static size_t put_pair(uint8_t *buf, const bn_t a, const bn_t b) {
 	bn_write_bin(buf, FP_LEN, a);
 	bn_write_bin(buf + FP_LEN, FP_LEN, b);
 	return 2 * FP_LEN;
-}
-
-/** Writes a public key as a compressed point. */
-static size_t put_point(uint8_t *buf, const ec_t q) {
-	size_t len = ec_size_bin(q, 1);
-	ec_write_bin(buf, len, q, 1);
-	return len;
 }
 
 /**
@@ -152,68 +145,20 @@ static void h2(uint8_t *k, const bn_t u0, const bn_t u1,
 	md_shake256(k, LAM, in, len);
 }
 
-/**
- * KEM stand-in: kappa = SHAKE256("KEM" | ECDH(r, ek) | ct | ek) for an
- * ephemeral key r with ct = rG. NOT post-quantum.
- */
+/** KEM: (kappa, ct) <- ML-KEM.Encaps(ek). */
 static int kem_encaps(uint8_t *kappa, uint8_t *ct, size_t *ct_len,
-		const ec_t ek) {
-	uint8_t in[3 + LAM + 2 * CT_MAX];
-	size_t len = 3;
-	bn_t r;
-	ec_t g;
-	int result;
-
-	bn_null(r);
-	ec_null(g);
-	bn_new(r);
-	ec_new(g);
-	memcpy(in, "KEM", 3);
-	result = cp_ecdh_gen(r, g);
-	if (result == RLC_OK) {
-		result = cp_ecdh_key(in + len, LAM, r, ek);
-	}
-	if (result == RLC_OK) {
-		len += LAM;
-		*ct_len = put_point(ct, g);
-		memcpy(in + len, ct, *ct_len);
-		len += *ct_len;
-		len += put_point(in + len, ek);
-		md_shake256(kappa, LAM, in, len);
-	}
-	bn_free(r);
-	ec_free(g);
-	return result;
+		const uint8_t *ek) {
+	*ct_len = MLKEM_CT_LEN;
+	return (mlkem_encaps(kappa, ct, ek) == 0 ? RLC_OK : RLC_ERR);
 }
 
-/** KEM stand-in: recovers kappa from ct with the decryption key. */
+/** KEM: kappa <- ML-KEM.Decaps(dk, ct), with implicit rejection. */
 static int kem_decaps(uint8_t *kappa, const uint8_t *ct, size_t ct_len,
-		const bn_t dk, const ec_t ek) {
-	uint8_t in[3 + LAM + 2 * CT_MAX];
-	size_t len = 3;
-	ec_t g;
-	int result = RLC_OK;
-
-	ec_null(g);
-	ec_new(g);
-	memcpy(in, "KEM", 3);
-	RLC_TRY {
-		ec_read_bin(g, ct, ct_len);
-	} RLC_CATCH_ANY {
-		result = RLC_ERR;
+		const uint8_t *dk) {
+	if (ct_len != MLKEM_CT_LEN) {
+		return RLC_ERR;
 	}
-	if (result == RLC_OK) {
-		result = cp_ecdh_key(in + len, LAM, dk, g);
-	}
-	if (result == RLC_OK) {
-		len += LAM;
-		memcpy(in + len, ct, ct_len);
-		len += ct_len;
-		len += put_point(in + len, ek);
-		md_shake256(kappa, LAM, in, len);
-	}
-	ec_free(g);
-	return result;
+	return (mlkem_decaps(kappa, ct, dk) == 0 ? RLC_OK : RLC_ERR);
 }
 
 /**
@@ -254,7 +199,7 @@ static const uint8_t *label(const uint8_t *l) {
 static double t_own, t_other, t_rest;
 
 /** T-PQ.Enc: Fig. 2 of the paper, steps 1 to 5. */
-static int tpq_enc(tpq_ct_t *c, const tpq_pp_t *pp, const ec_t ek,
+static int tpq_enc(tpq_ct_t *c, const tpq_pp_t *pp, const uint8_t *ek,
 		const uint8_t *m, size_t m_len, const uint8_t *l) {
 	bn_t u[2], chi[2];
 	uint8_t kappa[LAM], k[LAM];
@@ -306,7 +251,7 @@ static int tpq_enc(tpq_ct_t *c, const tpq_pp_t *pp, const ec_t ek,
 
 /** T-PQ.Dec: Fig. 2 of the paper, steps 1 to 4. */
 static int tpq_dec(uint8_t *m, size_t *m_len, const tpq_pp_t *pp,
-		const bn_t dk, const ec_t ek, tpq_ct_t *c, const uint8_t *l) {
+		const uint8_t *dk, tpq_ct_t *c, const uint8_t *l) {
 	bn_t u[2], chi[2], x[2];
 	uint8_t kappa[LAM], k[LAM];
 	double t0, t1, t2;
@@ -343,7 +288,7 @@ static int tpq_dec(uint8_t *m, size_t *m_len, const tpq_pp_t *pp,
 	t2 = now();
 	/* 3: kappa = Decaps(dk, ct), K = H2(u, kappa, l, ct). */
 	if (result == RLC_OK) {
-		result = kem_decaps(kappa, c->ct, c->ct_len, dk, ek);
+		result = kem_decaps(kappa, c->ct, c->ct_len, dk);
 	}
 	/* 4: m = AEAD.Dec(K, e). */
 	if (result == RLC_OK) {
@@ -365,15 +310,15 @@ static int tpq_dec(uint8_t *m, size_t *m_len, const tpq_pp_t *pp,
 int main(int argc, char *argv[]) {
 	tpq_pp_t pp;
 	tpq_ct_t c;
-	bn_t dk, q;
-	ec_t ek;
+	static uint8_t ek[MLKEM_EK_LEN], dk[MLKEM_DK_LEN];
+	bn_t q;
 	uint8_t l[LAM], m[MSG_MAX];
 	const char *msg = "A message that took time to send and takes time to read";
 	size_t m_len = sizeof(m);
 	dig_t r;
 	int code = 1;
 
-	if (core_init() != RLC_OK || ec_param_set_any() != RLC_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -381,13 +326,9 @@ int main(int argc, char *argv[]) {
 	pp.tau = (argc > 1 ? (size_t)atol(argv[1]) : 100);
 	pp.theta = (argc > 2 ? (size_t)atol(argv[2]) : 100);
 	bn_null(pp.p);
-	bn_null(dk);
 	bn_null(q);
-	ec_null(ek);
 	bn_new(pp.p);
-	bn_new(dk);
 	bn_new(q);
-	ec_new(ek);
 	for (int j = 0; j < 2; j++) {
 		bn_null(c.y[j]);
 		bn_null(c.w[j]);
@@ -405,12 +346,12 @@ int main(int argc, char *argv[]) {
 		printf("The MinRoot modulus is not a safe prime 2 mod 3.\n");
 		goto end;
 	}
-	printf("T-PQ prototype (classical KEM, NOT post-quantum)\n");
+	printf("T-PQ prototype with ML-KEM-1024 and AES-256-GCM\n");
 	printf("MinRoot over a %d-bit safe prime, tau = %zu, theta = %zu\n\n",
 			(int)bn_bits(pp.p), pp.tau, pp.theta);
 
 	/* KeyGen. */
-	if (cp_ecdh_gen(dk, ek) != RLC_OK) {
+	if (mlkem_keygen(ek, dk) != 0) {
 		goto end;
 	}
 	rand_bytes(l, LAM);
@@ -424,7 +365,7 @@ int main(int argc, char *argv[]) {
 	printf("     F_Dec.Bwd (theta / eta)    %10.2f ms\n", t_other);
 	printf("     KEM, hashes and AEAD       %10.2f ms\n", t_rest);
 
-	if (tpq_dec(m, &m_len, &pp, dk, ek, &c, l) != RLC_OK ||
+	if (tpq_dec(m, &m_len, &pp, dk, &c, l) != RLC_OK ||
 			m_len != strlen(msg) || memcmp(m, msg, m_len) != 0) {
 		printf("Decryption failed.\n");
 		goto end;
@@ -432,33 +373,38 @@ int main(int argc, char *argv[]) {
 	printf("Dec: F_Dec.Fwd (theta rounds)   %10.2f ms\n", t_own);
 	printf("     F_Enc.Bwd (tau / eta)      %10.2f ms\n", t_other);
 	printf("     KEM, hashes and AEAD       %10.2f ms\n", t_rest);
-	printf("Decrypted: \"%.*s\"\n\n", (int)m_len, m);
+	printf("Decrypted: \"%.*s\"\n", (int)m_len, m);
+	printf("Ciphertext: %d + %d + %zu + %zu bytes for y, w, ct and e\n\n",
+			2 * FP_LEN, 2 * FP_LEN, c.ct_len, c.e_len);
 
 	/* A ciphertext decrypts only under its own label, and any change to it
 	 * is rejected. A wrong y fails the cheap check before the theta rounds. */
 	l[LAM - 1] ^= 1;
 	m_len = sizeof(m);
 	printf("Wrong label rejected:           %s\n",
-			tpq_dec(m, &m_len, &pp, dk, ek, &c, l) == RLC_ERR ? "yes" : "NO");
+			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO");
 	l[LAM - 1] ^= 1;
 	c.e[0] ^= 1;
 	m_len = sizeof(m);
 	printf("Modified e rejected:            %s\n",
-			tpq_dec(m, &m_len, &pp, dk, ek, &c, l) == RLC_ERR ? "yes" : "NO");
+			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO");
 	c.e[0] ^= 1;
+	c.ct[0] ^= 1;
+	m_len = sizeof(m);
+	printf("Modified ct rejected:           %s\n",
+			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO");
+	c.ct[0] ^= 1;
 	bn_add_dig(c.y[0], c.y[0], 1);
 	bn_mod(c.y[0], c.y[0], pp.p);
 	m_len = sizeof(m);
 	printf("Modified y rejected:            %s (after %.2f ms)\n",
-			tpq_dec(m, &m_len, &pp, dk, ek, &c, l) == RLC_ERR ? "yes" : "NO",
+			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO",
 			t_other);
 	code = 0;
 
 end:
 	bn_free(pp.p);
-	bn_free(dk);
 	bn_free(q);
-	ec_free(ek);
 	for (int j = 0; j < 2; j++) {
 		bn_free(c.y[j]);
 		bn_free(c.w[j]);
