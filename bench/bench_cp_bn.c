@@ -171,11 +171,10 @@ static void trsa(void) {
 		BENCH_ADD(cp_trsa_dec(new, &new_len, out, out_len, lab, dk, 1));
 	} BENCH_END;
 
-	/* Moduli from Cunningham chains are slow to find, so time a single one. */
+	/* Moduli with safe primes are slow to find, so time a single one. */
 	bn_set_2b(e, 16);
 	bn_add_dig(e, e, 1);
-	BENCH_ONE("cp_trsa_gen_exp", cp_trsa_gen_exp(ek, dk, RLC_BN_BITS, e, 1, 1,
-			2), 1);
+	BENCH_ONE("cp_trsa_gen_exp", cp_trsa_gen_exp(ek, dk, RLC_BN_BITS, e, 1), 1);
 
 	bn_free(e);
 	rsa_free(ek);

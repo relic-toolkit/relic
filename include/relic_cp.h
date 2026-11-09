@@ -1017,25 +1017,21 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
 
 /**
  * Generates a key pair for Timed RSA with a given encryption exponent e, such
- * as one required by a standard. The primes p and q end Cunningham chains of
- * the first kind, so that the Carmichael function Lambda' of Lambda is known
- * and d = e^(-tau * w) mod Lambda for w = theta^(-1) mod Lambda'. Chains of
- * length 2 are safe primes, which suffice and are the recommended choice; a
- * prime is replaced when theta shares a factor with its contribution to
- * Lambda'. Chains of length 3 make that unlikely, but are generated tens of
- * times more slowly.
+ * as one required by a standard, and no decryption delay (theta = 1), the
+ * timed encryption mode. The modulus has safe primes with gcd(e, Lambda) = 1
+ * and d = e^(-tau) mod Lambda. A fixed e is known to every holder of the
+ * decryption key, who could then recover Lambda from e^tau * d^theta - 1, so
+ * a decryption delay requires cp_trsa_gen instead.
  *
  * @param[out] ek			- the encryption key.
  * @param[out] dk			- the decryption key.
  * @param[in] bits			- the length of the modulus in bits.
  * @param[in] e				- the encryption exponent, odd and greater than one.
  * @param[in] tau			- the encryption hardness, at least one.
- * @param[in] theta			- the decryption hardness, odd.
- * @param[in] len			- the length of the chains, 2 (recommended) or 3.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e, size_t tau,
-		size_t theta, size_t len);
+int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e,
+		size_t tau);
 
 /**
  * Encrypts using Timed RSA with the PSEP2 encoding, computing c = y^(e^tau)
