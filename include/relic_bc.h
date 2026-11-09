@@ -84,4 +84,47 @@ int bc_aes_cbc_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 int bc_aes_cbc_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv);
 
+/**
+ * Encrypts with AES in GCM mode, as in NIST SP 800-38D, and appends a tag of
+ * RLC_BC_LEN bytes. The ciphertext has in_len + RLC_BC_LEN bytes, and may
+ * overlap the input. An initialization vector of 12 bytes is recommended,
+ * and must never repeat under the same key.
+ *
+ * @param[out] out			- the resulting ciphertext and tag.
+ * @param[in,out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the bytes to be encrypted.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] key			- the key.
+ * @param[in] key_len		- the key size in bytes, 16, 24 or 32.
+ * @param[in] iv			- the initialization vector.
+ * @param[in] iv_len		- the length of the initialization vector in bytes.
+ * @param[in] aad			- the additional authenticated data.
+ * @param[in] aad_len		- the length of the additional data in bytes.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int bc_aes_gcm_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv,
+		size_t iv_len, const uint8_t *aad, size_t aad_len);
+
+/**
+ * Decrypts with AES in GCM mode, as in NIST SP 800-38D, after checking the
+ * tag of RLC_BC_LEN bytes at the end of the input. No plaintext is written
+ * if the tag does not match. The plaintext may overlap the input.
+ *
+ * @param[out] out			- the resulting plaintext.
+ * @param[in,out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the ciphertext and tag.
+ * @param[in] in_len		- the number of bytes of ciphertext and tag.
+ * @param[in] key			- the key.
+ * @param[in] key_len		- the key size in bytes, 16, 24 or 32.
+ * @param[in] iv			- the initialization vector.
+ * @param[in] iv_len		- the length of the initialization vector in bytes.
+ * @param[in] aad			- the additional authenticated data.
+ * @param[in] aad_len		- the length of the additional data in bytes.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int bc_aes_gcm_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv,
+		size_t iv_len, const uint8_t *aad, size_t aad_len);
+
 #endif /* !RLC_BC_H */

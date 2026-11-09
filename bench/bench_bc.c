@@ -54,6 +54,22 @@ static void aes(void) {
 		in_len = sizeof(in);
 		BENCH_ADD(bc_aes_cbc_dec(in, &in_len, out, out_len, key, 16, iv));
 	} BENCH_END;
+
+	BENCH_RUN("bc_aes_gcm_enc (256)") {
+		rand_bytes(in, sizeof(in));
+		out_len = sizeof(out);
+		BENCH_ADD(bc_aes_gcm_enc(out, &out_len, in, sizeof(in), key, 16, iv,
+				12, NULL, 0));
+	} BENCH_END;
+
+	BENCH_RUN("bc_aes_gcm_dec (256)") {
+		rand_bytes(in, sizeof(in));
+		out_len = sizeof(out);
+		bc_aes_gcm_enc(out, &out_len, in, sizeof(in), key, 16, iv, 12, NULL, 0);
+		in_len = sizeof(in);
+		BENCH_ADD(bc_aes_gcm_dec(in, &in_len, out, out_len, key, 16, iv, 12,
+				NULL, 0));
+	} BENCH_END;
 }
 
 int main(void) {
