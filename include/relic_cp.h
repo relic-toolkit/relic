@@ -1080,7 +1080,7 @@ int cp_trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
  * F_p, and contains no trapdoor.
  *
  * @param[out] p			- the modulus.
- * @param[in] bits			- the length of the modulus in bits, at least 8.
+ * @param[in] bits			- the length of the modulus in bits, at least 16.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mroot_gen(bn_t p, size_t bits);

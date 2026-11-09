@@ -40,4 +40,5 @@ demo/public-stats/data.csv
 demo/public-stats/data_04_13.csv
 demo/public-stats/main
 demo/tweedledum/main
+demo/timed-pq/main
 demo/ers-etrs/test-bench

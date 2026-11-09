@@ -87,8 +87,9 @@ int bc_aes_cbc_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 /**
  * Encrypts with AES in GCM mode, as in NIST SP 800-38D, and appends a tag of
  * RLC_BC_LEN bytes. The ciphertext has in_len + RLC_BC_LEN bytes, and may
- * overlap the input. An initialization vector of 12 bytes is recommended,
- * and must never repeat under the same key.
+ * start at the input, for encryption in place, but must not otherwise overlap
+ * it. An initialization vector of 12 bytes is recommended, and must never
+ * repeat under the same key.
  *
  * @param[out] out			- the resulting ciphertext and tag.
  * @param[in,out] out_len	- the buffer capacity and number of bytes written.
@@ -109,7 +110,8 @@ int bc_aes_gcm_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 /**
  * Decrypts with AES in GCM mode, as in NIST SP 800-38D, after checking the
  * tag of RLC_BC_LEN bytes at the end of the input. No plaintext is written
- * if the tag does not match. The plaintext may overlap the input.
+ * if the tag does not match. The plaintext may start at the input, for
+ * decryption in place, but must not otherwise overlap it.
  *
  * @param[out] out			- the resulting plaintext.
  * @param[in,out] out_len	- the buffer capacity and number of bytes written.

@@ -181,7 +181,11 @@ static int ae_dec(uint8_t *m, size_t *m_len, const uint8_t *e, size_t e_len,
 	return bc_aes_gcm_dec(m, m_len, e, e_len, k, LAM, iv, sizeof(iv), NULL, 0);
 }
 
-/** Replaces a missing label by zeros, and rejects the zero label. */
+/**
+ * Maps a missing label to 0^lambda, as the paper does for the omitted label.
+ * The label space excludes 0^lambda, so that an explicit zero label is
+ * outside the domain and rejected, while NULL keeps its distinct meaning.
+ */
 static const uint8_t *label(const uint8_t *l) {
 	static const uint8_t zero[LAM] = { 0 };
 	uint8_t acc = 0;
@@ -193,6 +197,21 @@ static const uint8_t *label(const uint8_t *l) {
 		acc |= l[j];
 	}
 	return (acc == 0 ? NULL : l);
+}
+
+/**
+ * Checks that a ciphertext lies in the domain of decryption: y and w in F_p^2,
+ * a KEM ciphertext of the right length and an AEAD ciphertext that fits.
+ */
+static int ct_valid(const tpq_ct_t *c, const bn_t p) {
+	for (int j = 0; j < 2; j++) {
+		if (bn_sign(c->y[j]) == RLC_NEG || bn_cmp(c->y[j], p) != RLC_LT ||
+				bn_sign(c->w[j]) == RLC_NEG || bn_cmp(c->w[j], p) != RLC_LT) {
+			return 0;
+		}
+	}
+	return c->ct_len == MLKEM_CT_LEN && c->e_len >= RLC_BC_LEN &&
+			c->e_len <= AE_MAX;
 }
 
 /** Times of the steps of one encryption or decryption, in milliseconds. */
@@ -209,12 +228,8 @@ static int tpq_enc(tpq_ct_t *c, const tpq_pp_t *pp, const uint8_t *ek,
 	if ((l = label(l)) == NULL || m_len > MSG_MAX) {
 		return RLC_ERR;
 	}
-	for (int j = 0; j < 2; j++) {
-		bn_null(u[j]);
-		bn_null(chi[j]);
-		bn_new(u[j]);
-		bn_new(chi[j]);
-	}
+	bn_null_all(u[0], u[1], chi[0], chi[1]);
+	bn_new_all(u[0], u[1], chi[0], chi[1]);
 
 	/* 1: u <- Y_Dec, w = F_Dec.Bwd(u), a 1/eta fraction of theta. */
 	t0 = now();
@@ -242,10 +257,9 @@ static int tpq_enc(tpq_ct_t *c, const tpq_pp_t *pp, const uint8_t *ek,
 	t_rest = t2 - t1;
 	t_own = now() - t2;
 
-	for (int j = 0; j < 2; j++) {
-		bn_free(u[j]);
-		bn_free(chi[j]);
-	}
+	util_zero(kappa, sizeof(kappa));
+	util_zero(k, sizeof(k));
+	bn_free_all(u[0], u[1], chi[0], chi[1]);
 	return result;
 }
 
@@ -257,17 +271,12 @@ static int tpq_dec(uint8_t *m, size_t *m_len, const tpq_pp_t *pp,
 	double t0, t1, t2;
 	int result = RLC_OK;
 
-	if ((l = label(l)) == NULL) {
+	/* Every field is checked before it is hashed into a fixed buffer. */
+	if ((l = label(l)) == NULL || !ct_valid(c, pp->p)) {
 		return RLC_ERR;
 	}
-	for (int j = 0; j < 2; j++) {
-		bn_null(u[j]);
-		bn_null(chi[j]);
-		bn_null(x[j]);
-		bn_new(u[j]);
-		bn_new(chi[j]);
-		bn_new(x[j]);
-	}
+	bn_null_all(u[0], u[1], chi[0], chi[1], x[0], x[1]);
+	bn_new_all(u[0], u[1], chi[0], chi[1], x[0], x[1]);
 
 	/* 1: reject unless F_Enc.Bwd(y) = H1(l, w, ct, e), a 1/eta fraction of
 	 * tau. */
@@ -299,11 +308,9 @@ static int tpq_dec(uint8_t *m, size_t *m_len, const tpq_pp_t *pp,
 	t_own = t2 - t1;
 	t_rest = now() - t2;
 
-	for (int j = 0; j < 2; j++) {
-		bn_free(u[j]);
-		bn_free(chi[j]);
-		bn_free(x[j]);
-	}
+	util_zero(kappa, sizeof(kappa));
+	util_zero(k, sizeof(k));
+	bn_free_all(u[0], u[1], chi[0], chi[1], x[0], x[1]);
 	return result;
 }
 
@@ -316,7 +323,7 @@ int main(int argc, char *argv[]) {
 	const char *msg = "A message that took time to send and takes time to read";
 	size_t m_len = sizeof(m);
 	dig_t r;
-	int code = 1;
+	int code = 1, rej;
 
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -325,16 +332,8 @@ int main(int argc, char *argv[]) {
 
 	pp.tau = (argc > 1 ? (size_t)atol(argv[1]) : 100);
 	pp.theta = (argc > 2 ? (size_t)atol(argv[2]) : 100);
-	bn_null(pp.p);
-	bn_null(q);
-	bn_new(pp.p);
-	bn_new(q);
-	for (int j = 0; j < 2; j++) {
-		bn_null(c.y[j]);
-		bn_null(c.w[j]);
-		bn_new(c.y[j]);
-		bn_new(c.w[j]);
-	}
+	bn_null_all(pp.p, q, c.y[0], c.y[1], c.w[0], c.w[1]);
+	bn_new_all(pp.p, q, c.y[0], c.y[1], c.w[0], c.w[1]);
 
 	/* Setup: one MinRoot family for both delays, with a transparent modulus
 	 * whose conditions anyone can check. */
@@ -397,18 +396,21 @@ int main(int argc, char *argv[]) {
 	bn_add_dig(c.y[0], c.y[0], 1);
 	bn_mod(c.y[0], c.y[0], pp.p);
 	m_len = sizeof(m);
+	/* Decrypt first, as the order of evaluation of arguments is unspecified
+	 * and the time of the rejection is read afterwards. */
+	rej = (tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR);
 	printf("Modified y rejected:            %s (after %.2f ms)\n",
-			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO",
-			t_other);
+			rej ? "yes" : "NO", t_other);
+	/* Fields of the wrong length are outside the domain. */
+	c.e_len = AE_MAX + 1;
+	m_len = sizeof(m);
+	printf("Oversized e rejected:           %s\n",
+			tpq_dec(m, &m_len, &pp, dk, &c, l) == RLC_ERR ? "yes" : "NO");
 	code = 0;
 
 end:
-	bn_free(pp.p);
-	bn_free(q);
-	for (int j = 0; j < 2; j++) {
-		bn_free(c.y[j]);
-		bn_free(c.w[j]);
-	}
+	util_zero(dk, sizeof(dk));
+	bn_free_all(pp.p, q, c.y[0], c.y[1], c.w[0], c.w[1]);
 	core_clean();
 	return code;
 }

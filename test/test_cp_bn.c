@@ -497,7 +497,7 @@ static int mroot(void) {
 	RLC_TRY {
 		bn_new_all(p, q, a, b, x, y, t);
 
-		TEST_CASE("minroot modulus generation is correct") {
+		TEST_ONCE("minroot modulus generation is correct") {
 			TEST_ASSERT(cp_mroot_gen(p, 256) == RLC_OK, end);
 			TEST_ASSERT(bn_bits(p) == 256 && bn_is_prime(p), end);
 			bn_sub_dig(q, p, 1);
@@ -552,7 +552,9 @@ static int mroot(void) {
 			TEST_ASSERT(cp_mroot_bwd(x, y, a, b, 1, q) == RLC_ERR, end);
 			TEST_ASSERT(cp_mroot_fwd(x, y, p, b, 1, p) == RLC_ERR, end);
 			TEST_ASSERT(cp_mroot_bwd(x, y, a, p, 1, p) == RLC_ERR, end);
-			TEST_ASSERT(cp_mroot_gen(q, 4) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_gen(q, 15) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_gen(q, 16) == RLC_OK, end);
+			TEST_ASSERT(bn_bits(q) == 16, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);

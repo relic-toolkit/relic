@@ -27,6 +27,7 @@
  * Compact implementation of ML-KEM-1024 from FIPS 203, following the
  * algorithms of the standard step by step. Coefficients are kept in [0, q)
  * and reduced with Barrett reduction, so that no secret value is divided.
+ * Secrets are wiped with util_zero(), which the compiler cannot remove.
  */
 
 #include <string.h>
@@ -274,7 +275,9 @@ static int kpke_keygen(uint8_t *ek, uint8_t *dk, const uint8_t *d) {
 	memcpy(g, d, 32);
 	g[32] = K;
 	md_map_s3512(rs, g, sizeof(g));
+	util_zero(g, sizeof(g));
 	if (sample_matrix(a, rs) != 0) {
+		util_zero(rs, sizeof(rs));
 		return -1;
 	}
 	for (int i = 0; i < K; i++) {
@@ -297,8 +300,9 @@ static int kpke_keygen(uint8_t *ek, uint8_t *dk, const uint8_t *d) {
 		encode(dk + 384 * i, s[i], 12);
 	}
 	memcpy(ek + 384 * K, rs, 32);
-	memset(s, 0, sizeof(s));
-	memset(rs, 0, sizeof(rs));
+	util_zero(s, sizeof(s));
+	util_zero(e, sizeof(e));
+	util_zero(rs, sizeof(rs));
 	return 0;
 }
 
@@ -346,7 +350,9 @@ static int kpke_enc(uint8_t *c, const uint8_t *ek, const uint8_t *m,
 	}
 	compress(v, DV);
 	encode(c + 32 * DU * K, v, DV);
-	memset(y, 0, sizeof(y));
+	util_zero(y, sizeof(y));
+	util_zero(f, sizeof(f));
+	util_zero(v, sizeof(v));
 	return 0;
 }
 
@@ -371,8 +377,8 @@ static void kpke_dec(uint8_t *m, const uint8_t *dk, const uint8_t *c) {
 	}
 	compress(w, 1);
 	encode(m, w, 1);
-	memset(s, 0, sizeof(s));
-	memset(w, 0, sizeof(w));
+	util_zero(s, sizeof(s));
+	util_zero(w, sizeof(w));
 }
 
 int mlkem_keygen_seed(uint8_t *ek, uint8_t *dk, const uint8_t *d,
@@ -395,7 +401,8 @@ int mlkem_keygen(uint8_t *ek, uint8_t *dk) {
 	rand_bytes(d, sizeof(d));
 	rand_bytes(z, sizeof(z));
 	result = mlkem_keygen_seed(ek, dk, d, z);
-	memset(d, 0, sizeof(d));
+	util_zero(d, sizeof(d));
+	util_zero(z, sizeof(z));
 	return result;
 }
 
@@ -422,8 +429,8 @@ int mlkem_encaps(uint8_t *ss, uint8_t *ct, const uint8_t *ek) {
 	if (result == 0) {
 		memcpy(ss, kr, MLKEM_SS_LEN);
 	}
-	memset(g, 0, sizeof(g));
-	memset(kr, 0, sizeof(kr));
+	util_zero(g, sizeof(g));
+	util_zero(kr, sizeof(kr));
 	return result;
 }
 
@@ -431,6 +438,7 @@ int mlkem_decaps(uint8_t *ss, const uint8_t *ct, const uint8_t *dk) {
 	const uint8_t *ek = dk + 384 * K, *h = ek + MLKEM_EK_LEN, *z = h + 32;
 	uint8_t g[64], kr[64], rej[32], h2[32], c2[MLKEM_CT_LEN], zc[32 +
 			MLKEM_CT_LEN], diff = 0, mask;
+	int result = 0;
 
 	init();
 	/* Hash check: the copy of ek in dk matches its hash. */
@@ -448,16 +456,19 @@ int mlkem_decaps(uint8_t *ss, const uint8_t *ct, const uint8_t *dk) {
 	md_shake256(rej, sizeof(rej), zc, sizeof(zc));
 	/* Re-encrypt and select K' or the rejection key in constant time. */
 	if (kpke_enc(c2, ek, g, kr + 32) != 0) {
-		return -1;
+		result = -1;
+	} else {
+		for (int i = 0; i < MLKEM_CT_LEN; i++) {
+			diff |= c2[i] ^ ct[i];
+		}
+		mask = (uint8_t)(-(uint8_t)((uint32_t)(diff - 1) >> 31 & 1));
+		for (int i = 0; i < MLKEM_SS_LEN; i++) {
+			ss[i] = (kr[i] & mask) | (rej[i] & ~mask);
+		}
 	}
-	for (int i = 0; i < MLKEM_CT_LEN; i++) {
-		diff |= c2[i] ^ ct[i];
-	}
-	mask = (uint8_t)(-(uint8_t)((uint32_t)(diff - 1) >> 31 & 1));
-	for (int i = 0; i < MLKEM_SS_LEN; i++) {
-		ss[i] = (kr[i] & mask) | (rej[i] & ~mask);
-	}
-	memset(g, 0, sizeof(g));
-	memset(kr, 0, sizeof(kr));
-	return 0;
+	util_zero(g, sizeof(g));
+	util_zero(kr, sizeof(kr));
+	util_zero(rej, sizeof(rej));
+	util_zero(zc, 32);
+	return result;
 }
