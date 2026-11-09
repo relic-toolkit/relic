@@ -487,6 +487,83 @@ static int trsa(void) {
 	return code;
 }
 
+static int mroot(void) {
+	int code = RLC_ERR;
+	bn_t p, q, a, b, x, y, t;
+	dig_t r;
+
+	bn_null_all(p, q, a, b, x, y, t);
+
+	RLC_TRY {
+		bn_new_all(p, q, a, b, x, y, t);
+
+		TEST_CASE("minroot modulus generation is correct") {
+			TEST_ASSERT(cp_mroot_gen(p, 256) == RLC_OK, end);
+			TEST_ASSERT(bn_bits(p) == 256 && bn_is_prime(p), end);
+			bn_sub_dig(q, p, 1);
+			bn_hlv(q, q);
+			TEST_ASSERT(bn_is_prime(q), end);
+			bn_mod_dig(&r, p, 3);
+			TEST_ASSERT(r == 2, end);
+		} TEST_END;
+
+		TEST_CASE("minroot backward evaluation inverts forward evaluation") {
+			bn_rand_mod(a, p);
+			bn_rand_mod(b, p);
+			TEST_ASSERT(cp_mroot_fwd(x, y, a, b, 10, p) == RLC_OK, end);
+			TEST_ASSERT(cp_mroot_bwd(x, y, x, y, 10, p) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(x, a) == RLC_EQ && bn_cmp(y, b) == RLC_EQ, end);
+			/* No rounds is the identity. */
+			TEST_ASSERT(cp_mroot_fwd(x, y, a, b, 0, p) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(x, a) == RLC_EQ && bn_cmp(y, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("minroot forward round extracts a cube root") {
+			bn_rand_mod(a, p);
+			bn_rand_mod(b, p);
+			TEST_ASSERT(cp_mroot_fwd(x, y, a, b, 1, p) == RLC_OK, end);
+			/* x_1^3 = x_0 + y_0 and y_1 = x_0 + 1. */
+			bn_sqr(t, x);
+			bn_mul(t, t, x);
+			bn_mod(t, t, p);
+			bn_add(q, a, b);
+			bn_mod(q, q, p);
+			TEST_ASSERT(bn_cmp(t, q) == RLC_EQ, end);
+			bn_add_dig(q, a, 1);
+			bn_mod(q, q, p);
+			TEST_ASSERT(bn_cmp(y, q) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("minroot is correct with more rounds than the modulus") {
+			bn_set_dig(q, 11);
+			bn_set_dig(a, 3);
+			bn_set_dig(b, 7);
+			TEST_ASSERT(cp_mroot_fwd(x, y, a, b, 30, q) == RLC_OK, end);
+			TEST_ASSERT(cp_mroot_bwd(x, y, x, y, 30, q) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(x, a) == RLC_EQ && bn_cmp(y, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("minroot rejects invalid moduli and inputs") {
+			/* 13 is 1 modulo 3, so cubing is not a permutation. */
+			bn_set_dig(q, 13);
+			bn_set_dig(a, 3);
+			bn_set_dig(b, 7);
+			TEST_ASSERT(cp_mroot_fwd(x, y, a, b, 1, q) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_bwd(x, y, a, b, 1, q) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_fwd(x, y, p, b, 1, p) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_bwd(x, y, a, p, 1, p) == RLC_ERR, end);
+			TEST_ASSERT(cp_mroot_gen(q, 4) == RLC_ERR, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free_all(p, q, a, b, x, y, t);
+	return code;
+}
+
 static int rabin(void) {
 	int code = RLC_ERR;
 	rabin_t pub, prv;
@@ -831,6 +908,11 @@ int main(void) {
 	}
 
 	if (trsa() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (mroot() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

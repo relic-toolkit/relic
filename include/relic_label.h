@@ -3761,6 +3761,9 @@
 #undef cp_trsa_gen_exp
 #undef cp_trsa_enc
 #undef cp_trsa_dec
+#undef cp_mroot_gen
+#undef cp_mroot_fwd
+#undef cp_mroot_bwd
 #undef cp_rabin_gen
 #undef cp_rabin_enc
 #undef cp_rabin_dec
@@ -3946,6 +3949,9 @@
 #define cp_trsa_gen_exp 	RLC_PREFIX(cp_trsa_gen_exp)
 #define cp_trsa_enc 	RLC_PREFIX(cp_trsa_enc)
 #define cp_trsa_dec 	RLC_PREFIX(cp_trsa_dec)
+#define cp_mroot_gen 	RLC_PREFIX(cp_mroot_gen)
+#define cp_mroot_fwd 	RLC_PREFIX(cp_mroot_fwd)
+#define cp_mroot_bwd 	RLC_PREFIX(cp_mroot_bwd)
 #define cp_rabin_gen 	RLC_PREFIX(cp_rabin_gen)
 #define cp_rabin_enc 	RLC_PREFIX(cp_rabin_enc)
 #define cp_rabin_dec 	RLC_PREFIX(cp_rabin_dec)

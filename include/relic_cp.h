@@ -1074,6 +1074,52 @@ int cp_trsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const uint8_t *l, const rsa_t dk, size_t theta);
 
 /**
+ * Generates a modulus for the MinRoot sequential function, from "MinRoot:
+ * Candidate Sequential Function for Ethereum VDF" by Khovratovich, Maller and
+ * Tiwari (ePrint 2022/1626). The modulus is a safe prime p, so cubing permutes
+ * F_p, and contains no trapdoor.
+ *
+ * @param[out] p			- the modulus.
+ * @param[in] bits			- the length of the modulus in bits, at least 8.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mroot_gen(bn_t p, size_t bits);
+
+/**
+ * Evaluates the MinRoot sequential function forward, which is slow: computes
+ * t rounds (x_i, y_i) = ((x_{i-1} + y_{i-1})^e, x_{i-1} + i) over F_p, with
+ * e = (2p - 1) / 3 so that each round extracts a cube root. The output may
+ * overlap the input.
+ *
+ * @param[out] x			- the first coordinate x_t.
+ * @param[out] y			- the second coordinate y_t.
+ * @param[in] a				- the first coordinate x_0, in [0, p).
+ * @param[in] b				- the second coordinate y_0, in [0, p).
+ * @param[in] t				- the number of rounds.
+ * @param[in] p				- the modulus, a prime congruent to 2 mod 3.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mroot_fwd(bn_t x, bn_t y, const bn_t a, const bn_t b, size_t t,
+		const bn_t p);
+
+/**
+ * Evaluates the MinRoot sequential function backward, which is fast: computes
+ * t rounds (x_{i-1}, y_{i-1}) = (y_i - i, x_i^3 - y_i + i) over F_p, from
+ * i = t down to 1, inverting cp_mroot_fwd() with the same number of rounds.
+ * The output may overlap the input.
+ *
+ * @param[out] x			- the first coordinate x_0.
+ * @param[out] y			- the second coordinate y_0.
+ * @param[in] a				- the first coordinate x_t, in [0, p).
+ * @param[in] b				- the second coordinate y_t, in [0, p).
+ * @param[in] t				- the number of rounds.
+ * @param[in] p				- the modulus, a prime congruent to 2 mod 3.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mroot_bwd(bn_t x, bn_t y, const bn_t a, const bn_t b, size_t t,
+		const bn_t p);
+
+/**
  * Generates a key pair for the Rabin cryptosystem.
  *
  * @param[out] pub			- the public key.

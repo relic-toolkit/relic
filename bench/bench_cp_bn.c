@@ -181,6 +181,33 @@ static void trsa(void) {
 	rsa_free(dk);
 }
 
+static void mroot(void) {
+	bn_t p, a, b, x, y;
+
+	bn_null_all(p, a, b, x, y);
+	bn_new_all(p, a, b, x, y);
+
+	/* Safe primes are slow to find, so time a single one. */
+	BENCH_ONE("cp_mroot_gen", cp_mroot_gen(p, RLC_BN_BITS), 1);
+	bn_rand_mod(a, p);
+	bn_rand_mod(b, p);
+
+	BENCH_RUN("cp_mroot_fwd (t = 1)") {
+		BENCH_ADD(cp_mroot_fwd(x, y, a, b, 1, p));
+	} BENCH_END;
+
+	BENCH_RUN("cp_mroot_bwd (t = 1)") {
+		BENCH_ADD(cp_mroot_bwd(x, y, a, b, 1, p));
+	} BENCH_END;
+
+	/* A backward round is short, so amortize the setup over many. */
+	BENCH_RUN("cp_mroot_bwd (t = 1000)") {
+		BENCH_ADD(cp_mroot_bwd(x, y, a, b, 1000, p));
+	} BENCH_END;
+
+	bn_free_all(p, a, b, x, y);
+}
+
 static void rabin(void) {
 	rabin_t pub, prv;
 	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
@@ -359,6 +386,7 @@ int main(void) {
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
 	trsa();
+	mroot();
 	rabin();
 	paillier();
 	benaloh();
