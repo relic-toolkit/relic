@@ -174,7 +174,8 @@ static void trsa(void) {
 	/* Moduli with safe primes are slow to find, so time a single one. */
 	bn_set_2b(e, 16);
 	bn_add_dig(e, e, 1);
-	BENCH_ONE("cp_trsa_gen_exp", cp_trsa_gen_exp(ek, dk, RLC_BN_BITS, e, 1), 1);
+	BENCH_ONE("cp_trsa_gen_exp", cp_trsa_gen_exp(ek, dk, RLC_BN_BITS, e, 1,
+			1), 1);
 
 	bn_free(e);
 	rsa_free(ek);

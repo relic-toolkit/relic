@@ -1378,14 +1378,16 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 	return result;
 }
 
-int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e,
-		size_t tau) {
+int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t x,
+		size_t tau, size_t theta) {
 	bn_t p, q, l, t;
 	int err = 0, result = RLC_OK;
 
-	/* As Lambda is even, e must be odd to be coprime to it. */
-	if (ek == NULL || dk == NULL || bits < 32 || tau == 0 ||
-			bn_cmp_dig(e, 1) != RLC_GT || bn_is_even(e)) {
+	/* One side has no delay, and as Lambda is even, x must be odd to be
+	 * coprime to it. */
+	if (ek == NULL || dk == NULL || bits < 32 || tau == 0 || theta == 0 ||
+			(tau != 1 && theta != 1) || bn_cmp_dig(x, 1) != RLC_GT ||
+			bn_is_even(x)) {
 		return RLC_ERR;
 	}
 
@@ -1394,12 +1396,12 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e,
 	RLC_TRY {
 		bn_new_all(p, q, l, t);
 
-		/* Generate different safe primes with gcd(e, Lambda) = 1, checked on
+		/* Generate different safe primes with gcd(x, Lambda) = 1, checked on
 		 * each prime, and n = pq of the requested length. */
 		bn_set_dig(t, 1);
 		do {
-			err = (trsa_gen_prime(p, bits / 2, e, t) != RLC_OK ||
-					trsa_gen_prime(q, bits - bits / 2, e, t) != RLC_OK);
+			err = (trsa_gen_prime(p, bits / 2, x, t) != RLC_OK ||
+					trsa_gen_prime(q, bits - bits / 2, x, t) != RLC_OK);
 			bn_mul(ek->crt->n, p, q);
 		} while (!err && (bn_cmp(p, q) == RLC_EQ ||
 				bn_bits(ek->crt->n) != bits));
@@ -1413,12 +1415,18 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e,
 		bn_sub_dig(q, q, 1);
 		bn_lcm(l, p, q);
 
-		/* d = e^(-tau) mod Lambda. */
-		bn_mod_inv(p, e, l);
-		trsa_set(t, tau);
-		bn_mxp(dk->d, p, t, l);
-
-		bn_copy(ek->e, e);
+		/* Fix e = x and set d = e^(-tau), or fix d = x and set e = d^(-theta),
+		 * all modulo Lambda. */
+		bn_mod_inv(p, x, l);
+		if (theta == 1) {
+			trsa_set(t, tau);
+			bn_mxp(dk->d, p, t, l);
+			bn_copy(ek->e, x);
+		} else {
+			trsa_set(t, theta);
+			bn_mxp(ek->e, p, t, l);
+			bn_copy(dk->d, x);
+		}
 		bn_zero(ek->d);
 		bn_zero(dk->e);
 	}

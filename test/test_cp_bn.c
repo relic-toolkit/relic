@@ -449,28 +449,33 @@ static int trsa(void) {
 			TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 		} TEST_END;
 
-		/* A fixed exponent allows only timed encryption, where tau need not be
-		 * odd. */
+		/* A fixed exponent allows a delay on its own side only, which need not
+		 * be odd: timed encryption with e fixed and timed decryption with d
+		 * fixed. */
 		bn_set_2b(e, 16);
 		bn_add_dig(e, e, 1);
 		TEST_CASE("timed rsa with a given exponent is correct") {
-			for (size_t t = 1; t <= 2; t++) {
-				TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e,
-						t) == RLC_OK, end);
-				TEST_ASSERT(bn_cmp(ek->e, e) == RLC_EQ, end);
+			for (int j = 0; j < 3; j++) {
+				size_t t = (j == 1 ? 2 : 1), u = (j == 2 ? 2 : 1);
+				TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, t,
+						u) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(u == 1 ? ek->e : dk->d, e) == RLC_EQ, end);
 				il = sizeof(in);
 				rand_bytes(in, il);
 				ol = sizeof(out);
 				TEST_ASSERT(cp_trsa_enc(out, &ol, in, il, lab, ek,
 						t) == RLC_OK, end);
 				TEST_ASSERT(cp_trsa_dec(out, &ol, out, ol, lab, dk,
-						1) == RLC_OK, end);
+						u) == RLC_OK, end);
 				TEST_ASSERT(ol == il && memcmp(in, out, il) == 0, end);
 			}
+			/* Delays on both sides need cp_trsa_gen. */
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 3,
+					3) == RLC_ERR, end);
 			/* The exponent must be odd to be coprime to Lambda. */
 			bn_sub_dig(e, e, 1);
-			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 1) == RLC_ERR,
-					end);
+			TEST_ASSERT(cp_trsa_gen_exp(ek, dk, TRSA_BITS, e, 1,
+					1) == RLC_ERR, end);
 			bn_add_dig(e, e, 1);
 		} TEST_END;
 	} RLC_CATCH_ANY {

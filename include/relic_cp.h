@@ -1016,22 +1016,27 @@ int cp_rsa_ver_pkcs1(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
 
 /**
- * Generates a key pair for Timed RSA with a given encryption exponent e, such
- * as one required by a standard, and no decryption delay (theta = 1), the
- * timed encryption mode. The modulus has safe primes with gcd(e, Lambda) = 1
- * and d = e^(-tau) mod Lambda. A fixed e is known to every holder of the
- * decryption key, who could then recover Lambda from e^tau * d^theta - 1, so
- * a decryption delay requires cp_trsa_gen instead.
+ * Generates a key pair for Timed RSA with a given exponent x, such as one
+ * required by a standard, when one side has no delay. With theta = 1, the
+ * timed encryption mode, the encryption exponent is e = x and the decryption
+ * exponent is d = e^(-tau) mod Lambda. With tau = 1, the timed decryption
+ * mode, the decryption exponent is d = x and the encryption exponent is
+ * e = d^(-theta) mod Lambda. With both, x is the encryption exponent. The
+ * modulus has safe primes with gcd(x, Lambda) = 1, and the delays need not be
+ * odd. A fixed exponent is known to every holder of the other key, who could
+ * then recover Lambda from e^tau * d^theta - 1, so delays on both sides
+ * require cp_trsa_gen instead.
  *
  * @param[out] ek			- the encryption key.
  * @param[out] dk			- the decryption key.
  * @param[in] bits			- the length of the modulus in bits.
- * @param[in] e				- the encryption exponent, odd and greater than one.
+ * @param[in] x				- the fixed exponent, odd and greater than one.
  * @param[in] tau			- the encryption hardness, at least one.
+ * @param[in] theta			- the decryption hardness, at least one.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t e,
-		size_t tau);
+int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t x,
+		size_t tau, size_t theta);
 
 /**
  * Encrypts using Timed RSA with the PSEP2 encoding, computing c = y^(e^tau)
