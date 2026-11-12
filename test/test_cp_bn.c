@@ -450,7 +450,7 @@ static int trsa(void) {
 		} TEST_END;
 
 		/* A fixed exponent allows a delay on its own side only, which need not
-		 * be odd: timed encryption with e fixed and timed decryption with d
+		 * be odd: timed encryption with e fixed and timed release with d
 		 * fixed. */
 		bn_set_2b(e, 16);
 		bn_add_dig(e, e, 1);

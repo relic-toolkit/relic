@@ -1019,13 +1019,15 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta);
  * Generates a key pair for Timed RSA with a given exponent x, such as one
  * required by a standard, when one side has no delay. With theta = 1, the
  * timed encryption mode, the encryption exponent is e = x and the decryption
- * exponent is d = e^(-tau) mod Lambda. With tau = 1, the timed decryption
- * mode, the decryption exponent is d = x and the encryption exponent is
- * e = d^(-theta) mod Lambda. With both, x is the encryption exponent. The
- * modulus has safe primes with gcd(x, Lambda) = 1, and the delays need not be
- * odd. A fixed exponent is known to every holder of the other key, who could
- * then recover Lambda from e^tau * d^theta - 1, so delays on both sides
- * require cp_trsa_gen instead.
+ * exponent is d = e^(-tau) mod Lambda. With tau = 1, the timed release mode,
+ * the decryption exponent is d = x and the encryption exponent is
+ * e = d^(-theta) mod Lambda. A fixed d makes the decryption key public, so
+ * anyone can decrypt after theta steps; timed decryption with a secret
+ * decryption key requires cp_trsa_gen. With both, x is the encryption
+ * exponent. The modulus has safe primes with gcd(x, Lambda) = 1, and the
+ * delays need not be odd. A fixed exponent is known to every holder of the
+ * other key, who could then recover Lambda from e^tau * d^theta - 1, so delays
+ * on both sides require cp_trsa_gen instead.
  *
  * @param[out] ek			- the encryption key.
  * @param[out] dk			- the decryption key.
