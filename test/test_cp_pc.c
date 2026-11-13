@@ -1420,6 +1420,18 @@ static int lhs(void) {
 				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xz", x, t1, fo,
 						fl, pk, 1) == 0, end);
 			}
+
+			/* An empty function is rejected without writing past the
+			 * scratch points, of which there are none. */
+			{
+				const char *x[1] = { "x" }, *t0[1] = { "zx" };
+				const dig_t one[1] = { 1 }, *fo[1] = { one };
+				const size_t fl[1] = { 0 };
+
+				g1_get_gen(_r);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", x, t0, fo,
+						fl, pk, 1) == 0, end);
+			}
 		}
 		TEST_END;
 	}
