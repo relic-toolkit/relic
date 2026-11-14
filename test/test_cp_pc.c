@@ -1409,28 +1409,29 @@ static int lhs(void) {
 			/* Moving bytes between the data set, identity and tag does not
 			 * give another valid signature. */
 			{
-				const char *x[1] = { "x" }, *t0[1] = { "zx" }, *t1[1] = { "yx" };
+				const char *ix[1] = { "x" }, *t0[1] = { "zx" };
+				const char *t1[1] = { "yx" };
 				const dig_t one[1] = { 1 }, *fo[1] = { one };
 				const size_t fl[1] = { 1 };
 
 				bn_mod(msg[0][0], msg[0][0], n);
-				cp_mklhs_sig(_r, msg[0][0], "xy", x[0], t0[0], sk[0]);
-				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", x, t0, fo,
-						fl, pk, 1) == 1, end);
-				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xz", x, t1, fo,
-						fl, pk, 1) == 0, end);
+				cp_mklhs_sig(_r, msg[0][0], "xy", ix[0], t0[0], sk[0]);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", ix, t0,
+						fo, fl, pk, 1) == 1, end);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xz", ix, t1,
+						fo, fl, pk, 1) == 0, end);
 			}
 
 			/* An empty function is rejected without writing past the
 			 * scratch points, of which there are none. */
 			{
-				const char *x[1] = { "x" }, *t0[1] = { "zx" };
+				const char *ix[1] = { "x" }, *t0[1] = { "zx" };
 				const dig_t one[1] = { 1 }, *fo[1] = { one };
 				const size_t fl[1] = { 0 };
 
 				g1_get_gen(_r);
-				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", x, t0, fo,
-						fl, pk, 1) == 0, end);
+				TEST_ASSERT(cp_mklhs_ver(_r, msg[0][0], msg[0], "xy", ix, t0,
+						fo, fl, pk, 1) == 0, end);
 			}
 		}
 		TEST_END;
