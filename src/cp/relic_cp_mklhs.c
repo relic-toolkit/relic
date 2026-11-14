@@ -226,8 +226,9 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 				}
 				g1_norm_sim(h, h, flen[i]);
 				g1_mul_sim_dig(g[i], h, f[i], flen[i]);
-				g1_mul_gen(h[0], mu[i]);
-				g1_add(g[i], g[i], h[0]);
+				/* Not h[0], which does not exist if all functions are empty. */
+				g1_mul_gen(d, mu[i]);
+				g1_add(g[i], g[i], d);
 			}
 			g1_norm_sim(g, g, slen);
 
