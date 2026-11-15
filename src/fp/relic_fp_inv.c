@@ -319,7 +319,12 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 
 		/* Start from (f, g) = (a, p) and (d, e) = (1, 0), with f = d * a and
 		 * g = e * a modulo p, both nonnegative. */
+#if FP_RDC == FP_RENUS
+		/* Elements in RNS have no digits, so take those of the value. */
+		fp_rns_get(f, a);
+#else
 		dv_copy(f, a, RLC_FP_DIGS);
+#endif
 		dv_copy(g, p, RLC_FP_DIGS);
 		dv_zero(d, RLC_FP_DIGS + 1);
 		dv_zero(e, RLC_FP_DIGS + 1);
@@ -395,6 +400,8 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 #if FP_RDC == FP_MONTY
 		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
 		fp_mul(c, e, core_get()->inv);
+#elif FP_RDC == FP_RENUS
+		fp_rns_set(c, e);
 #else
 		fp_copy(c, e);
 #endif

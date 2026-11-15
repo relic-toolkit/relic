@@ -179,10 +179,10 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		/* P0 = s0 * P and P1 = s1 * psi(P), the former kept in t[0]. */
 		ep_norm(t[0], p);
 		ep_neg(q, t[0]);
-		dv_copy_sec(t[0]->y, q->y, RLC_FP_DIGS, s[0] != RLC_POS);
+		dv_copy_sec(t[0]->y, q->y, RLC_FP_LEN, s[0] != RLC_POS);
 		ep_psi(p1, t[0]);
 		ep_neg(q, p1);
-		dv_copy_sec(p1->y, q->y, RLC_FP_DIGS, s[0] != s[1]);
+		dv_copy_sec(p1->y, q->y, RLC_FP_LEN, s[0] != s[1]);
 
 		ep_dbl(q, t[0]);
 		ep_add(t[1], t[0], q);

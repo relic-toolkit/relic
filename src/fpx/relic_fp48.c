@@ -169,7 +169,7 @@ void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < 2; k++) {
 					if (i + j + k > 0) {
-						z &= dv_is_zero(b[1][1][i][j][k], RLC_FP_DIGS);
+						z &= dv_is_zero(b[1][1][i][j][k], RLC_FP_LEN);
 					}
 				}
 			}
