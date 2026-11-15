@@ -131,7 +131,7 @@ dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	for (i = 0; i < RLC_FP_DIGS; i++, a++, b++, c++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
+		carry = ((*a) < (*b)) | (diff < carry);
 		(*c) = r0;
 	}
 	return carry;
@@ -146,7 +146,7 @@ void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	for (i = 0; i < RLC_FP_DIGS; i++, a++, b++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
+		carry = ((*a) < (*b)) | (diff < carry);
 		c[i] = r0;
 	}
 	if (carry) {
@@ -169,7 +169,7 @@ dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	for (i = 0; i < 2 * RLC_FP_DIGS; i++, a++, b++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
+		carry = ((*a) < (*b)) | (diff < carry);
 		c[i] = r0;
 	}
 	return carry;

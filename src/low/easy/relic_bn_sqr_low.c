@@ -73,7 +73,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size) {
 		/* Accumulate the old delayed carry. */
 		c0 = t1 + c1;
 		/* Compute the new delayed carry. */
-		c1 = (t1 < s1) || (s1 < r1) || (r1 < _r1) || (c0 < c1);
+		c1 = (t1 < s1) | (s1 < r1) | (r1 < _r1) | (c0 < c1);
 	}
 #else
 	dbl_t r, r0, r1;
@@ -96,7 +96,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size) {
 		/* Accumulate the old delayed carry. */
 		c0 = (dig_t)((r1 >> (dbl_t)RLC_DIG) + c1);
 		/* Compute the new delayed carry. */
-		c1 = (r0 < r) || (r1 < r0) || (c0 < c1);
+		c1 = (r0 < r) | (r1 < r0) | (c0 < c1);
 	}
 #endif
 
