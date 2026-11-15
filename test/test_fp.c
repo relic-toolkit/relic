@@ -916,7 +916,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == FP_EXGCD || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
+#if FP_INV == FP_EXGCD || !defined(RLC_STRIP)
 		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fp_rand(a);
@@ -927,7 +927,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-#if FP_INV == FP_DIVST || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
+#if FP_INV == FP_DIVST || !defined(RLC_STRIP)
 		TEST_CASE("division step inversion is correct") {
 			do {
 				fp_rand(a);
@@ -1012,14 +1012,14 @@ static int symbol(void) {
 		} TEST_END;
 #endif
 
-#if FP_SMB == FP_BINAR || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
+#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
 		} TEST_END;
 #endif
 
-#if FP_SMB == FP_DIVST || (!defined(RLC_STRIP) && FP_RDC != FP_RENUS)
+#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);

@@ -40,43 +40,36 @@
 /*============================================================================*/
 
 dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
-	RLC_RNS_MAP(c, RLC_RNS_ADD(a[_i], a[_i], _m[_i]));
+	(void)c;
+	(void)a;
+	/* Elements in RNS have no digits to shift. */
+	RLC_THROW(ERR_NO_VALID);
 	return 0;
 }
 
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	RLC_RNS_MAP(c, fp_rns_mul(a[_i], RLC_RNS_SCL((dig_t)1 << bits, _i), _m[_i],
-		_u[_i]));
+	(void)c;
+	(void)a;
+	(void)bits;
+	/* Elements in RNS have no digits to shift. */
+	RLC_THROW(ERR_NO_VALID);
 	return 0;
 }
 
 dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
-	return fp_rshb_low(c, a, 1);
+	(void)c;
+	(void)a;
+	/* Elements in RNS have no digits to shift. */
+	RLC_THROW(ERR_NO_VALID);
+	return 0;
 }
 
 dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	bn_t t;
-
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-		/* Shift the integer by the CRT, rounding towards minus infinity. */
-		fp_rns_back(t, a);
-		if (bn_sign(t) == RLC_NEG) {
-			bn_neg(t, t);
-			bn_add_dig(t, t, ((dig_t)1 << bits) - 1);
-			bn_rsh(t, t, bits);
-			bn_neg(t, t);
-		} else {
-			bn_rsh(t, t, bits);
-		}
-		fp_rns_conv(c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(t);
-	}
+	(void)c;
+	(void)a;
+	(void)bits;
+	/* Elements in RNS have no digits to shift. */
+	RLC_THROW(ERR_NO_VALID);
 	return 0;
 }
 

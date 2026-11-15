@@ -374,6 +374,9 @@ int fp_smb_binar(const fp_t a) {
 		/* Convert a from Montgomery form. */
 		fp_copy(t, a);
 		fp_rdcn_low(g, t);
+#elif FP_RDC == FP_RENUS
+		/* Elements in RNS have no digits, so take those of the value. */
+		fp_rns_get(g, a);
 #else
 		fp_copy(g, a);
 #endif
@@ -453,12 +456,15 @@ int fp_smb_divst(const fp_t a) {
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
 		fp_rdcn_low(g, t);
+#elif FP_RDC == FP_RENUS
+		/* Elements in RNS have no digits, so take those of the value. */
+		fp_rns_get(g, a);
 #else
 		fp_copy(g, a);
 #endif
 		r = dv_cmp_sec(g, f, RLC_FP_DIGS);
-		fp_subn_low(t, g, f);
-		fp_copy_sec(g, t, r != RLC_LT);
+		bn_subn_low(t, g, f, RLC_FP_DIGS);
+		dv_copy_sec(g, t, RLC_FP_DIGS, r != RLC_LT);
 
 		fs = gs = RLC_POS;
 
@@ -476,7 +482,7 @@ int fp_smb_divst(const fp_t a) {
 				f[j] ^= s;
 				g[j] ^= s ^ (-d0);
 			}
-			fp_add1_low(g, g, d0);
+			bn_add1_low(g, g, d0, RLC_FP_DIGS);
 
 			k ^= (((g[0] & f[0]) >> (dig_t)1) ^ (fs & gs)) & d0;
 			k ^= (f[0] >> 1) ^ (f[0] >> 2);
@@ -492,19 +498,21 @@ int fp_smb_divst(const fp_t a) {
 			 * updating the sign of g. */
 			gs ^= g0 & (fs ^ bn_addn_low(g, g, t, RLC_FP_DIGS));
 			/* Shift and restore the sign. */
-			fp_rsh1_low(g, g);
+			bn_rsh1_low(g, g, RLC_FP_DIGS);
 			g[RLC_FP_DIGS - 1] |= (dig_t)gs << (RLC_DIG - 1);
 		}
 
 		k = (2*k) % 4;
-		fp_zero(t);
+		dv_zero(t, RLC_FP_DIGS);
 		t[0] = 1;
 		bn_sneg_low(f, f, fs, RLC_FP_DIGS);
 		
 		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
+		/* As f stays odd, it is zero modulo p only when it equals p. */
+		r = RLC_SEL(r, 1 - k,
+				dv_equ_sec(f, fp_prime_get(), RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
 		r = 0;
