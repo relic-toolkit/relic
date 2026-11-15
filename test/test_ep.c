@@ -1294,6 +1294,15 @@ static int simultaneous(void) {
 			ep_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
+			/* Reduced scalars have as many bits as the order, which exceeds
+			 * the field on some curves. */
+			bn_sub_dig(k[0], n, 1);
+			bn_rand_mod(k[1], n);
+			ep_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep_mul(p[0], p[0], k[0]);
+			ep_mul(p[1], p[1], k[1]);
+			ep_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("simultaneous multiplication with generator is correct") {
