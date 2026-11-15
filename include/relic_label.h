@@ -548,7 +548,6 @@
 #undef fp_rns_back
 #undef fp_rns_get
 #undef fp_rns_set
-#undef fp_rns_is_zero
 #undef fp_prime_conv_dig
 #undef fp_prime_back
 #undef fp_param_set
@@ -660,7 +659,6 @@
 #define fp_rns_back 	RLC_PREFIX(fp_rns_back)
 #define fp_rns_get 	RLC_PREFIX(fp_rns_get)
 #define fp_rns_set 	RLC_PREFIX(fp_rns_set)
-#define fp_rns_is_zero 	RLC_PREFIX(fp_rns_is_zero)
 #define fp_prime_conv_dig 	RLC_PREFIX(fp_prime_conv_dig)
 #define fp_prime_back 	RLC_PREFIX(fp_prime_back)
 #define fp_param_set 	RLC_PREFIX(fp_param_set)

@@ -50,7 +50,31 @@ void fp_zero(fp_t a) {
 
 int fp_is_zero(const fp_t a) {
 #if FP_RDC == FP_RENUS
-	return fp_rns_is_zero(a);
+	ctx_t *ctx = core_get();
+	const size_t n = RLC_FP_RNS, o = RLC_FP_RNSO;
+	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
+	dig_t q[RLC_FP_RNS], r[RLC_FP_RNS], d, z = 0;
+
+	/* The first half of the reduction gives r = a / M in B', with |r| < 3p,
+	 * so a is zero modulo p if and only if r is one of -2p, -p, 0, p or 2p,
+	 * which B' tells apart without extending r back to B. */
+	for (size_t i = 0; i < n; i++) {
+		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
+	}
+	fp_rnsx_low(r, q, 1, 0);
+	for (size_t i = 0; i < n; i++) {
+		r[i] = RLC_RNS_ADD(
+				fp_rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
+				r[i], m[o + i]);
+	}
+	for (int k = 0; k < 5; k++) {
+		d = 0;
+		for (size_t i = 0; i < n; i++) {
+			d |= r[i] ^ ctx->rns.kp[k][o + i];
+		}
+		z |= (d == 0);
+	}
+	return (int)z;
 #else
 	const dig_t *p = fp_prime_get();
 	dig_t t = 0, u = 0, v = 0, c = 0;

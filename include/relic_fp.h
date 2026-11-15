@@ -762,15 +762,6 @@ void fp_rns_get(dig_t *c, const dig_t *a);
  */
 void fp_rns_set(dig_t *c, const dig_t *a);
 
-/**
- * Tests if an element of the Residue Number System is zero modulo p, in
- * constant time.
- *
- * @param[in] a				- the element to test.
- * @return 1 if the element is zero, 0 otherwise.
- */
-int fp_rns_is_zero(const dig_t *a);
-
 #endif
 
 /**
