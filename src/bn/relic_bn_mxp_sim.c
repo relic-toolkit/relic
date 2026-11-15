@@ -86,6 +86,11 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 	size_t l;
 	dig_t parities;
 
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
 		return;
@@ -183,6 +188,11 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
 	uint_t i, j;
     bn_t _a[RLC_BASES], _b[RLC_BASES], r, t;
+
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
