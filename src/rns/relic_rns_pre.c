@@ -109,13 +109,77 @@ static dig_t rns_inv(const rns_st *c, dig_t a, size_t i) {
 	return r;
 }
 
+#ifndef RLC_CONF_NODBL
+/**
+ * Computes a * b mod m for digits below m.
+ */
+static dig_t rns_mod_mul(dig_t a, dig_t b, dig_t m) {
+	return (dig_t)(((dbl_t)a * b) % m);
+}
+
+/**
+ * Tests if a digit is prime, deterministically: small primes are checked by
+ * trial division, and Miller-Rabin with these bases is exact for all inputs
+ * below 2^64 (Jaeschke, Sinclair) or 2^32 (Jaeschke).
+ *
+ * @param[in] p				- the odd digit to test, above the small primes.
+ * @return 1 if the digit is prime, 0 otherwise.
+ */
+static int rns_is_prime(dig_t p) {
+	static const dig_t small[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
+#if RLC_DIG == 64
+	static const dig_t base[] = { 2, 325, 9375, 28178, 450775, 9780504,
+		1795265022 };
+#else
+	static const dig_t base[] = { 2, 7, 61 };
+#endif
+	dig_t d = p - 1, x, y;
+	int r = 0;
+
+	for (size_t k = 0; k < sizeof(small) / sizeof(small[0]); k++) {
+		if (p % small[k] == 0) {
+			return 0;
+		}
+	}
+	while ((d & 1) == 0) {
+		d >>= 1;
+		r++;
+	}
+	for (size_t k = 0; k < sizeof(base) / sizeof(base[0]); k++) {
+		dig_t a = base[k] % p;
+		if (a == 0) {
+			continue;
+		}
+		/* x = a^d mod p by square-and-multiply. */
+		x = 1;
+		y = a;
+		for (dig_t e = d; e > 0; e >>= 1) {
+			if (e & 1) {
+				x = rns_mod_mul(x, y, p);
+			}
+			y = rns_mod_mul(y, y, p);
+		}
+		if (x == 1 || x == p - 1) {
+			continue;
+		}
+		for (int j = 1; j < r && x != p - 1; j++) {
+			x = rns_mod_mul(x, x, p);
+		}
+		if (x != p - 1) {
+			return 0;
+		}
+	}
+	return 1;
+}
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void rns_pre(rns_t c, const bn_t mod, int room) {
 	bn_t m, mb, t;
-	dig_t s = 1, d, r2, r3;
+	dig_t s = 1, d, r2, r3, f1[RLC_RNS_MAX], f2[RLC_RNS_MAX];
 	const size_t n = c->n, o = c->o, l = c->d + 1;
 	size_t k = 0, h = 0, j0;
 
@@ -149,9 +213,13 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 				break;
 			}
 			d = ((dig_t)1 << RLC_RNS_BITS) - s;
-			bn_set_dig(t, d);
 			bn_mod_dig(&r2, mod, d);
+#ifndef RLC_CONF_NODBL
+			if (r2 != 0 && rns_is_prime(d)) {
+#else
+			bn_set_dig(t, d);
 			if (r2 != 0 && bn_is_prime(t)) {
+#endif
 				if (k < n) {
 					c->m[k++] = d;
 				} else {
@@ -200,19 +268,24 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 			RLC_THROW(ERR_NO_VALID);
 		}
 
+		/* N / M^2 * R^3 mod m'_j and R^3 mod m_j, which only depend on the
+		 * column of the tables of the extensions. */
+		for (size_t j = 0; j < n; j++) {
+			d = rns_inv(c, rns_res(c, m, o + j), o + j);
+			d = rns_mulp(c, rns_mulp(c, rns_res(c, mod, o + j), d, o + j), d,
+					o + j);
+			r3 = rns_mulp(c, c->r2[o + j], RNS_SCL(c, 1, o + j), o + j);
+			f1[j] = rns_mulp(c, d, r3, o + j);
+			f2[j] = rns_mulp(c, c->r2[j], RNS_SCL(c, 1, j), j);
+		}
+
 		for (size_t i = 0; i < n; i++) {
-			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * R^3 mod m'_j. */
+			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * N / M^2 * R^3 mod m'_j, to
+			 * give q * N as a product in B'. */
 			bn_div_dig(t, m, c->m[i]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(c, c->r2[o + j], RNS_SCL(c, 1, o + j), o + j);
-				/* Times N / M^2, to give q * N as a product in B'. */
-				d = rns_mulp(c, rns_res(c, t, o + j), rns_res(c, mod, o + j),
+				c->t1[i * o + j] = rns_mulp(c, rns_res(c, t, o + j), f1[j],
 						o + j);
-				d = rns_mulp(c, d, rns_inv(c, rns_res(c, m, o + j), o + j),
-						o + j);
-				d = rns_mulp(c, d, rns_inv(c, rns_res(c, m, o + j), o + j),
-						o + j);
-				c->t1[i * o + j] = rns_mulp(c, d, r3, o + j);
 			}
 			c->ib[i] = rns_inv(c, rns_res(c, t, i), i);
 			/* -N^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
@@ -230,8 +303,7 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 			/* (M'/m'_i)^{-1} mod m'_i, and (M'/m'_i) * R^3 mod m_j. */
 			bn_div_dig(t, mb, c->m[j0]);
 			for (size_t j = 0; j < n; j++) {
-				r3 = rns_mulp(c, c->r2[j], RNS_SCL(c, 1, j), j);
-				c->t2[i * o + j] = rns_mulp(c, rns_res(c, t, j), r3, j);
+				c->t2[i * o + j] = rns_mulp(c, rns_res(c, t, j), f2[j], j);
 			}
 			/* Times M, as values are divided by M in B'. */
 			c->ib[j0] = rns_mulp(c, rns_inv(c, rns_res(c, t, j0), j0),

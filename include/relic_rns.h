@@ -188,6 +188,29 @@ typedef rns_st rns_t[1];
 /*============================================================================*/
 
 /**
+ * Initializes the cache of contexts of the library context.
+ */
+void rns_core_init(void);
+
+/**
+ * Frees the cache of contexts of the library context.
+ */
+void rns_core_clean(void);
+
+/**
+ * Returns a context for a modulus from the cache of the library context,
+ * precomputing it in place of the least recently used one if it is missing.
+ * The context stays valid until two other moduli are looked up.
+ *
+ * @param[in] mod			- the modulus.
+ * @param[in] room			- the room for sums of products, in bits.
+ * @return the context.
+ * @throw ERR_NO_VALID		- if the modulus exceeds the precision.
+ * @throw ERR_NO_MEMORY		- if there is no available memory.
+ */
+const rns_st *rns_lookup(const bn_t mod, int room);
+
+/**
  * Returns the number of digits of the tables of a context.
  *
  * @param[in] n				- the number of moduli in each base.

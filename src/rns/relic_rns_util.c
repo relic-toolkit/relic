@@ -38,6 +38,52 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void rns_core_init(void) {
+	ctx_t *ctx = core_get();
+
+	for (int k = 0; k < 2; k++) {
+		ctx->rns_cache[k].mem = NULL;
+	}
+	ctx->rns_last = 0;
+}
+
+void rns_core_clean(void) {
+	ctx_t *ctx = core_get();
+
+	if (ctx != NULL) {
+		for (int k = 0; k < 2; k++) {
+			rns_free(&(ctx->rns_cache[k]));
+		}
+	}
+}
+
+const rns_st *rns_lookup(const bn_t mod, int room) {
+	ctx_t *ctx = core_get();
+	const size_t n = RLC_RNS_SIZE(bn_bits(mod), room), d = mod->used;
+	rns_st *c;
+	int k;
+
+	/* The modulus is public, so it is compared in variable time. */
+	for (k = 0; k < 2; k++) {
+		c = &(ctx->rns_cache[k]);
+		if (c->mem != NULL && c->n == n && c->d == d &&
+				dv_cmp(c->p, mod->dp, d) == RLC_EQ) {
+			ctx->rns_last = k;
+			return c;
+		}
+	}
+	/* Replace the least recently used context. */
+	k = 1 - ctx->rns_last;
+	c = &(ctx->rns_cache[k]);
+	rns_free(c);
+	rns_new(c, n, d);
+	if (c->mem != NULL) {
+		rns_pre(c, mod, room);
+	}
+	ctx->rns_last = k;
+	return c;
+}
+
 size_t rns_size(size_t n, size_t d) {
 	const size_t o = RLC_RNS_SPAN(n), w = RLC_RNS_WORDS(d);
 

@@ -332,6 +332,10 @@ typedef crt_st *crt_t;
 #define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
 #elif BN_MOD == BN_MONTY
 #define bn_mod_pre(U, M)	bn_mod_pre_monty(U, M)
+#elif BN_MOD == BN_RENUS
+/* Exponentiation reduces in the Residue Number System, other uses by
+ * Barrett reduction. */
+#define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
 #endif
 
 /**
@@ -363,6 +367,8 @@ typedef crt_st *crt_t;
 #define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
 #elif BN_MOD == BN_MONTY
 #define bn_mod_imp(C, A, M, U)	bn_mod_monty(C, A, M, U)
+#elif BN_MOD == BN_RENUS
+#define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
 #endif
 
 /**

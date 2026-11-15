@@ -224,6 +224,13 @@ typedef struct _ctx_t {
 #endif /* EB_PRECO */
 #endif /* WITH_EB */
 
+#ifdef WITH_RNS
+	/** Contexts of the Residue Number System for the last two moduli. */
+	rns_st rns_cache[2];
+	/** Index of the most recently used context. */
+	int rns_last;
+#endif
+
 #ifdef WITH_FP
 	/** Identifier of the currently configured prime field. */
 	int fp_id;

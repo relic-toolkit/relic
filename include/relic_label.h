@@ -521,6 +521,9 @@
 #define rns_st     	RLC_PREFIX(rns_st)
 #define rns_t      	RLC_PREFIX(rns_t)
 
+#undef rns_core_init
+#undef rns_core_clean
+#undef rns_lookup
 #undef rns_size
 #undef rns_new
 #undef rns_free
@@ -531,6 +534,9 @@
 #undef rns_set
 #undef rns_is_zero
 
+#define rns_core_init 	RLC_PREFIX(rns_core_init)
+#define rns_core_clean 	RLC_PREFIX(rns_core_clean)
+#define rns_lookup 	RLC_PREFIX(rns_lookup)
 #define rns_size 	RLC_PREFIX(rns_size)
 #define rns_new 	RLC_PREFIX(rns_new)
 #define rns_free 	RLC_PREFIX(rns_free)

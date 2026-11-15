@@ -145,6 +145,9 @@ include(cmake/with.cmake)
 if (WITH_FP AND FP_RDC STREQUAL "RENUS" AND NOT WITH_RNS)
 	message(FATAL_ERROR "FP_METHD=RENUS requires WITH=RNS.")
 endif()
+if (BN_MOD STREQUAL "RENUS" AND (NOT WITH_RNS OR WSIZE LESS 32))
+	message(FATAL_ERROR "BN_METHD=RENUS requires WITH=RNS and WSIZE=32 or 64.")
+endif()
 
 # Number of tests and benchmarks
 set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")

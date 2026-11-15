@@ -166,6 +166,8 @@
 #define BN_MONTY    3
 /** Pseudo-Mersenne modular reduction. */
 #define BN_PMERS    4
+/** Montgomery modular reduction in a Residue Number System. */
+#define BN_RENUS    5
 /** Chosen multiple precision modular reduction method. */
 #define BN_MOD   BN_@BN_MOD@
 
