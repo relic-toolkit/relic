@@ -49,6 +49,14 @@
 /*============================================================================*/
 
 /**
+ * Tests if the I-th residue of a value pads its base in a context C.
+ *
+ * @param[in] C				- the context.
+ * @param[in] I				- the index of the residue.
+ */
+#define RLC_RNS_PAD(C, I)	((I) % (C)->o >= (C)->n)
+
+/**
  * Subtracts M from a value A below 2M in constant time.
  *
  * @param[in] A				- the value.
@@ -95,6 +103,22 @@
 /** The residue of 2^52 modulo a 50-bit modulus M, as 2^52 - 4M. */
 #define RLC_RNS_K(M)	(((dig_t)1 << RLC_RNS_DIG) - ((dig_t)(M) << 2))
 #endif
+
+/*============================================================================*/
+/* Type definitions                                                           */
+/*============================================================================*/
+
+/**
+ * Represents a base extension in a context, as rns_extm_low() computes it.
+ */
+typedef void (*rns_ext_t)(dig_t *r, const dig_t *xi, int b, int exact,
+		const rns_st *c);
+
+/**
+ * Represents a Montgomery reduction of a product in a context, as
+ * rns_rdcn_low() computes it.
+ */
+typedef void (*rns_rdc_t)(dig_t *r, const dig_t *a, const rns_st *c);
 
 /*============================================================================*/
 /* Function definitions                                                       */
@@ -343,6 +367,158 @@ static inline void rns_wide_imp(dig_t *r, const dig_t *a, const rns_st *c,
 	}
 	for (size_t i = 0; i < n; i++) {
 		r[o + i] = rns_mul(a[o + i], c->mi[i], m[i], u[i]);
+	}
+}
+
+/**
+ * Reduces a product of values by Montgomery reduction in the Residue Number
+ * System: computes r = a / M mod N, as an integer with -N < r < (n + 1)N. The
+ * base extensions are given, so that each owner of a context uses its own.
+ *
+ * @param[out] r			- the result.
+ * @param[in] a				- the product.
+ * @param[in] c				- the context.
+ * @param[in] n				- the number of moduli in each base.
+ * @param[in] o				- the space taken by each base.
+ * @param[out] q			- scratch space for n residues.
+ * @param[out] e			- scratch space for n residues.
+ * @param[in] ext			- the base extension.
+ */
+static inline void rns_rdcn_imp(dig_t *r, const dig_t *a, const rns_st *c,
+		size_t n, size_t o, dig_t *q, dig_t *e, rns_ext_t ext) {
+	const dig_t *m = c->m, *u = c->u;
+
+	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues. */
+	for (size_t i = 0; i < n; i++) {
+		q[i] = rns_mul(a[i], c->nq[i], m[i], u[i]);
+	}
+	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN
+	 * only makes the result larger, so the extension skips alpha. */
+	ext(e, q, 1, -1, c);
+	/* r = (a + q * N) / M in B', as a product carries 1 / M^2 there and a
+	 * value 1 / M; and its xi_j for the exact extension. */
+	for (size_t j = 0; j < n; j++) {
+		r[o + j] = RLC_RNS_ADD(a[o + j], e[j], m[o + j]);
+		q[j] = rns_mul(r[o + j], c->ib[o + j], m[o + j], u[o + j]);
+	}
+	/* r in B, exactly, since |r| < (n + 1)N is far below M'/2. */
+	ext(r, q, 0, 1, c);
+}
+
+/**
+ * Tests if a value in the Residue Number System is zero modulo N, in constant
+ * time. The base extension is given, so that each owner of a context uses its
+ * own.
+ *
+ * @param[in] a				- the value to test.
+ * @param[in] c				- the context.
+ * @param[in] n				- the number of moduli in each base.
+ * @param[in] o				- the space taken by each base.
+ * @param[out] q			- scratch space for n residues.
+ * @param[out] r			- scratch space for n residues.
+ * @param[in] ext			- the base extension.
+ * @return 1 if the value is zero modulo N, 0 otherwise.
+ */
+static inline int rns_is_zero_imp(const dig_t *a, const rns_st *c, size_t n,
+		size_t o, dig_t *q, dig_t *r, rns_ext_t ext) {
+	const dig_t *m = c->m, *u = c->u;
+	dig_t d, z = 0;
+
+	/* The first half of the reduction gives r = a / M in B', with |r| < 3N,
+	 * so a is zero modulo N if and only if r is one of -2N, -N, 0, N or 2N,
+	 * which B' tells apart without extending r back to B. */
+	for (size_t i = 0; i < n; i++) {
+		q[i] = rns_mul(a[i], c->nq[i], m[i], u[i]);
+	}
+	ext(r, q, 1, 0, c);
+	for (size_t i = 0; i < n; i++) {
+		r[i] = RLC_RNS_ADD(rns_mul(a[o + i], c->mi[i], m[o + i], u[o + i]),
+				r[i], m[o + i]);
+	}
+	for (size_t k = 0; k < 5; k++) {
+		d = 0;
+		for (size_t i = 0; i < n; i++) {
+			d |= r[i] ^ c->kp[k * 2 * o + o + i];
+		}
+		z |= (d == 0);
+	}
+	return (int)z;
+}
+
+/**
+ * Converts a value in the Residue Number System to the digits of its residue
+ * modulo N in [0, N), in constant time. The reduction is given, so that each
+ * owner of a context uses its own.
+ *
+ * @param[out] r			- the d digits.
+ * @param[in] a				- the value.
+ * @param[in] c				- the context.
+ * @param[in] n				- the number of moduli in each base.
+ * @param[in] o				- the space taken by each base.
+ * @param[in] d				- the number of digits of N.
+ * @param[out] w			- scratch space for 2o residues.
+ * @param[out] xi			- scratch space for n residues.
+ * @param[out] s			- scratch space for d + 1 digits.
+ * @param[out] t			- scratch space for d + 1 digits.
+ * @param[in] rdc			- the reduction.
+ */
+static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
+		size_t n, size_t o, size_t d, dig_t *w, dig_t *xi, dig_t *s,
+		dig_t *t, rns_rdc_t rdc) {
+	const size_t l = d + 1;
+	const dig_t *m = c->m, *u = c->u, *p = c->p;
+	dig_t a1, b, q;
+	dbl_t lo, hi, x, y;
+	int k;
+
+	/* w = a / M is the value of a, with -N < w < (n + 1)N. */
+	rns_wide_imp(w, a, c, n, o);
+	rdc(w, w, c);
+	/* w = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
+	 * w / M is tiny. */
+	for (size_t i = 0; i < n; i++) {
+		xi[i] = rns_mul(w[i], c->ib[i], m[i], u[i]);
+	}
+	a1 = rns_alpha(xi, n, 1);
+	/* The low digits of w + 3N are enough to recover it, as it is positive.
+	 * The multipliers are single digits, so sum them column by column, with
+	 * the high halves of the products carried to the next column. */
+	x = 0;
+	for (size_t j = 0; j < l; j++) {
+		lo = x + c->p3[j];
+		y = (dbl_t)a1 * c->mm[j];
+		lo += (dig_t)y;
+		hi = y >> RLC_DIG;
+		for (size_t i = 0; i < n; i++) {
+			y = (dbl_t)xi[i] * c->mp[i * l + j];
+			lo += (dig_t)y;
+			hi += y >> RLC_DIG;
+		}
+		s[j] = (dig_t)lo;
+		x = (lo >> RLC_DIG) + hi;
+	}
+	/* Now 0 < s < (n + 4)N, so subtract 2^k N where it fits, for 2^k at most
+	 * n + 3 from the largest down. */
+	for (k = 0; ((size_t)2 << k) <= n + 3; k++);
+	for (; k >= 0; k--) {
+		b = 0;
+		for (size_t j = 0; j < l; j++) {
+			q = (j < l - 1 ? p[j] << k : 0);
+			if (j > 0 && k > 0) {
+				q |= p[j - 1] >> (RLC_DIG - k);
+			}
+			x = (dbl_t)s[j] - q - b;
+			t[j] = (dig_t)x;
+			b = (dig_t)(x >> RLC_DIG) & 1;
+		}
+		/* Keep the difference unless it wrapped around. */
+		q = b - 1;
+		for (size_t j = 0; j < l; j++) {
+			s[j] = (t[j] & q) | (s[j] & ~q);
+		}
+	}
+	for (size_t j = 0; j < d; j++) {
+		r[j] = s[j];
 	}
 }
 

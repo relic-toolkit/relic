@@ -144,61 +144,11 @@ void fp_rns_pre(void) {
 /*============================================================================*/
 
 void fp_rns_get(dig_t *c, const dig_t *a) {
-	ctx_t *ctx = core_get();
-	const size_t n = RLC_FP_RNS, l = RLC_FP_DIGS + 1;
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.u, *p = fp_prime_get();
-	rlc_align dig_t r[RLC_FP_LEN];
-	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1], t[RLC_FP_DIGS + 1], a1, b, q;
-	dbl_t lo, hi, d, e;
-	int k;
+	rlc_align dig_t w[RLC_FP_LEN];
+	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1], t[RLC_FP_DIGS + 1];
 
-	/* r = a / M is the value of a, with -p < r < (RLC_FP_RNS + 1)p. */
-	fp_rns_wide(r, a);
-	fp_rdc_renus(r, r);
-	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
-	 * r / M is tiny. */
-	for (size_t i = 0; i < n; i++) {
-		xi[i] = rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
-	}
-	a1 = rns_alpha(xi, n, 1);
-	/* The low digits of r + 3p are enough to recover it, as it is positive.
-	 * The multipliers are single digits, so sum them column by column, with
-	 * the high halves of the products carried to the next column. */
-	d = 0;
-	for (size_t j = 0; j < l; j++) {
-		lo = d + ctx->rns.p3[j];
-		e = (dbl_t)a1 * ctx->rns.mm[j];
-		lo += (dig_t)e;
-		hi = e >> RLC_DIG;
-		for (size_t i = 0; i < n; i++) {
-			e = (dbl_t)xi[i] * ctx->rns.mp[i][j];
-			lo += (dig_t)e;
-			hi += e >> RLC_DIG;
-		}
-		s[j] = (dig_t)lo;
-		d = (lo >> RLC_DIG) + hi;
-	}
-	/* Now 0 < s < (RLC_FP_RNS + 4)p, so subtract 2^k p where it fits, for
-	 * 2^k at most RLC_FP_RNS + 3 from the largest down. */
-	for (k = 0; (2 << k) <= RLC_FP_RNS + 3; k++);
-	for (; k >= 0; k--) {
-		b = 0;
-		for (size_t j = 0; j < l; j++) {
-			q = (j < l - 1 ? p[j] << k : 0);
-			if (j > 0 && k > 0) {
-				q |= p[j - 1] >> (RLC_DIG - k);
-			}
-			d = (dbl_t)s[j] - q - b;
-			t[j] = (dig_t)d;
-			b = (dig_t)(d >> RLC_DIG) & 1;
-		}
-		/* Keep the difference unless it wrapped around. */
-		q = b - 1;
-		for (size_t j = 0; j < l; j++) {
-			s[j] = (t[j] & q) | (s[j] & ~q);
-		}
-	}
-	dv_copy(c, s, RLC_FP_DIGS);
+	rns_get_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO,
+			RLC_FP_DIGS, w, xi, s, t, fp_rns_red);
 }
 
 void fp_rns_set(dig_t *c, const dig_t *a) {

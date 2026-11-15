@@ -59,27 +59,11 @@ void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
 
 void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c) {
 #if RLC_ARITH != RLC_AVX512
-	const size_t n = c->n, o = c->o;
-	const dig_t *m = c->m, *u = c->u;
 	dig_t q[RLC_RNS_MAX], e[RLC_RNS_MAX];
 
 	/* Only the first n values are used, but the compiler cannot tell. */
 	dv_zero(q, RLC_RNS_MAX);
-	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues. */
-	for (size_t i = 0; i < n; i++) {
-		q[i] = rns_mul(a[i], c->nq[i], m[i], u[i]);
-	}
-	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN
-	 * only makes the result larger, so the extension skips alpha. */
-	rns_extm_low(e, q, 1, -1, c);
-	/* r = (a + q * N) / M in B', as a product carries 1 / M^2 there and a
-	 * value 1 / M; and its xi_j for the exact extension. */
-	for (size_t j = 0; j < n; j++) {
-		r[o + j] = RLC_RNS_ADD(a[o + j], e[j], m[o + j]);
-		q[j] = rns_mul(r[o + j], c->ib[o + j], m[o + j], u[o + j]);
-	}
-	/* r in B, exactly, since |r| < (n + 1)N is far below M'/2. */
-	rns_extm_low(r, q, 0, 1, c);
+	rns_rdcn_imp(r, a, c, c->n, c->o, q, e, rns_extm_low);
 #else
 	(void)r;
 	(void)a;

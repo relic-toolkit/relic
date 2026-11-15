@@ -52,26 +52,10 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 #ifndef FP_RNS_VEC
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {
-	ctx_t *ctx = core_get();
-	const size_t n = RLC_FP_RNS, o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
 	dig_t q[RLC_FP_RNS], r[RLC_FP_RNS];
 
-	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues. */
-	for (size_t i = 0; i < n; i++) {
-		q[i] = rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
-	}
-	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
-	 * extra kp only makes the result larger, so the extension skips alpha. */
-	fp_rnsx_low(r, q, 1, -1);
-	/* c = (a + q * p) / M in B', as a product carries 1 / M^2 there and an
-	 * element 1 / M; and its xi_j for the exact extension. */
-	for (size_t j = 0; j < n; j++) {
-		c[o + j] = RLC_RNS_ADD(a[o + j], r[j], m[o + j]);
-		q[j] = rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
-	}
-	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */
-	fp_rnsx_low(c, q, 0, 1);
+	rns_rdcn_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO, q, r,
+			fp_rns_ext);
 }
 
 void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n) {

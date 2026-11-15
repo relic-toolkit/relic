@@ -422,6 +422,26 @@ static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact);
 
 /**
+ * Extends a value between the bases of the prime field, with the signature of
+ * the base extensions of the Residue Number System module.
+ */
+static inline void fp_rns_ext(dig_t *r, const dig_t *xi, int b, int exact,
+		const rns_st *c) {
+	(void)c;
+	fp_rnsx_low(r, xi, b, exact);
+}
+
+/**
+ * Reduces a product of prime field elements, with the signature of the
+ * reductions of the Residue Number System module.
+ */
+static inline void fp_rns_red(dig_t *r, const dig_t *a, const rns_st *c) {
+	(void)c;
+	/* The reduction in RNS does not write to its input. */
+	fp_rdcn_low(r, (dig_t *)a);
+}
+
+/**
  * Computes the residues of an integer as stored in elements, at most m each,
  * from its digits of RLC_RNS_DIG bits and the table of their weights.
  *

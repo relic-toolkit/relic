@@ -46,11 +46,6 @@
 /*============================================================================*/
 
 /**
- * Tests if the i-th residue pads its base.
- */
-#define RNS_PAD(C, I)	((I) % (C)->o >= (C)->n)
-
-/**
  * Reduces a digit modulo the i-th modulus and converts it to Montgomery form,
  * as a multiplier of residues.
  */
@@ -169,7 +164,7 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 		/* -m^{-1} mod R by Newton iteration, and R^2 mod m. */
 		for (size_t i = 0; i < 2 * o; i++) {
 			dig_t x = c->m[i];
-			if (RNS_PAD(c, i)) {
+			if (RLC_RNS_PAD(c, i)) {
 				continue;
 			}
 			for (int j = 0; j < 6; j++) {
@@ -272,7 +267,7 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 		for (size_t j = 0; j < 5; j++) {
 			bn_mul_dig(t, mod, (dig_t)(j < 2 ? 2 - j : j - 2));
 			for (size_t i = 0; i < 2 * o; i++) {
-				if (RNS_PAD(c, i)) {
+				if (RLC_RNS_PAD(c, i)) {
 					continue;
 				}
 				d = rns_mul(rns_res(c, t, i), c->e[i], c->m[i], c->u[i]);
@@ -302,7 +297,7 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 		for (size_t j = 0; j < c->w; j++) {
 			bn_set_2b(t, RLC_RNS_DIG * j);
 			for (size_t i = 0; i < 2 * o; i++) {
-				if (RNS_PAD(c, i)) {
+				if (RLC_RNS_PAD(c, i)) {
 					continue;
 				}
 				c->pw[j * 2 * o + i] =
