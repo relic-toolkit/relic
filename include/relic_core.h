@@ -270,6 +270,8 @@ typedef struct _ctx_t {
 #if FP_RDC == FP_RENUS
 	/** Precomputed values of the Residue Number System. */
 	fp_rns_st rns;
+	/** Context of the Residue Number System over the tables in rns. */
+	rns_t prime_rns;
 #endif
 #endif /* WITH_FP */
 

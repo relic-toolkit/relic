@@ -784,7 +784,7 @@ static int reduction(void) {
 			fp_rand(a);
 #if FP_RDC == FP_RENUS
 			/* The residues of p represent a multiple of p. */
-			fp_rns_conv(t, &(core_get()->prime));
+			rns_conv(t, &(core_get()->prime), core_get()->prime_rns);
 #else
 			dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 #endif
@@ -1377,33 +1377,33 @@ static int rns(void) {
 		TEST_CASE("rns conversion is consistent") {
 			/* B exceeds 2^(RLC_FP_RNS_ROOM + 2) * p, so this is below B/2. */
 			bn_rand(a, RLC_POS, RLC_FP_BITS + RLC_FP_RNS_ROOM + 1);
-			fp_rns_conv(x, a);
-			fp_rns_back(b, x);
+			rns_conv(x, a, core_get()->prime_rns);
+			rns_back(b, x, core_get()->prime_rns);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("rns montgomery multiplication is correct") {
 			bn_rand_mod(a, p);
 			bn_rand_mod(b, p);
-			fp_rns_conv(x, a);
-			fp_rns_conv(y, b);
+			rns_conv(x, a, core_get()->prime_rns);
+			rns_conv(y, b, core_get()->prime_rns);
 			fp_mulm_low(z, x, y);
-			fp_rns_back(c, z);
+			rns_back(c, z, core_get()->prime_rns);
 			bn_mul(d, a, b);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
 			/* Zero, and inputs at the bound 2^(RLC_FP_RNS_ROOM / 2) * p, with
 			 * products up to 2^RLC_FP_RNS_ROOM * p^2. */
 			bn_zero(a);
-			fp_rns_conv(x, a);
+			rns_conv(x, a, core_get()->prime_rns);
 			fp_mulm_low(z, x, y);
-			fp_rns_back(c, z);
+			rns_back(c, z, core_get()->prime_rns);
 			bn_zero(d);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
 			bn_lsh(a, p, RLC_FP_RNS_ROOM / 2);
 			bn_sub_dig(a, a, 1);
-			fp_rns_conv(x, a);
+			rns_conv(x, a, core_get()->prime_rns);
 			fp_mulm_low(z, x, x);
-			fp_rns_back(c, z);
+			rns_back(c, z, core_get()->prime_rns);
 			bn_sqr(d, a);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
 		} TEST_END;
@@ -1449,15 +1449,15 @@ static int rns(void) {
 			for (int k = 0; k < 256; k++) {
 				bn_rand(a, RLC_POS, bits);
 				bn_rand(b, RLC_POS, bits);
-				fp_rns_conv(x, a);
-				fp_rns_conv(y, b);
+				rns_conv(x, a, core_get()->prime_rns);
+				rns_conv(y, b, core_get()->prime_rns);
 				fp_muln_low(z, x, y);
 				fp_addc_low(w, w, z);
 				bn_mul(c, a, b);
 				bn_add(d, d, c);
 			}
 			fp_rdc_renus(z, w);
-			fp_rns_back(c, z);
+			rns_back(c, z, core_get()->prime_rns);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
 		} TEST_END;
 	}

@@ -516,6 +516,25 @@
 #define bn_gcdh_low 	RLC_PREFIX(bn_gcdh_low)
 #define bn_mxpn_low 	RLC_PREFIX(bn_mxpn_low)
 
+#undef rns_st
+#undef rns_t
+#define rns_st     	RLC_PREFIX(rns_st)
+#define rns_t      	RLC_PREFIX(rns_t)
+
+#undef rns_size
+#undef rns_new
+#undef rns_free
+#undef rns_pre
+#undef rns_conv
+#undef rns_back
+
+#define rns_size 	RLC_PREFIX(rns_size)
+#define rns_new 	RLC_PREFIX(rns_new)
+#define rns_free 	RLC_PREFIX(rns_free)
+#define rns_pre 	RLC_PREFIX(rns_pre)
+#define rns_conv 	RLC_PREFIX(rns_conv)
+#define rns_back 	RLC_PREFIX(rns_back)
+
 #undef fp_st
 #undef fp_t
 #define fp_st			RLC_PREFIX(fp_st)
@@ -542,8 +561,6 @@
 #undef fp_prime_calc
 #undef fp_prime_conv
 #undef fp_rns_pre
-#undef fp_rns_conv
-#undef fp_rns_back
 #undef fp_rns_get
 #undef fp_rns_set
 #undef fp_prime_conv_dig
@@ -653,8 +670,6 @@
 #define fp_prime_calc 	RLC_PREFIX(fp_prime_calc)
 #define fp_prime_conv 	RLC_PREFIX(fp_prime_conv)
 #define fp_rns_pre 	RLC_PREFIX(fp_rns_pre)
-#define fp_rns_conv 	RLC_PREFIX(fp_rns_conv)
-#define fp_rns_back 	RLC_PREFIX(fp_rns_back)
 #define fp_rns_get 	RLC_PREFIX(fp_rns_get)
 #define fp_rns_set 	RLC_PREFIX(fp_rns_set)
 #define fp_prime_conv_dig 	RLC_PREFIX(fp_prime_conv_dig)

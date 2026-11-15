@@ -59,12 +59,12 @@ int fp_is_zero(const fp_t a) {
 	 * so a is zero modulo p if and only if r is one of -2p, -p, 0, p or 2p,
 	 * which B' tells apart without extending r back to B. */
 	for (size_t i = 0; i < n; i++) {
-		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
+		q[i] = rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
 	}
 	fp_rnsx_low(r, q, 1, 0);
 	for (size_t i = 0; i < n; i++) {
 		r[i] = RLC_RNS_ADD(
-				fp_rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
+				rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
 				r[i], m[o + i]);
 	}
 	for (int k = 0; k < 5; k++) {

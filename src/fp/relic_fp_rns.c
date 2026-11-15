@@ -64,56 +64,38 @@
 RLC_STATIC_ASSERT(RLC_FP_DLEN <= RLC_DV_DIGS, rns_dv);
 
 /**
- * Tests if the i-th residue of an element pads its base.
- */
-#define RNS_PAD(I)		((I) % RLC_FP_RNSO >= RLC_FP_RNS)
-
-/**
- * Multiplies two plain residues modulo the i-th modulus, for precomputation.
+ * Points the context of the Residue Number System of the prime field to the
+ * tables in the library context.
  *
- * @param[in] a				- the first residue.
- * @param[in] b				- the second residue.
- * @param[in] i				- the index of the modulus.
- * @return the product.
+ * @param[in] ctx			- the library context.
  */
-static dig_t fp_rns_mulp(dig_t a, dig_t b, size_t i) {
-	ctx_t *ctx = core_get();
-	dig_t m = ctx->rns.m[i], u = ctx->rns.u[i];
+static void fp_rns_bind(ctx_t *ctx) {
+	rns_st *c = ctx->prime_rns;
 
-	return fp_rns_mul(fp_rns_mul(a, b, m, u), ctx->rns.r2[i], m, u);
-}
-
-/**
- * Computes an integer modulo the i-th modulus.
- */
-static dig_t fp_rns_bn(const bn_t a, size_t i) {
-	dig_t d;
-
-	bn_mod_dig(&d, a, core_get()->rns.m[i]);
-	return d;
-}
-
-/**
- * Computes the inverse of a residue modulo the i-th modulus.
- */
-static dig_t fp_rns_inv(dig_t a, size_t i) {
-	bn_t t, u;
-	dig_t r = 0;
-
-	bn_null_all(t, u);
-
-	RLC_TRY {
-		bn_new_all(t, u);
-		bn_set_dig(t, a);
-		bn_set_dig(u, core_get()->rns.m[i]);
-		bn_mod_inv(t, t, u);
-		r = t->dp[0];
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free_all(t, u);
-	}
-	return r;
+	c->n = RLC_FP_RNS;
+	c->o = RLC_FP_RNSO;
+	c->d = RLC_FP_DIGS;
+	c->w = RLC_FP_RNS_DIGS;
+	c->m = ctx->rns.m;
+	c->u = ctx->rns.u;
+	c->iv = ctx->rns.iv;
+	c->r2 = ctx->rns.r2;
+	c->e = ctx->rns.e;
+	c->mi = ctx->rns.mi;
+	c->ib = ctx->rns.ib;
+	c->nq = ctx->rns.nq;
+	c->nqv = ctx->rns.nqv;
+	c->ibv = ctx->rns.ibv;
+	c->t1 = ctx->rns.t1[0];
+	c->t2 = ctx->rns.t2[0];
+	c->u1 = ctx->rns.u1;
+	c->u2 = ctx->rns.u2;
+	c->kp = ctx->rns.kp[0];
+	c->mp = ctx->rns.mp[0];
+	c->mm = ctx->rns.mm;
+	c->p3 = ctx->rns.p3;
+	c->pw = ctx->rns.pw[0];
+	c->mem = NULL;
 }
 
 /*============================================================================*/
@@ -122,268 +104,40 @@ static dig_t fp_rns_inv(dig_t a, size_t i) {
 
 void fp_rns_pre(void) {
 	ctx_t *ctx = core_get();
-	bn_t m, mb, t, u;
-	dig_t c = 1, d, r2, r3;
-	size_t k = 0, l = 0, n = RLC_FP_RNS, o = RLC_FP_RNSO, j0;
+	bn_t m, t, u;
 
-	bn_null_all(m, mb, t, u);
+	bn_null_all(m, t, u);
 
 	RLC_TRY {
-		bn_new_all(m, mb, t, u);
+		bn_new_all(m, t, u);
 
-		/* The residues that pad each base are zero in all tables. */
-		dv_zero(ctx->rns.m, 2 * o);
-		dv_zero(ctx->rns.u, 2 * o);
-		dv_zero(ctx->rns.iv, 2 * o);
-		dv_zero(ctx->rns.r2, 2 * o);
-		dv_zero(ctx->rns.e, 2 * o);
-		dv_zero(ctx->rns.ib, 2 * o);
-		dv_zero(ctx->rns.nq, o);
-		dv_zero(ctx->rns.nqv, o);
-		dv_zero(ctx->rns.ibv, o);
-		dv_zero(ctx->rns.u1, o);
-		dv_zero(ctx->rns.u2, o);
-		dv_zero(ctx->rns.t1[0], n * o);
-		dv_zero(ctx->rns.t2[0], n * o);
-		dv_zero(ctx->rns.kp[0], 5 * 2 * o);
-		dv_zero(ctx->rns.pw[0], RLC_FP_RNS_DIGS * 2 * o);
-
-		/* Pick the largest primes 2^RLC_RNS_BITS - c coprime to p, with c
-		 * below the square root of R: first for B, then for B'. */
-		while (k < n || l < n) {
-			if (c >= ((dig_t)1 << (RLC_RNS_DIG / 2))) {
-				RLC_THROW(ERR_NO_VALID);
-				break;
-			}
-			d = ((dig_t)1 << RLC_RNS_BITS) - c;
-			bn_set_dig(t, d);
-			bn_mod_dig(&r2, &(ctx->prime), d);
-			if (r2 != 0 && bn_is_prime(t)) {
-				if (k < n) {
-					ctx->rns.m[k++] = d;
-				} else {
-					ctx->rns.m[o + l++] = d;
-				}
-			}
-			c += 2;
-		}
-
-		/* -m^{-1} mod R by Newton iteration, and R^2 mod m. */
-		for (size_t i = 0; i < 2 * o; i++) {
-			dig_t x = ctx->rns.m[i];
-			if (RNS_PAD(i)) {
-				continue;
-			}
-			for (int j = 0; j < 6; j++) {
-				x *= 2 - ctx->rns.m[i] * x;
-			}
-			ctx->rns.u[i] = (0 - x) & RLC_RNS_MASK;
-			ctx->rns.iv[i] = x & RLC_RNS_MASK;
-			bn_set_2b(t, 2 * RLC_RNS_DIG);
-			ctx->rns.r2[i] = fp_rns_bn(t, i);
-		}
-
-		/* M and M' as integers. */
-		bn_set_dig(m, 1);
-		bn_set_dig(mb, 1);
-		for (size_t i = 0; i < n; i++) {
-			bn_mul_dig(m, m, ctx->rns.m[i]);
-			ctx->rns.e[i] = ctx->rns.r2[i];
-		}
-		for (size_t i = 0; i < n; i++) {
-			bn_mul_dig(mb, mb, ctx->rns.m[o + i]);
-		}
-		/* Elements are multiplied by R^2 in B and by R^2 / M in B' to be
-		 * stored, and the tables of the first extension carry 1 / M^2. */
-		for (size_t i = 0; i < n; i++) {
-			d = fp_rns_inv(fp_rns_bn(m, o + i), o + i);
-			ctx->rns.e[o + i] = fp_rns_mulp(ctx->rns.r2[o + i], d, o + i);
-			ctx->rns.mi[i] = RLC_RNS_SCL(d, o + i);
-		}
-
-		/* B must exceed 2^(RLC_FP_RNS_ROOM + 2) * p, and B' 2^11 * p. */
-		if (bn_bits(m) < bn_bits(&(ctx->prime)) + RLC_FP_RNS_ROOM + 2 + 1 ||
-				bn_bits(mb) < bn_bits(&(ctx->prime)) + 11 + 2) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-
-		for (size_t i = 0; i < n; i++) {
-			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * R^3 mod m'_j. */
-			bn_div_dig(t, m, ctx->rns.m[i]);
-			for (size_t j = 0; j < n; j++) {
-				r3 = fp_rns_mulp(ctx->rns.r2[o + j], RLC_RNS_SCL(1, o + j),
-						o + j);
-				/* Times p / M^2, to give q * p as a product in B'. */
-				d = fp_rns_mulp(fp_rns_bn(t, o + j),
-						fp_rns_bn(&(ctx->prime), o + j), o + j);
-				d = fp_rns_mulp(d, fp_rns_inv(fp_rns_bn(m, o + j), o + j),
-						o + j);
-				d = fp_rns_mulp(d, fp_rns_inv(fp_rns_bn(m, o + j), o + j),
-						o + j);
-				ctx->rns.t1[i][j] = fp_rns_mulp(d, r3, o + j);
-			}
-			ctx->rns.ib[i] = fp_rns_inv(fp_rns_bn(t, i), i);
-			/* -p^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
-			d = fp_rns_inv(fp_rns_bn(&(ctx->prime), i), i);
-			ctx->rns.nq[i] = fp_rns_mulp(ctx->rns.m[i] - d, ctx->rns.ib[i], i);
-			/* -M' * R^3 mod m_i. */
-			r3 = fp_rns_mulp(ctx->rns.r2[i], RLC_RNS_SCL(1, i), i);
-			ctx->rns.u2[i] = fp_rns_mulp(
-					RLC_RNS_SUB(0, fp_rns_bn(mb, i), ctx->rns.m[i]), r3, i);
-		}
-
-		for (size_t i = 0; i < n; i++) {
-			j0 = o + i;
-
-			/* (M'/m'_i)^{-1} mod m'_i, and (M'/m'_i) * R^3 mod m_j. */
-			bn_div_dig(t, mb, ctx->rns.m[j0]);
-			for (size_t j = 0; j < n; j++) {
-				r3 = fp_rns_mulp(ctx->rns.r2[j], RLC_RNS_SCL(1, j), j);
-				ctx->rns.t2[i][j] = fp_rns_mulp(fp_rns_bn(t, j), r3, j);
-			}
-			/* Times M, as elements are divided by M in B'. */
-			ctx->rns.ib[j0] = fp_rns_mulp(fp_rns_inv(fp_rns_bn(t, j0), j0),
-					fp_rns_bn(m, j0), j0);
-
-			/* -M * p / M^2 * R^3 mod m'_i. */
-			r3 = fp_rns_mulp(ctx->rns.r2[j0], RLC_RNS_SCL(1, j0), j0);
-			d = fp_rns_mulp(fp_rns_bn(&(ctx->prime), j0),
-					fp_rns_inv(fp_rns_bn(m, j0), j0), j0);
-			ctx->rns.u1[i] = fp_rns_mulp(RLC_RNS_SUB(0, d, ctx->rns.m[j0]), r3,
-					j0);
-		}
-
-#if RLC_ARITH == RLC_AVX512
-		/* The vectorized extensions reduce their sums with one Montgomery
-		 * reduction instead of two, so their tables carry one factor R less. */
-		for (size_t i = 0; i < n; i++) {
-			const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
-
-			for (size_t j = 0; j < n; j++) {
-				ctx->rns.t1[i][j] =
-						fp_rns_mul(ctx->rns.t1[i][j], 1, m[o + j], u[o + j]);
-				ctx->rns.t2[i][j] = fp_rns_mul(ctx->rns.t2[i][j], 1, m[j], u[j]);
-			}
-			ctx->rns.u1[i] = fp_rns_mul(ctx->rns.u1[i], 1, m[o + i], u[o + i]);
-			ctx->rns.u2[i] = fp_rns_mul(ctx->rns.u2[i], 1, m[i], u[i]);
-			/* The quotients of the Montgomery reductions of products by nq
-			 * and ib are their other factors times these values mod R. */
-			ctx->rns.nqv[i] = (ctx->rns.nq[i] * ctx->rns.iv[i]) & RLC_RNS_MASK;
-			ctx->rns.ibv[i] =
-					(ctx->rns.ib[o + i] * ctx->rns.iv[o + i]) & RLC_RNS_MASK;
-		}
-#endif
+		fp_rns_bind(ctx);
+		rns_pre(ctx->prime_rns, &(ctx->prime), RLC_FP_RNS_ROOM);
 
 		/* Constants in Montgomery form: M, M^2, M/2 and M/3 modulo p. */
+		bn_set_dig(m, 1);
+		for (size_t i = 0; i < RLC_FP_RNS; i++) {
+			bn_mul_dig(m, m, ctx->rns.m[i]);
+		}
 		bn_mod(t, m, &(ctx->prime));
-		fp_rns_conv(ctx->one, t);
+		rns_conv(ctx->one, t, ctx->prime_rns);
 		bn_sqr(u, t);
 		bn_mod(u, u, &(ctx->prime));
-		fp_rns_conv(ctx->conv, u);
+		rns_conv(ctx->conv, u, ctx->prime_rns);
 		bn_add_dig(u, &(ctx->prime), 1);
 		bn_hlv(u, u);
 		bn_mul(u, u, t);
 		bn_mod(u, u, &(ctx->prime));
-		fp_rns_conv(ctx->rns.half, u);
+		rns_conv(ctx->rns.half, u, ctx->prime_rns);
 		bn_set_dig(u, 3);
 		bn_mod_inv(u, u, &(ctx->prime));
 		bn_mul(u, u, t);
 		bn_mod(u, u, &(ctx->prime));
-		fp_rns_conv(ctx->rns.third, u);
-
-		/* The multiples kp for -2 <= k <= 2, in both bases. */
-		for (int j = 0; j < 5; j++) {
-			bn_mul_dig(t, &(ctx->prime), (dig_t)(j < 2 ? 2 - j : j - 2));
-			for (size_t i = 0; i < 2 * o; i++) {
-				if (RNS_PAD(i)) {
-					continue;
-				}
-				d = RLC_RNS_CONV(fp_rns_bn(t, i), i);
-				ctx->rns.kp[j][i] =
-						(j < 2 ? RLC_RNS_SUB(0, d, ctx->rns.m[i]) : d);
-			}
-		}
-
-		/* The low digits of M/m_i, -M and 3p for the conversion to positional
-		 * form, and the residues of 2^(RLC_DIG * k) for the way back. */
-		bn_set_2b(u, RLC_DIG * (RLC_FP_DIGS + 1));
-		bn_mod_2b(t, m, RLC_DIG * (RLC_FP_DIGS + 1));
-		bn_sub(t, u, t);
-		for (size_t k = 0; k <= RLC_FP_DIGS; k++) {
-			ctx->rns.mm[k] = (k < t->used ? t->dp[k] : 0);
-		}
-		bn_mul_dig(t, &(ctx->prime), 3);
-		for (size_t k = 0; k <= RLC_FP_DIGS; k++) {
-			ctx->rns.p3[k] = (k < t->used ? t->dp[k] : 0);
-		}
-		for (size_t i = 0; i < n; i++) {
-			bn_div_dig(t, m, ctx->rns.m[i]);
-			bn_mod_2b(t, t, RLC_DIG * (RLC_FP_DIGS + 1));
-			for (size_t k = 0; k <= RLC_FP_DIGS; k++) {
-				ctx->rns.mp[i][k] = (k < t->used ? t->dp[k] : 0);
-			}
-		}
-		for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
-			bn_set_2b(t, RLC_RNS_DIG * k);
-			for (size_t i = 0; i < 2 * o; i++) {
-				if (RNS_PAD(i)) {
-					continue;
-				}
-				ctx->rns.pw[k][i] = fp_rns_mulp(fp_rns_bn(t, i), ctx->rns.e[i],
-						i);
-			}
-		}
+		rns_conv(ctx->rns.third, u, ctx->prime_rns);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free_all(m, mb, t, u);
-	}
-}
-
-void fp_rns_conv(dig_t *c, const bn_t a) {
-	for (size_t i = 0; i < RLC_FP_LEN; i++) {
-		if (RNS_PAD(i)) {
-			c[i] = 0;
-			continue;
-		}
-		c[i] = RLC_RNS_CONV(fp_rns_bn(a, i), i);
-		if (bn_sign(a) == RLC_NEG) {
-			c[i] = RLC_RNS_SUB(0, c[i], core_get()->rns.m[i]);
-		}
-	}
-}
-
-void fp_rns_back(bn_t c, const dig_t *a) {
-	ctx_t *ctx = core_get();
-	bn_t m, t;
-
-	bn_null_all(m, t);
-
-	RLC_TRY {
-		bn_new_all(m, t);
-
-		/* CRT in B: c = sum xi_i * (M/m_i) mod M. */
-		bn_set_dig(m, 1);
-		for (size_t i = 0; i < RLC_FP_RNS; i++) {
-			bn_mul_dig(m, m, ctx->rns.m[i]);
-		}
-		bn_zero(c);
-		for (size_t i = 0; i < RLC_FP_RNS; i++) {
-			bn_div_dig(t, m, ctx->rns.m[i]);
-			bn_mul_dig(t, t, fp_rns_mul(a[i], ctx->rns.ib[i], ctx->rns.m[i],
-					ctx->rns.u[i]));
-			bn_add(c, c, t);
-		}
-		bn_mod(c, c, m);
-		/* Values above M/2 represent negative integers. */
-		bn_hlv(t, m);
-		if (bn_cmp(c, t) == RLC_GT) {
-			bn_sub(c, c, m);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free_all(m, t);
+		bn_free_all(m, t, u);
 	}
 }
 
@@ -404,9 +158,9 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
 	 * r / M is tiny. */
 	for (size_t i = 0; i < n; i++) {
-		xi[i] = fp_rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
+		xi[i] = rns_mul(r[i], ctx->rns.ib[i], m[i], u[i]);
 	}
-	a1 = fp_rns_alpha(xi, n, 1);
+	a1 = rns_alpha(xi, n, 1);
 	/* The low digits of r + 3p are enough to recover it, as it is positive.
 	 * The multipliers are single digits, so sum them column by column, with
 	 * the high halves of the products carried to the next column. */

@@ -1,6 +1,6 @@
 # Default modules.
 set(WITH "ALL" CACHE STRING "Selected modules")
-set(MODULES ALL BN DV FP FPX FB FBX EP EPX EB ED EC PP PC BC MD CP MPC)
+set(MODULES ALL BN DV RNS FP FPX FB FBX EP EPX EB ED EC PP PC BC MD CP MPC)
 foreach(MODULE ${WITH})
 	list(FIND MODULES "${MODULE}" TEMP)
 	if(TEMP EQUAL -1)
@@ -13,6 +13,7 @@ LIST(FIND WITH "ALL" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_BN 1)
 	set(WITH_DV 1)
+	set(WITH_RNS 1)
 	set(WITH_FP 1)
 	set(WITH_FPX 1)
 	set(WITH_FB 1)
@@ -40,6 +41,12 @@ endif(TEMP GREATER -1)
 list(FIND WITH "DV" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_DV 1)
+endif(TEMP GREATER -1)
+
+# Check if arithmetic in a Residue Number System is required.
+list(FIND WITH "RNS" TEMP)
+if(TEMP GREATER -1)
+	set(WITH_RNS 1)
 endif(TEMP GREATER -1)
 
 # Check if prime field arithmetic is required.

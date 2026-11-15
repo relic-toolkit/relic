@@ -89,6 +89,7 @@ extern "C" {
 #include "relic_types.h"
 #include "relic_bn.h"
 #include "relic_dv.h"
+#include "relic_rns.h"
 #include "relic_fp.h"
 #include "relic_fpx.h"
 #include "relic_fb.h"

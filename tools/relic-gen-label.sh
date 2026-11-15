@@ -117,6 +117,14 @@ echo
 REDEF bn
 REDEF_LOW bn
 
+echo "#undef rns_st"
+echo "#undef rns_t"
+echo "#define rns_st     	RLC_PREFIX(rns_st)"
+echo "#define rns_t      	RLC_PREFIX(rns_t)"
+echo
+REDEF rns
+REDEF_LOW rns
+
 echo "#undef fp_st"
 echo "#undef fp_t"
 echo "#define fp_st			RLC_PREFIX(fp_st)"

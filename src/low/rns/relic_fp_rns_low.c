@@ -81,7 +81,7 @@ void fp_rnsi_low(dig_t *c, const dig_t *a) {
 		c[i] = 0;
 		for (size_t k = 0; k < RLC_FP_RNS_DIGS; k++) {
 			c[i] = RLC_RNS_ADD(c[i],
-					fp_rns_mul(a[k], ctx->rns.pw[k][i], m[i], u[i]), m[i]);
+					rns_mul(a[k], ctx->rns.pw[k][i], m[i], u[i]), m[i]);
 		}
 	}
 }
@@ -94,7 +94,7 @@ void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact) {
 	const dig_t *w = (b ? ctx->rns.u1 : ctx->rns.u2);
 	const dig_t *m = ctx->rns.m + (b ? RLC_FP_RNSO : 0);
 	const dig_t *u = ctx->rns.u + (b ? RLC_FP_RNSO : 0);
-	dig_t a = (exact < 0 ? 0 : fp_rns_alpha(xi, n, exact));
+	dig_t a = (exact < 0 ? 0 : rns_alpha(xi, n, exact));
 
 #ifdef RLC_CONF_NODBL
 	dig_t h, l, s0, s1, s2;

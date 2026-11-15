@@ -63,6 +63,7 @@ message(STATUS "Available modules (default = ALL)\n")
 
 message("   WITH=BN       Multiple precision arithmetic.")
 message("   WITH=DV       Temporary double-precision digit vectors.")
+message("   WITH=RNS      Modular arithmetic in a Residue Number System.")
 message("   WITH=FP       Prime field arithmetic.")
 message("   WITH=FPX      Prime extension field arithmetic.")
 message("   WITH=FB       Binary field arithmetic.")
@@ -139,6 +140,11 @@ include(cmake/pp.cmake)
 include(cmake/md.cmake)
 include(cmake/rand.cmake)
 include(cmake/with.cmake)
+
+# Prime field elements in a Residue Number System use its module.
+if (WITH_FP AND FP_RDC STREQUAL "RENUS" AND NOT WITH_RNS)
+	message(FATAL_ERROR "FP_METHD=RENUS requires WITH=RNS.")
+endif()
 
 # Number of tests and benchmarks
 set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")

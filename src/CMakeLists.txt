@@ -27,6 +27,7 @@ endif()
 
 file(GLOB BN_SRCS bn/*.c)
 file(GLOB DV_SRCS dv/*.c)
+file(GLOB RNS_SRCS rns/*.c)
 file(GLOB FP_SRCS fp/*.c)
 file(GLOB FPX_SRCS fpx/*.c)
 file(GLOB FB_SRCS fb/*.c)
@@ -60,6 +61,10 @@ endif()
 
 if (WITH_DV)
 	list(APPEND RELIC_SRCS ${DV_SRCS})
+endif()
+
+if (WITH_RNS)
+	list(APPEND RELIC_SRCS ${RNS_SRCS})
 endif()
 
 if (WITH_FP)

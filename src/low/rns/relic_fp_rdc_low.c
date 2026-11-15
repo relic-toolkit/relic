@@ -59,7 +59,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 
 	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues. */
 	for (size_t i = 0; i < n; i++) {
-		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
+		q[i] = rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
 	}
 	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
 	 * extra kp only makes the result larger, so the extension skips alpha. */
@@ -68,7 +68,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	 * element 1 / M; and its xi_j for the exact extension. */
 	for (size_t j = 0; j < n; j++) {
 		c[o + j] = RLC_RNS_ADD(a[o + j], r[j], m[o + j]);
-		q[j] = fp_rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
+		q[j] = rns_mul(c[o + j], ctx->rns.ib[o + j], m[o + j], u[o + j]);
 	}
 	/* c in B, exactly, since |c| < (RLC_FP_RNS + 1)p is far below M'/2. */
 	fp_rnsx_low(c, q, 0, 1);

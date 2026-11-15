@@ -38,6 +38,7 @@
 
 #include "relic_dv.h"
 #include "relic_bn.h"
+#include "relic_rns.h"
 #include "relic_conf.h"
 #include "relic_types.h"
 
@@ -61,22 +62,6 @@
 #define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
 #if FP_RDC == FP_RENUS
-/*
- * Sizes in bits of the moduli of the Residue Number System of prime field
- * elements, RLC_RNS_BITS, and of its digits, RLC_RNS_DIG, so that the radix of
- * the Montgomery form of residues is R = 2^RLC_RNS_DIG. The AVX-512 IFMA
- * backend has 52-bit multipliers and 50-bit moduli, so that sums of a few
- * residues or products still fit them; otherwise, the digits are whole and the
- * moduli one bit shorter.
- */
-#if RLC_ARITH == RLC_AVX512
-#define RLC_RNS_BITS	50
-#define RLC_RNS_DIG		52
-#else
-#define RLC_RNS_BITS	(RLC_DIG - 1)
-#define RLC_RNS_DIG		RLC_DIG
-#endif
-
 /**
  * Logarithm of the bound on sums of products that the Residue Number System
  * reduces, as a multiple of p^2: 30, or with the AVX-512 IFMA backend as much
@@ -102,25 +87,20 @@
  * reduced: for instance, with RLC_FP_RNS_ROOM = 30, elements up to 2^11 * p,
  * with up to 2^8 products summed.
  */
-#define RLC_FP_RNS		((size_t)((RLC_FP_BITS + RLC_FP_RNS_ROOM + 3 +		\
-		RLC_RNS_BITS - 1) / RLC_RNS_BITS))
+#define RLC_FP_RNS		RLC_RNS_SIZE(RLC_FP_BITS, RLC_FP_RNS_ROOM)
 
 /**
  * Space taken by each base in the residues of an element: the number of moduli,
  * rounded up to a multiple of 8 with the AVX-512 IFMA backend, so that each
  * base fills whole vectors of eight residues.
  */
-#if RLC_ARITH == RLC_AVX512
-#define RLC_FP_RNSO		((RLC_FP_RNS + 7) / 8 * 8)
-#else
-#define RLC_FP_RNSO		RLC_FP_RNS
-#endif
+#define RLC_FP_RNSO		RLC_RNS_SPAN(RLC_FP_RNS)
 
 /**
  * Number of digits of RLC_RNS_DIG bits in an integer of RLC_FP_DIGS digits,
  * which are multiplied by tables to convert it to the Residue Number System.
  */
-#define RLC_FP_RNS_DIGS	RLC_CEIL(RLC_FP_DIGS * RLC_DIG, RLC_RNS_DIG)
+#define RLC_FP_RNS_DIGS	RLC_RNS_WORDS(RLC_FP_DIGS)
 
 /**
  * Size in digits of the storage of a prime field element: its residues in both
@@ -763,29 +743,6 @@ void fp_prime_conv(fp_t c, const bn_t a);
  * configured prime.
  */
 void fp_rns_pre(void);
-
-/**
- * Converts an integer to its residues in both bases of the Residue Number
- * System, exactly: the integer is not reduced modulo p nor scaled as elements
- * are, so it must be smaller than M/2 in absolute value for the product M of
- * a base. Meant for precomputation and for testing the bounds of the
- * arithmetic; elements are imported with fp_prime_conv().
- *
- * @param[out] c			- the RLC_FP_LEN residues.
- * @param[in] a				- the integer to convert.
- */
-void fp_rns_conv(dig_t *c, const bn_t a);
-
-/**
- * Converts the residues in the first base of the Residue Number System back to
- * an integer, by the Chinese Remainder Theorem: the exact integer in (-M/2,
- * M/2], not reduced modulo p. Meant for precomputation and for testing the
- * bounds of the arithmetic; elements are exported with fp_prime_back().
- *
- * @param[out] c			- the result.
- * @param[in] a				- the RLC_FP_LEN residues.
- */
-void fp_rns_back(bn_t c, const dig_t *a);
 
 /**
  * Converts an element in the Residue Number System to the digits of its value

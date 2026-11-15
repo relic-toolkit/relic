@@ -682,7 +682,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 
 		/* Reduce a modulo the prime, then multiply by M^2 / M. */
 		bn_mod(t, a, &(core_get()->prime));
-		fp_rns_conv(c, t);
+		rns_conv(c, t, core_get()->prime_rns);
 		fp_mulm_low(c, c, core_get()->conv);
 	}
 	RLC_CATCH_ANY {
@@ -708,7 +708,7 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 		bn_new(t);
 
 		bn_set_dig(t, a);
-		fp_rns_conv(c, t);
+		rns_conv(c, t, core_get()->prime_rns);
 		fp_mulm_low(c, c, core_get()->conv);
 	}
 	RLC_CATCH_ANY {
@@ -725,7 +725,7 @@ void fp_prime_back(bn_t c, const fp_t a) {
 	/* Reduce a plain element as a product, then take the value mod p. */
 	fp_rns_wide(t, a);
 	fp_rdc_renus(t, t);
-	fp_rns_back(c, t);
+	rns_back(c, t, core_get()->prime_rns);
 	bn_mod(c, c, &(core_get()->prime));
 	if (bn_sign(c) == RLC_NEG) {
 		bn_add(c, c, &(core_get()->prime));
