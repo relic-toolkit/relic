@@ -546,10 +546,8 @@
 #undef fp_rns_pre
 #undef fp_rns_conv
 #undef fp_rns_back
-#undef fp_rns_val
 #undef fp_rns_get
 #undef fp_rns_set
-#undef fp_rns_rdc
 #undef fp_rns_is_zero
 #undef fp_prime_conv_dig
 #undef fp_prime_back
@@ -612,6 +610,7 @@
 #undef fp_rdc_monty_basic
 #undef fp_rdc_monty_comba
 #undef fp_rdc_quick
+#undef fp_rdc_renus
 #undef fp_rdc_lower
 #undef fp_inv_basic
 #undef fp_inv_binar
@@ -659,10 +658,8 @@
 #define fp_rns_pre 	RLC_PREFIX(fp_rns_pre)
 #define fp_rns_conv 	RLC_PREFIX(fp_rns_conv)
 #define fp_rns_back 	RLC_PREFIX(fp_rns_back)
-#define fp_rns_val 	RLC_PREFIX(fp_rns_val)
 #define fp_rns_get 	RLC_PREFIX(fp_rns_get)
 #define fp_rns_set 	RLC_PREFIX(fp_rns_set)
-#define fp_rns_rdc 	RLC_PREFIX(fp_rns_rdc)
 #define fp_rns_is_zero 	RLC_PREFIX(fp_rns_is_zero)
 #define fp_prime_conv_dig 	RLC_PREFIX(fp_prime_conv_dig)
 #define fp_prime_back 	RLC_PREFIX(fp_prime_back)
@@ -725,6 +722,7 @@
 #define fp_rdc_monty_basic 	RLC_PREFIX(fp_rdc_monty_basic)
 #define fp_rdc_monty_comba 	RLC_PREFIX(fp_rdc_monty_comba)
 #define fp_rdc_quick 	RLC_PREFIX(fp_rdc_quick)
+#define fp_rdc_renus 	RLC_PREFIX(fp_rdc_renus)
 #define fp_rdc_lower 	RLC_PREFIX(fp_rdc_lower)
 #define fp_inv_basic 	RLC_PREFIX(fp_inv_basic)
 #define fp_inv_binar 	RLC_PREFIX(fp_inv_binar)

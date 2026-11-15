@@ -1437,7 +1437,7 @@ static int rns(void) {
 				bn_mul(c, a, b);
 				bn_add(d, d, c);
 			}
-			fp_rns_rdc(z, w);
+			fp_rdc_renus(z, w);
 			fp_rns_back(c, z);
 			TEST_ASSERT(rns_check(c, d, m, p), end);
 		} TEST_END;

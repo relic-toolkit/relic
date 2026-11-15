@@ -27,7 +27,7 @@ message("      Modular reduction:")
 message("      FP_METHD=BASIC    Division-based reduction.")
 message("      FP_METHD=QUICK    Fast reduction modulo special form prime (2^t - c, c > 0).")
 message("      FP_METHD=MONTY    Montgomery modular reduction.")
-message("      FP_METHD=RENUS    Montgomery reduction in a Residue Number System (64-bit only).")
+message("      FP_METHD=RENUS    Montgomery reduction in a Residue Number System (32 or 64-bit limbs).")
 message("      FP_METHD=LOWER    Pass reduction to the lower level.\n")
 
 message("      Field inversion:")

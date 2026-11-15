@@ -46,7 +46,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 
 	RLC_TRY {
 		bn_new(t);
-		fp_rns_val(t, a);
+		fp_prime_back(t, a);
 		bn_mod_inv(t, t, &(core_get()->prime));
 		fp_prime_conv(c, t);
 	} RLC_CATCH_ANY {

@@ -497,7 +497,7 @@ typedef struct {
 #elif FP_RDC == FP_QUICK
 #define fp_rdc(C, A)		fp_rdc_quick(C, A)
 #elif FP_RDC == FP_RENUS
-#define fp_rdc(C, A)		fp_rns_rdc(C, A)
+#define fp_rdc(C, A)		fp_rdc_renus(C, A)
 #elif FP_RDC == FP_LOWER
 #define fp_rdc(C, A)		fp_rdc_lower(C, A)
 #endif
@@ -745,14 +745,6 @@ void fp_rns_conv(dig_t *c, const bn_t a);
 void fp_rns_back(bn_t c, const dig_t *a);
 
 /**
- * Computes the value modulo p of an element in the Residue Number System.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the element.
- */
-void fp_rns_val(bn_t c, const dig_t *a);
-
-/**
  * Converts an element in the Residue Number System to the digits of its value
  * in [0, p), in constant time.
  *
@@ -769,16 +761,6 @@ void fp_rns_get(dig_t *c, const dig_t *a);
  * @param[in] a				- the RLC_FP_DIGS digits.
  */
 void fp_rns_set(dig_t *c, const dig_t *a);
-
-/**
- * Reduces an element of the Residue Number System by Montgomery reduction:
- * computes c = a / M mod p, for M the product of the first base, as an
- * integer smaller than 3p in absolute value. Requires |a| < 2^30 * p^2.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the element to reduce.
- */
-void fp_rns_rdc(dig_t *c, const dig_t *a);
 
 /**
  * Tests if an element of the Residue Number System is zero modulo p, in
@@ -1330,6 +1312,17 @@ void fp_rdc_monty_comba(fp_t c, dv_t a);
  * @param[in] a				- the multiplication result to reduce.
  */
 void fp_rdc_quick(fp_t c, dv_t a);
+
+/**
+ * Reduces a multiplication result modulo the prime field modulo using
+ * Montgomery reduction in a Residue Number System: computes c = a / M mod p,
+ * for M the product of the first base, as an integer smaller than 3p in
+ * absolute value. Requires |a| < 2^30 * p^2.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiplication result to reduce.
+ */
+void fp_rdc_renus(dig_t *c, const dig_t *a);
 
 /**
  * Reduces a multiplication result modulo the prime field modulo using

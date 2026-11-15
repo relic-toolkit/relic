@@ -57,7 +57,7 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	rlc_align dig_t t[RLC_FP_LEN];
 
 	/* Reduce, then multiply by M/2 without reduction to stay unreduced. */
-	fp_rns_rdc(t, a);
+	fp_rdc_renus(t, a);
 	fp_muln_low(c, t, core_get()->rns.half);
 }
 

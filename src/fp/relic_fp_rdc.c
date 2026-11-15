@@ -116,6 +116,15 @@ void fp_rdc_quick(fp_t c, dv_t a) {
 	}
 }
 
+#if FP_RDC == FP_RENUS
+
+void fp_rdc_renus(dig_t *c, const dig_t *a) {
+	/* The reduction in RNS does not write to its input. */
+	fp_rdcn_low(c, (dig_t *)a);
+}
+
+#endif
+
 #if FP_RDC == FP_LOWER
 
 void fp_rdc_lower(fp_t c, dv_t a) {

@@ -361,24 +361,7 @@ void fp_rns_back(bn_t c, const dig_t *a) {
 	}
 }
 
-void fp_rns_rdc(dig_t *c, const dig_t *a) {
-	/* The reduction in RNS does not write to its input. */
-	fp_rdcn_low(c, (dig_t *)a);
-}
-
 /*============================================================================*/
-
-void fp_rns_val(bn_t c, const dig_t *a) {
-	rlc_align dig_t t[RLC_FP_LEN];
-
-	fp_rns_wide(t, a);
-	fp_rns_rdc(t, t);
-	fp_rns_back(c, t);
-	bn_mod(c, c, &(core_get()->prime));
-	if (bn_sign(c) == RLC_NEG) {
-		bn_add(c, c, &(core_get()->prime));
-	}
-}
 
 void fp_rns_get(dig_t *c, const dig_t *a) {
 	ctx_t *ctx = core_get();
@@ -390,7 +373,7 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 
 	/* r = a / M is the value of a, with |r| < 3p. */
 	fp_rns_wide(r, a);
-	fp_rns_rdc(r, r);
+	fp_rdc_renus(r, r);
 	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
 	 * r / M is tiny. */
 	for (size_t i = 0; i < n; i++) {

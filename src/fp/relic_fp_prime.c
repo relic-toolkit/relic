@@ -720,7 +720,16 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 }
 
 void fp_prime_back(bn_t c, const fp_t a) {
-	fp_rns_val(c, a);
+	rlc_align dig_t t[RLC_FP_LEN];
+
+	/* Reduce a plain element as a product, then take the value mod p. */
+	fp_rns_wide(t, a);
+	fp_rdc_renus(t, t);
+	fp_rns_back(c, t);
+	bn_mod(c, c, &(core_get()->prime));
+	if (bn_sign(c) == RLC_NEG) {
+		bn_add(c, c, &(core_get()->prime));
+	}
 }
 
 #else
