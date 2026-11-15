@@ -31,9 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_bn_low.h"
-#if BN_MOD == BN_RENUS
-#include "relic_rns_low.h"
-#endif
+#include "relic_bn_mxp_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -44,127 +42,6 @@
  * and the binary method is faster. Measured at moduli of 1024 and 2048 bits.
  */
 #define BN_MXP_BITS	17
-
-/*
- * The exponentiations below are written once against the representation of
- * the modular reduction: the type of elements and of the precomputed value V,
- * and the conversions and operations on them. Positional reductions keep
- * elements as integers, while a Residue Number System keeps residues.
- */
-#if BN_MOD == BN_RENUS
-
-/*
- * Room of the contexts for exponentiation: products of values below (n + 1)N
- * need 2 log2(n + 1) bits of it, so 16 bits cover bases of up to 255 moduli.
- */
-#define BN_MXP_ROOM		16
-
-/**
- * Converts an integer to the Residue Number System, reduced modulo m and in
- * Montgomery form.
- *
- * @param[out] r			- the residues.
- * @param[in] a				- the integer.
- * @param[in] m				- the modulus.
- * @param[in] c				- the context.
- */
-static void bn_mxp_conv(dig_t *r, const bn_t a, const bn_t m,
-		const rns_st *c) {
-	dig_t v[RLC_BN_DIGS];
-	bn_t t;
-
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-		bn_mod_basic(t, a, m);
-		bn_write_raw(v, c->d, t);
-		rns_set(r, v, c);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(t);
-	}
-}
-
-/**
- * Converts residues in Montgomery form back to an integer in [0, m).
- *
- * @param[out] r			- the integer.
- * @param[in] a				- the residues.
- * @param[in] c				- the context.
- */
-static void bn_mxp_back(bn_t r, const dig_t *a, const rns_st *c) {
-	dig_t v[RLC_BN_DIGS];
-
-	rns_get(v, a, c);
-	bn_read_raw(r, v, c->d);
-}
-
-#define MXP_T					dv_t
-#define MXP_V					const rns_st *
-#define MXP_V_NULL(V)			V = NULL
-#define MXP_V_NEW(V, M)			V = rns_lookup(M, BN_MXP_ROOM)
-#define MXP_V_FREE(V)			(void)(V)
-#define MXP_NULL(X)				dv_null(X)
-#define MXP_NEW(X, V)			dv_new(X)
-#define MXP_FREE(X)				dv_free(X)
-#define MXP_GROW(X, M)			(void)(X)
-#define MXP_CONV(X, A, M, V)	bn_mxp_conv(X, A, M, V)
-#define MXP_BACK(C, X, M, V)	bn_mxp_back(C, X, V)
-#define MXP_ONE(X, M, V)		dv_copy(X, (V)->one, 2 * (V)->o)
-#define MXP_COPY(X, Y, V)		dv_copy(X, Y, 2 * (V)->o)
-#define MXP_SWAP(X, Y, B, V)	dv_swap_sec(X, Y, 2 * (V)->o, B)
-#define MXP_MUL(X, Y, Z, M, V)	rns_mulm_low(X, Y, Z, V)
-#define MXP_SQR(X, Y, M, V)		rns_mulm_low(X, Y, Y, V)
-/* A step of the ladder: X = X * Y and Y = Y^2, with T unused. */
-#define MXP_STEP(X, Y, T, M, V)												\
-	(void)(T);																\
-	rns_mulm_low(X, X, Y, V);												\
-	rns_mulm_low(Y, Y, Y, V)
-
-#else
-
-#define MXP_T					bn_t
-#define MXP_V					bn_t
-#define MXP_V_NULL(V)			bn_null(V)
-#define MXP_V_NEW(V, M)														\
-	bn_new(V);																\
-	bn_mod_pre(V, M)
-#define MXP_V_FREE(V)			bn_free(V)
-#define MXP_NULL(X)				bn_null(X)
-#define MXP_NEW(X, V)			bn_new(X)
-#define MXP_FREE(X)				bn_free(X)
-#define MXP_GROW(X, M)			bn_grow(X, (M)->alloc)
-#define MXP_COPY(X, Y, V)		bn_copy(X, Y)
-#define MXP_SWAP(X, Y, B, V)	bn_swap_sec(X, Y, B)
-#define MXP_MUL(X, Y, Z, M, V)												\
-	bn_mul(X, Y, Z);														\
-	bn_mod(X, X, M, V)
-#define MXP_SQR(X, Y, M, V)													\
-	bn_sqr(X, Y);															\
-	bn_mod(X, X, M, V)
-/* A step of the ladder: X = X * Y and Y = Y^2, with the products in T so that
- * X and Y keep their size for the swaps. */
-#define MXP_STEP(X, Y, T, M, V)												\
-	bn_mul(T, X, Y);														\
-	bn_mod(X, T, M, V);														\
-	bn_sqr(T, Y);															\
-	bn_mod(Y, T, M, V)
-#if BN_MOD == BN_MONTY
-#define MXP_CONV(X, A, M, V)	bn_mod_monty_conv(X, A, M)
-#define MXP_BACK(C, X, M, V)	bn_mod_monty_back(C, X, M)
-#define MXP_ONE(X, M, V)													\
-	bn_set_dig(X, 1);														\
-	bn_mod_monty_conv(X, X, M)
-#else
-/* The reductions expect operands in [0, m). */
-#define MXP_CONV(X, A, M, V)	bn_mod_basic(X, A, M)
-#define MXP_BACK(C, X, M, V)	bn_copy(C, X)
-#define MXP_ONE(X, M, V)		bn_set_dig(X, 1)
-#endif
-
-#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */

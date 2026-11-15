@@ -292,6 +292,27 @@ void rns_get(dig_t *r, const dig_t *a, const rns_t c);
 void rns_set(dig_t *r, const dig_t *a, const rns_t c);
 
 /**
+ * Converts a value in the Residue Number System to its residue modulo N in
+ * [0, N), as an integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] a				- the value.
+ * @param[in] c				- the context.
+ */
+void rns_get_bn(bn_t r, const dig_t *a, const rns_t c);
+
+/**
+ * Converts an integer of any sign and size to a value in the Residue Number
+ * System with the same residue modulo N. The integer is reduced by division,
+ * which is not constant time.
+ *
+ * @param[out] r			- the value.
+ * @param[in] a				- the integer.
+ * @param[in] c				- the context.
+ */
+void rns_set_bn(dig_t *r, const bn_t a, const rns_t c);
+
+/**
  * Tests if a value in the Residue Number System is zero modulo N, in constant
  * time.
  *

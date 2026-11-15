@@ -88,6 +88,17 @@ static void arith(int bits) {
 		BENCH_ADD(rns_get(v, x, c));
 	} BENCH_END;
 
+	BENCH_RUN("rns_set_bn") {
+		bn_rand_mod(a, n);
+		BENCH_ADD(rns_set_bn(x, a, c));
+	} BENCH_END;
+
+	BENCH_RUN("rns_get_bn") {
+		bn_rand_mod(a, n);
+		rns_set_bn(x, a, c);
+		BENCH_ADD(rns_get_bn(b, x, c));
+	} BENCH_END;
+
 	BENCH_RUN("rns_is_zero") {
 		bn_rand_mod(a, n);
 		bn_write_raw(v, d, a);

@@ -133,6 +133,19 @@ static int arith(int bits) {
 			TEST_ASSERT(dv_cmp(v, w, d) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("integer conversion is correct") {
+			/* Any sign and size, reduced modulo N on the way in. */
+			bn_rand(a, RLC_NEG, 2 * bits);
+			rns_set_bn(x, a, c);
+			rns_get_bn(b, x, c);
+			bn_mod(e, a, n);
+			TEST_ASSERT(bn_cmp(b, e) == RLC_EQ, end);
+			bn_rand_mod(a, n);
+			rns_set_bn(x, a, c);
+			rns_get_bn(b, x, c);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("montgomery multiplication is correct") {
 			bn_rand_mod(a, n);
 			bn_rand_mod(b, n);

@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_bn_mxp_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -82,7 +83,9 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n) {
-    bn_t *t = NULL, r, u;
+	MXP_T *t = NULL, r;
+	MXP_V u;
+	bn_t z;
 	size_t l;
 	dig_t parities;
 
@@ -106,83 +109,76 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		return;
 	}
 
-	bn_null_all(r, u);
-	t = RLC_ALLOCA(bn_t, 1 << n);
+	MXP_NULL(r);
+	MXP_V_NULL(u);
+	bn_null(z);
+	t = RLC_ALLOCA(MXP_T, 1 << n);
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 	for (size_t i = 0; i < ((size_t)1 << n); i++) {
-		bn_null(t[i]);
+		MXP_NULL(t[i]);
 	}
 
-    RLC_TRY {
+	RLC_TRY {
+		MXP_V_NEW(u, m);
 		for (size_t i = 0; i < ((size_t)1 << n); i++) {
-			bn_new(t[i]);
+			MXP_NEW(t[i], u);
 		}
-		bn_new_all(r, u);
-		bn_mod_pre(u, m);
+		MXP_NEW(r, u);
+		bn_new(z);
 
-        // Precompute all 2^n combinations
-		bn_set_dig(t[0], 1);
-#if BN_MOD == BN_MONTY
-		bn_mod_monty_conv(t[0], t[0], m);
-#endif
-        for (size_t i = 0; i < n; i++) {
-            if (!bn_is_zero(b[i])) { // Otherwise will never need P[i]
+		/* Precompute all 2^n combinations. */
+		MXP_ONE(t[0], m, u);
+		for (size_t i = 0; i < n; i++) {
+			/* A zero exponent never selects the combinations with a[i]. */
+			if (!bn_is_zero(b[i])) {
 				const uint_t star = 1 << i;
 				/* A negative exponent is a power of the inverse. */
 				if (bn_sign(b[i]) == RLC_NEG) {
-					bn_mod_inv(t[star], a[i], m);
+					bn_mod_inv(z, a[i], m);
+					MXP_CONV(t[star], z, m, u);
 				} else {
-					bn_mod_basic(t[star], a[i], m);
+					MXP_CONV(t[star], a[i], m, u);
 				}
-#if BN_MOD == BN_MONTY
-				bn_mod_monty_conv(t[star], t[star], m);
-#endif
-                for(size_t j = star + 1; j < (star << 1); j++) {
-                    bn_mul(t[j], t[star], t[j - star]);
-					bn_mod(t[j], t[j], m, u);
-                }
-            }
-        }
+				for (size_t j = star + 1; j < (star << 1); j++) {
+					MXP_MUL(t[j], t[star], t[j - star], m, u);
+				}
+			}
+		}
 
 		l = bn_bits(b[0]);
-	    for(size_t j = 1; j < n; j++) {
+		for (size_t j = 1; j < n; j++) {
 			l = RLC_MAX(l, bn_bits(b[j]));
-	    }
+		}
 
 		/* Accumulate in r, since c may alias m. */
-		bn_copy(r, t[0]);
+		MXP_COPY(r, t[0], u);
 		for (int i = l - 1; i >= 0; i--) {
-			// One Squaring
-		    bn_sqr(r, r);
-			bn_mod(r, r, m, u);
-			// Select odd exponents
-		    parities = bn_get_bit(b[0], i);
-		    for(size_t j = 1; j < n; j++) {
+			MXP_SQR(r, r, m, u);
+			/* Multiply by the combination of bases with a bit set. */
+			parities = bn_get_bit(b[0], i);
+			for (size_t j = 1; j < n; j++) {
 				parities |= (uint_t)(bn_get_bit(b[j], i)) << j;
 			}
-			// One multiplication by the odd exponents
-		    if (parities) {
-		        bn_mul(r, r, t[parities]);
-		        bn_mod(r, r, m, u);
-		    }
+			if (parities) {
+				MXP_MUL(r, r, t[parities], m, u);
+			}
 		}
-#if BN_MOD == BN_MONTY
-		bn_mod_monty_back(r, r, m);
-#endif
-		bn_copy(c, r);
-
+		MXP_BACK(z, r, m, u);
+		bn_copy(c, z);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		for (size_t i = 0; i < ((size_t)1 << n); i++) {
-			bn_free(t[i]);
+			MXP_FREE(t[i]);
 		}
 		RLC_FREE(t);
-		bn_free_all(r, u);
-    }
+		MXP_FREE(r);
+		MXP_V_FREE(u);
+		bn_free(z);
+	}
 }
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of the conversions to positional form and the zero test in a
- * Residue Number System.
+ * Implementation of the conversions to and from positional form and the zero
+ * test in a Residue Number System.
  *
  * @ingroup rns
  */
@@ -54,6 +54,32 @@ void rns_set(dig_t *r, const dig_t *a, const rns_t c) {
 	rns_digs_low(t, a, c);
 	/* Times M^2 / M for Montgomery form. */
 	rns_mulm_low(r, t, c->cv, c);
+}
+
+void rns_get_bn(bn_t r, const dig_t *a, const rns_t c) {
+	dig_t v[RLC_BN_DIGS];
+
+	rns_get(v, a, c);
+	bn_read_raw(r, v, c->d);
+}
+
+void rns_set_bn(dig_t *r, const bn_t a, const rns_t c) {
+	dig_t v[RLC_BN_DIGS];
+	bn_t n, t;
+
+	bn_null_all(n, t);
+
+	RLC_TRY {
+		bn_new_all(n, t);
+		bn_read_raw(n, c->p, c->d);
+		bn_mod_basic(t, a, n);
+		bn_write_raw(v, c->d, t);
+		rns_set(r, v, c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free_all(n, t);
+	}
 }
 
 int rns_is_zero(const dig_t *a, const rns_t c) {

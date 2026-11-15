@@ -532,6 +532,8 @@
 #undef rns_back
 #undef rns_get
 #undef rns_set
+#undef rns_get_bn
+#undef rns_set_bn
 #undef rns_is_zero
 
 #define rns_core_init 	RLC_PREFIX(rns_core_init)
@@ -545,6 +547,8 @@
 #define rns_back 	RLC_PREFIX(rns_back)
 #define rns_get 	RLC_PREFIX(rns_get)
 #define rns_set 	RLC_PREFIX(rns_set)
+#define rns_get_bn 	RLC_PREFIX(rns_get_bn)
+#define rns_set_bn 	RLC_PREFIX(rns_set_bn)
 #define rns_is_zero 	RLC_PREFIX(rns_is_zero)
 
 #undef rns_extm_low
