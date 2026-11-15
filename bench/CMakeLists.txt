@@ -21,6 +21,10 @@ if (WITH_DV)
 	ADD_MODULE(dv)
 endif(WITH_DV)
 
+if (WITH_RNS)
+	ADD_MODULE(rns)
+endif(WITH_RNS)
+
 if (WITH_FP)
 	ADD_MODULE(fp)
 endif(WITH_FP)

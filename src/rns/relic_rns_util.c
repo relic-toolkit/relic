@@ -135,11 +135,10 @@ void rns_conv(dig_t *r, const bn_t a, const rns_t c) {
 			r[i] = 0;
 			continue;
 		}
+		/* The remainder is non-negative, so it is the residue of a also when
+		 * a is negative. */
 		bn_mod_dig(&d, a, c->m[i]);
 		r[i] = rns_mul(d, c->e[i], c->m[i], c->u[i]);
-		if (bn_sign(a) == RLC_NEG) {
-			r[i] = RLC_RNS_SUB(0, r[i], c->m[i]);
-		}
 	}
 }
 
