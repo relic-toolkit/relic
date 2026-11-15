@@ -886,7 +886,8 @@
 	static void C##_mul_sim_plain(C##_t r, const C##_t p, const bn_t k,		\
 			const C##_t q, const bn_t m) {									\
 		int i;																\
-		int8_t naf0[B + 1], naf1[B + 1], n0, n1, *u, *v;					\
+		/* Some of the supported prime curves have order > field. */		\
+		int8_t naf0[B + 2], naf1[B + 2], n0, n1, *u, *v;					\
 		C##_t t[2 << (RLC_WIDTH - 2)];										\
 		C##_t *t0 = t, *t1 = t + (1 << (RLC_WIDTH - 2));					\
 		size_t l, l0, l1;													\
@@ -906,7 +907,7 @@
 			TMPL_EC_MUL_NORM(C, t, 2, RLC_WIDTH);							\
 																			\
 			/* Compute the w-NAF representations of k and m. */				\
-			l0 = l1 = B + 1;												\
+			l0 = l1 = B + 2;												\
 			bn_rec_naf(naf0, &l0, k, RLC_WIDTH);							\
 			bn_rec_naf(naf1, &l1, m, RLC_WIDTH);							\
 																			\

@@ -1145,6 +1145,23 @@ static void trsa_set(bn_t a, size_t v) {
 }
 
 /**
+ * Exponentiates an odd integer modulo Lambda = 2h for an odd h, as modular
+ * exponentiation needs an odd modulus. The power is odd, so it is the one of
+ * its two lifts from Z_h to Z_Lambda that is odd.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis, odd.
+ * @param[in] b				- the exponent.
+ * @param[in] h				- half the modulus, odd.
+ */
+static void trsa_mxp(bn_t c, const bn_t a, const bn_t b, const bn_t h) {
+	bn_mxp(c, a, b, h);
+	if (bn_is_even(c)) {
+		bn_add(c, c, h);
+	}
+}
+
+/**
  * Generates a safe prime p = 2p' + 1 with gcd(e, p - 1) = gcd(w, p' - 1) = 1.
  * Both conditions hold for the lcm of such values exactly when they hold for
  * each, so a prime that fails them is replaced without discarding the other
@@ -1348,6 +1365,7 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 		bn_sub_dig(p, p, 1);
 		bn_sub_dig(q, q, 1);
 		bn_lcm(l, p, q);
+		bn_hlv(q, l);
 
 		/* Sample x in Z_Lambda^* and set e = x^theta, d = x^(-tau), both
 		 * uniform in Z_Lambda^* as the powers by theta and -tau permute it. */
@@ -1357,10 +1375,10 @@ int cp_trsa_gen(rsa_t ek, rsa_t dk, size_t bits, size_t tau, size_t theta) {
 				bn_gcd(t, x, l);
 			} while (bn_cmp_dig(t, 1) != RLC_EQ);
 			trsa_set(t, theta);
-			bn_mxp(ek->e, x, t, l);
+			trsa_mxp(ek->e, x, t, q);
 			bn_mod_inv(x, x, l);
 			trsa_set(t, tau);
-			bn_mxp(dk->d, x, t, l);
+			trsa_mxp(dk->d, x, t, q);
 		} while (bn_cmp_dig(ek->e, 1) != RLC_GT ||
 				bn_cmp_dig(dk->d, 1) != RLC_GT);
 
@@ -1414,17 +1432,18 @@ int cp_trsa_gen_exp(rsa_t ek, rsa_t dk, size_t bits, const bn_t x,
 		bn_sub_dig(p, p, 1);
 		bn_sub_dig(q, q, 1);
 		bn_lcm(l, p, q);
+		bn_hlv(q, l);
 
 		/* Fix e = x and set d = e^(-tau), or fix d = x and set e = d^(-theta),
 		 * all modulo Lambda. */
 		bn_mod_inv(p, x, l);
 		if (theta == 1) {
 			trsa_set(t, tau);
-			bn_mxp(dk->d, p, t, l);
+			trsa_mxp(dk->d, p, t, q);
 			bn_copy(ek->e, x);
 		} else {
 			trsa_set(t, theta);
-			bn_mxp(ek->e, p, t, l);
+			trsa_mxp(ek->e, p, t, q);
 			bn_copy(dk->d, x);
 		}
 		bn_zero(ek->d);

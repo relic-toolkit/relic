@@ -47,8 +47,13 @@
 /*============================================================================*/
 
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	int i, l, even;
+	int i, l;
 	bn_t t, u, r;
+
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -62,27 +67,15 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	bn_null_all(r, t, u);
 
-	/*
-	 * The precomputed reductions all need an odd modulus, so an even one is
-	 * reduced by division instead. The binary method itself does not care.
-	 */
-	even = bn_is_even(m);
-
 	RLC_TRY {
 		bn_new_all(r, t, u);
 
-		if (!even) {
-			bn_mod_pre(u, m);
-		}
+		bn_mod_pre(u, m);
 
 		l = bn_bits(b);
 
 #if BN_MOD == BN_MONTY
-		if (even) {
-			bn_mod_basic(t, a, m);
-		} else {
-			bn_mod_monty_conv(t, a, m);
-		}
+		bn_mod_monty_conv(t, a, m);
 #else
 		/* The reductions below expect an operand in [0, m). */
 		bn_mod_basic(t, a, m);
@@ -91,25 +84,15 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(r, t);
 		for (i = l - 2; i >= 0; i--) {
 			bn_sqr(r, r);
-			if (even) {
-				bn_mod_basic(r, r, m);
-			} else {
-				bn_mod(r, r, m, u);
-			}
+			bn_mod(r, r, m, u);
 			if (bn_get_bit(b, i)) {
 				bn_mul(r, r, t);
-				if (even) {
-					bn_mod_basic(r, r, m);
-				} else {
-					bn_mod(r, r, m, u);
-				}
+				bn_mod(r, r, m, u);
 			}
 		}
 
 #if BN_MOD == BN_MONTY
-		if (!even) {
-			bn_mod_monty_back(r, r, m);
-		}
+		bn_mod_monty_back(r, r, m);
 #endif
 		/* Check the sign before writing c, which may alias b. */
 		if (bn_sign(b) == RLC_NEG) {
@@ -136,6 +119,12 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
+	if (bn_is_even(m)) {
+		RLC_FREE(win);
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		RLC_FREE(win);
 		bn_zero(c);
@@ -148,9 +137,9 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	if (bn_is_even(m) || bn_bits(b) < BN_MXP_BITS) {
-		/* The binary method takes an even modulus, and is the faster of the
-		 * two while the exponent is too short to pay for the table below. */
+	if (bn_bits(b) < BN_MXP_BITS) {
+		/* The binary method is the faster of the two while the exponent is
+		 * too short to pay for the table below. */
 		RLC_FREE(win);
 		bn_mxp_basic(c, a, b, m);
 		return;
@@ -258,6 +247,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	size_t sm = m->used;
 #endif
 
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
 		return;
@@ -265,13 +259,6 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	if (bn_is_zero(b)) {
 		bn_set_dig(c, 1);
-		return;
-	}
-
-	if (bn_is_even(m)) {
-		/* The ladder cannot run on an even modulus, and the binary method is
-		 * not constant time, so the guarantee is lost along with the fallback. */
-		bn_mxp_basic(c, a, b, m);
 		return;
 	}
 
@@ -358,6 +345,11 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t t, u;
 	size_t sm;
 
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
 		return;
@@ -370,11 +362,6 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	if (bn_is_zero(a)) {
 		bn_zero(c);
-		return;
-	}
-
-	if (bn_is_even(m)) {
-		bn_mxp_basic(c, a, b, m);
 		return;
 	}
 
@@ -498,8 +485,13 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 }
 
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
-	int i, l, even;
+	int i, l;
 	bn_t r, t, u;
+
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -513,50 +505,32 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 
 	bn_null_all(r, t, u);
 
-	/* As in bn_mxp_basic(), an even modulus is reduced by division. */
-	even = bn_is_even(m);
-
 	RLC_TRY {
 		bn_new_all(r, t, u);
 
-		if (!even) {
-			bn_mod_pre(u, m);
-		}
+		bn_mod_pre(u, m);
 
 		l = util_bits_dig(b);
 
 #if BN_MOD == BN_MONTY
-		if (even) {
-			bn_mod_basic(t, a, m);
-		} else {
-			bn_mod_monty_conv(t, a, m);
-		}
+		bn_mod_monty_conv(t, a, m);
 #else
+		/* The reductions below expect an operand in [0, m). */
 		bn_mod_basic(t, a, m);
 #endif
 
 		bn_copy(r, t);
 		for (i = l - 2; i >= 0; i--) {
 			bn_sqr(r, r);
-			if (even) {
-				bn_mod_basic(r, r, m);
-			} else {
-				bn_mod(r, r, m, u);
-			}
+			bn_mod(r, r, m, u);
 			if (b & ((dig_t)1 << i)) {
 				bn_mul(r, r, t);
-				if (even) {
-					bn_mod_basic(r, r, m);
-				} else {
-					bn_mod(r, r, m, u);
-				}
+				bn_mod(r, r, m, u);
 			}
 		}
 
 #if BN_MOD == BN_MONTY
-		if (!even) {
-			bn_mod_monty_back(r, r, m);
-		}
+		bn_mod_monty_back(r, r, m);
 #endif
 		/* Write c last, since it may alias m. The exponent is unsigned. */
 		bn_copy(c, r);

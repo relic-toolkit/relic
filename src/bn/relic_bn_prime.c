@@ -400,15 +400,14 @@ int bn_is_prime_basic(const bn_t a) {
 
 int bn_is_prime_rabin(const bn_t a) {
 	bn_t t, n1, y, r;
-	int i, s, j, result, b, tests = 0;
+	int i, s, j, b, tests = 0, result = bn_prime_small(a);
 
-	bn_null_all(t, n1, y, r);
-
-	result = bn_prime_small(a);
 	if (result >= 0) {
 		return result;
 	}
 	result = 1;
+
+	bn_null_all(t, n1, y, r);
 
 	RLC_TRY {
 		/*
@@ -500,11 +499,14 @@ int bn_is_prime_rabin(const bn_t a) {
 
 int bn_is_prime_solov(const bn_t a) {
 	bn_t t0, t1, t2;
-	int i, result;
+	int i, result = bn_prime_small(a);
+
+	if (result >= 0) {
+		return result;
+	}
+	result = 1;
 
 	bn_null_all(t0, t1, t2);
-
-	result = 1;
 
 	RLC_TRY {
 		bn_new_all(t0, t1, t2);
