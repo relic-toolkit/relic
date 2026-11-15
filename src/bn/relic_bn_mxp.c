@@ -405,6 +405,10 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 
 	RLC_TRY {
 		bn_new_all(t, u);
+#if BN_MOD == BN_RENUS
+		/* Use the contexts of the moduli set, when it has them. */
+		rns_hint(crt->rns, 2);
+#endif
 
 		/* The halves run in parallel under OpenMP, except in a Residue Number
 		 * System, where both threads would update the shared cache. */
@@ -481,8 +485,42 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+#if BN_MOD == BN_RENUS
+		rns_hint(NULL, 0);
+#endif
 		bn_free_all(t, u);
 	}
+}
+
+void bn_mxp_crt_pre(crt_t crt, int sqr) {
+#if BN_MOD == BN_RENUS
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		for (int k = 0; k < 2; k++) {
+			bn_copy(t, (k == 0 ? crt->p : crt->q));
+			if (sqr) {
+				bn_sqr(t, t);
+			}
+			rns_free(&(crt->rns[k]));
+			rns_new(&(crt->rns[k]), RLC_RNS_SIZE(bn_bits(t), BN_MXP_ROOM),
+					t->used);
+			if (crt->rns[k].mem != NULL) {
+				rns_pre(&(crt->rns[k]), t, BN_MXP_ROOM);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+	}
+#else
+	(void)crt;
+	(void)sqr;
+#endif
 }
 
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {

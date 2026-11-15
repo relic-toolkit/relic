@@ -975,6 +975,8 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 		bn_mod(prv->crt->dq, prv->d, t);
 		/* qInv = q^(-1) mod p. */
 		bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
+
+		bn_mxp_crt_pre(prv->crt, 0);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

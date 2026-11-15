@@ -103,6 +103,8 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 			/* qInv = q^(-1) mod p. */
 			bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
 
+			bn_mxp_crt_pre(prv->crt, 1);
+
 			/* n=pq */
 			bn_copy(pub->crt->n, prv->crt->n);
 			bn_copy(pub->g, prv->g);

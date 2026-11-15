@@ -69,6 +69,8 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 		/* qInv = q^(-1) mod p. */
 		bn_mod_inv(prv->qi, prv->q, prv->p);
 
+		bn_mxp_crt_pre(prv, 1);
+
 		bn_copy(pub, prv->n);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;

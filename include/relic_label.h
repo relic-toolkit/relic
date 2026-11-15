@@ -274,6 +274,7 @@
 #undef bn_mxp_lower
 #undef bn_mxp_dig
 #undef bn_mxp_crt
+#undef bn_mxp_crt_pre
 #undef bn_mxp_sim
 #undef bn_mxp_sim_few
 #undef bn_mxp_sim_lot
@@ -410,6 +411,7 @@
 #define bn_mxp_lower 	RLC_PREFIX(bn_mxp_lower)
 #define bn_mxp_dig 	RLC_PREFIX(bn_mxp_dig)
 #define bn_mxp_crt 	RLC_PREFIX(bn_mxp_crt)
+#define bn_mxp_crt_pre 	RLC_PREFIX(bn_mxp_crt_pre)
 #define bn_mxp_sim 	RLC_PREFIX(bn_mxp_sim)
 #define bn_mxp_sim_few 	RLC_PREFIX(bn_mxp_sim_few)
 #define bn_mxp_sim_lot 	RLC_PREFIX(bn_mxp_sim_lot)
@@ -523,6 +525,7 @@
 
 #undef rns_core_init
 #undef rns_core_clean
+#undef rns_hint
 #undef rns_lookup
 #undef rns_size
 #undef rns_new
@@ -538,6 +541,7 @@
 
 #define rns_core_init 	RLC_PREFIX(rns_core_init)
 #define rns_core_clean 	RLC_PREFIX(rns_core_clean)
+#define rns_hint 	RLC_PREFIX(rns_hint)
 #define rns_lookup 	RLC_PREFIX(rns_lookup)
 #define rns_size 	RLC_PREFIX(rns_size)
 #define rns_new 	RLC_PREFIX(rns_new)

@@ -229,6 +229,10 @@ typedef struct _ctx_t {
 	rns_st rns_cache[2];
 	/** Index of the most recently used context. */
 	int rns_last;
+	/** Contexts supplied by the caller, searched before the cache. */
+	const rns_st *rns_hint;
+	/** Number of contexts supplied by the caller. */
+	size_t rns_hints;
 #endif
 
 #ifdef WITH_FP

@@ -35,6 +35,24 @@
 #include "relic_rns_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Tests if a context is precomputed for a modulus with the given number of
+ * moduli. The modulus is public, so it is compared in variable time.
+ *
+ * @param[in] c				- the context.
+ * @param[in] mod			- the modulus.
+ * @param[in] n				- the number of moduli in each base.
+ * @return 1 if the context matches, 0 otherwise.
+ */
+static int rns_match(const rns_st *c, const bn_t mod, size_t n) {
+	return c->mem != NULL && c->n == n && c->d == mod->used &&
+			dv_cmp(c->p, mod->dp, mod->used) == RLC_EQ;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -45,6 +63,8 @@ void rns_core_init(void) {
 		ctx->rns_cache[k].mem = NULL;
 	}
 	ctx->rns_last = 0;
+	ctx->rns_hint = NULL;
+	ctx->rns_hints = 0;
 }
 
 void rns_core_clean(void) {
@@ -63,11 +83,14 @@ const rns_st *rns_lookup(const bn_t mod, int room) {
 	rns_st *c;
 	int k;
 
-	/* The modulus is public, so it is compared in variable time. */
+	for (size_t j = 0; j < ctx->rns_hints; j++) {
+		if (rns_match(&(ctx->rns_hint[j]), mod, n)) {
+			return &(ctx->rns_hint[j]);
+		}
+	}
 	for (k = 0; k < 2; k++) {
 		c = &(ctx->rns_cache[k]);
-		if (c->mem != NULL && c->n == n && c->d == d &&
-				dv_cmp(c->p, mod->dp, d) == RLC_EQ) {
+		if (rns_match(c, mod, n)) {
 			ctx->rns_last = k;
 			return c;
 		}
@@ -82,6 +105,13 @@ const rns_st *rns_lookup(const bn_t mod, int room) {
 	}
 	ctx->rns_last = k;
 	return c;
+}
+
+void rns_hint(const rns_st *c, size_t n) {
+	ctx_t *ctx = core_get();
+
+	ctx->rns_hint = c;
+	ctx->rns_hints = (c == NULL ? 0 : n);
 }
 
 size_t rns_size(size_t n, size_t d) {

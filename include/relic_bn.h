@@ -116,6 +116,11 @@ typedef bn_st *bn_t;
 #endif
 #endif
 
+#if BN_MOD == BN_RENUS
+/* After bn_t, as the header of the Residue Number System needs it. */
+#include "relic_rns.h"
+#endif
+
 /**
  * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
  */
@@ -132,6 +137,10 @@ typedef struct {
 	bn_t dq;
 	/** The inverse of q modulo p. */
 	bn_t qi;
+#if BN_MOD == BN_RENUS
+	/** Contexts of the Residue Number System for the moduli of the halves. */
+	rns_st rns[2];
+#endif
 } crt_st;
 
 #if RLC_ALLOC == RLC_AUTO
@@ -230,11 +239,31 @@ typedef crt_st *crt_t;
 /** @} */
 
 /**
+ * Sets empty and frees the contexts of the Residue Number System in a CRT
+ * moduli set, which own memory whatever the allocation method.
+ *
+ * @param[out] A			- the CRT moduli set.
+ */
+#if BN_MOD == BN_RENUS
+#define crt_null_rns(A)		(A)->rns[0].mem = (A)->rns[1].mem = NULL
+#define crt_free_rns(A)														\
+	rns_free(&((A)->rns[0]));												\
+	rns_free(&((A)->rns[1]))
+#else
+#define crt_null_rns(A)		/* empty */
+#define crt_free_rns(A)		/* empty */
+#endif
+
+/**
  * Initializes a Chinese Remainder Theorem (CRT) moduli set with a null value.
  *
  * @param[out] A			- the moduli to initialize.
  */
+#if RLC_ALLOC == RLC_AUTO
+#define crt_null(A)			crt_null_rns(A)
+#else
 #define crt_null(A)			RLC_NULL(A)
+#endif
 
 /**
  * Calls a function to allocate and initialize a CRT moduli set.
@@ -253,6 +282,7 @@ typedef crt_st *crt_t;
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
+	crt_null_rns(A);														\
 
 #elif RLC_ALLOC == RLC_AUTO
 #define crt_new(A)															\
@@ -262,6 +292,7 @@ typedef crt_st *crt_t;
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
+	crt_null_rns(A);														\
 
 #endif
 
@@ -279,12 +310,13 @@ typedef crt_st *crt_t;
 		bn_free((A)->p);													\
 		bn_free((A)->q);													\
 		bn_free((A)->qi);													\
+		crt_free_rns(A);													\
 		free(A);															\
 		A = NULL;															\
 	}
 
 #elif RLC_ALLOC == RLC_AUTO
-#define crt_free(A)				/* empty */
+#define crt_free(A)				crt_free_rns(A)
 
 #endif
 
@@ -1272,6 +1304,17 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
  */
 void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 	const crt_t crt, int sqr);
+
+/**
+ * Precomputes values for modular exponentiation with the Chinese Remainder
+ * Theorem, modulo the primes of a CRT moduli set or their squares. Only the
+ * modular reduction in a Residue Number System needs them, as contexts for
+ * both moduli, and bn_mxp_crt() does without them.
+ *
+ * @param[in,out] crt		- the set of moduli.
+ * @param[in] sqr			- the flag to indicate if modulo p, q or p^2, q^2.
+ */
+void bn_mxp_crt_pre(crt_t crt, int sqr);
 
 /**
  * Exponentiates simultaneously two integers modulo a positive integer

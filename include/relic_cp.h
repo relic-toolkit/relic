@@ -289,7 +289,11 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the moduli to initialize.
  */
+#if RLC_ALLOC == RLC_AUTO
+#define shpe_null(A)			crt_null((A)->crt)
+#else
 #define shpe_null(A)			RLC_NULL(A)
+#endif
 
 /**
  * Calls a function to allocate and initialize a Subgroup Paillier key pair.
@@ -336,7 +340,7 @@ typedef etrs_st *etrs_t;
 	}
 
 #elif RLC_ALLOC == RLC_AUTO
-#define shpe_free(A)				/* empty */
+#define shpe_free(A)				crt_free((A)->crt)
 
 #endif
 
@@ -345,7 +349,11 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
+#if RLC_ALLOC == RLC_AUTO
+#define rsa_null(A)			crt_null((A)->crt)
+#else
 #define rsa_null(A)			RLC_NULL(A)
+#endif
 
 /**
  * Calls a function to allocate and initialize an RSA key pair.
@@ -388,7 +396,7 @@ typedef etrs_st *etrs_t;
 	}
 
 #elif RLC_ALLOC == RLC_AUTO
-#define rsa_free(A)				/* empty */
+#define rsa_free(A)				crt_free((A)->crt)
 
 #endif
 
@@ -397,7 +405,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#define rabin_null(A)		RLC_NULL(A)
+#define rabin_null(A)		crt_null(A)
 
 /**
  * Calls a function to allocate and initialize a Rabin key pair.
@@ -418,7 +426,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#define phpe_null(A)		RLC_NULL(A)
+#define phpe_null(A)		crt_null(A)
 
 /**
  * Calls a function to allocate and initialize a Paillier key pair.

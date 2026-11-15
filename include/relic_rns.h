@@ -42,8 +42,8 @@
 #ifndef RLC_RNS_H
 #define RLC_RNS_H
 
-#include "relic_bn.h"
 #include "relic_conf.h"
+#include "relic_util.h"
 #include "relic_types.h"
 
 /*============================================================================*/
@@ -183,6 +183,9 @@ typedef struct {
  */
 typedef rns_st rns_t[1];
 
+/* The types come first, as the CRT moduli sets of the BN module hold them. */
+#include "relic_bn.h"
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -198,9 +201,19 @@ void rns_core_init(void);
 void rns_core_clean(void);
 
 /**
- * Returns a context for a modulus from the cache of the library context,
- * precomputing it in place of the least recently used one if it is missing.
- * The context stays valid until two other moduli are looked up.
+ * Supplies contexts to be searched by rns_lookup() before its cache, until
+ * replaced. The contexts must stay valid meanwhile, and are not modified.
+ *
+ * @param[in] c				- the contexts, or NULL for none.
+ * @param[in] n				- the number of contexts.
+ */
+void rns_hint(const rns_st *c, size_t n);
+
+/**
+ * Returns a context for a modulus among those supplied by rns_hint() or else
+ * from the cache of the library context, precomputing it in place of the least
+ * recently used one if it is missing. A context from the cache stays valid
+ * until two other moduli are looked up.
  *
  * @param[in] mod			- the modulus.
  * @param[in] room			- the room for sums of products, in bits.

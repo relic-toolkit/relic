@@ -71,6 +71,8 @@ int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits) {
 		bn_sub_dig(crt->dp, crt->p, 1);
 		bn_sub_dig(crt->dq, crt->q, 1);
 		bn_mod_inv(crt->qi, crt->q, crt->p);
+
+		bn_mxp_crt_pre(crt, 0);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
