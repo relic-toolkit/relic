@@ -1361,16 +1361,19 @@ static int exponentiation(void) {
 			bn_copy(c, p);
 			bn_mxp_dig(c, a, 251, c);
 			TEST_ASSERT(bn_cmp(t[0], c) == RLC_EQ, end);
-			/* An even modulus is also supported. */
+		}
+		TEST_END;
+
+		TEST_CASE("modular exponentiation rejects even moduli") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_set_dig(b, 251);
 			bn_add_dig(t[1], p, 1);
-			bn_mxp_dig(c, a, 5, t[1]);
-			bn_mod(t[2], a, t[1]);
-			bn_copy(t[3], t[2]);
-			for (int k = 1; k < 5; k++) {
-				bn_mul(t[3], t[3], t[2]);
-				bn_mod(t[3], t[3], t[1]);
-			}
-			TEST_ASSERT(bn_cmp(t[3], c) == RLC_EQ, end);
+			TEST_ERR(bn_mxp(c, a, b, t[1]));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_mxp_dig(c, a, 251, t[1]));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ERR(bn_mxp_sim(c, a, b, a, b, t[1]));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 

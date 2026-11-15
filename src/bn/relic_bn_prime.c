@@ -504,6 +504,10 @@ int bn_is_prime_solov(const bn_t a) {
 
 	bn_null_all(t0, t1, t2);
 
+	result = bn_prime_small(a);
+	if (result >= 0) {
+		return result;
+	}
 	result = 1;
 
 	RLC_TRY {

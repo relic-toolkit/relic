@@ -389,6 +389,7 @@ typedef crt_st *crt_t;
  * @param[in] A				- the basis.
  * @param[in] B				- the exponent.
  * @param[in] M				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 #if BN_MXP == BN_BASIC
 #define bn_mxp(C, A, B, M)	bn_mxp_basic(C, A, B, M)
@@ -1191,25 +1192,25 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the binary method. The modulus may be even, which the other methods do not
- * accept, as they reduce by an algorithm that needs an odd one.
+ * the binary method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the sliding window method. An even modulus is handed to bn_mxp_basic, as the
- * window needs a reduction that takes an odd one.
+ * the sliding window method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
@@ -1218,13 +1219,13 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * the Montgomery powering ladder method. With the gmp-sec backend and
  * Montgomery reduction, it runs in constant time in the exponent, revealing
  * only its number of digits; other backends have variable-time low-level
- * arithmetic. An even modulus is handed to bn_mxp_basic, which is not constant
- * time, as the ladder needs a reduction that takes an odd one.
+ * arithmetic.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
@@ -1236,6 +1237,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
@@ -1247,6 +1249,7 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
@@ -1272,6 +1275,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
  * @param[in] a				- the elements to exponentiate.
  * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 		const bn_t m);
@@ -1286,7 +1290,7 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
  * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
  * @param[in] n				- the number of elements, at most RLC_BASES.
- * @throw ERR_NO_VALID		- if there are more than RLC_BASES elements.
+ * @throw ERR_NO_VALID		- if the modulus is even or n > RLC_BASES.
  */
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n);
@@ -1300,6 +1304,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
  * @param[in] b				- the integer scalars.
  * @param[in] m				- the modulus.
  * @param[in] n				- the number of elements to multiply.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n);
