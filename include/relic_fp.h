@@ -727,8 +727,11 @@ void fp_prime_conv(fp_t c, const bn_t a);
 void fp_rns_pre(void);
 
 /**
- * Converts a non-negative integer smaller than the product of a base to its
- * residues in both bases of the Residue Number System.
+ * Converts an integer to its residues in both bases of the Residue Number
+ * System, exactly: the integer is not reduced modulo p nor scaled as elements
+ * are, so it must be smaller than M/2 in absolute value for the product M of
+ * a base. Meant for precomputation and for testing the bounds of the
+ * arithmetic; elements are imported with fp_prime_conv().
  *
  * @param[out] c			- the RLC_FP_LEN residues.
  * @param[in] a				- the integer to convert.
@@ -737,7 +740,9 @@ void fp_rns_conv(dig_t *c, const bn_t a);
 
 /**
  * Converts the residues in the first base of the Residue Number System back to
- * an integer, by the Chinese Remainder Theorem.
+ * an integer, by the Chinese Remainder Theorem: the exact integer in (-M/2,
+ * M/2], not reduced modulo p. Meant for precomputation and for testing the
+ * bounds of the arithmetic; elements are exported with fp_prime_back().
  *
  * @param[out] c			- the result.
  * @param[in] a				- the RLC_FP_LEN residues.

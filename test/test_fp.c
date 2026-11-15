@@ -685,7 +685,27 @@ static int doubling_halving_trisecting(void) {
 	return code;
 }
 
-#if FP_RDC != FP_RENUS
+/**
+ * Generates an element small enough to be shifted left by up to the given
+ * number of digits without wrapping, so that shifting it back recovers it.
+ */
+static void shift_input(fp_t a, int digits) {
+#if FP_RDC == FP_RENUS
+	/* Elements in RNS are shifted by their values. */
+	bn_t t;
+
+	bn_null(t);
+	bn_new(t);
+	bn_rand(t, RLC_POS, FP_PRIME - 1 - digits * RLC_DIG);
+	fp_prime_conv(a, t);
+	bn_free(t);
+#else
+	fp_rand(a);
+	for (int j = 1; j <= digits; j++) {
+		a[RLC_FP_DIGS - j] = 0;
+	}
+#endif
+}
 
 static int shifting(void) {
 	int code = RLC_ERR;
@@ -697,50 +717,42 @@ static int shifting(void) {
 		fp_new_all(a, b, c);
 
 		TEST_CASE("shifting by 1 bit is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
+			shift_input(a, 1);
 			fp_lsh(b, a, 1);
 			fp_rsh(c, b, 1);
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by 2 bits is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
+			shift_input(a, 1);
 			fp_lsh(b, a, 2);
 			fp_rsh(c, b, 2);
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by half digit is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
+			shift_input(a, 1);
 			fp_lsh(b, a, RLC_DIG / 2);
 			fp_rsh(c, b, RLC_DIG / 2);
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by 1 digit is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
+			shift_input(a, 1);
 			fp_lsh(b, a, RLC_DIG);
 			fp_rsh(c, b, RLC_DIG);
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by 2 digits is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
-			a[RLC_FP_DIGS - 2] = 0;
+			shift_input(a, 2);
 			fp_lsh(b, a, 2 * RLC_DIG);
 			fp_rsh(c, b, 2 * RLC_DIG);
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("shifting by 1 digit and half is consistent") {
-			fp_rand(a);
-			a[RLC_FP_DIGS - 1] = 0;
-			a[RLC_FP_DIGS - 2] = 0;
+			shift_input(a, 2);
 			fp_lsh(b, a, RLC_DIG + RLC_DIG / 2);
 			fp_rsh(c, b, (RLC_DIG + RLC_DIG / 2));
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
@@ -754,8 +766,6 @@ static int shifting(void) {
 	fp_free_all(a, b, c);
 	return code;
 }
-
-#endif
 
 static int reduction(void) {
 	int code = RLC_ERR;
@@ -1507,13 +1517,10 @@ int main(void) {
 		return 1;
 	}
 
-#if FP_RDC != FP_RENUS
-	/* Elements in RNS have no digits to shift. */
 	if (shifting() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
 
 	if (reduction() != RLC_OK) {
 		core_clean();
