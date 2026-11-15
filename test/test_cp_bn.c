@@ -352,8 +352,8 @@ static int rsa(void) {
 }
 
 /* Short modulus length for timed RSA keys, which fits the PSEP2 seed and tag
- * of 24 and 40 bytes and a message of 10 bytes. */
-#define TRSA_BITS	(8 * (24 + 40 + 2 + 10) + 32)
+ * of 33 and 40 bytes and a message of 10 bytes. */
+#define TRSA_BITS	(8 * (33 + 40 + 2 + 10) + 32)
 
 static int trsa(void) {
 	int code = RLC_ERR;

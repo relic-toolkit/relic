@@ -46,9 +46,9 @@
 #define RSA_OAEP_LEN		(2 * RLC_MD_LEN + 2)
 
 /**
- * Length of the random seed of PSEP2 in bytes, k0 = 192 bits.
+ * Length of the random seed of PSEP2 in bytes, k0 = 264 bits.
  */
-#define RSA_PSEP_K0			(24)
+#define RSA_PSEP_K0			(33)
 
 /**
  * Length of the tag of PSEP2 in bytes, k1 = 320 bits.
