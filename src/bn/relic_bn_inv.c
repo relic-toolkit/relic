@@ -67,7 +67,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
-	int i;
+	size_t i;
 	bn_t u, *t = NULL;
 
 	if (n == 0) {
@@ -83,12 +83,12 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	}
 
 	bn_null(u);
-	for (i = 0; i < (int)n; i++) {
+	for (i = 0; i < n; i++) {
 		bn_null(t[i]);
 	}
 
 	RLC_TRY {
-		for (i = 0; i < (int)n; i++) {
+		for (i = 0; i < n; i++) {
 			bn_new(t[i]);
 		}
 		bn_new(u);
@@ -96,7 +96,7 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 		bn_copy(c[0], a[0]);
 		bn_copy(t[0], a[0]);
 
-		for (i = 1; i < (int)n; i++) {
+		for (i = 1; i < n; i++) {
 			bn_copy(t[i], a[i]);
 			bn_mul(c[i], c[i - 1], a[i]);
 			bn_mod(c[i], c[i], b);
@@ -116,7 +116,7 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < (int)n; i++) {
+		for (i = 0; i < n; i++) {
 			bn_free(t[i]);
 		}
 		bn_free(u);

@@ -325,6 +325,8 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 
 	dv_null_all(f, g, d, e, t);
 
+	dv_null_all(f, g, d, e, t);
+
 	RLC_TRY {
 		dv_new_all(f, g, d, e, t);
 
@@ -630,6 +632,9 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		fp_copy(t, a);
 		fp_rdcn_low(g, t);
+#elif FP_RDC == FP_RENUS
+		/* Elements in RNS have no digits, so take those of the value. */
+		fp_rns_get(g, a);
 #else
 		fp_copy(g, a);
 #endif
@@ -642,22 +647,24 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 			/* Conditionally negate delta if d0 is set. */
 			delta = (delta ^ -d0) + d0;
 			/* Conditionally swap based on d0. */
-			dv_swap_sec(r, v, RLC_FP_DIGS, d0);
+			dv_swap_sec(r, v, RLC_FP_LEN, d0);
 			fp_negm_low(t, r);
 			dv_swap_sec(f, g, RLC_FP_DIGS, d0);
-			dv_copy_sec(r, t, RLC_FP_DIGS, d0);
+			dv_copy_sec(r, t, RLC_FP_LEN, d0);
 			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				g[j] = RLC_SEL(g[j], ~g[j], d0);
 			}
-			fp_add1_low(g, g, d0);
+			bn_add1_low(g, g, d0, RLC_FP_DIGS);
 			t[0] = (fs ^ gs) & (-d0);
 			fs ^= t[0];
 			gs ^= t[0] ^ d0;
 
 			delta++;
 			g0 = g[0] & 1;
-			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_LEN; j++) {
 				t[j] = v[j] & (-g0);
+			}
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				u[j] = f[j] & (-g0);
 			}
 			fp_addm_low(r, r, t);
@@ -667,14 +674,21 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 			 * updating the sign of g. */
 			gs ^= g0 & (fs ^ bn_addn_low(g, g, u, RLC_FP_DIGS));
 			/* Shift and restore the sign. */
-			fp_rsh1_low(g, g);
+			bn_rsh1_low(g, g, RLC_FP_DIGS);
 			g[RLC_FP_DIGS - 1] |= (dig_t)gs << (RLC_DIG - 1);
+#if FP_RDC == FP_RENUS
+			/* Elements in RNS grow with each doubling, so reduce them before
+			 * they exceed the inputs of a multiplication. */
+			if ((i & 7) == 7) {
+				fp_mul(r, r, core_get()->one);
+				fp_mul(v, v, core_get()->one);
+			}
+#endif
 		}
 		fp_neg(t, v);
 		fp_copy_sec(v, t, fs);
 
-		dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
-		fp_add_dig(t, t, 1);
+		fp_set_dig(t, 1);
 		fp_hlv(t, t);
 #if RLC_WSIZE == 8
 		bn_set_dig(_t, d >> 8);

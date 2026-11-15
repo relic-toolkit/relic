@@ -387,24 +387,7 @@ void fp_rns_back(bn_t c, const dig_t *a) {
 	}
 }
 
-void fp_rns_rdc(dig_t *c, const dig_t *a) {
-	/* The reduction in RNS does not write to its input. */
-	fp_rdcn_low(c, (dig_t *)a);
-}
-
 /*============================================================================*/
-
-void fp_rns_val(bn_t c, const dig_t *a) {
-	rlc_align dig_t t[RLC_FP_LEN];
-
-	fp_rns_wide(t, a);
-	fp_rns_rdc(t, t);
-	fp_rns_back(c, t);
-	bn_mod(c, c, &(core_get()->prime));
-	if (bn_sign(c) == RLC_NEG) {
-		bn_add(c, c, &(core_get()->prime));
-	}
-}
 
 void fp_rns_get(dig_t *c, const dig_t *a) {
 	ctx_t *ctx = core_get();
@@ -417,7 +400,7 @@ void fp_rns_get(dig_t *c, const dig_t *a) {
 
 	/* r = a / M is the value of a, with -p < r < (RLC_FP_RNS + 1)p. */
 	fp_rns_wide(r, a);
-	fp_rns_rdc(r, r);
+	fp_rdc_renus(r, r);
 	/* r = sum xi_i (M/m_i) - alpha M, where alpha rounds sum xi_i / m_i, as
 	 * r / M is tiny. */
 	for (size_t i = 0; i < n; i++) {
@@ -471,34 +454,6 @@ void fp_rns_set(dig_t *c, const dig_t *a) {
 	fp_rnsi_low(t, a);
 	/* Times M^2 / M for Montgomery form. */
 	fp_mulm_low(c, t, core_get()->conv);
-}
-
-int fp_rns_is_zero(const dig_t *a) {
-	ctx_t *ctx = core_get();
-	const size_t n = RLC_FP_RNS, o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m, *u = ctx->rns.u;
-	dig_t q[RLC_FP_RNS], r[RLC_FP_RNS], d, z = 0;
-
-	/* The first half of the reduction gives r = a / M in B', with |r| < 3p,
-	 * so a is zero modulo p if and only if r is one of -2p, -p, 0, p or 2p,
-	 * which B' tells apart without extending r back to B. */
-	for (size_t i = 0; i < n; i++) {
-		q[i] = fp_rns_mul(a[i], ctx->rns.nq[i], m[i], u[i]);
-	}
-	fp_rnsx_low(r, q, 1, 0);
-	for (size_t i = 0; i < n; i++) {
-		r[i] = RLC_RNS_ADD(
-				fp_rns_mul(a[o + i], ctx->rns.mi[i], m[o + i], u[o + i]),
-				r[i], m[o + i]);
-	}
-	for (int k = 0; k < 5; k++) {
-		d = 0;
-		for (size_t i = 0; i < n; i++) {
-			d |= r[i] ^ ctx->rns.kp[k][o + i];
-		}
-		z |= (d == 0);
-	}
-	return (int)z;
 }
 
 #endif /* FP_RDC == FP_RENUS */

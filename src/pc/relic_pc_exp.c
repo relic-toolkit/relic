@@ -898,52 +898,9 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 }
 
 void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
-	gt_t s, t;
-	bn_t _b;
-	int8_t u, naf[RLC_DIG + 1];
-	size_t l;
-
-	if (b == 0) {
-		gt_set_unity(c);
-		return;
-	}
-
-	gt_null(s);
-	gt_null(t);
-	bn_null(_b);
-
-	RLC_TRY {
-		gt_new(s);
-		gt_new(t);
-		bn_new(_b);
-
-		bn_set_dig(_b, b);
-
-		l = RLC_DIG + 1;
-		bn_rec_naf(naf, &l, _b, 2);
-
-		gt_inv(s, a);
-		gt_copy(t, a);
-		for (int i = l - 2; i >= 0; i--) {
-			gt_sqr(t, t);
-			u = naf[i];
-			if (u > 0) {
-				gt_mul(t, t, a);
-			} else if (u < 0) {
-				gt_mul(t, t, s);
-			}
-		}
-
-		gt_copy(c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		gt_free(s);
-		gt_free(t);
-		bn_free(_b);
-	}
+	/* The extension field already exponentiates cyclotomic elements by
+	 * digits, keeping long runs of squarings within bounds. */
+	RLC_CAT(RLC_GT_LOWER, exp_dig)(c, a, b);
 }
 
 void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) {

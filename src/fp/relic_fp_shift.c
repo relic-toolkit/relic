@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_fp_low.h"
+#include "relic_bn_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -38,21 +39,25 @@
 
 void fp_lsh(fp_t c, const fp_t a, uint_t bits) {
 #if FP_RDC == FP_RENUS
-	/* Elements in RNS have no digits, so shift the value. */
+	/* Elements in RNS have no digits, so multiply by 2^bits, which only
+	 * depends on the public shift. */
 	bn_t t;
+	fp_t u;
 
 	bn_null(t);
+	fp_null(u);
 
 	RLC_TRY {
 		bn_new(t);
-		fp_prime_back(t, a);
-		bn_lsh(t, t, bits);
-		bn_mod(t, t, &(core_get()->prime));
-		fp_prime_conv(c, t);
+		fp_new(u);
+		bn_set_2b(t, bits);
+		fp_prime_conv(u, t);
+		fp_mul(c, a, u);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(t);
+		fp_free(u);
 	}
 #else
 	int digits;
@@ -83,21 +88,18 @@ void fp_lsh(fp_t c, const fp_t a, uint_t bits) {
 
 void fp_rsh(fp_t c, const fp_t a, uint_t bits) {
 #if FP_RDC == FP_RENUS
-	/* Elements in RNS have no digits, so shift the value. */
-	bn_t t;
+	/* Elements in RNS have no digits, so shift those of the value, which are
+	 * taken and put back in constant time. */
+	dig_t t[RLC_FP_DIGS];
+	int digits;
 
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-		fp_prime_back(t, a);
-		bn_rsh(t, t, bits);
-		fp_prime_conv(c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(t);
+	fp_rns_get(t, a);
+	RLC_RIP(bits, digits, bits);
+	dv_rshd(t, t, RLC_FP_DIGS, digits);
+	if (bits > 0) {
+		bn_rshb_low(t, t, RLC_FP_DIGS, bits);
 	}
+	fp_rns_set(c, t);
 #else
 	int digits;
 

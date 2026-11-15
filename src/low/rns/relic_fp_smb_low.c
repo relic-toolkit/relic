@@ -47,7 +47,7 @@ int fp_smbm_low(const dig_t *a) {
 
 	RLC_TRY {
 		bn_new(t);
-		fp_rns_val(t, a);
+		fp_prime_back(t, a);
 		r = bn_smb_leg(t, &(core_get()->prime));
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
