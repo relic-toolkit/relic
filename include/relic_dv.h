@@ -44,6 +44,9 @@
 #include "relic_types.h"
 #include "relic_util.h"
 #include "relic_label.h"
+#ifdef WITH_RNS
+#include "relic_rns.h"
+#endif
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -89,7 +92,14 @@
  * A temporary vector has enough size to store a multiplication/squaring result
  * produced by any module, plus one digit for the carry of Montgomery reduction.
  */
+#if BN_MOD == BN_RENUS
+/* Integers in a Residue Number System have a digit per modulus of two bases. */
+#define RLC_DV_DIGS														\
+	(RLC_MAX(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG) + 1, RLC_BN_SIZE),		\
+	2 * RLC_RNS_MAX))
+#else
 #define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG) + 1, RLC_BN_SIZE))
+#endif
 
 /**
  * Size in bytes of a temporary vector.
