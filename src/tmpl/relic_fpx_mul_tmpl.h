@@ -506,7 +506,8 @@
 
 /**
  * Defines a template for exponentiation by a digit in an extension field,
- * switching to faster arithmetic in the cyclotomic subgroup.
+ * switching to faster arithmetic in the cyclotomic subgroup. It is only
+ * expanded with the cyclotomic templates, which define TMPL_CYC_NORM().
  *
  * @param[in] X			- the extension field prefix.
  */
@@ -540,6 +541,7 @@
 																			\
 				for (int i = l - 2; i >= 0; i--) {							\
 					X##_sqr_cyc(t, t);										\
+					TMPL_CYC_NORM(X, t, i)									\
 																			\
 					u = naf[i];												\
 					if (u > 0) {											\

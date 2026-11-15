@@ -1593,6 +1593,14 @@ int exponentiation(void) {
 			gt_exp(b, a, d);
 			gt_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			/* A long run of squarings, against general squarings. */
+			gt_exp_dig(b, a, ((dig_t)1 << (RLC_DIG - 1)) + 1);
+			gt_copy(c, a);
+			for (int j = 0; j < RLC_DIG - 1; j++) {
+				RLC_CAT(RLC_GT_LOWER, sqr)(c, c);
+			}
+			gt_mul(c, c, a);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			/* Exponents beyond the order, of the same length or longer, are
 			 * reduced first. */
 			bn_rand_mod(d, n);

@@ -971,6 +971,10 @@ typedef dv18_t dv54_t[3];
  * Squares a dodecic extension field element in the cyclotomic subgroup.
  * Computes C = A * A.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the dodecic extension field element to square.
  */
@@ -996,6 +1000,10 @@ typedef dv18_t dv54_t[3];
 /**
  * Squares a dodecic extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
+ *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the dodecic extension field element to square.
@@ -1214,6 +1222,10 @@ typedef dv18_t dv54_t[3];
  * Squares an octdecic extension field element in the cyclotomic subgroup.
  * Computes C = A * A.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the an octdecic extension field element to square.
  */
@@ -1239,6 +1251,10 @@ typedef dv18_t dv54_t[3];
 /**
  * Squares an octdecic extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
+ *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the octdecic extension field element to square.
@@ -1355,6 +1371,10 @@ typedef dv18_t dv54_t[3];
  * Squares a 24-degree extension field element in the cyclotomic subgroup.
  * Computes C = A * A.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the 24-degree extension field element to square.
  */
@@ -1367,6 +1387,10 @@ typedef dv18_t dv54_t[3];
 /**
  * Squares a 24-degree extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
+ *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the 24-degree extension field element to square.
@@ -1483,6 +1507,10 @@ typedef dv18_t dv54_t[3];
  * Squares a 48-degree extension field element in the cyclotomic subgroup.
  * Computes C = A * A.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the 48-degree extension field element to square.
  */
@@ -1508,6 +1536,10 @@ typedef dv18_t dv54_t[3];
 /**
  * Squares a 48-degree extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
+ *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the 48-degree extension field element to square.
@@ -1610,6 +1642,10 @@ typedef dv18_t dv54_t[3];
  * Squares a 54-degree extension field element in the cyclotomic subgroup.
  * Computes C = A * A.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the 54-degree extension field element to square.
  */
@@ -1622,6 +1658,10 @@ typedef dv18_t dv54_t[3];
 /**
  * Squares a 54-degree extension field element in the cyclotomic subgroup in
  * compressed form. Computes C = A * A.
+ *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by one after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the 54-degree extension field element to square.

@@ -781,6 +781,10 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * cyclotomic subgroup, so the cheaper cyclotomic squaring is used when the
  * extension field has one.
  *
+ * With FP_METHD=RENUS, results are not fully reduced and grow with each
+ * squaring: multiply by unity after at most 8 consecutive squarings, as the
+ * exponentiation functions do.
+ *
  * @param[out] C			- the result.
  * @param[in] A				- the element to square.
  */
