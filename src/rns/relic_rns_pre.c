@@ -309,6 +309,16 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 						rns_mulp(c, rns_res(c, t, i), c->e[i], i);
 			}
 		}
+
+		/* The digits of N, and M and M^2 modulo N in storage form. */
+		for (size_t j = 0; j < c->d; j++) {
+			c->p[j] = (j < mod->used ? mod->dp[j] : 0);
+		}
+		bn_mod(t, m, mod);
+		rns_conv(c->one, t, c);
+		bn_sqr(t, t);
+		bn_mod(t, t, mod);
+		rns_conv(c->cv, t, c);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

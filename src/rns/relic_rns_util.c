@@ -50,16 +50,21 @@
 size_t rns_size(size_t n, size_t d) {
 	const size_t o = RLC_RNS_SPAN(n), w = RLC_RNS_WORDS(d);
 
-	/* Six tables of 2o residues, n of mi, five of o, the two extension tables,
-	 * the five multiples kN, the digits of M/m_i, -M and 3N, and the powers. */
-	return 12 * o + n + 5 * o + 2 * n * o + 10 * o + (n + 2) * (d + 1) +
-			w * 2 * o;
+	/* Eight tables of 2o residues, n of mi, five of o, the two extension
+	 * tables, the five multiples kN, the digits of M/m_i, -M and 3N, the
+	 * powers, and the digits of N. */
+	return 16 * o + n + 5 * o + 2 * n * o + 10 * o + (n + 2) * (d + 1) +
+			w * 2 * o + d;
 }
 
 void rns_new(rns_t c, size_t n, size_t d) {
 	const size_t o = RLC_RNS_SPAN(n), l = d + 1;
 	dig_t *p;
 
+	if (n > RLC_RNS_MAX || d > RLC_BN_DIGS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 	c->mem = (dig_t *)calloc(rns_size(n, d), sizeof(dig_t));
 	if (c->mem == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -109,6 +114,12 @@ void rns_new(rns_t c, size_t n, size_t d) {
 	c->p3 = p;
 	p += l;
 	c->pw = p;
+	p += c->w * 2 * o;
+	c->one = p;
+	p += 2 * o;
+	c->cv = p;
+	p += 2 * o;
+	c->p = p;
 }
 
 void rns_free(rns_t c) {

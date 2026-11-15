@@ -402,16 +402,7 @@ int fp_smbm_low(const dig_t *a);
  * @param[in] a				- the element.
  */
 static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
-	ctx_t *ctx = core_get();
-	const size_t n = RLC_FP_RNS, o = RLC_FP_RNSO;
-	const dig_t *m = ctx->rns.m + o, *u = ctx->rns.u + o;
-
-	for (size_t i = 0; i < n; i++) {
-		c[i] = a[i];
-	}
-	for (size_t i = 0; i < n; i++) {
-		c[o + i] = rns_mul(a[o + i], ctx->rns.mi[i], m[i], u[i]);
-	}
+	rns_wide_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO);
 }
 
 /**

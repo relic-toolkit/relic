@@ -66,6 +66,13 @@
 #endif
 
 /**
+ * Largest number of moduli in a base, for moduli up to the precision of
+ * multiple precision integers and sums of products of up to 2^32 times the
+ * square of the modulus.
+ */
+#define RLC_RNS_MAX		RLC_RNS_SPAN(RLC_RNS_SIZE(BN_PRECI, 32))
+
+/**
  * Number of residues in a vector of the backend, so that each base is padded
  * to whole vectors: eight with the AVX-512 IFMA backend, one otherwise.
  */
@@ -123,6 +130,12 @@ typedef struct {
 	size_t d;
 	/** Number of digits of RLC_RNS_DIG bits in an integer of d digits. */
 	size_t w;
+	/** Digits of the modulus N (d digits). */
+	dig_t *p;
+	/** M modulo N in storage form, which represents one (2o values). */
+	dig_t *one;
+	/** M^2 modulo N in storage form, to convert to Montgomery form (2o). */
+	dig_t *cv;
 	/** Moduli of B and then of B', padded with zeros (2o values). */
 	dig_t *m;
 	/** Values -m^{-1} mod R (2o values). */
@@ -189,6 +202,7 @@ size_t rns_size(size_t n, size_t d);
  * @param[out] c			- the context.
  * @param[in] n				- the number of moduli in each base.
  * @param[in] d				- the number of digits of the modulus.
+ * @throw ERR_NO_VALID		- if the sizes exceed RLC_RNS_MAX or RLC_BN_DIGS.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
 void rns_new(rns_t c, size_t n, size_t d);
@@ -233,5 +247,35 @@ void rns_conv(dig_t *r, const bn_t a, const rns_t c);
  * @param[in] c				- the context.
  */
 void rns_back(bn_t r, const dig_t *a, const rns_t c);
+
+/**
+ * Converts a value in the Residue Number System to the digits of its residue
+ * modulo N in [0, N), in constant time.
+ *
+ * @param[out] r			- the d digits.
+ * @param[in] a				- the value.
+ * @param[in] c				- the context.
+ */
+void rns_get(dig_t *r, const dig_t *a, const rns_t c);
+
+/**
+ * Converts the digits of an integer to a value in the Residue Number System
+ * with that residue modulo N, in constant time.
+ *
+ * @param[out] r			- the value.
+ * @param[in] a				- the d digits.
+ * @param[in] c				- the context.
+ */
+void rns_set(dig_t *r, const dig_t *a, const rns_t c);
+
+/**
+ * Tests if a value in the Residue Number System is zero modulo N, in constant
+ * time.
+ *
+ * @param[in] a				- the value to test.
+ * @param[in] c				- the context.
+ * @return 1 if the value is zero modulo N, 0 otherwise.
+ */
+int rns_is_zero(const dig_t *a, const rns_t c);
 
 #endif /* !RLC_RNS_H */

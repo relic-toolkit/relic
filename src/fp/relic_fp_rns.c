@@ -95,6 +95,9 @@ static void fp_rns_bind(ctx_t *ctx) {
 	c->mm = ctx->rns.mm;
 	c->p3 = ctx->rns.p3;
 	c->pw = ctx->rns.pw[0];
+	c->p = ctx->prime.dp;
+	c->one = ctx->one;
+	c->cv = ctx->conv;
 	c->mem = NULL;
 }
 
@@ -114,16 +117,13 @@ void fp_rns_pre(void) {
 		fp_rns_bind(ctx);
 		rns_pre(ctx->prime_rns, &(ctx->prime), RLC_FP_RNS_ROOM);
 
-		/* Constants in Montgomery form: M, M^2, M/2 and M/3 modulo p. */
+		/* The context sets M and M^2 modulo p as one and conv, so add M/2 and
+		 * M/3 modulo p in Montgomery form. */
 		bn_set_dig(m, 1);
 		for (size_t i = 0; i < RLC_FP_RNS; i++) {
 			bn_mul_dig(m, m, ctx->rns.m[i]);
 		}
 		bn_mod(t, m, &(ctx->prime));
-		rns_conv(ctx->one, t, ctx->prime_rns);
-		bn_sqr(u, t);
-		bn_mod(u, u, &(ctx->prime));
-		rns_conv(ctx->conv, u, ctx->prime_rns);
 		bn_add_dig(u, &(ctx->prime), 1);
 		bn_hlv(u, u);
 		bn_mul(u, u, t);

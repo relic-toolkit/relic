@@ -65,6 +65,8 @@ endif()
 
 if (WITH_RNS)
 	list(APPEND RELIC_SRCS ${RNS_SRCS})
+	file(GLOB TEMP low/easy/relic_rns*.c)
+	list(APPEND LOW_SRCS ${TEMP})
 endif()
 
 if (WITH_FP)

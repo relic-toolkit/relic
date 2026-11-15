@@ -527,6 +527,9 @@
 #undef rns_pre
 #undef rns_conv
 #undef rns_back
+#undef rns_get
+#undef rns_set
+#undef rns_is_zero
 
 #define rns_size 	RLC_PREFIX(rns_size)
 #define rns_new 	RLC_PREFIX(rns_new)
@@ -534,6 +537,21 @@
 #define rns_pre 	RLC_PREFIX(rns_pre)
 #define rns_conv 	RLC_PREFIX(rns_conv)
 #define rns_back 	RLC_PREFIX(rns_back)
+#define rns_get 	RLC_PREFIX(rns_get)
+#define rns_set 	RLC_PREFIX(rns_set)
+#define rns_is_zero 	RLC_PREFIX(rns_is_zero)
+
+#undef rns_extm_low
+#undef rns_muln_low
+#undef rns_rdcn_low
+#undef rns_mulm_low
+#undef rns_digs_low
+
+#define rns_extm_low 	RLC_PREFIX(rns_extm_low)
+#define rns_muln_low 	RLC_PREFIX(rns_muln_low)
+#define rns_rdcn_low 	RLC_PREFIX(rns_rdcn_low)
+#define rns_mulm_low 	RLC_PREFIX(rns_mulm_low)
+#define rns_digs_low 	RLC_PREFIX(rns_digs_low)
 
 #undef fp_st
 #undef fp_t
