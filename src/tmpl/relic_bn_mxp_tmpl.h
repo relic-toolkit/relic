@@ -61,24 +61,30 @@
 #define MXP_POS_SWAP(X, Y, B, V)	bn_swap_sec(X, Y, B)
 #define MXP_POS_MUL(X, Y, Z, M, V)											\
 	bn_mul(X, Y, Z);														\
-	bn_mod(X, X, M, V)
+	MXP_POS_RDC(X, X, M, V)
 #define MXP_POS_SQR(X, Y, M, V)												\
 	bn_sqr(X, Y);															\
-	bn_mod(X, X, M, V)
+	MXP_POS_RDC(X, X, M, V)
 /* A step of the ladder: X = X * Y and Y = Y^2, with the products in T so that
  * X and Y keep their size for the swaps. */
 #define MXP_POS_STEP(X, Y, T, M, V)											\
 	bn_mul(T, X, Y);														\
-	bn_mod(X, T, M, V);														\
+	MXP_POS_RDC(X, T, M, V);												\
 	bn_sqr(T, Y);															\
-	bn_mod(Y, T, M, V)
-#if BN_MOD == BN_MONTY
+	MXP_POS_RDC(Y, T, M, V)
+/* Positional exponentiation reduces by Montgomery reduction also under RENUS,
+ * where the reduction of other uses is Barrett's, as it is faster. */
+#if BN_MOD == BN_MONTY || BN_MOD == BN_RENUS
+#define MXP_POS_PRE(V, M)			bn_mod_pre_monty(V, M)
+#define MXP_POS_RDC(X, Y, M, V)		bn_mod_monty(X, Y, M, V)
 #define MXP_POS_CONV(X, A, M, V)	bn_mod_monty_conv(X, A, M)
 #define MXP_POS_BACK(C, X, M, V)	bn_mod_monty_back(C, X, M)
 #define MXP_POS_ONE(X, M, V)												\
 	bn_set_dig(X, 1);														\
 	bn_mod_monty_conv(X, X, M)
 #else
+#define MXP_POS_PRE(V, M)			bn_mod_pre(V, M)
+#define MXP_POS_RDC(X, Y, M, V)		bn_mod(X, Y, M, V)
 /* The reductions expect operands in [0, m). */
 #define MXP_POS_CONV(X, A, M, V)	bn_mod_basic(X, A, M)
 #define MXP_POS_BACK(C, X, M, V)	bn_copy(C, X)
@@ -98,7 +104,7 @@
 		bn_null(_u);														\
 		RLC_TRY {															\
 			bn_new(_u);														\
-			bn_mod_pre(_u, M);												\
+			MXP_POS_PRE(_u, M);												\
 			G(__VA_ARGS__, _u);												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
