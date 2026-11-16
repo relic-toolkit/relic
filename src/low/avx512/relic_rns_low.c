@@ -38,8 +38,32 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/** Largest number of vectors that hold the residues of a base. */
-#define RNS_VB		(RLC_RNS_MAX / 8)
+/**
+ * Largest number of vectors that hold the residues of a base, at least the
+ * sizes that RNS_SIZES() compiles for.
+ */
+#define RNS_VB		RLC_MAX(RLC_RNS_MAX / 8, 8)
+
+/**
+ * Calls F with the number of vectors per base N as its last argument, as a
+ * constant for up to eight vectors, so that the kernels inlined into it are
+ * compiled for each size, with their sums in registers.
+ *
+ * @param[in] N				- the number of vectors per base.
+ * @param[in] F				- the kernel.
+ */
+#define RNS_SIZES(N, F, ...)												\
+	switch (N) {															\
+		case 1: F(__VA_ARGS__, 1); break;									\
+		case 2: F(__VA_ARGS__, 2); break;									\
+		case 3: F(__VA_ARGS__, 3); break;									\
+		case 4: F(__VA_ARGS__, 4); break;									\
+		case 5: F(__VA_ARGS__, 5); break;									\
+		case 6: F(__VA_ARGS__, 6); break;									\
+		case 7: F(__VA_ARGS__, 7); break;									\
+		case 8: F(__VA_ARGS__, 8); break;									\
+		default: F(__VA_ARGS__, N); break;									\
+	}
 
 /**
  * Bound on the outputs of a base extension without correction, as a multiple
@@ -61,10 +85,11 @@
  * @param[in] full			- 1 to bring the residues down to at most m, 0 to
  * 							leave them below RNS_BOUND(n) / 4 times m.
  * @param[in] c				- the context.
+ * @param[in] nb			- the number of vectors per base.
  */
-static void rns_vext(__m512i *r, const dig_t *xi, int b, int exact, int full,
-		const rns_st *c) {
-	const size_t n = c->n, o = c->o, nb = o / 8;
+rlc_inline void rns_vext(__m512i *r, const dig_t *xi, int b, int exact,
+		int full, const rns_st *c, size_t nb) {
+	const size_t n = c->n, o = c->o;
 	const dig_t *t = (b ? c->t1 : c->t2), *w = (b ? c->u1 : c->u2);
 	const dig_t *m = c->m + (b ? o : 0), *iv = c->iv + (b ? o : 0);
 	/* Rows are spread over S sets of sums, to shorten dependency chains, fewer
@@ -115,6 +140,51 @@ static void rns_vext(__m512i *r, const dig_t *xi, int b, int exact, int full,
 	}
 }
 
+/**
+ * Reduces a product by Montgomery reduction in a Residue Number System, as
+ * rns_rdcn_imp() does.
+ *
+ * @param[out] r			- the result.
+ * @param[in] a				- the product.
+ * @param[in] c				- the context.
+ * @param[in] nb			- the number of vectors per base.
+ */
+rlc_inline void rns_vrdc(dig_t *r, const dig_t *a, const rns_st *c,
+		size_t nb) {
+	const size_t o = c->o;
+	const dig_t *m = c->m;
+	const int s = rns_halvings(16 + RNS_BOUND(c->n));
+	__m512i v[RNS_VB], x, y, z;
+	dig_t q[RLC_RNS_MAX];
+
+	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues; the padding
+	 * lanes are zero, as are their constants. */
+	for (size_t k = 0; k < nb; k++) {
+		y = rns_load(m, k);
+		/* For a below 4m, the product is at most 2m. */
+		rns_store(q, k, rns_vpeel(rns_vmulc(rns_load(a, k),
+				rns_load(c->nq, k), rns_load(c->nqv, k), y), y, 1));
+	}
+	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN only
+	 * makes the result larger, so the extension skips alpha. */
+	rns_vext(v, q, 1, -1, 0, c, nb);
+	/* r = (a + q * N) / M in B', and its xi_j for the exact extension. */
+	for (size_t k = 0; k < nb; k++) {
+		y = rns_load(m + o, k);
+		z = rns_load(c->ibv, k);
+		/* Below 4m plus the bound of the extension. */
+		x = rns_vpeel(_mm512_add_epi64(rns_load(a + o, k), v[k]), y, s);
+		rns_store(r + o, k, x);
+		rns_store(q, k, rns_vpeel(rns_vmulc(x, rns_load(c->ib + o, k), z, y),
+				y, 1));
+	}
+	/* r in B, exactly, since |r| < (n + 1)N is far below M'/2. */
+	rns_vext(v, q, 0, 1, 1, c, nb);
+	for (size_t k = 0; k < nb; k++) {
+		rns_store(r, k, v[k]);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -123,7 +193,7 @@ void rns_extm_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_t c) {
 	const size_t n = c->n;
 	__m512i v[RNS_VB];
 
-	rns_vext(v, xi, b, exact, 1, c);
+	RNS_SIZES(c->o / 8, rns_vext, v, xi, b, exact, 1, c);
 	/* Only as many residues as each base has are written. */
 	for (size_t k = 0; 8 * k < n; k++) {
 		size_t l = n - 8 * k;
@@ -140,46 +210,16 @@ void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
 	}
 }
 
-void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c) {
-	const size_t o = c->o, nb = o / 8;
-	const dig_t *m = c->m;
-	const int s = rns_halvings(16 + RNS_BOUND(c->n));
-	__m512i v[RNS_VB], x, y, z;
-	dig_t q[RLC_RNS_MAX];
 
-	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues; the padding
-	 * lanes are zero, as are their constants. */
-	for (size_t k = 0; k < nb; k++) {
-		y = rns_load(m, k);
-		/* For a below 4m, the product is at most 2m. */
-		rns_store(q, k, rns_vpeel(rns_vmulc(rns_load(a, k),
-				rns_load(c->nq, k), rns_load(c->nqv, k), y), y, 1));
-	}
-	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN only
-	 * makes the result larger, so the extension skips alpha. */
-	rns_vext(v, q, 1, -1, 0, c);
-	/* r = (a + q * N) / M in B', and its xi_j for the exact extension. */
-	for (size_t k = 0; k < nb; k++) {
-		y = rns_load(m + o, k);
-		z = rns_load(c->ibv, k);
-		/* Below 4m plus the bound of the extension. */
-		x = rns_vpeel(_mm512_add_epi64(rns_load(a + o, k), v[k]), y, s);
-		rns_store(r + o, k, x);
-		rns_store(q, k, rns_vpeel(rns_vmulc(x, rns_load(c->ib + o, k), z, y),
-				y, 1));
-	}
-	/* r in B, exactly, since |r| < (n + 1)N is far below M'/2. */
-	rns_vext(v, q, 0, 1, 1, c);
-	for (size_t k = 0; k < nb; k++) {
-		rns_store(r, k, v[k]);
-	}
+void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c) {
+	RNS_SIZES(c->o / 8, rns_vrdc, r, a, c);
 }
 
 void rns_mulm_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
 	dig_t t[2 * RLC_RNS_MAX];
 
 	rns_muln_low(t, a, b, c);
-	rns_rdcn_low(r, t, c);
+	RNS_SIZES(c->o / 8, rns_vrdc, r, t, c);
 }
 
 void rns_digs_low(dig_t *r, const dig_t *a, const rns_t c) {
