@@ -148,6 +148,15 @@ endif()
 if (BN_MOD STREQUAL "RENUS" AND (NOT WITH_RNS OR WSIZE LESS 32))
 	message(FATAL_ERROR "BN_METHD=RENUS requires WITH=RNS and WSIZE=32 or 64.")
 endif()
+# The vector backend only has prime field arithmetic in a Residue Number System.
+if (ARITH STREQUAL "avx512")
+	if (NOT WSIZE EQUAL 64)
+		message(FATAL_ERROR "ARITH=avx512 requires WSIZE=64.")
+	endif()
+	if (WITH_FP AND NOT FP_RDC STREQUAL "RENUS")
+		message(FATAL_ERROR "ARITH=avx512 requires FP_METHD=RENUS.")
+	endif()
+endif()
 
 # Number of tests and benchmarks
 set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")
