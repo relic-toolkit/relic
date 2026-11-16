@@ -446,6 +446,20 @@ static inline int rns_is_zero_imp(const dig_t *a, const rns_st *c, size_t n,
 }
 
 /**
+ * Adds a double digit to an accumulator of three digits.
+ *
+ * @param[in,out] r			- the accumulator.
+ * @param[in] h				- the high digit, below the largest one.
+ * @param[in] l				- the low digit.
+ */
+static inline void rns_acc3(dig_t *r, dig_t h, dig_t l) {
+	r[0] += l;
+	h += (r[0] < l);
+	r[1] += h;
+	r[2] += (r[1] < h);
+}
+
+/**
  * Converts a value in the Residue Number System to the digits of its residue
  * modulo N in [0, N), in constant time. The reduction is given, so that each
  * owner of a context uses its own.
@@ -467,8 +481,7 @@ static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
 		dig_t *t, rns_rdc_t rdc) {
 	const size_t l = d + 1;
 	const dig_t *m = c->m, *u = c->u, *p = c->p;
-	dig_t a1, b, q;
-	dbl_t lo, hi, x, y;
+	dig_t a1, b, q, h, x, acc[3] = { 0, 0, 0 };
 	int k;
 
 	/* w = a / M is the value of a, with -N < w < (n + 1)N. */
@@ -481,21 +494,20 @@ static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
 	}
 	a1 = rns_alpha(xi, n, 1);
 	/* The low digits of w + 3N are enough to recover it, as it is positive.
-	 * The multipliers are single digits, so sum them column by column, with
-	 * the high halves of the products carried to the next column. */
-	x = 0;
+	 * The multipliers are single digits, so sum them column by column in three
+	 * digits, with the top two carried to the next column. */
 	for (size_t j = 0; j < l; j++) {
-		lo = x + c->p3[j];
-		y = (dbl_t)a1 * c->mm[j];
-		lo += (dig_t)y;
-		hi = y >> RLC_DIG;
+		rns_acc3(acc, 0, c->p3[j]);
+		RLC_MUL_DIG(h, x, a1, c->mm[j]);
+		rns_acc3(acc, h, x);
 		for (size_t i = 0; i < n; i++) {
-			y = (dbl_t)xi[i] * c->mp[i * l + j];
-			lo += (dig_t)y;
-			hi += y >> RLC_DIG;
+			RLC_MUL_DIG(h, x, xi[i], c->mp[i * l + j]);
+			rns_acc3(acc, h, x);
 		}
-		s[j] = (dig_t)lo;
-		x = (lo >> RLC_DIG) + hi;
+		s[j] = acc[0];
+		acc[0] = acc[1];
+		acc[1] = acc[2];
+		acc[2] = 0;
 	}
 	/* Now 0 < s < (n + 4)N, so subtract 2^k N where it fits, for 2^k at most
 	 * n + 3 from the largest down. */
@@ -507,9 +519,10 @@ static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
 			if (j > 0 && k > 0) {
 				q |= p[j - 1] >> (RLC_DIG - k);
 			}
-			x = (dbl_t)s[j] - q - b;
-			t[j] = (dig_t)x;
-			b = (dig_t)(x >> RLC_DIG) & 1;
+			x = s[j] - q;
+			h = (s[j] < q);
+			t[j] = x - b;
+			b = h | (x < b);
 		}
 		/* Keep the difference unless it wrapped around. */
 		q = b - 1;
