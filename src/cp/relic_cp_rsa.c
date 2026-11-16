@@ -46,14 +46,20 @@
 #define RSA_OAEP_LEN		(2 * RLC_MD_LEN + 2)
 
 /**
+ * Size in bits of the random multiples of p - 1 and q - 1 that blind the
+ * private exponents.
+ */
+#define RSA_BLIND			64
+
+/**
  * Returns 1 if a byte is zero and 0 otherwise, in constant time.
  */
 #define RSA_IS_ZERO(B)		((uint32_t)((uint32_t)(B) - 1) >> 31)
 
 /**
- * Computes the private-key operation c = a^d mod n. The input is blinded with
- * r^e for a random r, and the result is checked against faults before the
- * blinding is removed.
+ * Computes the private-key operation c = a^d mod n. The exponents of the halves
+ * are blinded with random multiples of p - 1 and q - 1, and the result is
+ * checked against faults.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the input, in [0, n).
@@ -73,24 +79,26 @@ static int rsa_exp_prv(bn_t c, const bn_t a, const rsa_t prv) {
 	RLC_TRY {
 		bn_new_all(r, s, t, u);
 
-		/* t = a * r^e mod n. */
-		bn_rand_mod(r, prv->crt->n);
-		bn_mxp(t, r, prv->e, prv->crt->n);
-		bn_mul(t, t, a);
-		bn_mod(t, t, prv->crt->n);
+		/* r = dP + k (p - 1) and u = dQ + k' (q - 1), for k and k' random
+		 * of RSA_BLIND bits, so that the exponents change on every call. */
+		bn_rand(r, RLC_POS, RSA_BLIND);
+		bn_sub_dig(t, prv->crt->p, 1);
+		bn_mul(r, r, t);
+		bn_add(r, r, prv->crt->dp);
+		bn_rand(u, RLC_POS, RSA_BLIND);
+		bn_sub_dig(t, prv->crt->q, 1);
+		bn_mul(u, u, t);
+		bn_add(u, u, prv->crt->dq);
 
-		/* s = t^d mod n. */
-		bn_mxp_crt(s, t, prv->crt->dp, prv->crt->dq, prv->crt, 0);
+		/* s = a^d mod n. */
+		bn_mxp_crt(s, a, r, u, prv->crt, 0);
 
 		/* A fault in either half of the CRT would reveal a factor of n. */
-		bn_mxp(u, s, prv->e, prv->crt->n);
-		if (bn_cmp(u, t) != RLC_EQ) {
+		bn_mxp(t, s, prv->e, prv->crt->n);
+		if (bn_cmp(t, a) != RLC_EQ) {
 			result = RLC_ERR;
 		} else {
-			/* c = s / r mod n. */
-			bn_mod_inv_crt(r, r, prv->crt);
-			bn_mul(s, s, r);
-			bn_mod(c, s, prv->crt->n);
+			bn_copy(c, s);
 		}
 	}
 	RLC_CATCH_ANY {
