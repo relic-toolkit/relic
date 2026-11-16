@@ -548,7 +548,6 @@ static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  * @param[in] c				- the context.
- * @throw ERR_NO_VALID		- with a backend without generic kernels.
  */
 void rns_extm_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_t c);
 
@@ -568,7 +567,6 @@ void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c);
  * @param[out] r			- the result.
  * @param[in] a				- the product.
  * @param[in] c				- the context.
- * @throw ERR_NO_VALID		- with a backend without generic kernels.
  */
 void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c);
 
@@ -579,7 +577,6 @@ void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c);
  * @param[in] a				- the first value.
  * @param[in] b				- the second value.
  * @param[in] c				- the context.
- * @throw ERR_NO_VALID		- with a backend without generic kernels.
  */
 void rns_mulm_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c);
 
@@ -590,7 +587,6 @@ void rns_mulm_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c);
  * @param[out] r			- the 2o residues.
  * @param[in] a				- the w digits of RLC_RNS_DIG bits.
  * @param[in] c				- the context.
- * @throw ERR_NO_VALID		- with a backend without generic kernels.
  */
 void rns_digs_low(dig_t *r, const dig_t *a, const rns_t c);
 

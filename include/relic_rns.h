@@ -210,12 +210,22 @@ void rns_core_clean(void);
 void rns_hint(const rns_st *c, size_t n);
 
 /**
+ * Enables or disables the precomputation of missing contexts by rns_lookup(),
+ * which is enabled by default, for code that knows its moduli will not be
+ * used enough to pay for it.
+ *
+ * @param[in] flag			- 1 to enable, 0 to disable.
+ * @return the previous setting.
+ */
+int rns_build(int flag);
+
+/**
  * Returns a context for a modulus among those supplied by rns_hint() or else
  * from the cache of the library context. A missing context is precomputed in
  * place of the least recently used one only when the same modulus was also the
  * last one looked up without a context, as a modulus used once does not pay
- * for the precomputation. A context from the cache stays valid until two other
- * moduli are looked up.
+ * for the precomputation, and when rns_build() allows it. A context from the
+ * cache stays valid until two other moduli are looked up.
  *
  * @param[in] mod			- the modulus.
  * @param[in] room			- the room for sums of products, in bits.

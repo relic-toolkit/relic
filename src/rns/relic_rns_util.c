@@ -66,6 +66,7 @@ void rns_core_init(void) {
 	ctx->rns_hint = NULL;
 	ctx->rns_hints = 0;
 	ctx->rns_seen_d = 0;
+	ctx->rns_build = 1;
 }
 
 void rns_core_clean(void) {
@@ -96,7 +97,7 @@ const rns_st *rns_lookup(const bn_t mod, int room) {
 			return c;
 		}
 	}
-	if (n > RLC_RNS_MAX || d > RLC_BN_DIGS) {
+	if (!ctx->rns_build || n > RLC_RNS_MAX || d > RLC_BN_DIGS) {
 		return NULL;
 	}
 	/* Precompute only on the second use of a modulus in a row. */
@@ -124,6 +125,14 @@ void rns_hint(const rns_st *c, size_t n) {
 
 	ctx->rns_hint = c;
 	ctx->rns_hints = (c == NULL ? 0 : n);
+}
+
+int rns_build(int flag) {
+	ctx_t *ctx = core_get();
+	int old = ctx->rns_build;
+
+	ctx->rns_build = flag;
+	return old;
 }
 
 size_t rns_size(size_t n, size_t d) {

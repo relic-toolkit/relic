@@ -114,7 +114,6 @@ static int arith(int bits) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if RLC_ARITH != RLC_AVX512
 		TEST_CASE("positional conversion is correct") {
 			bn_rand_mod(a, n);
 			bn_write_raw(v, d, a);
@@ -188,7 +187,6 @@ static int arith(int bits) {
 			rns_mulm_low(z, x, y, c);
 			TEST_ASSERT(rns_is_zero(z, c) == 1, end);
 		} TEST_END;
-#endif
 	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		RLC_ERROR(end);

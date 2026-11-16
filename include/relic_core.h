@@ -237,6 +237,8 @@ typedef struct _ctx_t {
 	dig_t rns_seen[RLC_BN_DIGS];
 	/** Number of digits of the last modulus looked up without a context. */
 	size_t rns_seen_d;
+	/** Flag to precompute missing contexts on lookup. */
+	int rns_build;
 #endif
 
 #ifdef WITH_FP

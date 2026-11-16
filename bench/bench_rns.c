@@ -74,7 +74,6 @@ static void arith(int bits) {
 		BENCH_ADD(rns_back(b, x, c));
 	} BENCH_END;
 
-#if RLC_ARITH != RLC_AVX512
 	BENCH_RUN("rns_set") {
 		bn_rand_mod(a, n);
 		bn_write_raw(v, d, a);
@@ -133,7 +132,6 @@ static void arith(int bits) {
 		rns_set(y, v, c);
 		BENCH_ADD(rns_mulm_low(z, x, y, c));
 	} BENCH_END;
-#endif
 
 	/* The same multiplication with the reduction of the BN module. */
 	bn_mod_pre(u, n);

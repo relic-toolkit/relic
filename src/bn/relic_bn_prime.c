@@ -40,6 +40,27 @@
 /*============================================================================*/
 
 /**
+ * Exponentiates modulo a candidate prime. Tests exponentiate a few times at
+ * most modulo each candidate, which does not pay for precomputing a context of
+ * the Residue Number System for it.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the basis.
+ * @param[in] B				- the exponent.
+ * @param[in] M				- the candidate.
+ */
+#if BN_MOD == BN_RENUS
+#define bn_prime_mxp(C, A, B, M)											\
+	do {																	\
+		int _b = rns_build(0);												\
+		bn_mxp(C, A, B, M);													\
+		rns_build(_b);														\
+	} while (0)
+#else
+#define bn_prime_mxp(C, A, B, M)	bn_mxp(C, A, B, M)
+#endif
+
+/**
  * Number of trial division tests.
  */
 #define BASIC_TESTS	((int)(sizeof(primes)/sizeof(dig_t)))
@@ -156,7 +177,7 @@ static const dig_t primes[] = {
 static int bn_prime_fermt(const bn_t a, bn_t t, bn_t u) {
 	bn_sub_dig(u, a, 1);
 	bn_set_dig(t, 2);
-	bn_mxp(t, t, u, a);
+	bn_prime_mxp(t, t, u, a);
 	return (bn_cmp_dig(t, 1) == RLC_EQ);
 }
 
@@ -464,7 +485,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			}
 
 			/* y = b^r mod a. */
-			bn_mxp(y, t, r, a);
+			bn_prime_mxp(y, t, r, a);
 
 			if (bn_cmp_dig(y, 1) != RLC_EQ && bn_cmp(y, n1) != RLC_EQ) {
 				j = 1;
@@ -525,7 +546,7 @@ int bn_is_prime_solov(const bn_t a) {
 			/* t1 = (a - 1)/2. */
 			bn_rsh(t1, t2, 1);
 			/* t1 = t0^(a - 1)/2 mod a. */
-			bn_mxp(t1, t0, t1, a);
+			bn_prime_mxp(t1, t0, t1, a);
 			/* If t1 != 1 and t1 != n - 1 return 0 */
 			if (bn_cmp_dig(t1, 1) != RLC_EQ && bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
@@ -801,7 +822,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 			}
 			/* Compute t = 2 * (s^(r-2) mod r) * s - 1. */
 			bn_sub_dig(t, r, 2);
-			bn_mxp(t, s, t, r);
+			bn_prime_mxp(t, s, t, r);
 
 			bn_mul(t, t, s);
 			bn_dbl(t, t);

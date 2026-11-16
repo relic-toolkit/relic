@@ -50,10 +50,7 @@ void fp_zero(fp_t a) {
 
 int fp_is_zero(const fp_t a) {
 #if FP_RDC == FP_RENUS
-	dig_t q[RLC_FP_RNS], r[RLC_FP_RNS];
-
-	return rns_is_zero_imp(a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO, q,
-			r, fp_rns_ext);
+	return rns_is_zero(a, core_get()->prime_rns);
 #else
 	const dig_t *p = fp_prime_get();
 	dig_t t = 0, u = 0, v = 0, c = 0;

@@ -38,17 +38,7 @@
 /*============================================================================*/
 
 void rns_extm_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_t c) {
-#if RLC_ARITH != RLC_AVX512
 	rns_extm_imp(r, xi, b, exact, c, c->n, c->o);
-#else
-	(void)r;
-	(void)xi;
-	(void)b;
-	(void)exact;
-	(void)c;
-	/* The tables follow the convention of the vector kernels. */
-	RLC_THROW(ERR_NO_VALID);
-#endif
 }
 
 void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
@@ -58,19 +48,11 @@ void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
 }
 
 void rns_rdcn_low(dig_t *r, const dig_t *a, const rns_t c) {
-#if RLC_ARITH != RLC_AVX512
 	dig_t q[RLC_RNS_MAX], e[RLC_RNS_MAX];
 
 	/* Only the first n values are used, but the compiler cannot tell. */
 	dv_zero(q, RLC_RNS_MAX);
 	rns_rdcn_imp(r, a, c, c->n, c->o, q, e, rns_extm_low);
-#else
-	(void)r;
-	(void)a;
-	(void)c;
-	/* The tables follow the convention of the vector kernels. */
-	RLC_THROW(ERR_NO_VALID);
-#endif
 }
 
 void rns_mulm_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
@@ -81,13 +63,5 @@ void rns_mulm_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
 }
 
 void rns_digs_low(dig_t *r, const dig_t *a, const rns_t c) {
-#if RLC_ARITH != RLC_AVX512
 	rns_digs_imp(r, a, c, 2 * c->o, c->w);
-#else
-	(void)r;
-	(void)a;
-	(void)c;
-	/* Digits of 52 bits are not whole digits of the machine. */
-	RLC_THROW(ERR_NO_VALID);
-#endif
 }
