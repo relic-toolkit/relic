@@ -82,31 +82,26 @@ static dig_t rns_res(const rns_st *c, const bn_t a, size_t i) {
 }
 
 /**
- * Computes the inverse of a residue modulo the i-th modulus.
+ * Computes the inverse of a nonzero residue modulo the i-th modulus, as its
+ * power to m - 2 in Montgomery form. The modulus is public, so the time may
+ * depend on it.
  *
- * @param[in] c				- the context.
+ * @param[in] c				- the context, with the moduli and R^2 mod m.
  * @param[in] a				- the residue.
  * @param[in] i				- the index of the modulus.
  * @return the inverse.
  */
 static dig_t rns_inv(const rns_st *c, dig_t a, size_t i) {
-	bn_t t, u;
-	dig_t r = 0;
+	const dig_t m = c->m[i], u = c->u[i];
+	dig_t b = rns_mul(a, c->r2[i], m, u), r = rns_mul(1, c->r2[i], m, u);
 
-	bn_null_all(t, u);
-
-	RLC_TRY {
-		bn_new_all(t, u);
-		bn_set_dig(t, a);
-		bn_set_dig(u, c->m[i]);
-		bn_mod_inv(t, t, u);
-		r = t->dp[0];
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free_all(t, u);
+	for (dig_t e = m - 2; e > 0; e >>= 1) {
+		if (e & 1) {
+			r = rns_mul(r, b, m, u);
+		}
+		b = rns_mul(b, b, m, u);
 	}
-	return r;
+	return rns_mul(r, 1, m, u);
 }
 
 #ifndef RLC_CONF_NODBL
@@ -173,14 +168,20 @@ static int rns_is_prime(dig_t p) {
 }
 #endif
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-void rns_pre(rns_t c, const bn_t mod, int room) {
+/**
+ * Precomputes the base of a context: the moduli and the tables that do not
+ * depend on the modulus N. Three tables of a base differ from those of a
+ * context, which computes its own from them: t1 holds the residues of M/m_i
+ * before the column factors of N are applied, u1 holds M^{-2} R^3 mod m'_j and
+ * nq holds M^{-1} R^3 mod m'_j.
+ *
+ * @param[out] b			- the base, sized as the context.
+ * @param[in] mod			- a modulus the moduli must not divide, or NULL.
+ */
+static void rns_pre_base(rns_t b, const bn_t mod) {
 	bn_t m, mb, t;
-	dig_t s = 1, d, r2, r3, f1[RLC_RNS_MAX], f2[RLC_RNS_MAX];
-	const size_t n = c->n, o = c->o, l = c->d + 1;
+	dig_t s = 1, d, r3, f2[RLC_RNS_MAX];
+	const size_t n = b->n, o = b->o, l = b->d + 1;
 	size_t k = 0, h = 0, j0;
 
 	bn_null_all(m, mb, t);
@@ -189,131 +190,114 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 		bn_new_all(m, mb, t);
 
 		/* The residues that pad each base are zero in all tables. */
-		dv_zero(c->m, 2 * o);
-		dv_zero(c->u, 2 * o);
-		dv_zero(c->iv, 2 * o);
-		dv_zero(c->r2, 2 * o);
-		dv_zero(c->e, 2 * o);
-		dv_zero(c->ib, 2 * o);
-		dv_zero(c->nq, o);
-		dv_zero(c->nqv, o);
-		dv_zero(c->ibv, o);
-		dv_zero(c->u1, o);
-		dv_zero(c->u2, o);
-		dv_zero(c->t1, n * o);
-		dv_zero(c->t2, n * o);
-		dv_zero(c->kp, 5 * 2 * o);
-		dv_zero(c->pw, c->w * 2 * o);
+		dv_zero(b->m, 2 * o);
+		dv_zero(b->u, 2 * o);
+		dv_zero(b->iv, 2 * o);
+		dv_zero(b->r2, 2 * o);
+		dv_zero(b->e, 2 * o);
+		dv_zero(b->ib, 2 * o);
+		dv_zero(b->nq, o);
+		dv_zero(b->nqv, o);
+		dv_zero(b->ibv, o);
+		dv_zero(b->u1, o);
+		dv_zero(b->u2, o);
+		dv_zero(b->t1, n * o);
+		dv_zero(b->t2, n * o);
+		dv_zero(b->kp, 5 * 2 * o);
+		dv_zero(b->pw, b->w * 2 * o);
 
-		/* Pick the largest primes 2^RLC_RNS_BITS - s coprime to the modulus,
-		 * with s below the square root of R: first for B, then for B'. */
+		/* Pick the largest primes 2^RLC_RNS_BITS - s, coprime to the modulus
+		 * if given, with s below the square root of R: first for B, then for
+		 * B'. */
 		while (k < n || h < n) {
 			if (s >= ((dig_t)1 << (RLC_RNS_DIG / 2))) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
 			d = ((dig_t)1 << RLC_RNS_BITS) - s;
-			bn_mod_dig(&r2, mod, d);
-#ifndef RLC_CONF_NODBL
-			if (r2 != 0 && rns_is_prime(d)) {
-#else
-			bn_set_dig(t, d);
-			if (r2 != 0 && bn_is_prime(t)) {
-#endif
-				if (k < n) {
-					c->m[k++] = d;
-				} else {
-					c->m[o + h++] = d;
+			s += 2;
+			if (mod != NULL) {
+				bn_mod_dig(&r3, mod, d);
+				if (r3 == 0) {
+					continue;
 				}
 			}
-			s += 2;
+#ifndef RLC_CONF_NODBL
+			if (rns_is_prime(d)) {
+#else
+			bn_set_dig(t, d);
+			if (bn_is_prime(t)) {
+#endif
+				if (k < n) {
+					b->m[k++] = d;
+				} else {
+					b->m[o + h++] = d;
+				}
+			}
 		}
 
 		/* -m^{-1} mod R by Newton iteration, and R^2 mod m. */
 		for (size_t i = 0; i < 2 * o; i++) {
-			dig_t x = c->m[i];
-			if (RLC_RNS_PAD(c, i)) {
+			dig_t x = b->m[i];
+			if (RLC_RNS_PAD(b, i)) {
 				continue;
 			}
 			for (int j = 0; j < 6; j++) {
-				x *= 2 - c->m[i] * x;
+				x *= 2 - b->m[i] * x;
 			}
-			c->u[i] = (0 - x) & RLC_RNS_MASK;
-			c->iv[i] = x & RLC_RNS_MASK;
+			b->u[i] = (0 - x) & RLC_RNS_MASK;
+			b->iv[i] = x & RLC_RNS_MASK;
 			bn_set_2b(t, 2 * RLC_RNS_DIG);
-			c->r2[i] = rns_res(c, t, i);
+			b->r2[i] = rns_res(b, t, i);
 		}
 
 		/* M and M' as integers. */
 		bn_set_dig(m, 1);
 		bn_set_dig(mb, 1);
 		for (size_t i = 0; i < n; i++) {
-			bn_mul_dig(m, m, c->m[i]);
-			c->e[i] = c->r2[i];
+			bn_mul_dig(m, m, b->m[i]);
+			b->e[i] = b->r2[i];
 		}
 		for (size_t i = 0; i < n; i++) {
-			bn_mul_dig(mb, mb, c->m[o + i]);
+			bn_mul_dig(mb, mb, b->m[o + i]);
 		}
 		/* Values are multiplied by R^2 in B and by R^2 / M in B' to be stored,
-		 * and the tables of the first extension carry 1 / M^2. */
-		for (size_t i = 0; i < n; i++) {
-			d = rns_inv(c, rns_res(c, m, o + i), o + i);
-			c->e[o + i] = rns_mulp(c, c->r2[o + i], d, o + i);
-			c->mi[i] = RNS_SCL(c, d, o + i);
-		}
-
-		/* B must exceed 2^(room + 2) * N, and B' 2^11 * N. */
-		if (bn_bits(m) < bn_bits(mod) + room + 2 + 1 ||
-				bn_bits(mb) < bn_bits(mod) + 11 + 2) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-
-		/* N / M^2 * R^3 mod m'_j and R^3 mod m_j, which only depend on the
-		 * column of the tables of the extensions. */
+		 * and the tables of the first extension carry 1 / M^2. With R^3, the
+		 * column factors M^{-2} R^3 and M^{-1} R^3 mod m'_j, and R^3 mod m_j
+		 * for the second extension. */
 		for (size_t j = 0; j < n; j++) {
-			d = rns_inv(c, rns_res(c, m, o + j), o + j);
-			d = rns_mulp(c, rns_mulp(c, rns_res(c, mod, o + j), d, o + j), d,
-					o + j);
-			r3 = rns_mulp(c, c->r2[o + j], RNS_SCL(c, 1, o + j), o + j);
-			f1[j] = rns_mulp(c, d, r3, o + j);
-			f2[j] = rns_mulp(c, c->r2[j], RNS_SCL(c, 1, j), j);
+			d = rns_inv(b, rns_res(b, m, o + j), o + j);
+			b->e[o + j] = rns_mulp(b, b->r2[o + j], d, o + j);
+			b->mi[j] = RNS_SCL(b, d, o + j);
+			r3 = rns_mulp(b, b->r2[o + j], RNS_SCL(b, 1, o + j), o + j);
+			b->nq[j] = rns_mulp(b, d, r3, o + j);
+			b->u1[j] = rns_mulp(b, b->nq[j], d, o + j);
+			f2[j] = rns_mulp(b, b->r2[j], RNS_SCL(b, 1, j), j);
 		}
 
 		for (size_t i = 0; i < n; i++) {
-			/* (M/m_i)^{-1} mod m_i, and (M/m_i) * N / M^2 * R^3 mod m'_j, to
-			 * give q * N as a product in B'. */
-			bn_div_dig(t, m, c->m[i]);
+			/* (M/m_i)^{-1} mod m_i, and M/m_i mod m'_j. */
+			bn_div_dig(t, m, b->m[i]);
 			for (size_t j = 0; j < n; j++) {
-				c->t1[i * o + j] = rns_mulp(c, rns_res(c, t, o + j), f1[j],
-						o + j);
+				b->t1[i * o + j] = rns_res(b, t, o + j);
 			}
-			c->ib[i] = rns_inv(c, rns_res(c, t, i), i);
-			/* -N^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
-			d = rns_inv(c, rns_res(c, mod, i), i);
-			c->nq[i] = rns_mulp(c, c->m[i] - d, c->ib[i], i);
+			b->ib[i] = rns_inv(b, rns_res(b, t, i), i);
 			/* -M' * R^3 mod m_i. */
-			r3 = rns_mulp(c, c->r2[i], RNS_SCL(c, 1, i), i);
-			c->u2[i] = rns_mulp(c, RLC_RNS_SUB(0, rns_res(c, mb, i), c->m[i]),
+			r3 = rns_mulp(b, b->r2[i], RNS_SCL(b, 1, i), i);
+			b->u2[i] = rns_mulp(b, RLC_RNS_SUB(0, rns_res(b, mb, i), b->m[i]),
 					r3, i);
 		}
 
 		for (size_t i = 0; i < n; i++) {
 			j0 = o + i;
-
 			/* (M'/m'_i)^{-1} mod m'_i, and (M'/m'_i) * R^3 mod m_j. */
-			bn_div_dig(t, mb, c->m[j0]);
+			bn_div_dig(t, mb, b->m[j0]);
 			for (size_t j = 0; j < n; j++) {
-				c->t2[i * o + j] = rns_mulp(c, rns_res(c, t, j), f2[j], j);
+				b->t2[i * o + j] = rns_mulp(b, rns_res(b, t, j), f2[j], j);
 			}
 			/* Times M, as values are divided by M in B'. */
-			c->ib[j0] = rns_mulp(c, rns_inv(c, rns_res(c, t, j0), j0),
-					rns_res(c, m, j0), j0);
-
-			/* -M * N / M^2 * R^3 mod m'_i. */
-			r3 = rns_mulp(c, c->r2[j0], RNS_SCL(c, 1, j0), j0);
-			d = rns_mulp(c, rns_res(c, mod, j0),
-					rns_inv(c, rns_res(c, m, j0), j0), j0);
-			c->u1[i] = rns_mulp(c, RLC_RNS_SUB(0, d, c->m[j0]), r3, j0);
+			b->ib[j0] = rns_mulp(b, rns_inv(b, rns_res(b, t, j0), j0),
+					rns_res(b, m, j0), j0);
 		}
 
 #if RLC_ARITH == RLC_AVX512
@@ -321,74 +305,224 @@ void rns_pre(rns_t c, const bn_t mod, int room) {
 		 * reduction instead of two, so their tables carry one factor R less. */
 		for (size_t i = 0; i < n; i++) {
 			for (size_t j = 0; j < n; j++) {
-				c->t1[i * o + j] =
-						rns_mul(c->t1[i * o + j], 1, c->m[o + j], c->u[o + j]);
-				c->t2[i * o + j] =
-						rns_mul(c->t2[i * o + j], 1, c->m[j], c->u[j]);
+				b->t2[i * o + j] =
+						rns_mul(b->t2[i * o + j], 1, b->m[j], b->u[j]);
 			}
-			c->u1[i] = rns_mul(c->u1[i], 1, c->m[o + i], c->u[o + i]);
-			c->u2[i] = rns_mul(c->u2[i], 1, c->m[i], c->u[i]);
-			/* The quotients of the Montgomery reductions of products by nq and
-			 * ib are their other factors times these values mod R. */
-			c->nqv[i] = (c->nq[i] * c->iv[i]) & RLC_RNS_MASK;
-			c->ibv[i] = (c->ib[o + i] * c->iv[o + i]) & RLC_RNS_MASK;
+			b->u2[i] = rns_mul(b->u2[i], 1, b->m[i], b->u[i]);
+			/* The quotients of the Montgomery reductions of products by ib are
+			 * their other factors times these values mod R. */
+			b->ibv[i] = (b->ib[o + i] * b->iv[o + i]) & RLC_RNS_MASK;
 		}
 #endif
 
-		/* The multiples kN for -2 <= k <= 2, in both bases. */
-		for (size_t j = 0; j < 5; j++) {
-			bn_mul_dig(t, mod, (dig_t)(j < 2 ? 2 - j : j - 2));
-			for (size_t i = 0; i < 2 * o; i++) {
-				if (RLC_RNS_PAD(c, i)) {
-					continue;
-				}
-				d = rns_mul(rns_res(c, t, i), c->e[i], c->m[i], c->u[i]);
-				c->kp[j * 2 * o + i] = (j < 2 ? RLC_RNS_SUB(0, d, c->m[i]) : d);
-			}
-		}
-
-		/* The low digits of M/m_i, -M and 3N for the conversion to positional
+		/* The low digits of M/m_i and -M for the conversion to positional
 		 * form, and the residues of 2^(RLC_RNS_DIG * k) for the way back. */
 		bn_set_2b(mb, RLC_DIG * l);
 		bn_mod_2b(t, m, RLC_DIG * l);
 		bn_sub(t, mb, t);
 		for (size_t j = 0; j < l; j++) {
-			c->mm[j] = (j < t->used ? t->dp[j] : 0);
-		}
-		bn_mul_dig(t, mod, 3);
-		for (size_t j = 0; j < l; j++) {
-			c->p3[j] = (j < t->used ? t->dp[j] : 0);
+			b->mm[j] = (j < t->used ? t->dp[j] : 0);
 		}
 		for (size_t i = 0; i < n; i++) {
-			bn_div_dig(t, m, c->m[i]);
+			bn_div_dig(t, m, b->m[i]);
 			bn_mod_2b(t, t, RLC_DIG * l);
 			for (size_t j = 0; j < l; j++) {
-				c->mp[i * l + j] = (j < t->used ? t->dp[j] : 0);
+				b->mp[i * l + j] = (j < t->used ? t->dp[j] : 0);
 			}
 		}
-		for (size_t j = 0; j < c->w; j++) {
+		for (size_t j = 0; j < b->w; j++) {
 			bn_set_2b(t, RLC_RNS_DIG * j);
 			for (size_t i = 0; i < 2 * o; i++) {
-				if (RLC_RNS_PAD(c, i)) {
+				if (RLC_RNS_PAD(b, i)) {
 					continue;
 				}
-				c->pw[j * 2 * o + i] =
-						rns_mulp(c, rns_res(c, t, i), c->e[i], i);
+				b->pw[j * 2 * o + i] =
+						rns_mulp(b, rns_res(b, t, i), b->e[i], i);
 			}
 		}
-
-		/* The digits of N, and M and M^2 modulo N in storage form. */
-		for (size_t j = 0; j < c->d; j++) {
-			c->p[j] = (j < mod->used ? mod->dp[j] : 0);
-		}
-		bn_mod(t, m, mod);
-		rns_conv(c->one, t, c);
-		bn_sqr(t, t);
-		bn_mod(t, t, mod);
-		rns_conv(c->cv, t, c);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free_all(m, mb, t);
+	}
+}
+
+/**
+ * Returns the base for contexts of the given sizes from the library context,
+ * precomputing it in place of the older one if it is missing.
+ *
+ * @param[in] n				- the number of moduli in each base.
+ * @param[in] d				- the number of digits of the moduli N.
+ * @return the base, or NULL if there is no memory for it.
+ */
+static const rns_st *rns_base(size_t n, size_t d) {
+	ctx_t *ctx = core_get();
+	rns_st *b;
+
+	for (int k = 0; k < 2; k++) {
+		b = &(ctx->rns_base[k]);
+		if (b->mem != NULL && b->n == n && b->d == d) {
+			return b;
+		}
+	}
+	b = &(ctx->rns_base[ctx->rns_bnext]);
+	ctx->rns_bnext ^= 1;
+	rns_free(b);
+	rns_new(b, n, d);
+	if (b->mem != NULL) {
+		rns_pre_base(b, NULL);
+	}
+	return (b->mem != NULL ? b : NULL);
+}
+
+/**
+ * Precomputes the tables of a context that depend on the modulus N, from a
+ * base of the same sizes, which may be the context itself.
+ *
+ * @param[out] c			- the context.
+ * @param[in] b				- the base.
+ * @param[in] mod			- the modulus.
+ * @param[in] room			- the room for sums of products, in bits.
+ * @return 1 if the moduli of the base are coprime to N, 0 otherwise.
+ */
+static int rns_pre_mod(rns_t c, const rns_st *b, const bn_t mod, int room) {
+	bn_t m, t;
+	dig_t d, f1[RLC_RNS_MAX], g1[RLC_RNS_MAX], g2[RLC_RNS_MAX];
+	dig_t rn[2 * RLC_RNS_MAX];
+	const size_t n = c->n, o = c->o, l = c->d + 1;
+	int result = 1;
+
+	bn_null_all(m, t);
+
+	RLC_TRY {
+		bn_new_all(m, t);
+
+		/* The residues of N, which must all be nonzero. */
+		for (size_t i = 0; i < 2 * o; i++) {
+			rn[i] = (RLC_RNS_PAD(b, i) ? 0 : rns_res(b, mod, i));
+			if (!RLC_RNS_PAD(b, i) && rn[i] == 0) {
+				result = 0;
+			}
+		}
+		if (result) {
+			/* The column factors, read before the tables are overwritten. */
+			for (size_t j = 0; j < n; j++) {
+				g1[j] = b->u1[j];
+				g2[j] = b->nq[j];
+			}
+			if (b != c) {
+				dv_copy(c->m, b->m, 2 * o);
+				dv_copy(c->u, b->u, 2 * o);
+				dv_copy(c->iv, b->iv, 2 * o);
+				dv_copy(c->r2, b->r2, 2 * o);
+				dv_copy(c->e, b->e, 2 * o);
+				dv_copy(c->ib, b->ib, 2 * o);
+				dv_copy(c->mi, b->mi, n);
+				dv_copy(c->ibv, b->ibv, o);
+				dv_copy(c->u2, b->u2, o);
+				dv_copy(c->t1, b->t1, n * o);
+				dv_copy(c->t2, b->t2, n * o);
+				dv_copy(c->mm, b->mm, l);
+				dv_copy(c->mp, b->mp, n * l);
+				dv_copy(c->pw, b->pw, c->w * 2 * o);
+				dv_zero(c->nq, o);
+				dv_zero(c->nqv, o);
+				dv_zero(c->u1, o);
+			}
+
+			/* B must exceed 2^(room + 2) * N, and B' 2^11 * N. */
+			bn_set_dig(m, 1);
+			bn_set_dig(t, 1);
+			for (size_t i = 0; i < n; i++) {
+				bn_mul_dig(m, m, c->m[i]);
+				bn_mul_dig(t, t, c->m[o + i]);
+			}
+			if (bn_bits(m) < bn_bits(mod) + room + 2 + 1 ||
+					bn_bits(t) < bn_bits(mod) + 11 + 2) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+
+			for (size_t j = 0; j < n; j++) {
+				/* N / M^2 * R^3 mod m'_j, the column factor of the first
+				 * extension, and -M * N / M^2 * R^3 mod m'_j. */
+				f1[j] = rns_mulp(c, rn[o + j], g1[j], o + j);
+				d = rns_mulp(c, rn[o + j], g2[j], o + j);
+				c->u1[j] = RLC_RNS_SUB(0, d, c->m[o + j]);
+			}
+			for (size_t i = 0; i < n; i++) {
+				/* (M/m_i) * N / M^2 * R^3 mod m'_j, to give q * N as a
+				 * product in B'. */
+				for (size_t j = 0; j < n; j++) {
+					c->t1[i * o + j] =
+							rns_mulp(c, c->t1[i * o + j], f1[j], o + j);
+				}
+				/* -N^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
+				d = rns_inv(c, rn[i], i);
+				c->nq[i] = rns_mulp(c, c->m[i] - d, c->ib[i], i);
+			}
+
+#if RLC_ARITH == RLC_AVX512
+			/* One factor R less, as for the base, and the quotients of the
+			 * reductions of products by nq. */
+			for (size_t i = 0; i < n; i++) {
+				for (size_t j = 0; j < n; j++) {
+					c->t1[i * o + j] = rns_mul(c->t1[i * o + j], 1,
+							c->m[o + j], c->u[o + j]);
+				}
+				c->u1[i] = rns_mul(c->u1[i], 1, c->m[o + i], c->u[o + i]);
+				c->nqv[i] = (c->nq[i] * c->iv[i]) & RLC_RNS_MASK;
+			}
+#endif
+
+			/* The multiples kN for -2 <= k <= 2, in both bases. */
+			for (size_t j = 0; j < 5; j++) {
+				dig_t k = (dig_t)(j < 2 ? 2 - j : j - 2);
+				for (size_t i = 0; i < 2 * o; i++) {
+					if (RLC_RNS_PAD(c, i)) {
+						c->kp[j * 2 * o + i] = 0;
+						continue;
+					}
+					d = rns_mul(rns_mulp(c, rn[i], k, i), c->e[i], c->m[i],
+							c->u[i]);
+					c->kp[j * 2 * o + i] =
+							(j < 2 ? RLC_RNS_SUB(0, d, c->m[i]) : d);
+				}
+			}
+
+			/* The low digits of 3N, the digits of N, and M and M^2 modulo N
+			 * in storage form. */
+			bn_mul_dig(t, mod, 3);
+			for (size_t j = 0; j < l; j++) {
+				c->p3[j] = (j < t->used ? t->dp[j] : 0);
+			}
+			for (size_t j = 0; j < c->d; j++) {
+				c->p[j] = (j < mod->used ? mod->dp[j] : 0);
+			}
+			bn_mod(t, m, mod);
+			rns_conv(c->one, t, c);
+			bn_sqr(t, t);
+			bn_mod(t, t, mod);
+			rns_conv(c->cv, t, c);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free_all(m, t);
+	}
+	return result;
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void rns_pre(rns_t c, const bn_t mod, int room) {
+	const rns_st *b = rns_base(c->n, c->d);
+
+	/* A modulus divisible by a modulus of the shared base, which is rare, gets
+	 * a base of its own. */
+	if (b == NULL || !rns_pre_mod(c, b, mod, room)) {
+		rns_pre_base(c, mod);
+		rns_pre_mod(c, c, mod, room);
 	}
 }

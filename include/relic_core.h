@@ -229,6 +229,10 @@ typedef struct _ctx_t {
 	rns_st rns_cache[2];
 	/** Index of the most recently used context. */
 	int rns_last;
+	/** Bases of contexts for the last two sizes, shared by their contexts. */
+	rns_st rns_base[2];
+	/** Index of the base to replace next. */
+	int rns_bnext;
 	/** Contexts supplied by the caller, searched before the cache. */
 	const rns_st *rns_hint;
 	/** Number of contexts supplied by the caller. */
@@ -237,8 +241,6 @@ typedef struct _ctx_t {
 	dig_t rns_seen[RLC_BN_DIGS];
 	/** Number of digits of the last modulus looked up without a context. */
 	size_t rns_seen_d;
-	/** Flag to precompute missing contexts on lookup. */
-	int rns_build;
 #endif
 
 #ifdef WITH_FP
