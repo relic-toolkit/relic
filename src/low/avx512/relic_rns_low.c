@@ -42,12 +42,13 @@
  * Largest number of vectors that hold the residues of a base, at least the
  * sizes that RNS_SIZES() compiles for.
  */
-#define RNS_VB		RLC_MAX(RLC_RNS_MAX / 8, 8)
+#define RNS_VB		RLC_MAX(RLC_RNS_MAX / 8, 12)
 
 /**
  * Calls F with the number of vectors per base N as its last argument, as a
- * constant for up to eight vectors, so that the kernels inlined into it are
- * compiled for each size, with their sums in registers.
+ * constant for up to twelve vectors, which covers moduli of about 4600 bits,
+ * so that the kernels inlined into it are compiled for each size, with their
+ * sums in registers.
  *
  * @param[in] N				- the number of vectors per base.
  * @param[in] F				- the kernel.
@@ -62,6 +63,10 @@
 		case 6: F(__VA_ARGS__, 6); break;									\
 		case 7: F(__VA_ARGS__, 7); break;									\
 		case 8: F(__VA_ARGS__, 8); break;									\
+		case 9: F(__VA_ARGS__, 9); break;									\
+		case 10: F(__VA_ARGS__, 10); break;									\
+		case 11: F(__VA_ARGS__, 11); break;									\
+		case 12: F(__VA_ARGS__, 12); break;									\
 		default: F(__VA_ARGS__, N); break;									\
 	}
 
