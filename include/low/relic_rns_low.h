@@ -357,7 +357,8 @@ static inline void rns_digs_imp(dig_t *r, const dig_t *a, const rns_st *c,
 #endif
 
 /**
- * Divides the residues of a value by M in B', so that the value can be
+ * Turns a stored value into a product of the same value: multiplies its
+ * residues by S_i in B and divides them by M in B', so that the value can be
  * reduced as if it were a product.
  *
  * @param[out] r			- the result.
@@ -368,13 +369,13 @@ static inline void rns_digs_imp(dig_t *r, const dig_t *a, const rns_st *c,
  */
 static inline void rns_wide_imp(dig_t *r, const dig_t *a, const rns_st *c,
 		size_t n, size_t o) {
-	const dig_t *m = c->m + o, *u = c->u + o;
+	const dig_t *m = c->m, *u = c->u;
 
 	for (size_t i = 0; i < n; i++) {
-		r[i] = a[i];
+		r[i] = rns_mul(a[i], c->s[i], m[i], u[i]);
 	}
 	for (size_t i = 0; i < n; i++) {
-		r[o + i] = rns_mul(a[o + i], c->mi[i], m[i], u[i]);
+		r[o + i] = rns_mul(a[o + i], c->mi[i], m[o + i], u[o + i]);
 	}
 }
 
@@ -396,11 +397,13 @@ static inline void rns_rdcn_imp(dig_t *r, const dig_t *a, const rns_st *c,
 		size_t n, size_t o, dig_t *q, dig_t *e, rns_ext_t ext) {
 	const dig_t *m = c->m, *u = c->u;
 
-	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues. */
+	/* xi_i of q = a * (-N^{-1}) mod M, in B: a product of stored values is
+	 * already +-xi_i, so negate it where the mask is set, as m - a in (0, m]
+	 * for a residue below m. */
 	for (size_t i = 0; i < n; i++) {
-		q[i] = rns_mul(a[i], c->nq[i], m[i], u[i]);
+		q[i] = a[i] ^ (c->ng[i] & (a[i] ^ (m[i] - a[i])));
 	}
-	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN
+	/* q * N for q + kM, as a product in B', with 0 <= k <= n: the extra kN
 	 * only makes the result larger, so the extension skips alpha. */
 	ext(e, q, 1, -1, c);
 	/* r = (a + q * N) / M in B', as a product carries 1 / M^2 there and a

@@ -85,7 +85,8 @@ static void fp_rns_bind(ctx_t *ctx) {
 	c->mi = ctx->rns.mi;
 	c->ib = ctx->rns.ib;
 	c->nq = ctx->rns.nq;
-	c->nqv = ctx->rns.nqv;
+	c->ng = ctx->rns.ng;
+	c->s = ctx->rns.s;
 	c->ibv = ctx->rns.ibv;
 	c->t1 = ctx->rns.t1[0];
 	c->t2 = ctx->rns.t2[0];

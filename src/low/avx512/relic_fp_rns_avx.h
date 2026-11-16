@@ -538,19 +538,22 @@ rlc_inline void rns_vrdc(dig_t *const c[], const dig_t *const a[],
 	const size_t o = RLC_FP_RNSO;
 	const dig_t *m = ctx->rns.m;
 	__m512i q[RNS_K][RNS_NB], r[RNS_K][RNS_NB], x, y, z;
+	__mmask8 g;
 
-	/* xi_i of q = a * (-p^{-1}) mod M, in B, as plain residues; the padding
-	 * lanes are zero, as are their constants. */
+	/* xi_i of q = a * (-p^{-1}) mod M, in B: a product of stored values,
+	 * below 4m, is already +-xi_i once brought down to at most m, so negate
+	 * it as m - a where the mask is set; the padding lanes are zero, as are
+	 * their masks. */
 	for (size_t k = 0; k < RNS_NB; k++) {
 		y = rns_load(m, k);
-		z = rns_load(ctx->rns.nqv, k);
+		z = rns_load(ctx->rns.ng, k);
+		g = _mm512_test_epi64_mask(z, z);
 		for (int j = 0; j < K; j++) {
-			/* For a below 4m, the product is at most 2m. */
-			q[j][k] = rns_vpeel(rns_vmulc(rns_load(a[j], k),
-					rns_load(ctx->rns.nq, k), z, y), y, 1);
+			x = rns_vpeel(rns_load(a[j], k), y, 2);
+			q[j][k] = _mm512_mask_sub_epi64(x, g, y, x);
 		}
 	}
-	/* q * p for q + kM, as a product in B', with 0 <= k < RLC_FP_RNS: the
+	/* q * p for q + kM, as a product in B', with 0 <= k <= RLC_FP_RNS: the
 	 * extra kp only makes the result larger, so the extension skips alpha. */
 	rns_vext(r, q, K, 1, -1, 0);
 	/* c = (a + q * p) / M in B', and its xi_j for the exact extension. */

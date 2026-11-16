@@ -165,16 +165,17 @@ rlc_inline void rns_vrdc(dig_t *r, const dig_t *a, const rns_st *c,
 	__m512i v[RNS_VB], x, y, z;
 	dig_t q[RLC_RNS_MAX];
 
-	/* xi_i of q = a * (-N^{-1}) mod M, in B, as plain residues; the padding
-	 * lanes are zero, as are their constants. */
+	/* xi_i of q = a * (-N^{-1}) mod M, in B: a product of stored values, at
+	 * most m, is already +-xi_i, so negate it as m - a where the mask is set;
+	 * the padding lanes are zero, as are their masks. */
 	for (size_t k = 0; k < nb; k++) {
-		y = rns_load(m, k);
-		/* For a at most m, the product is below 2m. */
-		rns_store(q, k, rns_vpeel(rns_vmulc(rns_load(a, k),
-				rns_load(c->nq, k), rns_load(c->nqv, k), y), y, 1));
+		x = rns_load(a, k);
+		z = rns_load(c->ng, k);
+		rns_store(q, k, _mm512_mask_sub_epi64(x, _mm512_test_epi64_mask(z, z),
+				rns_load(m, k), x));
 	}
-	/* q * N for q + kM, as a product in B', with 0 <= k < n: the extra kN only
-	 * makes the result larger, so the extension skips alpha. */
+	/* q * N for q + kM, as a product in B', with 0 <= k <= n: the extra kN
+	 * only makes the result larger, so the extension skips alpha. */
 	rns_vext(v, q, 1, -1, 0, c, nb);
 	/* r = (a + q * N) / M in B', and its xi_j for the exact extension. */
 	for (size_t k = 0; k < nb; k++) {

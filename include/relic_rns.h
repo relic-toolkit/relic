@@ -33,8 +33,12 @@
  * A context holds two bases B and B' of n moduli each, all primes of the form
  * 2^b - c coprime to a modulus N, and the tables for Montgomery
  * multiplication modulo N with M = prod(B) as the Montgomery constant. Values
- * are stored as their residues in both bases, each residue in Montgomery form
- * x_i * R mod m_i for R = 2^RLC_RNS_DIG, and divided by M in B'.
+ * are stored as their residues in both bases: in B, as x_i * S_i mod m_i for
+ * factors S_i with S_i^2 = +-R k_i, where R = 2^RLC_RNS_DIG and k_i = -N^{-1}
+ * (M/m_i)^{-1} mod m_i, so that the Montgomery product of two stored values
+ * is already, up to sign, the value the reduction needs (the moduli of B are
+ * 3 mod 4, so that k_i or -k_i is a square); in B', in Montgomery form x_i * R
+ * mod m'_j and divided by M.
  *
  * @ingroup rns
  */
@@ -153,16 +157,19 @@ typedef struct {
 	dig_t *iv;
 	/** Values R^2 mod m (2o values). */
 	dig_t *r2;
-	/** Factors to store integers: R^2 in B and R^2 / M in B' (2o values). */
+	/** Factors to store integers: S_i R in B and R^2 / M in B' (2o values). */
 	dig_t *e;
 	/** Values M^{-1} mod m'_j, in Montgomery form (n values). */
 	dig_t *mi;
-	/** Values (M/m_i)^{-1} mod m_i in B, and M (M'/m'_j)^{-1} in B' (2o). */
+	/** Values (M/m_i)^{-1} R / S_i mod m_i in B, and M (M'/m'_j)^{-1} in B'
+	 * (2o values). */
 	dig_t *ib;
-	/** Values -N^{-1} (M/m_i)^{-1} mod m_i in B (o values). */
+	/** Values k_i R / S_i mod m_i in B, for the zero test (o values). */
 	dig_t *nq;
-	/** Values nq times m^{-1} mod R, for the vectorized reduction (o). */
-	dig_t *nqv;
+	/** Masks of the residues of B whose products give -k_i instead (o). */
+	dig_t *ng;
+	/** Factors S_i in B, to make products of stored values (o values). */
+	dig_t *s;
 	/** Values ib times m^{-1} mod R in B', for the vectorized reduction (o). */
 	dig_t *ibv;
 	/** Tables of the extension from B to B' by row i (n rows of o values). */

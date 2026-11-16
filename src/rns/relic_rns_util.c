@@ -134,10 +134,10 @@ void rns_hint(const rns_st *c, size_t n) {
 size_t rns_size(size_t n, size_t d) {
 	const size_t o = RLC_RNS_SPAN(n), w = RLC_RNS_WORDS(d);
 
-	/* Eight tables of 2o residues, n of mi, five of o, the two extension
+	/* Eight tables of 2o residues, n of mi, six of o, the two extension
 	 * tables, the five multiples kN, the digits of M/m_i, -M and 3N, the
 	 * powers, the digits of N, and the room to align the block to a vector. */
-	return 16 * o + n + 5 * o + 2 * n * o + 10 * o + (n + 2) * (d + 1) +
+	return 16 * o + n + 6 * o + 2 * n * o + 10 * o + (n + 2) * (d + 1) +
 			w * 2 * o + d + RLC_RNS_LANES - 1;
 }
 
@@ -184,7 +184,9 @@ void rns_new(rns_t c, size_t n, size_t d) {
 	p += 2 * o;
 	c->nq = p;
 	p += o;
-	c->nqv = p;
+	c->ng = p;
+	p += o;
+	c->s = p;
 	p += o;
 	c->ibv = p;
 	p += o;

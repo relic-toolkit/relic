@@ -82,9 +82,31 @@ static dig_t rns_res(const rns_st *c, const bn_t a, size_t i) {
 }
 
 /**
+ * Exponentiates a residue modulo the i-th modulus in Montgomery form. The
+ * exponent is public, so the time may depend on it.
+ *
+ * @param[in] c				- the context, with the moduli and R^2 mod m.
+ * @param[in] a				- the residue.
+ * @param[in] e				- the exponent.
+ * @param[in] i				- the index of the modulus.
+ * @return the power.
+ */
+static dig_t rns_pow(const rns_st *c, dig_t a, dig_t e, size_t i) {
+	const dig_t m = c->m[i], u = c->u[i];
+	dig_t b = rns_mul(a, c->r2[i], m, u), r = rns_mul(1, c->r2[i], m, u);
+
+	for (; e > 0; e >>= 1) {
+		if (e & 1) {
+			r = rns_mul(r, b, m, u);
+		}
+		b = rns_mul(b, b, m, u);
+	}
+	return rns_mul(r, 1, m, u);
+}
+
+/**
  * Computes the inverse of a nonzero residue modulo the i-th modulus, as its
- * power to m - 2 in Montgomery form. The modulus is public, so the time may
- * depend on it.
+ * power to m - 2.
  *
  * @param[in] c				- the context, with the moduli and R^2 mod m.
  * @param[in] a				- the residue.
@@ -92,16 +114,7 @@ static dig_t rns_res(const rns_st *c, const bn_t a, size_t i) {
  * @return the inverse.
  */
 static dig_t rns_inv(const rns_st *c, dig_t a, size_t i) {
-	const dig_t m = c->m[i], u = c->u[i];
-	dig_t b = rns_mul(a, c->r2[i], m, u), r = rns_mul(1, c->r2[i], m, u);
-
-	for (dig_t e = m - 2; e > 0; e >>= 1) {
-		if (e & 1) {
-			r = rns_mul(r, b, m, u);
-		}
-		b = rns_mul(b, b, m, u);
-	}
-	return rns_mul(r, 1, m, u);
+	return rns_pow(c, a, c->m[i] - 2, i);
 }
 
 #ifndef RLC_CONF_NODBL
@@ -197,7 +210,8 @@ static void rns_pre_base(rns_t b, const bn_t mod) {
 		dv_zero(b->e, 2 * o);
 		dv_zero(b->ib, 2 * o);
 		dv_zero(b->nq, o);
-		dv_zero(b->nqv, o);
+		dv_zero(b->ng, o);
+		dv_zero(b->s, o);
 		dv_zero(b->ibv, o);
 		dv_zero(b->u1, o);
 		dv_zero(b->u2, o);
@@ -207,8 +221,8 @@ static void rns_pre_base(rns_t b, const bn_t mod) {
 		dv_zero(b->pw, b->w * 2 * o);
 
 		/* Pick the largest primes 2^bits - s, coprime to the modulus if
-		 * given, with s below the square root of R: first for B, then for
-		 * B'. */
+		 * given, with s below the square root of R: first for B, those 3 mod
+		 * 4, then for B'. */
 		while (k < n || h < n) {
 			if (s >= ((dig_t)1 << (RLC_RNS_DIG / 2))) {
 				RLC_THROW(ERR_NO_VALID);
@@ -216,6 +230,9 @@ static void rns_pre_base(rns_t b, const bn_t mod) {
 			}
 			d = ((dig_t)1 << b->bits) - s;
 			s += 2;
+			if (k < n && (d & 3) != 3) {
+				continue;
+			}
 			if (mod != NULL) {
 				bn_mod_dig(&r3, mod, d);
 				if (r3 == 0) {
@@ -428,7 +445,8 @@ static int rns_pre_mod(rns_t c, const rns_st *b, const bn_t mod, int room) {
 				dv_copy(c->mp, b->mp, n * l);
 				dv_copy(c->pw, b->pw, c->w * 2 * o);
 				dv_zero(c->nq, o);
-				dv_zero(c->nqv, o);
+				dv_zero(c->ng, o);
+				dv_zero(c->s, o);
 				dv_zero(c->u1, o);
 			}
 
@@ -458,21 +476,50 @@ static int rns_pre_mod(rns_t c, const rns_st *b, const bn_t mod, int room) {
 					c->t1[i * o + j] =
 							rns_mulp(c, c->t1[i * o + j], f1[j], o + j);
 				}
-				/* -N^{-1} (M/m_i)^{-1} mod m_i, to get xi_i of q directly. */
+				/* k_i = -N^{-1} (M/m_i)^{-1} mod m_i, which gives xi_i of q. */
 				d = rns_inv(c, rn[i], i);
 				c->nq[i] = rns_mulp(c, c->m[i] - d, c->ib[i], i);
 			}
 
+			/* The storage form in B: S_i = 2^(RLC_RNS_DIG / 2) y_i, for y_i a
+			 * square root of k_i or of -k_i, whichever is a square, as one is
+			 * for moduli 3 mod 4. Then the Montgomery product of two stored
+			 * values x S_i and y S_i is xy S_i^2 / R = +-xy k_i, the xi_i of
+			 * the reduction up to sign. The tables of stored values in B get
+			 * the factor lambda_i = S_i / R, and those that read stored values
+			 * its inverse. */
+			for (size_t i = 0; i < n; i++) {
+				dig_t k = c->nq[i], h, y, ng, lam, ilm;
+
+				ng = (rns_pow(c, k, (c->m[i] - 1) / 2, i) != 1);
+				k = RLC_SEL(k, c->m[i] - k, ng);
+				y = rns_pow(c, k, (c->m[i] + 1) / 4, i);
+				h = ((dig_t)1 << (RLC_RNS_DIG / 2)) % c->m[i];
+				lam = rns_mulp(c, y, rns_inv(c, h, i), i);
+				ilm = rns_inv(c, lam, i);
+				c->s[i] = rns_mulp(c, y, h, i);
+				c->ng[i] = (dig_t)0 - ng;
+				c->nq[i] = rns_mulp(c, c->nq[i], ilm, i);
+				c->e[i] = rns_mulp(c, c->e[i], lam, i);
+				c->ib[i] = rns_mulp(c, c->ib[i], ilm, i);
+				c->u2[i] = rns_mulp(c, c->u2[i], lam, i);
+				for (size_t j = 0; j < n; j++) {
+					c->t2[j * o + i] = rns_mulp(c, c->t2[j * o + i], lam, i);
+				}
+				for (size_t j = 0; j < c->w; j++) {
+					c->pw[j * 2 * o + i] =
+							rns_mulp(c, c->pw[j * 2 * o + i], lam, i);
+				}
+			}
+
 #if RLC_ARITH == RLC_AVX512
-			/* One factor R less, as for the base, and the quotients of the
-			 * reductions of products by nq. */
+			/* One factor R less, as for the base. */
 			for (size_t i = 0; i < n; i++) {
 				for (size_t j = 0; j < n; j++) {
 					c->t1[i * o + j] = rns_mul(c->t1[i * o + j], 1,
 							c->m[o + j], c->u[o + j]);
 				}
 				c->u1[i] = rns_mul(c->u1[i], 1, c->m[o + i], c->u[o + i]);
-				c->nqv[i] = (c->nq[i] * c->iv[i]) & RLC_RNS_MASK;
 			}
 #endif
 
