@@ -1431,6 +1431,21 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
+#if BN_MXP == BN_LWREG || !defined(RLC_STRIP)
+		TEST_CASE("fixed window modular exponentiation is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_mod(a, a, p);
+			bn_mxp_lwreg(b, a, p, p);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* Exponents of any length cross every window size. */
+			bn_rand(c, RLC_POS, 1 + a->dp[0] % RLC_BN_BITS);
+			bn_mxp_lwreg(b, a, c, p);
+			bn_mxp_basic(t[0], a, c, p);
+			TEST_ASSERT(bn_cmp(t[0], b) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
 #if BN_MXP == BN_LOWER
 		TEST_CASE("low-level modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);

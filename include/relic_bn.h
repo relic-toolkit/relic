@@ -435,6 +435,8 @@ typedef crt_st *crt_t;
 #define bn_mxp(C, A, B, M)	bn_mxp_slide(C, A, B, M)
 #elif BN_MXP == BN_MONTY
 #define bn_mxp(C, A, B, M)	bn_mxp_monty(C, A, B, M)
+#elif BN_MXP == BN_LWREG
+#define bn_mxp(C, A, B, M)	bn_mxp_lwreg(C, A, B, M)
 #elif BN_MXP == BN_LOWER
 #define bn_mxp(C, A, B, M)	bn_mxp_lower(C, A, B, M)
 #endif
@@ -1254,10 +1256,10 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the Montgomery powering ladder method. With the gmp-sec backend and
- * Montgomery reduction, it runs in constant time in the exponent, revealing
- * only its number of digits; other backends have variable-time low-level
- * arithmetic.
+ * the Montgomery powering ladder method. With the easy or gmp-sec backends
+ * and Montgomery reduction, it runs in constant time in the exponent,
+ * revealing only its number of digits; the gmp backend has variable-time
+ * low-level arithmetic.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1266,6 +1268,21 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
+
+/**
+ * Exponentiates a multiple precision integer modulo a positive integer using
+ * fixed windows, with every window multiplied by a table entry selected in
+ * constant time. In a Residue Number System, it runs in constant time in the
+ * exponent, revealing only its number of bits; the positional representation
+ * has variable-time low-level arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
+ */
+void bn_mxp_lwreg(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
@@ -1293,7 +1310,8 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
 /*
  * Computes a modular exponentiation of a multiple precision integer using the
- * Chinese Remainder Theorem, given the moduli.
+ * Chinese Remainder Theorem, given the moduli. When they have the same number
+ * of digits, the recombination of the halves runs without branches.
  *
  * @param[out] d 			- the result.
  * @param[in] a				- the basis.

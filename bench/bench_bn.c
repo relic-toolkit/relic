@@ -669,6 +669,15 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if BN_MXP == BN_LWREG || !defined(RLC_STRIP)
+	BENCH_RUN("bn_mxp_lwreg") {
+		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
+		bn_mod(a, a, b);
+		BENCH_ADD(bn_mxp_lwreg(c, a, b, b));
+	}
+	BENCH_END;
+#endif
+
 #if BN_MXP == BN_LOWER
 	BENCH_RUN("bn_mxp_lower") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);

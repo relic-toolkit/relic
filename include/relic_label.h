@@ -271,6 +271,7 @@
 #undef bn_mxp_basic
 #undef bn_mxp_slide
 #undef bn_mxp_monty
+#undef bn_mxp_lwreg
 #undef bn_mxp_lower
 #undef bn_mxp_dig
 #undef bn_mxp_crt
@@ -408,6 +409,7 @@
 #define bn_mxp_basic 	RLC_PREFIX(bn_mxp_basic)
 #define bn_mxp_slide 	RLC_PREFIX(bn_mxp_slide)
 #define bn_mxp_monty 	RLC_PREFIX(bn_mxp_monty)
+#define bn_mxp_lwreg 	RLC_PREFIX(bn_mxp_lwreg)
 #define bn_mxp_lower 	RLC_PREFIX(bn_mxp_lower)
 #define bn_mxp_dig 	RLC_PREFIX(bn_mxp_dig)
 #define bn_mxp_crt 	RLC_PREFIX(bn_mxp_crt)

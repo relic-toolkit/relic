@@ -318,8 +318,8 @@ void rns_get_bn(bn_t r, const dig_t *a, const rns_t c);
 
 /**
  * Converts an integer of any sign and size to a value in the Residue Number
- * System with the same residue modulo N. The integer is reduced by division,
- * which is not constant time.
+ * System with the same residue modulo N, in time that depends on the number
+ * of digits of the integer but not on their values.
  *
  * @param[out] r			- the value.
  * @param[in] a				- the integer.

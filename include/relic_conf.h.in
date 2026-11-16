@@ -177,6 +177,8 @@
 #define BN_SLIDE    2
 /** Montgomery powering ladder. */
 #define BN_MONTY    3
+/** Fixed windows with constant-time table lookups. */
+#define BN_LWREG    4
 /** Chosen multiple precision modular exponentiation method. */
 #define BN_MXP   BN_@BN_MXP@
 

@@ -59,6 +59,10 @@
 #define MXP_POS_GROW(X, M)			bn_grow(X, (M)->alloc)
 #define MXP_POS_COPY(X, Y, V)		bn_copy(X, Y)
 #define MXP_POS_SWAP(X, Y, B, V)	bn_swap_sec(X, Y, B)
+/* X = Y if B is set, through T, without branching on B. */
+#define MXP_POS_CSEL(X, Y, B, T, V)											\
+	bn_copy(T, Y);															\
+	bn_swap_sec(X, T, B)
 #define MXP_POS_MUL(X, Y, Z, M, V)											\
 	bn_mul(X, Y, Z);														\
 	MXP_POS_RDC(X, X, M, V)
@@ -132,6 +136,8 @@
 #define MXP_RNS_ONE(X, M, V)		dv_copy(X, (V)->one, 2 * (V)->o)
 #define MXP_RNS_COPY(X, Y, V)		dv_copy(X, Y, 2 * (V)->o)
 #define MXP_RNS_SWAP(X, Y, B, V)	dv_swap_sec(X, Y, 2 * (V)->o, B)
+/* X = Y if B is set, with T unused. */
+#define MXP_RNS_CSEL(X, Y, B, T, V)	dv_copy_sec(X, Y, 2 * (V)->o, B)
 #define MXP_RNS_MUL(X, Y, Z, M, V)	rns_mulm_low(X, Y, Z, V)
 #define MXP_RNS_SQR(X, Y, M, V)		rns_mulm_low(X, Y, Y, V)
 /* A step of the ladder: X = X * Y and Y = Y^2, with T unused. */
@@ -391,6 +397,112 @@
 			R##_FREE(tab[1]);												\
 			R##_FREE(tab[0]);												\
 			bn_free(z);														\
+		}																	\
+	}
+
+/**
+ * Defines a template for exponentiation by fixed windows in a representation
+ * R, with the precomputed value u of the modulus.
+ *
+ * @param[in] S			- the suffix of the function.
+ * @param[in] R			- the representation.
+ */
+#define TMPL_BN_MXP_LWREG(S, R)												\
+	static void bn_mxp_lwreg_##S(bn_t c, const bn_t a, const bn_t b,		\
+			const bn_t m, R##_V u) {										\
+		R##_T *tab, t, s;													\
+		bn_t z;																\
+		size_t i, j, k, w, l = bn_bits(b);									\
+		dig_t d, e;															\
+																			\
+		/* Find window size. */												\
+		if (l <= 64) {														\
+			w = 3;															\
+		} else if (l <= 256) {												\
+			w = 4;															\
+		} else if (l <= 1024) {												\
+			w = 5;															\
+		} else {															\
+			w = 6;															\
+		}																	\
+																			\
+		tab = RLC_ALLOCA(R##_T, (size_t)1 << w);							\
+		if (tab == NULL) {													\
+			RLC_THROW(ERR_NO_MEMORY);										\
+			return;															\
+		}																	\
+		for (i = 0; i < ((size_t)1 << w); i++) {							\
+			R##_NULL(tab[i]);												\
+		}																	\
+		R##_NULL(t);														\
+		R##_NULL(s);														\
+		bn_null(z);															\
+																			\
+		RLC_TRY {															\
+			for (i = 0; i < ((size_t)1 << w); i++) {						\
+				R##_NEW(tab[i], u);											\
+			}																\
+			R##_NEW(t, u);													\
+			R##_NEW(s, u);													\
+			bn_new(z);														\
+																			\
+			/* Create the table of a^0, ..., a^(2^w - 1). */				\
+			R##_ONE(tab[0], m, u);											\
+			R##_CONV(tab[1], a, m, u);										\
+			for (i = 2; i < ((size_t)1 << w); i++) {						\
+				R##_MUL(tab[i], tab[i - 1], tab[1], m, u);					\
+			}																\
+			for (i = 0; i < ((size_t)1 << w); i++) {						\
+				R##_GROW(tab[i], m);										\
+			}																\
+			R##_GROW(s, m);													\
+																			\
+			/* Each window costs w squarings and one multiplication, by the	\
+			 * entry found by scanning the whole table, so only the length	\
+			 * of b is revealed. */											\
+			k = RLC_CEIL(l, w);												\
+			for (i = k; i-- > 0;) {											\
+				if (i != k - 1) {											\
+					for (j = 0; j < w; j++) {								\
+						R##_SQR(t, t, m, u);								\
+					}														\
+				}															\
+				d = 0;														\
+				for (j = 0; j < w; j++) {									\
+					d |= (dig_t)bn_get_bit(b, i * w + j) << j;				\
+				}															\
+				R##_COPY(s, tab[0], u);										\
+				for (j = 1; j < ((size_t)1 << w); j++) {					\
+					/* The top bit of (j ^ d) - 1 is set only if j = d. */	\
+					e = ((dig_t)(j ^ d) - 1) >> (RLC_DIG - 1);				\
+					R##_CSEL(s, tab[j], e, z, u);							\
+				}															\
+				if (i == k - 1) {											\
+					R##_COPY(t, s, u);										\
+				} else {													\
+					R##_MUL(t, t, s, m, u);									\
+				}															\
+			}																\
+																			\
+			R##_BACK(z, t, m, u);											\
+																			\
+			if (bn_sign(b) == RLC_NEG) {									\
+				bn_mod_inv(c, z, m);										\
+			} else {														\
+				bn_copy(c, z);												\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			for (i = 0; i < ((size_t)1 << w); i++) {						\
+				R##_FREE(tab[i]);											\
+			}																\
+			R##_FREE(t);													\
+			R##_FREE(s);													\
+			bn_free(z);														\
+			RLC_FREE(tab);													\
 		}																	\
 	}
 

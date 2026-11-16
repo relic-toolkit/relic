@@ -125,14 +125,172 @@ TMPL_BN_MXP_MONTY(pos, MXP_POS)
 
 TMPL_BN_MXP_BASIC(pos, MXP_POS)
 TMPL_BN_MXP_SLIDE(pos, MXP_POS)
+TMPL_BN_MXP_LWREG(pos, MXP_POS)
 TMPL_BN_MXP_DIG(pos, MXP_POS)
 
 #if BN_MOD == BN_RENUS
 TMPL_BN_MXP_BASIC(rns, MXP_RNS)
 TMPL_BN_MXP_SLIDE(rns, MXP_RNS)
 TMPL_BN_MXP_MONTY(rns, MXP_RNS)
+TMPL_BN_MXP_LWREG(rns, MXP_RNS)
 TMPL_BN_MXP_DIG(rns, MXP_RNS)
 #endif
+
+/**
+ * Reduces a digit vector t below m * R, for R = 2^(RLC_DIG * s), by
+ * Montgomery's algorithm and without branches: c = t / R mod m, in [0, m).
+ *
+ * @param[out] c			- the s digits of the result.
+ * @param[in] t				- the 2s digits to reduce.
+ * @param[in] m				- the s digits of the modulus.
+ * @param[in] s				- the number of digits of the modulus.
+ * @param[in] u				- the Montgomery constant -m^{-1} mod 2^RLC_DIG.
+ */
+static void bn_crt_rdc(dig_t *c, const dig_t *t, const dig_t *m, size_t s,
+		dig_t u) {
+	dig_t w[RLC_BN_SIZE], v[RLC_BN_DIGS], b;
+
+	/* The low level may work in place over all digits of t. */
+	bn_modn_low(w, t, 2 * s, m, s, u);
+	/* The result is below 2m, so one subtraction of m reduces it. */
+	b = bn_subn_low(v, w, m, s);
+	dv_copy_sec(v, w, s, b);
+	dv_copy(c, v, s);
+}
+
+/**
+ * Finishes a modular exponentiation by the Chinese Remainder Theorem from its
+ * halves. When the moduli have the same number of digits, the values derived
+ * from the secret halves are only handled by arithmetic without branches.
+ *
+ * @param[out] d			- the result.
+ * @param[in,out] t			- the half modulo p, or modulo p^2 if sqr is set.
+ * @param[in,out] u			- the half modulo q, or modulo q^2 if sqr is set.
+ * @param[in] crt			- the set of moduli.
+ * @param[in] sqr			- the flag to indicate if modulo n or n^2.
+ */
+static void bn_mxp_crt_fin(bn_t d, bn_t t, bn_t u, const crt_t crt, int sqr) {
+	const size_t s = crt->p->used;
+	dig_t x[RLC_BN_SIZE], y[RLC_BN_SIZE], one[RLC_BN_SIZE];
+	dig_t mp[RLC_BN_DIGS], mq[RLC_BN_DIGS], rp[RLC_BN_DIGS], qr[RLC_BN_DIGS];
+	dig_t hp[RLC_BN_DIGS], hq[RLC_BN_DIGS], ip[RLC_BN_DIGS], iq[RLC_BN_DIGS];
+	dig_t up, uq, b;
+	bn_t z, w;
+
+	if (crt->q->used != s || s > RLC_BN_DIGS || t->used > 2 * s ||
+			u->used > 2 * s) {
+		/* Moduli of different lengths take the variable-time path. */
+		if (sqr) {
+			/* m_p = L(t) * dp mod p and m_q = L(u) * dq mod q. */
+			bn_sub_dig(t, t, 1);
+			bn_div(t, t, crt->p);
+			bn_mul(t, t, crt->dp);
+			bn_mod(t, t, crt->p);
+			bn_sub_dig(u, u, 1);
+			bn_div(u, u, crt->q);
+			bn_mul(u, u, crt->dq);
+			bn_mod(u, u, crt->q);
+		}
+		/* m = m_q + q * (qInv * (m_p - m_q) mod p). */
+		bn_sub(d, t, u);
+		while (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, crt->p);
+		}
+		bn_mul(d, d, crt->qi);
+		bn_mod(d, d, crt->p);
+		bn_mul(d, d, crt->q);
+		bn_add(d, d, u);
+		return;
+	}
+
+	bn_null_all(z, w);
+
+	RLC_TRY {
+		bn_new_all(z, w);
+
+		/* Constants of the key, whose computation depends on it alone. */
+		bn_mod_pre_monty(z, crt->p);
+		up = z->dp[0];
+		bn_mod_pre_monty(z, crt->q);
+		uq = z->dp[0];
+		/* R mod p and qInv * R mod p, for R = 2^(RLC_DIG * s). */
+		bn_set_2b(z, RLC_DIG * s);
+		bn_mod(z, z, crt->p);
+		dv_zero(rp, s);
+		dv_copy(rp, z->dp, z->used);
+		bn_lsh(z, crt->qi, RLC_DIG * s);
+		bn_mod(z, z, crt->p);
+		dv_zero(qr, s);
+		dv_copy(qr, z->dp, z->used);
+
+		dv_zero(one, 2 * s);
+		one[0] = 1;
+		dv_zero(mp, s);
+		dv_zero(mq, s);
+		if (sqr) {
+			/* dp * R mod p, dq * R mod q, and the inverses of p and q. */
+			bn_lsh(z, crt->dp, RLC_DIG * s);
+			bn_mod(z, z, crt->p);
+			dv_zero(hp, s);
+			dv_copy(hp, z->dp, z->used);
+			bn_lsh(z, crt->dq, RLC_DIG * s);
+			bn_mod(z, z, crt->q);
+			dv_zero(hq, s);
+			dv_copy(hq, z->dp, z->used);
+			bn_set_2b(w, RLC_DIG * s);
+			bn_mod_inv(z, crt->p, w);
+			dv_zero(ip, s);
+			dv_copy(ip, z->dp, z->used);
+			bn_mod_inv(z, crt->q, w);
+			dv_zero(iq, s);
+			dv_copy(iq, z->dp, z->used);
+
+			/* t - 1 = p * L(t) exactly, so L(t) = (t - 1) / p mod R, and
+			 * then m_p = L(t) * dp mod p. The same holds modulo q. */
+			dv_zero(x, 2 * s);
+			dv_copy(x, t->dp, t->used);
+			bn_subn_low(x, x, one, 2 * s);
+			bn_muln_low(y, x, ip, s);
+			bn_muln_low(x, y, hp, s);
+			bn_crt_rdc(mp, x, crt->p->dp, s, up);
+			dv_zero(x, 2 * s);
+			dv_copy(x, u->dp, u->used);
+			bn_subn_low(x, x, one, 2 * s);
+			bn_muln_low(y, x, iq, s);
+			bn_muln_low(x, y, hq, s);
+			bn_crt_rdc(mq, x, crt->q->dp, s, uq);
+		} else {
+			dv_copy(mp, t->dp, t->used);
+			dv_copy(mq, u->dp, u->used);
+		}
+
+		/* h = (m_p - m_q mod p) mod p, where m_q mod p = m_q * R / R. */
+		bn_muln_low(x, mq, rp, s);
+		bn_crt_rdc(hq, x, crt->p->dp, s, up);
+		b = bn_subn_low(hp, mp, hq, s);
+		bn_addn_low(x, hp, crt->p->dp, s);
+		dv_copy_sec(hp, x, s, b);
+		/* h = h * qInv mod p and m = m_q + q * h. */
+		bn_muln_low(x, hp, qr, s);
+		bn_crt_rdc(hp, x, crt->p->dp, s, up);
+		bn_muln_low(x, crt->q->dp, hp, s);
+		dv_zero(y, 2 * s);
+		dv_copy(y, mq, s);
+		bn_addn_low(x, x, y, 2 * s);
+
+		bn_grow(d, 2 * s);
+		dv_copy(d->dp, x, 2 * s);
+		d->used = 2 * s;
+		d->sign = RLC_POS;
+		bn_trim(d);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(z, w);
+	}
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -199,6 +357,25 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 
 	BN_MXP_RUN(bn_mxp_monty, m, bn_bits(b), c, a, b, m);
+}
+
+void bn_mxp_lwreg(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
+	BN_MXP_RUN(bn_mxp_lwreg, m, bn_bits(b), c, a, b, m);
 }
 
 #if BN_MXP == BN_LOWER
@@ -340,42 +517,24 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 					#pragma omp section
 					{
 #endif
-						/* Compute m_p = L(c^(p-1) mod p^2) * dp mod p. */
+						/* t = c^(p-1) mod p^2. */
 						bn_sqr(t, crt->p);
 						bn_mxp(t, a, b, t);
-						bn_sub_dig(t, t, 1);
-						bn_div(t, t, crt->p);
-						bn_mul(t, t, crt->dp);
-						bn_mod(t, t, crt->p);
 #if RLC_MULTI == RLC_OPENMP && BN_MOD != BN_RENUS
 					}
 					#pragma omp section
 					{
 #endif
-						/* Compute m_q = L(c^(q-1) mod q^2) * dq mod q. */
+						/* u = c^(q-1) mod q^2. */
 						bn_sqr(u, crt->q);
 						bn_mxp(u, a, c, u);
-						bn_sub_dig(u, u, 1);
-						bn_div(u, u, crt->q);
-						bn_mul(u, u, crt->dq);
-						bn_mod(u, u, crt->q);
 #if RLC_MULTI == RLC_OPENMP && BN_MOD != BN_RENUS
 					}
 				}
 			}
 #endif
 		}
-		/* m1 = m1 - m2 mod p. */
-		bn_sub(d, t, u);
-		while (bn_sign(d) == RLC_NEG) {
-			bn_add(d, d, crt->p);
-		}
-		/* m1 = qInv(m1 - m2) mod p. */
-		bn_mul(d, d, crt->qi);
-		bn_mod(d, d, crt->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(d, d, crt->q);
-		bn_add(d, d, u);
+		bn_mxp_crt_fin(d, t, u, crt, sqr);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

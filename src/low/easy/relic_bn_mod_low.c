@@ -41,7 +41,7 @@
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
 	size_t i, j;
-	dig_t t, r0, r1, r2;
+	dig_t t, r0, r1, r2, w[RLC_BN_SIZE];
 	dig_t *tmp, *tmpc;
 	const dig_t *tmpm;
 
@@ -82,7 +82,10 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		RLC_COMBA_ADD(t, r2, r1, r0, *a);
 	}
 	c[sm - 1] = r0;
-	if (r1) {
-		bn_subn_low(c, c, m, sm);
+	/* Subtract m if there is a carry, without branching on it. */
+	r1 = -(dig_t)(r1 != 0);
+	for (i = 0; i < sm; i++) {
+		w[i] = m[i] & r1;
 	}
+	bn_subn_low(c, c, w, sm);
 }

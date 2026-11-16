@@ -64,21 +64,46 @@ void rns_get_bn(bn_t r, const dig_t *a, const rns_t c) {
 }
 
 void rns_set_bn(dig_t *r, const bn_t a, const rns_t c) {
-	dig_t v[RLC_BN_DIGS];
-	bn_t n, t;
+	dig_t v[RLC_BN_DIGS], k[2 * RLC_RNS_MAX];
+	dig_t s[2 * RLC_RNS_MAX], t[2 * RLC_RNS_MAX];
+	const size_t d = c->d, b = RLC_DIG * d / 2;
+	size_t i, j, l = RLC_MAX(RLC_CEIL(a->used, d), 1);
 
-	bn_null_all(n, t);
+	/* K = 2^(RLC_DIG * d) mod N in Montgomery form, as the square of the
+	 * Montgomery form of 2^(RLC_DIG * d / 2), which has d digits. Only an
+	 * integer longer than N needs it. */
+	if (l > 1) {
+		dv_zero(v, d);
+		v[b / RLC_DIG] = (dig_t)1 << (b % RLC_DIG);
+		rns_set(s, v, c);
+		rns_mulm_low(k, s, s, c);
+	}
 
-	RLC_TRY {
-		bn_new_all(n, t);
-		bn_read_raw(n, c->p, c->d);
-		bn_mod_basic(t, a, n);
-		bn_write_raw(v, c->d, t);
-		rns_set(r, v, c);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free_all(n, t);
+	/* Horner's rule on the blocks of d digits of |a|, from the top one, so
+	 * that the time depends on the length of a and not on its digits. */
+	for (i = l; i-- > 0;) {
+		dv_zero(v, d);
+		if (i * d < a->used) {
+			dv_copy(v, a->dp + i * d, RLC_MIN(d, a->used - i * d));
+		}
+		rns_set(t, v, c);
+		if (i == l - 1) {
+			dv_copy(r, t, 2 * c->o);
+		} else {
+			rns_mulm_low(s, r, k, c);
+			for (j = 0; j < 2 * c->o; j++) {
+				s[j] = RLC_RNS_ADD(s[j], t[j], c->m[j]);
+			}
+			/* Multiplying by one brings the sum back to the bounds of a
+			 * product, so that it can be multiplied again. */
+			rns_mulm_low(r, s, c->one, c);
+		}
+	}
+
+	if (bn_sign(a) == RLC_NEG) {
+		for (j = 0; j < 2 * c->o; j++) {
+			r[j] = RLC_RNS_SUB(0, r[j], c->m[j]);
+		}
 	}
 }
 

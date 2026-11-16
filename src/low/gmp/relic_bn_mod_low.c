@@ -58,7 +58,5 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		r = (dig_t)(*tmpc * u);
 		*tmpc = mpn_addmul_1(tmpc, m, sm, r);
 	}
-	if (mpn_add_n(c, c, tmpc, sm)) {
-		mpn_sub_n(c, c, m, sm);
-	}
+	mpn_cnd_sub_n(mpn_add_n(c, c, tmpc, sm), c, c, m, sm);
 }

@@ -25,7 +25,8 @@ message("      BN_METHD=RENUS    Montgomery reduction in a Residue Number System
 message("      Modular exponentiation:")
 message("      BN_METHD=BASIC    Binary modular exponentiation.")
 message("      BN_METHD=MONTY    Montgomery powering ladder.")
-message("      BN_METHD=SLIDE    Sliding window modular exponentiation.\n")
+message("      BN_METHD=SLIDE    Sliding window modular exponentiation.")
+message("      BN_METHD=LWREG    Fixed window exponentiation with constant-time table lookups.\n")
 message("      BN_METHD=LOWER    Pass exponentiation to the lower level.\n")
 
 message("      Greatest Common Divisor:")
