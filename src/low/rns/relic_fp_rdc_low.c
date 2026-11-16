@@ -52,7 +52,12 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 #ifndef FP_RNS_VEC
 
 void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_st *c) {
-	rns_extm_imp(r, xi, b, exact, c, RLC_FP_RNS, RLC_FP_RNSO);
+	/* A constant exact = -1 lets the copy without alpha drop its products. */
+	if (exact < 0) {
+		rns_extm_imp(r, xi, b, -1, c, RLC_FP_RNS, RLC_FP_RNSO);
+	} else {
+		rns_extm_imp(r, xi, b, exact, c, RLC_FP_RNS, RLC_FP_RNSO);
+	}
 }
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {

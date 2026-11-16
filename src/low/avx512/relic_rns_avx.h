@@ -26,8 +26,9 @@
  *
  * Vector arithmetic for the lower level of a Residue Number System with
  * AVX-512 IFMA: eight residues per vector, multiplied with the 52-bit
- * multiply-add instructions. The moduli are below 2^50, so that residues and
- * sums of a few of them, below 4m, still fit the multipliers.
+ * multiply-add instructions. With moduli below 2^50, residues and sums of a
+ * few of them, below 4m, still fit the multipliers; with moduli below 2^52,
+ * the residues that enter them must be at most m.
  *
  * @ingroup rns
  */

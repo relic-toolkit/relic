@@ -72,12 +72,14 @@
 
 /**
  * Bound on the outputs of a base extension without correction, as a multiple
- * of m / 4: n products of residues at most m give at most n * m / 4, the
- * Montgomery reduction adds m, and the correction by alpha a little more.
+ * of m / 4: each of the n products of residues at most m, and the correction
+ * by alpha, has its top bits below m / 4 for moduli of 50 bits and below m for
+ * moduli of 52 bits, and the Montgomery reduction adds m.
  *
  * @param[in] N				- the number of moduli in each base.
+ * @param[in] B				- the size in bits of the moduli.
  */
-#define RNS_BOUND(N)	((int)(N) + 4 + 1)
+#define RNS_BOUND(N, B)		(((int)(N) + 1) * (1 << ((B) - 50)) + 4)
 
 /**
  * Extends a value to a base from the other, as rns_extm_imp() does, with one
@@ -88,7 +90,7 @@
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
  * @param[in] full			- 1 to bring the residues down to at most m, 0 to
- * 							leave them below RNS_BOUND(n) / 4 times m.
+ * 							leave them below RNS_BOUND() / 4 times m.
  * @param[in] c				- the context.
  * @param[in] nb			- the number of vectors per base.
  */
@@ -122,13 +124,13 @@ rlc_inline void rns_vext(__m512i *r, const dig_t *xi, int b, int exact,
 		}
 	}
 	if (exact >= 0) {
-		/* alpha = (sum xi_i + exact * 2^49) / 2^50, as the sum is below
-		 * n * 2^50, far from overflowing. */
-		a = (dig_t)exact << (RLC_RNS_BITS - 1);
+		/* alpha = (sum xi_i + exact * 2^(b - 1)) / 2^b for moduli of b
+		 * bits, as the sum is below n * 2^b, far from overflowing. */
+		a = (dig_t)exact << (c->bits - 1);
 		for (size_t i = 0; i < n; i++) {
 			a += xi[i];
 		}
-		x = _mm512_set1_epi64(a >> RLC_RNS_BITS);
+		x = _mm512_set1_epi64(a >> c->bits);
 		for (size_t k = 0; k < nb; k++) {
 			y = rns_load(w, k);
 			l[S - 1][k] = _mm512_madd52lo_epu64(l[S - 1][k], x, y);
@@ -141,7 +143,7 @@ rlc_inline void rns_vext(__m512i *r, const dig_t *xi, int b, int exact,
 			h[0][k] = _mm512_add_epi64(h[0][k], h[e][k]);
 		}
 		r[k] = rns_vred(l[0][k], h[0][k], rns_load(m, k), rns_load(iv, k),
-				full ? rns_halvings(RNS_BOUND(n)) : 0);
+				full ? rns_halvings(RNS_BOUND(n, c->bits)) : 0);
 	}
 }
 
@@ -158,7 +160,8 @@ rlc_inline void rns_vrdc(dig_t *r, const dig_t *a, const rns_st *c,
 		size_t nb) {
 	const size_t o = c->o;
 	const dig_t *m = c->m;
-	const int s = rns_halvings(16 + RNS_BOUND(c->n));
+	/* The product is at most m and the extension adds its bound. */
+	const int s = rns_halvings(4 + RNS_BOUND(c->n, c->bits));
 	__m512i v[RNS_VB], x, y, z;
 	dig_t q[RLC_RNS_MAX];
 
@@ -166,7 +169,7 @@ rlc_inline void rns_vrdc(dig_t *r, const dig_t *a, const rns_st *c,
 	 * lanes are zero, as are their constants. */
 	for (size_t k = 0; k < nb; k++) {
 		y = rns_load(m, k);
-		/* For a below 4m, the product is at most 2m. */
+		/* For a at most m, the product is below 2m. */
 		rns_store(q, k, rns_vpeel(rns_vmulc(rns_load(a, k),
 				rns_load(c->nq, k), rns_load(c->nqv, k), y), y, 1));
 	}
@@ -177,7 +180,6 @@ rlc_inline void rns_vrdc(dig_t *r, const dig_t *a, const rns_st *c,
 	for (size_t k = 0; k < nb; k++) {
 		y = rns_load(m + o, k);
 		z = rns_load(c->ibv, k);
-		/* Below 4m plus the bound of the extension. */
 		x = rns_vpeel(_mm512_add_epi64(rns_load(a + o, k), v[k]), y, s);
 		rns_store(r + o, k, x);
 		rns_store(q, k, rns_vpeel(rns_vmulc(x, rns_load(c->ib + o, k), z, y),
@@ -208,10 +210,14 @@ void rns_extm_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_t c) {
 }
 
 void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {
-	/* For factors at most m, the products are at most 5m / 4. */
+	__m512i m;
+
+	/* For factors at most m, the products are below 2m, and are brought down
+	 * to at most m, as factors of 52 bits must be. */
 	for (size_t k = 0; k < 2 * c->o / 8; k++) {
-		rns_store(r, k, rns_vmul(rns_load(a, k), rns_load(b, k),
-				rns_load(c->m, k), rns_load(c->iv, k)));
+		m = rns_load(c->m, k);
+		rns_store(r, k, rns_vpeel(rns_vmul(rns_load(a, k), rns_load(b, k), m,
+				rns_load(c->iv, k)), m, 1));
 	}
 }
 

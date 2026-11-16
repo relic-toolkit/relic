@@ -93,15 +93,18 @@
 #define RLC_RNS_MOD(D, M)													\
 	RLC_RNS_CRT((dig_t)(D) - (M) * (dig_t)((dig_t)(D) >= (M)), M)
 #else
-/* As 2^52 = K mod M for K = 2^52 - 4M, fold the high bits: the moduli are
- * 2^50 - c with c below 2^26, so K = 4c is below 2^28, and the result is below
+/* As 2^52 = K mod M, fold the high bits: the moduli are 2^50 - c or 2^52 - c
+ * with c below 2^26, so K = 4c or c is below 2^28, and the result is below
  * 2^52 + 2^12 * K < 4M + 2^28 + 2^40 < 5M, which three subtractions bring
  * below M. */
 #define RLC_RNS_MOD(D, M)													\
 	rns_fix(((dig_t)(D) & RLC_RNS_MASK) +									\
 		((dig_t)(D) >> RLC_RNS_DIG) * RLC_RNS_K(M), M)
-/** The residue of 2^52 modulo a 50-bit modulus M, as 2^52 - 4M. */
-#define RLC_RNS_K(M)	(((dig_t)1 << RLC_RNS_DIG) - ((dig_t)(M) << 2))
+/** The residue of 2^52 modulo a modulus M of 50 to 52 bits, as 2^52 - 2^k M
+ * for the shift k that brings M to 52 bits. */
+#define RLC_RNS_K(M)														\
+	(((dig_t)1 << RLC_RNS_DIG) - ((dig_t)(M) << (((dig_t)(M) >> 51 == 0) +	\
+		((dig_t)(M) >> 50 == 0))))
 #endif
 
 /*============================================================================*/
@@ -182,22 +185,23 @@ static inline dig_t rns_mul(dig_t a, dig_t b, dig_t m, dig_t u) {
 /**
  * Computes the number of times the product M of a base is subtracted in the
  * Chinese Remainder Theorem for the values xi_i = x_i (M/m_i)^{-1} mod m_i:
- * sum xi_i / m_i, approximated by sum xi_i / 2^RLC_RNS_BITS, and truncated or
- * rounded.
+ * sum xi_i / m_i, approximated by sum xi_i / 2^b for moduli of b bits, and
+ * truncated or rounded.
  *
  * @param[in] xi			- the values xi_i.
  * @param[in] n				- the number of moduli in the base.
  * @param[in] exact			- the flag to round instead of truncating.
+ * @param[in] b				- the size in bits of the moduli.
  * @return the result.
  */
-static inline dig_t rns_alpha(const dig_t *xi, size_t n, int exact) {
-	dig_t a0 = (dig_t)exact << (RLC_RNS_BITS - 1), a1 = 0;
+static inline dig_t rns_alpha(const dig_t *xi, size_t n, int exact, size_t b) {
+	dig_t a0 = (dig_t)exact << (b - 1), a1 = 0;
 
 	for (size_t i = 0; i < n; i++) {
 		a0 += xi[i];
 		a1 += (a0 < xi[i]);
 	}
-	return (a1 << (RLC_DIG - RLC_RNS_BITS)) | (a0 >> RLC_RNS_BITS);
+	return (a1 << (RLC_DIG - b)) | (a0 >> b);
 }
 
 #if RLC_ARITH != RLC_AVX512
@@ -255,15 +259,18 @@ static inline void rns_extm_imp(dig_t *r, const dig_t *xi, int b, int exact,
 	const dig_t *w = (b ? c->u1 : c->u2);
 	const dig_t *m = c->m + (b ? o : 0);
 	const dig_t *u = c->u + (b ? o : 0);
-	dig_t a = (exact < 0 ? 0 : rns_alpha(xi, n, exact));
+	dig_t a = (exact < 0 ? 0 : rns_alpha(xi, n, exact, c->bits));
 
 #ifdef RLC_CONF_NODBL
 	dig_t h, l, s0, s1, s2;
 
 	for (size_t j = 0; j < n; j++) {
-		/* The n + 1 products, below R^2 / 4 each, as three digits. */
-		RLC_MUL_DIG(s1, s0, a, w[j]);
-		s2 = 0;
+		/* The n + 1 products, below R^2 / 4 each, as three digits; the
+		 * extension that skips alpha has n of them. */
+		s0 = s1 = s2 = 0;
+		if (exact >= 0) {
+			RLC_MUL_DIG(s1, s0, a, w[j]);
+		}
 		for (size_t i = 0; i < n; i++) {
 			RLC_MUL_DIG(h, l, xi[i], t[i * o + j]);
 			s0 += l;
@@ -282,8 +289,9 @@ static inline void rns_extm_imp(dig_t *r, const dig_t *xi, int b, int exact,
 		dbl_t acc[4], g;
 		dig_t s[4] = { 0, 0, 0, 0 };
 		const dig_t *ti;
+		/* The extension that skips alpha has no product by it. */
 		for (int k = 0; k < 4; k++) {
-			acc[k] = (dbl_t)a * w[j + k];
+			acc[k] = (exact < 0 ? 0 : (dbl_t)a * w[j + k]);
 		}
 		size_t i = 0;
 		for (; i + 4 <= n; i += 4) {
@@ -310,7 +318,7 @@ static inline void rns_extm_imp(dig_t *r, const dig_t *xi, int b, int exact,
 		}
 	}
 	for (; j < n; j++) {
-		dbl_t acc = (dbl_t)a * w[j], g;
+		dbl_t acc = (exact < 0 ? 0 : (dbl_t)a * w[j]), g;
 		dig_t s = 0;
 		for (size_t i = 0; i < n; i++) {
 			g = (dbl_t)xi[i] * t[i * o + j];
@@ -492,7 +500,7 @@ static inline void rns_get_imp(dig_t *r, const dig_t *a, const rns_st *c,
 	for (size_t i = 0; i < n; i++) {
 		xi[i] = rns_mul(w[i], c->ib[i], m[i], u[i]);
 	}
-	a1 = rns_alpha(xi, n, 1);
+	a1 = rns_alpha(xi, n, 1, c->bits);
 	/* The low digits of w + 3N are enough to recover it, as it is positive.
 	 * The multipliers are single digits, so sum them column by column in three
 	 * digits, with the top two carried to the next column. */

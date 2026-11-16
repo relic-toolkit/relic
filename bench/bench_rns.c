@@ -50,7 +50,7 @@ static void arith(int bits) {
 	bn_rand(n, RLC_POS, bits);
 	bn_set_bit(n, bits - 1, 1);
 	bn_set_bit(n, 0, 1);
-	rns_new(c, RLC_RNS_SIZE(bits, ROOM), d);
+	rns_new(c, RLC_RNS_SIZE(bits, ROOM, RLC_RNS_WIDE), d);
 	x = RLC_ALLOCA(dig_t, 2 * c->o);
 	y = RLC_ALLOCA(dig_t, 2 * c->o);
 	z = RLC_ALLOCA(dig_t, 2 * c->o);

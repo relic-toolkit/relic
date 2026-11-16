@@ -206,15 +206,15 @@ static void rns_pre_base(rns_t b, const bn_t mod) {
 		dv_zero(b->kp, 5 * 2 * o);
 		dv_zero(b->pw, b->w * 2 * o);
 
-		/* Pick the largest primes 2^RLC_RNS_BITS - s, coprime to the modulus
-		 * if given, with s below the square root of R: first for B, then for
+		/* Pick the largest primes 2^bits - s, coprime to the modulus if
+		 * given, with s below the square root of R: first for B, then for
 		 * B'. */
 		while (k < n || h < n) {
 			if (s >= ((dig_t)1 << (RLC_RNS_DIG / 2))) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
-			d = ((dig_t)1 << RLC_RNS_BITS) - s;
+			d = ((dig_t)1 << b->bits) - s;
 			s += 2;
 			if (mod != NULL) {
 				bn_mod_dig(&r3, mod, d);
@@ -353,15 +353,16 @@ static void rns_pre_base(rns_t b, const bn_t mod) {
  *
  * @param[in] n				- the number of moduli in each base.
  * @param[in] d				- the number of digits of the moduli N.
+ * @param[in] bits			- the size in bits of the moduli.
  * @return the base, or NULL if there is no memory for it.
  */
-static const rns_st *rns_base(size_t n, size_t d) {
+static const rns_st *rns_base(size_t n, size_t d, size_t bits) {
 	ctx_t *ctx = core_get();
 	rns_st *b;
 
 	for (int k = 0; k < 2; k++) {
 		b = &(ctx->rns_base[k]);
-		if (b->mem != NULL && b->n == n && b->d == d) {
+		if (b->mem != NULL && b->n == n && b->d == d && b->bits == bits) {
 			return b;
 		}
 	}
@@ -370,6 +371,7 @@ static const rns_st *rns_base(size_t n, size_t d) {
 	rns_free(b);
 	rns_new(b, n, d);
 	if (b->mem != NULL) {
+		b->bits = bits;
 		rns_pre_base(b, NULL);
 	}
 	return (b->mem != NULL ? b : NULL);
@@ -517,7 +519,7 @@ static int rns_pre_mod(rns_t c, const rns_st *b, const bn_t mod, int room) {
 /*============================================================================*/
 
 void rns_pre(rns_t c, const bn_t mod, int room) {
-	const rns_st *b = rns_base(c->n, c->d);
+	const rns_st *b = rns_base(c->n, c->d, c->bits);
 
 	/* A modulus divisible by a modulus of the shared base, which is rare, gets
 	 * a base of its own. */

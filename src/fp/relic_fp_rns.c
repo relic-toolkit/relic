@@ -76,6 +76,7 @@ static void fp_rns_bind(ctx_t *ctx) {
 	c->o = RLC_FP_RNSO;
 	c->d = RLC_FP_DIGS;
 	c->w = RLC_FP_RNS_DIGS;
+	c->bits = RLC_RNS_BITS;
 	c->m = ctx->rns.m;
 	c->u = ctx->rns.u;
 	c->iv = ctx->rns.iv;

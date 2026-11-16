@@ -451,8 +451,8 @@ void bn_mxp_crt_pre(crt_t crt, int sqr) {
 				bn_sqr(t, t);
 			}
 			rns_free(&(crt->rns[k]));
-			rns_new(&(crt->rns[k]), RLC_RNS_SIZE(bn_bits(t), BN_MXP_ROOM),
-					t->used);
+			rns_new(&(crt->rns[k]), RLC_RNS_SIZE(bn_bits(t), BN_MXP_ROOM,
+					RLC_RNS_WIDE), t->used);
 			if (crt->rns[k].mem != NULL) {
 				rns_pre(&(crt->rns[k]), t, BN_MXP_ROOM);
 			}

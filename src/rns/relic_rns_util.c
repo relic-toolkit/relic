@@ -83,7 +83,8 @@ void rns_core_clean(void) {
 
 const rns_st *rns_lookup(const bn_t mod, int room, int now) {
 	ctx_t *ctx = core_get();
-	const size_t n = RLC_RNS_SIZE(bn_bits(mod), room), d = mod->used;
+	const size_t n = RLC_RNS_SIZE(bn_bits(mod), room, RLC_RNS_WIDE);
+	const size_t d = mod->used;
 	rns_st *c;
 	int k;
 
@@ -135,9 +136,9 @@ size_t rns_size(size_t n, size_t d) {
 
 	/* Eight tables of 2o residues, n of mi, five of o, the two extension
 	 * tables, the five multiples kN, the digits of M/m_i, -M and 3N, the
-	 * powers, and the digits of N. */
+	 * powers, the digits of N, and the room to align the block to a vector. */
 	return 16 * o + n + 5 * o + 2 * n * o + 10 * o + (n + 2) * (d + 1) +
-			w * 2 * o + d;
+			w * 2 * o + d + RLC_RNS_LANES - 1;
 }
 
 void rns_new(rns_t c, size_t n, size_t d) {
@@ -157,9 +158,14 @@ void rns_new(rns_t c, size_t n, size_t d) {
 	c->o = o;
 	c->d = d;
 	c->w = RLC_RNS_WORDS(d);
+	c->bits = RLC_RNS_WIDE;
 
-	/* Lay out the tables one after the other in the block. */
-	p = c->mem;
+	/* Lay out the tables one after the other in the block, from its first
+	 * address aligned to a vector, as loads that cross cache lines are much
+	 * slower: first the tables of whole vectors, whose sizes are multiples of
+	 * o and so keep the alignment, then those only read residue by residue. */
+	p = c->mem + (RLC_RNS_LANES - (uintptr_t)c->mem / sizeof(dig_t) %
+			RLC_RNS_LANES) % RLC_RNS_LANES;
 	c->m = p;
 	p += 2 * o;
 	c->u = p;
@@ -172,8 +178,10 @@ void rns_new(rns_t c, size_t n, size_t d) {
 	p += 2 * o;
 	c->ib = p;
 	p += 2 * o;
-	c->mi = p;
-	p += n;
+	c->one = p;
+	p += 2 * o;
+	c->cv = p;
+	p += 2 * o;
 	c->nq = p;
 	p += o;
 	c->nqv = p;
@@ -190,18 +198,16 @@ void rns_new(rns_t c, size_t n, size_t d) {
 	p += n * o;
 	c->kp = p;
 	p += 10 * o;
+	c->pw = p;
+	p += c->w * 2 * o;
+	c->mi = p;
+	p += n;
 	c->mp = p;
 	p += n * l;
 	c->mm = p;
 	p += l;
 	c->p3 = p;
 	p += l;
-	c->pw = p;
-	p += c->w * 2 * o;
-	c->one = p;
-	p += 2 * o;
-	c->cv = p;
-	p += 2 * o;
 	c->p = p;
 }
 

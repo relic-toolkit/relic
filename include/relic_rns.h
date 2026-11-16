@@ -31,7 +31,7 @@
  * Interface of the module for modular arithmetic in a Residue Number System.
  *
  * A context holds two bases B and B' of n moduli each, all primes of the form
- * 2^RLC_RNS_BITS - c coprime to a modulus N, and the tables for Montgomery
+ * 2^b - c coprime to a modulus N, and the tables for Montgomery
  * multiplication modulo N with M = prod(B) as the Montgomery constant. Values
  * are stored as their residues in both bases, each residue in Montgomery form
  * x_i * R mod m_i for R = 2^RLC_RNS_DIG, and divided by M in B'.
@@ -56,12 +56,18 @@
  * R = 2^RLC_RNS_DIG. The AVX-512 IFMA backend has 52-bit multipliers and 50-bit
  * moduli, so that sums of a few residues or products still fit them;
  * otherwise, the digits are whole and the moduli one bit shorter.
+ *
+ * Contexts made by rns_new() have moduli of RLC_RNS_WIDE bits instead: 52 with
+ * the AVX-512 IFMA backend, as their arithmetic keeps residues reduced, so
+ * that a base needs fewer moduli and often fewer vectors.
  */
 #if RLC_ARITH == RLC_AVX512
 #define RLC_RNS_BITS	50
+#define RLC_RNS_WIDE	52
 #define RLC_RNS_DIG		52
 #else
 #define RLC_RNS_BITS	(RLC_DIG - 1)
+#define RLC_RNS_WIDE	RLC_RNS_BITS
 #define RLC_RNS_DIG		RLC_DIG
 #endif
 
@@ -70,7 +76,7 @@
  * multiple precision integers and sums of products of up to 2^32 times the
  * square of the modulus.
  */
-#define RLC_RNS_MAX		RLC_RNS_SPAN(RLC_RNS_SIZE(BN_PRECI, 32))
+#define RLC_RNS_MAX		RLC_RNS_SPAN(RLC_RNS_SIZE(BN_PRECI, 32, RLC_RNS_BITS))
 
 /**
  * Number of residues in a vector of the backend, so that each base is padded
@@ -87,15 +93,16 @@
 /*============================================================================*/
 
 /**
- * Returns the number of moduli in a base for a modulus of B bits, so that the
- * base exceeds 2^(R + 2) times the modulus: sums of products below 2^R times
- * the square of the modulus can then be reduced.
+ * Returns the number of moduli of W bits in a base for a modulus of B bits, so
+ * that the base exceeds 2^(R + 2) times the modulus: sums of products below
+ * 2^R times the square of the modulus can then be reduced.
  *
  * @param[in] B				- the size of the modulus in bits.
  * @param[in] R				- the room for sums of products, in bits.
+ * @param[in] W				- the size of the moduli in bits.
  */
-#define RLC_RNS_SIZE(B, R)													\
-	((size_t)(((B) + (R) + 3 + RLC_RNS_BITS - 1) / RLC_RNS_BITS))
+#define RLC_RNS_SIZE(B, R, W)												\
+	((size_t)(((B) + (R) + 3 + (W) - 1) / (W)))
 
 /**
  * Returns the space taken by a base of N moduli, padded to whole vectors.
@@ -130,6 +137,8 @@ typedef struct {
 	size_t d;
 	/** Number of digits of RLC_RNS_DIG bits in an integer of d digits. */
 	size_t w;
+	/** Size in bits of the moduli. */
+	size_t bits;
 	/** Digits of the modulus N (d digits). */
 	dig_t *p;
 	/** M modulo N in storage form, which represents one (2o values). */
@@ -235,7 +244,8 @@ const rns_st *rns_lookup(const bn_t mod, int room, int now);
 size_t rns_size(size_t n, size_t d);
 
 /**
- * Allocates the tables of a context in a block that the context owns.
+ * Allocates the tables of a context in a block that the context owns, for
+ * moduli of RLC_RNS_WIDE bits.
  *
  * @param[out] c			- the context.
  * @param[in] n				- the number of moduli in each base.

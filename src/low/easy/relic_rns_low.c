@@ -38,7 +38,12 @@
 /*============================================================================*/
 
 void rns_extm_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_t c) {
-	rns_extm_imp(r, xi, b, exact, c, c->n, c->o);
+	/* A constant exact = -1 lets the copy without alpha drop its products. */
+	if (exact < 0) {
+		rns_extm_imp(r, xi, b, -1, c, c->n, c->o);
+	} else {
+		rns_extm_imp(r, xi, b, exact, c, c->n, c->o);
+	}
 }
 
 void rns_muln_low(dig_t *r, const dig_t *a, const dig_t *b, const rns_t c) {

@@ -87,7 +87,7 @@
  * reduced: for instance, with RLC_FP_RNS_ROOM = 30, elements up to 2^11 * p,
  * with up to 2^8 products summed.
  */
-#define RLC_FP_RNS		RLC_RNS_SIZE(RLC_FP_BITS, RLC_FP_RNS_ROOM)
+#define RLC_FP_RNS		RLC_RNS_SIZE(RLC_FP_BITS, RLC_FP_RNS_ROOM, RLC_RNS_BITS)
 
 /**
  * Space taken by each base in the residues of an element: the number of moduli,
