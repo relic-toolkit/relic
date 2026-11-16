@@ -775,12 +775,13 @@ void fp_prime_conv_dig(fp_t c, dig_t a);
 
 /**
  * Exports a prime field element as a multiple precision integer, doing the
- * necessary conversion.
+ * necessary conversion. The element is taken as digits, so that it may be read
+ * through a pointer to constant digits whatever the memory allocation.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to export.
  */
-void fp_prime_back(bn_t c, const fp_t a);
+void fp_prime_back(bn_t c, const dig_t *a);
 
 /**
  * Assigns a prime modulus based on its identifier.

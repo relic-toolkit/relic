@@ -46,8 +46,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 
 	RLC_TRY {
 		bn_new(t);
-		/* The element is only read, as fp_t drops const with dynamic memory. */
-		fp_prime_back(t, (dig_t *)a);
+		fp_prime_back(t, a);
 		bn_mod_inv(t, t, &(core_get()->prime));
 		fp_prime_conv(c, t);
 	} RLC_CATCH_ANY {

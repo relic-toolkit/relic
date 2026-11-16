@@ -719,17 +719,13 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 	}
 }
 
-void fp_prime_back(bn_t c, const fp_t a) {
-	rlc_align dig_t t[RLC_FP_LEN];
-
-	/* Reduce a plain element as a product, then take the value mod p. */
-	fp_rns_wide(t, a);
-	fp_rdc_renus(t, t);
-	rns_back(c, t, core_get()->prime_rns);
-	bn_mod(c, c, &(core_get()->prime));
-	if (bn_sign(c) == RLC_NEG) {
-		bn_add(c, c, &(core_get()->prime));
-	}
+void fp_prime_back(bn_t c, const dig_t *a) {
+	/* The digits of the value modulo p, in constant time. */
+	bn_grow(c, RLC_FP_DIGS);
+	fp_rns_get(c->dp, a);
+	c->used = RLC_FP_DIGS;
+	c->sign = RLC_POS;
+	bn_trim(c);
 }
 
 #else
@@ -787,7 +783,7 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 #endif
 }
 
-void fp_prime_back(bn_t c, const fp_t a) {
+void fp_prime_back(bn_t c, const dig_t *a) {
 	dv_t t;
 
 	dv_null(t);
@@ -796,7 +792,8 @@ void fp_prime_back(bn_t c, const fp_t a) {
 		dv_new(t);
 
 		bn_grow(c, RLC_FP_DIGS);
-		fp_norm(c->dp, a);
+		dv_copy(c->dp, a, RLC_FP_DIGS);
+		fp_norm(c->dp, c->dp);
 
 #if FP_RDC == FP_MONTY
 		dv_zero(t, 2 * RLC_FP_DIGS + 1);
