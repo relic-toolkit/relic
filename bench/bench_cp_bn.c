@@ -269,21 +269,21 @@ static void paillier(void) {
 
 	BENCH_RUN("cp_ghpe_dec (1)") {
 		bn_rand_mod(m, pub);
-		cp_ghpe_enc(m, c, pub, 1);
-		BENCH_ADD(cp_ghpe_dec(c, m, pub, prv->n, 1));
+		cp_ghpe_enc(c, m, pub, 1);
+		BENCH_ADD(cp_ghpe_dec(m, c, pub, prv->n, 1));
 	} BENCH_END;
 
 	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 4), 1);
 
 	BENCH_RUN("cp_ghpe_enc (2)") {
 		bn_rand(m, RLC_POS, 2 * bn_bits(pub) - 1);
-		BENCH_ADD(cp_ghpe_enc(m, c, pub, 2));
+		BENCH_ADD(cp_ghpe_enc(c, m, pub, 2));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ghpe_dec (2)") {
 		bn_rand(m, RLC_POS, 2 * bn_bits(pub) - 1);
-		cp_ghpe_enc(m, c, pub, 2);
-		BENCH_ADD(cp_ghpe_dec(c, m, pub, prv->n, 2));
+		cp_ghpe_enc(c, m, pub, 2);
+		BENCH_ADD(cp_ghpe_dec(m, c, pub, prv->n, 2));
 	} BENCH_END;
 
 	bn_free(c);
