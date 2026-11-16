@@ -211,15 +211,15 @@ void rns_hint(const rns_st *c, size_t n);
 
 /**
  * Returns a context for a modulus among those supplied by rns_hint() or else
- * from the cache of the library context, precomputing it in place of the least
- * recently used one if it is missing. A context from the cache stays valid
- * until two other moduli are looked up.
+ * from the cache of the library context. A missing context is precomputed in
+ * place of the least recently used one only when the same modulus was also the
+ * last one looked up without a context, as a modulus used once does not pay
+ * for the precomputation. A context from the cache stays valid until two other
+ * moduli are looked up.
  *
  * @param[in] mod			- the modulus.
  * @param[in] room			- the room for sums of products, in bits.
- * @return the context.
- * @throw ERR_NO_VALID		- if the modulus exceeds the precision.
- * @throw ERR_NO_MEMORY		- if there is no available memory.
+ * @return the context, or NULL if there is none for the modulus.
  */
 const rns_st *rns_lookup(const bn_t mod, int room);
 

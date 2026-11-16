@@ -65,6 +65,7 @@ void rns_core_init(void) {
 	ctx->rns_last = 0;
 	ctx->rns_hint = NULL;
 	ctx->rns_hints = 0;
+	ctx->rns_seen_d = 0;
 }
 
 void rns_core_clean(void) {
@@ -95,14 +96,25 @@ const rns_st *rns_lookup(const bn_t mod, int room) {
 			return c;
 		}
 	}
+	if (n > RLC_RNS_MAX || d > RLC_BN_DIGS) {
+		return NULL;
+	}
+	/* Precompute only on the second use of a modulus in a row. */
+	if (ctx->rns_seen_d != d || dv_cmp(ctx->rns_seen, mod->dp, d) != RLC_EQ) {
+		dv_copy(ctx->rns_seen, mod->dp, d);
+		ctx->rns_seen_d = d;
+		return NULL;
+	}
 	/* Replace the least recently used context. */
 	k = 1 - ctx->rns_last;
 	c = &(ctx->rns_cache[k]);
 	rns_free(c);
 	rns_new(c, n, d);
-	if (c->mem != NULL) {
-		rns_pre(c, mod, room);
+	if (c->mem == NULL) {
+		return NULL;
 	}
+	rns_pre(c, mod, room);
+	ctx->rns_seen_d = 0;
 	ctx->rns_last = k;
 	return c;
 }

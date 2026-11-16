@@ -233,6 +233,10 @@ typedef struct _ctx_t {
 	const rns_st *rns_hint;
 	/** Number of contexts supplied by the caller. */
 	size_t rns_hints;
+	/** Digits of the last modulus looked up without a context. */
+	dig_t rns_seen[RLC_BN_DIGS];
+	/** Number of digits of the last modulus looked up without a context. */
+	size_t rns_seen_d;
 #endif
 
 #ifdef WITH_FP

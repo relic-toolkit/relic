@@ -43,232 +43,30 @@
  */
 #define BN_MXP_BITS	17
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+#if BN_MOD == BN_MONTY
 
-void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	int i, l;
-	MXP_T r, t;
-	MXP_V u;
-	bn_t z;
-
-	if (bn_is_even(m)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	if (bn_cmp_dig(m, 1) == RLC_EQ) {
-		bn_zero(c);
-		return;
-	}
-
-	if (bn_is_zero(b)) {
-		bn_set_dig(c, 1);
-		return;
-	}
-
-	MXP_NULL(r);
-	MXP_NULL(t);
-	MXP_V_NULL(u);
-	bn_null(z);
-
-	RLC_TRY {
-		MXP_V_NEW(u, m);
-		MXP_NEW(r, u);
-		MXP_NEW(t, u);
-		bn_new(z);
-
-		l = bn_bits(b);
-
-		MXP_CONV(t, a, m, u);
-		MXP_COPY(r, t, u);
-		for (i = l - 2; i >= 0; i--) {
-			MXP_SQR(r, r, m, u);
-			if (bn_get_bit(b, i)) {
-				MXP_MUL(r, r, t, m, u);
-			}
-		}
-		MXP_BACK(z, r, m, u);
-
-		/* Check the sign before writing c, which may alias b. */
-		if (bn_sign(b) == RLC_NEG) {
-			bn_mod_inv(c, z, m);
-		} else {
-			bn_copy(c, z);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		MXP_FREE(r);
-		MXP_FREE(t);
-		MXP_V_FREE(u);
-		bn_free(z);
-	}
-}
-
-void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	MXP_T *tab, t;
-	MXP_V u;
-	bn_t z;
-	size_t l, w = 1;
-	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
-
-	if (win == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	if (bn_is_even(m)) {
-		RLC_FREE(win);
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	if (bn_cmp_dig(m, 1) == RLC_EQ) {
-		RLC_FREE(win);
-		bn_zero(c);
-		return;
-	}
-
-	if (bn_is_zero(b)) {
-		RLC_FREE(win);
-		bn_set_dig(c, 1);
-		return;
-	}
-
-	if (bn_bits(b) < BN_MXP_BITS) {
-		/* The binary method is the faster of the two while the exponent is
-		 * too short to pay for the table below. */
-		RLC_FREE(win);
-		bn_mxp_basic(c, a, b, m);
-		return;
-	}
-
-	MXP_NULL(t);
-	MXP_V_NULL(u);
-	bn_null(z);
-
-	/* Find window size. */
-	l = bn_bits(b);
-	if (l <= 21) {
-		w = 2;
-	} else if (l <= 32) {
-		w = 3;
-	} else if (l <= 128) {
-		w = 4;
-	} else if (l <= 256) {
-		w = 5;
-	} else if (l <= 512) {
-		w = 6;
-	} else {
-		w = 7;
-	}
-
-	tab = RLC_ALLOCA(MXP_T, (1 << (w - 1)));
-	if (tab == NULL) {
-		RLC_FREE(win);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-	for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {
-		MXP_NULL(tab[i]);
-	}
-
-	RLC_TRY {
-		MXP_V_NEW(u, m);
-		for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {
-			MXP_NEW(tab[i], u);
-		}
-		MXP_NEW(t, u);
-		bn_new(z);
-
-		MXP_CONV(t, a, m, u);
-
-		MXP_COPY(tab[0], t, u);
-		MXP_SQR(t, tab[0], m, u);
-		/* Create table. */
-		for (size_t i = 1; i < ((size_t)1 << (w - 1)); i++) {
-			MXP_MUL(tab[i], tab[i - 1], t, m, u);
-		}
-
-		MXP_ONE(t, m, u);
-
-		bn_rec_slw(win, &l, b, w);
-		for (size_t i = 0; i < l; i++) {
-			if (win[i] == 0) {
-				MXP_SQR(t, t, m, u);
-			} else {
-				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
-					MXP_SQR(t, t, m, u);
-				}
-				MXP_MUL(t, t, tab[win[i] >> 1], m, u);
-			}
-		}
-
-		MXP_BACK(z, t, m, u);
-
-		if (bn_sign(b) == RLC_NEG) {
-			bn_mod_inv(c, z, m);
-		} else {
-			bn_copy(c, z);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {
-			MXP_FREE(tab[i]);
-		}
-		MXP_FREE(t);
-		MXP_V_FREE(u);
-		bn_free(z);
-		RLC_FREE(win);
-		RLC_FREE(tab);
-	}
-}
-
-void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	MXP_T tab[2], t;
-	MXP_V u;
-	bn_t z;
+/**
+ * Exponentiates by the Montgomery powering ladder in Montgomery form, on the
+ * digits of the low level, so that with the gmp-sec backend it runs in
+ * constant time in the exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ * @param[in] m				- the modulus.
+ * @param[in] u				- the Montgomery constant of the modulus.
+ */
+static void bn_mxp_monty_pos(bn_t c, const bn_t a, const bn_t b, const bn_t m,
+		const bn_t u) {
+	bn_t tab[2], t, z;
 	int i, j;
-#if BN_MOD == BN_MONTY
 	size_t sm = m->used;
-#endif
 
-	if (bn_is_even(m)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
-	if (bn_cmp_dig(m, 1) == RLC_EQ) {
-		bn_zero(c);
-		return;
-	}
-
-	if (bn_is_zero(b)) {
-		bn_set_dig(c, 1);
-		return;
-	}
-
-	MXP_NULL(tab[0]);
-	MXP_NULL(tab[1]);
-	MXP_NULL(t);
-	MXP_V_NULL(u);
-	bn_null(z);
+	bn_null_all(tab[0], tab[1], t, z);
 
 	RLC_TRY {
-		MXP_V_NEW(u, m);
-		MXP_NEW(tab[0], u);
-		MXP_NEW(tab[1], u);
-		MXP_NEW(t, u);
-		bn_new(z);
+		bn_new_all(tab[0], tab[1], t, z);
 
-#if BN_MOD == BN_MONTY
 		bn_grow(t, 2 * sm);
 
 		bn_set_dig(tab[0], 1);
@@ -304,21 +102,6 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		tab[0]->sign = RLC_POS;
 		bn_trim(tab[0]);
 		bn_copy(z, tab[0]);
-#else
-		MXP_ONE(tab[0], m, u);
-		MXP_CONV(tab[1], a, m, u);
-
-		MXP_GROW(tab[0], m);
-		MXP_GROW(tab[1], m);
-		for (i = bn_bits(b) - 1; i >= 0; i--) {
-			j = bn_get_bit(b, i);
-			MXP_SWAP(tab[0], tab[1], j ^ 1, u);
-			MXP_STEP(tab[0], tab[1], t, m, u);
-			MXP_SWAP(tab[0], tab[1], j ^ 1, u);
-		}
-
-		MXP_BACK(z, tab[0], m, u);
-#endif
 
 		if (bn_sign(b) == RLC_NEG) {
 			bn_mod_inv(c, z, m);
@@ -330,12 +113,92 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		MXP_FREE(t);
-		MXP_FREE(tab[1]);
-		MXP_FREE(tab[0]);
-		MXP_V_FREE(u);
-		bn_free(z);
+		bn_free_all(t, tab[1], tab[0], z);
 	}
+}
+
+#else
+
+TMPL_BN_MXP_MONTY(pos, MXP_POS)
+
+#endif
+
+TMPL_BN_MXP_BASIC(pos, MXP_POS)
+TMPL_BN_MXP_SLIDE(pos, MXP_POS)
+TMPL_BN_MXP_DIG(pos, MXP_POS)
+
+#if BN_MOD == BN_RENUS
+TMPL_BN_MXP_BASIC(rns, MXP_RNS)
+TMPL_BN_MXP_SLIDE(rns, MXP_RNS)
+TMPL_BN_MXP_MONTY(rns, MXP_RNS)
+TMPL_BN_MXP_DIG(rns, MXP_RNS)
+#endif
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
+	BN_MXP_RUN(bn_mxp_basic, m, c, a, b, m);
+}
+
+void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
+	if (bn_bits(b) < BN_MXP_BITS) {
+		/* The binary method is the faster of the two while the exponent is
+		 * too short to pay for the table of the window. */
+		BN_MXP_RUN(bn_mxp_basic, m, c, a, b, m);
+	} else {
+		BN_MXP_RUN(bn_mxp_slide, m, c, a, b, m);
+	}
+}
+
+void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+	if (bn_is_even(m)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
+	BN_MXP_RUN(bn_mxp_monty, m, c, a, b, m);
 }
 
 #if BN_MXP == BN_LOWER
@@ -524,11 +387,6 @@ void bn_mxp_crt_pre(crt_t crt, int sqr) {
 }
 
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
-	int i, l;
-	MXP_T r, t;
-	MXP_V u;
-	bn_t z;
-
 	if (bn_is_even(m)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -544,38 +402,5 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		return;
 	}
 
-	MXP_NULL(r);
-	MXP_NULL(t);
-	MXP_V_NULL(u);
-	bn_null(z);
-
-	RLC_TRY {
-		MXP_V_NEW(u, m);
-		MXP_NEW(r, u);
-		MXP_NEW(t, u);
-		bn_new(z);
-
-		l = util_bits_dig(b);
-
-		MXP_CONV(t, a, m, u);
-		MXP_COPY(r, t, u);
-		for (i = l - 2; i >= 0; i--) {
-			MXP_SQR(r, r, m, u);
-			if (b & ((dig_t)1 << i)) {
-				MXP_MUL(r, r, t, m, u);
-			}
-		}
-		MXP_BACK(z, r, m, u);
-
-		/* Write c last, since it may alias m. The exponent is unsigned. */
-		bn_copy(c, z);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		MXP_FREE(r);
-		MXP_FREE(t);
-		MXP_V_FREE(u);
-		bn_free(z);
-	}
+	BN_MXP_RUN(bn_mxp_dig, m, c, a, b, m);
 }
