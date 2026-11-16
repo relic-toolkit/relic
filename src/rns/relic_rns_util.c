@@ -81,7 +81,7 @@ void rns_core_clean(void) {
 	}
 }
 
-const rns_st *rns_lookup(const bn_t mod, int room) {
+const rns_st *rns_lookup(const bn_t mod, int room, int now) {
 	ctx_t *ctx = core_get();
 	const size_t n = RLC_RNS_SIZE(bn_bits(mod), room), d = mod->used;
 	rns_st *c;
@@ -102,8 +102,9 @@ const rns_st *rns_lookup(const bn_t mod, int room) {
 	if (n > RLC_RNS_MAX || d > RLC_BN_DIGS) {
 		return NULL;
 	}
-	/* Precompute only on the second use of a modulus in a row. */
-	if (ctx->rns_seen_d != d || dv_cmp(ctx->rns_seen, mod->dp, d) != RLC_EQ) {
+	/* Unless asked to, precompute only on the second miss in a row. */
+	if (!now && (ctx->rns_seen_d != d ||
+			dv_cmp(ctx->rns_seen, mod->dp, d) != RLC_EQ)) {
 		dv_copy(ctx->rns_seen, mod->dp, d);
 		ctx->rns_seen_d = d;
 		return NULL;

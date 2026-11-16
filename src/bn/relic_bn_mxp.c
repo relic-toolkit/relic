@@ -154,7 +154,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	BN_MXP_RUN(bn_mxp_basic, m, c, a, b, m);
+	BN_MXP_RUN(bn_mxp_basic, m, bn_bits(b), c, a, b, m);
 }
 
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
@@ -176,9 +176,9 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	if (bn_bits(b) < BN_MXP_BITS) {
 		/* The binary method is the faster of the two while the exponent is
 		 * too short to pay for the table of the window. */
-		BN_MXP_RUN(bn_mxp_basic, m, c, a, b, m);
+		BN_MXP_RUN(bn_mxp_basic, m, bn_bits(b), c, a, b, m);
 	} else {
-		BN_MXP_RUN(bn_mxp_slide, m, c, a, b, m);
+		BN_MXP_RUN(bn_mxp_slide, m, bn_bits(b), c, a, b, m);
 	}
 }
 
@@ -198,7 +198,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	BN_MXP_RUN(bn_mxp_monty, m, c, a, b, m);
+	BN_MXP_RUN(bn_mxp_monty, m, bn_bits(b), c, a, b, m);
 }
 
 #if BN_MXP == BN_LOWER
@@ -402,5 +402,5 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		return;
 	}
 
-	BN_MXP_RUN(bn_mxp_dig, m, c, a, b, m);
+	BN_MXP_RUN(bn_mxp_dig, m, util_bits_dig(b), c, a, b, m);
 }

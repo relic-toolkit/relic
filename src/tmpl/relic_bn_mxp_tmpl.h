@@ -140,16 +140,31 @@
 	rns_mulm_low(X, X, Y, V);												\
 	rns_mulm_low(Y, Y, Y, V)
 
+/*
+ * Exponent length from which a context pays for itself in one exponentiation,
+ * so that it is precomputed at the first use of a modulus. With AVX-512 IFMA,
+ * a context saves 1.4k to 3.4k cycles per exponent bit for moduli of 1024 to
+ * 2048 bits and costs 300k to 670k cycles; the portable backend saves nothing.
+ */
+#if RLC_ARITH == RLC_AVX512
+#define BN_MXP_LONG		256
+#else
+#define BN_MXP_LONG		((size_t)-1)
+#endif
+
 /**
  * Runs the exponentiation F##_rns in a Residue Number System when a context
- * for the modulus M is available, and F##_pos otherwise.
+ * for the modulus M is available, and F##_pos otherwise. A missing context is
+ * precomputed at once for exponents of L bits or more.
  *
  * @param[in] F				- the prefix of the exponentiation.
  * @param[in] M				- the modulus.
+ * @param[in] L				- the length of the exponent in bits.
  */
-#define BN_MXP_RUN(F, M, ...)												\
+#define BN_MXP_RUN(F, M, L, ...)											\
 	do {																	\
-		const rns_st *_c = rns_lookup(M, BN_MXP_ROOM);						\
+		const rns_st *_c = rns_lookup(M, BN_MXP_ROOM,						\
+				(size_t)(L) >= BN_MXP_LONG);								\
 		if (_c != NULL) {													\
 			F##_rns(__VA_ARGS__, _c);										\
 		} else {															\
@@ -164,8 +179,9 @@
  *
  * @param[in] F				- the prefix of the exponentiation.
  * @param[in] M				- the modulus.
+ * @param[in] L				- the length of the exponent in bits, unused.
  */
-#define BN_MXP_RUN(F, M, ...)		BN_MXP_POS(F##_pos, M, __VA_ARGS__)
+#define BN_MXP_RUN(F, M, L, ...)	BN_MXP_POS(F##_pos, M, __VA_ARGS__)
 
 #endif
 

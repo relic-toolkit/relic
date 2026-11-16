@@ -89,6 +89,8 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n) {
+	size_t l = 0;
+
 	if (bn_is_even(m)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -109,7 +111,10 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		return;
 	}
 
-	BN_MXP_RUN(bn_mxp_sim_few, m, c, a, b, m, n);
+	for (size_t i = 0; i < n; i++) {
+		l = RLC_MAX(l, bn_bits(b[i]));
+	}
+	BN_MXP_RUN(bn_mxp_sim_few, m, l, c, a, b, m, n);
 }
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
