@@ -376,7 +376,7 @@ int fp_smb_binar(const fp_t a) {
 		fp_rdcn_low(g, t);
 #elif FP_RDC == FP_RENUS
 		/* Elements in RNS have no digits, so take those of the value. */
-		fp_rns_get(g, a);
+		rns_get(g, a, core_get()->prime_rns);
 #else
 		fp_copy(g, a);
 #endif
@@ -458,7 +458,7 @@ int fp_smb_divst(const fp_t a) {
 		fp_rdcn_low(g, t);
 #elif FP_RDC == FP_RENUS
 		/* Elements in RNS have no digits, so take those of the value. */
-		fp_rns_get(g, a);
+		rns_get(g, a, core_get()->prime_rns);
 #else
 		fp_copy(g, a);
 #endif
@@ -551,7 +551,7 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_rdcn_low(g, t);
 #elif FP_RDC == FP_RENUS
 		/* Elements in RNS have no digits, so take those of the value. */
-		fp_rns_get(g, a);
+		rns_get(g, a, core_get()->prime_rns);
 #else
 		fp_copy(g, a);
 #endif

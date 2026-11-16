@@ -744,24 +744,6 @@ void fp_prime_conv(fp_t c, const bn_t a);
  */
 void fp_rns_pre(void);
 
-/**
- * Converts an element in the Residue Number System to the digits of its value
- * in [0, p), in constant time.
- *
- * @param[out] c			- the RLC_FP_DIGS digits.
- * @param[in] a				- the element.
- */
-void fp_rns_get(dig_t *c, const dig_t *a);
-
-/**
- * Converts the digits of an integer to an element in the Residue Number System
- * with that value modulo p, in constant time.
- *
- * @param[out] c			- the element.
- * @param[in] a				- the RLC_FP_DIGS digits.
- */
-void fp_rns_set(dig_t *c, const dig_t *a);
-
 #endif
 
 /**

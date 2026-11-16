@@ -593,8 +593,6 @@
 #undef fp_prime_calc
 #undef fp_prime_conv
 #undef fp_rns_pre
-#undef fp_rns_get
-#undef fp_rns_set
 #undef fp_prime_conv_dig
 #undef fp_prime_back
 #undef fp_param_set
@@ -702,8 +700,6 @@
 #define fp_prime_calc 	RLC_PREFIX(fp_prime_calc)
 #define fp_prime_conv 	RLC_PREFIX(fp_prime_conv)
 #define fp_rns_pre 	RLC_PREFIX(fp_rns_pre)
-#define fp_rns_get 	RLC_PREFIX(fp_rns_get)
-#define fp_rns_set 	RLC_PREFIX(fp_rns_set)
 #define fp_prime_conv_dig 	RLC_PREFIX(fp_prime_conv_dig)
 #define fp_prime_back 	RLC_PREFIX(fp_prime_back)
 #define fp_param_set 	RLC_PREFIX(fp_param_set)
@@ -820,7 +816,6 @@
 #undef fp_invm_low
 #undef fp_smbm_low
 #undef fp_rnsx_low
-#undef fp_rnsi_low
 #undef fp_rdcv_low
 
 #define fp_add1_low 	RLC_PREFIX(fp_add1_low)
@@ -853,7 +848,6 @@
 #define fp_invm_low 	RLC_PREFIX(fp_invm_low)
 #define fp_smbm_low 	RLC_PREFIX(fp_smbm_low)
 #define fp_rnsx_low 	RLC_PREFIX(fp_rnsx_low)
-#define fp_rnsi_low 	RLC_PREFIX(fp_rnsi_low)
 #define fp_rdcv_low 	RLC_PREFIX(fp_rdcv_low)
 
 #undef fp_st

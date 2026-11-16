@@ -310,7 +310,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 #if FP_RDC == FP_RENUS
 	/* Elements in RNS have no digits, so take those of the value in [0, p),
 	 * which are also the cheapest to test for zero. */
-	fp_rns_get(v, a);
+	rns_get(v, a, core_get()->prime_rns);
 	if (dv_is_zero_sec(v, RLC_FP_DIGS)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -409,7 +409,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
 		fp_mul(c, e, core_get()->inv);
 #elif FP_RDC == FP_RENUS
-		fp_rns_set(c, e);
+		rns_set(c, e, core_get()->prime_rns);
 #else
 		fp_copy(c, e);
 #endif
@@ -634,7 +634,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_rdcn_low(g, t);
 #elif FP_RDC == FP_RENUS
 		/* Elements in RNS have no digits, so take those of the value. */
-		fp_rns_get(g, a);
+		rns_get(g, a, core_get()->prime_rns);
 #else
 		fp_copy(g, a);
 #endif
@@ -724,7 +724,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #if FP_RDC == FP_RENUS
 	/* Elements in RNS have no digits, so take those of the value in [0, p),
 	 * which are also the cheapest to test for zero. */
-	fp_rns_get(v, a);
+	rns_get(v, a, core_get()->prime_rns);
 	if (dv_is_zero_sec(v, RLC_FP_DIGS)) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
@@ -778,7 +778,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		/* Multiply 1/(x * R) by R^3 and reduce to get R/x for the input x. */
 		fp_mul(c, d, core_get()->inv);
 #elif FP_RDC == FP_RENUS
-		fp_rns_set(c, d);
+		rns_set(c, d, core_get()->prime_rns);
 #else
 		fp_copy(c, d);
 #endif

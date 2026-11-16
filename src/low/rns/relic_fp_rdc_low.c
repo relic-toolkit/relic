@@ -51,11 +51,15 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
  * can replace them with vectorized ones. */
 #ifndef FP_RNS_VEC
 
+void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_st *c) {
+	rns_extm_imp(r, xi, b, exact, c, RLC_FP_RNS, RLC_FP_RNSO);
+}
+
 void fp_rdcn_low(dig_t *c, dig_t *a) {
 	dig_t q[RLC_FP_RNS], r[RLC_FP_RNS];
 
 	rns_rdcn_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO, q, r,
-			fp_rns_ext);
+			fp_rnsx_low);
 }
 
 void fp_rdcv_low(dig_t *const c[], dig_t *const a[], int n) {

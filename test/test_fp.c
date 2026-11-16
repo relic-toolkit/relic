@@ -1416,12 +1416,12 @@ static int rns(void) {
 			fp_new_all(e, f);
 			/* Zero, p - 1, and a value far from reduced. */
 			fp_zero(e);
-			fp_rns_get(v, e);
+			rns_get(v, e, core_get()->prime_rns);
 			bn_read_raw(b, v, RLC_FP_DIGS);
 			TEST_ASSERT(bn_is_zero(b), end);
 			fp_set_dig(e, 1);
 			fp_neg(e, e);
-			fp_rns_get(v, e);
+			rns_get(v, e, core_get()->prime_rns);
 			bn_read_raw(b, v, RLC_FP_DIGS);
 			bn_sub_dig(a, p, 1);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
@@ -1430,11 +1430,11 @@ static int rns(void) {
 			for (int k = 0; k < 1000; k++) {
 				fp_add(f, f, e);
 			}
-			fp_rns_get(v, f);
+			rns_get(v, f, core_get()->prime_rns);
 			bn_read_raw(b, v, RLC_FP_DIGS);
 			fp_prime_back(a, f);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
-			fp_rns_set(e, v);
+			rns_set(e, v, core_get()->prime_rns);
 			TEST_ASSERT(fp_cmp(e, f) == RLC_EQ, end);
 			fp_free_all(e, f);
 		} TEST_END;

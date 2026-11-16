@@ -141,23 +141,4 @@ void fp_rns_pre(void) {
 	}
 }
 
-/*============================================================================*/
-
-void fp_rns_get(dig_t *c, const dig_t *a) {
-	rlc_align dig_t w[RLC_FP_LEN];
-	dig_t xi[RLC_FP_RNS], s[RLC_FP_DIGS + 1], t[RLC_FP_DIGS + 1];
-
-	rns_get_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO,
-			RLC_FP_DIGS, w, xi, s, t, fp_rns_red);
-}
-
-void fp_rns_set(dig_t *c, const dig_t *a) {
-	rlc_align dig_t t[RLC_FP_LEN];
-
-	/* The residues of a, stored as an element. */
-	fp_rnsi_low(t, a);
-	/* Times M^2 / M for Montgomery form. */
-	fp_mulm_low(c, t, core_get()->conv);
-}
-
 #endif /* FP_RDC == FP_RENUS */

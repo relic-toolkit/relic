@@ -93,13 +93,13 @@ void fp_rsh(fp_t c, const fp_t a, uint_t bits) {
 	dig_t t[RLC_FP_DIGS];
 	int digits;
 
-	fp_rns_get(t, a);
+	rns_get(t, a, core_get()->prime_rns);
 	RLC_RIP(bits, digits, bits);
 	dv_rshd(t, t, RLC_FP_DIGS, digits);
 	if (bits > 0) {
 		bn_rshb_low(t, t, RLC_FP_DIGS, bits);
 	}
-	fp_rns_set(c, t);
+	rns_set(c, t, core_get()->prime_rns);
 #else
 	int digits;
 

@@ -395,17 +395,6 @@ int fp_smbm_low(const dig_t *a);
 #if FP_RDC == FP_RENUS
 
 /**
- * Divides the residues of an element by M in B', so that the element can be
- * reduced as if it were a product.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the element.
- */
-static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
-	rns_wide_imp(c, a, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO);
-}
-
-/**
  * Extends a value to a base of the Residue Number System from the other, given
  * the plain values xi_i = x_i (M/m_i)^{-1} mod m_i in the source base. When the
  * number of times M is subtracted is truncated, the result is x or x + M, where
@@ -418,37 +407,9 @@ static inline void fp_rns_wide(dig_t *c, const dig_t *a) {
  * @param[in] xi			- the values xi_i in the source base.
  * @param[in] b				- the target base: 0 for B, 1 for B'.
  * @param[in] exact			- 1 to round, 0 to truncate, -1 to skip.
+ * @param[in] c				- the context of the prime field.
  */
-void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact);
-
-/**
- * Extends a value between the bases of the prime field, with the signature of
- * the base extensions of the Residue Number System module.
- */
-static inline void fp_rns_ext(dig_t *r, const dig_t *xi, int b, int exact,
-		const rns_st *c) {
-	(void)c;
-	fp_rnsx_low(r, xi, b, exact);
-}
-
-/**
- * Reduces a product of prime field elements, with the signature of the
- * reductions of the Residue Number System module.
- */
-static inline void fp_rns_red(dig_t *r, const dig_t *a, const rns_st *c) {
-	(void)c;
-	/* The reduction in RNS does not write to its input. */
-	fp_rdcn_low(r, (dig_t *)a);
-}
-
-/**
- * Computes the residues of an integer as stored in elements, at most m each,
- * from its digits of RLC_RNS_DIG bits and the table of their weights.
- *
- * @param[out] c			- the residues.
- * @param[in] a				- the RLC_FP_DIGS digits of the integer.
- */
-void fp_rnsi_low(dig_t *c, const dig_t *a);
+void fp_rnsx_low(dig_t *r, const dig_t *xi, int b, int exact, const rns_st *c);
 
 /**
  * Reduces n digit vectors modulo the configured prime p at once. Computes

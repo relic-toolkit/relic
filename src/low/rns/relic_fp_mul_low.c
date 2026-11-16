@@ -50,7 +50,7 @@ void fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 
 	/* a * digit / M, then times M^2 / M to undo the division by M. */
 	RLC_RNS_MAP(t, rns_mul(a[_i], RLC_RNS_SCL(digit, _i), _m[_i], _u[_i]));
-	fp_rns_wide(t, t);
+	rns_wide_imp(t, t, core_get()->prime_rns, RLC_FP_RNS, RLC_FP_RNSO);
 	fp_rdc_renus(t, t);
 	fp_mulm_low(c, t, core_get()->conv);
 }

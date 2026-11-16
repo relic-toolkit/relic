@@ -722,7 +722,7 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 void fp_prime_back(bn_t c, const dig_t *a) {
 	/* The digits of the value modulo p, in constant time. */
 	bn_grow(c, RLC_FP_DIGS);
-	fp_rns_get(c->dp, a);
+	rns_get(c->dp, a, core_get()->prime_rns);
 	c->used = RLC_FP_DIGS;
 	c->sign = RLC_POS;
 	bn_trim(c);

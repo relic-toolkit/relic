@@ -392,7 +392,7 @@ rlc_inline void rp4_sqrf(rp2_t c0, rp2_t c1, const rp2_t x, const rp2_t y,
 }
 
 /**
- * Extends K values to a base into vectors, as fp_rnsx_low() does, with their
+ * Extends K values to a base into vectors, as rns_extm_imp() does, with their
  * products interleaved so that their dependency chains overlap. The values
  * xi_i stay in vectors, with zeros in the lanes that pad the source base.
  *
