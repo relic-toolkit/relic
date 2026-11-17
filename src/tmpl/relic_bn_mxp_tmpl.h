@@ -63,6 +63,16 @@
 #define MXP_POS_CSEL(X, Y, B, T, V)											\
 	bn_copy(T, Y);															\
 	bn_swap_sec(X, T, B)
+/* X = TAB[D] for D below N, through T, copying every entry without branching:
+ * the top bit of (j ^ D) - 1 is set only if j = D. */
+#define MXP_POS_SEL(X, TAB, N, D, T, V)										\
+	MXP_POS_COPY(X, TAB[0], V);												\
+	for (size_t _j = 1; _j < (N); _j++) {									\
+		MXP_POS_CSEL(X, TAB[_j], ((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1),	\
+				T, V);														\
+	}
+/* Largest window of the exponentiation by fixed windows. */
+#define MXP_POS_WMAX				6
 #define MXP_POS_MUL(X, Y, Z, M, V)											\
 	bn_mul(X, Y, Z);														\
 	MXP_POS_RDC(X, X, M, V)
@@ -136,8 +146,20 @@
 #define MXP_RNS_ONE(X, M, V)		dv_copy(X, (V)->one, 2 * (V)->o)
 #define MXP_RNS_COPY(X, Y, V)		dv_copy(X, Y, 2 * (V)->o)
 #define MXP_RNS_SWAP(X, Y, B, V)	dv_swap_sec(X, Y, 2 * (V)->o, B)
-/* X = Y if B is set, with T unused. */
-#define MXP_RNS_CSEL(X, Y, B, T, V)	dv_copy_sec(X, Y, 2 * (V)->o, B)
+/* X = TAB[D] for D below N, with T unused, in one pass: each residue ORs the
+ * entries masked by whether they are selected, and is stored once. */
+#define MXP_RNS_SEL(X, TAB, N, D, T, V)										\
+	for (size_t _i = 0; _i < 2 * (V)->o; _i++) {							\
+		dig_t _a = 0;														\
+		for (size_t _j = 0; _j < (N); _j++) {								\
+			_a |= TAB[_j][_i] & ((dig_t)0 -									\
+					(((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1)));			\
+		}																	\
+		(X)[_i] = _a;														\
+	}
+/* Largest window of the exponentiation by fixed windows: multiplications are
+ * cheap enough that the scan of a larger table costs more than it saves. */
+#define MXP_RNS_WMAX				4
 #define MXP_RNS_MUL(X, Y, Z, M, V)	rns_mulm_low(X, Y, Z, V)
 #define MXP_RNS_SQR(X, Y, M, V)		rns_mulm_low(X, Y, Y, V)
 /* A step of the ladder: X = X * Y and Y = Y^2, with T unused. */
@@ -413,9 +435,9 @@
 		R##_T *tab, t, s;													\
 		bn_t z;																\
 		size_t i, j, k, w, l = bn_bits(b);									\
-		dig_t d, e;															\
+		dig_t d;															\
 																			\
-		/* Find window size. */												\
+		/* Find window size, up to the largest of the representation. */	\
 		if (l <= 64) {														\
 			w = 3;															\
 		} else if (l <= 256) {												\
@@ -425,6 +447,7 @@
 		} else {															\
 			w = 6;															\
 		}																	\
+		w = RLC_MIN(w, R##_WMAX);											\
 																			\
 		tab = RLC_ALLOCA(R##_T, (size_t)1 << w);							\
 		if (tab == NULL) {													\
@@ -471,12 +494,7 @@
 				for (j = 0; j < w; j++) {									\
 					d |= (dig_t)bn_get_bit(b, i * w + j) << j;				\
 				}															\
-				R##_COPY(s, tab[0], u);										\
-				for (j = 1; j < ((size_t)1 << w); j++) {					\
-					/* The top bit of (j ^ d) - 1 is set only if j = d. */	\
-					e = ((dig_t)(j ^ d) - 1) >> (RLC_DIG - 1);				\
-					R##_CSEL(s, tab[j], e, z, u);							\
-				}															\
+				R##_SEL(s, tab, (size_t)1 << w, d, z, u);					\
 				if (i == k - 1) {											\
 					R##_COPY(t, s, u);										\
 				} else {													\
