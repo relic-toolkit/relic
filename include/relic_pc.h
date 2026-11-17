@@ -55,9 +55,10 @@
 /* Symmetric pairing on a supersingular curve over Fp^4. */
 #define RLC_G1_LOWER			ep4_
 #define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A[0][0]
 #define RLC_G2_LOWER			ep4_
 #define RLC_G2_UPPER			EP
-#define RLC_G2_BASEF(A)			A
+#define RLC_G2_BASEF(A)			A[0][0]
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
 
@@ -65,6 +66,7 @@
 
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A
 
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
@@ -111,6 +113,7 @@
 #else /* FP_PRIME >= 1536*/
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A
 #define RLC_G2_LOWER			ep_
 #define RLC_G2_UPPER			EP
 #define RLC_G2_BASEF(A)			A

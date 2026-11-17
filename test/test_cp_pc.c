@@ -611,7 +611,7 @@ static int bgn(void) {
 
 		TEST_CASE("boneh-go-nissim decryption rejects invalid ciphertexts") {
 			TEST_ASSERT(cp_bgn_enc1(c, 3, pub) == RLC_OK, end);
-			fp_add_dig(c[0]->x, c[0]->x, 1);
+			fp_add_dig(RLC_G1_BASEF(c[0]->x), RLC_G1_BASEF(c[0]->x), 1);
 			TEST_ASSERT(g1_is_valid(c[0]) == 0, end);
 			TEST_ASSERT(cp_bgn_dec1(&out, c, prv) == RLC_ERR, end);
 			TEST_ASSERT(cp_bgn_enc2(e, 3, pub) == RLC_OK, end);
