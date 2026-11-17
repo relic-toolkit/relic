@@ -23,21 +23,23 @@ RELIC is an ongoing project and features will be added on demand. The focus is t
 
 RELIC implements to date:
 
- * Multiple-precision integer arithmetic
- * Prime and Binary field arithmetic
- * Elliptic curves over prime and binary fields (NIST curves and pairing-friendly curves)
- * Bilinear maps and related extension fields
- * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
- * [**Pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pcdel.c) with public and private inputs
- * [**Batch pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pdbat.c) with public inputs
+ * [Multiple-precision integer arithmetic](src/bn)
+ * Arithmetic in [prime](src/fp) and [binary](src/fb) fields and their extensions ([prime](src/fpx), [binary](src/fbx))
+ * Elliptic curves over [prime](src/ep) and [binary](src/eb) fields, including NIST, SECG and pairing-friendly curves (BN, BLS12, BLS24, BLS48, KSS), and [Edwards curves](src/ed)
+ * [Pairings](src/pp) for embedding degrees from 1 to 54, with an [interface for pairing-based protocols](src/pc)
+ * [Hash functions](src/md), the [AES block cipher](src/bc) and [random number generators](src/rand)
+ * [Secret sharing and triples for multi-party computation](src/mpc)
+ * [Cryptographic protocols](src/cp):
+   * Encryption: [RSA](src/cp/relic_cp_rsa.c), [ECIES](src/cp/relic_cp_ecies.c), [Boneh-Franklin IBE](src/cp/relic_cp_ibe.c), and homomorphic encryption by [Paillier](src/cp/relic_cp_phpe.c), [Damgård-Jurik](src/cp/relic_cp_ghpe.c) and [Boneh-Goh-Nissim](src/cp/relic_cp_bgn.c)
+   * Signatures: [RSA](src/cp/relic_cp_rsa.c), [ECDSA](src/cp/relic_cp_ecdsa.c), [Schnorr](src/cp/relic_cp_ecss.c), [BLS](src/cp/relic_cp_bls.c), [Camenisch-Lysyanskaya](src/cp/relic_cp_cls.c), [Pointcheval-Sanders](src/cp/relic_cp_pss.c), [linearly homomorphic](src/cp/relic_cp_mklhs.c) and [threshold ring](src/cp/relic_cp_etrs.c) signatures
+   * Key agreement: [ECDH](src/cp/relic_cp_ecdh.c), [ECMQV](src/cp/relic_cp_ecmqv.c) and [Sakai-Ohgishi-Kasahara](src/cp/relic_cp_sokaka.c)
+   * Others: [zero-knowledge proofs](src/cp/relic_cp_pok.c), [private set intersection](src/cp/relic_cp_pbpsi.c), an [oblivious pseudorandom function](src/cp/relic_cp_oprf.c) and [pairing delegation](src/cp/relic_cp_pcdel.c)
 
 ### Build instructions
 
 Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
 
 To reduce code size, configure with `-DSTRIP=on`. This compiles the library with `-ffunction-sections -fdata-sections` and drops precomputed tables of algorithms that were not selected. Unused functions are then removed at link time, which only happens for static linking: applications linking against `librelic_s.a` must pass `-Wl,--gc-sections` (or `-Wl,-dead_strip` on macOS, `/OPT:REF` with MSVC) to their own linker. The shared library is not reduced.
-
-For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp_pc` testing binary, and entries with prefix `cp_amore_* (1)` (for the sequential version), `cp_amore_* (AGGS)` (for the batch version) in the output of the `bench_cp_pc` benchmarking binary. You can change the parameter `AGGS` in the source code to adjust the number of pairings.
 
 ### Support
 
