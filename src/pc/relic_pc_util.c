@@ -656,6 +656,20 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp18_test_cyc((void *)a);
 				break;
+			case EP_SG54:
+				/* Check that a^(3u) * \psi(a) * \psi^10(a) == 1, since
+				 * p^10 + p + 3u = 0 mod r and the gcd of p^10 + p + 3u and
+				 * Phi_54(p) is r. */
+				fp_prime_get_par(n);
+				bn_mul_dig(n, n, 3);
+				fp54_exp_cyc((void *)u, (void *)a, n);
+				gt_frb(v, a, 1);
+				gt_mul(u, u, v);
+				gt_frb(v, v, 9);
+				gt_mul(u, u, v);
+				r = gt_is_unity(u);
+				r &= fp54_test_cyc((void *)a);
+				break;
 			default:
 				/* Common case. The exponentiation and the inversion assume
 				 * that a is in the cyclotomic subgroup, so test it too. */
@@ -673,9 +687,6 @@ int gt_is_valid(const gt_t a) {
 						break;
 					case 12:
 						r &= fp12_test_cyc((void *)a);
-						break;
-					case 54:
-						r &= fp54_test_cyc((void *)a);
 						break;
 				}
 				break;
