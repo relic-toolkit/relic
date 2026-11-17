@@ -68,8 +68,8 @@
 #define MXP_POS_SEL(X, TAB, N, D, T, V)										\
 	MXP_POS_COPY(X, TAB[0], V);												\
 	for (size_t _j = 1; _j < (N); _j++) {									\
-		MXP_POS_CSEL(X, TAB[_j], ((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1),	\
-				T, V);														\
+		MXP_POS_CSEL(X, TAB[_j],											\
+				(dig_t)((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1), T, V);		\
 	}
 /* Largest window of the exponentiation by fixed windows. */
 #define MXP_POS_WMAX				6
@@ -153,7 +153,7 @@
 		dig_t _a = 0;														\
 		for (size_t _j = 0; _j < (N); _j++) {								\
 			_a |= TAB[_j][_i] & ((dig_t)0 -									\
-					(((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1)));			\
+					((dig_t)((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1)));		\
 		}																	\
 		(X)[_i] = _a;														\
 	}
