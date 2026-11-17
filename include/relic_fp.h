@@ -307,9 +307,16 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * Represents the precomputed values of the Residue Number System that holds
  * the prime field elements: the moduli of the bases B and B', with products M
  * and M', and the tables of the Montgomery reduction, of the conversions and of
- * the zero test. R is the radix of the Montgomery form of residues.
+ * the zero test. R is the radix of the Montgomery form of residues. The tables
+ * read as whole vectors come first and keep their alignment, as loads that
+ * cross cache lines are slower.
  */
-typedef struct {
+#if RLC_ARITH == RLC_AVX512
+#define RLC_FP_RNS_ALIGN	__attribute__ ((aligned (64)))
+#else
+#define RLC_FP_RNS_ALIGN	/* empty */
+#endif
+typedef struct RLC_FP_RNS_ALIGN {
 	/** Moduli of both bases. */
 	dig_t m[2 * RLC_FP_RNSO];
 	/** Values -m_i^{-1} mod R, for Montgomery form. */
@@ -321,8 +328,8 @@ typedef struct {
 	dig_t r2[2 * RLC_FP_RNSO];
 	/** Factors R^2 in B and R^2 / M in B' to store elements. */
 	dig_t e[2 * RLC_FP_RNSO];
-	/** Values M^{-1} mod m'_j, in Montgomery form. */
-	dig_t mi[RLC_FP_RNS];
+	/** Values M^{-1} mod m'_j, in Montgomery form, padded to whole vectors. */
+	dig_t mi[RLC_FP_RNSO];
 	/** Values (M/m_i)^{-1} R / S_i mod m_i in B and M (M'/m'_j)^{-1} mod m'_j
 	 * in B', where S_i are the factors of the storage form in B. */
 	dig_t ib[2 * RLC_FP_RNSO];
@@ -349,12 +356,12 @@ typedef struct {
 	fp_st third;
 	/** Multiples kp for -2 <= k <= 2 in both bases, to test for zero. */
 	dig_t kp[5][2 * RLC_FP_RNSO];
+	/** Values 2^(RLC_RNS_DIG * k) times the factors to store elements. */
+	dig_t pw[RLC_FP_RNS_DIGS][2 * RLC_FP_RNSO];
 	/** Values M/m_i and -M modulo 2^(RLC_DIG * (RLC_FP_DIGS + 1)). */
 	dig_t mp[RLC_FP_RNS][RLC_FP_DIGS + 1], mm[RLC_FP_DIGS + 1];
 	/** Value 3p modulo 2^(RLC_DIG * (RLC_FP_DIGS + 1)). */
 	dig_t p3[RLC_FP_DIGS + 1];
-	/** Values 2^(RLC_RNS_DIG * k) times the factors to store elements. */
-	dig_t pw[RLC_FP_RNS_DIGS][2 * RLC_FP_RNSO];
 } fp_rns_st;
 #endif
 
