@@ -53,23 +53,19 @@
  */
 #define MXP_POS_T					bn_t
 #define MXP_POS_V					bn_t
-#define MXP_POS_NULL(X)				bn_null(X)
-#define MXP_POS_NEW(X, V)			bn_new(X)
-#define MXP_POS_FREE(X)				bn_free(X)
+#define MXP_POS_NULL(...)			bn_null_all(__VA_ARGS__)
+#define MXP_POS_NEW(...)			bn_new_all(__VA_ARGS__)
+#define MXP_POS_FREE(...)			bn_free_all(__VA_ARGS__)
 #define MXP_POS_GROW(X, M)			bn_grow(X, (M)->alloc)
 #define MXP_POS_COPY(X, Y, V)		bn_copy(X, Y)
 #define MXP_POS_SWAP(X, Y, B, V)	bn_swap_sec(X, Y, B)
-/* X = Y if B is set, through T, without branching on B. */
-#define MXP_POS_CSEL(X, Y, B, T, V)											\
-	bn_copy(T, Y);															\
-	bn_swap_sec(X, T, B)
 /* X = TAB[D] for D below N, through T, copying every entry without branching:
  * the top bit of (j ^ D) - 1 is set only if j = D. */
 #define MXP_POS_SEL(X, TAB, N, D, T, V)										\
-	MXP_POS_COPY(X, TAB[0], V);												\
+	bn_copy(X, TAB[0]);														\
 	for (size_t _j = 1; _j < (N); _j++) {									\
-		MXP_POS_CSEL(X, TAB[_j],											\
-				(dig_t)((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1), T, V);		\
+		bn_copy(T, TAB[_j]);												\
+		bn_swap_sec(X, T, (dig_t)((dig_t)(_j ^ (D)) - 1) >> (RLC_DIG - 1));	\
 	}
 /* Largest window of the exponentiation by fixed windows. */
 #define MXP_POS_WMAX				6
@@ -137,9 +133,9 @@
 
 #define MXP_RNS_T					dv_t
 #define MXP_RNS_V					const rns_st *
-#define MXP_RNS_NULL(X)				dv_null(X)
-#define MXP_RNS_NEW(X, V)			dv_new(X)
-#define MXP_RNS_FREE(X)				dv_free(X)
+#define MXP_RNS_NULL(...)			dv_null_all(__VA_ARGS__)
+#define MXP_RNS_NEW(...)			dv_new_all(__VA_ARGS__)
+#define MXP_RNS_FREE(...)			dv_free_all(__VA_ARGS__)
 #define MXP_RNS_GROW(X, M)			(void)(X)
 #define MXP_RNS_CONV(X, A, M, V)	rns_set_bn(X, A, V)
 #define MXP_RNS_BACK(C, X, M, V)	rns_get_bn(C, X, V)
@@ -227,13 +223,11 @@
 		R##_T r, t;															\
 		bn_t z;																\
 																			\
-		R##_NULL(r);														\
-		R##_NULL(t);														\
+		R##_NULL(r, t);														\
 		bn_null(z);															\
 																			\
 		RLC_TRY {															\
-			R##_NEW(r, u);													\
-			R##_NEW(t, u);													\
+			R##_NEW(r, t);													\
 			bn_new(z);														\
 																			\
 			l = bn_bits(b);													\
@@ -259,8 +253,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			R##_FREE(r);													\
-			R##_FREE(t);													\
+			R##_FREE(r, t);													\
 			bn_free(z);														\
 		}																	\
 	}
@@ -277,7 +270,7 @@
 			const bn_t m, R##_V u) {										\
 		R##_T *tab, t;														\
 		bn_t z;																\
-		size_t l, w = 1;													\
+		size_t l, n, w = 1;													\
 		uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));						\
 																			\
 		if (win == NULL) {													\
@@ -304,21 +297,22 @@
 			w = 7;															\
 		}																	\
 																			\
-		tab = RLC_ALLOCA(R##_T, (1 << (w - 1)));							\
+		n = (size_t)1 << (w - 1);											\
+		tab = RLC_ALLOCA(R##_T, n);											\
 		if (tab == NULL) {													\
 			RLC_FREE(win);													\
 			RLC_THROW(ERR_NO_MEMORY);										\
 			return;															\
 		}																	\
-		for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {				\
+		for (size_t i = 0; i < n; i++) {									\
 			R##_NULL(tab[i]);												\
 		}																	\
 																			\
 		RLC_TRY {															\
-			for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {			\
-				R##_NEW(tab[i], u);											\
+			for (size_t i = 0; i < n; i++) {								\
+				R##_NEW(tab[i]);											\
 			}																\
-			R##_NEW(t, u);													\
+			R##_NEW(t);														\
 			bn_new(z);														\
 																			\
 			R##_CONV(t, a, m, u);											\
@@ -326,7 +320,7 @@
 			R##_COPY(tab[0], t, u);											\
 			R##_SQR(t, tab[0], m, u);										\
 			/* Create table. */												\
-			for (size_t i = 1; i < ((size_t)1 << (w - 1)); i++) {			\
+			for (size_t i = 1; i < n; i++) {								\
 				R##_MUL(tab[i], tab[i - 1], t, m, u);						\
 			}																\
 																			\
@@ -356,7 +350,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {			\
+			for (size_t i = 0; i < n; i++) {								\
 				R##_FREE(tab[i]);											\
 			}																\
 			R##_FREE(t);													\
@@ -380,15 +374,11 @@
 		bn_t z;																\
 		int i, j;															\
 																			\
-		R##_NULL(tab[0]);													\
-		R##_NULL(tab[1]);													\
-		R##_NULL(t);														\
+		R##_NULL(tab[0], tab[1], t);										\
 		bn_null(z);															\
 																			\
 		RLC_TRY {															\
-			R##_NEW(tab[0], u);												\
-			R##_NEW(tab[1], u);												\
-			R##_NEW(t, u);													\
+			R##_NEW(tab[0], tab[1], t);										\
 			bn_new(z);														\
 																			\
 			R##_ONE(tab[0], m, u);											\
@@ -415,9 +405,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			R##_FREE(t);													\
-			R##_FREE(tab[1]);												\
-			R##_FREE(tab[0]);												\
+			R##_FREE(t, tab[1], tab[0]);									\
 			bn_free(z);														\
 		}																	\
 	}
@@ -434,7 +422,7 @@
 			const bn_t m, R##_V u) {										\
 		R##_T *tab, t, s;													\
 		bn_t z;																\
-		size_t i, j, k, w, l = bn_bits(b);									\
+		size_t i, j, k, n, w, l = bn_bits(b);								\
 		dig_t d;															\
 																			\
 		/* Find window size, up to the largest of the representation. */	\
@@ -448,34 +436,33 @@
 			w = 6;															\
 		}																	\
 		w = RLC_MIN(w, R##_WMAX);											\
+		n = (size_t)1 << w;													\
 																			\
-		tab = RLC_ALLOCA(R##_T, (size_t)1 << w);							\
+		tab = RLC_ALLOCA(R##_T, n);											\
 		if (tab == NULL) {													\
 			RLC_THROW(ERR_NO_MEMORY);										\
 			return;															\
 		}																	\
-		for (i = 0; i < ((size_t)1 << w); i++) {							\
+		for (i = 0; i < n; i++) {											\
 			R##_NULL(tab[i]);												\
 		}																	\
-		R##_NULL(t);														\
-		R##_NULL(s);														\
+		R##_NULL(t, s);														\
 		bn_null(z);															\
 																			\
 		RLC_TRY {															\
-			for (i = 0; i < ((size_t)1 << w); i++) {						\
-				R##_NEW(tab[i], u);											\
+			for (i = 0; i < n; i++) {										\
+				R##_NEW(tab[i]);											\
 			}																\
-			R##_NEW(t, u);													\
-			R##_NEW(s, u);													\
+			R##_NEW(t, s);													\
 			bn_new(z);														\
 																			\
 			/* Create the table of a^0, ..., a^(2^w - 1). */				\
 			R##_ONE(tab[0], m, u);											\
 			R##_CONV(tab[1], a, m, u);										\
-			for (i = 2; i < ((size_t)1 << w); i++) {						\
+			for (i = 2; i < n; i++) {										\
 				R##_MUL(tab[i], tab[i - 1], tab[1], m, u);					\
 			}																\
-			for (i = 0; i < ((size_t)1 << w); i++) {						\
+			for (i = 0; i < n; i++) {										\
 				R##_GROW(tab[i], m);										\
 			}																\
 			R##_GROW(s, m);													\
@@ -494,7 +481,7 @@
 				for (j = 0; j < w; j++) {									\
 					d |= (dig_t)bn_get_bit(b, i * w + j) << j;				\
 				}															\
-				R##_SEL(s, tab, (size_t)1 << w, d, z, u);					\
+				R##_SEL(s, tab, n, d, z, u);								\
 				if (i == k - 1) {											\
 					R##_COPY(t, s, u);										\
 				} else {													\
@@ -514,11 +501,10 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			for (i = 0; i < ((size_t)1 << w); i++) {						\
+			for (i = 0; i < n; i++) {										\
 				R##_FREE(tab[i]);											\
 			}																\
-			R##_FREE(t);													\
-			R##_FREE(s);													\
+			R##_FREE(t, s);													\
 			bn_free(z);														\
 			RLC_FREE(tab);													\
 		}																	\
@@ -538,13 +524,11 @@
 		R##_T r, t;															\
 		bn_t z;																\
 																			\
-		R##_NULL(r);														\
-		R##_NULL(t);														\
+		R##_NULL(r, t);														\
 		bn_null(z);															\
 																			\
 		RLC_TRY {															\
-			R##_NEW(r, u);													\
-			R##_NEW(t, u);													\
+			R##_NEW(r, t);													\
 			bn_new(z);														\
 																			\
 			l = util_bits_dig(b);											\
@@ -565,8 +549,7 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			R##_FREE(r);													\
-			R##_FREE(t);													\
+			R##_FREE(r, t);													\
 			bn_free(z);														\
 		}																	\
 	}
@@ -599,9 +582,9 @@
 																			\
 		RLC_TRY {															\
 			for (size_t i = 0; i < ((size_t)1 << n); i++) {					\
-				R##_NEW(t[i], u);											\
+				R##_NEW(t[i]);												\
 			}																\
-			R##_NEW(r, u);													\
+			R##_NEW(r);														\
 			bn_new(z);														\
 																			\
 			/* Precompute all 2^n combinations. */							\
