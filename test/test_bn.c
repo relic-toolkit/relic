@@ -1298,6 +1298,33 @@ static int reduction(void) {
 		TEST_END;
 #endif
 
+#if !defined(RLC_STRIP)
+		TEST_CASE("pseudo-mersenne reduction is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			bn_rand(c, RLC_POS, RLC_BN_BITS / 4);
+			if (bn_is_zero(c)) {
+				bn_set_dig(c, 1);
+			}
+			bn_set_2b(b, RLC_BN_BITS / 2);
+			bn_sub(b, b, c);
+			bn_mod(c, a, b);
+			bn_mod_pre_pmers(e, b);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_mod(c, a, b);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			/* Negative multiples of the modulus reduce to zero. */
+			bn_mul_dig(a, b, 2);
+			bn_neg(a, a);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_is_zero(d), end);
+		}
+		TEST_END;
+#endif
+
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

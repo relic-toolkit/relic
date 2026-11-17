@@ -632,6 +632,27 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if !defined(RLC_STRIP)
+	BENCH_RUN("bn_mod_pre_pmers") {
+		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
+		bn_set_2b(b, RLC_BN_BITS);
+		bn_rand(c, RLC_POS, RLC_DIG);
+		bn_sub(b, b, c);
+		BENCH_ADD(bn_mod_pre_pmers(d[0], b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_mod_pmers") {
+		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
+		bn_set_2b(b, RLC_BN_BITS);
+		bn_rand(c, RLC_POS, RLC_DIG);
+		bn_sub(b, b, c);
+		bn_mod_pre_pmers(d[0], b);
+		BENCH_ADD(bn_mod_pmers(c, a, b, d[0]));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("bn_mxp") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
