@@ -710,6 +710,10 @@ void ep4_curve_set_super(void) {
 		g->coord = EC_AFFIN;
 
 		ep4_curve_set(a, b, g, r, h);
+		/* The pairing groups have the order of this curve, so precompute the
+		 * Frobenius decompositions for it. */
+		ep_curve_frbase(h);
+		bn_rec_pre(&(ctx->ep_rec), h, r);
 
 		/* The endomorphism [p] maps (x, y) to (x^(p^2) / B^((p^2 - 1) / 3),
 		 * -y^(p^2) / B^((p^2 - 1) / 2)), so store the inverted constants. */
