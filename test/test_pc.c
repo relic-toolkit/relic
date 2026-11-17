@@ -1374,6 +1374,13 @@ int util(void) {
 			r = RLC_ERR;
 			TEST_ERR(r = gt_read_bin(b, bin, l));
 			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			/* Neither is zero. */
+			gt_zero(a);
+			l = gt_size_bin(a, 0);
+			gt_write_bin(bin, l, a, 0);
+			r = RLC_ERR;
+			TEST_ERR(r = gt_read_bin(b, bin, l));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 	}

@@ -671,6 +671,9 @@ int gt_is_valid(const gt_t a) {
 					case 8:
 						r &= fp8_test_cyc((void *)a);
 						break;
+					case 12:
+						r &= fp12_test_cyc((void *)a);
+						break;
 					case 54:
 						r &= fp54_test_cyc((void *)a);
 						break;
