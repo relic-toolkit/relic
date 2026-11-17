@@ -45,6 +45,21 @@
 #define RNS_VB		RLC_MAX(RLC_RNS_MAX / 8, 12)
 
 /**
+ * Calls F with K vectors per base as its last argument, if bases of that size
+ * fit in RLC_RNS_MAX, so that larger sizes, which no context has, are not
+ * compiled.
+ *
+ * @param[in] K				- the number of vectors per base.
+ * @param[in] F				- the kernel.
+ */
+#define RNS_CASE(K, F, ...)													\
+	case K:																	\
+		if ((K) * 8 <= RLC_RNS_MAX) {										\
+			F(__VA_ARGS__, K);												\
+		}																	\
+		break;
+
+/**
  * Calls F with the number of vectors per base N as its last argument, as a
  * constant for up to twelve vectors, which covers moduli of about 4600 bits,
  * so that the kernels inlined into it are compiled for each size, with their
@@ -55,18 +70,18 @@
  */
 #define RNS_SIZES(N, F, ...)												\
 	switch (N) {															\
-		case 1: F(__VA_ARGS__, 1); break;									\
-		case 2: F(__VA_ARGS__, 2); break;									\
-		case 3: F(__VA_ARGS__, 3); break;									\
-		case 4: F(__VA_ARGS__, 4); break;									\
-		case 5: F(__VA_ARGS__, 5); break;									\
-		case 6: F(__VA_ARGS__, 6); break;									\
-		case 7: F(__VA_ARGS__, 7); break;									\
-		case 8: F(__VA_ARGS__, 8); break;									\
-		case 9: F(__VA_ARGS__, 9); break;									\
-		case 10: F(__VA_ARGS__, 10); break;									\
-		case 11: F(__VA_ARGS__, 11); break;									\
-		case 12: F(__VA_ARGS__, 12); break;									\
+		RNS_CASE(1, F, __VA_ARGS__)											\
+		RNS_CASE(2, F, __VA_ARGS__)											\
+		RNS_CASE(3, F, __VA_ARGS__)											\
+		RNS_CASE(4, F, __VA_ARGS__)											\
+		RNS_CASE(5, F, __VA_ARGS__)											\
+		RNS_CASE(6, F, __VA_ARGS__)											\
+		RNS_CASE(7, F, __VA_ARGS__)											\
+		RNS_CASE(8, F, __VA_ARGS__)											\
+		RNS_CASE(9, F, __VA_ARGS__)											\
+		RNS_CASE(10, F, __VA_ARGS__)										\
+		RNS_CASE(11, F, __VA_ARGS__)										\
+		RNS_CASE(12, F, __VA_ARGS__)										\
 		default: F(__VA_ARGS__, N); break;									\
 	}
 
