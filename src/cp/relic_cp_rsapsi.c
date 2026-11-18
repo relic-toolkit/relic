@@ -186,6 +186,13 @@ int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
 		if (m > 0) {
 			for (j = 0; j < l; j++) {
 				bn_mxp(f, u[j], r, n);
+				/* Powers of 0, 1 and -1 do not depend on the elements of the
+				 * receiver, so they would let a sender match all of them. */
+				bn_add_dig(e, f, 1);
+				if (bn_is_zero(f) || bn_cmp_dig(f, 1) == RLC_EQ ||
+						bn_cmp(e, n) == RLC_EQ) {
+					continue;
+				}
 				for (k = 0; k < m; k++) {
 					bn_copy(e, f);
 					for (i = 0; i < m; i++) {
