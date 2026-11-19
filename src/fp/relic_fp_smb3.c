@@ -172,8 +172,8 @@ static inline void smb3_divd(uint64_t *c, const uint64_t *a, uint64_t d,
  * @param[in] s				- the factors, below 2^63 in absolute value.
  * @param[in] len			- the number of limbs.
  */
-static inline void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4],
-		size_t len) {
+static inline void smb3_lin(uint64_t *c, const uint64_t *a[4],
+		const int64_t s[4], size_t len) {
 	uint64_t ms[4], ns[4], cs[4] = { 0, 0, 0, 0 }, k = 0, h, l, d;
 
 	for (int i = 0; i < 4; i++) {
@@ -287,7 +287,8 @@ static void smb3_modj_pre(uint64_t *k) {
  * @param[in] len			- the number of limbs.
  * @return the residue.
  */
-static inline int64_t smb3_modj(const uint64_t *a, const uint64_t *k, size_t len) {
+static inline int64_t smb3_modj(const uint64_t *a, const uint64_t *k,
+		size_t len) {
 	const uint64_t m = FP_CUB_JM;
 	uint64_t r = 0, h, l, u, t, s;
 
@@ -589,6 +590,61 @@ static inline void smb3_jump(uint64_t c[4][FP_CUB_L],
 }
 
 /**
+ * Starts the cubic residue symbol of a nonzero element for p = 1 mod 3 with
+ * f = pi and g = a - q * pi, both of norm about p, in 64-bit limbs.
+ *
+ * @param[out] w			- the coordinates of f and g.
+ * @param[in] a				- the prime field element.
+ */
+static void smb3_init(uint64_t w[4][FP_CUB_L], const fp_t a) {
+	ctx_t *ctx = core_get();
+	dig_t g[RLC_FP_DIGS + 1], x[FP_CUB_DIGS], y[FP_CUB_DIGS];
+
+	/* The stored digits of a, the integer a * R mod p in Montgomery form,
+	 * whose symbol is that of a times that of R. */
+	dv_copy(g, a, RLC_FP_DIGS);
+	g[RLC_FP_DIGS] = 0;
+	smb3_first(x, y, g);
+	smb3_pack(w[0], ctx->cub_pi[0], RLC_FP_DIGS + 1);
+	smb3_pack(w[1], ctx->cub_pi[1], RLC_FP_DIGS + 1);
+	smb3_pack(w[2], x, FP_CUB_DIGS);
+	smb3_pack(w[3], y, FP_CUB_DIGS);
+}
+
+/**
+ * Returns the number of limbs that the coordinates of f and g need, in
+ * variable time. Their absolute values do not grow, but a coordinate may
+ * double, so the largest stays below 2^(64 * len - 3). A limb that comes back
+ * is set to the sign extension, and not to what was left there before.
+ *
+ * @param[in,out] w			- the coordinates of f and g.
+ * @param[in] len			- the current number of limbs.
+ * @return the new number of limbs.
+ */
+static size_t smb3_shrink(uint64_t w[4][FP_CUB_L], size_t len) {
+	uint64_t s;
+	size_t t = 1;
+
+	for (int j = 0; j < 4; j++) {
+		s = -(w[j][len - 1] >> 63);
+		for (size_t l = len; l > 0; l--) {
+			if ((w[j][l - 1] ^ s) != 0) {
+				t = RLC_MAX(t, l + (((w[j][l - 1] ^ s) >> 61) != 0));
+				break;
+			}
+		}
+	}
+	t = RLC_MIN(t, (size_t)FP_CUB_L);
+	for (int j = 0; j < 4; j++) {
+		s = -(w[j][len - 1] >> 63);
+		for (size_t l = len; l < t; l++) {
+			w[j][l] = s;
+		}
+	}
+	return t;
+}
+
+/**
  * Computes the cubic residue symbol of a nonzero element for p = 1 mod 3 by
  * jumps of combined divsteps, either a number of them that only depends on
  * the size of p, or until g is 0. Jumps of one iteration are the divsteps
@@ -600,22 +656,11 @@ static inline void smb3_jump(uint64_t c[4][FP_CUB_L],
  * @return k in {0, 1, 2}.
  */
 static int smb3_jumps(const fp_t a, int ct, int k) {
-	ctx_t *ctx = core_get();
-	dig_t g[RLC_FP_DIGS + 1], x[FP_CUB_DIGS], y[FP_CUB_DIGS];
-	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], mk[FP_CUB_L + 1], z, s;
+	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], mk[FP_CUB_L + 1], z;
 	int64_t m[4][2], d = 1, e = 0;
-	size_t len = FP_CUB_L, t;
+	size_t len = FP_CUB_L;
 
-	/* The stored digits of a, the integer a * R mod p in Montgomery form,
-	 * whose symbol is that of a times that of R. */
-	dv_copy(g, a, RLC_FP_DIGS);
-	g[RLC_FP_DIGS] = 0;
-	/* f = pi and g = a - q * pi, both of norm about p, in 64-bit limbs. */
-	smb3_first(x, y, g);
-	smb3_pack(w[0], ctx->cub_pi[0], RLC_FP_DIGS + 1);
-	smb3_pack(w[1], ctx->cub_pi[1], RLC_FP_DIGS + 1);
-	smb3_pack(w[2], x, FP_CUB_DIGS);
-	smb3_pack(w[3], y, FP_CUB_DIGS);
+	smb3_init(w, a);
 	smb3_modj_pre(mk);
 
 	for (int i = 0, n; i < FP_CUB_ITER; i += n) {
@@ -643,35 +688,53 @@ static int smb3_jumps(const fp_t a, int ct, int k) {
 				w[j][l] = c[j][l];
 			}
 		}
-		/* Without constant time, keep only the limbs that f and g need. Their
-		 * absolute values do not grow, but a coordinate may double, so the
-		 * largest stays below 2^(64 * len - 3). */
+		/* Without constant time, keep only the limbs that f and g need. */
 		if (!ct) {
-			t = 1;
-			for (int j = 0; j < 4; j++) {
-				s = -(w[j][len - 1] >> 63);
-				for (size_t l = len; l > 0; l--) {
-					if ((w[j][l - 1] ^ s) != 0) {
-						t = RLC_MAX(t, l + (((w[j][l - 1] ^ s) >> 61) != 0));
-						break;
-					}
-				}
-			}
-			t = RLC_MIN(t, (size_t)FP_CUB_L);
-			/* A coordinate that doubled may need a limb back, which must be
-			 * the sign extension and not what was left there before. */
-			for (int j = 0; j < 4; j++) {
-				s = -(w[j][len - 1] >> 63);
-				for (size_t l = len; l < t; l++) {
-					w[j][l] = s;
-				}
-			}
-			len = t;
+			len = smb3_shrink(w, len);
 		}
 	}
 	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
 	 * of R in Montgomery form. */
-	return (int)((e + 3 - ctx->cub_r) % 3);
+	return (int)((e + 3 - core_get()->cub_r) % 3);
+}
+
+/**
+ * Reduces an integer of len limbs in two's complement modulo 9, in variable
+ * time, with 2^64 = 7 mod 9.
+ *
+ * @param[in] a				- the integer.
+ * @param[in] len			- the number of limbs.
+ * @return the residue.
+ */
+static int smb3_mod9(const uint64_t *a, size_t len) {
+	unsigned r = 0, w = 1;
+
+	for (size_t j = 0; j < len; j++) {
+		r += (unsigned)(a[j] % 9) * w;
+		w = w * 7 % 9;
+	}
+	/* A negative integer is its limbs minus 2^(64 * len) = 7^len mod 9. */
+	r += (9 - w) * (unsigned)(a[len - 1] >> 63);
+	return (int)(r % 9);
+}
+
+/**
+ * Returns the bits of an integer of len limbs in two's complement from the
+ * given position, as a signed integer that fits in 64 bits.
+ *
+ * @param[in] a				- the integer.
+ * @param[in] len			- the number of limbs.
+ * @param[in] sh			- the position.
+ * @return the shifted integer.
+ */
+static int64_t smb3_top(const uint64_t *a, size_t len, size_t sh) {
+	size_t q = sh / 64, r = sh % 64;
+	uint64_t h = (q + 1 < len ? a[q + 1] : -(a[len - 1] >> 63));
+
+	if (r == 0) {
+		return (int64_t)a[q];
+	}
+	return (int64_t)((a[q] >> r) | (h << (64 - r)));
 }
 
 /**
@@ -741,7 +804,88 @@ int fp_smb3_basic(const fp_t a) {
 }
 
 int fp_smb3_binar(const fp_t a) {
-	return smb3_symbol(a, 0, 1);
+	uint64_t w[4][FP_CUB_L], c[2][FP_CUB_L], z;
+	int64_t x[4], nf, ng, e = 0, tab, dv, j, ua, ub, mf, kf;
+	const int64_t one[2] = { 1, -1 }, nul[2] = { 0, 0 }, neg[2] = { -1, 0 };
+	int64_t u[2];
+	size_t len = FP_CUB_L, b, l;
+
+	if (fp_is_zero(a)) {
+		return -1;
+	}
+	if (fp_prime_get_mod18() % 3 == 2) {
+		return 0;
+	}
+
+	smb3_init(w, a);
+	/* For f = (3m - 1) + 3k * w, m and k modulo 3. */
+	mf = (smb3_mod9(w[0], len) + 1) % 9 / 3;
+	kf = smb3_mod9(w[1], len) / 3;
+	while (1) {
+		z = 0;
+		for (l = 0; l < len; l++) {
+			z |= w[2][l] | w[3][l];
+		}
+		if (z == 0) {
+			break;
+		}
+		tab = (int64_t)((FP_CUB_TAB >> (7 * (3 * (smb3_mod9(w[2], len) % 3) +
+				smb3_mod9(w[3], len) % 3))) & 127);
+		dv = tab & 1;
+		j = (tab >> 1) & 3;
+		ua = ((tab >> 3) & 3) - 1;
+		ub = (tab >> 5) - 1;
+		if (dv) {
+			/* g / (1 - w) = g * (1 - w) / (1 - w)^2, and (1 - w) gives
+			 * w^(2m). */
+			smb3_row(c[0], c[1], one, nul, 1, w[2], w[3], w[0], w[1], len);
+			e += 2 * mf;
+		} else {
+			/* u = +/- w^-j gives w^(j(m + k)). */
+			e += j * (mf + kf);
+			/* Compare N(u * g) = N(g) with N(f), from the bits of the
+			 * coordinates below their top one. */
+			z = 0;
+			for (l = len; l > 0 && z == 0; l--) {
+				for (int i = 0; i < 4; i++) {
+					z |= w[i][l - 1] ^ -(w[i][len - 1] >> 63);
+				}
+			}
+			b = 64 * l;
+			for (; z != 0; z >>= 1) {
+				b++;
+			}
+			b = (b > 29 ? b - 29 : 0);
+			for (int i = 0; i < 4; i++) {
+				x[i] = smb3_top(w[i], len, b);
+			}
+			nf = x[0] * x[0] - x[0] * x[1] + x[1] * x[1];
+			ng = x[2] * x[2] - x[2] * x[3] + x[3] * x[3];
+			u[0] = ua;
+			u[1] = ub;
+			if (ng < nf) {
+				/* Replace f by u * g, by reciprocity, and g by
+				 * (u * g - f) / (1 - w)^2. */
+				smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
+				smb3_row(w[0], w[1], u, nul, 0, w[2], w[3], w[2], w[3], len);
+				mf = (smb3_mod9(w[0], len) + 1) % 9 / 3;
+				kf = smb3_mod9(w[1], len) / 3;
+			} else {
+				/* Replace u * g by (u * g - f) / (1 - w)^2. */
+				smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
+			}
+			/* (1 - w)^2 gives w^(4m) = w^m, with the m of the new f. */
+			e += mf;
+		}
+		for (l = 0; l < len; l++) {
+			w[2][l] = c[0][l];
+			w[3][l] = c[1][l];
+		}
+		len = smb3_shrink(w, len);
+	}
+	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
+	 * of R in Montgomery form. */
+	return (int)((e + 3 - core_get()->cub_r) % 3);
 }
 
 int fp_smb3_divst(const fp_t a) {

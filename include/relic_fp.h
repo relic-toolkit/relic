@@ -1297,9 +1297,11 @@ int fp_smb3_basic(const fp_t a);
 
 /**
  * Computes the cubic residue symbol of a prime field element as
- * fp_smb3_basic() does, in variable time, by the binary method in the
- * Eisenstein integers: divisions by 1 - w and subtractions of primary
- * elements, as the division steps of Bernstein and Yang, until done.
+ * fp_smb3_basic() does, in variable time, by the binary algorithm of Damgard
+ * and Frandsen in the Eisenstein integers: if 1 - w divides g, divide it, and
+ * otherwise make g primary with a unit u and replace the one of f and u * g
+ * with the larger norm by (u * g - f) / (1 - w)^2, until g is 0. The norms are
+ * compared from the top bits of the coordinates.
  *
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
