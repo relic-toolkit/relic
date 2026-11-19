@@ -357,7 +357,7 @@ static int smb2_jumps(const fp_t a, int ct) {
 		for (size_t l = 0; l < RLC_FP_DIGS; l++) {
 			z |= a[l];
 		}
-		z = (z | -z) >> (RLC_DIG - 1);
+		z = (dig_t)(z | -z) >> (RLC_DIG - 1);
 		r = (int)(dis_t)((1 - j) & -z);
 	}
 	RLC_CATCH_ANY {

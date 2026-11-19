@@ -47,7 +47,7 @@ int fp_smb3_low(const dig_t *a) {
 		for (size_t i = 0; i < RLC_FP_DIGS; i++) {
 			z |= a[i];
 		}
-		return -(int)((~z & (z - 1)) >> (RLC_DIG - 1));
+		return -(int)((dig_t)(~z & (z - 1)) >> (RLC_DIG - 1));
 	}
 
 	/* By Euler's criterion, a^((p - 1)/3) = z^k, and 0 for zero. */

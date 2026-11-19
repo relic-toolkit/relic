@@ -101,7 +101,7 @@ int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
 	}
 	/* Compute RLC_GT = 1 if different, minus 2 if less, from the nonzero bit
 	 * of diff, without comparisons that compilers may turn into branches. */
-	diff = (diff | -diff) >> (RLC_DIG - 1);
+	diff = (dig_t)(diff | -diff) >> (RLC_DIG - 1);
 	return (int)diff - 2 * (int)borrow;
 }
 
@@ -123,7 +123,7 @@ int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size) {
 	}
 	/* The nonzero bit of r, without comparisons that compilers may turn into
 	 * branches. */
-	r = (r | -r) >> (RLC_DIG - 1);
+	r = (dig_t)(r | -r) >> (RLC_DIG - 1);
 	return RLC_NE * (int)r;
 }
 
