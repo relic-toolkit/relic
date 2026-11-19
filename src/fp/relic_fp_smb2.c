@@ -184,10 +184,10 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
  * @return the updated value of zeta.
  */
 #if RLC_WSIZE == 8
-static int smb_steps(dis_t m[4], dig_t *k, int zeta, dig_t f, dig_t g,
+static int smb2_steps(dis_t m[4], dig_t *k, int zeta, dig_t f, dig_t g,
 		int s) {
 #else
-static dis_t smb_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
+static dis_t smb2_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
 		int s) {
 #endif
 	const int h = RLC_DIG / 2;
@@ -246,7 +246,7 @@ static dis_t smb_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
 /**
  * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
  */
-static inline void smb_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
+static inline void smb2_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
 		dig_t sb) {
 	dig_t h, l;
 #ifdef RLC_CONF_NODBL
@@ -273,7 +273,7 @@ static inline void smb_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
  * @param[in] m				- the transition matrix.
  * @param[in] s				- the number of division steps.
  */
-static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
+static void smb2_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	const dis_t u = m[0], v = m[1], q = m[2], r = m[3];
 	dig_t f1 = 0, f0 = 0, g1 = 0, g0 = 0, fs = 0, gs = 0, fi, gi;
 	size_t i;
@@ -281,10 +281,10 @@ static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
 		gi = g[i];
-		smb_mac(&f1, &f0, u, fi, 0);
-		smb_mac(&f1, &f0, v, gi, 0);
-		smb_mac(&g1, &g0, q, fi, 0);
-		smb_mac(&g1, &g0, r, gi, 0);
+		smb2_mac(&f1, &f0, u, fi, 0);
+		smb2_mac(&f1, &f0, v, gi, 0);
+		smb2_mac(&g1, &g0, q, fi, 0);
+		smb2_mac(&g1, &g0, r, gi, 0);
 		/* Store the previous digits shifted right by s bits. */
 		if (i > 0) {
 			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
@@ -301,10 +301,10 @@ static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	/* Only the top digits are signed. */
 	fi = f[i];
 	gi = g[i];
-	smb_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
-	smb_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
-	smb_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
-	smb_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	smb2_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
+	smb2_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
+	smb2_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
+	smb2_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
 	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
 	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
 	f[i] = (dis_t)f0 >> s;
@@ -377,7 +377,7 @@ int fp_smb2_binar(const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
-		/* Both stay nonnegative, with a zero sign digit for smb_apply(). */
+		/* Both stay nonnegative, with a zero sign digit for smb2_apply(). */
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 
 		for (size_t len, i = 0; i < iterations / s; i++) {
@@ -400,7 +400,7 @@ int fp_smb2_binar(const fp_t a) {
 
 			/* (g, f) <- (m0 g + m1 f, m2 g + m3 f)/2^s, then their absolute
 			 * values. */
-			smb_apply(g, f, m, s);
+			smb2_apply(g, f, m, s);
 			neg = RLC_SIGN(g[RLC_FP_DIGS]);
 			bn_sneg_low(g, g, neg, RLC_FP_DIGS);
 			bn_sneg_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), RLC_FP_DIGS);
@@ -548,8 +548,8 @@ int fp_smb2_jmpds(const fp_t a) {
 		/* The number of steps only depends on the prime size. */
 		for (int i = 0; i < JMPDS_ITERS; i += s) {
 			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
-			zeta = smb_steps(m, &k, zeta, f[0], g[0], s);
-			smb_apply(f, g, m, s);
+			zeta = smb2_steps(m, &k, zeta, f[0], g[0], s);
+			smb2_apply(f, g, m, s);
 			/* Count the sign changes of f, whose parity is its sign. */
 			j = (j + k) % 4;
 			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;

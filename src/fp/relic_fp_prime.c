@@ -200,7 +200,7 @@ static void fp_prime_set_cub(const bn_t p) {
  */
 static void fp_prime_set(const bn_t p) {
 	bn_t t;
-	fp_t r;
+	fp_t r, s;
 	ctx_t *ctx = core_get();
 	dig_t rem;
 
@@ -211,10 +211,12 @@ static void fp_prime_set(const bn_t p) {
 
 	bn_null(t);
 	fp_null(r);
+	fp_null(s);
 
 	RLC_TRY {
 		bn_new(t);
 		fp_new(r);
+		fp_new(s);
 
 		bn_copy(&(ctx->prime), p);
 		bn_sub_dig(&(ctx->over3), p, 1);
@@ -282,22 +284,28 @@ static void fp_prime_set(const bn_t p) {
 		};
 		fp_inv(ctx->iqnr, r);
 
-		/* Check if cnr is a cubic non-residue or find another. */
+		/* Check if cnr is a cubic non-residue or find another, by Euler's
+		 * criterion, as fp_is_cub() needs the cube root of unity that it
+		 * gives. */
 		if (ctx->mod18 % 3 == 1) {
 			if (ctx->cnr > 0) {
 				fp_set_dig(r, ctx->cnr);
-				while (fp_is_cub(r)) {
+				fp_exp(s, r, &(ctx->over3));
+				while (fp_cmp_dig(s, 1) == RLC_EQ) {
 					ctx->cnr++;
 					fp_set_dig(r, ctx->cnr);
-				};
+					fp_exp(s, r, &(ctx->over3));
+				}
 			} else {
 				fp_set_dig(r, -ctx->cnr);
 				fp_neg(r, r);
-				while (fp_is_cub(r)) {
+				fp_exp(s, r, &(ctx->over3));
+				while (fp_cmp_dig(s, 1) == RLC_EQ) {
 					ctx->cnr--;
 					fp_set_dig(r, -ctx->cnr);
 					fp_neg(r, r);
-				};
+					fp_exp(s, r, &(ctx->over3));
+				}
 			}
 		} else {
 			ctx->cnr = 0;
@@ -340,8 +348,7 @@ static void fp_prime_set(const bn_t p) {
 		}
 		fp_exp(ctx->crt, ctx->crt, t);
 
-		fp_prime_calc();
-
+		/* The cubic residue symbol, before anything that tests for cubes. */
 		if (ctx->mod18 % 3 == 1) {
 			fp_prime_set_cub(p);
 		} else {
@@ -352,6 +359,8 @@ static void fp_prime_set(const bn_t p) {
 			dv_zero(ctx->cub_inv[1], RLC_FP_DIGS + 1);
 			ctx->cub_r = 0;
 		}
+
+		fp_prime_calc();
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -359,6 +368,7 @@ static void fp_prime_set(const bn_t p) {
 	RLC_FINALLY {
 		bn_free(t);
 		fp_free(r);
+		fp_free(s);
 	}
 }
 

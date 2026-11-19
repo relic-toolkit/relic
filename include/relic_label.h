@@ -621,8 +621,11 @@
 #undef fp_smb2_divst
 #undef fp_smb2_jmpds
 #undef fp_smb2_lower
-#undef fp_smb3_jmpvt
+#undef fp_smb3_basic
+#undef fp_smb3_binar
+#undef fp_smb3_divst
 #undef fp_smb3_jmpds
+#undef fp_smb3_jmpvt
 #undef fp_exp_basic
 #undef fp_exp_slide
 #undef fp_exp_monty
@@ -727,8 +730,11 @@
 #define fp_smb2_divst 	RLC_PREFIX(fp_smb2_divst)
 #define fp_smb2_jmpds 	RLC_PREFIX(fp_smb2_jmpds)
 #define fp_smb2_lower 	RLC_PREFIX(fp_smb2_lower)
-#define fp_smb3_jmpvt 	RLC_PREFIX(fp_smb3_jmpvt)
+#define fp_smb3_basic 	RLC_PREFIX(fp_smb3_basic)
+#define fp_smb3_binar 	RLC_PREFIX(fp_smb3_binar)
+#define fp_smb3_divst 	RLC_PREFIX(fp_smb3_divst)
 #define fp_smb3_jmpds 	RLC_PREFIX(fp_smb3_jmpds)
+#define fp_smb3_jmpvt 	RLC_PREFIX(fp_smb3_jmpvt)
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)

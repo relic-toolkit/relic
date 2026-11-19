@@ -443,6 +443,25 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #endif
 
 /**
+ * Computes the cubic residue symbol of a prime field element, the k such that
+ * A^((p - 1)/3) = z^k for the cube root of unity z = fp_prime_get_cub(). As
+ * the lower layer has no cubic residue symbol, it falls back to jumps of
+ * division steps there.
+ *
+ * @param[in] A				- the prime field element to compute.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+#if FP_SMB == FP_BASIC
+#define fp_smb3(A)		fp_smb3_basic(A)
+#elif FP_SMB == FP_BINAR
+#define fp_smb3(A)		fp_smb3_binar(A)
+#elif FP_SMB == FP_DIVST
+#define fp_smb3(A)		fp_smb3_divst(A)
+#elif FP_SMB == FP_JMPDS || FP_SMB == FP_LOWER
+#define fp_smb3(A)		fp_smb3_jmpds(A)
+#endif
+
+/**
  * Exponentiates a prime field element. Computes C = A^B (mod p).
  *
  * @param[out] C			- the result.
@@ -1257,27 +1276,54 @@ int fp_smb2_jmpds(const fp_t a);
 int fp_smb2_lower(const fp_t a);
 
 /**
- * Computes the cubic residue symbol of a prime field element in variable
- * time, by jumps of divsteps in the Eisenstein integers in the manner of
- * Bernstein and Yang, stopped once done. For p = 1 mod 3, the symbol is w^k
- * for the k such that a^((p - 1)/3) = z^k, where z is the cube root of unity
- * returned by fp_prime_get_cub(); for p = 2 mod 3, every element is a cube
- * and k = 0.
+ * Computes the cubic residue symbol of a prime field element using Euler's
+ * criterion. For p = 1 mod 3, the symbol is w^k for the k such that
+ * a^((p - 1)/3) = z^k, where z is the cube root of unity returned by
+ * fp_prime_get_cub(); for p = 2 mod 3, every element is a cube and k = 0.
  *
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
-int fp_smb3_jmpvt(const fp_t a);
+int fp_smb3_basic(const fp_t a);
 
 /**
  * Computes the cubic residue symbol of a prime field element as
- * fp_smb3_jmpvt() does, in constant time, by a number of jumps of divsteps
- * that only depends on the size of the prime.
+ * fp_smb3_basic() does, in variable time, by the binary method in the
+ * Eisenstein integers: divisions by 1 - w and subtractions of primary
+ * elements, as the division steps of Bernstein and Yang, until done.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_binar(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_basic() does, in constant time, by a number of division steps in
+ * the Eisenstein integers that only depends on the size of the prime.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_divst(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_divst() does, by jumps of division steps on their residues.
  *
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
 int fp_smb3_jmpds(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_jmpds() does, in variable time, stopping once done.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_jmpvt(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary

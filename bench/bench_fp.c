@@ -696,15 +696,47 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("fp_smb3_jmpvt") {
+	BENCH_RUN("fp_smb3") {
 		fp_rand(a);
-		BENCH_ADD(fp_smb3_jmpvt(a));
+		BENCH_ADD(fp_smb3(a));
 	}
 	BENCH_END;
 
+#if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_basic") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_basic(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_binar") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_binar(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_divst") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_divst(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb3_jmpds") {
 		fp_rand(a);
 		BENCH_ADD(fp_smb3_jmpds(a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("fp_smb3_jmpvt") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_jmpvt(a));
 	}
 	BENCH_END;
 
