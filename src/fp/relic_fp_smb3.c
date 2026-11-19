@@ -240,7 +240,7 @@ static inline void smb3_row(dig_t *c0, dig_t *c1, const int64_t m[2],
  * @param[in] len			- the number of digits.
  * @return the residue.
  */
-static inline int64_t smb3_modj(const dig_t *a, size_t len) {
+static inline dig_t smb3_modj(const dig_t *a, size_t len) {
 	const dig_t m = FP_CUB_JM;
 	dig_t r = 0, p = FP_CUB_JR1, q = 0, h, l, t, s;
 
@@ -266,7 +266,7 @@ static inline int64_t smb3_modj(const dig_t *a, size_t len) {
 	r += (m - q) & -(a[len - 1] >> (RLC_DIG - 1));
 	r -= m;
 	r += m & (dig_t)((dis_t)r >> (RLC_DIG - 1));
-	return (int64_t)r;
+	return r;
 }
 
 /**
@@ -318,19 +318,6 @@ static int64_t smb3_c3(uint64_t a) {
 }
 
 /**
- * Unpacks two signed 32-bit entries from a digit, the high one with the
- * borrow of the low one.
- *
- * @param[out] lo			- the low entry.
- * @param[out] hi			- the high entry.
- * @param[in] w				- the packed entries.
- */
-static void smb3_unpack(int64_t *lo, int64_t *hi, uint64_t w) {
-	*lo = (int64_t)(w << 32) >> 32;
-	*hi = (int64_t)(w - (uint64_t)*lo) >> 32;
-}
-
-/**
  * Runs len <= FP_CUB_JK / 2 combined iterations on the residues of f and g in
  * constant time, with the rows (A, B) and (C, D) over Z[w] such that (-3w)^len
  * * (f', g') = (A f + B g, C f + D g). An iteration divides g by 1 - w if it
@@ -348,16 +335,17 @@ static void smb3_unpack(int64_t *lo, int64_t *hi, uint64_t w) {
  * @param[in,out] e			- the exponent of the symbol.
  * @param[in] len			- the number of iterations.
  */
-static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
+static void smb3_jhalf(int64_t r[4][2], uint64_t f[2], uint64_t g[2],
 		int64_t mk[2], int64_t *d, int64_t *e, int len) {
-	/* Exact divisions by 3 are multiplications by its inverse modulo 2^64,
-	 * and the results of inexact ones are never selected. */
+	/* Values in two's complement modulo 2^64, where exact divisions by 3 are
+	 * multiplications by its inverse, and the results of inexact ones are
+	 * never selected; the masks are signed, and so are delta and m, k. */
 	const uint64_t i3 = FP_CUB_I3;
-	int64_t f0 = f[0], f1 = f[1], g0 = g[0], g1 = g[1], m = mk[0], k = mk[1];
-	int64_t tab, dv, sw, ua, ub, j, mu, ku, h0, h1, q0, q1;
-	/* The rows as packed coordinates: px = (A.x, B.x), py = (A.y, B.y), and
-	 * qx, qy the same for (C, D), starting from the identity. */
-	int64_t px = 1, py = 0, qx = (int64_t)1 << 32, qy = 0, tx, ty, ux, uy;
+	uint64_t f0 = f[0], f1 = f[1], g0 = g[0], g1 = g[1], h0, h1, q0, q1;
+	int64_t m = mk[0], k = mk[1], tab, dv, sw, ua, ub, j, mu, ku;
+	/* The rows as packed coordinates, starting from the identity:
+	 * p = ((A.x, B.x), (A.y, B.y), (C.x, D.x), (C.y, D.y)). */
+	uint64_t p[4] = { 1, 0, (uint64_t)1 << 32, 0 }, tx, ty, ux, uy;
 	/* Local copies, which stay in registers. */
 	int64_t dl = *d, el = *e;
 
@@ -376,10 +364,10 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		tx = ua * g0 - ub * g1;
 		g1 = ua * g1 + ub * (g0 - g1);
 		g0 = tx;
-		tx = ua * qx - ub * qy;
-		ty = ua * qy + ub * (qx - qy);
-		mu = smb3_c3((uint64_t)(g0 + 1) * i3);
-		ku = smb3_c3((uint64_t)g1 * i3);
+		tx = ua * p[2] - ub * p[3];
+		ty = ua * p[3] + ub * (p[2] - p[3]);
+		mu = smb3_c3((g0 + 1) * i3);
+		ku = smb3_c3(g1 * i3);
 		/* The exponent, modulo 3: 2m for a division, or j(m + k) for the
 		 * unit and 4m = m for (1 - w)^2, with the m of u * g after a swap. */
 		el += (2 * m & dv) | ((j * (m + k) + m + ((mu - m) & sw)) & ~dv);
@@ -388,10 +376,10 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		/* The new f and g: g / (1 - w), or (u * g - f) / (1 - w)^2. */
 		h0 = g0 - (f0 & ~dv);
 		h1 = g1 - (f1 & ~dv);
-		q0 = (int64_t)((uint64_t)(2 * h0 - h1) * i3);
-		q1 = (int64_t)((uint64_t)(h0 + h1) * i3);
-		h0 = (int64_t)((uint64_t)(2 * q0 - q1) * i3);
-		h1 = (int64_t)((uint64_t)(q0 + q1) * i3);
+		q0 = (2 * h0 - h1) * i3;
+		q1 = (h0 + h1) * i3;
+		h0 = (2 * q0 - q1) * i3;
+		h1 = (q0 + q1) * i3;
 		f0 += (g0 - f0) & sw;
 		f1 += (g1 - f1) & sw;
 		m += (mu - m) & sw;
@@ -402,16 +390,16 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		 * that of f is (A, B), or u * (C, D) after a swap, times (1 - w)^2,
 		 * and that of g is u * (C, D) - (A, B), or (C, D) times 1 - w for a
 		 * division. */
-		ux = tx - px;
-		uy = ty - py;
-		px += ux & sw;
-		py += uy & sw;
-		tx = 3 * py;
-		py = 3 * (py - px);
-		px = tx;
-		tx = ux ^ ((ux ^ (qx + qy)) & dv);
-		qy = uy ^ ((uy ^ (2 * qy - qx)) & dv);
-		qx = tx;
+		ux = tx - p[0];
+		uy = ty - p[1];
+		p[0] += ux & sw;
+		p[1] += uy & sw;
+		tx = 3 * p[1];
+		p[1] = 3 * (p[1] - p[0]);
+		p[0] = tx;
+		tx = ux ^ ((ux ^ (p[2] + p[3])) & dv);
+		p[3] = uy ^ ((uy ^ (2 * p[3] - p[2])) & dv);
+		p[2] = tx;
 	}
 	f[0] = f0;
 	f[1] = f1;
@@ -421,10 +409,12 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 	mk[1] = k;
 	*d = dl;
 	*e = el;
-	smb3_unpack(&r[0][0], &r[1][0], (uint64_t)px);
-	smb3_unpack(&r[0][1], &r[1][1], (uint64_t)py);
-	smb3_unpack(&r[2][0], &r[3][0], (uint64_t)qx);
-	smb3_unpack(&r[2][1], &r[3][1], (uint64_t)qy);
+	/* Unpack the signed entries, the high one with the borrow of the low one,
+	 * into the rows (A, B) and (C, D). */
+	for (int i = 0; i < 4; i++) {
+		r[i & 2][i & 1] = (int64_t)(p[i] << 32) >> 32;
+		r[(i & 2) + 1][i & 1] = (int64_t)(p[i] - (uint64_t)r[i & 2][i & 1]) >> 32;
+	}
 }
 
 /**
@@ -442,15 +432,16 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
  */
 static inline void smb3_jump(dig_t c[4][FP_CUB_DIGS],
 		dig_t w[4][FP_CUB_DIGS], int64_t *d, int64_t *e, int n, size_t len) {
-	int64_t f[2], g[2], mk[2], s[4][2], t[4][2], r[4][2], u[2], v[2];
+	uint64_t f[2], g[2];
+	int64_t mk[2], s[4][2], t[4][2], r[4][2], u[2], v[2];
 
 	f[0] = smb3_modj(w[0], len);
 	f[1] = smb3_modj(w[1], len);
 	g[0] = smb3_modj(w[2], len);
 	g[1] = smb3_modj(w[3], len);
 	/* For f = (3m - 1) + 3k * w, m and k modulo 3. */
-	mk[0] = smb3_c3((uint64_t)(f[0] + 1) * FP_CUB_I3);
-	mk[1] = smb3_c3((uint64_t)f[1] * FP_CUB_I3);
+	mk[0] = smb3_c3((f[0] + 1) * FP_CUB_I3);
+	mk[1] = smb3_c3(f[1] * FP_CUB_I3);
 	smb3_jhalf(s, f, g, mk, d, e, n / 2);
 	smb3_jhalf(t, f, g, mk, d, e, n - n / 2);
 	/* The second matrix times the first. */
