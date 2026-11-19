@@ -244,26 +244,6 @@ static dis_t smb2_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
 }
 
 /**
- * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
- */
-static inline void smb2_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
-		dig_t sb) {
-	dig_t h, l;
-#ifdef RLC_CONF_NODBL
-	RLC_MUL_DIG(h, l, (dig_t)a, b);
-#else
-	/* Multiply once to get both halves. */
-	dbl_t t = (dbl_t)(dig_t)a * b;
-	h = (dig_t)(t >> RLC_DIG);
-	l = (dig_t)t;
-#endif
-	/* Correct the unsigned high half for the signs of a and b. */
-	h -= (b & -RLC_SIGN(a)) + ((dig_t)a & sb);
-	*c0 += l;
-	*c1 += h + (*c0 < l);
-}
-
-/**
  * Applies the transition matrix m = (u, v; q, r) of s division steps to
  * (f, g), computing (u * f + v * g, q * f + r * g) / 2^s in a single pass,
  * where the division is exact. Both values have RLC_FP_DIGS + 1 signed digits.
@@ -281,10 +261,10 @@ static void smb2_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
 		gi = g[i];
-		smb2_mac(&f1, &f0, u, fi, 0);
-		smb2_mac(&f1, &f0, v, gi, 0);
-		smb2_mac(&g1, &g0, q, fi, 0);
-		smb2_mac(&g1, &g0, r, gi, 0);
+		RLC_MAC_DIG(f1, f0, u, fi, 0);
+		RLC_MAC_DIG(f1, f0, v, gi, 0);
+		RLC_MAC_DIG(g1, g0, q, fi, 0);
+		RLC_MAC_DIG(g1, g0, r, gi, 0);
 		/* Store the previous digits shifted right by s bits. */
 		if (i > 0) {
 			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
@@ -301,10 +281,10 @@ static void smb2_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	/* Only the top digits are signed. */
 	fi = f[i];
 	gi = g[i];
-	smb2_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
-	smb2_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
-	smb2_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
-	smb2_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(f1, f0, u, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(f1, f0, v, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(g1, g0, q, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(g1, g0, r, gi, -RLC_SIGN(gi));
 	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
 	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
 	f[i] = (dis_t)f0 >> s;
