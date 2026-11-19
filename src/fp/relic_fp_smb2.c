@@ -44,7 +44,7 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		dig_t k, size_t s) {
 	dig_t limbx, ai = 1, bi = 0, ci = 0, di = 1;
 	dig_t g_lo = g[0], g_hi = g[1], f_lo = f[0], f_hi = f[1];
-	dig_t t_lo, t_hi, odd, borrow, xorm;
+	dig_t t_lo, t_hi, odd, borrow, xorm, sub;
 
 	/* Unrolling twice gives some small speedup. */
 	for (size_t i = 0; i < s; i+=2) {
@@ -53,15 +53,17 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		/* g_ -= f_ if g_ is odd */
 		t_lo = g_lo, t_hi = g_hi;
 
-		borrow = 0;
-		limbx = g_lo - (f_lo & odd);
-		borrow = (g_lo < limbx);
+		/* The borrows are the top bits of (~a & b) | (~(a ^ b) & (a - b)),
+		 * without comparisons that compilers may turn into branches. */
+		sub = f_lo & odd;
+		limbx = g_lo - sub;
+		borrow = ((~g_lo & sub) | (~(g_lo ^ sub) & limbx)) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
-		limbx = g_hi - (f_hi & odd);
-		xorm = limbx - borrow;
-		borrow = -((g_hi < limbx) || (borrow && !limbx));
-		g_hi = xorm;
+		sub = f_hi & odd;
+		limbx = g_hi - sub - borrow;
+		borrow = -(((~g_hi & sub) | (~(g_hi ^ sub) & limbx)) >> (RLC_DIG - 1));
+		g_hi = limbx;
 
 		k += ((t_lo & f_lo) >> 1) & borrow;
 
@@ -103,15 +105,17 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		/* g_ -= f_ if g_ is odd */
 		t_lo = g_lo, t_hi = g_hi;
 
-		borrow = 0;
-		limbx = g_lo - (f_lo & odd);
-		borrow = (g_lo < limbx);
+		/* The borrows are the top bits of (~a & b) | (~(a ^ b) & (a - b)),
+		 * without comparisons that compilers may turn into branches. */
+		sub = f_lo & odd;
+		limbx = g_lo - sub;
+		borrow = ((~g_lo & sub) | (~(g_lo ^ sub) & limbx)) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
-		limbx = g_hi - (f_hi & odd);
-		xorm = limbx - borrow;
-		borrow = -((g_hi < limbx) || (borrow && !limbx));
-		g_hi = xorm;
+		sub = f_hi & odd;
+		limbx = g_hi - sub - borrow;
+		borrow = -(((~g_hi & sub) | (~(g_hi ^ sub) & limbx)) >> (RLC_DIG - 1));
+		g_hi = limbx;
 
 		k += ((t_lo & f_lo) >> 1) & borrow;
 
