@@ -40,7 +40,7 @@ int fp_is_sqr(const fp_t a) {
 		return 1;
 	}
 	
-	return (fp_smb(a) == 1);
+	return (fp_smb2(a) == 1);
 }
 
 int fp_srt(fp_t c, const fp_t a) {

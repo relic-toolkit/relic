@@ -425,21 +425,21 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #endif
 
 /**
- * Computes the Legendre symbol of a prime field element. Computes C = (A|P).
+ * Computes the Legendre symbol (A|P) of a prime field element.
  *
- * @param[out] C			- the result.
  * @param[in] A				- the prime field element to compute.
+ * @return 1 or -1, or 0 if the element is zero.
  */
 #if FP_SMB == FP_BASIC
-#define fp_smb(A)		fp_smb_basic(A)
+#define fp_smb2(A)		fp_smb2_basic(A)
 #elif FP_SMB == FP_BINAR
-#define fp_smb(A)		fp_smb_binar(A)
+#define fp_smb2(A)		fp_smb2_binar(A)
 #elif FP_SMB == FP_DIVST
-#define fp_smb(A)		fp_smb_divst(A)
+#define fp_smb2(A)		fp_smb2_divst(A)
 #elif FP_SMB == FP_JMPDS
-#define fp_smb(A)		fp_smb_jmpds(A)
+#define fp_smb2(A)		fp_smb2_jmpds(A)
 #elif FP_SMB == FP_LOWER
-#define fp_smb(A)		fp_smb_lower(A)
+#define fp_smb2(A)		fp_smb2_lower(A)
 #endif
 
 /**
@@ -1213,47 +1213,48 @@ void fp_inv_lower(fp_t c, const fp_t a);
 void fp_inv_sim(fp_t *c, const fp_t *a, int n);
 
 /**
- * Computes Legendre symbol of a prime field element using exponentiation.
+ * Computes the Legendre symbol of a prime field element using exponentiation.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_basic(const fp_t a);
+int fp_smb2_basic(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the binary method.
+ * Computes the Legendre symbol of a prime field element using the binary
+ * method.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_binar(const fp_t a);
+int fp_smb2_binar(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the constant-time
+ * Computes the Legendre symbol of a prime field element using the constant-time
  * division step approach by Bernstein and Bo-Yin Yang.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_divst(const fp_t a);
+int fp_smb2_divst(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the constant-time
+ * Computes the Legendre symbol of a prime field element using the constant-time
  * jump division step approach by Bernstein and Bo-Yin Yang.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_jmpds(const fp_t a);
+int fp_smb2_jmpds(const fp_t a);
 
 /**
- * Computes Legendre symbol a prime field element using a direct call to the
- * lower layer.
+ * Computes the Legendre symbol of a prime field element using a direct call
+ * to the lower layer.
  *
- * @param[in] a				- the prime field element to invert.
+ * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_lower(const fp_t a);
+int fp_smb2_lower(const fp_t a);
 
 /**
  * Computes the cubic residue symbol of a prime field element in variable
@@ -1266,17 +1267,17 @@ int fp_smb_lower(const fp_t a);
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
-int fp_smb_cub(const fp_t a);
+int fp_smb3_jmpvt(const fp_t a);
 
 /**
- * Computes the cubic residue symbol of a prime field element as fp_smb_cub()
- * does, in constant time, by a number of jumps of divsteps that only depends
- * on the size of the prime.
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_jmpvt() does, in constant time, by a number of jumps of divsteps
+ * that only depends on the size of the prime.
  *
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
-int fp_smb_cub_jmpds(const fp_t a);
+int fp_smb3_jmpds(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary

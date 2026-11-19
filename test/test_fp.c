@@ -960,47 +960,47 @@ static int symbol(void) {
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_smb(a) == 0, end);
+			TEST_ASSERT(fp_smb2(a) == 0, end);
 			fp_rand(a);
 			fp_sqr(a, a);
-			TEST_ASSERT(fp_smb(a) == 1, end);
+			TEST_ASSERT(fp_smb2(a) == 1, end);
 			do {
 				fp_rand(a);
 			} while(fp_srt(b, a) == 1);
-			TEST_ASSERT(fp_smb(a) == -1, end);
+			TEST_ASSERT(fp_smb2(a) == -1, end);
 		}
 		TEST_END;
 
 #if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
 		TEST_CASE("basic symbol computation is correct") {
 			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_basic(a), end);
 		} TEST_END;
 #endif
 
 #if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
 		TEST_CASE("binary symbol computation is correct") {
 			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_binar(a), end);
 		} TEST_END;
 #endif
 
 #if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_divst(a), end);
 		} TEST_END;
 #endif
 #if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
 		TEST_CASE("jump division step symbol computation is correct") {
 			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_jmpds(a), end);
 		} TEST_END;
 #endif
 #if FP_SMB == FP_LOWER
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_lower(a), end);
 		} TEST_END;
 #endif
 	}
@@ -1187,14 +1187,14 @@ static int cube_root(void) {
 
 		TEST_CASE("cubic residue symbol is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_smb_cub(a) == -1, end);
+			TEST_ASSERT(fp_smb3_jmpvt(a) == -1, end);
 			do {
 				fp_rand(a);
 				fp_rand(d);
 			} while (fp_is_zero(a) || fp_is_zero(d));
 			fp_sqr(b, a);
 			fp_mul(b, b, a);
-			TEST_ASSERT(fp_smb_cub(b) == 0, end);
+			TEST_ASSERT(fp_smb3_jmpvt(b) == 0, end);
 			if (fp_prime_get_mod18() % 3 == 1) {
 				/* For the symbol w^k, a^((p - 1)/3) = z^k. */
 				bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
@@ -1202,29 +1202,29 @@ static int cube_root(void) {
 				bn_div_dig(e, e, 3);
 				fp_exp(b, a, e);
 				fp_set_dig(c, 1);
-				for (int k = fp_smb_cub(a); k > 0; k--) {
+				for (int k = fp_smb3_jmpvt(a); k > 0; k--) {
 					fp_mul(c, c, (dig_t *)fp_prime_get_cub());
 				}
 				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
-				TEST_ASSERT((fp_smb_cub(a) == 0) == fp_is_cub(a), end);
+				TEST_ASSERT((fp_smb3_jmpvt(a) == 0) == fp_is_cub(a), end);
 				/* The symbol is multiplicative. */
 				fp_mul(c, a, d);
-				TEST_ASSERT(fp_smb_cub(c) ==
-						(fp_smb_cub(a) + fp_smb_cub(d)) % 3, end);
+				TEST_ASSERT(fp_smb3_jmpvt(c) ==
+						(fp_smb3_jmpvt(a) + fp_smb3_jmpvt(d)) % 3, end);
 			} else {
-				TEST_ASSERT(fp_smb_cub(a) == 0, end);
+				TEST_ASSERT(fp_smb3_jmpvt(a) == 0, end);
 			}
 		}
 		TEST_END;
 
 		TEST_CASE("constant-time cubic residue symbol is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_smb_cub_jmpds(a) == -1, end);
+			TEST_ASSERT(fp_smb3_jmpds(a) == -1, end);
 			fp_rand(a);
-			TEST_ASSERT(fp_smb_cub_jmpds(a) == fp_smb_cub(a), end);
+			TEST_ASSERT(fp_smb3_jmpds(a) == fp_smb3_jmpvt(a), end);
 			fp_sqr(b, a);
 			fp_mul(b, b, a);
-			TEST_ASSERT(fp_smb_cub_jmpds(b) == fp_smb_cub(b), end);
+			TEST_ASSERT(fp_smb3_jmpds(b) == fp_smb3_jmpvt(b), end);
 		}
 		TEST_END;
 

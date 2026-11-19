@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smbm_low(const dig_t *a) {
+int fp_smb2m_low(const dig_t *a) {
 	mpz_t n, p;
 	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
 	int res;

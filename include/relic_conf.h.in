@@ -248,17 +248,17 @@
 /** Chosen prime field inversion method. */
 #define FP_INV   FP_@FP_INV@
 
-/** Legendre by Fermat's Little Theorem. */
+/** Residue symbols by Euler's criterion. */
 #define FP_BASIC    1
 /** Binary method. */
 #define FP_BINAR    2
-/** Constant-time inversion by Bernstein-Yang division steps. */
+/** Constant-time residue symbols by Bernstein-Yang division steps. */
 #define FP_DIVST    5
-/** Constant-time inversion by Bernstein-Yang jump division steps. */
+/** Constant-time residue symbols by Bernstein-Yang jump division steps. */
 #define FP_JMPDS    6
 /** Use implementation provided by the lower layer. */
 #define FP_LOWER    7
-/** Chosen prime field inversion method. */
+/** Chosen method for the quadratic and cubic residue symbols. */
 #define FP_SMB   FP_@FP_SMB@
 
 /** Binary modular exponentiation. */

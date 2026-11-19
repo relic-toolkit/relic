@@ -350,7 +350,7 @@ void fp_invm_low(dig_t *c, const dig_t *a);
  * @param[in] a				- the digit vector to invert.
  * @return the result.
  */
-int fp_smbm_low(const dig_t *a);
+int fp_smb2m_low(const dig_t *a);
 
 #endif /* ASM */
 
