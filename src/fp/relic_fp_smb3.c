@@ -136,20 +136,21 @@ static void smb3_pack(uint64_t *c, const dig_t *a, size_t n) {
 }
 
 /**
- * Divides an integer of FP_CUB_L limbs in two's complement by an odd 64-bit
+ * Divides an integer of len limbs in two's complement by an odd 64-bit
  * integer, when the division is exact, by multiplying the limbs by its inverse
- * modulo 2^64, which is also the quotient modulo 2^(64 * FP_CUB_L).
+ * modulo 2^64, which is also the quotient modulo 2^(64 * len).
  *
  * @param[out] c			- the quotient.
  * @param[in] a				- the integer, a multiple of d.
  * @param[in] d				- the odd divisor.
  * @param[in] inv			- the inverse of d modulo 2^64.
+ * @param[in] len			- the number of limbs.
  */
-static void smb3_divd(uint64_t *c, const uint64_t *a, uint64_t d,
-		uint64_t inv) {
+static inline void smb3_divd(uint64_t *c, const uint64_t *a, uint64_t d,
+		uint64_t inv, size_t len) {
 	uint64_t b = 0, h, l, q;
 
-	for (size_t j = 0; j < FP_CUB_L; j++) {
+	for (size_t j = 0; j < len; j++) {
 		l = a[j] - b;
 		b = (a[j] < b);
 		q = l * inv;
@@ -161,16 +162,18 @@ static void smb3_divd(uint64_t *c, const uint64_t *a, uint64_t d,
 }
 
 /**
- * Computes a combination of four integers of FP_CUB_L limbs in two's
- * complement with signed factors, in one pass:
+ * Computes a combination of four integers of len limbs in two's complement
+ * with signed factors, in one pass:
  * c = s0 * a0 + s1 * a1 + s2 * a2 + s3 * a3, with each negative term added as
  * the complement of its absolute value plus one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the integers.
  * @param[in] s				- the factors, below 2^63 in absolute value.
+ * @param[in] len			- the number of limbs.
  */
-static void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4]) {
+static inline void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4],
+		size_t len) {
 	uint64_t ms[4], ns[4], cs[4] = { 0, 0, 0, 0 }, k = 0, h, l, d;
 
 	for (int i = 0; i < 4; i++) {
@@ -178,7 +181,7 @@ static void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4]) {
 		ns[i] = -(uint64_t)(s[i] < 0);
 		k += (s[i] < 0);
 	}
-	for (size_t j = 0; j < FP_CUB_L; j++) {
+	for (size_t j = 0; j < len; j++) {
 		d = k;
 		k = 0;
 		for (int i = 0; i < 4; i++) {
@@ -194,8 +197,8 @@ static void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4]) {
 }
 
 /**
- * Computes (m * alpha + n * beta) / (1 - w)^(2h) in limbs, where the division
- * is exact, for alpha = x + y * w and beta = u + v * w.
+ * Computes (m * alpha + n * beta) / (1 - w)^(2h) in len limbs, where the
+ * division is exact, for alpha = x + y * w and beta = u + v * w.
  *
  * @param[out] c0			- the first coordinate of the result.
  * @param[out] c1			- the second coordinate of the result.
@@ -206,10 +209,11 @@ static void smb3_lin(uint64_t *c, const uint64_t *a[4], const int64_t s[4]) {
  * @param[in] y				- the second coordinate of alpha.
  * @param[in] u				- the first coordinate of beta.
  * @param[in] v				- the second coordinate of beta.
+ * @param[in] len			- the number of limbs.
  */
-static void smb3_row(uint64_t *c0, uint64_t *c1, const int64_t m[2],
+static inline void smb3_row(uint64_t *c0, uint64_t *c1, const int64_t m[2],
 		const int64_t n[2], int h, const uint64_t *x, const uint64_t *y,
-		const uint64_t *u, const uint64_t *v) {
+		const uint64_t *u, const uint64_t *v, size_t len) {
 	/* (1 - w)^(2h) = (-3w)^h, so first multiply m and n by the unit
 	 * (-w)^-h, a power of 1 + w with (a + b * w)(1 + w) = (a - b) + a * w. */
 	const uint64_t *f[4] = { x, y, u, v };
@@ -235,8 +239,8 @@ static void smb3_row(uint64_t *c0, uint64_t *c1, const int64_t m[2],
 	f1[2] = n1;
 	f1[3] = n0 - n1;
 
-	smb3_lin(c0, f, f0);
-	smb3_lin(c1, f, f1);
+	smb3_lin(c0, f, f0, len);
+	smb3_lin(c1, f, f1, len);
 	/* Divide by 3^h, with 3^h and its inverse by squaring and multiplying. */
 	for (int j = 5; j >= 0; j--) {
 		p *= p;
@@ -246,15 +250,15 @@ static void smb3_row(uint64_t *c0, uint64_t *c1, const int64_t m[2],
 			pi *= FP_CUB_I3;
 		}
 	}
-	smb3_divd(c0, c0, p, pi);
-	smb3_divd(c1, c1, p, pi);
+	smb3_divd(c0, c0, p, pi, len);
+	smb3_divd(c1, c1, p, pi, len);
 }
 
 /**
- * Precomputes the constants of smb3_modj(): -m^-1 mod 2^64, the powers
- * 2^(64 * (j + 1)) mod m and 2^(64 * FP_CUB_L) mod m, for m = FP_CUB_JM.
+ * Precomputes the constants of smb3_modj(): -m^-1 mod 2^64 and the powers
+ * 2^(64 * j) mod m for 0 < j <= FP_CUB_L, for m = FP_CUB_JM.
  *
- * @param[out] k			- the constants, FP_CUB_L + 2 of them.
+ * @param[out] k			- the constants, FP_CUB_L + 1 of them.
  */
 static void smb3_modj_pre(uint64_t *k) {
 	const uint64_t m = FP_CUB_JM;
@@ -272,23 +276,22 @@ static void smb3_modj_pre(uint64_t *k) {
 			c -= m & -(uint64_t)(c >= m);
 		}
 	}
-	/* The power for j = FP_CUB_L - 1 is 2^(64 * FP_CUB_L) mod m. */
-	k[FP_CUB_L + 1] = k[FP_CUB_L];
 }
 
 /**
- * Reduces an integer of FP_CUB_L limbs in two's complement modulo FP_CUB_JM,
- * with Montgomery reduction so that no division depends on the integer.
+ * Reduces an integer of len limbs in two's complement modulo FP_CUB_JM, with
+ * Montgomery reduction so that no division depends on the integer.
  *
  * @param[in] a				- the integer.
  * @param[in] k				- the constants from smb3_modj_pre().
+ * @param[in] len			- the number of limbs.
  * @return the residue.
  */
-static int64_t smb3_modj(const uint64_t *a, const uint64_t *k) {
+static inline int64_t smb3_modj(const uint64_t *a, const uint64_t *k, size_t len) {
 	const uint64_t m = FP_CUB_JM;
 	uint64_t r = 0, h, l, u, t, s;
 
-	for (size_t j = 0; j < FP_CUB_L; j++) {
+	for (size_t j = 0; j < len; j++) {
 		/* The reduction of a_j * 2^(64 * (j + 1)) is a_j * 2^(64 * j). */
 		smb3_mul64(&h, &l, a[j], k[j + 1]);
 		u = l * k[0];
@@ -302,10 +305,10 @@ static int64_t smb3_modj(const uint64_t *a, const uint64_t *k) {
 		r += t - m;
 		r += m & (uint64_t)((int64_t)r >> 63);
 	}
-	/* A negative integer is its limbs minus 2^(64 * FP_CUB_L), which leaves
-	 * r below 2m, reduced without a division, which 32-bit processors may
+	/* A negative integer is its limbs minus 2^(64 * len), which leaves r
+	 * below 2m, reduced without a division, which 32-bit processors may
 	 * compute in a time that depends on its operands. */
-	r += (m - k[FP_CUB_L + 1]) & -(a[FP_CUB_L - 1] >> 63);
+	r += (m - k[len]) & -(a[len - 1] >> 63);
 	r -= m;
 	r += m & (uint64_t)((int64_t)r >> 63);
 	return (int64_t)r;
@@ -559,6 +562,33 @@ static void smb3_jmat(int64_t r[4][2], const int64_t f[2], const int64_t g[2],
 }
 
 /**
+ * Computes one jump of n combined iterations on f = w[0] + w[1] * w and
+ * g = w[2] + w[3] * w, with the residues from their len limbs, into c.
+ *
+ * @param[out] c			- the new coordinates.
+ * @param[in] w				- the coordinates.
+ * @param[in] mk			- the constants from smb3_modj_pre().
+ * @param[out] m			- the rows of the matrix of the jump.
+ * @param[in,out] d			- the doubled delta.
+ * @param[in,out] e			- the exponent of the symbol.
+ * @param[in] n				- the number of iterations.
+ * @param[in] len			- the number of limbs.
+ */
+static inline void smb3_jump(uint64_t c[4][FP_CUB_L],
+		uint64_t w[4][FP_CUB_L], const uint64_t *mk, int64_t m[4][2],
+		int64_t *d, int64_t *e, int n, size_t len) {
+	int64_t rf[2], rg[2];
+
+	rf[0] = smb3_modj(w[0], mk, len);
+	rf[1] = smb3_modj(w[1], mk, len);
+	rg[0] = smb3_modj(w[2], mk, len);
+	rg[1] = smb3_modj(w[3], mk, len);
+	smb3_jmat(m, rf, rg, d, e, n);
+	smb3_row(c[0], c[1], m[0], m[1], n, w[0], w[1], w[2], w[3], len);
+	smb3_row(c[2], c[3], m[2], m[3], n, w[0], w[1], w[2], w[3], len);
+}
+
+/**
  * Computes the cubic residue symbol of a nonzero element for p = 1 mod 3 by
  * jumps of combined divsteps, either a number of them that only depends on
  * the size of p, or until g is 0. Jumps of one iteration are the divsteps
@@ -572,8 +602,9 @@ static void smb3_jmat(int64_t r[4][2], const int64_t f[2], const int64_t g[2],
 static int smb3_jumps(const fp_t a, int ct, int k) {
 	ctx_t *ctx = core_get();
 	dig_t g[RLC_FP_DIGS + 1], x[FP_CUB_DIGS], y[FP_CUB_DIGS];
-	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], mk[FP_CUB_L + 2], z;
-	int64_t rf[2], rg[2], m[4][2], d = 1, e = 0;
+	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], mk[FP_CUB_L + 1], z, s;
+	int64_t m[4][2], d = 1, e = 0;
+	size_t len = FP_CUB_L, t;
 
 	/* The stored digits of a, the integer a * R mod p in Montgomery form,
 	 * whose symbol is that of a times that of R. */
@@ -592,26 +623,50 @@ static int smb3_jumps(const fp_t a, int ct, int k) {
 		/* Without constant time, stop once g is 0. */
 		if (!ct) {
 			z = 0;
-			for (size_t j = 0; j < FP_CUB_L; j++) {
+			for (size_t j = 0; j < len; j++) {
 				z |= w[2][j] | w[3][j];
 			}
 			if (z == 0) {
 				break;
 			}
 		}
-		rf[0] = smb3_modj(w[0], mk);
-		rf[1] = smb3_modj(w[1], mk);
-		rg[0] = smb3_modj(w[2], mk);
-		rg[1] = smb3_modj(w[3], mk);
-		smb3_jmat(m, rf, rg, &d, &e, n);
 		/* f' = (A f + B g) / (1 - w)^(2n) and g' = (C f + D g) / (1 - w)^(2n),
-		 * as (1 - w)^2 = -3w. */
-		smb3_row(c[0], c[1], m[0], m[1], n, w[0], w[1], w[2], w[3]);
-		smb3_row(c[2], c[3], m[2], m[3], n, w[0], w[1], w[2], w[3]);
-		for (int k = 0; k < 4; k++) {
-			for (size_t j = 0; j < FP_CUB_L; j++) {
-				w[k][j] = c[k][j];
+		 * as (1 - w)^2 = -3w, with a fixed number of limbs in constant time
+		 * so that the compiler can specialize the loops for it. */
+		if (ct) {
+			smb3_jump(c, w, mk, m, &d, &e, n, FP_CUB_L);
+		} else {
+			smb3_jump(c, w, mk, m, &d, &e, n, len);
+		}
+		for (int j = 0; j < 4; j++) {
+			for (size_t l = 0; l < len; l++) {
+				w[j][l] = c[j][l];
 			}
+		}
+		/* Without constant time, keep only the limbs that f and g need. Their
+		 * absolute values do not grow, but a coordinate may double, so the
+		 * largest stays below 2^(64 * len - 3). */
+		if (!ct) {
+			t = 1;
+			for (int j = 0; j < 4; j++) {
+				s = -(w[j][len - 1] >> 63);
+				for (size_t l = len; l > 0; l--) {
+					if ((w[j][l - 1] ^ s) != 0) {
+						t = RLC_MAX(t, l + (((w[j][l - 1] ^ s) >> 61) != 0));
+						break;
+					}
+				}
+			}
+			t = RLC_MIN(t, (size_t)FP_CUB_L);
+			/* A coordinate that doubled may need a limb back, which must be
+			 * the sign extension and not what was left there before. */
+			for (int j = 0; j < 4; j++) {
+				s = -(w[j][len - 1] >> 63);
+				for (size_t l = len; l < t; l++) {
+					w[j][l] = s;
+				}
+			}
+			len = t;
 		}
 	}
 	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
