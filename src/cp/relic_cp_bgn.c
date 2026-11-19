@@ -144,7 +144,7 @@ int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv) {
 
 		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g1_mul(t, in[0], prv->x[0]);
+		g1_mul_sec(t, in[0], prv->x[0]);
 		g1_sub(t, t, in[1]);
 		g1_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
@@ -249,7 +249,7 @@ int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv) {
 
 		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g2_mul(t, in[0], prv->x[1]);
+		g2_mul_sec(t, in[0], prv->x[1]);
 		g2_sub(t, t, in[1]);
 		g2_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
@@ -333,11 +333,11 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 
 		/* For in[2i + j] = e(c_i, d_j), compute T = e(x_0 c_0 - c_1,
 		 * x_1 d_0 - d_1) = e(G, H)^(m(x_0 y_0 - z_0)(x_1 y_1 - z_1)). */
-		gt_exp(t[0], in[0], prv->x[0]);
-		gt_exp(t[0], t[0], prv->x[1]);
+		gt_exp_sec(t[0], in[0], prv->x[0]);
+		gt_exp_sec(t[0], t[0], prv->x[1]);
 
-		gt_exp(t[1], in[1], prv->x[0]);
-		gt_exp(t[2], in[2], prv->x[1]);
+		gt_exp_sec(t[1], in[1], prv->x[0]);
+		gt_exp_sec(t[2], in[2], prv->x[1]);
 		gt_mul(t[1], t[1], t[2]);
 		gt_inv(t[1], t[1]);
 

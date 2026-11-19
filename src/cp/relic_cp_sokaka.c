@@ -60,12 +60,12 @@ int cp_sokaka_gen(bn_t master) {
 int cp_sokaka_gen_prv(sokaka_t k, const char *id, bn_t master) {
 	if (pc_map_is_type1()) {
 		g1_map(k->s1, (uint8_t *)id, strlen(id));
-		g1_mul(k->s1, k->s1, master);
+		g1_mul_sec(k->s1, k->s1, master);
 	} else {
 		g1_map(k->s1, (uint8_t *)id, strlen(id));
-		g1_mul(k->s1, k->s1, master);
+		g1_mul_sec(k->s1, k->s1, master);
 		g2_map(k->s2, (uint8_t *)id, strlen(id));
-		g2_mul(k->s2, k->s2, master);
+		g2_mul_sec(k->s2, k->s2, master);
 	}
 	return RLC_OK;
 }

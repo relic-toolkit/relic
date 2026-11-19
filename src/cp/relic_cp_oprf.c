@@ -54,7 +54,7 @@ int cp_oprf_ask(ec_t b, bn_t x, const ec_t a) {
 		do {
 			bn_rand_mod(x, n);
 		} while (bn_is_zero(x));
-		ec_mul(b, a, x);
+		ec_mul_sec(b, a, x);
 		/* Blind the secret, as inversion takes variable time. */
 		bn_rand_mod(r, n);
 		bn_mul(x, x, r);
@@ -79,7 +79,7 @@ int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b) {
 		return RLC_ERR;
 	}
 
-	ec_mul(c, b, alpha);
+	ec_mul_sec(c, b, alpha);
 	return RLC_OK;
 }
 
@@ -89,6 +89,6 @@ int cp_oprf_res(ec_t r, const bn_t x, const ec_t c) {
 		return RLC_ERR;
 	}
 
-	ec_mul(r, c, x);
+	ec_mul_sec(r, c, x);
 	return RLC_OK;
 }

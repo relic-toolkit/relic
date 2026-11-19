@@ -74,7 +74,7 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		/* Compute the linkability tag tau = [sk]H(m). */
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
-		ec_mul(p->tau, g[1], sk);
+		ec_mul_sec(p->tau, g[1], sk);
 
 		/* Prove the relation h = [x]G or (pk = [x]G and tau = [x]H(m)),
 		 * signing the message with a fresh nonce shared by the signature. */
