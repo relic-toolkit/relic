@@ -59,6 +59,52 @@
 #define FP_CUB_JM		((uint64_t)1350851717672992089)
 
 /**
+ * Constants of the reduction modulo FP_CUB_JM: -FP_CUB_JM^-1 modulo 2^64, and
+ * the powers 2^(64 * i) modulo FP_CUB_JM for 0 <= i <= 33, which are enough for
+ * the limbs of primes of up to 4096 bits.
+ */
+#define FP_CUB_JMI		((uint64_t)0xf5942fe5e5698517)
+#if FP_PRIME > 4096
+#error "The powers modulo FP_CUB_JM only cover primes of up to 4096 bits."
+#endif
+static const uint64_t smb3_pow[34] = {
+	(uint64_t)1,
+	(uint64_t)885671743960654459,
+	(uint64_t)792073204337213275,
+	(uint64_t)586490958008935255,
+	(uint64_t)1295230848450375760,
+	(uint64_t)710001608724358780,
+	(uint64_t)635941805576807998,
+	(uint64_t)533011610587339816,
+	(uint64_t)762588996820054978,
+	(uint64_t)131445467812113139,
+	(uint64_t)1240965494095201864,
+	(uint64_t)792337006269962041,
+	(uint64_t)454462252115244490,
+	(uint64_t)1185228923154704143,
+	(uint64_t)205684517671594132,
+	(uint64_t)1340767436457147481,
+	(uint64_t)326157572186370961,
+	(uint64_t)1029922088796227299,
+	(uint64_t)631889733757841308,
+	(uint64_t)1075631505205135714,
+	(uint64_t)684124450186419301,
+	(uint64_t)749433300652420678,
+	(uint64_t)212207963177166991,
+	(uint64_t)747655825117739368,
+	(uint64_t)427747832907210748,
+	(uint64_t)1082644498137464449,
+	(uint64_t)930089920312740370,
+	(uint64_t)467668154078311051,
+	(uint64_t)409686187828695001,
+	(uint64_t)1010659045755081532,
+	(uint64_t)1032617185993781434,
+	(uint64_t)1229910867075030469,
+	(uint64_t)1189294920532567840,
+	(uint64_t)589500091577369611
+};
+
+/**
  * Number of combined iterations of the constant-time symbol. A convex-hull
  * bound of the iterations, computed as in the safegcd-bounds analysis of the
  * divsteps up to 800 iterations, gives the smallest B that reaches g = 0
@@ -102,11 +148,7 @@
  */
 static void smb3_mul64(uint64_t *h, uint64_t *l, uint64_t a, uint64_t b) {
 #if RLC_DIG == 64
-	dig_t hd, ld;
-
-	RLC_MUL_DIG(hd, ld, (dig_t)a, (dig_t)b);
-	*h = hd;
-	*l = ld;
+	RLC_MUL_DIG(*h, *l, a, b);
 #else
 	uint64_t a0 = (uint32_t)a, a1 = a >> 32, b0 = (uint32_t)b, b1 = b >> 32;
 	uint64_t p00 = a0 * b0, p01 = a0 * b1, p10 = a1 * b0, p11 = a1 * b1;
@@ -137,8 +179,11 @@ static void smb3_pack(uint64_t *c, const dig_t *a, size_t n) {
 
 /**
  * Divides an integer of len limbs in two's complement by an odd 64-bit
- * integer, when the division is exact, by multiplying the limbs by its inverse
- * modulo 2^64, which is also the quotient modulo 2^(64 * len).
+ * integer, when the division is exact, limb by limb from the lowest one: each
+ * limb of the quotient is the current limb times the inverse modulo 2^64, and
+ * the high limb of its product with the divisor is the borrow into the next.
+ * This gives the quotient modulo 2^(64 * len) with two products per limb and
+ * no division.
  *
  * @param[out] c			- the quotient.
  * @param[in] a				- the integer, a multiple of d.
@@ -194,6 +239,18 @@ static inline void smb3_lin(uint64_t *c, const uint64_t *a[4],
 		}
 		c[j] = d;
 	}
+}
+
+/**
+ * Multiplies two Eisenstein integers with signed coordinates.
+ *
+ * @param[out] c			- the product.
+ * @param[in] a				- the first factor.
+ * @param[in] b				- the second factor.
+ */
+static void smb3_emul(int64_t c[2], const int64_t a[2], const int64_t b[2]) {
+	c[0] = a[0] * b[0] - a[1] * b[1];
+	c[1] = a[0] * b[1] + a[1] * b[0] - a[1] * b[1];
 }
 
 /**
@@ -255,47 +312,21 @@ static inline void smb3_row(uint64_t *c0, uint64_t *c1, const int64_t m[2],
 }
 
 /**
- * Precomputes the constants of smb3_modj(): -m^-1 mod 2^64 and the powers
- * 2^(64 * j) mod m for 0 < j <= FP_CUB_L, for m = FP_CUB_JM.
- *
- * @param[out] k			- the constants, FP_CUB_L + 1 of them.
- */
-static void smb3_modj_pre(uint64_t *k) {
-	const uint64_t m = FP_CUB_JM;
-	uint64_t mi = m, c = (UINT64_MAX % m + 1) % m;
-
-	for (int j = 0; j < 6; j++) {
-		mi *= 2 - m * mi;
-	}
-	k[0] = -mi;
-	for (size_t j = 0; j < FP_CUB_L; j++) {
-		k[j + 1] = c;
-		/* The next power, by doubling modulo m < 2^61. */
-		for (int i = 0; i < 64; i++) {
-			c <<= 1;
-			c -= m & -(uint64_t)(c >= m);
-		}
-	}
-}
-
-/**
  * Reduces an integer of len limbs in two's complement modulo FP_CUB_JM, with
  * Montgomery reduction so that no division depends on the integer.
  *
  * @param[in] a				- the integer.
- * @param[in] k				- the constants from smb3_modj_pre().
  * @param[in] len			- the number of limbs.
  * @return the residue.
  */
-static inline int64_t smb3_modj(const uint64_t *a, const uint64_t *k,
-		size_t len) {
+static inline int64_t smb3_modj(const uint64_t *a, size_t len) {
 	const uint64_t m = FP_CUB_JM;
 	uint64_t r = 0, h, l, u, t, s;
 
 	for (size_t j = 0; j < len; j++) {
 		/* The reduction of a_j * 2^(64 * (j + 1)) is a_j * 2^(64 * j). */
-		smb3_mul64(&h, &l, a[j], k[j + 1]);
-		u = l * k[0];
+		smb3_mul64(&h, &l, a[j], smb3_pow[j + 1]);
+		u = l * FP_CUB_JMI;
 		smb3_mul64(&t, &s, u, m);
 		(void)s;
 		/* Both t and r stay at most m, with the sign of each difference as
@@ -309,83 +340,30 @@ static inline int64_t smb3_modj(const uint64_t *a, const uint64_t *k,
 	/* A negative integer is its limbs minus 2^(64 * len), which leaves r
 	 * below 2m, reduced without a division, which 32-bit processors may
 	 * compute in a time that depends on its operands. */
-	r += (m - k[len]) & -(a[len - 1] >> 63);
+	r += (m - smb3_pow[len]) & -(a[len - 1] >> 63);
 	r -= m;
 	r += m & (uint64_t)((int64_t)r >> 63);
 	return (int64_t)r;
 }
 
 /**
- * Computes alpha = a - q * pi for the primary prime pi of norm p and q the
- * rounded a / pi, which has norm below p, with the scaled inverse of pi and
- * operations that do not depend on a.
+ * Reduces an integer of len limbs in two's complement modulo 9, in variable
+ * time, with 2^64 = 7 mod 9.
  *
- * @param[out] x			- the first coordinate of alpha.
- * @param[out] y			- the second coordinate of alpha.
- * @param[in] g				- the integer a, in RLC_FP_DIGS + 1 digits.
+ * @param[in] a				- the integer.
+ * @param[in] len			- the number of limbs.
+ * @return the residue.
  */
-static void smb3_first(dig_t *x, dig_t *y, const dig_t *g) {
-	ctx_t *ctx = core_get();
-	dig_t q[2][FP_CUB_DIGS], h[2 * (RLC_FP_DIGS + 1)], z[FP_CUB_DIGS];
-	dig_t t[FP_CUB_DIGS], c;
-	const dig_t *u = ctx->cub_pi[0], *v = ctx->cub_pi[1];
+static int smb3_mod9(const uint64_t *a, size_t len) {
+	unsigned r = 0, w = 1;
 
-	dv_zero(z, FP_CUB_DIGS);
-	for (int j = 0; j < 2; j++) {
-		bn_muln_low(h, g, ctx->cub_inv[j], RLC_FP_DIGS + 1);
-		dv_copy(q[j], h + RLC_FP_DIGS + 1, FP_CUB_DIGS);
-		/* Round with the top bit of the fraction, propagating the carry
-		 * through all digits so that the time does not depend on it. */
-		c = h[RLC_FP_DIGS] >> (RLC_DIG - 1);
-		for (size_t i = 0; i < FP_CUB_DIGS; i++) {
-			q[j][i] += c;
-			c = (q[j][i] < c);
-		}
-		/* The signs of the inverse are public. */
-		if (ctx->cub_sgn[j] == RLC_NEG) {
-			bn_subn_low(q[j], z, q[j], FP_CUB_DIGS);
-		}
+	for (size_t j = 0; j < len; j++) {
+		r += (unsigned)(a[j] % 9) * w;
+		w = w * 7 % 9;
 	}
-	/* q * pi = (q0 * u - q1 * v) + (q0 * v + q1 * (u - v)) * w. */
-	dv_copy(x, g, FP_CUB_DIGS);
-	dv_zero(y, FP_CUB_DIGS);
-	bn_muln_low(h, q[0], u, FP_CUB_DIGS);
-	bn_subn_low(x, x, h, FP_CUB_DIGS);
-	bn_muln_low(h, q[1], v, FP_CUB_DIGS);
-	bn_addn_low(x, x, h, FP_CUB_DIGS);
-	bn_muln_low(h, q[0], v, FP_CUB_DIGS);
-	bn_subn_low(y, y, h, FP_CUB_DIGS);
-	bn_subn_low(t, u, v, FP_CUB_DIGS);
-	bn_muln_low(h, q[1], t, FP_CUB_DIGS);
-	bn_subn_low(y, y, h, FP_CUB_DIGS);
-}
-
-/**
- * Selects between two signed integers without branches.
- *
- * @param[in] a				- the integer for a zero mask.
- * @param[in] b				- the integer for a full mask.
- * @param[in] m				- the mask, 0 or -1.
- * @return the selected integer.
- */
-static int64_t smb3_sel(int64_t a, int64_t b, int64_t m) {
-	return a ^ ((a ^ b) & m);
-}
-
-/**
- * Multiplies the Eisenstein integer x + y * w by a + b * w, for a and b in
- * {-1, 0, 1}, which applies a unit without selections.
- *
- * @param[in,out] x			- the first coordinate.
- * @param[in,out] y			- the second coordinate.
- * @param[in] a				- the first coordinate of the unit.
- * @param[in] b				- the second coordinate of the unit.
- */
-static void smb3_unit(int64_t *x, int64_t *y, int64_t a, int64_t b) {
-	int64_t x0 = *x, y0 = *y;
-
-	*x = a * x0 - b * y0;
-	*y = a * y0 + b * (x0 - y0);
+	/* A negative integer is its limbs minus 2^(64 * len) = 7^len mod 9. */
+	r += (9 - w) * (unsigned)(a[len - 1] >> 63);
+	return (int)(r % 9);
 }
 
 /**
@@ -459,11 +437,13 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		ua = ((tab >> 3) & 3) - 1;
 		ub = (tab >> 5) - 1;
 		sw = ~dv & -(int64_t)(dl > 0);
-		/* u * g, and u * (C, D) on the packed row. */
-		smb3_unit(&g0, &g1, ua, ub);
-		tx = qx;
-		ty = qy;
-		smb3_unit(&tx, &ty, ua, ub);
+		/* u * g = (a x - b y) + (a y + b (x - y)) w for g = x + y w and
+		 * u = a + b w, and u * (C, D) on the packed row. */
+		tx = ua * g0 - ub * g1;
+		g1 = ua * g1 + ub * (g0 - g1);
+		g0 = tx;
+		tx = ua * qx - ub * qy;
+		ty = ua * qy + ub * (qx - qy);
 		mu = smb3_c3((int64_t)((uint64_t)(g0 + 1) * i3));
 		ku = smb3_c3((int64_t)((uint64_t)g1 * i3));
 		/* The exponent, modulo 3: 2m for a division, or j(m + k) for the
@@ -482,8 +462,8 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		f1 += (g1 - f1) & sw;
 		m += (mu - m) & sw;
 		k += (ku - k) & sw;
-		g0 = smb3_sel(h0, q0, dv);
-		g1 = smb3_sel(h1, q1, dv);
+		g0 = h0 ^ ((h0 ^ q0) & dv);
+		g1 = h1 ^ ((h1 ^ q1) & dv);
 		/* The rows, over a denominator that grows by (1 - w)^2 = -3w each
 		 * iteration: u * (C, D) - (A, B) is the new row of g, and (A, B)
 		 * plus it that of f after a swap, times (1 - w)^2 = (3y, 3y - 3x);
@@ -495,8 +475,8 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 		tx = 3 * py;
 		py = 3 * (py - px);
 		px = tx;
-		tx = smb3_sel(ux, qx + qy, dv);
-		qy = smb3_sel(uy, 2 * qy - qx, dv);
+		tx = ux ^ ((ux ^ (qx + qy)) & dv);
+		qy = uy ^ ((uy ^ (2 * qy - qx)) & dv);
 		qx = tx;
 	}
 	f[0] = f0;
@@ -514,41 +494,33 @@ static void smb3_jhalf(int64_t r[4][2], int64_t f[2], int64_t g[2],
 }
 
 /**
- * Multiplies two Eisenstein integers with signed coordinates.
+ * Computes one jump of n <= FP_CUB_JK combined iterations on
+ * f = w[0] + w[1] * w and g = w[2] + w[3] * w. The iterations run on the
+ * residues of f and g modulo FP_CUB_JM in two halves, in constant time, and
+ * give the rows (A, B) and (C, D) over Z[w] with
+ * (-3w)^n * (f', g') = (A f + B g, C f + D g), as the product of those of the
+ * halves, which are then applied to f and g in len limbs.
  *
- * @param[out] c			- the product.
- * @param[in] a				- the first factor.
- * @param[in] b				- the second factor.
- */
-static void smb3_emul(int64_t c[2], const int64_t a[2], const int64_t b[2]) {
-	c[0] = a[0] * b[0] - a[1] * b[1];
-	c[1] = a[0] * b[1] + a[1] * b[0] - a[1] * b[1];
-}
-
-/**
- * Runs len <= FP_CUB_JK combined iterations on residues of f and g modulo
- * FP_CUB_JM, in constant time, and returns their matrix: the rows (A, B) and
- * (C, D) over Z[w] with (-3w)^len * (f', g') = (A f + B g, C f + D g), as the
- * product of those of two halves.
- *
- * @param[out] r			- the rows A, B, C and D, as coordinate pairs.
- * @param[in] f				- the residues of f.
- * @param[in] g				- the residues of g.
+ * @param[out] c			- the coordinates of f' and g'.
+ * @param[in] w				- the coordinates of f and g.
  * @param[in,out] d			- the doubled delta.
  * @param[in,out] e			- the exponent of the symbol.
- * @param[in] len			- the number of iterations.
+ * @param[in] n				- the number of iterations.
+ * @param[in] len			- the number of limbs.
  */
-static void smb3_jmat(int64_t r[4][2], const int64_t f[2], const int64_t g[2],
-		int64_t *d, int64_t *e, int len) {
-	const uint64_t i3 = FP_CUB_I3;
-	int64_t ff[2] = { f[0], f[1] }, gg[2] = { g[0], g[1] }, s[4][2], t[4][2];
-	int64_t u[2], v[2], mk[2];
+static inline void smb3_jump(uint64_t c[4][FP_CUB_L],
+		uint64_t w[4][FP_CUB_L], int64_t *d, int64_t *e, int n, size_t len) {
+	int64_t f[2], g[2], mk[2], s[4][2], t[4][2], r[4][2], u[2], v[2];
 
+	f[0] = smb3_modj(w[0], len);
+	f[1] = smb3_modj(w[1], len);
+	g[0] = smb3_modj(w[2], len);
+	g[1] = smb3_modj(w[3], len);
 	/* For f = (3m - 1) + 3k * w, m and k modulo 3. */
-	mk[0] = smb3_c3((int64_t)((uint64_t)(ff[0] + 1) * i3));
-	mk[1] = smb3_c3((int64_t)((uint64_t)ff[1] * i3));
-	smb3_jhalf(s, ff, gg, mk, d, e, len / 2);
-	smb3_jhalf(t, ff, gg, mk, d, e, len - len / 2);
+	mk[0] = smb3_c3((int64_t)((uint64_t)(f[0] + 1) * FP_CUB_I3));
+	mk[1] = smb3_c3((int64_t)((uint64_t)f[1] * FP_CUB_I3));
+	smb3_jhalf(s, f, g, mk, d, e, n / 2);
+	smb3_jhalf(t, f, g, mk, d, e, n - n / 2);
 	/* The second matrix times the first. */
 	for (int i = 0; i < 2; i++) {
 		smb3_emul(u, t[2 * i], s[0]);
@@ -560,53 +532,60 @@ static void smb3_jmat(int64_t r[4][2], const int64_t f[2], const int64_t g[2],
 		r[2 * i + 1][0] = u[0] + v[0];
 		r[2 * i + 1][1] = u[1] + v[1];
 	}
-}
-
-/**
- * Computes one jump of n combined iterations on f = w[0] + w[1] * w and
- * g = w[2] + w[3] * w, with the residues from their len limbs, into c.
- *
- * @param[out] c			- the new coordinates.
- * @param[in] w				- the coordinates.
- * @param[in] mk			- the constants from smb3_modj_pre().
- * @param[out] m			- the rows of the matrix of the jump.
- * @param[in,out] d			- the doubled delta.
- * @param[in,out] e			- the exponent of the symbol.
- * @param[in] n				- the number of iterations.
- * @param[in] len			- the number of limbs.
- */
-static inline void smb3_jump(uint64_t c[4][FP_CUB_L],
-		uint64_t w[4][FP_CUB_L], const uint64_t *mk, int64_t m[4][2],
-		int64_t *d, int64_t *e, int n, size_t len) {
-	int64_t rf[2], rg[2];
-
-	rf[0] = smb3_modj(w[0], mk, len);
-	rf[1] = smb3_modj(w[1], mk, len);
-	rg[0] = smb3_modj(w[2], mk, len);
-	rg[1] = smb3_modj(w[3], mk, len);
-	smb3_jmat(m, rf, rg, d, e, n);
-	smb3_row(c[0], c[1], m[0], m[1], n, w[0], w[1], w[2], w[3], len);
-	smb3_row(c[2], c[3], m[2], m[3], n, w[0], w[1], w[2], w[3], len);
+	smb3_row(c[0], c[1], r[0], r[1], n, w[0], w[1], w[2], w[3], len);
+	smb3_row(c[2], c[3], r[2], r[3], n, w[0], w[1], w[2], w[3], len);
 }
 
 /**
  * Starts the cubic residue symbol of a nonzero element for p = 1 mod 3 with
- * f = pi and g = a - q * pi, both of norm about p, in 64-bit limbs.
+ * f = pi and g = a - q * pi, for the primary prime pi of norm p and q the
+ * rounded a / pi, so that g has norm below p. The quotient comes from the
+ * scaled inverse of pi, with operations that do not depend on a.
  *
- * @param[out] w			- the coordinates of f and g.
+ * @param[out] w			- the coordinates of f and g, in 64-bit limbs.
  * @param[in] a				- the prime field element.
  */
 static void smb3_init(uint64_t w[4][FP_CUB_L], const fp_t a) {
 	ctx_t *ctx = core_get();
 	dig_t g[RLC_FP_DIGS + 1], x[FP_CUB_DIGS], y[FP_CUB_DIGS];
+	dig_t q[2][FP_CUB_DIGS], h[2 * (RLC_FP_DIGS + 1)], z[FP_CUB_DIGS];
+	dig_t t[FP_CUB_DIGS], c;
+	const dig_t *u = ctx->cub_pi[0], *v = ctx->cub_pi[1];
 
 	/* The stored digits of a, the integer a * R mod p in Montgomery form,
 	 * whose symbol is that of a times that of R. */
 	dv_copy(g, a, RLC_FP_DIGS);
 	g[RLC_FP_DIGS] = 0;
-	smb3_first(x, y, g);
-	smb3_pack(w[0], ctx->cub_pi[0], RLC_FP_DIGS + 1);
-	smb3_pack(w[1], ctx->cub_pi[1], RLC_FP_DIGS + 1);
+	dv_zero(z, FP_CUB_DIGS);
+	for (int j = 0; j < 2; j++) {
+		bn_muln_low(h, g, ctx->cub_inv[j], RLC_FP_DIGS + 1);
+		dv_copy(q[j], h + RLC_FP_DIGS + 1, FP_CUB_DIGS);
+		/* Round with the top bit of the fraction, propagating the carry
+		 * through all digits so that the time does not depend on it. */
+		c = h[RLC_FP_DIGS] >> (RLC_DIG - 1);
+		for (size_t i = 0; i < FP_CUB_DIGS; i++) {
+			q[j][i] += c;
+			c = (q[j][i] < c);
+		}
+		/* The signs of the inverse are public. */
+		if (ctx->cub_sgn[j] == RLC_NEG) {
+			bn_subn_low(q[j], z, q[j], FP_CUB_DIGS);
+		}
+	}
+	/* q * pi = (q0 * u - q1 * v) + (q0 * v + q1 * (u - v)) * w. */
+	dv_copy(x, g, FP_CUB_DIGS);
+	dv_zero(y, FP_CUB_DIGS);
+	bn_muln_low(h, q[0], u, FP_CUB_DIGS);
+	bn_subn_low(x, x, h, FP_CUB_DIGS);
+	bn_muln_low(h, q[1], v, FP_CUB_DIGS);
+	bn_addn_low(x, x, h, FP_CUB_DIGS);
+	bn_muln_low(h, q[0], v, FP_CUB_DIGS);
+	bn_subn_low(y, y, h, FP_CUB_DIGS);
+	bn_subn_low(t, u, v, FP_CUB_DIGS);
+	bn_muln_low(h, q[1], t, FP_CUB_DIGS);
+	bn_subn_low(y, y, h, FP_CUB_DIGS);
+	smb3_pack(w[0], u, RLC_FP_DIGS + 1);
+	smb3_pack(w[1], v, RLC_FP_DIGS + 1);
 	smb3_pack(w[2], x, FP_CUB_DIGS);
 	smb3_pack(w[3], y, FP_CUB_DIGS);
 }
@@ -645,24 +624,34 @@ static size_t smb3_shrink(uint64_t w[4][FP_CUB_L], size_t len) {
 }
 
 /**
- * Computes the cubic residue symbol of a nonzero element for p = 1 mod 3 by
- * jumps of combined divsteps, either a number of them that only depends on
- * the size of p, or until g is 0. Jumps of one iteration are the divsteps
- * themselves.
+ * Computes the cubic residue symbol by jumps of combined divsteps, either a
+ * number of them that only depends on the size of p, or until g is 0, with
+ * -1 for zero and 0 for p = 2 mod 3, where every element is a cube. Jumps of
+ * one iteration are the divsteps themselves.
  *
  * @param[in] a				- the prime field element.
  * @param[in] ct			- the flag to run in constant time.
  * @param[in] k				- the largest number of iterations per jump.
- * @return k in {0, 1, 2}.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
-static int smb3_jumps(const fp_t a, int ct, int k) {
-	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], mk[FP_CUB_L + 1], z;
-	int64_t m[4][2], d = 1, e = 0;
+static int smb3_symbol(const fp_t a, int ct, int k) {
+	uint64_t w[4][FP_CUB_L], c[4][FP_CUB_L], z = 0;
+	int64_t d = 1, e = 0;
 	size_t len = FP_CUB_L;
+	int zero;
+
+	for (size_t j = 0; j < RLC_FP_DIGS; j++) {
+		z |= a[j];
+	}
+	zero = (z == 0);
+	if (!ct && zero) {
+		return -1;
+	}
+	if (fp_prime_get_mod18() % 3 == 2) {
+		return -zero;
+	}
 
 	smb3_init(w, a);
-	smb3_modj_pre(mk);
-
 	for (int i = 0, n; i < FP_CUB_ITER; i += n) {
 		n = RLC_MIN(k, FP_CUB_ITER - i);
 		/* Without constant time, stop once g is 0. */
@@ -675,13 +664,12 @@ static int smb3_jumps(const fp_t a, int ct, int k) {
 				break;
 			}
 		}
-		/* f' = (A f + B g) / (1 - w)^(2n) and g' = (C f + D g) / (1 - w)^(2n),
-		 * as (1 - w)^2 = -3w, with a fixed number of limbs in constant time
-		 * so that the compiler can specialize the loops for it. */
+		/* A fixed number of limbs in constant time, so that the compiler can
+		 * specialize the loops for it. */
 		if (ct) {
-			smb3_jump(c, w, mk, m, &d, &e, n, FP_CUB_L);
+			smb3_jump(c, w, &d, &e, n, FP_CUB_L);
 		} else {
-			smb3_jump(c, w, mk, m, &d, &e, n, len);
+			smb3_jump(c, w, &d, &e, n, len);
 		}
 		for (int j = 0; j < 4; j++) {
 			for (size_t l = 0; l < len; l++) {
@@ -694,72 +682,8 @@ static int smb3_jumps(const fp_t a, int ct, int k) {
 		}
 	}
 	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
-	 * of R in Montgomery form. */
-	return (int)((e + 3 - core_get()->cub_r) % 3);
-}
-
-/**
- * Reduces an integer of len limbs in two's complement modulo 9, in variable
- * time, with 2^64 = 7 mod 9.
- *
- * @param[in] a				- the integer.
- * @param[in] len			- the number of limbs.
- * @return the residue.
- */
-static int smb3_mod9(const uint64_t *a, size_t len) {
-	unsigned r = 0, w = 1;
-
-	for (size_t j = 0; j < len; j++) {
-		r += (unsigned)(a[j] % 9) * w;
-		w = w * 7 % 9;
-	}
-	/* A negative integer is its limbs minus 2^(64 * len) = 7^len mod 9. */
-	r += (9 - w) * (unsigned)(a[len - 1] >> 63);
-	return (int)(r % 9);
-}
-
-/**
- * Returns the bits of an integer of len limbs in two's complement from the
- * given position, as a signed integer that fits in 64 bits.
- *
- * @param[in] a				- the integer.
- * @param[in] len			- the number of limbs.
- * @param[in] sh			- the position.
- * @return the shifted integer.
- */
-static int64_t smb3_top(const uint64_t *a, size_t len, size_t sh) {
-	size_t q = sh / 64, r = sh % 64;
-	uint64_t h = (q + 1 < len ? a[q + 1] : -(a[len - 1] >> 63));
-
-	if (r == 0) {
-		return (int64_t)a[q];
-	}
-	return (int64_t)((a[q] >> r) | (h << (64 - r)));
-}
-
-/**
- * Computes the cubic residue symbol with the given jumps, with -1 for zero and
- * 0 for p = 2 mod 3, where every element is a cube.
- *
- * @param[in] a				- the prime field element.
- * @param[in] ct			- the flag to run in constant time.
- * @param[in] k				- the largest number of iterations per jump.
- * @return k in {0, 1, 2}, or -1 if the element is zero.
- */
-static int smb3_symbol(const fp_t a, int ct, int k) {
-	dig_t z = 0;
-
-	for (size_t j = 0; j < RLC_FP_DIGS; j++) {
-		z |= a[j];
-	}
-	if (!ct && z == 0) {
-		return -1;
-	}
-	if (fp_prime_get_mod18() % 3 == 2) {
-		return -(int)(z == 0);
-	}
-	/* Zero has no symbol. */
-	return smb3_jumps(a, ct, k) | -(int)(z == 0);
+	 * of R in Montgomery form; zero has no symbol. */
+	return (int)((e + 3 - core_get()->cub_r) % 3) | -zero;
 }
 
 /*============================================================================*/
@@ -856,8 +780,12 @@ int fp_smb3_binar(const fp_t a) {
 				b++;
 			}
 			b = (b > 29 ? b - 29 : 0);
+			/* The bits from position b, with the sign above the top limb, and
+			 * a shift in two steps so that it is not by 64 bits. */
 			for (int i = 0; i < 4; i++) {
-				x[i] = smb3_top(w[i], len, b);
+				z = (b / 64 + 1 < len ? w[i][b / 64 + 1] : -(w[i][len - 1] >> 63));
+				x[i] = (int64_t)((w[i][b / 64] >> (b % 64)) |
+						((z << 1) << (63 - b % 64)));
 			}
 			nf = x[0] * x[0] - x[0] * x[1] + x[1] * x[1];
 			ng = x[2] * x[2] - x[2] * x[3] + x[3] * x[3];
