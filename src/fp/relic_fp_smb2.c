@@ -311,6 +311,82 @@ static void smb2_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	g[i] = (dis_t)g0 >> s;
 }
 
+/**
+ * Computes the Legendre symbol by jumps of division steps, either a number of
+ * them that only depends on the size of p, or until g is 0.
+ *
+ * @param[in] a				- the prime field element.
+ * @param[in] ct			- the flag to run in constant time.
+ * @return the result.
+ */
+static int smb2_jumps(const fp_t a, int ct) {
+	dis_t m[4];
+	dv_t f, g;
+	dig_t j = 0, k, z = 0;
+	int r = 0, s;
+#if RLC_WSIZE == 8
+	int zeta = -1;
+#else
+	dis_t zeta = -1;
+#endif
+
+	dv_null_all(f, g);
+
+	RLC_TRY {
+		dv_new_all(f, g);
+
+		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+		f[RLC_FP_DIGS] = 0;
+		dv_zero(g, RLC_FP_DIGS + 1);
+
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
+		fp_copy(g, a);
+
+		/* In constant time, the number of steps only depends on the size of
+		 * the prime. */
+		for (int i = 0; i < JMPDS_ITERS; i += s) {
+			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
+			/* Without constant time, stop once g is 0, after which f and the
+			 * count no longer change. */
+			if (!ct) {
+				k = 0;
+				for (size_t l = 0; l <= RLC_FP_DIGS; l++) {
+					k |= g[l];
+				}
+				if (k == 0) {
+					break;
+				}
+			}
+			zeta = smb2_steps(m, &k, zeta, f[0], g[0], s);
+			smb2_apply(f, g, m, s);
+			/* Count the sign changes of f, whose parity is its sign. */
+			j = (j + k) % 4;
+			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;
+		}
+		/* Each flip of the symbol added two to the count. */
+		j = (j + (j & 1)) % 4;
+
+		/* For a nonzero, f is now 1 or -1 and the symbol is 1 - j, and for
+		 * zero it is 0, from the nonzero bit of a, without comparisons that
+		 * compilers may turn into branches. */
+		for (size_t l = 0; l < RLC_FP_DIGS; l++) {
+			z |= a[l];
+		}
+		z = (z | -z) >> (RLC_DIG - 1);
+		r = (int)(dis_t)((1 - j) & -z);
+	}
+	RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		dv_free_all(f, g);
+	}
+
+	return r;
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -507,59 +583,11 @@ int fp_smb2_divst(const fp_t a) {
 }
 
 int fp_smb2_jmpds(const fp_t a) {
-	dis_t m[4];
-	dv_t f, g;
-	dig_t j = 0, k, z = 0;
-	int r = 0, s;
-#if RLC_WSIZE == 8
-	int zeta = -1;
-#else
-	dis_t zeta = -1;
-#endif
+	return smb2_jumps(a, 1);
+}
 
-	dv_null_all(f, g);
-
-	RLC_TRY {
-		dv_new_all(f, g);
-
-		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-		f[RLC_FP_DIGS] = 0;
-		dv_zero(g, RLC_FP_DIGS + 1);
-
-		/* The stored digits of a, which are a * R mod p in Montgomery form,
-		 * have the same symbol, as R is an even power of 2 and so a square. */
-		fp_copy(g, a);
-
-		/* The number of steps only depends on the prime size. */
-		for (int i = 0; i < JMPDS_ITERS; i += s) {
-			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
-			zeta = smb2_steps(m, &k, zeta, f[0], g[0], s);
-			smb2_apply(f, g, m, s);
-			/* Count the sign changes of f, whose parity is its sign. */
-			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;
-		}
-		/* Each flip of the symbol added two to the count. */
-		j = (j + (j & 1)) % 4;
-
-		/* For a nonzero, f is now 1 or -1 and the symbol is 1 - j, and for
-		 * zero it is 0, from the nonzero bit of a, without comparisons that
-		 * compilers may turn into branches. */
-		for (size_t l = 0; l < RLC_FP_DIGS; l++) {
-			z |= a[l];
-		}
-		z = (z | -z) >> (RLC_DIG - 1);
-		r = (int)(dis_t)((1 - j) & -z);
-	}
-	RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv_free_all(f, g);
-	}
-
-	return r;
+int fp_smb2_jmpvt(const fp_t a) {
+	return smb2_jumps(a, 0);
 }
 
 #if FP_SMB == FP_LOWER

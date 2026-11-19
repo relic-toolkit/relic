@@ -997,6 +997,12 @@ static int symbol(void) {
 			TEST_ASSERT(fp_smb2(a) == fp_smb2_jmpds(a), end);
 		} TEST_END;
 #endif
+		TEST_CASE("variable-time jump symbol computation is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb2_jmpvt(a) == 0, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb2(a) == fp_smb2_jmpvt(a), end);
+		} TEST_END;
 #if FP_SMB == FP_LOWER
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);

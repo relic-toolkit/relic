@@ -618,6 +618,13 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp_smb2_jmpvt") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb2_jmpvt(a));
+	}
+	BENCH_END;
+
 #if FP_SMB == FP_LOWER
 	BENCH_RUN("fp_smb2_lower") {
 		dig_t b = 0;

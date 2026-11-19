@@ -620,6 +620,7 @@
 #undef fp_smb2_binar
 #undef fp_smb2_divst
 #undef fp_smb2_jmpds
+#undef fp_smb2_jmpvt
 #undef fp_smb2_lower
 #undef fp_smb3_basic
 #undef fp_smb3_binar
@@ -729,6 +730,7 @@
 #define fp_smb2_binar 	RLC_PREFIX(fp_smb2_binar)
 #define fp_smb2_divst 	RLC_PREFIX(fp_smb2_divst)
 #define fp_smb2_jmpds 	RLC_PREFIX(fp_smb2_jmpds)
+#define fp_smb2_jmpvt 	RLC_PREFIX(fp_smb2_jmpvt)
 #define fp_smb2_lower 	RLC_PREFIX(fp_smb2_lower)
 #define fp_smb3_basic 	RLC_PREFIX(fp_smb3_basic)
 #define fp_smb3_binar 	RLC_PREFIX(fp_smb3_binar)

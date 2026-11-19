@@ -1267,6 +1267,15 @@ int fp_smb2_divst(const fp_t a);
 int fp_smb2_jmpds(const fp_t a);
 
 /**
+ * Computes the Legendre symbol of a prime field element as fp_smb2_jmpds()
+ * does, in variable time, stopping once done.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb2_jmpvt(const fp_t a);
+
+/**
  * Computes the Legendre symbol of a prime field element using a direct call
  * to the lower layer.
  *
