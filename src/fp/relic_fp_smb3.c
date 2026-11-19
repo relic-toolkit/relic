@@ -292,13 +292,29 @@ static int smb3_mod9(const dig_t *a, size_t len) {
 
 /**
  * Reduces a signed integer below 2^61 in absolute value modulo 3, adding 3^39
- * to make it nonnegative.
+ * to make it nonnegative. With digits of 16 bits or less, whose processors
+ * would divide with a library call, it sums chunks of 16, 8, 4 and 2 bits
+ * instead, as 2^(2i) = 1 mod 3, and maps the final sum, at most 5, to its
+ * residue.
  *
  * @param[in] a				- the integer.
  * @return the residue in {0, 1, 2}.
  */
 static int64_t smb3_c3(uint64_t a) {
+#if RLC_DIG >= 32
 	return (a + (uint64_t)4052555153018976267) % 3;
+#else
+	uint32_t x;
+
+	a += (uint64_t)4052555153018976267;
+	x = (uint32_t)(a >> 48) + (uint32_t)((a >> 32) & 0xFFFF) +
+			(uint32_t)((a >> 16) & 0xFFFF) + (uint32_t)(a & 0xFFFF);
+	x = (x >> 16) + ((x >> 8) & 0xFF) + (x & 0xFF);
+	x = (x >> 8) + ((x >> 4) & 0xF) + (x & 0xF);
+	x = (x >> 4) + ((x >> 2) & 3) + (x & 3);
+	x = (x >> 2) + (x & 3);
+	return x - 3 * ((x + 1) >> 2);
+#endif
 }
 
 /**
@@ -593,7 +609,7 @@ static int smb3_symbol(const fp_t a, int ct, int k) {
 	}
 	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
 	 * of R in Montgomery form; zero has no symbol. */
-	return (int)((e + 3 - core_get()->cub_r) % 3) | -zero;
+	return (int)smb3_c3((uint64_t)(e + 3 - core_get()->cub_r)) | -zero;
 }
 
 /*============================================================================*/
@@ -685,10 +701,7 @@ int fp_smb3_binar(const fp_t a) {
 					z |= w[i][l - 1] ^ -(w[i][len - 1] >> (RLC_DIG - 1));
 				}
 			}
-			b = RLC_DIG * l;
-			for (; z != 0; z >>= 1) {
-				b++;
-			}
+			b = RLC_DIG * l + util_bits_dig(z);
 			b = (b > 29 ? b - 29 : 0);
 			/* The 64 bits from position b, with the sign above the top digit. */
 			q = b / RLC_DIG;
