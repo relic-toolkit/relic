@@ -99,7 +99,10 @@ int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
 		borrow = (dig_t)(a[i] < b[i]) | ((dig_t)(a[i] == b[i]) & borrow);
 		diff |= a[i] ^ b[i];
 	}
-	return (borrow ? RLC_LT : (diff == 0 ? RLC_EQ : RLC_GT));
+	/* Compute RLC_GT = 1 if different, minus 2 if less, from the nonzero bit
+	 * of diff, without comparisons that compilers may turn into branches. */
+	diff = (diff | -diff) >> (RLC_DIG - 1);
+	return (int)diff - 2 * (int)borrow;
 }
 
 int dv_equ(const dig_t *a, const dig_t *b, size_t size) {
@@ -118,8 +121,10 @@ int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size) {
 	for (size_t i = 0; i < size; i++) {
 		r |= a[i] ^ b[i];
 	}
-
-	return (r == 0 ? RLC_EQ : RLC_NE);
+	/* The nonzero bit of r, without comparisons that compilers may turn into
+	 * branches. */
+	r = (r | -r) >> (RLC_DIG - 1);
+	return RLC_NE * (int)r;
 }
 
 void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
