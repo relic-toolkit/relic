@@ -46,6 +46,7 @@ static int psi(void) {
 	gt_t t[M];
 	crt_t crt;
 	size_t l;
+	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)], h[RLC_MD_LEN];
 
 	bn_null(g);
 	bn_null(n);
@@ -122,6 +123,17 @@ static int psi(void) {
 			TEST_ASSERT(l == 1 && bn_cmp(z[0], x[0]) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("laconic private set intersection ignores trivial answers") {
+			/* A sender with none of the elements answers 1 and its tag. */
+			bn_set_dig(w[0], 1);
+			bn_write_bin(bin, sizeof(bin), w[0]);
+			md_map(h, bin, sizeof(bin));
+			bn_read_bin(v[0], h, RLC_MD_LEN);
+			TEST_ASSERT(cp_rsapsi_ask(q, r, p, g, n, x, M) == RLC_OK, end);
+			TEST_ASSERT(cp_rsapsi_int(z, &l, r, p, n, x, M, v, w, 1) == RLC_OK, end);
+			TEST_ASSERT(l == 0, end);
+		} TEST_END;
+
 		result = cp_shipsi_gen(g, crt, RLC_BN_BITS);
 
 		TEST_CASE("factoring-based size-hiding private set intersection is correct") {
@@ -151,6 +163,18 @@ static int psi(void) {
 			TEST_ASSERT(cp_shipsi_int(z, &l, r, p, crt->n, x, 1, v, w[0],
 				N) == RLC_OK, end);
 			TEST_ASSERT(l == 1 && bn_cmp(z[0], x[0]) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("size-hiding private set intersection ignores trivial answers") {
+			/* A sender with none of the elements answers 1 and its tag. */
+			bn_set_dig(w[0], 1);
+			bn_write_bin(bin, sizeof(bin), w[0]);
+			md_map(h, bin, sizeof(bin));
+			bn_read_bin(v[0], h, RLC_MD_LEN);
+			TEST_ASSERT(cp_shipsi_ask(q, r, p, g, crt->n, x, M) == RLC_OK, end);
+			TEST_ASSERT(cp_shipsi_int(z, &l, r, p, crt->n, x, M, v, w[0],
+				1) == RLC_OK, end);
+			TEST_ASSERT(l == 0, end);
 		} TEST_END;
 
 		if (pc_param_set_any() == RLC_OK) {
