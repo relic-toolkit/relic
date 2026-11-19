@@ -444,9 +444,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 
 /**
  * Computes the cubic residue symbol of a prime field element, the k such that
- * A^((p - 1)/3) = z^k for the cube root of unity z = fp_prime_get_cub(). As
- * the lower layer has no cubic residue symbol, it falls back to jumps of
- * division steps there.
+ * A^((p - 1)/3) = z^k for the cube root of unity z = fp_prime_get_cub().
  *
  * @param[in] A				- the prime field element to compute.
  * @return k in {0, 1, 2}, or -1 if the element is zero.
@@ -457,8 +455,10 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_smb3(A)		fp_smb3_binar(A)
 #elif FP_SMB == FP_DIVST
 #define fp_smb3(A)		fp_smb3_divst(A)
-#elif FP_SMB == FP_JMPDS || FP_SMB == FP_LOWER
+#elif FP_SMB == FP_JMPDS
 #define fp_smb3(A)		fp_smb3_jmpds(A)
+#elif FP_SMB == FP_LOWER
+#define fp_smb3(A)		fp_smb3_lower(A)
 #endif
 
 /**
@@ -1333,6 +1333,15 @@ int fp_smb3_jmpds(const fp_t a);
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
 int fp_smb3_jmpvt(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element using a direct
+ * call to the lower layer.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_lower(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level Legendre symbol.
  *
  * @&version $Id$
  * @ingroup fp
@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smb2m_low(const dig_t *a) {
+int fp_smb2_low(const dig_t *a) {
 	bn_st e;
 	dig_t t[RLC_FP_DIGS];
 

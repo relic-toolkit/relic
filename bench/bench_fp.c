@@ -747,6 +747,14 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if FP_SMB == FP_LOWER
+	BENCH_RUN("fp_smb3_lower") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_lower(a));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("fp_crt") {
 		fp_rand(a);
 		fp_sqr(b, a);

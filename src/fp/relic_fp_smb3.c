@@ -649,42 +649,36 @@ static int smb3_symbol(const fp_t a, int ct, int k) {
 /*============================================================================*/
 
 int fp_smb3_basic(const fp_t a) {
-	const dig_t *z = fp_prime_get_cub();
-	bn_t e;
 	fp_t t, u;
 	int r = -1;
 
-	bn_null(e);
 	fp_null(t);
 	fp_null(u);
 
 	if (fp_prime_get_mod18() % 3 == 2) {
-		return -fp_is_zero(a);
+		return smb3_symbol(a, 1, 0);
 	}
 
 	RLC_TRY {
-		bn_new(e);
 		fp_new(t);
 		fp_new(u);
 
 		/* By Euler's criterion, a^((p - 1)/3) = z^k, and 0 for zero. */
-		e->sign = RLC_POS;
-		e->used = RLC_FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_sub_dig(e, e, 1);
-		bn_div_dig(e, e, 3);
-		fp_exp(t, a, e);
+		fp_exp(t, a, &(core_get()->over3));
+		/* The k of the only one of 1, z and z^2 that is equal to the power,
+		 * from dv_equ_sec(), which is 0 if equal and RLC_NE = 2 otherwise,
+		 * without comparisons that compilers may turn into branches. */
 		fp_set_dig(u, 1);
-		r = RLC_SEL(r, 0, fp_cmp(t, u) == RLC_EQ);
-		r = RLC_SEL(r, 1, fp_cmp(t, z) == RLC_EQ);
-		fp_sqr(u, z);
-		r = RLC_SEL(r, 2, fp_cmp(t, u) == RLC_EQ);
+		r += 1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1);
+		r += 2 * (1 - (dv_equ_sec(t, fp_prime_get_cub(), RLC_FP_DIGS) >> 1));
+		dv_copy(u, fp_prime_get_cub(), RLC_FP_DIGS);
+		fp_sqr(u, u);
+		r += 3 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(e);
 		fp_free(t);
 		fp_free(u);
 	}
@@ -706,3 +700,11 @@ int fp_smb3_jmpds(const fp_t a) {
 int fp_smb3_jmpvt(const fp_t a) {
 	return smb3_symbol(a, 0, FP_CUB_JK);
 }
+
+#if FP_SMB == FP_LOWER
+
+int fp_smb3_lower(const fp_t a) {
+	return fp_smb3_low(a);
+}
+
+#endif

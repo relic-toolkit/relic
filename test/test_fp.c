@@ -1272,6 +1272,18 @@ static int cube_root(void) {
 		} TEST_END;
 #endif
 
+#if FP_SMB == FP_LOWER
+		TEST_CASE("lower cubic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb3_lower(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb3(a) == fp_smb3_lower(a), end);
+			fp_sqr(b, a);
+			fp_mul(b, b, a);
+			TEST_ASSERT(fp_smb3_lower(b) == 0, end);
+		} TEST_END;
+#endif
+
 		TEST_CASE("variable-time jump cubic residue symbol is correct") {
 			fp_zero(a);
 			TEST_ASSERT(fp_smb3_jmpvt(a) == -1, end);

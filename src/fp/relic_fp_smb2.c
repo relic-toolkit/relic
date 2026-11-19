@@ -593,7 +593,7 @@ int fp_smb2_jmpvt(const fp_t a) {
 #if FP_SMB == FP_LOWER
 
 int fp_smb2_lower(const fp_t a) {
-	return fp_smb2m_low(a);
+	return fp_smb2_low(a);
 }
 
 #endif

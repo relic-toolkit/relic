@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level Legendre symbol.
  *
  * @&version $Id$
  * @ingroup fp
@@ -40,28 +40,20 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smb2m_low(const dig_t *a) {
+int fp_smb2_low(const dig_t *a) {
 	mpz_t n, p;
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
 	int res;
 
 	mpz_init(n);
 	mpz_init(p);
 
-#if FP_RDC == FP_MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
-
-	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, u);
+	/* The stored digits of a, which are a * R mod p in Montgomery form,
+	 * have the same symbol, as R is an even power of 2 and so a square. */
+	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, a);
 	mpz_import(p, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, fp_prime_get());
 
 	res = mpz_jacobi(n, p);
 
-	(void)t;
 	mpz_clear(n);
 	mpz_clear(p);
 	return res;
