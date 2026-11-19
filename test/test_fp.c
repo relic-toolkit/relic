@@ -997,12 +997,14 @@ static int symbol(void) {
 			TEST_ASSERT(fp_smb2(a) == fp_smb2_jmpds(a), end);
 		} TEST_END;
 #endif
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
 		TEST_CASE("variable-time jump symbol computation is correct") {
 			fp_zero(a);
 			TEST_ASSERT(fp_smb2_jmpvt(a) == 0, end);
 			fp_rand(a);
 			TEST_ASSERT(fp_smb2(a) == fp_smb2_jmpvt(a), end);
 		} TEST_END;
+#endif
 #if FP_SMB == FP_LOWER
 		TEST_CASE("lower symbol computation is correct") {
 			fp_rand(a);
@@ -1284,6 +1286,7 @@ static int cube_root(void) {
 		} TEST_END;
 #endif
 
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
 		TEST_CASE("variable-time jump cubic residue symbol is correct") {
 			fp_zero(a);
 			TEST_ASSERT(fp_smb3_jmpvt(a) == -1, end);
@@ -1293,6 +1296,7 @@ static int cube_root(void) {
 			fp_mul(b, b, a);
 			TEST_ASSERT(fp_smb3_jmpvt(b) == 0, end);
 		} TEST_END;
+#endif
 
 		TEST_CASE("cube root extraction is correct") {
 			int r = 1;

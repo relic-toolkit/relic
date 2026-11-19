@@ -258,6 +258,8 @@
 #define FP_JMPDS    6
 /** Use implementation provided by the lower layer. */
 #define FP_LOWER    7
+/** Variable-time residue symbols by Bernstein-Yang jump division steps. */
+#define FP_JMPVT    8
 /** Chosen method for the quadratic and cubic residue symbols. */
 #define FP_SMB   FP_@FP_SMB@
 

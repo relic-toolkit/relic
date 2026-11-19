@@ -42,6 +42,7 @@ message("      FP_METHD=BASIC    Computation by Euler's criterion.")
 message("      FP_METHD=BINAR    Binary method.")
 message("      FP_METHD=DIVST    Constant-time method by division steps.")
 message("      FP_METHD=JMPDS    Constant-time method by jump division steps.")
+message("      FP_METHD=JMPVT    Variable-time method by jump division steps.")
 message("      FP_METHD=LOWER    Pass call to the lower level.\n")
 
 message("      Field exponentiation:")

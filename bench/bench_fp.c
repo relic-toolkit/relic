@@ -618,12 +618,14 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb2_jmpvt") {
 		fp_rand(a);
 		fp_sqr(a, a);
 		BENCH_ADD(fp_smb2_jmpvt(a));
 	}
 	BENCH_END;
+#endif
 
 #if FP_SMB == FP_LOWER
 	BENCH_RUN("fp_smb2_lower") {
@@ -741,11 +743,13 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
 	BENCH_RUN("fp_smb3_jmpvt") {
 		fp_rand(a);
 		BENCH_ADD(fp_smb3_jmpvt(a));
 	}
 	BENCH_END;
+#endif
 
 #if FP_SMB == FP_LOWER
 	BENCH_RUN("fp_smb3_lower") {
