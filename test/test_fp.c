@@ -1159,11 +1159,14 @@ static int square_root(void) {
 static int cube_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
+	bn_t e;
 
 	fp_null_all(a, b, c, d);
+	bn_null(e);
 
 	RLC_TRY {
 		fp_new_all(a, b, c, d);
+		bn_new(e);
 
 		TEST_CASE("cubic residuosity test is correct") {
 			fp_zero(a);
@@ -1179,6 +1182,49 @@ static int cube_root(void) {
 				} while(fp_crt(b, a) == 1);
 				TEST_ASSERT(fp_is_cub(a) == 0, end);
 			}
+		}
+		TEST_END;
+
+		TEST_CASE("cubic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb_cub(a) == -1, end);
+			do {
+				fp_rand(a);
+				fp_rand(d);
+			} while (fp_is_zero(a) || fp_is_zero(d));
+			fp_sqr(b, a);
+			fp_mul(b, b, a);
+			TEST_ASSERT(fp_smb_cub(b) == 0, end);
+			if (fp_prime_get_mod18() % 3 == 1) {
+				/* For the symbol w^k, a^((p - 1)/3) = z^k. */
+				bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+				bn_sub_dig(e, e, 1);
+				bn_div_dig(e, e, 3);
+				fp_exp(b, a, e);
+				fp_set_dig(c, 1);
+				for (int k = fp_smb_cub(a); k > 0; k--) {
+					fp_mul(c, c, (dig_t *)fp_prime_get_cub());
+				}
+				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+				TEST_ASSERT((fp_smb_cub(a) == 0) == fp_is_cub(a), end);
+				/* The symbol is multiplicative. */
+				fp_mul(c, a, d);
+				TEST_ASSERT(fp_smb_cub(c) ==
+						(fp_smb_cub(a) + fp_smb_cub(d)) % 3, end);
+			} else {
+				TEST_ASSERT(fp_smb_cub(a) == 0, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("constant-time cubic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb_cub_jmpds(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb_cub_jmpds(a) == fp_smb_cub(a), end);
+			fp_sqr(b, a);
+			fp_mul(b, b, a);
+			TEST_ASSERT(fp_smb_cub_jmpds(b) == fp_smb_cub(b), end);
 		}
 		TEST_END;
 
@@ -1221,6 +1267,7 @@ static int cube_root(void) {
 	code = RLC_OK;
   end:
 	fp_free_all(a, b, c, d);
+	bn_free(e);
 	return code;
 }
 

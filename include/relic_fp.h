@@ -518,6 +518,15 @@ const dig_t *fp_prime_get_srt(void);
 const dig_t *fp_prime_get_crt(void);
 
 /**
+ * Returns the primitive cube root of unity that defines the cubic residue
+ * symbol, congruent to w modulo the primary prime of norm p in the Eisenstein
+ * integers Z[w], or zero if p = 2 mod 3.
+ *
+ * @return the cube root of unity.
+ */
+const dig_t *fp_prime_get_cub(void);
+
+/**
  * Returns the result of prime order mod 8.
  *
  * @return the result of prime order mod 8.
@@ -1245,6 +1254,29 @@ int fp_smb_jmpds(const fp_t a);
  * @return the result.
  */
 int fp_smb_lower(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element in variable
+ * time, by jumps of divsteps in the Eisenstein integers in the manner of
+ * Bernstein and Yang, stopped once done. For p = 1 mod 3, the symbol is w^k
+ * for the k such that a^((p - 1)/3) = z^k, where z is the cube root of unity
+ * returned by fp_prime_get_cub(); for p = 2 mod 3, every element is a cube
+ * and k = 0.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb_cub(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as fp_smb_cub()
+ * does, in constant time, by a number of jumps of divsteps that only depends
+ * on the size of the prime.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb_cub_jmpds(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary

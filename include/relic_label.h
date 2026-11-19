@@ -535,6 +535,7 @@
 #undef fp_prime_get_conv
 #undef fp_prime_get_srt
 #undef fp_prime_get_crt
+#undef fp_prime_get_cub
 #undef fp_prime_get_mod8
 #undef fp_prime_get_mod18
 #undef fp_prime_get_sps
@@ -620,6 +621,8 @@
 #undef fp_smb_divst
 #undef fp_smb_jmpds
 #undef fp_smb_lower
+#undef fp_smb_cub
+#undef fp_smb_cub_jmpds
 #undef fp_exp_basic
 #undef fp_exp_slide
 #undef fp_exp_monty
@@ -638,6 +641,7 @@
 #define fp_prime_get_conv 	RLC_PREFIX(fp_prime_get_conv)
 #define fp_prime_get_srt 	RLC_PREFIX(fp_prime_get_srt)
 #define fp_prime_get_crt 	RLC_PREFIX(fp_prime_get_crt)
+#define fp_prime_get_cub 	RLC_PREFIX(fp_prime_get_cub)
 #define fp_prime_get_mod8 	RLC_PREFIX(fp_prime_get_mod8)
 #define fp_prime_get_mod18 	RLC_PREFIX(fp_prime_get_mod18)
 #define fp_prime_get_sps 	RLC_PREFIX(fp_prime_get_sps)
@@ -723,6 +727,8 @@
 #define fp_smb_divst 	RLC_PREFIX(fp_smb_divst)
 #define fp_smb_jmpds 	RLC_PREFIX(fp_smb_jmpds)
 #define fp_smb_lower 	RLC_PREFIX(fp_smb_lower)
+#define fp_smb_cub 	RLC_PREFIX(fp_smb_cub)
+#define fp_smb_cub_jmpds 	RLC_PREFIX(fp_smb_cub_jmpds)
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)

@@ -696,6 +696,18 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_smb_cub") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb_cub(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_smb_cub_jmpds") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb_cub_jmpds(a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_crt") {
 		fp_rand(a);
 		fp_sqr(b, a);
