@@ -354,7 +354,7 @@ int fp_smb2_basic(const fp_t a) {
 
 int fp_smb2_binar(const fp_t a) {
 	const size_t s = RLC_DIG - 2;
-	dv_t f, g, t;
+	dv_t f, g;
 	dig_t g_[2], f_[2], neg, l, g_hi, g_lo, f_hi, f_lo, mask, k = 0;
 	dis_t m[4];
 	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
@@ -363,20 +363,15 @@ int fp_smb2_binar(const fp_t a) {
 		return 0;
 	}
 
-	dv_null_all(f, g, t);
+	dv_null_all(f, g);
 
 	RLC_TRY {
-		dv_new_all(f, g, t);
+		dv_new_all(f, g);
 
-		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
 		fp_copy(g, a);
-#endif
 		/* Both stay nonnegative, with a zero sign digit for smb2_apply(). */
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 
@@ -413,7 +408,7 @@ int fp_smb2_binar(const fp_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free_all(f, g, t);
+		dv_free_all(f, g);
 	}
 
 	return (k & 1 ? -1 : 1);
@@ -448,14 +443,9 @@ int fp_smb2_divst(const fp_t a) {
 
 		k = 0;
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		dv_zero(t, 2 * RLC_FP_DIGS);
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
 		fp_copy(g, a);
-#endif
 		r = dv_cmp_sec(g, f, RLC_FP_DIGS);
 		fp_subn_low(t, g, f);
 		fp_copy_sec(g, t, r != RLC_LT);
@@ -518,8 +508,8 @@ int fp_smb2_divst(const fp_t a) {
 
 int fp_smb2_jmpds(const fp_t a) {
 	dis_t m[4];
-	dv_t f, g, t;
-	dig_t j = 0, k;
+	dv_t f, g;
+	dig_t j = 0, k, z = 0;
 	int r = 0, s;
 #if RLC_WSIZE == 8
 	int zeta = -1;
@@ -527,23 +517,18 @@ int fp_smb2_jmpds(const fp_t a) {
 	dis_t zeta = -1;
 #endif
 
-	dv_null_all(f, g, t);
+	dv_null_all(f, g);
 
 	RLC_TRY {
-		dv_new_all(f, g, t);
+		dv_new_all(f, g);
 
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		f[RLC_FP_DIGS] = 0;
 		dv_zero(g, RLC_FP_DIGS + 1);
-		dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
 
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
 		fp_copy(g, a);
-#endif
 
 		/* The number of steps only depends on the prime size. */
 		for (int i = 0; i < JMPDS_ITERS; i += s) {
@@ -557,19 +542,21 @@ int fp_smb2_jmpds(const fp_t a) {
 		/* Each flip of the symbol added two to the count. */
 		j = (j + (j & 1)) % 4;
 
-		fp_zero(t);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		t[0] = 1;
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		/* For a nonzero, f is now 1 or -1 and the symbol is 1 - j, and for
+		 * zero it is 0, from the nonzero bit of a, without comparisons that
+		 * compilers may turn into branches. */
+		for (size_t l = 0; l < RLC_FP_DIGS; l++) {
+			z |= a[l];
+		}
+		z = (z | -z) >> (RLC_DIG - 1);
+		r = (int)(dis_t)((1 - j) & -z);
 	}
 	RLC_CATCH_ANY {
 		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free_all(f, g, t);
+		dv_free_all(f, g);
 	}
 
 	return r;
