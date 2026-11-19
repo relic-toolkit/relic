@@ -302,9 +302,13 @@ static int64_t smb3_modj(const uint64_t *a, const uint64_t *k) {
 		r += t - m;
 		r += m & (uint64_t)((int64_t)r >> 63);
 	}
-	/* A negative integer is its limbs minus 2^(64 * FP_CUB_L). */
+	/* A negative integer is its limbs minus 2^(64 * FP_CUB_L), which leaves
+	 * r below 2m, reduced without a division, which 32-bit processors may
+	 * compute in a time that depends on its operands. */
 	r += (m - k[FP_CUB_L + 1]) & -(a[FP_CUB_L - 1] >> 63);
-	return (int64_t)(r % m);
+	r -= m;
+	r += m & (uint64_t)((int64_t)r >> 63);
+	return (int64_t)r;
 }
 
 /**
