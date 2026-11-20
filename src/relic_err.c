@@ -46,12 +46,18 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#ifdef RLC_CHECK
-
-void err_simple_msg(int error) {
-	if (error != ERR_CAUGHT && !core_get()->quiet) {
-		fprintf(stderr, "\nERROR: %s.\n", core_get()->reason[error]);
+void err_simple_msg(const char *file, int line, int error) {
+	if (error == ERR_CAUGHT || core_get()->quiet) {
+		return;
 	}
+#if RLC_ARCH == RLC_AVR
+	/* The file name is stored in program memory. */
+	util_print("\nERROR in %S:%d: %s.\n", file, line,
+			core_get()->reason[error]);
+#else
+	util_print("\nERROR in %s:%d: %s.\n", file, line,
+			core_get()->reason[error]);
+#endif
 }
 
 #ifdef RLC_VERBS
@@ -95,48 +101,31 @@ void err_full_msg(const char *function, const char *file, int line,
 
 void err_get_msg(err_t *e, char **msg) {
 	ctx_t *ctx = core_get();
-	if (ctx->last == NULL || ctx->last->error == NULL) {
-		/* No error was thrown outside of a try-catch block. */
+	if (ctx->number == 0) {
+		/* No error was thrown since the last read. */
 		*e = 0;
 		*msg = NULL;
 		return;
 	}
-	*e = *(ctx->last->error);
+	*e = ctx->number;
 	*msg = ctx->reason[*e];
-	ctx->last = NULL;
-}
-
-#endif /* RLC_CHECK */
-
-void err_throw(const char *file, int line) {
-	core_get()->code = RLC_ERR;
-	if (core_get()->quiet) {
-		return;
-	}
-#if RLC_ARCH == RLC_AVR
-	/* The file name is stored in program memory. */
-	util_print("ERROR THROWN in %S:%d\n", file, line);
-#else
-	util_print("ERROR THROWN in %s:%d\n", file, line);
-#endif
+	ctx->number = 0;
 }
 
 /* RLC_ALLOCA names the error by its value, as it cannot see the list. */
 typedef char err_alloc_fatal[(RLC_ALLOC_FATAL == ERR_NO_MEMORY) ? 1 : -1];
 
 void err_fatal(const char *file, int line, int error) {
-	/* Without error checking the messages are not set, so name them here. */
-	const char *msg = (error == ERR_NO_MEMORY ? "not enough memory" :
-			"insufficient precision");
 	/* Printed even when quiet, as the program stops. */
 #if RLC_ARCH == RLC_AVR
-	util_print("\nFATAL ERROR in %S:%d: %s.\n", file, line, msg);
+	util_print("\nFATAL ERROR in %S:%d: %s.\n", file, line,
+			core_get()->reason[error]);
 #else
 	/* Without the directory, as RLC_FILE, for RLC_ALLOCA, which passes the full
 	 * name of the file. */
 	const char *base = strrchr(file, '/');
 	fprintf(stderr, "\nFATAL ERROR in %s:%d: %s.\n",
-			(base ? base + 1 : file), line, msg);
+			(base ? base + 1 : file), line, core_get()->reason[error]);
 #endif
 	abort();
 }
@@ -145,15 +134,9 @@ int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;
 	ctx->code = RLC_OK;
-#ifdef RLC_CHECK
-	/* Forget an error thrown outside of a try-catch block, so that the next
-	 * one is reported. */
-	if (ctx->last == &(ctx->error)) {
-		ctx->last = NULL;
-	}
-#else
+	/* Forget the last error, so that the next one is reported. */
+	ctx->number = 0;
 	ctx->pending = 0;
-#endif
 	return r;
 }
 

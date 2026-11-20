@@ -17,10 +17,9 @@ set(WFLAGS "-Wall")
 
 message("\n-- Configuring ${PROJECT_NAME} ${PROJECT_VERSION}...\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM, COLOR, SHLIB, STLIB):\n")
+message(STATUS "Available switches (default = VERBS, DOCUM, COLOR, SHLIB, STLIB):\n")
 
 message("   DEBUG=[off|on] Build with debugging support.")
-message("   CHECK=[off|on] Build with error-checking support.")
 message("   VERBS=[off|on] Build with detailed error messages.")
 message("   DOCUM=[off|on] Build documentation.")
 message("   STRIP=[off|on] Remove unused code and tables of unused algorithms.")
@@ -33,7 +32,6 @@ message("   AMALG=[off|on] Build amalgamation for better performance.")
 message("   AUSAN=[off|on] Build with ASan and UBSan (gcc/clang only).\n")
 
 option(DEBUG "Build with debugging support" off)
-option(CHECK "Build with error-checking support" on)
 option(VERBS "Build with detailed error messages" on)
 option(DOCUM "Build documentation" on)
 option(STRIP "Remove unused code and tables of unselected algorithms" off)
@@ -389,7 +387,7 @@ string(REPLACE "\\" "\\\\" RLC_FLAGS "${RLC_FLAGS}")
 string(REPLACE "\"" "\\\"" RLC_FLAGS "${RLC_FLAGS}")
 
 # The header names these options and switches with a prefix.
-foreach(OPT ARCH SEED MULTI TIMER OPSYS LABEL DEBUG CHECK VERBS DOCUM STRIP
+foreach(OPT ARCH SEED MULTI TIMER OPSYS LABEL DEBUG VERBS DOCUM STRIP
 		QUIET COLOR SHLIB STLIB)
 	set(RLC_${OPT} "${${OPT}}")
 endforeach()

@@ -109,11 +109,7 @@ typedef struct {
 #if RLC_ALLOC == RLC_AUTO
 typedef bn_st bn_t[1];
 #elif RLC_ALLOC == RLC_DYNAMIC
-#ifdef RLC_CHECK
-typedef bn_st *volatile bn_t;
-#else
 typedef bn_st *bn_t;
-#endif
 #endif
 
 /**

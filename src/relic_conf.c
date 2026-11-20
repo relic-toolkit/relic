@@ -59,11 +59,6 @@
  * Names the state of the switches.
  */
 /** @{ */
-#ifdef RLC_CHECK
-#define CONF_CHECK			"on"
-#else
-#define CONF_CHECK			"off"
-#endif
 #ifdef RLC_STRIP
 #define CONF_STRIP			"on"
 #else
@@ -160,8 +155,8 @@ void conf_print(void) {
 	util_print("** Compiler: " RLC_CC "\n");
 	util_print("   Flags: " RLC_FLAGS "\n\n");
 	util_print("** Architecture: " CONF_ARCH ", %d-bit words\n\n", (int)RLC_WSIZE);
-	util_print("** Switches: CHECK " CONF_CHECK ", STRIP " CONF_STRIP
-			", multithreading " CONF_MULTI "\n\n");
+	util_print("** Switches: STRIP " CONF_STRIP ", multithreading "
+			CONF_MULTI "\n\n");
 	util_print("** Random number generator: " CONF_RAND ", seeded by "
 			CONF_SEED "\n\n");
 	util_print("** Timer: " CONF_TIMER "\n\n");

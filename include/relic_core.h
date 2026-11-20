@@ -150,21 +150,12 @@ typedef struct _ctx_t {
 	/** A flag to indicate if error messages are printed. */
 	int quiet;
 
-#ifdef RLC_CHECK
-	/** The state of the last error caught. */
-	sts_t *last;
-	/** Error state to be used outside try-catch blocks. */
-	sts_t error;
-	/** The error message respective to the last error. */
+	/** The error message respective to each error. */
 	char *reason[ERR_MAX];
-	/** A flag to indicate if the last error was already caught. */
-	int caught;
-#else
 	/** Number of try-catch blocks entered and not yet caught. */
 	int depth;
 	/** A flag to indicate if an error thrown inside a try-catch is pending. */
 	int pending;
-#endif /* RLC_CHECK */
 
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */

@@ -286,11 +286,7 @@ typedef struct {
 #if RLC_ALLOC == RLC_AUTO
 typedef ep_st ep_t[1];
 #else
-#ifdef RLC_CHECK
-typedef ep_st *volatile ep_t;
-#else
 typedef ep_st *ep_t;
-#endif
 #endif
 
 /**

@@ -123,11 +123,7 @@ typedef struct {
 #if RLC_ALLOC == RLC_AUTO
 typedef ed_st ed_t[1];
 #else
-#ifdef RLC_CHECK
-typedef ed_st *volatile ed_t;
-#else
 typedef ed_st *ed_t;
-#endif
 #endif
 
 /*============================================================================*/

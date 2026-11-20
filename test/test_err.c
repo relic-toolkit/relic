@@ -85,9 +85,7 @@ static void dummy4(void) {
 
 int main(void) {
 	err_t e = 0;
-#ifdef RLC_CHECK
 	char *msg = NULL;
-#endif
 	int code = RLC_ERR;
 
 	if (core_init() != RLC_OK) {
@@ -100,19 +98,16 @@ int main(void) {
 	TEST_ONCE("not using try-catch is correct") {
 		counter = 0;
 		dummy();
-#ifdef RLC_CHECK
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == ERR_NO_VALID, end);
 		TEST_ASSERT(msg == core_get()->reason[ERR_NO_VALID], end);
 		/* Reading the message clears the pending error. */
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == 0 && msg == NULL, end);
-#endif
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 	} TEST_END;
 
-#ifdef RLC_CHECK
 	TEST_ONCE("errors are reported again after reading the code") {
 		RLC_THROW(ERR_NO_VALID);
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
@@ -121,7 +116,6 @@ int main(void) {
 		TEST_ASSERT(e == ERR_NO_BUFFER, end);
 		TEST_ASSERT(err_get_code() == RLC_ERR, end);
 	} TEST_END;
-#endif
 
 	TEST_ONCE("try-catch is correct and error message is printed") {
 		int caught = 0;

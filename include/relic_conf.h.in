@@ -44,8 +44,6 @@
 
 /** Debugging support. */
 #cmakedefine RLC_DEBUG
-/** Error handling support. */
-#cmakedefine RLC_CHECK
 /** Verbose error messages. */
 #cmakedefine RLC_VERBS
 /** Build documentation. */

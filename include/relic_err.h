@@ -42,10 +42,6 @@
 #include "relic_util.h"
 #include "relic_label.h"
 
-#ifdef RLC_CHECK
-#include <setjmp.h>
-#endif
-
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
@@ -102,211 +98,48 @@ enum errors {
  */
 typedef int err_t;
 
-#ifdef RLC_CHECK
-
-/**
- * Type that describes an error status, including the error code and the program
- * location where the error occurred.
- */
-typedef struct _sts_t {
-	/** Error occurred. */
-	err_t *error;
-	/** Pointer to the program location where the error occurred. */
-	jmp_buf addr;
-	/** Flag to tell if there is a surrounding try-catch block. */
-	int block;
-} sts_t;
-
-#endif
-
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
 
 /**
- * Saves the calling environment for the error handling. MinGW-w64 makes
- * longjmp() unwind the stack through SEH from the frame given to _setjmp(),
- * which can crash on optimized frames, while a null frame restores the
- * registers directly, which is all that the error handling needs.
- *
- * @param[out] B			- the buffer to save the environment to.
- */
-#if defined(__MINGW32__) && defined(__x86_64__)
-#define RLC_SETJMP(B)		_setjmp((B), NULL)
-#else
-#define RLC_SETJMP(B)		setjmp(B)
-#endif
-
-/**
- * Implements the TRY clause of the error-handling routines.
- *
- * This macro copies the last error from the current library context to
- * a temporary variable and handles the current error. The loop is used so
- * the CATCH facility is called first to store the address of the error
- * being caught. The setjmp() function is then called to store the current
- * program location in the current error field. The program block can now be
- * executed. If an error is thrown inside the program block, the setjmp()
- * function is called again and the return value is non-zero.
- */
-#define RLC_ERR_TRY														\
-	{																	\
-		sts_t *_last, _this;											\
-		ctx_t *_ctx = core_get();										\
-		_last = _ctx->last; 											\
-		_this.block = 1;												\
-		_ctx->last = &_this; 											\
-		for (int _z = 0; ; _z = 1) 										\
-			if (_z) { 													\
-				if (RLC_SETJMP(_this.addr) == 0) { 						\
-					if (1)												\
-
-/**
- * Implements the CATCH clause of the error-handling routines.
- *
- * First, the address of the error is stored and the execution resumes
- * on the RLC_ERR_TRY macro. If an error is thrown inside the program block,
- * the caught flag is updated and the last error is restored. If some error
- * was caught, the execution is resumed inside the RLC_CATCH block.
- *
- * @param[in] ADDR	- the address of the exception being caught
- */
-#define RLC_ERR_CATCH(ADDR)												\
-					else { } 											\
-					_ctx->caught = 0; 									\
-				} else {												\
-					_ctx->caught = 1; 									\
-				}														\
-				_ctx->last = _last;										\
-				break; 													\
-			} else {													\
-				_this.error = ADDR; 									\
-			}															\
-	} 																	\
-	for (int _z = 0, _ctx_c = core_get()->caught; _z < 2; _z++)			\
-		if (_z == 1 && _ctx_c)											\
-
-/**
- * Implements the THROW clause of the error-handling routines.
- *
- * First we make sure that the error pointer is NULL (new exception) or
- * there is a surrounding try-catch block (block = 1). If this is not the case,
- * then it is the second exception thrown in sequence without handling.
- *
- * If the error pointer is NULL, the error was thrown outside of a TRY-CATCH
- * block. An error message is printed and the function returns.
- *
- * If the error pointer is valid, the longjmp() function is called to return to
- * the program location where setjmp() was last called. An error message
- * respective to the error is then printed and the current error pointer is
- * updated to store the error.
- *
- * @param[in] E		- the exception being caught.
- */
-#define RLC_ERR_THROW(E)												\
-	do {																\
-		ctx_t *_ctx = core_get();										\
-		if ((E) == ERR_NO_MEMORY) {										\
-			err_fatal(RLC_FILE, __LINE__, E);							\
-		}																\
-		_ctx->code = RLC_ERR;											\
-		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
-			/* Remember the original code, so that rethrows keep it. */	\
-			if (E != ERR_CAUGHT) {										\
-				_ctx->number = E;										\
-			}															\
-			if (_ctx->last == NULL) {									\
-				_ctx->last = &(_ctx->error);							\
-				_ctx->error.error = &(_ctx->number);					\
-				_ctx->error.block = 0;									\
-				RLC_ERR_PRINT(E);										\
-			} else {													\
-				for (; ; longjmp(_ctx->last->addr, 1)) {				\
-					RLC_ERR_PRINT(E);									\
-					if (_ctx->last->error) {							\
-						*(_ctx->last->error) = _ctx->number;			\
-					}													\
-				}														\
-			}															\
-		}																\
-	} while (0)															\
-
-#ifdef RLC_CHECK
-/**
- * Implements a TRY clause.
- */
-#define RLC_TRY					RLC_ERR_TRY
-#else
-/**
- * Implements a TRY clause without error checking. The block always runs to
- * the end, and the number of blocks entered is counted so that errors thrown
- * inside them are reported to their CATCH clause.
+ * Implements a TRY clause. The block always runs to the end, and the number of
+ * blocks entered is counted so that errors thrown inside them are reported to
+ * their CATCH clause.
  */
 #define RLC_TRY					if ((core_get()->depth++, 1))
-#endif
 
-#ifdef RLC_CHECK
 /**
- * Implements a CATCH clause.
- */
-#define RLC_CATCH(E)			RLC_ERR_CATCH(&(E))
-#else
-/**
- * Implements a CATCH clause without error checking, which runs if an error was
- * thrown in its TRY clause and consumes it.
+ * Implements a CATCH clause, which runs if an error was thrown in its TRY
+ * clause and consumes it.
+ *
+ * @param[out] E			- the error caught.
  */
 #define RLC_CATCH(E)														\
 	if ((core_get()->depth--, core_get()->pending) &&						\
 			(core_get()->pending = 0, (E) = core_get()->number, 1))
-#endif
 
-#ifdef RLC_CHECK
 /**
- * Implements a CATCH clause for any possible error.
- *
- * If this macro is used the error type is not available inside the CATCH
- * block.
- */
-#define RLC_CATCH_ANY			RLC_ERR_CATCH(NULL)
-#else
-/**
- * Implements a CATCH clause for any possible error without error checking,
- * which runs if an error was thrown in its TRY clause and consumes it.
+ * Implements a CATCH clause for any possible error, which runs if an error was
+ * thrown in its TRY clause and consumes it.
  */
 #define RLC_CATCH_ANY														\
 	if ((core_get()->depth--, core_get()->pending) &&						\
 			(core_get()->pending = 0, 1))
-#endif
 
-#ifdef RLC_CHECK
 /**
- * Implements the RLC_FINALLY clause.
+ * Implements a FINALLY clause, which always runs.
  */
-#define RLC_FINALLY				else if (_z == 0)
-#else
 #define RLC_FINALLY				if (1)
-#endif
 
-#ifdef RLC_CHECK
 /**
- * Implements a THROW clause.
- */
-#define RLC_THROW				RLC_ERR_THROW
-#else
-/**
- * Implements a THROW clause without error checking. The error is recorded in
- * the code returned by err_get_code() and execution continues; inside a
- * try-catch block, the error is also passed on to its CATCH clause.
+ * Implements a THROW clause. The error is recorded in the code returned by
+ * err_get_code() and execution continues, so the code after a throw must not
+ * depend on what failed; inside a try-catch block, the error is also passed on
+ * to its CATCH clause. Running out of memory is fatal instead.
  *
  * @param[in] E		- the exception being thrown.
  */
-#ifdef RLC_QUIET
-#define RLC_ERR_PRINT_OFF(E)	/* empty */
-#else
-#define RLC_ERR_PRINT_OFF(E)												\
-	if (E != ERR_CAUGHT) {													\
-		err_throw(RLC_FILE, __LINE__);										\
-	}
-#endif
 #define RLC_THROW(E)														\
 	do {																	\
 		ctx_t *_ctx = core_get();											\
@@ -320,9 +153,8 @@ typedef struct _sts_t {
 		if (_ctx->depth > 0) {												\
 			_ctx->pending = 1;												\
 		}																	\
-		RLC_ERR_PRINT_OFF(E);												\
+		RLC_ERR_PRINT(E);													\
 	} while (0)
-#endif
 
 /**
  * Treats an error jumping to the argument.
@@ -355,12 +187,12 @@ typedef struct _sts_t {
 #else /* RLC_VERBS */
 
 /**
- * Prints the current error message.
+ * Prints the current error message with its location.
  *
  * @param[in] ERROR			- the error code.
  */
 #define RLC_ERR_PRINT(ERROR)												\
-	err_simple_msg(ERROR)													\
+	err_simple_msg(RLC_FILE, __LINE__, ERROR)								\
 
 #endif /* RLC_VERBS */
 #endif /* RLC_QUIET */
@@ -369,14 +201,14 @@ typedef struct _sts_t {
 /* Function prototypes                                                        */
 /*============================================================================*/
 
-#ifdef RLC_CHECK
-
 /**
- * Prints the error message with little information.
+ * Prints the error message with its location.
  *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
  * @param[in] error    		- the error code.
  */
-void err_simple_msg(int error);
+void err_simple_msg(const char *file, int line, int error);
 
 /**
  * Prints the error message with detailed information.
@@ -390,28 +222,18 @@ void err_full_msg(const char *function, const char *file,
 		int line, int error);
 
 /**
- * Prints the error message respective to an error code.
+ * Returns the last error thrown and its message, and forgets it, so that the
+ * next call returns 0 and NULL unless another error is thrown.
  *
  * @param[out] e			- the error occurred.
  * @param[out] msg			- the error message.
  */
 void err_get_msg(err_t *e, char **msg);
 
-#endif
-
-/**
- * Records an error without error checking and prints where it was thrown.
- *
- * @param[in] file      	- the source file where the error occurred.
- * @param[in] line      	- the line in the file where the error occurred.
- */
-void err_throw(const char *file, int line);
-
 /**
  * Reports an error that cannot be recovered from and aborts: running out of
  * memory, or a result that does not fit in a number of fixed size, as execution
- * continues past a throw without error checking and callers would use the
- * missing memory.
+ * continues past a throw and callers would use the missing memory.
  *
  * @param[in] file      	- the source file where the error occurred.
  * @param[in] line      	- the line in the file where the error occurred.
@@ -421,7 +243,7 @@ void err_fatal(const char *file, int line, int error);
 
 /**
  * Returns the code returned by the last function call and resets the current
- * code.
+ * code and the last error.
  *
  * @returns ERR_OK if no errors occurred in the function, ERR_ERR otherwise.
  */
