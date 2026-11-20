@@ -77,7 +77,6 @@
 #define FP_CUB_JR2		((dig_t)792073204337213275)
 #endif
 
-
 /**
  * Number of iterations of the constant-time symbol, B >= 1.112 log2(p) + 15.12
  * from a convex-hull bound as in safegcd-bounds for |f|, |g| <= sqrt(p), within
@@ -100,113 +99,83 @@
 #define FP_CUB_I3		((uint64_t)0xAAAAAAAAAAAAAAAB)
 
 /**
- * Divides an integer of len digits in two's complement exactly by an odd digit,
- * from the lowest digit with the inverse modulo 2^RLC_DIG, the high half of
- * each product being the borrow into the next: two products per digit and no
- * division.
+ * Computes c = (s0 * f0 + s1 * f1 + s2 * g0 + s3 * g1) / d for the coordinates
+ * f0, f1, g0, g1 in w of len digits in two's complement, signed digits s_i and
+ * an odd digit d dividing the combination, in one pass from the lowest digit:
+ * the combination accumulates in a signed double digit, whose digits are
+ * divided exactly as they come, with the inverse of d modulo 2^RLC_DIG and the
+ * high half of each quotient digit times d as the borrow into the next.
  *
- * @param[out] c			- the quotient.
- * @param[in] a				- the integer, a multiple of d.
- * @param[in] d				- the odd divisor.
+ * @param[out] c			- the result.
+ * @param[in] w				- the coordinates.
+ * @param[in] s				- the factors.
+ * @param[in] d				- the divisor.
  * @param[in] inv			- the inverse of d modulo 2^RLC_DIG.
  * @param[in] len			- the number of digits.
  */
-static inline void smb3_divd(dig_t *c, const dig_t *a, dig_t d, dig_t inv,
-		size_t len) {
-	dig_t b = 0, h, l, q;
+static inline void smb3_comb(dig_t *c, dig_t w[4][FP_CUB_DIGS],
+		const dis_t s[4], dig_t d, dig_t inv, size_t len) {
+	dig_t lo = 0, hi = 0, b = 0, q, u, v;
 
 	for (size_t j = 0; j < len; j++) {
-		l = a[j] - b;
-		b = (a[j] < b);
-		q = RLC_MLO_DIG(l, inv);
-		c[j] = q;
-		/* The borrow is the high digit of d * q, the low one being l. */
-		RLC_MUL_DIG(h, l, q, d);
-		b += h;
-	}
-}
-
-/**
- * Computes c = s0 * a0 + s1 * a1 + s2 * a2 + s3 * a3 for integers of len digits
- * in two's complement and signed digits s_i, with each negative term added as a
- * complement plus one.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the integers.
- * @param[in] s				- the factors, signed digits.
- * @param[in] len			- the number of digits.
- */
-static inline void smb3_lin(dig_t *c, const dig_t *a[4], const dis_t s[4],
-		size_t len) {
-	dig_t ms[4], ns[4], cs[4] = { 0, 0, 0, 0 }, k = 0, h, l, d;
-
-	for (int i = 0; i < 4; i++) {
-		ms[i] = (dig_t)(s[i] < 0 ? -s[i] : s[i]);
-		ns[i] = -(dig_t)(s[i] < 0);
-		k += (s[i] < 0);
-	}
-	for (size_t j = 0; j < len; j++) {
-		d = k;
-		k = 0;
+		/* The top digits need no sign correction, as only the result
+		 * modulo 2^(RLC_DIG * len) matters. */
 		for (int i = 0; i < 4; i++) {
-			RLC_MUL_DIG(h, l, ms[i], a[i][j]);
-			l += cs[i];
-			cs[i] = h + (l < cs[i]);
-			l ^= ns[i];
-			d += l;
-			k += (d < l);
+			RLC_MAC_DIG(hi, lo, s[i], w[i][j], 0);
 		}
-		c[j] = d;
+		u = lo - b;
+		b = (lo < b);
+		q = RLC_MLO_DIG(u, inv);
+		c[j] = q;
+		RLC_MUL_DIG(v, u, q, d);
+		b += v;
+		lo = hi;
+		hi = -RLC_SIGN(hi);
 	}
 }
 
 /**
- * Computes (m * alpha + n * beta) / (1 - w)^(2h) in len digits, where the
- * division is exact, for alpha = x + y * w and beta = u + v * w.
+ * Applies the rows (A, B) and (C, D) over Z[w] of h combined iterations to
+ * f = w[0] + w[1] * w and g = w[2] + w[3] * w, computing
+ * f' = (A f + B g) / (-3w)^h and g' = (C f + D g) / (-3w)^h into c: the entries
+ * times (-w)^-h give four combinations of the coordinates, divided by 3^h.
  *
- * @param[out] c0			- the first coordinate of the result.
- * @param[out] c1			- the second coordinate of the result.
- * @param[in] m				- the factor of alpha.
- * @param[in] n				- the factor of beta.
- * @param[in] h				- half the power of 1 - w to divide by.
- * @param[in] x				- the first coordinate of alpha.
- * @param[in] y				- the second coordinate of alpha.
- * @param[in] u				- the first coordinate of beta.
- * @param[in] v				- the second coordinate of beta.
+ * @param[out] c			- the coordinates of f' and g'.
+ * @param[in] w				- the coordinates of f and g.
+ * @param[in] r				- the rows A, B, C and D, as coordinate pairs.
+ * @param[in] h				- the number of iterations.
  * @param[in] len			- the number of digits.
  */
-static inline void smb3_row(dig_t *c0, dig_t *c1, const int64_t m[2],
-		const int64_t n[2], int h, const dig_t *x, const dig_t *y,
-		const dig_t *u, const dig_t *v, size_t len) {
-	/* (1 - w)^(2h) = (-3w)^h, so first multiply m and n by the unit
-	 * (-w)^-h, a power of 1 + w with (a + b * w)(1 + w) = (a - b) + a * w. */
-	const dig_t *f[4] = { x, y, u, v };
-	int64_t m0 = m[0], m1 = m[1], n0 = n[0], n1 = n[1], t;
-	dis_t f0[4], f1[4];
+static inline void smb3_apply(dig_t c[4][FP_CUB_DIGS],
+		dig_t w[4][FP_CUB_DIGS], const int64_t r[4][2], int h, size_t len) {
+	int64_t e[4][2], t;
+	dis_t s[4][4];
 	dig_t p = 1, pi = 1;
 
-	for (int j = 0; j < h % 6; j++) {
-		t = m0 - m1;
-		m1 = m0;
-		m0 = t;
-		t = n0 - n1;
-		n1 = n0;
-		n0 = t;
+	/* Multiply the entries by (-w)^-h, a power of 1 + w, with
+	 * (a + b * w)(1 + w) = (a - b) + a * w. */
+	for (int k = 0; k < 4; k++) {
+		e[k][0] = r[k][0];
+		e[k][1] = r[k][1];
+		for (int j = 0; j < h % 6; j++) {
+			t = e[k][0] - e[k][1];
+			e[k][1] = e[k][0];
+			e[k][0] = t;
+		}
 	}
 	/* (m0 + m1 * w)(x + y * w) = (m0 * x - m1 * y) +
-	 * (m1 * x + (m0 - m1) * y) * w, and the same for n and beta. */
-	f0[0] = (dis_t)m0;
-	f0[1] = (dis_t)-m1;
-	f0[2] = (dis_t)n0;
-	f0[3] = (dis_t)-n1;
-	f1[0] = (dis_t)m1;
-	f1[1] = (dis_t)(m0 - m1);
-	f1[2] = (dis_t)n1;
-	f1[3] = (dis_t)(n0 - n1);
-
-	smb3_lin(c0, f, f0, len);
-	smb3_lin(c1, f, f1, len);
-	/* Divide by 3^h, with 3^h and its inverse by squaring and multiplying. */
+	 * (m1 * x + (m0 - m1) * y) * w, for (m, n) = (A, B) and (C, D). */
+	for (int k = 0; k < 4; k += 2) {
+		s[k][0] = (dis_t)e[k][0];
+		s[k][1] = (dis_t)-e[k][1];
+		s[k][2] = (dis_t)e[k + 1][0];
+		s[k][3] = (dis_t)-e[k + 1][1];
+		s[k + 1][0] = (dis_t)e[k][1];
+		s[k + 1][1] = (dis_t)(e[k][0] - e[k][1]);
+		s[k + 1][2] = (dis_t)e[k + 1][1];
+		s[k + 1][3] = (dis_t)(e[k + 1][0] - e[k + 1][1]);
+	}
+	/* 3^h and its inverse, by squaring and multiplying. */
 	for (int j = 5; j >= 0; j--) {
 		p *= p;
 		pi = RLC_MLO_DIG(pi, pi);
@@ -215,8 +184,9 @@ static inline void smb3_row(dig_t *c0, dig_t *c1, const int64_t m[2],
 			pi = RLC_MLO_DIG(pi, (dig_t)FP_CUB_I3);
 		}
 	}
-	smb3_divd(c0, c0, p, pi, len);
-	smb3_divd(c1, c1, p, pi, len);
+	for (int k = 0; k < 4; k++) {
+		smb3_comb(c[k], w, s[k], p, pi, len);
+	}
 }
 
 /**
@@ -441,8 +411,7 @@ static inline void smb3_jump(dig_t c[4][FP_CUB_DIGS],
 		r[i][1] = a[0] * x[1] + a[1] * x[0] - a[1] * x[1] +
 				b[0] * y[1] + b[1] * y[0] - b[1] * y[1];
 	}
-	smb3_row(c[0], c[1], r[0], r[1], n, w[0], w[1], w[2], w[3], len);
-	smb3_row(c[2], c[3], r[2], r[3], n, w[0], w[1], w[2], w[3], len);
+	smb3_apply(c, w, r, n, len);
 }
 
 /**
@@ -630,11 +599,10 @@ int fp_smb3_basic(const fp_t a) {
 }
 
 int fp_smb3_binar(const fp_t a) {
-	dig_t w[4][FP_CUB_DIGS], c[2][FP_CUB_DIGS], z, d;
+	dig_t w[4][FP_CUB_DIGS], c[4][FP_CUB_DIGS], z, d;
 	uint64_t v;
-	int64_t x[4], nf, ng, e = 0, tab, dv, j, ua, ub, mf, kf;
-	const int64_t one[2] = { 1, -1 }, nul[2] = { 0, 0 }, neg[2] = { -1, 0 };
-	int64_t u[2];
+	int64_t x[4], nf, ng, e = 0, tab, dv, sw, j, ua, ub, mf, kf;
+	const dig_t i3 = (dig_t)FP_CUB_I3;
 	size_t len = FP_CUB_DIGS, b, l, q, r;
 
 	if (fp_is_zero(a)) {
@@ -662,12 +630,22 @@ int fp_smb3_binar(const fp_t a) {
 		j = (tab >> 1) & 3;
 		ua = ((tab >> 3) & 3) - 1;
 		ub = (tab >> 5) - 1;
+		sw = 0;
 		if (dv) {
-			/* g / (1 - w) = g * (1 - w) / (1 - w)^2, and (1 - w) gives
-			 * w^(2m). */
-			smb3_row(c[0], c[1], one, nul, 1, w[2], w[3], w[0], w[1], len);
+			/* g / (1 - w) = ((2x - y) + (x + y) * w) / 3 for g = x + y * w,
+			 * and (1 - w) gives w^(2m). */
+			const dis_t s0[4] = { 0, 0, 2, -1 }, s1[4] = { 0, 0, 1, 1 };
+
+			smb3_comb(c[2], w, s0, 3, i3, len);
+			smb3_comb(c[3], w, s1, 3, i3, len);
 			e += 2 * mf;
 		} else {
+			/* The factors of (u * g - f) / (1 - w)^2, and of u * g. */
+			const dis_t s0[4] = { -1, 1, (dis_t)(ua - ub), (dis_t)-ua };
+			const dis_t s1[4] = { -1, 0, (dis_t)ua, (dis_t)-ub };
+			const dis_t s2[4] = { 0, 0, (dis_t)ua, (dis_t)-ub };
+			const dis_t s3[4] = { 0, 0, (dis_t)ub, (dis_t)(ua - ub) };
+
 			/* u = +/- w^-j gives w^(j(m + k)). */
 			e += j * (mf + kf);
 			/* Compare N(u * g) = N(g) with N(f), from the bits of the
@@ -698,21 +676,29 @@ int fp_smb3_binar(const fp_t a) {
 			}
 			nf = x[0] * x[0] - x[0] * x[1] + x[1] * x[1];
 			ng = x[2] * x[2] - x[2] * x[3] + x[3] * x[3];
-			u[0] = ua;
-			u[1] = ub;
-			/* (u * g - f) / (1 - w)^2 replaces the one with the larger norm,
-			 * and f becomes u * g if that is f, by reciprocity. */
-			smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
-			if (ng < nf) {
-				smb3_row(w[0], w[1], u, nul, 0, w[2], w[3], w[2], w[3], len);
-				mf = (smb3_mod9(w[0], len) + 1) % 9 / 3;
-				kf = smb3_mod9(w[1], len) / 3;
+			/* (u * g - f) / (1 - w)^2 = ((x - y) + x * w) / 3 for
+			 * x + y * w = u * g - f, which replaces the one with the larger
+			 * norm, and f becomes u * g if that is f, by reciprocity. */
+			smb3_comb(c[2], w, s0, 3, i3, len);
+			smb3_comb(c[3], w, s1, 3, i3, len);
+			sw = (ng < nf);
+			if (sw) {
+				smb3_comb(c[0], w, s2, 1, 1, len);
+				smb3_comb(c[1], w, s3, 1, 1, len);
 			}
-			/* (1 - w)^2 gives w^(4m) = w^m, with the m of the new f. */
+		}
+		/* f only changes after a swap. */
+		for (int i = (sw ? 0 : 2); i < 4; i++) {
+			dv_copy(w[i], c[i], len);
+		}
+		if (sw) {
+			mf = (smb3_mod9(w[0], len) + 1) % 9 / 3;
+			kf = smb3_mod9(w[1], len) / 3;
+		}
+		/* (1 - w)^2 gives w^(4m) = w^m, with the m of the new f. */
+		if (!dv) {
 			e += mf;
 		}
-		dv_copy(w[2], c[0], len);
-		dv_copy(w[3], c[1], len);
 		len = smb3_shrink(w, len);
 	}
 	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
