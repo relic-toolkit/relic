@@ -27,7 +27,6 @@
  * Implementation of Freeman's prime-order version of the Boneh-Goh-Nissim
  * cryptosystem.
  *
- * @version $Id$
  * @ingroup cp
  */
 

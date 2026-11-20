@@ -26,7 +26,6 @@
  *
  * Benchmarks for cryptographic protocols based on accumulators.
  *
- * @version $Id$
  * @ingroup bench
  */
 

@@ -26,7 +26,6 @@
  *
  * Benchmarks for cryptographic protocols based on integer factorization.
  *
- * @version $Id$
  * @ingroup bench
  */
 

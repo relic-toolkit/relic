@@ -25,7 +25,6 @@
  *
  * Implementation of the low-le&vel in&version functions.
  *
- * @&version $Id$
  * @ingroup fp
  */
 

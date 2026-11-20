@@ -26,7 +26,6 @@
  *
  * Tests for implementation of cryptographic protocols based on elliptic curves.
  *
- * @version $Id$
  * @ingroup test
  */
 

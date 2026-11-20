@@ -26,7 +26,6 @@
  *
  * Implementation of the low-level Legendre symbol.
  *
- * @&version $Id$
  * @ingroup fp
  */
 

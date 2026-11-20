@@ -26,7 +26,6 @@
  *
  * Tests for implementation of cryptographic protocols based on accumulators.
  *
- * @version $Id$
  * @ingroup test
  */
 

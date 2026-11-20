@@ -28,7 +28,6 @@
  *
  * Paper: "IMBAS: id-based multi-user broadcast authentication in wireless sensor networks"
  *
- * @version $Id$
  * @ingroup cp
  */
 

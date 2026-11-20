@@ -26,7 +26,6 @@
  *
  * Benchmarks for cryptographic protocols based on elliptic curves.
  *
- * @version $Id$
  * @ingroup bench
  */
 

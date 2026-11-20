@@ -26,7 +26,6 @@
  *
  * Benchmarks for cryptographic protocols.
  *
- * @version $Id$
  * @ingroup bench
  */
 

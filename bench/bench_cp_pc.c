@@ -26,7 +26,6 @@
  *
  * Benchmarks for cryptographic protocols based on pairings.
  *
- * @version $Id$
  * @ingroup bench
  */
 
