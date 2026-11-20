@@ -71,7 +71,8 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		g_lo ^= borrow;
 		g_hi ^= borrow;
 		limbx = g_lo + (borrow & 1);
-		g_hi += (g_lo < limbx);
+		/* The carry is set only if g_lo was all ones, so limbx is 0. */
+		g_hi += ((g_lo | (borrow & 1)) & ~limbx) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
 		/* f_=g_ if g_-f_ borrowed */
@@ -123,7 +124,8 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		g_lo ^= borrow;
 		g_hi ^= borrow;
 		limbx = g_lo + (borrow & 1);
-		g_hi += (g_lo < limbx);
+		/* The carry is set only if g_lo was all ones, so limbx is 0. */
+		g_hi += ((g_lo | (borrow & 1)) & ~limbx) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
 		/* f_=g_ if g_-f_ borrowed */
@@ -438,7 +440,7 @@ int fp_smb2_binar(const fp_t a) {
 		for (size_t len, i = 0; i < iterations / s; i++) {
 			f_hi = f[RLC_FP_DIGS - 1], f_lo = f[RLC_FP_DIGS - 2];
 			g_hi = g[RLC_FP_DIGS - 1], g_lo = g[RLC_FP_DIGS - 2];
-			for (int j = RLC_FP_DIGS - 2; j >= 0; j--) {
+			for (int j = RLC_FP_DIGS - 3; j >= 0; j--) {
 				l = (f_hi | g_hi);
 				l = ~l & (l - 1);
 				mask = -(l >> (RLC_DIG - 1));
@@ -463,7 +465,7 @@ int fp_smb2_binar(const fp_t a) {
 			k += (f[0] >> 1) & neg;
 		}
 
-		k = porninstep(m, g, f, k, iterations % s);
+		k = porninstep(m, f, g, k, iterations % s);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -481,7 +483,9 @@ int fp_smb2_divst(const fp_t a) {
 #else
 	const int d = (49 * FP_PRIME + 57) / 17;
 #endif
-	dig_t delta = 1, g0, d0, fs, gs, k, mask, s;
+	dig_t g0, d0, fs, gs, k, mask, s;
+	/* An int, as a digit of 8 or 16 bits is promoted to a nonnegative int. */
+	int delta = 1;
 	bn_t _t;
 	dv_t f, g, t;
 	int r = 0;
@@ -513,9 +517,10 @@ int fp_smb2_divst(const fp_t a) {
 		fs = gs = RLC_POS;
 
 		for (int i = 0; i < d; i++) {
-			d0 = g[0] & ((int)delta > 0);
+			/* delta > 0 from the sign of -delta, without a comparison. */
+			d0 = g[0] & (dig_t)((unsigned)-delta >> (8 * sizeof(int) - 1));
 			/* Conditionally negate delta if d0 is set. */
-			delta = (delta ^ -d0) + d0;
+			delta = (delta ^ -(int)d0) + (int)d0;
 			/* Conditionally swap and negate based on d0. */
 			mask = -d0;
 			s = (fs ^ gs) & mask;
