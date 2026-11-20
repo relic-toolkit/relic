@@ -813,6 +813,18 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp_smb6") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb6(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_smb12") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb12(a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_crt") {
 		fp_rand(a);
 		fp_sqr(b, a);

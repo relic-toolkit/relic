@@ -1447,6 +1447,32 @@ int fp_smb4_jmpvt(const fp_t a);
 int fp_smb4_lower(const fp_t a);
 
 /**
+ * Computes the sextic residue symbol of a prime field element, the k such that
+ * a^((p - 1)/6) = z^k for the sixth root of unity z = -w^2, where w is the cube
+ * root of unity returned by fp_prime_get_cub(), from the quadratic and cubic
+ * symbols and by their configured methods. For p = 2 mod 3, it is the character
+ * of order 2, with k = 0 for squares and k = 3 otherwise.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, ..., 5}, or -1 if the element is zero.
+ */
+int fp_smb6(const fp_t a);
+
+/**
+ * Computes the residue symbol of order 12 of a prime field element, the k such
+ * that a^((p - 1)/12) = z^k for the twelfth root of unity z = -w * i, where w
+ * and i are the roots of unity returned by fp_prime_get_cub() and
+ * fp_prime_get_qrt(), from the cubic and quartic symbols and by their
+ * configured methods. If 12 does not divide p - 1, it is the character of order
+ * g = gcd(12, p - 1) written with z^(12/g) as its root of unity, that is,
+ * a^((p - 1)/g) = (z^(12/g))^(k g / 12), where z^3 = i and z^2 = -w^2.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, ..., 11}, or -1 if the element is zero.
+ */
+int fp_smb12(const fp_t a);
+
+/**
  * Exponentiates a prime field element using the binary
  * method.
  *

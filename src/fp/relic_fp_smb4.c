@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_bn_low.h"
 #include "relic_fp_low.h"
+#include "relic_fp_smb_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -408,37 +409,6 @@ static void smb4_init(dig_t w[4][FP_QRT_DIGS], const fp_t a) {
 	dv_copy(w[1], v, FP_QRT_DIGS);
 }
 
-/**
- * Returns the number of digits that f and g need, in variable time. They do not
- * grow, but a coordinate may double, so the largest stays below 2^(RLC_DIG *
- * len - 3); digits that come back are sign-extended.
- *
- * @param[in,out] w			- the coordinates of f and g.
- * @param[in] len			- the current number of digits.
- * @return the new number of digits.
- */
-static size_t smb4_shrink(dig_t w[4][FP_QRT_DIGS], size_t len) {
-	dig_t s;
-	size_t t = 1;
-
-	for (int j = 0; j < 4; j++) {
-		s = -(w[j][len - 1] >> (RLC_DIG - 1));
-		for (size_t l = len; l > 0; l--) {
-			if ((w[j][l - 1] ^ s) != 0) {
-				t = RLC_MAX(t, l + (((w[j][l - 1] ^ s) >> (RLC_DIG - 3)) != 0));
-				break;
-			}
-		}
-	}
-	t = RLC_MIN(t, (size_t)FP_QRT_DIGS);
-	for (int j = 0; j < 4; j++) {
-		s = -(w[j][len - 1] >> (RLC_DIG - 1));
-		for (size_t l = len; l < t; l++) {
-			w[j][l] = s;
-		}
-	}
-	return t;
-}
 
 /**
  * Converts a Legendre symbol s in {1, -1, 0} into the exponent of the quartic
@@ -453,61 +423,11 @@ static inline int smb4_from2(int s) {
 }
 
 /**
- * Computes the quartic residue symbol for p = 1 mod 4 by jumps of up to k
- * combined divsteps, a fixed number of them in constant time or until g is 0,
- * with -1 for zero.
- *
- * @param[in] a				- the prime field element.
- * @param[in] ct			- the flag to run in constant time.
- * @param[in] k				- the largest number of iterations per jump.
- * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ * Reduces an exponent of the quartic symbol modulo 4.
  */
-static int smb4_symbol(const fp_t a, int ct, int k) {
-	dig_t w[4][FP_QRT_DIGS], c[4][FP_QRT_DIGS], z = 0;
-	int64_t d = 1, e = 0;
-	size_t len = FP_QRT_DIGS;
-	int zero;
+#define SMB4_MOD(E)		((E) & 3)
 
-	for (size_t j = 0; j < RLC_FP_DIGS; j++) {
-		z |= a[j];
-	}
-	zero = (z == 0);
-	if (!ct && zero) {
-		return -1;
-	}
-
-	smb4_init(w, a);
-	for (int i = 0, n; i < FP_QRT_ITER; i += n) {
-		n = RLC_MIN(k, FP_QRT_ITER - i);
-		/* Without constant time, stop once g is 0. */
-		if (!ct) {
-			z = 0;
-			for (size_t j = 0; j < len; j++) {
-				z |= w[2][j] | w[3][j];
-			}
-			if (z == 0) {
-				break;
-			}
-		}
-		/* A fixed number of digits in constant time, so that the compiler can
-		 * specialize the loops for it. */
-		if (ct) {
-			smb4_jump(c, w, &d, &e, n, FP_QRT_DIGS);
-		} else {
-			smb4_jump(c, w, &d, &e, n, len);
-		}
-		for (int j = 0; j < 4; j++) {
-			dv_copy(w[j], c[j], len);
-		}
-		/* Without constant time, keep only the digits that f and g need. */
-		if (!ct) {
-			len = smb4_shrink(w, len);
-		}
-	}
-	/* g is now 0 and f the unit 1, so the symbol is i^e, divided by that of R
-	 * in Montgomery form; zero has no symbol. */
-	return (int)((e - core_get()->qrt_r) & 3) | -zero;
-}
+TMPL_FP_SMB(smb4, FP_QRT_DIGS, FP_QRT_ITER, qrt_r, SMB4_MOD)
 
 /*============================================================================*/
 /* Public definitions                                                         */

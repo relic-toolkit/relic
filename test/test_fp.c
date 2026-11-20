@@ -1341,7 +1341,7 @@ static int cube_root(void) {
 	return code;
 }
 
-static int quartic_symbol(void) {
+static int residue_symbols(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 	bn_t e;
@@ -1382,6 +1382,77 @@ static int quartic_symbol(void) {
 			} else {
 				TEST_ASSERT(fp_smb4(a) == 2 * !fp_is_sqr(a), end);
 			}
+		}
+		TEST_END;
+
+		TEST_CASE("sextic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb6(a) == -1, end);
+			do {
+				fp_rand(a);
+				fp_rand(d);
+			} while (fp_is_zero(a) || fp_is_zero(d));
+			fp_sqr(b, a);
+			fp_mul(b, b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb6(b) == 0, end);
+			if (fp_prime_get_mod18() % 3 == 1) {
+				/* For the symbol z^k with z = -w^2, a^((p - 1)/6) = z^k. */
+				bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+				bn_div_dig(e, e, 6);
+				fp_exp(b, a, e);
+				fp_sqr(c, (dig_t *)fp_prime_get_cub());
+				fp_neg(c, c);
+				fp_copy(d, c);
+				fp_set_dig(c, 1);
+				for (int k = fp_smb6(a); k > 0; k--) {
+					fp_mul(c, c, d);
+				}
+				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+				fp_rand(d);
+			} else {
+				TEST_ASSERT(fp_smb6(a) == 3 * !fp_is_sqr(a), end);
+			}
+			/* The symbol is multiplicative. */
+			fp_mul(c, a, d);
+			TEST_ASSERT(fp_is_zero(d) ||
+					fp_smb6(c) == (fp_smb6(a) + fp_smb6(d)) % 6, end);
+		}
+		TEST_END;
+
+		TEST_CASE("residue symbol of order 12 is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb12(a) == -1, end);
+			do {
+				fp_rand(a);
+				fp_rand(d);
+			} while (fp_is_zero(a) || fp_is_zero(d));
+			fp_sqr(b, a);
+			fp_mul(b, b, a);
+			fp_sqr(b, b);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb12(b) == 0, end);
+			if (fp_prime_get_mod8() % 4 == 1 &&
+					fp_prime_get_mod18() % 3 == 1) {
+				/* For the symbol z^k with z = -w * i, a^((p - 1)/12) = z^k. */
+				bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+				bn_div_dig(e, e, 12);
+				fp_exp(b, a, e);
+				fp_mul(c, (dig_t *)fp_prime_get_cub(),
+						(dig_t *)fp_prime_get_qrt());
+				fp_neg(c, c);
+				fp_copy(d, c);
+				fp_set_dig(c, 1);
+				for (int k = fp_smb12(a); k > 0; k--) {
+					fp_mul(c, c, d);
+				}
+				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+				fp_rand(d);
+			}
+			/* The symbol is multiplicative. */
+			fp_mul(c, a, d);
+			TEST_ASSERT(fp_is_zero(d) ||
+					fp_smb12(c) == (fp_smb12(a) + fp_smb12(d)) % 12, end);
 		}
 		TEST_END;
 
@@ -1617,7 +1688,7 @@ int main(void) {
 		return 1;
 	}
 
-	if (quartic_symbol() != RLC_OK) {
+	if (residue_symbols() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

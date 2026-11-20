@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_bn_low.h"
 #include "relic_fp_low.h"
+#include "relic_fp_smb_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -466,97 +467,13 @@ static void smb3_init(dig_t w[4][FP_CUB_DIGS], const fp_t a) {
 	dv_copy(w[1], v, FP_CUB_DIGS);
 }
 
-/**
- * Returns the number of digits that f and g need, in variable time. They do not
- * grow, but a coordinate may double, so the largest stays below 2^(RLC_DIG *
- * len - 3); digits that come back are sign-extended.
- *
- * @param[in,out] w			- the coordinates of f and g.
- * @param[in] len			- the current number of digits.
- * @return the new number of digits.
- */
-static size_t smb3_shrink(dig_t w[4][FP_CUB_DIGS], size_t len) {
-	dig_t s;
-	size_t t = 1;
-
-	for (int j = 0; j < 4; j++) {
-		s = -(w[j][len - 1] >> (RLC_DIG - 1));
-		for (size_t l = len; l > 0; l--) {
-			if ((w[j][l - 1] ^ s) != 0) {
-				t = RLC_MAX(t, l + (((w[j][l - 1] ^ s) >> (RLC_DIG - 3)) != 0));
-				break;
-			}
-		}
-	}
-	t = RLC_MIN(t, (size_t)FP_CUB_DIGS);
-	for (int j = 0; j < 4; j++) {
-		s = -(w[j][len - 1] >> (RLC_DIG - 1));
-		for (size_t l = len; l < t; l++) {
-			w[j][l] = s;
-		}
-	}
-	return t;
-}
 
 /**
- * Computes the cubic residue symbol by jumps of up to k combined divsteps, a
- * fixed number of them in constant time or until g is 0, with -1 for zero and 0
- * for p = 2 mod 3.
- *
- * @param[in] a				- the prime field element.
- * @param[in] ct			- the flag to run in constant time.
- * @param[in] k				- the largest number of iterations per jump.
- * @return k in {0, 1, 2}, or -1 if the element is zero.
+ * Reduces an exponent of the cubic symbol modulo 3, nonnegative after adding 3.
  */
-static int smb3_symbol(const fp_t a, int ct, int k) {
-	dig_t w[4][FP_CUB_DIGS], c[4][FP_CUB_DIGS], z = 0;
-	int64_t d = 1, e = 0;
-	size_t len = FP_CUB_DIGS;
-	int zero;
+#define SMB3_MOD(E)		smb3_c3((uint64_t)((E) + 3))
 
-	for (size_t j = 0; j < RLC_FP_DIGS; j++) {
-		z |= a[j];
-	}
-	zero = (z == 0);
-	if (!ct && zero) {
-		return -1;
-	}
-	if (fp_prime_get_mod18() % 3 == 2) {
-		return -zero;
-	}
-
-	smb3_init(w, a);
-	for (int i = 0, n; i < FP_CUB_ITER; i += n) {
-		n = RLC_MIN(k, FP_CUB_ITER - i);
-		/* Without constant time, stop once g is 0. */
-		if (!ct) {
-			z = 0;
-			for (size_t j = 0; j < len; j++) {
-				z |= w[2][j] | w[3][j];
-			}
-			if (z == 0) {
-				break;
-			}
-		}
-		/* A fixed number of digits in constant time, so that the compiler can
-		 * specialize the loops for it. */
-		if (ct) {
-			smb3_jump(c, w, &d, &e, n, FP_CUB_DIGS);
-		} else {
-			smb3_jump(c, w, &d, &e, n, len);
-		}
-		for (int j = 0; j < 4; j++) {
-			dv_copy(w[j], c[j], len);
-		}
-		/* Without constant time, keep only the digits that f and g need. */
-		if (!ct) {
-			len = smb3_shrink(w, len);
-		}
-	}
-	/* g is now 0 and f the unit -1, so the symbol is w^e, divided by that
-	 * of R in Montgomery form; zero has no symbol. */
-	return (int)smb3_c3((uint64_t)(e + 3 - core_get()->cub_r)) | -zero;
-}
+TMPL_FP_SMB(smb3, FP_CUB_DIGS, FP_CUB_ITER, cub_r, SMB3_MOD)
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -569,8 +486,9 @@ int fp_smb3_basic(const fp_t a) {
 	fp_null(t);
 	fp_null(u);
 
+	/* For p = 2 mod 3 every element is a cube, and zero has no symbol. */
 	if (fp_prime_get_mod18() % 3 == 2) {
-		return smb3_symbol(a, 1, 0);
+		return -fp_is_zero(a);
 	}
 
 	RLC_TRY {
@@ -712,14 +630,23 @@ int fp_smb3_binar(const fp_t a) {
 }
 
 int fp_smb3_divst(const fp_t a) {
+	if (fp_prime_get_mod18() % 3 == 2) {
+		return -fp_is_zero(a);
+	}
 	return smb3_symbol(a, 1, 1);
 }
 
 int fp_smb3_jmpds(const fp_t a) {
+	if (fp_prime_get_mod18() % 3 == 2) {
+		return -fp_is_zero(a);
+	}
 	return smb3_symbol(a, 1, FP_CUB_JK);
 }
 
 int fp_smb3_jmpvt(const fp_t a) {
+	if (fp_prime_get_mod18() % 3 == 2) {
+		return -fp_is_zero(a);
+	}
 	return smb3_symbol(a, 0, FP_CUB_JK);
 }
 

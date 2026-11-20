@@ -637,6 +637,8 @@
 #undef fp_smb4_jmpds
 #undef fp_smb4_jmpvt
 #undef fp_smb4_lower
+#undef fp_smb6
+#undef fp_smb12
 #undef fp_exp_basic
 #undef fp_exp_slide
 #undef fp_exp_monty
@@ -755,6 +757,8 @@
 #define fp_smb4_jmpds 	RLC_PREFIX(fp_smb4_jmpds)
 #define fp_smb4_jmpvt 	RLC_PREFIX(fp_smb4_jmpvt)
 #define fp_smb4_lower 	RLC_PREFIX(fp_smb4_lower)
+#define fp_smb6 	RLC_PREFIX(fp_smb6)
+#define fp_smb12 	RLC_PREFIX(fp_smb12)
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)
