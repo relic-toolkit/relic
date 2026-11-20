@@ -359,56 +359,6 @@ static inline void smb4_jump(dig_t c[4][FP_QRT_DIGS],
 	smb4_apply(c, w, r, n, len);
 }
 
-/**
- * Starts the symbol of a nonzero element for p = 1 mod 4 with f = pi and g = a
- * - q * pi, of norm below p, for q the rounded a / pi from the scaled inverse
- * of pi, in constant time.
- *
- * @param[out] w			- the coordinates of f and g.
- * @param[in] a				- the prime field element.
- */
-static void smb4_init(dig_t w[4][FP_QRT_DIGS], const fp_t a) {
-	ctx_t *ctx = core_get();
-	dig_t g[RLC_FP_DIGS + 1], *x = w[2], *y = w[3];
-	dig_t q[2][FP_QRT_DIGS], h[2 * (RLC_FP_DIGS + 1)], z[FP_QRT_DIGS], c;
-	const dig_t *u = ctx->qrt_pi[0], *v = ctx->qrt_pi[1];
-
-	/* The stored digits of a, the integer a * R mod p in Montgomery form,
-	 * whose symbol is that of a times that of R. */
-	dv_copy(g, a, RLC_FP_DIGS);
-	g[RLC_FP_DIGS] = 0;
-	dv_zero(z, FP_QRT_DIGS);
-	for (int j = 0; j < 2; j++) {
-		bn_muln_low(h, g, ctx->qrt_inv[j], RLC_FP_DIGS + 1);
-		dv_copy(q[j], h + RLC_FP_DIGS + 1, FP_QRT_DIGS);
-		/* Round with the top bit of the fraction, propagating the carry
-		 * through all digits so that the time does not depend on it. */
-		c = h[RLC_FP_DIGS] >> (RLC_DIG - 1);
-		for (size_t i = 0; i < FP_QRT_DIGS; i++) {
-			q[j][i] += c;
-			c = (q[j][i] < c);
-		}
-		/* The signs of the inverse are public. */
-		if (ctx->qrt_sgn[j] == RLC_NEG) {
-			bn_subn_low(q[j], z, q[j], FP_QRT_DIGS);
-		}
-	}
-	/* q * pi = (q0 * u - q1 * v) + (q0 * v + q1 * u) * i. */
-	dv_copy(x, g, FP_QRT_DIGS);
-	dv_zero(y, FP_QRT_DIGS);
-	bn_muln_low(h, q[0], u, FP_QRT_DIGS);
-	bn_subn_low(x, x, h, FP_QRT_DIGS);
-	bn_muln_low(h, q[1], v, FP_QRT_DIGS);
-	bn_addn_low(x, x, h, FP_QRT_DIGS);
-	bn_muln_low(h, q[0], v, FP_QRT_DIGS);
-	bn_subn_low(y, y, h, FP_QRT_DIGS);
-	bn_muln_low(h, q[1], u, FP_QRT_DIGS);
-	bn_subn_low(y, y, h, FP_QRT_DIGS);
-	/* The coordinates of pi also fit in FP_QRT_DIGS digits. */
-	dv_copy(w[0], u, FP_QRT_DIGS);
-	dv_copy(w[1], v, FP_QRT_DIGS);
-}
-
 
 /**
  * Converts a Legendre symbol s in {1, -1, 0} into the exponent of the quartic
@@ -427,7 +377,7 @@ static inline int smb4_from2(int s) {
  */
 #define SMB4_MOD(E)		((E) & 3)
 
-TMPL_FP_SMB(smb4, FP_QRT_DIGS, FP_QRT_ITER, qrt_r, SMB4_MOD)
+TMPL_FP_SMB(smb4, FP_QRT_DIGS, FP_QRT_ITER, qrt, 0, SMB4_MOD)
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -485,10 +435,9 @@ int fp_smb4_basic(const fp_t a) {
 }
 
 int fp_smb4_binar(const fp_t a) {
-	dig_t w[4][FP_QRT_DIGS], c[4][FP_QRT_DIGS], z, d;
-	uint64_t v;
+	dig_t w[4][FP_QRT_DIGS], c[4][FP_QRT_DIGS], z;
 	int64_t x[4], vf, vg, e = 0, tab, j, ua, ub, nf, lf, eh, lh;
-	size_t len = FP_QRT_DIGS, b, l, q, r;
+	size_t len = FP_QRT_DIGS, l;
 	int sw;
 
 	if (fp_is_zero(a)) {
@@ -537,30 +486,7 @@ int fp_smb4_binar(const fp_t a) {
 			e -= j * nf;
 			/* Compare N(u * g) = N(g) with N(f), from the bits of the
 			 * coordinates below their top one. */
-			z = 0;
-			for (l = len; l > 0 && z == 0; l--) {
-				for (int i = 0; i < 4; i++) {
-					z |= w[i][l - 1] ^ -(w[i][len - 1] >> (RLC_DIG - 1));
-				}
-			}
-			b = RLC_DIG * l + util_bits_dig(z);
-			b = (b > 29 ? b - 29 : 0);
-			/* The 64 bits from position b, with the sign above the top digit. */
-			q = b / RLC_DIG;
-			r = b % RLC_DIG;
-			for (int i = 0; i < 4; i++) {
-				v = 0;
-				for (size_t k = 0; k * RLC_DIG < 64 + r; k++) {
-					d = (q + k < len ? w[i][q + k] :
-							-(w[i][len - 1] >> (RLC_DIG - 1)));
-					if (k == 0) {
-						v |= (uint64_t)(d >> r);
-					} else {
-						v |= (uint64_t)d << (k * RLC_DIG - r);
-					}
-				}
-				x[i] = (int64_t)v;
-			}
+			smb4_top(x, w, len);
 			vf = x[0] * x[0] + x[1] * x[1];
 			vg = x[2] * x[2] + x[3] * x[3];
 			/* (u * g - f) / (1 + i)^3 replaces the one with the larger norm,
