@@ -85,11 +85,14 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 	fp2_null(t);
 	ep2_null(q);
 
-	RLC_TRY {
-		if (len != 2 * lpe) {
-			RLC_THROW(ERR_NO_VALID);
-		}
+	/* Before the TRY block, as execution continues after a throw without error
+	 * checking and would read past the input. */
+	if (len != 2 * lpe) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
+	RLC_TRY {
 		bn_new(k);
 		fp2_new(t);
 		ep2_new(q);
@@ -210,10 +213,14 @@ void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 	const size_t lpe = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 4 * lpe);
 
+	/* Before the TRY block, as execution continues after a throw without error
+	 * checking. */
+	if (r == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	RLC_TRY {
-		if (r == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		/* XXX(rsw) See note in ep/relic_ep_map.c about using MD_MAP. */
 		/* hash to a pseudorandom string using md_xmd */
 		md_xmd(r, 4 * lpe, msg, len, dst, dst_len);

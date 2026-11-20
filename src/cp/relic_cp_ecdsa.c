@@ -148,18 +148,21 @@ static int ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 
 		if (det) {
 			rlen = RLC_CEIL(bn_bits(n), 8);
-			if (rlen > ECDSA_BYTES) {
-				RLC_THROW(ERR_NO_BUFFER);
-			}
 			/* K = 00...00, V = 01...01. */
 			memset(kv, 0x00, RLC_MD_LEN);
 			memset(kv + RLC_MD_LEN, 0x01, RLC_MD_LEN);
-			/* Seed with int2octets(d) || bits2octets(e). */
-			bn_mod(x, d, n);
-			bn_write_bin(seed, rlen, x);
-			bn_mod(x, e, n);
-			bn_write_bin(seed + rlen, rlen, x);
-			ecdsa_det_update(kv, seed, 2 * rlen);
+			if (rlen > ECDSA_BYTES) {
+				/* Without error checking execution continues, so do not seed
+				 * past the buffer. */
+				RLC_THROW(ERR_NO_BUFFER);
+			} else {
+				/* Seed with int2octets(d) || bits2octets(e). */
+				bn_mod(x, d, n);
+				bn_write_bin(seed, rlen, x);
+				bn_mod(x, e, n);
+				bn_write_bin(seed + rlen, rlen, x);
+				ecdsa_det_update(kv, seed, 2 * rlen);
+			}
 		}
 
 		do {

@@ -265,11 +265,15 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 		return;
 	}
 
+	/* Before the TRY block, as execution continues after a throw without error
+	 * checking. */
+	if (naf == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
 	RLC_TRY {
 		ep_new(t);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_BUFFER);
-		}
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
