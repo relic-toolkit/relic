@@ -327,10 +327,6 @@ static int pkcs1_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	uint8_t *t = RLC_ALLOCA(uint8_t, k);
 	int result = 0;
 
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 	if (pkcs1_sig(t, em_bits, h) == RLC_OK) {
 		result = (util_cmp_sec(t, em, k) == RLC_EQ);
 	}
@@ -353,11 +349,6 @@ static int oaep_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	size_t db_len = k - RLC_MD_LEN - 1;
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
-
-	if (mask == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	em[0] = 0x00;
 	md_map(db, NULL, 0);
@@ -394,11 +385,6 @@ static int oaep_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	uint8_t *seed = em + 1, *db = em + 1 + RLC_MD_LEN, h[RLC_MD_LEN], diff = 0;
 	uint8_t *mask = RLC_ALLOCA(uint8_t, db_len);
 	uint32_t good, found = 0, bad = 0, one, zero, sel;
-
-	if (mask == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	md_mgf(mask, RLC_MD_LEN, db, db_len);
 	for (size_t i = 0; i < RLC_MD_LEN; i++) {
@@ -455,11 +441,6 @@ static int oaepp_enc(uint8_t *em, size_t k, const uint8_t *m, size_t m_len) {
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN];
 	uint8_t *buf = RLC_ALLOCA(uint8_t, k);
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	/* X = PS | 01 | M. */
 	em[0] = 0x00;
 	memset(s, 0, x_len - m_len - 1);
@@ -505,11 +486,6 @@ static int oaepp_dec(uint8_t *m, size_t *m_len, uint8_t *em, size_t k) {
 	uint8_t *s = em + 1, *t = em + 1 + s_len, r[RLC_MD_LEN], h[RLC_MD_LEN];
 	uint8_t *buf = RLC_ALLOCA(uint8_t, k), diff = 0;
 	uint32_t good, found = 0, bad = 0, one, zero, sel;
-
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	/* r = H(s) XOR t. */
 	buf[0] = 0x02;
@@ -578,10 +554,6 @@ static int pss_sig(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	db_len = em_len - RLC_MD_LEN - 1;
 	hh = em + db_len;
 	mask = RLC_ALLOCA(uint8_t, db_len);
-	if (mask == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	memset(buf, 0, 8);
 	memcpy(buf + 8, h, RLC_MD_LEN);
@@ -624,10 +596,6 @@ static int pss_ver(uint8_t *em, size_t em_bits, const uint8_t *h) {
 	db_len = em_len - RLC_MD_LEN - 1;
 	hh = em + db_len;
 	mask = RLC_ALLOCA(uint8_t, db_len);
-	if (mask == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	md_mgf(mask, db_len, hh, RLC_MD_LEN);
 	for (size_t i = 0; i < db_len; i++) {
@@ -682,10 +650,6 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 	}
 
 	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(m);
 
@@ -742,10 +706,6 @@ static int rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 	}
 
 	em = RLC_ALLOCA(uint8_t, k);
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(m);
 
@@ -805,10 +765,6 @@ static int rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 	}
 
 	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(m);
 
@@ -877,10 +833,6 @@ static int rsa_ver(const uint8_t *sig, size_t sig_len, const uint8_t *msg,
 	}
 
 	em = RLC_ALLOCA(uint8_t, RLC_CEIL(em_bits, 8));
-	if (em == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(m);
 

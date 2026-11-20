@@ -61,11 +61,6 @@ static void rand_update(const uint8_t *in, size_t in_len) {
 	size_t len = RLC_MD_LEN + 1 + in_len;
 	uint8_t *buf = RLC_ALLOCA(uint8_t, len);
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	if (in_len > 0) {
 		memcpy(buf + RLC_MD_LEN + 1, in, in_len);
 	}

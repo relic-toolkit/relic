@@ -45,11 +45,6 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 	uint8_t *buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
 	int result = RLC_OK;
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	ec_null(g[0]);
 	ec_null(g[1]);
@@ -113,10 +108,6 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 	}
 
 	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	ec_null(t);
 	ec_null(g[0]);
@@ -188,10 +179,6 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 	}
 
 	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(n);
 	bn_null(r);

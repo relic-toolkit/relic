@@ -316,10 +316,6 @@
 		}																	\
 																			\
 		a = RLC_ALLOCA(F##_t, n);											\
-		if (a == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 																			\
 		for (i = 0; i < n; i++) {											\
 			F##_null(a[i]);													\

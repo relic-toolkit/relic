@@ -136,11 +136,6 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 			1 + 2 * (sizeof(z->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
 	int result = RLC_OK;
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(k);
 	bn_null(m);
 	bn_null(n);
@@ -262,11 +257,6 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	uint8_t *buf = RLC_ALLOCA(uint8_t,
 			1 + 2 * (sizeof(s->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
 	int ok, result = 0;
-
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	g1_null(g1);
 	g1_null(p[0]);
@@ -394,11 +384,6 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	uint8_t *buf = RLC_ALLOCA(uint8_t,
 			1 + 2 * (sizeof(s->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
 	int ok, result = 0;
-
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	g1_null(g1);
 	g1_null(p[0]);

@@ -78,11 +78,6 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
 	uint8_t *buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
 	int result = RLC_OK;
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	ec_null(t);
 	ec_null(y[0]);
@@ -137,10 +132,6 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 	}
 
 	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(n);
 	ec_null(t);
@@ -207,10 +198,6 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 	}
 
 	buf = RLC_ALLOCA(uint8_t, RLC_MD_LEN + len);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(n);
 	bn_null(r);

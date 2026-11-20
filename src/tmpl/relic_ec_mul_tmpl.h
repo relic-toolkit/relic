@@ -100,9 +100,6 @@
 																			\
 		RLC_TRY {															\
 			C##_new(t);														\
-			if (naf == NULL) {												\
-				RLC_THROW(ERR_NO_BUFFER);									\
-			}																\
 																			\
 			l = bn_bits(k) + 1;												\
 			bn_rec_naf(naf, &l, k, 2);										\
@@ -1067,13 +1064,6 @@
 			l = RLC_MAX(l, bn_bits(k[i]) + 1);								\
 		}																	\
 		naf = RLC_ALLOCA(int8_t, n * l);									\
-		if (naf == NULL || _p == NULL || _l == NULL) {						\
-			RLC_FREE(naf);													\
-			RLC_FREE(_p);													\
-			RLC_FREE(_l);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		for (i = 0; i < n; i++) {											\
 			C##_null(_p[i]);												\
 		}																	\
@@ -1143,13 +1133,6 @@
 		/* One more window absorbs the carry of the signed recoding. */		\
 		m = l / w + 1;														\
 		dig = RLC_ALLOCA(int, n * m);										\
-		if (dig == NULL || _b == NULL || _p == NULL) {						\
-			RLC_FREE(dig);													\
-			RLC_FREE(_b);													\
-			RLC_FREE(_p);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		C##_null(s);														\
 		C##_null(t);														\
 		C##_null(u);														\

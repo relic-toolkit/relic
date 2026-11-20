@@ -56,7 +56,8 @@
 enum errors {
 	/** Constant to indicate the first an error already catched. */
 	ERR_CAUGHT = 1,
-	/** Occurs when memory-allocating functions fail. */
+	/** Occurs when memory-allocating functions fail, which is fatal: throwing
+	 * it stops the program through err_fatal() instead of being caught. */
 	ERR_NO_MEMORY,
 	/** Occcurs when the library precision is not sufficient. */
 	ERR_NO_PRECI,

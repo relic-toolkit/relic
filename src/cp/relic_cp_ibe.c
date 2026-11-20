@@ -94,10 +94,6 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 
 	/* Room for an element of G_T in uncompressed form. */
 	buf = RLC_ALLOCA(uint8_t, (sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -167,10 +163,6 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 
 	/* Room for an element of G_T in uncompressed form. */
 	buf = RLC_ALLOCA(uint8_t, (sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	RLC_TRY {
 		g1_new(p);

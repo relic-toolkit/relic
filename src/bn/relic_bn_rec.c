@@ -712,11 +712,6 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	dig_t mask = RLC_MASK(w), *t = (dig_t *)RLC_ALLOCA(dig_t, d);
 	int8_t u_i;
 
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	if (*len <= l) {
 		*len = 0;
 		RLC_FREE(t);
@@ -763,11 +758,6 @@ void bn_rec_aln(int8_t *b, size_t len, const bn_t k, const int8_t *a,
 	dig_t z = 0, mask = RLC_MASK(w - 1), *t = (dig_t *)RLC_ALLOCA(dig_t, d);
 	const int h = 1 << (w - 1);
 	int c = 0;
-
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	if (len == 0 || k->used > d) {
 		RLC_FREE(t);
@@ -1005,11 +995,6 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 	size_t sl = RLC_CEIL(l + 1, RLC_DIG);
 	dig_t *t = RLC_ALLOCA(dig_t, m * sl);
 	int8_t bji;
-
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	if (*len < l) {
 		*len = 0;

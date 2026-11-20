@@ -49,10 +49,6 @@ int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t secret, const bn_t order,
 
     /* Allocate after the early return, so that it does not leak. */
     a = RLC_ALLOCA(bn_t, k);
-    if (a == NULL) {
-        RLC_THROW(ERR_NO_MEMORY);
-        return RLC_ERR;
-    }
 
     bn_null(t);
     for (size_t i = 0; i < k; i++) {
@@ -95,13 +91,6 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
     if (k < 2) {
         RLC_FREE(a);
         RLC_FREE(b);
-        return RLC_ERR;
-    }
-
-    if (a == NULL || b == NULL) {
-        RLC_FREE(a);
-        RLC_FREE(b);
-        RLC_THROW(ERR_NO_MEMORY);
         return RLC_ERR;
     }
 

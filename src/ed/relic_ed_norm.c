@@ -95,10 +95,6 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	}
 
 	a = RLC_ALLOCA(fp_t, n);
-	if (a == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	for (int i = 0; i < n; i++) {
 		fp_null(a[i]);

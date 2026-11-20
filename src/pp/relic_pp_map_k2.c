@@ -538,11 +538,6 @@ void pp_map_pre_k2(fp_t *t, const ep_t q) {
 	size_t len = RLC_FP_BITS + 1;
 	int8_t b[RLC_FP_BITS + 1];
 
-	if (y == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	for (i = 0; i < RLC_PP_TABLE_K2 / 2; i++) {
 		fp_null(y[i]);
 	}

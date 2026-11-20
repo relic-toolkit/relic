@@ -546,14 +546,6 @@ static void pp_mil_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m,
 	fp4_null_all(g, e);
 	bn_null(d);
 
-	if (s == NULL || c == NULL || v == NULL) {
-		RLC_FREE(s);
-		RLC_FREE(c);
-		RLC_FREE(v);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	for (j = 0; j < PP_K3_PTS * m + 1; j++) {
 		fp4_null(s[j]);
 	}
@@ -712,13 +704,6 @@ void pp_map_sim_oatep_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m) {
 	ep4_t *_p = RLC_ALLOCA(ep4_t, m), *_q = RLC_ALLOCA(ep4_t, m);
 	int i, j;
 
-	if (_p == NULL || _q == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	for (i = 0; i < m; i++) {
 		ep4_null(_p[i]);
 		ep4_null(_q[i]);
@@ -766,11 +751,6 @@ void pp_map_pre_k3(fp4_t *t, const ep4_t q) {
 	int i, j = 0;
 	size_t len = RLC_FP_BITS + 1;
 	int8_t naf[RLC_FP_BITS + 1];
-
-	if (y == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	for (i = 0; i < PP_K3_PTS; i++) {
 		fp4_null(s[i]);
@@ -883,13 +863,6 @@ void pp_map_sim_fix_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m,
 	ep4_t *_p = RLC_ALLOCA(ep4_t, 2 * m + n + 1), *_q = _p + m, *_s = _q + m;
 	const fp4_t **_t = RLC_ALLOCA(const fp4_t *, n + 1);
 	int i, mm = 0, nn = 0;
-
-	if (_p == NULL || _t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	for (i = 0; i < 2 * m + n + 1; i++) {
 		ep4_null(_p[i]);

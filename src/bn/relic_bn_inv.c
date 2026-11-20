@@ -77,10 +77,6 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 
 	/* Allocate after the early return, so that it does not leak. */
 	t = RLC_ALLOCA(bn_t, n);
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	bn_null(u);
 	for (i = 0; i < n; i++) {

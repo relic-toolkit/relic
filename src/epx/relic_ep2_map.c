@@ -215,10 +215,6 @@ void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 
 	/* Before the TRY block, as execution continues after a throw without error
 	 * checking. */
-	if (r == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	RLC_TRY {
 		/* XXX(rsw) See note in ep/relic_ep_map.c about using MD_MAP. */

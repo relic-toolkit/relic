@@ -753,10 +753,6 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	}
 
 	t = RLC_ALLOCA(fp_t, n);
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	fp_null(u);
 	for (i = 0; i < n; i++) {

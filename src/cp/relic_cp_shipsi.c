@@ -125,11 +125,6 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 		}
 	}
 
-	if (shuffle == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(p);
 	bn_null(q);
 

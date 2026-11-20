@@ -114,11 +114,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	size_t l, w = 1;
 	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
-	if (win == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	if (bn_is_even(m)) {
 		RLC_FREE(win);
 		RLC_THROW(ERR_NO_VALID);
@@ -164,11 +159,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 
 	tab = RLC_ALLOCA(bn_t, (1 << (w - 1)));
-	if (tab == NULL) {
-		RLC_FREE(win);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 	for (size_t i = 0; i < ((size_t)1 << (w - 1)); i++) {
 		bn_null(tab[i]);
 	}

@@ -65,11 +65,6 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n,
 	size_t len = bn_bits(a) + 1;
 	int8_t b[RLC_FP_BITS + 1];
 
-	if (w == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	fp_null_all(l, m, s);
 	for (j = 0; j < n + 1; j++) {
 		fp_null(w[j]);
@@ -461,14 +456,6 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 
 	bn_null(n);
 
-	if (_p == NULL || _q == NULL || t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	for (i = 0; i < m; i++) {
 		ep_null(_p[i]);
 		ep_null(_q[i]);
@@ -586,15 +573,6 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 	fp_null(r0);
 	fp_null(r1);
 	bn_null(n);
-
-	if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t0);
-		RLC_FREE(t1);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	for (i = 0; i < m; i++) {
 		ep_null(_p[i]);
@@ -784,13 +762,6 @@ void pp_map_sim_fix_k1(fp_t r, const ep_t *p, const ep_t *q, int m,
 	const fp_t **_t = RLC_ALLOCA(const fp_t *, n + 1);
 	bn_t a;
 	int i, mm = 0, nn = 0;
-
-	if (_p == NULL || _t == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	bn_null(a);
 	for (i = 0; i < 3 * m + 2 * n + 1; i++) {

@@ -208,13 +208,6 @@ static int bn_prime_sieve(bn_t p, bn_t u, const bn_t s, const bn_t d,
 	int found = 0, result;
 	bn_t a, t, x, y, z;
 
-	if (q == NULL || bad == NULL || buf == NULL) {
-		RLC_FREE(q);
-		RLC_FREE(bad);
-		RLC_FREE(buf);
-		RLC_THROW(ERR_NO_MEMORY);
-		return -1;
-	}
 	r = q + BN_SIEVE_PRIMES;
 	e = r + BN_SIEVE_PRIMES;
 	w = e + BN_SIEVE_PRIMES;
@@ -925,10 +918,6 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 	}
 
 	out = RLC_ALLOCA(uint8_t, nb);
-	if (out == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	RLC_TRY {
 		/*

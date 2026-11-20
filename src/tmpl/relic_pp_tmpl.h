@@ -922,12 +922,6 @@
 		/* Allocate after the early return, so that it does not leak. */	\
 		_p = RLC_ALLOCA(ep_t, m);											\
 		_q = RLC_ALLOCA(C##_t, m);											\
-		if (_p == NULL || _q == NULL) {										\
-			RLC_FREE(_p);													\
-			RLC_FREE(_q);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 																			\
 		fp##K##_null(l);													\
 		for (j = 0; j < m; j++) {											\
@@ -1018,11 +1012,6 @@
 		int i, j;															\
 																			\
 		fp##K##_null(l);													\
-																			\
-		if (_q == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 																			\
 		for (j = 0; j < m; j++) {											\
 			C##_null(_q[j]);												\
@@ -1390,14 +1379,6 @@
 		bn_t a;																\
 		int i, j;															\
 																			\
-		if (_p == NULL || _q == NULL || t == NULL) {						\
-			RLC_FREE(_p);													\
-			RLC_FREE(_q);													\
-			RLC_FREE(t);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
-																			\
 		bn_null(a);															\
 		for (i = 0; i < m; i++) {											\
 			ep_null(_p[i]);													\
@@ -1519,11 +1500,6 @@
 		size_t len = RLC_FP_BITS + 1;										\
 		int8_t s[RLC_FP_BITS + 1];											\
 		int i, j = 0;														\
-																			\
-		if (y == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 																			\
 		C##_null_all(r, _q, n);												\
 		fp##K##_null(l);													\
@@ -1692,13 +1668,6 @@
 		int8_t w[RLC_FP_BITS + 1];											\
 		int i, j, k, c = 0, mm = 0, nn = 0, first = 1;						\
 																			\
-		if (_p == NULL || _q == NULL || _t == NULL) {						\
-			RLC_FREE(_p);													\
-			RLC_FREE(_q);													\
-			RLC_FREE(_t);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		e = _p + m;															\
 		_s = e + m;															\
 		d = _s + n;															\
@@ -1886,14 +1855,6 @@
 		bn_t n;																\
 		int i, j;															\
 																			\
-		if (_p == NULL || _q == NULL || t == NULL) {						\
-			RLC_FREE(_p);													\
-			RLC_FREE(_q);													\
-			RLC_FREE(t);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
-																			\
 		bn_null(n);															\
 		for (i = 0; i < m; i++) {											\
 			ep_null(_p[i]);													\
@@ -2038,15 +1999,6 @@
 		fp##K##_t r0, r1;													\
 		bn_t n;																\
 		int i, j;															\
-																			\
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {			\
-			RLC_FREE(_p);													\
-			RLC_FREE(_q);													\
-			RLC_FREE(t0);													\
-			RLC_FREE(t1);													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 																			\
 		fp##K##_null(r0);													\
 		fp##K##_null(r1);													\

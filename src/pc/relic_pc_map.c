@@ -82,13 +82,6 @@ void pc_map_sim_gen(gt_t r, const g1_t *p, const g2_t *q, int m,
 	g2_t *_q = RLC_ALLOCA(g2_t, m + 1);
 	int i;
 
-	if (_p == NULL || _q == NULL) {
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	for (i = 0; i <= m; i++) {
 		g1_null(_p[i]);
 		g2_null(_q[i]);

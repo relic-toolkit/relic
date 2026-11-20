@@ -127,11 +127,6 @@ int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
 		}
 	}
 
-	if (shuffle == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(p);
 
 	RLC_TRY {

@@ -224,10 +224,6 @@ void md_xof_bits(bn_t r, size_t bits, xof_t *ctx) {
 		return;
 	}
 	b = RLC_ALLOCA(uint8_t, n);
-	if (b == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 	/* Keep the output defined even if squeezing fails. */
 	memset(b, 0, n);
 	md_xof_bytes(b, n, ctx);

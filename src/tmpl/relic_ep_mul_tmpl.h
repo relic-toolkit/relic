@@ -567,13 +567,6 @@
 		if (n <= 10) {														\
 			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
 																			\
-			if (naf == NULL || _p == NULL) {								\
-				RLC_FREE(naf);												\
-				RLC_FREE(_p);												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-				return;														\
-			}																\
-																			\
 			for (j = 0; j < S; j++) {										\
 				bn_null(_k[j]);												\
 				for (i = 0; i < n; i++) {									\
@@ -648,14 +641,6 @@
 			const size_t c = (1 << (w - 2));								\
 			C##_t s, t, u, v, *_p = RLC_ALLOCA(C##_t, c);					\
 			C##_t *_q = RLC_ALLOCA(C##_t, S * n);							\
-																			\
-			if (naf == NULL || _p == NULL || _q == NULL) {					\
-				RLC_FREE(naf);												\
-				RLC_FREE(_p);												\
-				RLC_FREE(_q);												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-				return;														\
-			}																\
 																			\
 			C##_null_all(s, t, u, v);										\
 			for (i = 0; i < S; i++) {										\

@@ -265,13 +265,6 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
 	int result = RLC_OK;
 	bn_t n, t[2], *d = RLC_ALLOCA(bn_t, 2 * l), *e = RLC_ALLOCA(bn_t, 2 * l);
 
-	if (d == NULL || e == NULL) {
-		RLC_FREE(d);
-		RLC_FREE(e);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	for (int i = 0; i < 2; i++) {
 		bn_null(t[i]);
@@ -350,15 +343,6 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 	g1_t p[2], q[2];
 	g2_t w[2], z[2], *_y = RLC_ALLOCA(g2_t, 2 * l);
 	gt_t alpha[2], beta[2];
-
-	if (_m == NULL || _y == NULL || _d == NULL || _e == NULL) {
-		RLC_FREE(_m);
-		RLC_FREE(_y);
-		RLC_FREE(_d);
-		RLC_FREE(_e);
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(n);
 	bn_null(_t);

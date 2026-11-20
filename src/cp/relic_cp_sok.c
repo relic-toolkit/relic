@@ -48,11 +48,6 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
 
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	bn_null(r);
 	ec_null(t);
@@ -116,11 +111,6 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		return 0;
 	}
 
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
-
 	bn_null(n);
 	bn_null(v);
 	ec_null(t);
@@ -181,11 +171,6 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	/* Treat any nonzero flag as one, so that the indices stay in range. */
 	int one = 1 ^ (first != 0);
 	int zero = 0 ^ (first != 0);
-
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(n);
 	bn_null(v[0]);
@@ -295,11 +280,6 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		return 0;
 	}
 
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
-
 	bn_null(n);
 	bn_null(v[0]);
 	bn_null(v[1]);
@@ -384,11 +364,6 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	/* The first branch proves log_G(h), the second log_g0(y0) = log_g1(y1). */
 	int one = (first == 0);
 	int zero = (first != 0);
-
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(n);
 	bn_null(v[0]);
@@ -489,11 +464,6 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	if (!ec_on_curve(h) || !ec_on_curve(y[0]) || !ec_on_curve(y[1])
 			|| !ec_on_curve(g[0]) || !ec_on_curve(g[1])) {
 		RLC_FREE(m);
-		return 0;
-	}
-
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
 		return 0;
 	}
 

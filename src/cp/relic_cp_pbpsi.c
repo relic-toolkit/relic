@@ -68,13 +68,6 @@ int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m) {
 	size_t i;
 	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1);
 
-	if (p == NULL || _x == NULL) {
-		RLC_FREE(p);
-		RLC_FREE(_x);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(q);
 	bn_null(t);
 	for (i = 0; i <= m; i++) {
@@ -135,11 +128,6 @@ int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
 	g1_t g1;
 	gt_t e;
 	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
-
-	if (shuffle == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(q);
 	bn_null(tj);

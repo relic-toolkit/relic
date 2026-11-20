@@ -316,12 +316,6 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 
 	u = RLC_ALLOCA(int, len + 1);
 	table = RLC_ALLOCA(fb_t, len + 1);
-	if (u == NULL || table == NULL) {
-		RLC_FREE(u);
-		RLC_FREE(table);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 	for (i = 0; i <= len; i++) {
 		fb_null(table[i]);
 	}
@@ -454,10 +448,6 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	}
 
 	t = RLC_ALLOCA(fb_t, n);
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	fb_null(u);
 	for (i = 0; i < n; i++) {

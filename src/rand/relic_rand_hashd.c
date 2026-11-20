@@ -62,11 +62,6 @@ static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
 	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[RLC_MD_LEN];
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	buf[0] = 1;
 	util_write_uint32(buf + 1, 8 * out_len);
 	memcpy(buf + 1 + sizeof(uint32_t), in, in_len);
@@ -228,10 +223,6 @@ void rand_seed(uint8_t *buf, size_t size) {
 		/* V = hash_df(01 || V || seed). */
 		size_t tmp_size = 1 + len + size;
 		uint8_t *tmp = RLC_ALLOCA(uint8_t, tmp_size);
-		if (tmp == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-			return;
-		}
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);
 		memcpy(tmp + 1 + len, buf, size);

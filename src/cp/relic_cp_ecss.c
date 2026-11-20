@@ -64,11 +64,6 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = RLC_OK;
 
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	bn_null(k);
 	bn_null(x);
@@ -131,11 +126,6 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	uint8_t hash[RLC_MD_LEN];
 	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = 0;
-
-	if (m == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(n);
 	bn_null(ev);

@@ -48,10 +48,6 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 
 	/* Allocate after the early return, so that it does not leak. */
 	t = RLC_ALLOCA(bn_t, n + 1);
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 	for (i = 0; i <= n; i++) {
 		bn_null(t[i]);
 	}

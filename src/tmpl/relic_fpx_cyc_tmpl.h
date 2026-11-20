@@ -124,10 +124,6 @@
 		/* The NAF may be sparser than the binary expansion. */				\
 		l = bn_bits(b) + 1;													\
 		d = RLC_ALLOCA(int8_t, l);											\
-		if (d == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		bn_rec_naf(d, &l, b, 2);											\
 		for (size_t i = 0; i < l; i++) {									\
 			n += (d[i] != 0);												\
@@ -198,11 +194,6 @@
 			size_t j = 0;													\
 			F##_t t;														\
 																			\
-			if (e == NULL) {												\
-				RLC_FREE(d);												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-				return;														\
-			}																\
 			if (n < h) {													\
 				for (size_t i = 0; i < l; i++) {							\
 					if (d[i] == 1) {										\
@@ -257,11 +248,6 @@
 		if (len == 0) {														\
 			RLC_FREE(u);													\
 			F##_set_dig(c, 1);												\
-			return;															\
-		}																	\
-																			\
-		if (u == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
 			return;															\
 		}																	\
 																			\
@@ -742,10 +728,6 @@
 			return;															\
 		}																	\
 																			\
-		if (t == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		for (int i = 0; i < n; i++) {										\
 			Z##_null(t0[i]);												\
 			Z##_null(t1[i]);												\
@@ -918,10 +900,6 @@
 			return;															\
 		}																	\
 																			\
-		if (t == NULL) {													\
-			RLC_THROW(ERR_NO_MEMORY);										\
-			return;															\
-		}																	\
 		for (int i = 0; i < n; i++) {										\
 			Z##_null(t0[i]);												\
 			Z##_null(t1[i]);												\

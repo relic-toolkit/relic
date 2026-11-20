@@ -108,10 +108,6 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 
 	bn_null_all(r, u);
 	t = RLC_ALLOCA(bn_t, 1 << n);
-	if (t == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 	for (size_t i = 0; i < ((size_t)1 << n); i++) {
 		bn_null(t[i]);
 	}

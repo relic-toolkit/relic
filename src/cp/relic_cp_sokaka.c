@@ -87,11 +87,6 @@ int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
 		return RLC_ERR;
 	}
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	g1_null(p);
 	g2_null(q);
 	gt_null(e);

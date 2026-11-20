@@ -91,11 +91,6 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 	uint8_t *str = RLC_ALLOCA(uint8_t,
 			strlen(id) + RLC_MAX(strlen(data), strlen(tag)) + 2);
 
-	if (str == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	g1_null(a);
 
@@ -179,14 +174,6 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 	}
 	g1_t *h = RLC_ALLOCA(g1_t, fmax);
 	uint8_t *str = RLC_ALLOCA(uint8_t, imax + RLC_MAX(strlen(data), lmax) + 2);
-
-	if (g == NULL || h == NULL || str == NULL) {
-		RLC_FREE(g);
-		RLC_FREE(h);
-		RLC_FREE(str);
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(t);
 	bn_null(n);
@@ -275,13 +262,6 @@ int cp_mklhs_off(g1_t h[], bn_t ft[], const char *id[], const char *tag[],
 	g1_t *_h = RLC_ALLOCA(g1_t, fmax);
 	uint8_t *str = RLC_ALLOCA(uint8_t, imax + lmax + 2);
 
-	if (_h == NULL || str == NULL) {
-		RLC_FREE(_h);
-		RLC_FREE(str);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
-
 	bn_null(n);
 	for (size_t j = 0; j < fmax; j++) {
 		g1_null(_h[j]);
@@ -331,13 +311,6 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
 		imax = RLC_MAX(imax, strlen(id[i]));
 	}
 	uint8_t *str = RLC_ALLOCA(uint8_t, strlen(data) + imax + 2);
-
-	if (g == NULL || str == NULL) {
-		RLC_FREE(g);
-		RLC_FREE(str);
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	bn_null(t);
 	bn_null(n);

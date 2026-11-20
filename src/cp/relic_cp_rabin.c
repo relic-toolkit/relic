@@ -115,10 +115,6 @@ int cp_rabin_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 	pad = len - 2 - in_len;
 
 	buf = RLC_ALLOCA(uint8_t, size - 1);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(m);
 
@@ -178,10 +174,6 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 	}
 
 	buf = RLC_ALLOCA(uint8_t, size);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(m);
 	bn_null(m0);

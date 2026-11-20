@@ -67,12 +67,6 @@ static int bls_agg(g1_t sig, g2_t a, const g1_t s[], const g2_t q[],
 
 	t = RLC_ALLOCA(bn_t, n);
 	buf = RLC_ALLOCA(uint8_t, RLC_MAX(n * len, len + RLC_MD_LEN));
-	if (t == NULL || buf == NULL) {
-		RLC_FREE(t);
-		RLC_FREE(buf);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	for (size_t i = 0; i < n; i++) {
 		bn_null(t[i]);
@@ -214,11 +208,6 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	g1_t *p = RLC_ALLOCA(g1_t, size + 1);
 	gt_t e;
 	int result = 0;
-
-	if (p == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	gt_null(e);
 	for (size_t i = 0; i < size + 1; i++) {

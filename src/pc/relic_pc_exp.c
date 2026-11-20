@@ -137,16 +137,6 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, m * f);
 	size_t *_l = RLC_ALLOCA(size_t, m * f);
 
-	if (naf == NULL || s == NULL || t == NULL || _b == NULL || _l == NULL) {
-		RLC_FREE(naf);
-		RLC_FREE(s);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(_l);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	if (bn_is_zero(b)) {
 		RLC_FREE(naf);
 		RLC_FREE(s);
@@ -327,16 +317,6 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	int8_t *sac = RLC_ALLOCA(int8_t, d * f * RLC_FP_BITS);
 	gt_t *q = RLC_ALLOCA(gt_t, f), *t = RLC_ALLOCA(gt_t, d * s);
 
-	if (sac == NULL || e == NULL || t == NULL || _b == NULL || q == NULL) {
-		RLC_FREE(sac);
-		RLC_FREE(e);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	bn_null(n);
 	bn_null(u);
 
@@ -472,16 +452,6 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 	int8_t *sac = RLC_ALLOCA(int8_t, d * f * RLC_FP_BITS);
 	gt_t *q = RLC_ALLOCA(gt_t, f), *t = RLC_ALLOCA(gt_t, d * s);
 
-	if (sac == NULL || e == NULL || t == NULL || _b == NULL || q == NULL) {
-		RLC_FREE(sac);
-		RLC_FREE(e);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(q);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	bn_null(n);
 	bn_null(u);
 
@@ -612,18 +582,6 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	gt_t q, w, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
 	size_t l, len, *_l = RLC_ALLOCA(size_t, f);
-
-	if (reg == NULL || e == NULL || s == NULL || t == NULL || _b == NULL ||
-			_l == NULL) {
-		RLC_FREE(reg);
-		RLC_FREE(e);
-		RLC_FREE(s);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(_l);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
 
 	if (bn_is_zero(b)) {
 		RLC_FREE(reg);

@@ -79,10 +79,6 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 
 	/* Room for the point in compressed form, whatever it is. */
 	buf = RLC_ALLOCA(uint8_t, id_len + 1 + RLC_FC_BYTES);
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	/* zero variables */
 	bn_null(n);
@@ -140,10 +136,6 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
 
 	/* Room for both points in compressed form, whatever they are. */
 	buf = RLC_ALLOCA(uint8_t, id_len + msg_len + 2 * (1 + RLC_FC_BYTES));
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	/* zero variables */
 	bn_null(n);
@@ -213,10 +205,6 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 
 	/* Room for both points r and Z in compressed form, whatever they are. */
 	buf = RLC_ALLOCA(uint8_t, id_len + msg_len + 2 * (1 + RLC_FC_BYTES));
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 
 	/* zero variables */
 	bn_null(n);

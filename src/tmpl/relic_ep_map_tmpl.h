@@ -357,9 +357,6 @@
 																			\
 		RLC_TRY {															\
 			bn_new(k);														\
-			if (r == NULL) {												\
-				RLC_THROW(ERR_NO_MEMORY);									\
-			}																\
 			md_xmd(r, 2 * D * elm + 1, msg, len,							\
 					(const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));			\
 			for (int i = 0; i < D; i++) {									\

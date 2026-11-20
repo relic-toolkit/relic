@@ -132,11 +132,6 @@ static void etrs_dig(uint8_t *d, const ec_t *com, size_t deg) {
 	const size_t size = deg * (RLC_FC_BYTES + 1);
 	uint8_t *buf = RLC_ALLOCA(uint8_t, size + 1);
 
-	if (buf == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
 	memset(buf, 0, size);
 	for (size_t i = 0; i < deg; i++) {
 		ec_write_bin(buf + i * (RLC_FC_BYTES + 1), ec_size_bin(com[i], 1),
@@ -202,13 +197,6 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		ys = RLC_ALLOCA(ec_t, k);
 	}
 	buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
-	if ((k > 0 && (b == NULL || ys == NULL)) || buf == NULL) {
-		RLC_FREE(b);
-		RLC_FREE(ys);
-		RLC_FREE(buf);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null(n);
 	ec_null_all(w[0], w[1]);
@@ -307,14 +295,6 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, ec_t *com,
 	ec_t w[2], *ys = RLC_ALLOCA(ec_t, k);
 	uint8_t *buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
 	int result = RLC_OK;
-
-	if (b == NULL || ys == NULL || buf == NULL) {
-		RLC_FREE(b);
-		RLC_FREE(ys);
-		RLC_FREE(buf);
-		RLC_THROW(ERR_NO_MEMORY);
-		return RLC_ERR;
-	}
 
 	bn_null_all(n, x);
 	ec_null_all(w[0], w[1]);
@@ -415,13 +395,6 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	b = RLC_ALLOCA(bn_t, 2 * k + 4 * d);
 	ys = RLC_ALLOCA(ec_t, k + d);
 	buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
-	if (b == NULL || ys == NULL || buf == NULL) {
-		RLC_FREE(b);
-		RLC_FREE(ys);
-		RLC_FREE(buf);
-		RLC_THROW(ERR_NO_MEMORY);
-		return 0;
-	}
 	/* Abscissas, scalars of the final check, base abscissas, weights. */
 	xs = b;
 	sc = b + k;

@@ -436,11 +436,6 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, elm);
 
-	if (r == NULL) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
-	}
-
 	RLC_TRY {
 		md_xmd(r, elm, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
 		ep_map_basic_impl(p, r, elm);
@@ -462,11 +457,6 @@ void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
-
-	if (r == NULL) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
-	}
 
 	RLC_TRY {
 		/* for hash_to_field, need to hash to a pseudorandom string */
@@ -504,10 +494,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 
 	r = RLC_ALLOCA(uint8_t, 2 * elm + 1);
-	if (r == NULL) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
-	}
 
 	RLC_TRY {
 		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)RLC_DSTAG,
