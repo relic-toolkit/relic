@@ -34,6 +34,7 @@
 #include "relic_bn_low.h"
 #include "relic_dv.h"
 #include "relic_util.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -41,8 +42,9 @@
 
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
-	/* The modulus fits in the precision, so 2 * sm <= RLC_BN_SIZE. */
-	dig_t t[RLC_BN_SIZE], r;
+	/* The double width of the modulus, which with dynamic allocation may
+	 * exceed the precision. */
+	dig_t *t = RLC_ALLOCA(dig_t, 2 * sm), r;
 
 	dv_copy(t, a, sa);
 	dv_zero(t + sa, 2 * sm - sa);
@@ -57,4 +59,5 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	if (bn_addn_low(c, t + sm, t, sm)) {
 		bn_subn_low(c, c, m, sm);
 	}
+	RLC_FREE(t);
 }
