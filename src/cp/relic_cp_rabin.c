@@ -170,7 +170,9 @@ int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
 	int result = RLC_OK;
 
 	size = bn_size_bin(prv->n);
-	if (in_len < RABIN_PAD_LEN ||
+	/* Ciphertexts take as many bytes as the modulus. A longer one can fill a
+	 * whole integer, leaving no room for the extra digit of the reductions. */
+	if (in_len < RABIN_PAD_LEN || in_len > size ||
 			size < 2 + RABIN_RND_LEN + RABIN_PAD_LEN + 2) {
 		return RLC_ERR;
 	}

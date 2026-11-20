@@ -355,6 +355,7 @@ static int rabin(void) {
 	rabin_t pub, prv;
 	uint8_t in[RLC_BN_BITS / 8 + 1];
 	uint8_t out[RLC_BN_BITS / 8 + 1], tmp[RLC_BN_BITS / 8 + 1];
+	uint8_t big[RLC_BN_SIZE * (RLC_DIG / 8)];
 	size_t in_len, out_len, tmp_len, k;
 	int result;
 
@@ -402,6 +403,20 @@ static int rabin(void) {
 			memset(out, 0, sizeof(out));
 			out_len = sizeof(out);
 			TEST_ASSERT(cp_rabin_dec(out, &out_len, out, bn_size_bin(pub->n),
+							prv) == RLC_ERR, end);
+			/* A ciphertext longer than the modulus is rejected, also with a
+			 * leading zero or when it fills a whole integer. */
+			out_len = sizeof(out);
+			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len, pub) == RLC_OK,
+					end);
+			big[0] = 0;
+			memcpy(big + 1, out, out_len);
+			tmp_len = sizeof(tmp);
+			TEST_ASSERT(cp_rabin_dec(tmp, &tmp_len, big, out_len + 1,
+							prv) == RLC_ERR, end);
+			memset(big, 0xFF, sizeof(big));
+			tmp_len = sizeof(tmp);
+			TEST_ASSERT(cp_rabin_dec(tmp, &tmp_len, big, sizeof(big),
 							prv) == RLC_ERR, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
