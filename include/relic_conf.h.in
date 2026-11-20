@@ -260,7 +260,7 @@
 #define FP_LOWER    7
 /** Variable-time residue symbols by Bernstein-Yang jump division steps. */
 #define FP_JMPVT    8
-/** Chosen method for the quadratic and cubic residue symbols. */
+/** Chosen method for the quadratic, cubic and quartic residue symbols. */
 #define FP_SMB   FP_@FP_SMB@
 
 /** Binary modular exponentiation. */

@@ -466,6 +466,28 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #endif
 
 /**
+ * Computes the quartic residue symbol of a prime field element, the k such that
+ * A^((p - 1)/4) = z^k for the fourth root of unity z = fp_prime_get_qrt(), or
+ * for p = 3 mod 4, k = 0 for squares and k = 2 otherwise.
+ *
+ * @param[in] A				- the prime field element to compute.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+#if FP_SMB == FP_BASIC
+#define fp_smb4(A)		fp_smb4_basic(A)
+#elif FP_SMB == FP_BINAR
+#define fp_smb4(A)		fp_smb4_binar(A)
+#elif FP_SMB == FP_DIVST
+#define fp_smb4(A)		fp_smb4_divst(A)
+#elif FP_SMB == FP_JMPDS
+#define fp_smb4(A)		fp_smb4_jmpds(A)
+#elif FP_SMB == FP_LOWER
+#define fp_smb4(A)		fp_smb4_lower(A)
+#elif FP_SMB == FP_JMPVT
+#define fp_smb4(A)		fp_smb4_jmpvt(A)
+#endif
+
+/**
  * Exponentiates a prime field element. Computes C = A^B (mod p).
  *
  * @param[out] C			- the result.
@@ -548,6 +570,15 @@ const dig_t *fp_prime_get_crt(void);
  * @return the cube root of unity.
  */
 const dig_t *fp_prime_get_cub(void);
+
+/**
+ * Returns the primitive fourth root of unity that defines the quartic residue
+ * symbol, congruent to i modulo the primary prime of norm p in the Gaussian
+ * integers Z[i], or zero if p = 3 mod 4.
+ *
+ * @return the fourth root of unity.
+ */
+const dig_t *fp_prime_get_qrt(void);
 
 /**
  * Returns the result of prime order mod 8.
@@ -1352,6 +1383,68 @@ int fp_smb3_jmpvt(const fp_t a);
  * @return k in {0, 1, 2}, or -1 if the element is zero.
  */
 int fp_smb3_lower(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element using Euler's
+ * criterion. For p = 1 mod 4, the symbol is i^k for the k such that
+ * a^((p - 1)/4) = z^k, where z is the fourth root of unity returned by
+ * fp_prime_get_qrt(); for p = 3 mod 4, it is the character of order 2, with
+ * k = 0 for squares and k = 2 otherwise.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_basic(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_basic() does, in variable time, by a binary algorithm in the
+ * Gaussian integers: if 1 + i divides g, divide it, and otherwise make g
+ * primary with a unit u and replace the one of f and u * g with the larger
+ * norm by (u * g - f) / (1 + i)^3, until g is 0. The norms are compared from
+ * the top bits of the coordinates.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_binar(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_basic() does, in constant time, by a number of division steps in
+ * the Gaussian integers that only depends on the size of the prime.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_divst(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_divst() does, by jumps of division steps on their residues.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_jmpds(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_jmpds() does, in variable time, stopping once done.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_jmpvt(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element using a direct
+ * call to the lower layer.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_lower(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary

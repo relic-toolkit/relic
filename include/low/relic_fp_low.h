@@ -362,6 +362,16 @@ int fp_smb2_low(const dig_t *a);
  */
 int fp_smb3_low(const dig_t *a);
 
+/**
+ * Computes the quartic residue symbol of a digit vector and the configured
+ * prime, the k such that a^((p - 1)/4) = z^k for the fourth root of unity
+ * z = fp_prime_get_qrt().
+ *
+ * @param[in] a				- the digit vector.
+ * @return k in {0, 1, 2, 3}, or -1 if the digit vector is zero.
+ */
+int fp_smb4_low(const dig_t *a);
+
 #endif /* ASM */
 
 #endif /* !RLC_FP_LOW_H */

@@ -81,7 +81,7 @@
  * Number of iterations of the constant-time symbol, B >= 1.112 log2(p) + 15.12
  * from a convex-hull bound as in safegcd-bounds for |f|, |g| <= sqrt(p), within
  * two iterations of the hull for primes of 128 to 690 bits and with its slope
- * beyond, as tools/relic-cub-hull.py computes and checks.
+ * beyond, as tools/relic-smb-hull.py computes and checks.
  */
 #define FP_CUB_ITER		RLC_CEIL(FP_PRIME * 139 + 1890, 125)
 

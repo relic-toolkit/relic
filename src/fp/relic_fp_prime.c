@@ -194,6 +194,127 @@ static void fp_prime_set_cub(const bn_t p) {
 }
 
 /**
+ * Computes, for p = 1 mod 4, the primary prime pi = a + b * i of norm p in the
+ * Gaussian integers Z[i] and the fourth root of unity congruent to i modulo
+ * pi, which define the quartic residue symbol.
+ *
+ * @param[in] p			- the prime field modulus.
+ */
+static void fp_prime_set_qrt(const bn_t p) {
+	ctx_t *ctx = core_get();
+	dig_t z[RLC_FP_DIGS + 1], ra, rb;
+	bn_t a, b, c, d;
+	fp_t s, t;
+
+	bn_null_all(a, b, c, d);
+	fp_null_all(s, t);
+
+	RLC_TRY {
+		bn_new_all(a, b, c, d);
+		fp_new_all(s, t);
+
+		/* A square root of -1 is qnr^((p - 1)/4). */
+		fp_set_dig(s, (ctx->qnr < 0 ? -ctx->qnr : ctx->qnr));
+		if (ctx->qnr < 0) {
+			fp_neg(s, s);
+		}
+		bn_sub_dig(d, p, 1);
+		bn_rsh(d, d, 2);
+		fp_exp(s, s, d);
+		fp_prime_back(b, s);
+
+		/* Cornacchia's algorithm finds x^2 + y^2 = p, with x the first
+		 * remainder of the Euclidean algorithm below sqrt(p). */
+		bn_copy(a, p);
+		bn_sqr(c, b);
+		while (bn_cmp(c, p) == RLC_GT) {
+			bn_mod(c, a, b);
+			bn_copy(a, b);
+			bn_copy(b, c);
+			bn_sqr(c, b);
+		}
+		bn_sub(c, p, c);
+		bn_srt(d, c);
+
+		/* x + y * i has norm p, and so does i * (x + y * i) = -y + x * i, one
+		 * of which has an odd real part. */
+		if (bn_is_even(b)) {
+			bn_neg(a, d);
+		} else {
+			bn_copy(a, b);
+			bn_copy(b, d);
+		}
+		/* Its primary associate is the one with a + b = 1 mod 4. */
+		bn_abs(c, a);
+		bn_mod_dig(&ra, c, 4);
+		if (bn_sign(a) == RLC_NEG) {
+			ra = (4 - ra) % 4;
+		}
+		bn_mod_dig(&rb, b, 4);
+		if ((ra + rb) % 4 == 3) {
+			bn_neg(a, a);
+			bn_neg(b, b);
+		}
+
+		/* Store the coordinates in two's complement. */
+		dv_zero(z, RLC_FP_DIGS + 1);
+		for (int k = 0; k < 2; k++) {
+			bn_copy(c, (k == 0 ? a : b));
+			dv_zero(ctx->qrt_pi[k], RLC_FP_DIGS + 1);
+			dv_copy(ctx->qrt_pi[k], c->dp, c->used);
+			if (bn_sign(c) == RLC_NEG) {
+				bn_subn_low(ctx->qrt_pi[k], z, ctx->qrt_pi[k], RLC_FP_DIGS + 1);
+			}
+		}
+
+		/* As a / pi = a * (a - b * i) / p, the coordinates a / p and -b / p,
+		 * scaled by 2^K for K = RLC_DIG * (RLC_FP_DIGS + 1), divide by pi
+		 * with one multiplication each. */
+		for (int k = 0; k < 2; k++) {
+			if (k == 0) {
+				bn_copy(c, a);
+			} else {
+				bn_neg(c, b);
+			}
+			ctx->qrt_sgn[k] = bn_sign(c);
+			bn_abs(c, c);
+			bn_lsh(c, c, RLC_DIG * (RLC_FP_DIGS + 1));
+			bn_div(c, c, p);
+			dv_zero(ctx->qrt_inv[k], RLC_FP_DIGS + 1);
+			dv_copy(ctx->qrt_inv[k], c->dp, c->used);
+		}
+
+		/* As pi = a + b * i = 0 modulo pi, i = -a / b. */
+		fp_prime_conv_sgn(s, a);
+		fp_prime_conv_sgn(t, b);
+		fp_inv(t, t);
+		fp_mul(s, s, t);
+		fp_neg(ctx->qrt, s);
+
+		/* The symbol of R, stored as R^2 mod p in Montgomery form, for the
+		 * k such that R^((p - 1)/4) = z^k. */
+		ctx->qrt_r = 0;
+#if FP_RDC == FP_MONTY
+		bn_sub_dig(d, p, 1);
+		bn_rsh(d, d, 2);
+		fp_exp(s, ctx->conv, d);
+		fp_copy(t, ctx->qrt);
+		for (int k = 1; k < 4; k++) {
+			ctx->qrt_r += k * (fp_cmp(s, t) == RLC_EQ);
+			fp_mul(t, t, ctx->qrt);
+		}
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(a, b, c, d);
+		fp_free_all(s, t);
+	}
+}
+
+/**
  * Assigns the prime field modulus.
  *
  * @param[in] p			- the new prime field modulus.
@@ -360,6 +481,18 @@ static void fp_prime_set(const bn_t p) {
 			ctx->cub_r = 0;
 		}
 
+		/* The quartic residue symbol. */
+		if (ctx->mod8 % 4 == 1) {
+			fp_prime_set_qrt(p);
+		} else {
+			fp_zero(ctx->qrt);
+			dv_zero(ctx->qrt_pi[0], RLC_FP_DIGS + 1);
+			dv_zero(ctx->qrt_pi[1], RLC_FP_DIGS + 1);
+			dv_zero(ctx->qrt_inv[0], RLC_FP_DIGS + 1);
+			dv_zero(ctx->qrt_inv[1], RLC_FP_DIGS + 1);
+			ctx->qrt_r = 0;
+		}
+
 		fp_prime_calc();
 	}
 	RLC_CATCH_ANY {
@@ -457,6 +590,10 @@ const dig_t *fp_prime_get_crt(void) {
 
 const dig_t *fp_prime_get_cub(void) {
 	return core_get()->cub;
+}
+
+const dig_t *fp_prime_get_qrt(void) {
+	return core_get()->qrt;
 }
 
 dig_t fp_prime_get_mod8(void) {

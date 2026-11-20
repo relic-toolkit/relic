@@ -1341,6 +1341,132 @@ static int cube_root(void) {
 	return code;
 }
 
+static int quartic_symbol(void) {
+	int code = RLC_ERR;
+	fp_t a, b, c, d;
+	bn_t e;
+
+	fp_null_all(a, b, c, d);
+	bn_null(e);
+
+	RLC_TRY {
+		fp_new_all(a, b, c, d);
+		bn_new(e);
+
+		TEST_CASE("quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4(a) == -1, end);
+			do {
+				fp_rand(a);
+				fp_rand(d);
+			} while (fp_is_zero(a) || fp_is_zero(d));
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4(b) == 0, end);
+			if (fp_prime_get_mod8() % 4 == 1) {
+				/* The symbol is even exactly for squares. */
+				TEST_ASSERT((fp_smb4(a) % 2 == 0) == fp_is_sqr(a), end);
+				/* For the symbol i^k, a^((p - 1)/4) = z^k. */
+				bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+				bn_rsh(e, e, 2);
+				fp_exp(b, a, e);
+				fp_set_dig(c, 1);
+				for (int k = fp_smb4(a); k > 0; k--) {
+					fp_mul(c, c, (dig_t *)fp_prime_get_qrt());
+				}
+				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+				/* The symbol is multiplicative. */
+				fp_mul(c, a, d);
+				TEST_ASSERT(fp_smb4(c) ==
+						(fp_smb4(a) + fp_smb4(d)) % 4, end);
+			} else {
+				TEST_ASSERT(fp_smb4(a) == 2 * !fp_is_sqr(a), end);
+			}
+		}
+		TEST_END;
+
+#if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
+		TEST_CASE("basic quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_basic(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_basic(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_basic(b) == 0, end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
+		TEST_CASE("binary quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_binar(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_binar(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_binar(b) == 0, end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
+		TEST_CASE("division step quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_divst(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_divst(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_divst(b) == 0, end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
+		TEST_CASE("jump division step quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_jmpds(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_jmpds(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_jmpds(b) == 0, end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == FP_LOWER
+		TEST_CASE("lower quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_lower(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_lower(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_lower(b) == 0, end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
+		TEST_CASE("variable-time jump quartic residue symbol is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb4_jmpvt(a) == -1, end);
+			fp_rand(a);
+			TEST_ASSERT(fp_smb4(a) == fp_smb4_jmpvt(a), end);
+			fp_sqr(b, a);
+			fp_sqr(b, b);
+			TEST_ASSERT(fp_smb4_jmpvt(b) == 0, end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free_all(a, b, c, d);
+	bn_free(e);
+	return code;
+}
+
 static int digit(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
@@ -1487,6 +1613,11 @@ int main(void) {
 	}
 
 	if (cube_root() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (quartic_symbol() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

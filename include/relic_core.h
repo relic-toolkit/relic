@@ -260,6 +260,20 @@ typedef struct _ctx_t {
 	/** Exponent of the cubic residue symbol of R in Montgomery form, and
 	 * otherwise 0, to divide it out of that of stored elements. */
 	int cub_r;
+	/** Primitive fourth root of unity that defines the quartic residue
+	 * symbol. */
+	fp_st qrt;
+	/** Coordinates in two's complement of the primary prime of norm p in the
+	 * Gaussian integers, for the quartic residue symbol. */
+	dig_t qrt_pi[2][RLC_FP_DIGS + 1];
+	/** Absolute values of the scaled coordinates of the inverse of that prime,
+	 * to divide by it with one multiplication. */
+	dig_t qrt_inv[2][RLC_FP_DIGS + 1];
+	/** Signs of the scaled coordinates of the inverse of that prime. */
+	int qrt_sgn[2];
+	/** Exponent of the quartic residue symbol of R in Montgomery form, and
+	 * otherwise 0, to divide it out of that of stored elements. */
+	int qrt_r;
 	/** Inverse of qnr for root extraction. */
 	fp_st iqnr;
 	/** Quadratic non-residue. */
