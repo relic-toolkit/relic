@@ -1,2 +1,2 @@
 #!/bin/sh
-cmake -DCHECK=off -DARITH=gmp -DFP_PRIME=254 -DFP_METHD="INTEG;INTEG;INTEG;MONTY;JMPDS;JMPDS;SLIDE" -DCFLAGS="-O3 -funroll-loops -fomit-frame-pointer -march=native -mtune=native" -DFP_QNRES=on -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" $1
+cmake -DARITH=gmp -DFP_PRIME=254 -DFP_METHD="INTEG;INTEG;INTEG;MONTY;JMPDS;JMPDS;SLIDE" -DCFLAGS="-O3 -funroll-loops -fomit-frame-pointer -march=native -mtune=native" -DFP_QNRES=on -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" $1

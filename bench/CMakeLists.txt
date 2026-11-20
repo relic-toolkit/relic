@@ -9,9 +9,7 @@ macro(ADD_MODULE MODULE)
 	endif(STLIB)
 endmacro(ADD_MODULE)
 
-if (CHECK)
-	ADD_MODULE(err)
-endif(CHECK)
+ADD_MODULE(err)
 
 if (WITH_BN)
 	ADD_MODULE(bn)
