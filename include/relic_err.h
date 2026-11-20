@@ -204,6 +204,9 @@ typedef struct _sts_t {
 #define RLC_ERR_THROW(E)												\
 	do {																\
 		ctx_t *_ctx = core_get();										\
+		if ((E) == ERR_NO_MEMORY) {										\
+			err_fatal(RLC_FILE, __LINE__);								\
+		}																\
 		_ctx->code = RLC_ERR;											\
 		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
 			/* Remember the original code, so that rethrows keep it. */	\
@@ -306,6 +309,9 @@ typedef struct _sts_t {
 #define RLC_THROW(E)														\
 	do {																	\
 		ctx_t *_ctx = core_get();											\
+		if ((E) == ERR_NO_MEMORY) {											\
+			err_fatal(RLC_FILE, __LINE__);									\
+		}																	\
 		_ctx->code = RLC_ERR;												\
 		if (E != ERR_CAUGHT) {												\
 			_ctx->number = E;												\
@@ -399,6 +405,16 @@ void err_get_msg(err_t *e, char **msg);
  * @param[in] line      	- the line in the file where the error occurred.
  */
 void err_throw(const char *file, int line);
+
+/**
+ * Reports that there is not enough memory and aborts. Running out of memory is
+ * fatal in every configuration, as execution continues past a throw without
+ * error checking and callers would use the missing memory.
+ *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
+ */
+void err_fatal(const char *file, int line);
 
 /**
  * Returns the code returned by the last function call and resets the current

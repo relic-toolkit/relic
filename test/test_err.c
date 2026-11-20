@@ -51,7 +51,7 @@ static void dummy2(void) {
 	if (counter < 5)
 		dummy();
 	else {
-		RLC_THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_VALID);
 	}
 }
 
@@ -64,7 +64,7 @@ static void dummy3(void) {
 
 	RLC_TRY {
 		bn_new(a);
-		RLC_THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_VALID);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -102,8 +102,8 @@ int main(void) {
 		dummy();
 #ifdef RLC_CHECK
 		err_get_msg(&e, &msg);
-		TEST_ASSERT(e == ERR_NO_MEMORY, end);
-		TEST_ASSERT(msg == core_get()->reason[ERR_NO_MEMORY], end);
+		TEST_ASSERT(e == ERR_NO_VALID, end);
+		TEST_ASSERT(msg == core_get()->reason[ERR_NO_VALID], end);
 		/* Reading the message clears the pending error. */
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == 0 && msg == NULL, end);
@@ -132,7 +132,7 @@ int main(void) {
 		} RLC_CATCH(e) {
 			caught = 1;
 		}
-		TEST_ASSERT(caught == 1 && e == ERR_NO_MEMORY, end);
+		TEST_ASSERT(caught == 1 && e == ERR_NO_VALID, end);
 		/* Nothing is caught when nothing is thrown. */
 		caught = 0;
 		e = 0;
@@ -152,13 +152,13 @@ int main(void) {
 			dummy3();
 		} RLC_CATCH(e) {
 		}
-		TEST_ASSERT(e == ERR_NO_MEMORY, end);
+		TEST_ASSERT(e == ERR_NO_VALID, end);
 		e = 0;
 		RLC_TRY {
 			dummy4();
 		} RLC_CATCH(e) {
 		}
-		TEST_ASSERT(e == ERR_NO_MEMORY, end);
+		TEST_ASSERT(e == ERR_NO_VALID, end);
 		err_get_code();
 	} TEST_END;
 #endif

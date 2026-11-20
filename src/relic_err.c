@@ -121,6 +121,20 @@ void err_throw(const char *file, int line) {
 #endif
 }
 
+void err_fatal(const char *file, int line) {
+	/* Printed even when quiet, as the program stops. */
+#if RLC_ARCH == RLC_AVR
+	util_print("\nFATAL ERROR in %S:%d: not enough memory.\n", file, line);
+#else
+	/* Without the directory, as RLC_FILE, for RLC_ALLOCA, which passes the full
+	 * name of the file. */
+	const char *base = strrchr(file, '/');
+	fprintf(stderr, "\nFATAL ERROR in %s:%d: not enough memory.\n",
+			(base ? base + 1 : file), line);
+#endif
+	abort();
+}
+
 int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;

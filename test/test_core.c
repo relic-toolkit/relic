@@ -40,7 +40,7 @@
 void *master(void *ptr) {
 	int *code = (int *)ptr;
 	core_init();
-	RLC_THROW(ERR_NO_MEMORY);
+	RLC_THROW(ERR_NO_VALID);
 	if (err_get_code() != RLC_ERR) {
 		*code = RLC_ERR;
 	} else {
@@ -90,7 +90,7 @@ int main(void) {
 		core_init();
 		/* Run function to manipulate the library context. */
 		err_set_quiet(1);
-		RLC_THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_VALID);
 		err_set_quiet(0);
 		core_set(old_ctx);
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
@@ -111,7 +111,7 @@ int main(void) {
 #pragma omp parallel shared(code)
 		{
 			if (omp_get_thread_num() == 0) {
-				RLC_THROW(ERR_NO_MEMORY);
+				RLC_THROW(ERR_NO_VALID);
 				if (err_get_code() != RLC_ERR) {
 					code = RLC_ERR;
 				}

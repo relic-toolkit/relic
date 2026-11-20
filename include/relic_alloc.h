@@ -29,23 +29,59 @@
  * @ingroup utils
  */
 
+#ifndef RLC_ALLOC_H
+#define RLC_ALLOC_H
+
 #include "relic_conf.h"
+
+#if RLC_ALLOC == RLC_DYNAMIC
+
+#include <stdlib.h>
+#include "relic_label.h"
+
+/* Declared here as well, as relic_err.h includes this file indirectly. */
+void err_fatal(const char *file, int line);
+
+/**
+ * Allocates n objects of the given size for RLC_ALLOCA with dynamic allocation,
+ * and stops with err_fatal() if there is no memory: execution continues past a
+ * throw without error checking, and callers would use the missing memory, so
+ * running out of memory is fatal.
+ *
+ * @param[in] n					- the number of objects.
+ * @param[in] size				- the size of each object.
+ * @param[in] file				- the source file of the allocation.
+ * @param[in] line				- the line of the allocation in the file.
+ * @return the allocated memory.
+ */
+static inline void *rlc_alloca_dyn(size_t n, size_t size, const char *file,
+		int line) {
+	void *p = malloc(n * size);
+
+	if (p == NULL && n * size != 0) {
+		err_fatal(file, line);
+	}
+	return p;
+}
+
+#endif
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 
 #include <malloc.h>
 
 /*
- * Dynamiclly allocates an array of "Type" with the specified size on the stack.
- * This memory will be automaticlly deallocated from the stack when the function
- * frame is returned from.
+ * Dynamically allocates an array of "Type" with the specified size on the
+ * stack. This memory will be automatically deallocated from the stack when the
+ * function frame is returned from.
  * Note: This is the Windows specific implementation.
  *
  * @param[in] T                 - the type of each object.
- * @param[in] S                 - the number of obecs to allocate.
+ * @param[in] S                 - the number of objects to allocate.
  */
 #if RLC_ALLOC == RLC_DYNAMIC
-#define RLC_ALLOCA(T, S)		(T*) calloc((S), sizeof(T))
+#define RLC_ALLOCA(T, S)													\
+	(T*) rlc_alloca_dyn((S), sizeof(T), __FILE__, __LINE__)
 #else
 #define RLC_ALLOCA(T, S)		(T*) _alloca((S) * sizeof(T))
 #endif
@@ -59,16 +95,17 @@
 #endif
 
 /*
- * Dynamiclly allocates an array of "Type" with the specified size on the stack.
- * This memory will be automaticlly deallocated from the stack when the function
- * frame is returned from.
+ * Dynamically allocates an array of "Type" with the specified size on the
+ * stack. This memory will be automatically deallocated from the stack when the
+ * function frame is returned from.
  * Note: This is the POSIX specific implementation.
  *
  * @param[in] T                 - the type of each object.
- * @param[in] S                 - the number of obecs to allocate.
+ * @param[in] S                 - the number of objects to allocate.
  */
 #if RLC_ALLOC == RLC_DYNAMIC
-#define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
+#define RLC_ALLOCA(T, S)													\
+	(T*) rlc_alloca_dyn((S), sizeof(T), __FILE__, __LINE__)
 #elif defined(__GNUC__)
 /* The builtin does not depend on the C library providing alloca(), and keeps
  * the alignment of the type, which may exceed that of alloca() with ALIGN. */
@@ -94,3 +131,5 @@
 #else
 #define RLC_FREE(A)         	(void)A;
 #endif
+
+#endif /* !RLC_ALLOC_H */
