@@ -85,7 +85,7 @@ int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 		} else {
 			ec_mul(p, q, h);
 		}
-		ec_mul(p, p, d);
+		ec_mul_sec(p, p, d);
 		if (ec_is_infty(p)) {
 			result = RLC_ERR;
 		} else {

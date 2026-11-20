@@ -89,7 +89,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
 		bn_rand_mod(k, n);
 
 		ec_mul_gen(r, k);
-		ec_mul(p, q, k);
+		ec_mul_sec(p, q, k);
 		ec_get_x(x, p);
 		l = bn_size_bin(x);
 		if (bn_bits(x) % 8 == 0) {
@@ -144,7 +144,7 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 		bn_new(x);
 		ec_new(p);
 
-		ec_mul(p, r, d);
+		ec_mul_sec(p, r, d);
 		ec_get_x(x, p);
 		l = bn_size_bin(x);
 		if (bn_bits(x) % 8 == 0) {

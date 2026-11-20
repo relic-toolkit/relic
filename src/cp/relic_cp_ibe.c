@@ -61,7 +61,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 
 int cp_ibe_gen_prv(g2_t prv, const char *id, const bn_t master) {
 	g2_map(prv, (uint8_t *)id, strlen(id));
-	g2_mul(prv, prv, master);
+	g2_mul_sec(prv, prv, master);
 	return RLC_OK;
 }
 
