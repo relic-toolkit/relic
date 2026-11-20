@@ -535,6 +535,7 @@
 #undef fp_prime_get_conv
 #undef fp_prime_get_srt
 #undef fp_prime_get_crt
+#undef fp_prime_get_cub
 #undef fp_prime_get_mod8
 #undef fp_prime_get_mod18
 #undef fp_prime_get_sps
@@ -615,11 +616,18 @@
 #undef fp_inv_jmpds
 #undef fp_inv_lower
 #undef fp_inv_sim
-#undef fp_smb_basic
-#undef fp_smb_binar
-#undef fp_smb_divst
-#undef fp_smb_jmpds
-#undef fp_smb_lower
+#undef fp_smb2_basic
+#undef fp_smb2_binar
+#undef fp_smb2_divst
+#undef fp_smb2_jmpds
+#undef fp_smb2_jmpvt
+#undef fp_smb2_lower
+#undef fp_smb3_basic
+#undef fp_smb3_binar
+#undef fp_smb3_divst
+#undef fp_smb3_jmpds
+#undef fp_smb3_jmpvt
+#undef fp_smb3_lower
 #undef fp_exp_basic
 #undef fp_exp_slide
 #undef fp_exp_monty
@@ -638,6 +646,7 @@
 #define fp_prime_get_conv 	RLC_PREFIX(fp_prime_get_conv)
 #define fp_prime_get_srt 	RLC_PREFIX(fp_prime_get_srt)
 #define fp_prime_get_crt 	RLC_PREFIX(fp_prime_get_crt)
+#define fp_prime_get_cub 	RLC_PREFIX(fp_prime_get_cub)
 #define fp_prime_get_mod8 	RLC_PREFIX(fp_prime_get_mod8)
 #define fp_prime_get_mod18 	RLC_PREFIX(fp_prime_get_mod18)
 #define fp_prime_get_sps 	RLC_PREFIX(fp_prime_get_sps)
@@ -718,11 +727,18 @@
 #define fp_inv_jmpds 	RLC_PREFIX(fp_inv_jmpds)
 #define fp_inv_lower 	RLC_PREFIX(fp_inv_lower)
 #define fp_inv_sim 	RLC_PREFIX(fp_inv_sim)
-#define fp_smb_basic 	RLC_PREFIX(fp_smb_basic)
-#define fp_smb_binar 	RLC_PREFIX(fp_smb_binar)
-#define fp_smb_divst 	RLC_PREFIX(fp_smb_divst)
-#define fp_smb_jmpds 	RLC_PREFIX(fp_smb_jmpds)
-#define fp_smb_lower 	RLC_PREFIX(fp_smb_lower)
+#define fp_smb2_basic 	RLC_PREFIX(fp_smb2_basic)
+#define fp_smb2_binar 	RLC_PREFIX(fp_smb2_binar)
+#define fp_smb2_divst 	RLC_PREFIX(fp_smb2_divst)
+#define fp_smb2_jmpds 	RLC_PREFIX(fp_smb2_jmpds)
+#define fp_smb2_jmpvt 	RLC_PREFIX(fp_smb2_jmpvt)
+#define fp_smb2_lower 	RLC_PREFIX(fp_smb2_lower)
+#define fp_smb3_basic 	RLC_PREFIX(fp_smb3_basic)
+#define fp_smb3_binar 	RLC_PREFIX(fp_smb3_binar)
+#define fp_smb3_divst 	RLC_PREFIX(fp_smb3_divst)
+#define fp_smb3_jmpds 	RLC_PREFIX(fp_smb3_jmpds)
+#define fp_smb3_jmpvt 	RLC_PREFIX(fp_smb3_jmpvt)
+#define fp_smb3_lower 	RLC_PREFIX(fp_smb3_lower)
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)
@@ -761,7 +777,8 @@
 #undef fp_rdcs_low
 #undef fp_rdcn_low
 #undef fp_invm_low
-#undef fp_smbm_low
+#undef fp_smb2_low
+#undef fp_smb3_low
 
 #define fp_add1_low 	RLC_PREFIX(fp_add1_low)
 #define fp_addn_low 	RLC_PREFIX(fp_addn_low)
@@ -791,7 +808,8 @@
 #define fp_rdcs_low 	RLC_PREFIX(fp_rdcs_low)
 #define fp_rdcn_low 	RLC_PREFIX(fp_rdcn_low)
 #define fp_invm_low 	RLC_PREFIX(fp_invm_low)
-#define fp_smbm_low 	RLC_PREFIX(fp_smbm_low)
+#define fp_smb2_low 	RLC_PREFIX(fp_smb2_low)
+#define fp_smb3_low 	RLC_PREFIX(fp_smb3_low)
 
 #undef fp_st
 #undef fp_t

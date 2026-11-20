@@ -347,10 +347,20 @@ void fp_invm_low(dig_t *c, const dig_t *a);
 /**
  * Computes the Legendre symbol of a digit vector and the configured prime.
  *
- * @param[in] a				- the digit vector to invert.
- * @return the result.
+ * @param[in] a				- the digit vector.
+ * @return 1 or -1, or 0 if the digit vector is zero.
  */
-int fp_smbm_low(const dig_t *a);
+int fp_smb2_low(const dig_t *a);
+
+/**
+ * Computes the cubic residue symbol of a digit vector and the configured
+ * prime, the k such that a^((p - 1)/3) = z^k for the cube root of unity
+ * z = fp_prime_get_cub().
+ *
+ * @param[in] a				- the digit vector.
+ * @return k in {0, 1, 2}, or -1 if the digit vector is zero.
+ */
+int fp_smb3_low(const dig_t *a);
 
 #endif /* ASM */
 

@@ -40,13 +40,167 @@
 /*============================================================================*/
 
 /**
+ * Converts a signed integer to a prime field element.
+ *
+ * @param[out] c		- the result.
+ * @param[in] a			- the integer, with absolute value below p.
+ */
+static void fp_prime_conv_sgn(fp_t c, const bn_t a) {
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_abs(t, a);
+		fp_prime_conv(c, t);
+		if (bn_sign(a) == RLC_NEG) {
+			fp_neg(c, c);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
+/**
+ * Computes, for p = 1 mod 3, the primary prime pi = a + b * w of norm p in the
+ * Eisenstein integers Z[w], with w^2 + w + 1 = 0, and the cube root of unity
+ * congruent to w modulo pi, which define the cubic residue symbol.
+ *
+ * @param[in] p			- the prime field modulus.
+ */
+static void fp_prime_set_cub(const bn_t p) {
+	ctx_t *ctx = core_get();
+	dig_t z[RLC_FP_DIGS + 1], ra, rb;
+	bn_t a, b, c, d;
+	fp_t s, t;
+	int neg;
+
+	bn_null_all(a, b, c, d);
+	fp_null_all(s, t);
+
+	RLC_TRY {
+		bn_new_all(a, b, c, d);
+		fp_new_all(s, t);
+
+		/* A cube root of unity z = cnr^((p - 1)/3) gives sqrt(-3) = 2z + 1. */
+		fp_set_dig(s, (ctx->cnr < 0 ? -ctx->cnr : ctx->cnr));
+		if (ctx->cnr < 0) {
+			fp_neg(s, s);
+		}
+		fp_exp(s, s, &(ctx->over3));
+		fp_dbl(s, s);
+		fp_add_dig(s, s, 1);
+		fp_prime_back(b, s);
+
+		/* Cornacchia's algorithm finds x^2 + 3y^2 = p, with x the first
+		 * remainder of the Euclidean algorithm below sqrt(p). */
+		bn_copy(a, p);
+		bn_sqr(c, b);
+		while (bn_cmp(c, p) == RLC_GT) {
+			bn_mod(c, a, b);
+			bn_copy(a, b);
+			bn_copy(b, c);
+			bn_sqr(c, b);
+		}
+		bn_sub(c, p, c);
+		bn_div_dig(c, c, 3);
+		bn_srt(d, c);
+
+		/* x + y * sqrt(-3) = (x + y) + 2y * w has norm p. */
+		bn_add(a, b, d);
+		bn_dbl(b, d);
+
+		/* Its primary associate is the one with a = 2 and b = 0 mod 3. */
+		bn_mod_dig(&ra, a, 3);
+		bn_mod_dig(&rb, b, 3);
+		if (rb == 0) {
+			neg = (ra == 1);
+		} else if (ra == 0) {
+			/* w^2 * pi = (b - a) - a * w. */
+			bn_sub(c, b, a);
+			bn_neg(b, a);
+			bn_copy(a, c);
+			neg = (rb == 1);
+		} else {
+			/* w * pi = -b + (a - b) * w. */
+			bn_sub(c, a, b);
+			bn_neg(a, b);
+			bn_copy(b, c);
+			neg = (rb == 2);
+		}
+		if (neg) {
+			bn_neg(a, a);
+			bn_neg(b, b);
+		}
+
+		/* Store the coordinates in two's complement. */
+		dv_zero(z, RLC_FP_DIGS + 1);
+		for (int k = 0; k < 2; k++) {
+			bn_copy(c, (k == 0 ? a : b));
+			dv_zero(ctx->cub_pi[k], RLC_FP_DIGS + 1);
+			dv_copy(ctx->cub_pi[k], c->dp, c->used);
+			if (bn_sign(c) == RLC_NEG) {
+				bn_subn_low(ctx->cub_pi[k], z, ctx->cub_pi[k], RLC_FP_DIGS + 1);
+			}
+		}
+
+		/* As a / pi = a * ((a - b) - b * w) / p, the coordinates (a - b) / p
+		 * and -b / p, scaled by 2^K for K = RLC_DIG * (RLC_FP_DIGS + 1),
+		 * divide by pi with one multiplication each. */
+		for (int k = 0; k < 2; k++) {
+			if (k == 0) {
+				bn_sub(c, a, b);
+			} else {
+				bn_neg(c, b);
+			}
+			ctx->cub_sgn[k] = bn_sign(c);
+			bn_abs(c, c);
+			bn_lsh(c, c, RLC_DIG * (RLC_FP_DIGS + 1));
+			bn_div(c, c, p);
+			dv_zero(ctx->cub_inv[k], RLC_FP_DIGS + 1);
+			dv_copy(ctx->cub_inv[k], c->dp, c->used);
+		}
+
+		/* As pi = a + b * w = 0 modulo pi, w = -a / b. */
+		fp_prime_conv_sgn(s, a);
+		fp_prime_conv_sgn(t, b);
+		fp_inv(t, t);
+		fp_mul(s, s, t);
+		fp_neg(ctx->cub, s);
+
+		/* The symbol of R, stored as R^2 mod p in Montgomery form, for the
+		 * k such that R^((p - 1)/3) = z^k. */
+		ctx->cub_r = 0;
+#if FP_RDC == FP_MONTY
+		fp_exp(s, ctx->conv, &(ctx->over3));
+		fp_copy(t, ctx->cub);
+		ctx->cub_r = (fp_cmp(s, t) == RLC_EQ);
+		fp_sqr(t, t);
+		ctx->cub_r += 2 * (fp_cmp(s, t) == RLC_EQ);
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(a, b, c, d);
+		fp_free_all(s, t);
+	}
+}
+
+/**
  * Assigns the prime field modulus.
  *
  * @param[in] p			- the new prime field modulus.
  */
 static void fp_prime_set(const bn_t p) {
 	bn_t t;
-	fp_t r;
+	fp_t r, s;
 	ctx_t *ctx = core_get();
 	dig_t rem;
 
@@ -57,10 +211,12 @@ static void fp_prime_set(const bn_t p) {
 
 	bn_null(t);
 	fp_null(r);
+	fp_null(s);
 
 	RLC_TRY {
 		bn_new(t);
 		fp_new(r);
+		fp_new(s);
 
 		bn_copy(&(ctx->prime), p);
 		bn_sub_dig(&(ctx->over3), p, 1);
@@ -128,22 +284,28 @@ static void fp_prime_set(const bn_t p) {
 		};
 		fp_inv(ctx->iqnr, r);
 
-		/* Check if cnr is a cubic non-residue or find another. */
+		/* Check if cnr is a cubic non-residue or find another, by Euler's
+		 * criterion, as fp_is_cub() needs the cube root of unity that it
+		 * gives. */
 		if (ctx->mod18 % 3 == 1) {
 			if (ctx->cnr > 0) {
 				fp_set_dig(r, ctx->cnr);
-				while (fp_is_cub(r)) {
+				fp_exp(s, r, &(ctx->over3));
+				while (fp_cmp_dig(s, 1) == RLC_EQ) {
 					ctx->cnr++;
 					fp_set_dig(r, ctx->cnr);
-				};
+					fp_exp(s, r, &(ctx->over3));
+				}
 			} else {
 				fp_set_dig(r, -ctx->cnr);
 				fp_neg(r, r);
-				while (fp_is_cub(r)) {
+				fp_exp(s, r, &(ctx->over3));
+				while (fp_cmp_dig(s, 1) == RLC_EQ) {
 					ctx->cnr--;
 					fp_set_dig(r, -ctx->cnr);
 					fp_neg(r, r);
-				};
+					fp_exp(s, r, &(ctx->over3));
+				}
 			}
 		} else {
 			ctx->cnr = 0;
@@ -186,6 +348,18 @@ static void fp_prime_set(const bn_t p) {
 		}
 		fp_exp(ctx->crt, ctx->crt, t);
 
+		/* The cubic residue symbol, before anything that tests for cubes. */
+		if (ctx->mod18 % 3 == 1) {
+			fp_prime_set_cub(p);
+		} else {
+			fp_zero(ctx->cub);
+			dv_zero(ctx->cub_pi[0], RLC_FP_DIGS + 1);
+			dv_zero(ctx->cub_pi[1], RLC_FP_DIGS + 1);
+			dv_zero(ctx->cub_inv[0], RLC_FP_DIGS + 1);
+			dv_zero(ctx->cub_inv[1], RLC_FP_DIGS + 1);
+			ctx->cub_r = 0;
+		}
+
 		fp_prime_calc();
 	}
 	RLC_CATCH_ANY {
@@ -194,6 +368,7 @@ static void fp_prime_set(const bn_t p) {
 	RLC_FINALLY {
 		bn_free(t);
 		fp_free(r);
+		fp_free(s);
 	}
 }
 
@@ -278,6 +453,10 @@ const dig_t *fp_prime_get_srt(void) {
 
 const dig_t *fp_prime_get_crt(void) {
 	return core_get()->crt;
+}
+
+const dig_t *fp_prime_get_cub(void) {
+	return core_get()->cub;
 }
 
 dig_t fp_prime_get_mod8(void) {

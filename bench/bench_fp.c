@@ -573,57 +573,66 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("fp_smb") {
+	BENCH_RUN("fp_smb2") {
 		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+		BENCH_ADD(fp_smb2(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
 				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 
 #if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
-	BENCH_RUN("fp_smb_basic") {
+	BENCH_RUN("fp_smb2_basic") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_basic(a));
+		BENCH_ADD(fp_smb2_basic(a));
 	}
 	BENCH_END;
 #endif
 
 #if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
-	BENCH_RUN("fp_smb_binar") {
+	BENCH_RUN("fp_smb2_binar") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_binar(a));
+		BENCH_ADD(fp_smb2_binar(a));
 	}
 	BENCH_END;
 #endif
 
 #if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
-	BENCH_RUN("fp_smb_divst") {
+	BENCH_RUN("fp_smb2_divst") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_divst(a));
+		BENCH_ADD(fp_smb2_divst(a));
 	}
 	BENCH_END;
 #endif
 
 #if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
-	BENCH_RUN("fp_smb_jmpds") {
+	BENCH_RUN("fp_smb2_jmpds") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_jmpds(a));
+		BENCH_ADD(fp_smb2_jmpds(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb2_jmpvt") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb2_jmpvt(a));
 	}
 	BENCH_END;
 #endif
 
 #if FP_SMB == FP_LOWER
-	BENCH_RUN("fp_smb_lower") {
+	BENCH_RUN("fp_smb2_lower") {
 		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_lower(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+		BENCH_ADD(fp_smb2_lower(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
 				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
@@ -695,6 +704,60 @@ static void arith(void) {
 		BENCH_ADD(fp_is_cub(a));
 	}
 	BENCH_END;
+
+	BENCH_RUN("fp_smb3") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3(a));
+	}
+	BENCH_END;
+
+#if FP_SMB == FP_BASIC || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_basic") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_basic(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_BINAR || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_binar") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_binar(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_DIVST || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_divst") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_divst(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_JMPDS || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_jmpds") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_jmpds(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_JMPVT || !defined(RLC_STRIP)
+	BENCH_RUN("fp_smb3_jmpvt") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_jmpvt(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == FP_LOWER
+	BENCH_RUN("fp_smb3_lower") {
+		fp_rand(a);
+		BENCH_ADD(fp_smb3_lower(a));
+	}
+	BENCH_END;
+#endif
 
 	BENCH_RUN("fp_crt") {
 		fp_rand(a);

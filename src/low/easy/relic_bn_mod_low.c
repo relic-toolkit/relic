@@ -32,6 +32,7 @@
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
+#include "relic_dv.h"
 #include "relic_util.h"
 
 /*============================================================================*/
@@ -40,49 +41,20 @@
 
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
-	size_t i, j;
-	dig_t t, r0, r1, r2;
-	dig_t *tmp, *tmpc;
-	const dig_t *tmpm;
+	/* The modulus fits in the precision, so 2 * sm <= RLC_BN_SIZE. */
+	dig_t t[RLC_BN_SIZE], r;
 
-	tmpc = c;
-
-	r0 = r1 = r2 = 0;
-	for (i = 0; i < sm; i++, tmpc++, a++) {
-		tmp = c;
-		tmpm = m + i;
-		for (j = 0; j < i; j++, tmp++, tmpm--) {
-			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmp, *tmpm);
-		}
-		if (i < sa) {
-			RLC_COMBA_ADD(t, r2, r1, r0, *a);
-		}
-		*tmpc = RLC_MUL_LOW(r0, u);
-		RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpc, *m);
-		r0 = r1;
-		r1 = r2;
-		r2 = 0;
+	dv_copy(t, a, sa);
+	dv_zero(t + sa, 2 * sm - sa);
+	/* Row by row, cancel the lowest digit with a multiple of m, keeping the
+	 * carry of the row in the digit that it cancels, which no later row
+	 * touches, so that fewer values stay live than in a column-wise pass. */
+	for (size_t i = 0; i < sm; i++) {
+		r = RLC_MLO_DIG(t[i], u);
+		t[i] = bn_mula_low(t + i, m, r, sm);
 	}
-	for (i = sm; i < 2 * sm - 1; i++, a++) {
-		tmp = c + (i - sm + 1);
-		tmpm = m + sm - 1;
-		for (j = i - sm + 1; j < sm; j++, tmp++, tmpm--) {
-			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmp, *tmpm);
-		}
-		if (i < sa) {
-			RLC_COMBA_ADD(t, r2, r1, r0, *a);
-		}
-		c[i - sm] = r0;
-		r0 = r1;
-		r1 = r2;
-		r2 = 0;
-	}
-
-	if (i < sa) {
-		RLC_COMBA_ADD(t, r2, r1, r0, *a);
-	}
-	c[sm - 1] = r0;
-	if (r1) {
+	/* Add the carries to the high half, at the columns where they belong. */
+	if (bn_addn_low(c, t + sm, t, sm)) {
 		bn_subn_low(c, c, m, sm);
 	}
 }

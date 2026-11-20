@@ -37,10 +37,12 @@ message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm."
 message("      FP_METHD=DIVST    Constant-time inversion by division steps.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 
-message("      Legendre symbol:")
-message("      FP_METHD=BASIC    Computation by Fermat's Little Theorem.")
+message("      Quadratic and cubic residue symbols:")
+message("      FP_METHD=BASIC    Computation by Euler's criterion.")
+message("      FP_METHD=BINAR    Binary method.")
 message("      FP_METHD=DIVST    Constant-time method by division steps.")
 message("      FP_METHD=JMPDS    Constant-time method by jump division steps.")
+message("      FP_METHD=JMPVT    Variable-time method by jump division steps.")
 message("      FP_METHD=LOWER    Pass call to the lower level.\n")
 
 message("      Field exponentiation:")

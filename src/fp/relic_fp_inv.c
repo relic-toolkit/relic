@@ -124,26 +124,6 @@ static dis_t inv_steps(dis_t m[4], dis_t zeta, dig_t f, dig_t g, int s) {
 }
 
 /**
- * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
- */
-static inline void inv_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
-		dig_t sb) {
-	dig_t h, l;
-#ifdef RLC_CONF_NODBL
-	RLC_MUL_DIG(h, l, (dig_t)a, b);
-#else
-	/* Multiply once to get both halves. */
-	dbl_t t = (dbl_t)(dig_t)a * b;
-	h = (dig_t)(t >> RLC_DIG);
-	l = (dig_t)t;
-#endif
-	/* Correct the unsigned high half for the signs of a and b. */
-	h -= (b & -RLC_SIGN(a)) + ((dig_t)a & sb);
-	*c0 += l;
-	*c1 += h + (*c0 < l);
-}
-
-/**
  * Applies the transition matrix of s division steps to (f, g) and to (d, e),
  * with f = d * a and g = e * a mod p, dividing by 2^s exactly by adding the
  * right multiples of p to d and e, as in update_de of libsecp256k1. All values
@@ -169,26 +149,26 @@ static void inv_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	/* Choose md and me to clear the low s bits of the sums. */
 	md = (u & sd) + (v & se);
 	me = (q & sd) + (r & se);
-	cd = RLC_MUL_LOW((dig_t)u, d[0]) + RLC_MUL_LOW((dig_t)v, e[0]);
-	ce = RLC_MUL_LOW((dig_t)q, d[0]) + RLC_MUL_LOW((dig_t)r, e[0]);
-	md -= (md - RLC_MUL_LOW(cd, rdc)) & RLC_MASK(s);
-	me -= (me - RLC_MUL_LOW(ce, rdc)) & RLC_MASK(s);
+	cd = RLC_MLO_DIG((dig_t)u, d[0]) + RLC_MLO_DIG((dig_t)v, e[0]);
+	ce = RLC_MLO_DIG((dig_t)q, d[0]) + RLC_MLO_DIG((dig_t)r, e[0]);
+	md -= (md - RLC_MLO_DIG(cd, rdc)) & RLC_MASK(s);
+	me -= (me - RLC_MLO_DIG(ce, rdc)) & RLC_MASK(s);
 
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
 		gi = g[i];
 		di = d[i];
 		ei = e[i];
-		inv_mac(&f1, &f0, u, fi, 0);
-		inv_mac(&f1, &f0, v, gi, 0);
-		inv_mac(&g1, &g0, q, fi, 0);
-		inv_mac(&g1, &g0, r, gi, 0);
-		inv_mac(&d1, &d0, u, di, 0);
-		inv_mac(&d1, &d0, v, ei, 0);
-		inv_mac(&d1, &d0, md, p[i], 0);
-		inv_mac(&e1, &e0, q, di, 0);
-		inv_mac(&e1, &e0, r, ei, 0);
-		inv_mac(&e1, &e0, me, p[i], 0);
+		RLC_MAC_DIG(f1, f0, u, fi, 0);
+		RLC_MAC_DIG(f1, f0, v, gi, 0);
+		RLC_MAC_DIG(g1, g0, q, fi, 0);
+		RLC_MAC_DIG(g1, g0, r, gi, 0);
+		RLC_MAC_DIG(d1, d0, u, di, 0);
+		RLC_MAC_DIG(d1, d0, v, ei, 0);
+		RLC_MAC_DIG(d1, d0, md, p[i], 0);
+		RLC_MAC_DIG(e1, e0, q, di, 0);
+		RLC_MAC_DIG(e1, e0, r, ei, 0);
+		RLC_MAC_DIG(e1, e0, me, p[i], 0);
 		/* Store the previous digits shifted right by s bits. */
 		if (i > 0) {
 			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
@@ -215,14 +195,14 @@ static void inv_apply(dig_t *f, dig_t *g, dig_t *d, dig_t *e,
 	gi = g[i];
 	di = d[i];
 	ei = e[i];
-	inv_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
-	inv_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
-	inv_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
-	inv_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
-	inv_mac(&d1, &d0, u, di, -RLC_SIGN(di));
-	inv_mac(&d1, &d0, v, ei, -RLC_SIGN(ei));
-	inv_mac(&e1, &e0, q, di, -RLC_SIGN(di));
-	inv_mac(&e1, &e0, r, ei, -RLC_SIGN(ei));
+	RLC_MAC_DIG(f1, f0, u, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(f1, f0, v, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(g1, g0, q, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(g1, g0, r, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(d1, d0, u, di, -RLC_SIGN(di));
+	RLC_MAC_DIG(d1, d0, v, ei, -RLC_SIGN(ei));
+	RLC_MAC_DIG(e1, e0, q, di, -RLC_SIGN(di));
+	RLC_MAC_DIG(e1, e0, r, ei, -RLC_SIGN(ei));
 	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
 	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
 	d[i - 1] = (ds >> s) | (d0 << (RLC_DIG - s));

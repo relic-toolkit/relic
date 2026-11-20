@@ -187,12 +187,12 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 	}
 
 	x = (((b + 2) & 4) << 1) + b;				/* here x*a==1 mod 2**4 */
-	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**8 */
+	x = RLC_MLO_DIG(x, (dig_t)(2 - RLC_MLO_DIG(b, x)));	/* mod 2**8 */
 #if RLC_WSIZE > 8
-	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**16 */
+	x = RLC_MLO_DIG(x, (dig_t)(2 - RLC_MLO_DIG(b, x)));	/* mod 2**16 */
 #endif
 #if RLC_WSIZE > 16
-	x = RLC_MUL_LOW(x, (dig_t)(2 - RLC_MUL_LOW(b, x)));	/* mod 2**32 */
+	x = RLC_MLO_DIG(x, (dig_t)(2 - RLC_MLO_DIG(b, x)));	/* mod 2**32 */
 #endif
 #if RLC_WSIZE > 32
 	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**64 */
@@ -263,7 +263,7 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		tmp = t->dp;
 
 		for (i = 0; i < m->used; i++, tmp++) {
-			r = RLC_MUL_LOW(*tmp, u0);
+			r = RLC_MLO_DIG(*tmp, u0);
 			*tmp = bn_mula_low(tmp, m->dp, r, m->used);
 		}
 		if (bn_addn_low(t->dp, t->dp, tmp, m->used)) {

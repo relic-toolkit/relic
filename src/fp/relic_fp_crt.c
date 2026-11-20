@@ -36,36 +36,8 @@
 /*============================================================================*/
 
 int fp_is_cub(const fp_t a) {
-	bn_t t;
-	int r = 0;
-
-	bn_null(t);
-
-	if (fp_is_zero(a) || (fp_prime_get_mod18() % 3 == 2)) {
-		return 1;
-	}
-
-	RLC_TRY {
-		bn_new(t);
-
-		/* t = (b - 1)/3. */
-		t->sign = RLC_POS;
-		t->used = RLC_FP_DIGS;
-		dv_copy(t->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_sub_dig(t, t, 1);
-		bn_div_dig(t, t, 3);
-
-		fp_exp(t->dp, a, t);
-		r = (fp_cmp_dig(t->dp, 1) == RLC_EQ);
-	}
-	RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(t);
-	}
-	return r;
+	/* Zero is a cube, with symbol -1. */
+	return fp_smb3(a) <= 0;
 }
 
 int fp_crt(fp_t c, const fp_t a) {

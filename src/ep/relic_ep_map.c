@@ -83,7 +83,7 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 		while (1) {
 			ep_rhs(t0, p->x);
 
-			if (fp_smb(t0) == 1) {
+			if (fp_smb2(t0) == 1) {
 				fp_srt(p->y, t0);
 				p->coord = EC_AFFIN;
 				break;

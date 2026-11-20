@@ -247,6 +247,19 @@ typedef struct _ctx_t {
 	fp_st srt;
 	/** Primitive cube root of unity for cube root extraction. */
 	fp_st crt;
+	/** Primitive cube root of unity that defines the cubic residue symbol. */
+	fp_st cub;
+	/** Coordinates in two's complement of the primary prime of norm p in the
+	 * Eisenstein integers, for the cubic residue symbol. */
+	dig_t cub_pi[2][RLC_FP_DIGS + 1];
+	/** Absolute values of the scaled coordinates of the inverse of that prime,
+	 * to divide by it with one multiplication. */
+	dig_t cub_inv[2][RLC_FP_DIGS + 1];
+	/** Signs of the scaled coordinates of the inverse of that prime. */
+	int cub_sgn[2];
+	/** Exponent of the cubic residue symbol of R in Montgomery form, and
+	 * otherwise 0, to divide it out of that of stored elements. */
+	int cub_r;
 	/** Inverse of qnr for root extraction. */
 	fp_st iqnr;
 	/** Quadratic non-residue. */

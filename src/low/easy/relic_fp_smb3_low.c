@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2023 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,14 +24,12 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level cubic residue symbol.
  *
- * @&version $Id$
  * @ingroup fp
  */
 
-#include <gmp.h>
-
+#include "relic_bn.h"
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 #include "relic_core.h"
@@ -40,29 +38,32 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smbm_low(const dig_t *a) {
-	mpz_t n, p;
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
-	int res;
+int fp_smb3_low(const dig_t *a) {
+	dig_t t[RLC_FP_DIGS], u[RLC_FP_DIGS], z = 0;
+	int r = -1;
 
-	mpz_init(n);
-	mpz_init(p);
+	if (fp_prime_get_mod18() % 3 == 2) {
+		/* Every element is a cube, and zero has no symbol. */
+		for (size_t i = 0; i < RLC_FP_DIGS; i++) {
+			z |= a[i];
+		}
+		return -(int)((dig_t)(~z & (z - 1)) >> (RLC_DIG - 1));
+	}
 
-#if FP_RDC == FP_MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
+	/* By Euler's criterion, a^((p - 1)/3) = z^k, and 0 for zero. */
+#if RLC_AUTO == RLC_ALLOC
+	fp_exp(t, a, &(core_get()->over3));
 #else
-	fp_copy(u, a);
+	fp_exp(t, (const fp_t)a, &(core_get()->over3));
 #endif
+	/* The k of the only one of 1, z and z^2 that is equal to the power, from
+	 * dv_equ_sec(), which is 0 if equal and RLC_NE = 2 otherwise. */
+	fp_set_dig(u, 1);
+	r += 1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1);
+	r += 2 * (1 - (dv_equ_sec(t, fp_prime_get_cub(), RLC_FP_DIGS) >> 1));
+	dv_copy(u, fp_prime_get_cub(), RLC_FP_DIGS);
+	fp_sqr(u, u);
+	r += 3 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 
-	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, u);
-	mpz_import(p, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, fp_prime_get());
-
-	res = mpz_jacobi(n, p);
-
-	(void)t;
-	mpz_clear(n);
-	mpz_clear(p);
-	return res;
+	return r;
 }

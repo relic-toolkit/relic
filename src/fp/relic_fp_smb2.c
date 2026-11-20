@@ -44,7 +44,7 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		dig_t k, size_t s) {
 	dig_t limbx, ai = 1, bi = 0, ci = 0, di = 1;
 	dig_t g_lo = g[0], g_hi = g[1], f_lo = f[0], f_hi = f[1];
-	dig_t t_lo, t_hi, odd, borrow, xorm;
+	dig_t t_lo, t_hi, odd, borrow, xorm, sub;
 
 	/* Unrolling twice gives some small speedup. */
 	for (size_t i = 0; i < s; i+=2) {
@@ -53,15 +53,17 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		/* g_ -= f_ if g_ is odd */
 		t_lo = g_lo, t_hi = g_hi;
 
-		borrow = 0;
-		limbx = g_lo - (f_lo & odd);
-		borrow = (g_lo < limbx);
+		/* The borrows are the top bits of (~a & b) | (~(a ^ b) & (a - b)),
+		 * without comparisons that compilers may turn into branches. */
+		sub = f_lo & odd;
+		limbx = g_lo - sub;
+		borrow = ((~g_lo & sub) | (~(g_lo ^ sub) & limbx)) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
-		limbx = g_hi - (f_hi & odd);
-		xorm = limbx - borrow;
-		borrow = -((g_hi < limbx) || (borrow && !limbx));
-		g_hi = xorm;
+		sub = f_hi & odd;
+		limbx = g_hi - sub - borrow;
+		borrow = -(((~g_hi & sub) | (~(g_hi ^ sub) & limbx)) >> (RLC_DIG - 1));
+		g_hi = limbx;
 
 		k += ((t_lo & f_lo) >> 1) & borrow;
 
@@ -103,15 +105,17 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 		/* g_ -= f_ if g_ is odd */
 		t_lo = g_lo, t_hi = g_hi;
 
-		borrow = 0;
-		limbx = g_lo - (f_lo & odd);
-		borrow = (g_lo < limbx);
+		/* The borrows are the top bits of (~a & b) | (~(a ^ b) & (a - b)),
+		 * without comparisons that compilers may turn into branches. */
+		sub = f_lo & odd;
+		limbx = g_lo - sub;
+		borrow = ((~g_lo & sub) | (~(g_lo ^ sub) & limbx)) >> (RLC_DIG - 1);
 		g_lo = limbx;
 
-		limbx = g_hi - (f_hi & odd);
-		xorm = limbx - borrow;
-		borrow = -((g_hi < limbx) || (borrow && !limbx));
-		g_hi = xorm;
+		sub = f_hi & odd;
+		limbx = g_hi - sub - borrow;
+		borrow = -(((~g_hi & sub) | (~(g_hi ^ sub) & limbx)) >> (RLC_DIG - 1));
+		g_hi = limbx;
 
 		k += ((t_lo & f_lo) >> 1) & borrow;
 
@@ -184,10 +188,10 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
  * @return the updated value of zeta.
  */
 #if RLC_WSIZE == 8
-static int smb_steps(dis_t m[4], dig_t *k, int zeta, dig_t f, dig_t g,
+static int smb2_steps(dis_t m[4], dig_t *k, int zeta, dig_t f, dig_t g,
 		int s) {
 #else
-static dis_t smb_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
+static dis_t smb2_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
 		int s) {
 #endif
 	const int h = RLC_DIG / 2;
@@ -244,26 +248,6 @@ static dis_t smb_steps(dis_t m[4], dig_t *k, dis_t zeta, dig_t f, dig_t g,
 }
 
 /**
- * Adds a * b to the signed double digit (c1, c0); sb is the sign mask of b.
- */
-static inline void smb_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
-		dig_t sb) {
-	dig_t h, l;
-#ifdef RLC_CONF_NODBL
-	RLC_MUL_DIG(h, l, (dig_t)a, b);
-#else
-	/* Multiply once to get both halves. */
-	dbl_t t = (dbl_t)(dig_t)a * b;
-	h = (dig_t)(t >> RLC_DIG);
-	l = (dig_t)t;
-#endif
-	/* Correct the unsigned high half for the signs of a and b. */
-	h -= (b & -RLC_SIGN(a)) + ((dig_t)a & sb);
-	*c0 += l;
-	*c1 += h + (*c0 < l);
-}
-
-/**
  * Applies the transition matrix m = (u, v; q, r) of s division steps to
  * (f, g), computing (u * f + v * g, q * f + r * g) / 2^s in a single pass,
  * where the division is exact. Both values have RLC_FP_DIGS + 1 signed digits.
@@ -273,7 +257,7 @@ static inline void smb_mac(dig_t *c1, dig_t *c0, dis_t a, dig_t b,
  * @param[in] m				- the transition matrix.
  * @param[in] s				- the number of division steps.
  */
-static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
+static void smb2_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	const dis_t u = m[0], v = m[1], q = m[2], r = m[3];
 	dig_t f1 = 0, f0 = 0, g1 = 0, g0 = 0, fs = 0, gs = 0, fi, gi;
 	size_t i;
@@ -281,10 +265,10 @@ static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		fi = f[i];
 		gi = g[i];
-		smb_mac(&f1, &f0, u, fi, 0);
-		smb_mac(&f1, &f0, v, gi, 0);
-		smb_mac(&g1, &g0, q, fi, 0);
-		smb_mac(&g1, &g0, r, gi, 0);
+		RLC_MAC_DIG(f1, f0, u, fi, 0);
+		RLC_MAC_DIG(f1, f0, v, gi, 0);
+		RLC_MAC_DIG(g1, g0, q, fi, 0);
+		RLC_MAC_DIG(g1, g0, r, gi, 0);
 		/* Store the previous digits shifted right by s bits. */
 		if (i > 0) {
 			f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
@@ -301,21 +285,97 @@ static void smb_apply(dig_t *f, dig_t *g, const dis_t m[4], int s) {
 	/* Only the top digits are signed. */
 	fi = f[i];
 	gi = g[i];
-	smb_mac(&f1, &f0, u, fi, -RLC_SIGN(fi));
-	smb_mac(&f1, &f0, v, gi, -RLC_SIGN(gi));
-	smb_mac(&g1, &g0, q, fi, -RLC_SIGN(fi));
-	smb_mac(&g1, &g0, r, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(f1, f0, u, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(f1, f0, v, gi, -RLC_SIGN(gi));
+	RLC_MAC_DIG(g1, g0, q, fi, -RLC_SIGN(fi));
+	RLC_MAC_DIG(g1, g0, r, gi, -RLC_SIGN(gi));
 	f[i - 1] = (fs >> s) | (f0 << (RLC_DIG - s));
 	g[i - 1] = (gs >> s) | (g0 << (RLC_DIG - s));
 	f[i] = (dis_t)f0 >> s;
 	g[i] = (dis_t)g0 >> s;
 }
 
+/**
+ * Computes the Legendre symbol by jumps of division steps, either a number of
+ * them that only depends on the size of p, or until g is 0.
+ *
+ * @param[in] a				- the prime field element.
+ * @param[in] ct			- the flag to run in constant time.
+ * @return the result.
+ */
+static int smb2_jumps(const fp_t a, int ct) {
+	dis_t m[4];
+	dv_t f, g;
+	dig_t j = 0, k, z = 0;
+	int r = 0, s;
+#if RLC_WSIZE == 8
+	int zeta = -1;
+#else
+	dis_t zeta = -1;
+#endif
+
+	dv_null_all(f, g);
+
+	RLC_TRY {
+		dv_new_all(f, g);
+
+		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+		f[RLC_FP_DIGS] = 0;
+		dv_zero(g, RLC_FP_DIGS + 1);
+
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
+		fp_copy(g, a);
+
+		/* In constant time, the number of steps only depends on the size of
+		 * the prime. */
+		for (int i = 0; i < JMPDS_ITERS; i += s) {
+			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
+			/* Without constant time, stop once g is 0, after which f and the
+			 * count no longer change. */
+			if (!ct) {
+				k = 0;
+				for (size_t l = 0; l <= RLC_FP_DIGS; l++) {
+					k |= g[l];
+				}
+				if (k == 0) {
+					break;
+				}
+			}
+			zeta = smb2_steps(m, &k, zeta, f[0], g[0], s);
+			smb2_apply(f, g, m, s);
+			/* Count the sign changes of f, whose parity is its sign. */
+			j = (j + k) % 4;
+			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;
+		}
+		/* Each flip of the symbol added two to the count. */
+		j = (j + (j & 1)) % 4;
+
+		/* For a nonzero, f is now 1 or -1 and the symbol is 1 - j, and for
+		 * zero it is 0, from the nonzero bit of a, without comparisons that
+		 * compilers may turn into branches. */
+		for (size_t l = 0; l < RLC_FP_DIGS; l++) {
+			z |= a[l];
+		}
+		z = (dig_t)(z | -z) >> (RLC_DIG - 1);
+		r = (int)(dis_t)((1 - j) & -z);
+	}
+	RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		dv_free_all(f, g);
+	}
+
+	return r;
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smb_basic(const fp_t a) {
+int fp_smb2_basic(const fp_t a) {
 	bn_t t;
 	int r = 0;
 
@@ -352,9 +412,9 @@ int fp_smb_basic(const fp_t a) {
 		(H << (I & (RLC_DIG - 1))) |										\
 		(L & -(I != 0)) >> ((RLC_DIG - I) & (RLC_DIG - 1))
 
-int fp_smb_binar(const fp_t a) {
+int fp_smb2_binar(const fp_t a) {
 	const size_t s = RLC_DIG - 2;
-	dv_t f, g, t;
+	dv_t f, g;
 	dig_t g_[2], f_[2], neg, l, g_hi, g_lo, f_hi, f_lo, mask, k = 0;
 	dis_t m[4];
 	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
@@ -363,21 +423,16 @@ int fp_smb_binar(const fp_t a) {
 		return 0;
 	}
 
-	dv_null_all(f, g, t);
+	dv_null_all(f, g);
 
 	RLC_TRY {
-		dv_new_all(f, g, t);
+		dv_new_all(f, g);
 
-		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
 		fp_copy(g, a);
-#endif
-		/* Both stay nonnegative, with a zero sign digit for smb_apply(). */
+		/* Both stay nonnegative, with a zero sign digit for smb2_apply(). */
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 
 		for (size_t len, i = 0; i < iterations / s; i++) {
@@ -400,7 +455,7 @@ int fp_smb_binar(const fp_t a) {
 
 			/* (g, f) <- (m0 g + m1 f, m2 g + m3 f)/2^s, then their absolute
 			 * values. */
-			smb_apply(g, f, m, s);
+			smb2_apply(g, f, m, s);
 			neg = RLC_SIGN(g[RLC_FP_DIGS]);
 			bn_sneg_low(g, g, neg, RLC_FP_DIGS);
 			bn_sneg_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), RLC_FP_DIGS);
@@ -413,13 +468,13 @@ int fp_smb_binar(const fp_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free_all(f, g, t);
+		dv_free_all(f, g);
 	}
 
 	return (k & 1 ? -1 : 1);
 }
 
-int fp_smb_divst(const fp_t a) {
+int fp_smb2_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
 	const int d = (49 * FP_PRIME + 80) / 17;
@@ -448,14 +503,9 @@ int fp_smb_divst(const fp_t a) {
 
 		k = 0;
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		dv_zero(t, 2 * RLC_FP_DIGS);
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
+		/* The stored digits of a, which are a * R mod p in Montgomery form,
+		 * have the same symbol, as R is an even power of 2 and so a square. */
 		fp_copy(g, a);
-#endif
 		r = dv_cmp_sec(g, f, RLC_FP_DIGS);
 		fp_subn_low(t, g, f);
 		fp_copy_sec(g, t, r != RLC_LT);
@@ -516,69 +566,18 @@ int fp_smb_divst(const fp_t a) {
 	return r;
 }
 
-int fp_smb_jmpds(const fp_t a) {
-	dis_t m[4];
-	dv_t f, g, t;
-	dig_t j = 0, k;
-	int r = 0, s;
-#if RLC_WSIZE == 8
-	int zeta = -1;
-#else
-	dis_t zeta = -1;
-#endif
+int fp_smb2_jmpds(const fp_t a) {
+	return smb2_jumps(a, 1);
+}
 
-	dv_null_all(f, g, t);
-
-	RLC_TRY {
-		dv_new_all(f, g, t);
-
-		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-		f[RLC_FP_DIGS] = 0;
-		dv_zero(g, RLC_FP_DIGS + 1);
-		dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-
-#if FP_RDC == FP_MONTY
-		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
-#else
-		fp_copy(g, a);
-#endif
-
-		/* The number of steps only depends on the prime size. */
-		for (int i = 0; i < JMPDS_ITERS; i += s) {
-			s = RLC_MIN(JMPDS_STEPS, JMPDS_ITERS - i);
-			zeta = smb_steps(m, &k, zeta, f[0], g[0], s);
-			smb_apply(f, g, m, s);
-			/* Count the sign changes of f, whose parity is its sign. */
-			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ RLC_SIGN(f[RLC_FP_DIGS]))) % 4;
-		}
-		/* Each flip of the symbol added two to the count. */
-		j = (j + (j & 1)) % 4;
-
-		fp_zero(t);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		t[0] = 1;
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
-		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-	}
-	RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv_free_all(f, g, t);
-	}
-
-	return r;
+int fp_smb2_jmpvt(const fp_t a) {
+	return smb2_jumps(a, 0);
 }
 
 #if FP_SMB == FP_LOWER
 
-int fp_smb_lower(const fp_t a) {
-	return fp_smbm_low(a);
+int fp_smb2_lower(const fp_t a) {
+	return fp_smb2_low(a);
 }
 
 #endif
