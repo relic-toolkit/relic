@@ -116,9 +116,9 @@ int fp_param_get(void) {
 	return core_get()->fp_id;
 }
 
-void fp_param_set(int param) {
+int fp_param_set(int param) {
 	bn_t t0, t1, t2, p;
-	int f[10] = { 0 };
+	int f[10] = { 0 }, code = RLC_OK;
 
 	bn_null_all(t0, t1, t2, p);
 
@@ -767,11 +767,13 @@ void fp_param_set(int param) {
 		}
 	}
 	RLC_CATCH_ANY {
+		code = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free_all(t0, t1, t2, p);
 	}
+	return code;
 }
 
 int fp_param_set_any(void) {

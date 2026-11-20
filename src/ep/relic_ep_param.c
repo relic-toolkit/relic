@@ -814,7 +814,11 @@
  * @param[in] FIELD		- the finite field identifier.
  */
 #define EP_ASSIGN(CURVE, FIELD)												\
-	fp_param_set(FIELD);													\
+	if (fp_param_set(FIELD) != RLC_OK) {									\
+		/* Leave the switch, as execution continues without error checking	\
+		 * and the curve would be set over the wrong field. */				\
+		break;																\
+	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(a, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\

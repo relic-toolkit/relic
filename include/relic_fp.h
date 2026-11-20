@@ -657,8 +657,12 @@ void fp_prime_back(bn_t c, const fp_t a);
 
 /**
  * Assigns a prime modulus based on its identifier.
+ *
+ * @param[in] param			- the identifier of the prime.
+ * @return RLC_OK if the prime was assigned, RLC_ERR otherwise, as when the
+ * configured reduction cannot use it.
  */
-void fp_param_set(int param);
+int fp_param_set(int param);
 
 /**
  * Assigns any pre-defined parameter as the prime modulus.
