@@ -580,12 +580,17 @@ int fp_smb3_basic(const fp_t a) {
 		/* By Euler's criterion, a^((p - 1)/3) = z^k, and 0 for zero. */
 		fp_exp(t, a, &(core_get()->over3));
 		/* k from which of 1, z and z^2 is the power, with dv_equ_sec() 0 if
-		 * equal and RLC_NE = 2 otherwise, without branches. */
+		 * equal and RLC_NE = 2 otherwise, without branches, on the reduced
+		 * values, as some backends keep elements below a multiple of p. */
+		fp_norm(t, t);
 		fp_set_dig(u, 1);
+		fp_norm(u, u);
 		r += 1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1);
-		r += 2 * (1 - (dv_equ_sec(t, fp_prime_get_cub(), RLC_FP_DIGS) >> 1));
 		dv_copy(u, fp_prime_get_cub(), RLC_FP_DIGS);
+		fp_norm(u, u);
+		r += 2 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 		fp_sqr(u, u);
+		fp_norm(u, u);
 		r += 3 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 	}
 	RLC_CATCH_ANY {

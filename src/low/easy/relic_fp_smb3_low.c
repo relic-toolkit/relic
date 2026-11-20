@@ -57,12 +57,17 @@ int fp_smb3_low(const dig_t *a) {
 	fp_exp(t, (const fp_t)a, &(core_get()->over3));
 #endif
 	/* The k of the only one of 1, z and z^2 that is equal to the power, from
-	 * dv_equ_sec(), which is 0 if equal and RLC_NE = 2 otherwise. */
+	 * dv_equ_sec(), which is 0 if equal and RLC_NE = 2 otherwise, on the
+	 * reduced values, as some backends keep elements below a multiple of p. */
+	fp_norm(t, t);
 	fp_set_dig(u, 1);
+	fp_norm(u, u);
 	r += 1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1);
-	r += 2 * (1 - (dv_equ_sec(t, fp_prime_get_cub(), RLC_FP_DIGS) >> 1));
 	dv_copy(u, fp_prime_get_cub(), RLC_FP_DIGS);
+	fp_norm(u, u);
+	r += 2 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 	fp_sqr(u, u);
+	fp_norm(u, u);
 	r += 3 * (1 - (dv_equ_sec(t, u, RLC_FP_DIGS) >> 1));
 
 	return r;
