@@ -161,18 +161,6 @@ static inline void smb3_lin(dig_t *c, const dig_t *a[4], const dis_t s[4],
 }
 
 /**
- * Multiplies two Eisenstein integers with signed coordinates.
- *
- * @param[out] c			- the product.
- * @param[in] a				- the first factor.
- * @param[in] b				- the second factor.
- */
-static void smb3_emul(int64_t c[2], const int64_t a[2], const int64_t b[2]) {
-	c[0] = a[0] * b[0] - a[1] * b[1];
-	c[1] = a[0] * b[1] + a[1] * b[0] - a[1] * b[1];
-}
-
-/**
  * Computes (m * alpha + n * beta) / (1 - w)^(2h) in len digits, where the
  * division is exact, for alpha = x + y * w and beta = u + v * w.
  *
@@ -433,7 +421,7 @@ static void smb3_jhalf(int64_t r[4][2], uint64_t f[2], uint64_t g[2],
 static inline void smb3_jump(dig_t c[4][FP_CUB_DIGS],
 		dig_t w[4][FP_CUB_DIGS], int64_t *d, int64_t *e, int n, size_t len) {
 	uint64_t f[2], g[2];
-	int64_t mk[2], s[4][2], t[4][2], r[4][2], u[2], v[2];
+	int64_t mk[2], s[4][2], t[4][2], r[4][2];
 
 	f[0] = smb3_modj(w[0], len);
 	f[1] = smb3_modj(w[1], len);
@@ -444,16 +432,14 @@ static inline void smb3_jump(dig_t c[4][FP_CUB_DIGS],
 	mk[1] = smb3_c3(f[1] * FP_CUB_I3);
 	smb3_jhalf(s, f, g, mk, d, e, n / 2);
 	smb3_jhalf(t, f, g, mk, d, e, n - n / 2);
-	/* The second matrix times the first. */
-	for (int i = 0; i < 2; i++) {
-		smb3_emul(u, t[2 * i], s[0]);
-		smb3_emul(v, t[2 * i + 1], s[2]);
-		r[2 * i][0] = u[0] + v[0];
-		r[2 * i][1] = u[1] + v[1];
-		smb3_emul(u, t[2 * i], s[1]);
-		smb3_emul(v, t[2 * i + 1], s[3]);
-		r[2 * i + 1][0] = u[0] + v[0];
-		r[2 * i + 1][1] = u[1] + v[1];
+	/* The second matrix times the first, entry by entry, with
+	 * (a0 + a1 * w)(x0 + x1 * w) = (a0 x0 - a1 x1) + (a0 x1 + a1 x0 - a1 x1) w. */
+	for (int i = 0; i < 4; i++) {
+		const int64_t *a = t[i & 2], *b = t[(i & 2) + 1];
+		const int64_t *x = s[i & 1], *y = s[(i & 1) + 2];
+		r[i][0] = a[0] * x[0] - a[1] * x[1] + b[0] * y[0] - b[1] * y[1];
+		r[i][1] = a[0] * x[1] + a[1] * x[0] - a[1] * x[1] +
+				b[0] * y[1] + b[1] * y[0] - b[1] * y[1];
 	}
 	smb3_row(c[0], c[1], r[0], r[1], n, w[0], w[1], w[2], w[3], len);
 	smb3_row(c[2], c[3], r[2], r[3], n, w[0], w[1], w[2], w[3], len);
