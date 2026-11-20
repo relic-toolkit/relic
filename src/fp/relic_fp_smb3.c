@@ -714,16 +714,13 @@ int fp_smb3_binar(const fp_t a) {
 			ng = x[2] * x[2] - x[2] * x[3] + x[3] * x[3];
 			u[0] = ua;
 			u[1] = ub;
+			/* (u * g - f) / (1 - w)^2 replaces the one with the larger norm,
+			 * and f becomes u * g if that is f, by reciprocity. */
+			smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
 			if (ng < nf) {
-				/* Replace f by u * g, by reciprocity, and g by
-				 * (u * g - f) / (1 - w)^2. */
-				smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
 				smb3_row(w[0], w[1], u, nul, 0, w[2], w[3], w[2], w[3], len);
 				mf = (smb3_mod9(w[0], len) + 1) % 9 / 3;
 				kf = smb3_mod9(w[1], len) / 3;
-			} else {
-				/* Replace u * g by (u * g - f) / (1 - w)^2. */
-				smb3_row(c[0], c[1], u, neg, 1, w[2], w[3], w[0], w[1], len);
 			}
 			/* (1 - w)^2 gives w^(4m) = w^m, with the m of the new f. */
 			e += mf;
