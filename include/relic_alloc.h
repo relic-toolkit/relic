@@ -34,13 +34,19 @@
 
 #include "relic_conf.h"
 
+/**
+ * The value of ERR_NO_MEMORY, which this file cannot see, as relic_err.h
+ * includes it indirectly; relic_err.c checks that they agree.
+ */
+#define RLC_ALLOC_FATAL		2
+
 #if RLC_ALLOC == RLC_DYNAMIC
 
 #include <stdlib.h>
 #include "relic_label.h"
 
 /* Declared here as well, as relic_err.h includes this file indirectly. */
-void err_fatal(const char *file, int line);
+void err_fatal(const char *file, int line, int error);
 
 /**
  * Allocates n objects of the given size for RLC_ALLOCA with dynamic allocation,
@@ -59,7 +65,7 @@ static inline void *rlc_alloca_dyn(size_t n, size_t size, const char *file,
 	void *p = malloc(n * size);
 
 	if (p == NULL && n * size != 0) {
-		err_fatal(file, line);
+		err_fatal(file, line, RLC_ALLOC_FATAL);
 	}
 	return p;
 }

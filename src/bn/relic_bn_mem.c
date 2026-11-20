@@ -79,10 +79,10 @@ void bn_make(bn_t a, size_t digits) {
 		return;
 	}
 #else
-	/* Verify if the number of digits is sane. */
+	/* Verify if the number of digits is sane. A number that cannot hold its
+	 * value is fatal, as the caller would write past its digits. */
 	if (digits > RLC_BN_SIZE) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_PRECI);
 	} else {
 		digits = RLC_BN_SIZE;
 	}
@@ -157,9 +157,10 @@ void bn_grow(bn_t a, size_t digits) {
 		a->alloc = digits;
 	}
 #elif RLC_ALLOC == RLC_AUTO
+	/* Fatal, as the caller would write the result past the digits, and inputs
+	 * that are too long are rejected when they are read. */
 	if (digits > RLC_BN_SIZE) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_PRECI);
 	}
 	(void)a;
 #endif

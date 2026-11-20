@@ -145,12 +145,19 @@ int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
 int cp_cades_ver(gt_t r, const gt_t g[2], const bn_t t, const gt_t e) {
 	int result = 0;
 
-	gt_exp(r, g[1], t);
-	gt_mul(r, r, e);
-	if (gt_is_valid(g[1]) && gt_cmp(g[0], r) == RLC_EQ) {
-		result = 1;
-		gt_copy(r, g[1]);
-	} else {
+	RLC_TRY {
+		gt_exp(r, g[1], t);
+		gt_mul(r, r, e);
+		if (gt_is_valid(g[1]) && gt_cmp(g[0], r) == RLC_EQ) {
+			result = 1;
+			gt_copy(r, g[1]);
+		} else {
+			gt_set_unity(r);
+		}
+	}
+	RLC_CATCH_ANY {
+		/* Execution continues past errors, so fail closed. */
+		result = 0;
 		gt_set_unity(r);
 	}
 	return result;

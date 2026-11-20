@@ -57,7 +57,7 @@ enum errors {
 	/** Constant to indicate the first an error already catched. */
 	ERR_CAUGHT = 1,
 	/** Occurs when memory-allocating functions fail, which is fatal: throwing
-	 * it stops the program through err_fatal() instead of being caught. */
+	 * it reports the error and stops the program instead of being caught. */
 	ERR_NO_MEMORY,
 	/** Occcurs when the library precision is not sufficient. */
 	ERR_NO_PRECI,
@@ -206,7 +206,7 @@ typedef struct _sts_t {
 	do {																\
 		ctx_t *_ctx = core_get();										\
 		if ((E) == ERR_NO_MEMORY) {										\
-			err_fatal(RLC_FILE, __LINE__);								\
+			err_fatal(RLC_FILE, __LINE__, E);							\
 		}																\
 		_ctx->code = RLC_ERR;											\
 		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
@@ -311,7 +311,7 @@ typedef struct _sts_t {
 	do {																	\
 		ctx_t *_ctx = core_get();											\
 		if ((E) == ERR_NO_MEMORY) {											\
-			err_fatal(RLC_FILE, __LINE__);									\
+			err_fatal(RLC_FILE, __LINE__, E);								\
 		}																	\
 		_ctx->code = RLC_ERR;												\
 		if (E != ERR_CAUGHT) {												\
@@ -408,14 +408,16 @@ void err_get_msg(err_t *e, char **msg);
 void err_throw(const char *file, int line);
 
 /**
- * Reports that there is not enough memory and aborts. Running out of memory is
- * fatal in every configuration, as execution continues past a throw without
- * error checking and callers would use the missing memory.
+ * Reports an error that cannot be recovered from and aborts: running out of
+ * memory, or a result that does not fit in a number of fixed size, as execution
+ * continues past a throw without error checking and callers would use the
+ * missing memory.
  *
  * @param[in] file      	- the source file where the error occurred.
  * @param[in] line      	- the line in the file where the error occurred.
+ * @param[in] error			- the error code.
  */
-void err_fatal(const char *file, int line);
+void err_fatal(const char *file, int line, int error);
 
 /**
  * Returns the code returned by the last function call and resets the current

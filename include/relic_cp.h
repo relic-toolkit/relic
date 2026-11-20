@@ -2037,7 +2037,8 @@ int cp_bbs_sig(g1_t s, const uint8_t *msg, size_t len, int hash, const bn_t d);
  * Verifies a message signed with the BB protocol.
  *
  * @param[in] s				- the signature.
- * @param[in] msg			- the signed message.
+ * @param[in] msg			- the signed message, an integer smaller than
+ *						  the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[out] q			- the first component of the public key.
@@ -2067,7 +2068,8 @@ int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
  * @param[out] a			- the first part of the signature.
  * @param[out] b			- the second part of the signature.
  * @param[out] c			- the third part of the signature.
- * @param[in] msg			- the message to sign.
+ * @param[in] msg			- the message to sign, an integer smaller
+ *						  than the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] u				- the first part of the private key.
  * @param[in] v				- the second part of the private key.
@@ -2082,7 +2084,8 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
  * @param[in] c				- the third part of the signature.
- * @param[in] msg			- the signed message.
+ * @param[in] msg			- the signed message, an integer smaller than
+ *						  the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] x				- the first part of the public key.
  * @param[in] y				- the second part of the public key.
@@ -2115,7 +2118,8 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
  * @param[out] b			- one of the components of the signature.
  * @param[out] B			- one of the components of the signature.
  * @param[out] c			- one of the components of the signature.
- * @param[in] msg			- the message to sign.
+ * @param[in] msg			- the message to sign, an integer smaller
+ *						  than the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] r				- the per-message randomness.
  * @param[in] t				- the first part of the private key.
@@ -2134,7 +2138,8 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
  * @param[in] b				- one of the components of the signature.
  * @param[in] B				- one of the components of the signature.
  * @param[in] c				- one of the components of the signature.
- * @param[in] msg			- the signed message.
+ * @param[in] msg			- the signed message, an integer smaller than
+ *						  the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] r				- the per-message randomness.
  * @param[in] x				- the first part of the public key.
@@ -2170,7 +2175,8 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t *v, g2_t x, g2_t y, g2_t *z, size_t l);
  * @param[out] b			- the next component of the signature.
  * @param[out] B			- the (l - 1) next components of the signature.
  * @param[out] c			- the last component of the signature.
- * @param[in] ms			- the l messages to sign.
+ * @param[in] ms			- the l messages to sign, integers smaller
+ *						  than the group order in big-endian bytes.
  * @param[in] ls			- the l message lengths in bytes.
  * @param[in] t				- the first part of the private key.
  * @param[in] u				- the second part of the private key.
@@ -2190,7 +2196,8 @@ int cp_clb_sig(g1_t a, g1_t *A, g1_t b, g1_t *B, g1_t c, const uint8_t *ms[],
  * @param[in] b				- the next component of the signature.
  * @param[in] B				- the (l - 1) next components of the signature.
  * @param[in] c				- the last component of the signature.
- * @param[in] ms			- the l signed messages.
+ * @param[in] ms			- the l signed messages, integers smaller than
+ *						  the group order in big-endian bytes.
  * @param[in] ls			- the l message lengths in bytes.
  * @param[in] x				- the first part of the public key.
  * @param[in] y				- the second part of the public key.

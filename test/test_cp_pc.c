@@ -806,6 +806,7 @@ static int cls(void) {
 	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	const uint8_t *ms[5] = {m, m, m, m, m};
 	const size_t ls[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
+	uint8_t h[RLC_PC_BYTES + 1];
 
 	bn_null(r);
 	bn_null(t);
@@ -855,6 +856,15 @@ static int cls(void) {
 			g1_set_infty(b);
 			g1_set_infty(c);
 			TEST_ASSERT(cp_cls_ver(a, b, c, m, sizeof(m), x, y) == 0, end);
+			/* Check that messages are not reduced by the group order. */
+			pc_get_ord(r);
+			bn_write_bin(h, bn_size_bin(r), r);
+			err_set_quiet(1);
+			TEST_ASSERT(cp_cls_sig(a, b, c, h, bn_size_bin(r), u, v)
+					== RLC_ERR, end);
+			TEST_ASSERT(cp_cls_ver(a, b, c, h, bn_size_bin(r), x, y) == 0, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 

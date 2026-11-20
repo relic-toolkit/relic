@@ -569,6 +569,13 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	if (len == 0) {
 		return;
 	}
+#if RLC_ALLOC == RLC_AUTO
+	/* Reject inputs that do not fit, as growing past the digits is fatal. */
+	if ((size_t)digs > RLC_BN_SIZE) {
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+#endif
 
 	RLC_TRY {
 		bn_grow(a, digs);
@@ -641,6 +648,14 @@ void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
 		bn_zero(a);
 		return;
 	}
+#if RLC_ALLOC == RLC_AUTO
+	/* Reject inputs that do not fit, as growing past the digits is fatal. */
+	if (len > RLC_BN_SIZE) {
+		bn_zero(a);
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+#endif
 
 	RLC_TRY {
 		bn_grow(a, len);

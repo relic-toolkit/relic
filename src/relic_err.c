@@ -121,16 +121,22 @@ void err_throw(const char *file, int line) {
 #endif
 }
 
-void err_fatal(const char *file, int line) {
+/* RLC_ALLOCA names the error by its value, as it cannot see the list. */
+typedef char err_alloc_fatal[(RLC_ALLOC_FATAL == ERR_NO_MEMORY) ? 1 : -1];
+
+void err_fatal(const char *file, int line, int error) {
+	/* Without error checking the messages are not set, so name them here. */
+	const char *msg = (error == ERR_NO_MEMORY ? "not enough memory" :
+			"insufficient precision");
 	/* Printed even when quiet, as the program stops. */
 #if RLC_ARCH == RLC_AVR
-	util_print("\nFATAL ERROR in %S:%d: not enough memory.\n", file, line);
+	util_print("\nFATAL ERROR in %S:%d: %s.\n", file, line, msg);
 #else
 	/* Without the directory, as RLC_FILE, for RLC_ALLOCA, which passes the full
 	 * name of the file. */
 	const char *base = strrchr(file, '/');
-	fprintf(stderr, "\nFATAL ERROR in %s:%d: not enough memory.\n",
-			(base ? base + 1 : file), line);
+	fprintf(stderr, "\nFATAL ERROR in %s:%d: %s.\n",
+			(base ? base + 1 : file), line, msg);
 #endif
 	abort();
 }
