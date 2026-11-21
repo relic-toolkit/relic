@@ -418,13 +418,14 @@
 /**
  * Supersingular curve y^2 = x^3 + 1 of order p + 1 over the SS3 prime, only a
  * placeholder: the pairing groups lie on a curve over Fp^4 configured with it.
+ * Its order is given as zero so that protocols cannot generate keys on it.
  */
 /** @{ */
 #define SS3_P318_A		"0"
 #define SS3_P318_B		"1"
 #define SS3_P318_X		"1"
 #define SS3_P318_Y		"1445C7BE2804EF3F7F75E25068A34F8395337D4DDFF793878AFDE330723C224234DB5B165BD4D8AB"
-#define SS3_P318_R		"3C9D4B197042868EE79844EFF67BCD12762BCF6C704AABA75F3217911EB1657C0000000000000000"
+#define SS3_P318_R		"0"
 #define SS3_P318_H		"1"
 /** @} */
 #endif
@@ -494,13 +495,14 @@
 /**
  * Supersingular curve y^2 = x^3 + 1 of order p + 1 over the SS3 prime, only a
  * placeholder: the pairing groups lie on a curve over Fp^4 configured with it.
+ * Its order is given as zero so that protocols cannot generate keys on it.
  */
 /** @{ */
 #define SS3_P381_A		"0"
 #define SS3_P381_B		"1"
 #define SS3_P381_X		"1"
 #define SS3_P381_Y		"E27BD1A95C14191CC5B79248A4D9CC98E884DB205EFAF920349F51AA3D191E6988D70CA6BFD9AE4C3E972847647714"
-#define SS3_P381_R		"10D3D10D00EE5D72BD99C96E04729F8F08A88098F51FEBEFAE328A41F46782B700000000008000000000000100000000"
+#define SS3_P381_R		"0"
 #define SS3_P381_H		"1"
 /** @} */
 #endif
@@ -1930,6 +1932,8 @@ int ep_param_level(void) {
 			return 113;
 		case CURVE_1174:
 			return 125;
+		case SS3_P318:
+			return 123;
 		case BN_P254:
 		case BN_P256:
 		case SM9_P256:
@@ -1948,7 +1952,6 @@ int ep_param_level(void) {
 		case B12_P377:
 		case K16_P330:
 		case B12_P381:
-		case SS3_P318:
 		case SS3_P381:
 		case BN_P382:
 		case B12_P383:
