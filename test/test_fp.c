@@ -249,6 +249,24 @@ static int util(void) {
 			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
+
+		TEST_CASE("setting a composite or short modulus is rejected") {
+			bn_read_raw(c, fp_prime_get(), RLC_FP_DIGS);
+			/* A square, on which the search for non-residues never ended. */
+			do {
+				bn_gen_prime(e, (RLC_FP_BITS + 1) / 2);
+				bn_sqr(e, e);
+			} while (bn_bits(e) != RLC_FP_BITS);
+			TEST_ERR(fp_prime_set_dense(e));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			bn_gen_prime(e, RLC_FP_BITS - 1);
+			TEST_ERR(fp_prime_set_dense(e));
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			/* The field is left as it was. */
+			bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
+			TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

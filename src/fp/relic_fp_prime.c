@@ -633,7 +633,15 @@ void fp_prime_set_dense(const bn_t p) {
 	(void)p;
 	RLC_THROW(ERR_NO_CONFIG);
 #else
-	fp_prime_set(p);
+	/* Accept a prime of the configured size, by trial division and a Fermat
+	 * test to base 2, which rejects squares, on which the search for
+	 * non-residues would not end, and other composites set by mistake. */
+	if (bn_bits(p) != RLC_FP_BITS || !bn_is_prime_basic(p) ||
+			!bn_is_prime_fermt(p)) {
+		RLC_THROW(ERR_NO_VALID);
+	} else {
+		fp_prime_set(p);
+	}
 #endif
 }
 

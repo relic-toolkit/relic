@@ -636,6 +636,8 @@ int fp_param_get(void);
  * Assigns the prime field modulus to a non-sparse prime.
  *
  * @param[in] p			- the new prime field modulus.
+ * @throw ERR_NO_VALID		- if p does not have FP_PRIME bits or is not a
+ * 							probable prime by a Fermat test to base 2.
  */
 void fp_prime_set_dense(const bn_t p);
 
