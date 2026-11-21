@@ -77,9 +77,13 @@
  */
 #define ED_ASSIGN(CURVE, FIELD)												\
 	if (fp_param_set(FIELD) != RLC_OK) {									\
-		/* Leave the switch, as the curve would be set over the wrong		\
-		 * field, and pass on the error, as no code is returned. */			\
-		RLC_THROW(ERR_CAUGHT);												\
+		/* Leave the switch with the curve unset, as it would be set over	\
+		 * the wrong field, and report the error returned. */				\
+		code = RLC_ERR;														\
+		param = 0;															\
+		ed_set_infty(g);													\
+		bn_zero(r);															\
+		bn_zero(h);															\
 		break;																\
 	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
@@ -96,8 +100,9 @@
 	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);
 
-void ed_param_set(int param) {
+int ed_param_set(int param) {
 	ctx_t *ctx = core_get();
+	int code = RLC_OK;
 	char str[2 * RLC_FP_BYTES + 2];
 
 	ed_t g;
@@ -209,22 +214,24 @@ void ed_param_set(int param) {
 		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		/* The error is reported by the code returned, not thrown again. */
+		code = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free_all(r, h);
 		ed_free(g);
 	}
+	return code;
 }
 
 int ed_param_set_any(void) {
 	int r = RLC_OK;
 #if FP_PRIME == 255
-	ed_param_set(CURVE_ED25519);
+	r = ed_param_set(CURVE_ED25519);
 #elif FP_PRIME == 448
-	ed_param_set(CURVE_ED448);
+	r = ed_param_set(CURVE_ED448);
 #elif FP_PRIME == 521
-	ed_param_set(CURVE_ED521);
+	r = ed_param_set(CURVE_ED521);
 #else
 	r = RLC_ERR;
 #endif

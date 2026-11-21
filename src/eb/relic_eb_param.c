@@ -228,7 +228,12 @@
  * @param[in] FIELD		- the finite field identifier.
  */
 #define EB_ASSIGN(CURVE, FIELD)												\
-	fb_param_set(FIELD);													\
+	if (fb_param_set(FIELD) != RLC_OK) {									\
+		/* Leave the switch, as the curve would be set over the wrong		\
+		 * field, and report the error returned. */							\
+		code = RLC_ERR;														\
+		break;																\
+	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fb_read_str(a, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
@@ -250,8 +255,9 @@ int eb_param_get(void) {
 	return core_get()->eb_id;
 }
 
-void eb_param_set(int param) {
+int eb_param_set(int param) {
 	char str[2 * RLC_FB_BYTES + 1];
+	int code = RLC_OK;
 	fb_t a, b;
 	eb_t g;
 	bn_t r;
@@ -336,24 +342,30 @@ void eb_param_set(int param) {
 #endif
 			default:
 				(void)str;
+				code = RLC_ERR;
 				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
-		fb_zero(g->z);
-		fb_set_bit(g->z, 0, 1);
-		g->coord = EC_AFFIN;
+		/* Only set a curve whose parameters were all read. */
+		if (code == RLC_OK) {
+			fb_zero(g->z);
+			fb_set_bit(g->z, 0, 1);
+			g->coord = EC_AFFIN;
 
-		eb_curve_set(a, b, g, r, h);
-		core_get()->eb_id = param;
+			eb_curve_set(a, b, g, r, h);
+			core_get()->eb_id = param;
+		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		/* The error is reported by the code returned, not thrown again. */
+		code = RLC_ERR;
 	}
 	RLC_FINALLY {
 		fb_free_all(a, b);
 		eb_free(g);
 		bn_free_all(r, h);
 	}
+	return code;
 }
 
 int eb_param_set_any(void) {
@@ -370,19 +382,19 @@ int eb_param_set_any(void) {
 int eb_param_set_any_plain(void) {
 	int r = RLC_OK;
 #if FB_POLYN == 163
-	eb_param_set(NIST_B163);
+	r = eb_param_set(NIST_B163);
 #elif FB_POLYN == 233
-	eb_param_set(NIST_B233);
+	r = eb_param_set(NIST_B233);
 #elif FB_POLYN == 251
-	eb_param_set(EBACS_B251);
+	r = eb_param_set(EBACS_B251);
 #elif FB_POLYN == 257
-	eb_param_set(HALVE_B257);
+	r = eb_param_set(HALVE_B257);
 #elif FB_POLYN == 283
-	eb_param_set(NIST_B283);
+	r = eb_param_set(NIST_B283);
 #elif FB_POLYN == 409
-	eb_param_set(NIST_B409);
+	r = eb_param_set(NIST_B409);
 #elif FB_POLYN == 571
-	eb_param_set(NIST_B571);
+	r = eb_param_set(NIST_B571);
 #else
 	r = RLC_ERR;
 #endif
@@ -392,17 +404,17 @@ int eb_param_set_any_plain(void) {
 int eb_param_set_any_kbltz(void) {
 	int r = RLC_OK;
 #if FB_POLYN == 163
-	eb_param_set(NIST_K163);
+	r = eb_param_set(NIST_K163);
 #elif FB_POLYN == 233
-	eb_param_set(NIST_K233);
+	r = eb_param_set(NIST_K233);
 #elif FB_POLYN == 239
-	eb_param_set(SECG_K239);
+	r = eb_param_set(SECG_K239);
 #elif FB_POLYN == 283
-	eb_param_set(NIST_K283);
+	r = eb_param_set(NIST_K283);
 #elif FB_POLYN == 409
-	eb_param_set(NIST_K409);
+	r = eb_param_set(NIST_K409);
 #elif FB_POLYN == 571
-	eb_param_set(NIST_K571);
+	r = eb_param_set(NIST_K571);
 #else
 	r = RLC_ERR;
 #endif

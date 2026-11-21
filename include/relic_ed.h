@@ -250,9 +250,10 @@ typedef ed_st *ed_t;
 /**
  * Configures an Edwards curve by its parameter identifier.
  *
- * @param				   - the parameter identifier.
+ * @param[in] param			- the parameter identifier.
+ * @return RLC_OK if the curve was configured, RLC_ERR otherwise.
  */
-void ed_param_set(int param);
+int ed_param_set(int param);
 
 /**
  * Configures some set of curve parameters for the current security level.

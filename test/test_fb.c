@@ -1041,14 +1041,11 @@ int main(void) {
 
 	util_banner("Tests for the FB module", 0);
 
-	RLC_TRY {
-		fb_param_set_any();
-		fb_param_print();
-	}
-	RLC_CATCH_ANY {
+	if (fb_param_set_any() != RLC_OK) {
 		core_clean();
 		return 0;
 	}
+	fb_param_print();
 
 	util_banner("Utilities", 1);
 	if (memory() != RLC_OK) {

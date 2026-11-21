@@ -520,13 +520,16 @@ int fb_param_get(void);
  * Assigns a standard irreducible polynomial as modulo of the binary field.
  *
  * @param[in] param			- the standardized polynomial identifier.
+ * @return RLC_OK if the polynomial was assigned, RLC_ERR otherwise.
  */
-void fb_param_set(int param);
+int fb_param_set(int param);
 
 /**
  * Configures some finite field parameters for the current security level.
+ *
+ * @return RLC_OK if a polynomial was assigned, RLC_ERR otherwise.
  */
-void fb_param_set_any(void);
+int fb_param_set_any(void);
 
 /**
  * Prints the currently configured irreducible polynomial.

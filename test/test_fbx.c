@@ -365,9 +365,7 @@ int main(void) {
 
 	util_banner("Tests for the FBX module", 0);
 
-	RLC_TRY {
-		fb_param_set_any();
-	} RLC_CATCH_ANY {
+	if (fb_param_set_any() != RLC_OK) {
 		core_clean();
 		return 0;
 	}

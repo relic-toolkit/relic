@@ -414,8 +414,9 @@ void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t n,
  * Configures a new binary elliptic curve by its parameter identifier.
  *
  * @param[in] param			- the parameters identifier.
+ * @return RLC_OK if the curve was configured, RLC_ERR otherwise.
  */
-void eb_param_set(int param);
+int eb_param_set(int param);
 
 /**
  * Configures some set of curve parameters for the current security level.
