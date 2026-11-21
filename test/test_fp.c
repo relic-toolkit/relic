@@ -254,7 +254,13 @@ static int util(void) {
 			bn_read_raw(c, fp_prime_get(), RLC_FP_DIGS);
 			/* A square, on which the search for non-residues never ended. */
 			do {
-				bn_gen_prime(e, (RLC_FP_BITS + 1) / 2);
+				/* Not bn_gen_prime(), which sets the top two bits, so that
+				 * the square would never have an odd number of bits. */
+				bn_rand(e, RLC_POS, (RLC_FP_BITS + 1) / 2);
+				bn_set_bit(e, 0, 1);
+				while (!bn_is_prime(e)) {
+					bn_add_dig(e, e, 2);
+				}
 				bn_sqr(e, e);
 			} while (bn_bits(e) != RLC_FP_BITS);
 			TEST_ERR(fp_prime_set_dense(e));
