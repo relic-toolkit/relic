@@ -866,6 +866,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_mul_any(R, P, K)		RLC_CAT(RLC_G2_LOWER, mul_basic)(R, P, K)
 
 /**
+ * Exponentiates an element from a larger group containing G_T by an integer.
+ * Computes C = A^B.
+ *
+ * @param[out] C				- the result.
+ * @param[in] A					- the element to exponentiate.
+ * @param[in] B					- the integer exponent.
+ */
+#define gt_exp_any(C, A, B)		RLC_CAT(RLC_GT_LOWER, exp)(C, A, B)
+
+/**
  * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.

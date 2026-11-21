@@ -366,7 +366,7 @@ static int multiplication1(void) {
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			g1_mul(r, p, n);
+			g1_mul_any(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -389,7 +389,7 @@ static int multiplication1(void) {
 
 		TEST_CASE("random element has the right order") {
 			g1_rand(p);
-			g1_mul(r, p, n);
+			g1_mul_any(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -619,15 +619,17 @@ static int validity1(void) {
 
 static int hashing1(void) {
 	int code = RLC_ERR;
-	g1_t a;
+	g1_t a, b;
 	bn_t n;
 	uint8_t msg[5];
 
 	g1_null(a);
+	g1_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		g1_new(a);
+		g1_new(b);
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -636,6 +638,8 @@ static int hashing1(void) {
 			rand_bytes(msg, sizeof(msg));
 			g1_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g1_is_valid(a), end);
+			g1_mul_any(b, a, n);
+			TEST_ASSERT(g1_is_infty(b), end);
 		}
 		TEST_END;
 
@@ -646,6 +650,7 @@ static int hashing1(void) {
 	code = RLC_OK;
   end:
 	g1_free(a);
+	g1_free(b);
 	bn_free(n);
 	return code;
 }
@@ -981,7 +986,7 @@ static int multiplication2(void) {
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			g2_mul(r, p, n);
+			g2_mul_any(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -1004,7 +1009,7 @@ static int multiplication2(void) {
 
 		TEST_CASE("random element has the right order") {
 			g2_rand(p);
-			g2_mul(r, p, n);
+			g2_mul_any(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -1234,15 +1239,17 @@ static int validity2(void) {
 
 static int hashing2(void) {
 	int code = RLC_ERR;
-	g2_t a;
+	g2_t a, b;
 	bn_t n;
 	uint8_t msg[5];
 
 	g2_null(a);
+	g2_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		g2_new(a);
+		g2_new(b);
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -1251,6 +1258,8 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			g2_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g2_is_valid(a), end);
+			g2_mul_any(b, a, n);
+			TEST_ASSERT(g2_is_infty(b), end);
 		}
 		TEST_END;
 
@@ -1261,6 +1270,7 @@ static int hashing2(void) {
 	code = RLC_OK;
   end:
 	g2_free(a);
+	g2_free(b);
 	bn_free(n);
 	return code;
 }
@@ -1539,7 +1549,7 @@ int exponentiation(void) {
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			gt_exp(c, a, n);
+			gt_exp_any(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
@@ -1565,7 +1575,7 @@ int exponentiation(void) {
 
 		TEST_CASE("random element has the right order") {
 			gt_rand(a);
-			gt_exp(c, a, n);
+			gt_exp_any(c, a, n);
 			TEST_ASSERT(gt_is_unity(c) == 1, end);
 		} TEST_END;
 
@@ -1578,7 +1588,7 @@ int exponentiation(void) {
 			gt_exp(b, a, d);
 			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand_mod(d, n);
-			RLC_CAT(RLC_GT_LOWER, exp)(b, a, d);
+			gt_exp_any(b, a, d);
 			gt_exp(c, a, d);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			bn_rand_mod(d, n);
@@ -1634,11 +1644,16 @@ int exponentiation(void) {
 static int validity(void) {
 	int code = RLC_ERR;
 	gt_t a;
+	bn_t n;
 
 	gt_null(a);
+	bn_null(n);
 
 	RLC_TRY {
 		gt_new(a);
+		bn_new(n);
+
+		pc_get_ord(n);
 
 		TEST_CASE("validity check is correct") {
 			gt_set_unity(a);
@@ -1651,6 +1666,13 @@ static int validity(void) {
 			gt_set_unity(a);
 			RLC_CAT(RLC_GT_LOWER, neg)(a, a);
 			TEST_ASSERT(!gt_is_valid(a), end);
+#if RLC_GT_EMBED > 1
+			/* Cyclotomic elements of order coprime to r are not in G_T. */
+			RLC_CAT(RLC_GT_LOWER, rand)(a);
+			RLC_CAT(RLC_GT_LOWER, conv_cyc)(a, a);
+			gt_exp_any(a, a, n);
+			TEST_ASSERT(gt_is_unity(a) || !gt_is_valid(a), end);
+#endif
 		}
 		TEST_END;
 	}
@@ -1660,6 +1682,7 @@ static int validity(void) {
 	code = RLC_OK;
   end:
 	gt_free(a);
+	bn_free(n);
 	return code;
 }
 
