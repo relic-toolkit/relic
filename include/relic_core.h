@@ -563,7 +563,7 @@ typedef struct _ctx_t {
 #endif
 } ctx_t;
 
-#if RLC_MULTI == RLC_OPENMP
+#if defined(RLC_MULTI)
 /**
  * State of a thread saved while it runs a parallel section.
  */
@@ -662,7 +662,7 @@ void core_set(ctx_t *ctx);
 void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
 #endif
 
-#if RLC_MULTI == RLC_OPENMP
+#if defined(RLC_MULTI)
 /**
  * Gives the calling thread a context of its own for a parallel section, so
  * that threads do not share the depth of try-catch blocks. The context private

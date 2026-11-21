@@ -60,7 +60,7 @@
  * Default library context.
  */
 #if RLC_MULTI
-rlc_thread ctx_t first_ctx;
+static rlc_thread ctx_t first_ctx;
 #else
 static ctx_t first_ctx;
 #endif
@@ -186,7 +186,7 @@ void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
 }
 #endif
 
-#if RLC_MULTI == RLC_OPENMP
+#if defined(RLC_MULTI)
 void core_par_enter(core_par_t *s, const ctx_t *ctx) {
 	ctx_t *own = &first_ctx;
 
