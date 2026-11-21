@@ -111,20 +111,22 @@ typedef int err_t;
 
 /**
  * Implements a CATCH clause, which runs if an error was thrown in its TRY
- * clause and consumes it.
+ * clause and consumes it. An error pending from before the TRY clause is left
+ * to the CATCH clause of the block where it was thrown.
  *
  * @param[out] E			- the error caught.
  */
 #define RLC_CATCH(E)														\
-	if ((core_get()->depth--, core_get()->pending) &&						\
+	if ((core_get()->depth--, core_get()->pending > core_get()->depth) &&	\
 			(core_get()->pending = 0, (E) = core_get()->number, 1))
 
 /**
  * Implements a CATCH clause for any possible error, which runs if an error was
- * thrown in its TRY clause and consumes it.
+ * thrown in its TRY clause and consumes it. An error pending from before the
+ * TRY clause is left to the CATCH clause of the block where it was thrown.
  */
 #define RLC_CATCH_ANY														\
-	if ((core_get()->depth--, core_get()->pending) &&						\
+	if ((core_get()->depth--, core_get()->pending > core_get()->depth) &&	\
 			(core_get()->pending = 0, 1))
 
 /**
@@ -136,7 +138,8 @@ typedef int err_t;
  * Implements a THROW clause. The error is recorded in the code returned by
  * err_get_code() and execution continues, so the code after a throw must not
  * depend on what failed; inside a try-catch block, the error is also passed on
- * to its CATCH clause. Running out of memory is fatal instead.
+ * to its CATCH clause, or to the outermost one if errors are thrown at several
+ * depths. Running out of memory is fatal instead.
  *
  * @param[in] E		- the exception being thrown.
  */
@@ -150,8 +153,9 @@ typedef int err_t;
 		if (E != ERR_CAUGHT) {												\
 			_ctx->number = E;												\
 		}																	\
-		if (_ctx->depth > 0) {												\
-			_ctx->pending = 1;												\
+		if (_ctx->depth > 0 &&												\
+				(_ctx->pending == 0 || _ctx->depth < _ctx->pending)) {		\
+			_ctx->pending = _ctx->depth;									\
 		}																	\
 		RLC_ERR_PRINT(E);													\
 	} while (0)

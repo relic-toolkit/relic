@@ -192,6 +192,43 @@ int main(void) {
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 	} TEST_END;
 
+	TEST_ONCE("a pending error is caught by its own try-catch only") {
+		int inner = 0, outer = 0;
+		err_set_quiet(1);
+		RLC_TRY {
+			RLC_THROW(ERR_NO_VALID);
+			/* A block entered after the throw does not catch it. */
+			RLC_TRY {
+				counter = 0;
+			} RLC_CATCH_ANY {
+				inner++;
+			}
+			/* Nor does a block where another error is thrown. */
+			RLC_TRY {
+				RLC_THROW(ERR_NO_BUFFER);
+			} RLC_CATCH_ANY {
+				inner++;
+			}
+		} RLC_CATCH_ANY {
+			outer++;
+		}
+		TEST_ASSERT(inner == 0 && outer == 1, end);
+		/* An error caught inside is not caught again outside. */
+		inner = outer = 0;
+		RLC_TRY {
+			RLC_TRY {
+				RLC_THROW(ERR_NO_VALID);
+			} RLC_CATCH_ANY {
+				inner++;
+			}
+		} RLC_CATCH_ANY {
+			outer++;
+		}
+		err_set_quiet(0);
+		TEST_ASSERT(inner == 1 && outer == 0, end);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
+	} TEST_END;
+
 	TEST_ONCE("disabling error messages keeps errors recorded") {
 		err_set_quiet(1);
 		RLC_THROW(ERR_NO_VALID);

@@ -154,7 +154,8 @@ typedef struct _ctx_t {
 	char *reason[ERR_MAX];
 	/** Number of try-catch blocks entered and not yet caught. */
 	int depth;
-	/** A flag to indicate if an error thrown inside a try-catch is pending. */
+	/** The depth of the outermost try-catch block with an error pending, or
+	 * zero if there is none. */
 	int pending;
 
 #ifdef WITH_FB
