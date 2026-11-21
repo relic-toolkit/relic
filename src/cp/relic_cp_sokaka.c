@@ -75,8 +75,7 @@ int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
 	size_t size, len1 = strlen(id1), len2 = strlen(id2);
 	int first = 0, result = RLC_OK;
 	/* Room for an element of G_T in uncompressed form. */
-	uint8_t *buf = RLC_ALLOCA(uint8_t,
-			(sizeof(gt_t) / sizeof(fp_t)) * RLC_FP_BYTES);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, RLC_GT_EMBED * RLC_FP_BYTES);
 	g1_t p;
 	g2_t q;
 	gt_t e;
