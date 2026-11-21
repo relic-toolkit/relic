@@ -77,8 +77,9 @@
  */
 #define ED_ASSIGN(CURVE, FIELD)												\
 	if (fp_param_set(FIELD) != RLC_OK) {									\
-		/* Leave the switch, as execution continues without error checking	\
-		 * and the curve would be set over the wrong field. */				\
+		/* Leave the switch, as the curve would be set over the wrong		\
+		 * field, and pass on the error, as no code is returned. */			\
+		RLC_THROW(ERR_CAUGHT);												\
 		break;																\
 	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\

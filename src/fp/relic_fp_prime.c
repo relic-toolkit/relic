@@ -366,134 +366,145 @@ static void fp_prime_set(const bn_t p) {
 		fp_mul(ctx->inv, ctx->conv, ctx->conv);
 #endif
 
-		/* Now look for proper quadratic/cubic non-residues. */
-		ctx->qnr = ctx->cnr = 0;
-		bn_mod_dig(&(ctx->mod8), &(ctx->prime), 8);
-		bn_mod_dig(&(ctx->mod18), &(ctx->prime), 18);
-
-		switch (ctx->mod8) {
-			case 3:
-				ctx->qnr = -1;
-				ctx->cnr = 2;
-				break;
-			case 7:
-				ctx->qnr = -1;
-				/* Try this one, pick another later if not a CNR. */
-				ctx->cnr = -2;
-				break;
-			case 1:
-			case 5:
-				ctx->qnr = -2;
-				ctx->cnr = 2;
-#if FP_PRIME == 638
-				if (fp_param_get() == K18_638) {
-					ctx->qnr = -6;
-				} else {
-					ctx->qnr = -7;
-				}
-#endif
-				break;
-		}
-
-		/* Check if qnr is a quadratic non-residue or find another. */
-		fp_set_dig(r, -ctx->qnr);
+		/* Backends with a prime built in reduce modulo that prime only, and
+		 * the searches below would not end, so check that (-1)^2 = 1. */
+		fp_set_dig(r, 1);
 		fp_neg(r, r);
-		while (fp_is_sqr(r)) {
-			ctx->qnr--;
+		fp_sqr(r, r);
+		fp_prime_back(t, r);
+		bn_mod(t, t, &(ctx->prime));
+		if (bn_cmp_dig(t, 1) != RLC_EQ) {
+			RLC_THROW(ERR_NO_CONFIG);
+		} else {
+			/* Now look for proper quadratic/cubic non-residues. */
+			ctx->qnr = ctx->cnr = 0;
+			bn_mod_dig(&(ctx->mod8), &(ctx->prime), 8);
+			bn_mod_dig(&(ctx->mod18), &(ctx->prime), 18);
+
+			switch (ctx->mod8) {
+				case 3:
+					ctx->qnr = -1;
+					ctx->cnr = 2;
+					break;
+				case 7:
+					ctx->qnr = -1;
+					/* Try this one, pick another later if not a CNR. */
+					ctx->cnr = -2;
+					break;
+				case 1:
+				case 5:
+					ctx->qnr = -2;
+					ctx->cnr = 2;
+	#if FP_PRIME == 638
+					if (fp_param_get() == K18_638) {
+						ctx->qnr = -6;
+					} else {
+						ctx->qnr = -7;
+					}
+	#endif
+					break;
+			}
+
+			/* Check if qnr is a quadratic non-residue or find another. */
 			fp_set_dig(r, -ctx->qnr);
 			fp_neg(r, r);
-		};
-		fp_inv(ctx->iqnr, r);
+			while (fp_is_sqr(r)) {
+				ctx->qnr--;
+				fp_set_dig(r, -ctx->qnr);
+				fp_neg(r, r);
+			};
+			fp_inv(ctx->iqnr, r);
 
-		/* Check if cnr is a cubic non-residue or find another, by Euler's
-		 * criterion, as fp_is_cub() needs the cube root of unity that it
-		 * gives. */
-		if (ctx->mod18 % 3 == 1) {
-			if (ctx->cnr > 0) {
-				fp_set_dig(r, ctx->cnr);
-				fp_exp(s, r, &(ctx->over3));
-				while (fp_cmp_dig(s, 1) == RLC_EQ) {
-					ctx->cnr++;
+			/* Check if cnr is a cubic non-residue or find another, by Euler's
+			 * criterion, as fp_is_cub() needs the cube root of unity that it
+			 * gives. */
+			if (ctx->mod18 % 3 == 1) {
+				if (ctx->cnr > 0) {
 					fp_set_dig(r, ctx->cnr);
 					fp_exp(s, r, &(ctx->over3));
-				}
-			} else {
-				fp_set_dig(r, -ctx->cnr);
-				fp_neg(r, r);
-				fp_exp(s, r, &(ctx->over3));
-				while (fp_cmp_dig(s, 1) == RLC_EQ) {
-					ctx->cnr--;
+					while (fp_cmp_dig(s, 1) == RLC_EQ) {
+						ctx->cnr++;
+						fp_set_dig(r, ctx->cnr);
+						fp_exp(s, r, &(ctx->over3));
+					}
+				} else {
 					fp_set_dig(r, -ctx->cnr);
 					fp_neg(r, r);
 					fp_exp(s, r, &(ctx->over3));
+					while (fp_cmp_dig(s, 1) == RLC_EQ) {
+						ctx->cnr--;
+						fp_set_dig(r, -ctx->cnr);
+						fp_neg(r, r);
+						fp_exp(s, r, &(ctx->over3));
+					}
 				}
+			} else {
+				ctx->cnr = 0;
 			}
-		} else {
-			ctx->cnr = 0;
-		}
 
-#ifdef FP_QNRES
-		if (ctx->mod8 != 3) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-#endif
+	#ifdef FP_QNRES
+			if (ctx->mod8 != 3) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+	#endif
 
-		/* Compute root of unity by computing QNR to (p - 1)/2^f. */
-		ctx->ad2 = 0;
-		bn_sub_dig(t, p, 1);
-		while (bn_is_even(t)) {
-			ctx->ad2++;
-			bn_hlv(t, t);
-		}
+			/* Compute root of unity by computing QNR to (p - 1)/2^f. */
+			ctx->ad2 = 0;
+			bn_sub_dig(t, p, 1);
+			while (bn_is_even(t)) {
+				ctx->ad2++;
+				bn_hlv(t, t);
+			}
 
-		if (ctx->qnr < 0) {
-			fp_set_dig(ctx->srt, -ctx->qnr);
-		} else {
-			fp_set_dig(ctx->srt, ctx->qnr);
-		}
-		fp_exp(ctx->srt, ctx->srt, t);
+			if (ctx->qnr < 0) {
+				fp_set_dig(ctx->srt, -ctx->qnr);
+			} else {
+				fp_set_dig(ctx->srt, ctx->qnr);
+			}
+			fp_exp(ctx->srt, ctx->srt, t);
 
-		/* Write p - 1 as (e * 3^f), with e = 3l \pm 1. */
-		bn_sub_dig(t, p, 1);
-		bn_mod_dig(&rem, t, 3);
-		while (rem == 0) {
-			bn_div_dig(t, t, 3);
+			/* Write p - 1 as (e * 3^f), with e = 3l \pm 1. */
+			bn_sub_dig(t, p, 1);
 			bn_mod_dig(&rem, t, 3);
-		}
+			while (rem == 0) {
+				bn_div_dig(t, t, 3);
+				bn_mod_dig(&rem, t, 3);
+			}
 
-		/* Compute fth root of unity by computing CNR to (p - 1)/3^f. */
-		if (ctx->cnr < 0) {
-			fp_set_dig(ctx->crt, -fp_prime_get_cnr());
-		} else {
-			fp_set_dig(ctx->crt, fp_prime_get_cnr());
-		}
-		fp_exp(ctx->crt, ctx->crt, t);
+			/* Compute fth root of unity by computing CNR to (p - 1)/3^f. */
+			if (ctx->cnr < 0) {
+				fp_set_dig(ctx->crt, -fp_prime_get_cnr());
+			} else {
+				fp_set_dig(ctx->crt, fp_prime_get_cnr());
+			}
+			fp_exp(ctx->crt, ctx->crt, t);
 
-		/* The cubic residue symbol, before anything that tests for cubes. */
-		if (ctx->mod18 % 3 == 1) {
-			fp_prime_set_cub(p);
-		} else {
-			fp_zero(ctx->cub);
-			dv_zero(ctx->cub_pi[0], RLC_FP_DIGS + 1);
-			dv_zero(ctx->cub_pi[1], RLC_FP_DIGS + 1);
-			dv_zero(ctx->cub_inv[0], RLC_FP_DIGS + 1);
-			dv_zero(ctx->cub_inv[1], RLC_FP_DIGS + 1);
-			ctx->cub_r = 0;
-		}
+			/* The cubic residue symbol, before anything testing for cubes. */
+			if (ctx->mod18 % 3 == 1) {
+				fp_prime_set_cub(p);
+			} else {
+				fp_zero(ctx->cub);
+				dv_zero(ctx->cub_pi[0], RLC_FP_DIGS + 1);
+				dv_zero(ctx->cub_pi[1], RLC_FP_DIGS + 1);
+				dv_zero(ctx->cub_inv[0], RLC_FP_DIGS + 1);
+				dv_zero(ctx->cub_inv[1], RLC_FP_DIGS + 1);
+				ctx->cub_r = 0;
+			}
 
-		/* The quartic residue symbol. */
-		if (ctx->mod8 % 4 == 1) {
-			fp_prime_set_qrt(p);
-		} else {
-			fp_zero(ctx->qrt);
-			dv_zero(ctx->qrt_pi[0], RLC_FP_DIGS + 1);
-			dv_zero(ctx->qrt_pi[1], RLC_FP_DIGS + 1);
-			dv_zero(ctx->qrt_inv[0], RLC_FP_DIGS + 1);
-			dv_zero(ctx->qrt_inv[1], RLC_FP_DIGS + 1);
-			ctx->qrt_r = 0;
-		}
+			/* The quartic residue symbol. */
+			if (ctx->mod8 % 4 == 1) {
+				fp_prime_set_qrt(p);
+			} else {
+				fp_zero(ctx->qrt);
+				dv_zero(ctx->qrt_pi[0], RLC_FP_DIGS + 1);
+				dv_zero(ctx->qrt_pi[1], RLC_FP_DIGS + 1);
+				dv_zero(ctx->qrt_inv[0], RLC_FP_DIGS + 1);
+				dv_zero(ctx->qrt_inv[1], RLC_FP_DIGS + 1);
+				ctx->qrt_r = 0;
+			}
 
-		fp_prime_calc();
+			fp_prime_calc();
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

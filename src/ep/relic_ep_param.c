@@ -815,8 +815,9 @@
  */
 #define EP_ASSIGN(CURVE, FIELD)												\
 	if (fp_param_set(FIELD) != RLC_OK) {									\
-		/* Leave the switch, as execution continues without error checking	\
-		 * and the curve would be set over the wrong field. */				\
+		/* Leave the switch, as the curve would be set over the wrong		\
+		 * field, and report the error returned. */							\
+		code = RLC_ERR;														\
 		break;																\
 	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
@@ -1521,8 +1522,8 @@ int ep_param_set(int param) {
 #endif
 	}
 	RLC_CATCH_ANY {
+		/* The error is reported by the code returned, not thrown again. */
 		code = RLC_ERR;
-		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		fp_free(a);
