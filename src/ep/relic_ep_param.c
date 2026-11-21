@@ -590,7 +590,7 @@
 
 #if FP_PRIME == 509
 /**
- * Parameters for a 477-bit pairing-friendly prime curve at the 192-bit security level.
+ * Parameters for a 509-bit pairing-friendly prime curve at the 192-bit security level.
  */
 /** @{ */
 #define B24_P509_A		"0"
@@ -599,6 +599,19 @@
 #define B24_P509_Y		"86B48A4539E514DBD0754CFE03DDD7A76F9B894AF4F84F523D34D14880E62B69E0BF48700BE85CF53E15BA009DF292E06F4512EB44EB6D3C8BE9388E23BED96"
 #define B24_P509_R		"100000FFFF870FF91CE195DB5B6F3EBD1E08C94C9E193B724ED58B907FF7C311A80D7CABC647746AE3ECB627C943998457FE001"
 #define B24_P509_H		"155555AAAA805FFFAAC0154AAC"
+/** @} */
+
+/**
+ * Parameters for a 509-bit pairing-friendly prime curve at the 192-bit security
+ * level, with high 2-adicity of r - 1 and p - 1 for SNARKs.
+ */
+/** @{ */
+#define B24_P509S_A		"0"
+#define B24_P509S_B		"1"
+#define B24_P509S_X		"95B9E9FEB9F982B4CA0CA585BFA9520F5221BB84B5D8912C723A10EA287128232A41ED47F17BB8C479A7B41CDD082B7B18E522F4C4BB4BBF80ECD0121E42F19"
+#define B24_P509S_Y		"137272DFE54A45BDC9E39FBA20A1A786E0B072D7FA05DA45CF93D0E03E81043F7CD047BA14871AAFDAB4B910F33E917F0085F5679D11E2E3B5ACFA2E350305DB"
+#define B24_P509S_R		"1126E414A831633D70AF7CD00E285569EF5E4E2C86F03F25AE6C7E77EB5CF329B0F3A2B9DC60598AF7558000020478000000001"
+#define B24_P509S_H		"15B5152C000000000000000000"
 /** @} */
 #endif
 
@@ -1221,6 +1234,12 @@ int ep_param_set(int param) {
 				pairf = EP_B24;
 				twist = RLC_EP_DTYPE;
 				break;
+			case B24_P509S:
+				EP_ASSIGN(B24_P509S, B24_509S);
+				endom = 1;
+				pairf = EP_B24;
+				twist = RLC_EP_DTYPE;
+				break;
 #endif
 #if FP_PRIME == 510
 			case AFG16_P510:
@@ -1637,7 +1656,11 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 508
 	r = ep_param_set(K18_P508);
 #elif FP_PRIME == 509
+#ifdef FP_QNRES
 	r = ep_param_set(B24_P509);
+#else
+	r = ep_param_set(B24_P509S);
+#endif
 #elif FP_PRIME == 510
 	r = ep_param_set(AFG16_P510);
 #elif FP_PRIME == 544
@@ -1719,7 +1742,11 @@ int ep_param_set_any_pairf(void) {
 #elif FP_PRIME == 508
 	r = ep_param_set(K18_P508);
 #elif FP_PRIME == 509
+#ifdef FP_QNRES
 	r = ep_param_set(B24_P509);
+#else
+	r = ep_param_set(B24_P509S);
+#endif
 #elif FP_PRIME == 510
 	r = ep_param_set(AFG16_P510);
 #elif FP_PRIME == 544
@@ -1856,6 +1883,9 @@ void ep_param_print(void) {
 		case B24_P509:
 			util_banner("Curve B24-P509:", 0);
 			break;
+		case B24_P509S:
+			util_banner("Curve B24-P509S:", 0);
+			break;
 		case AFG16_P510:
 			util_banner("Curve AFG16-P510:", 0);
 			break;
@@ -1976,6 +2006,7 @@ int ep_param_level(void) {
 		case N16_P765:
 		case AFG16_P766:
 		case B24_P509:
+		case B24_P509S:
 			return 192;
 		case NIST_P521:
 		case CURVE_511187:

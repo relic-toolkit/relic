@@ -148,8 +148,10 @@ enum {
 	B12_455,
 	/** 508-bit prime for KSS16 curve. */
 	K18_508,
-	/** 477-bit prime for BLS curve of embedding degree 24. */
+	/** 509-bit prime for BLS curve of embedding degree 24. */
 	B24_509,
+	/** 509-bit prime for BLS curve of embedding degree 24 (SNARK curve). */
+	B24_509S,
 	/** 510-bit prime for new family with embedding degree 16. */
 	AFG16_510,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */

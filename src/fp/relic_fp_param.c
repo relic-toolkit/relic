@@ -522,6 +522,18 @@ int fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B24);
 				break;
+			case B24_509S:
+				/* x = 2^51 + 2^44 + 2^41 - 2^37 + 1. */
+				bn_set_2b(t0, 51);
+				bn_set_2b(t1, 44);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 41);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 37);
+				bn_sub(t0, t0, t1);
+				bn_add_dig(t0, t0, 1);
+				fp_prime_set_pairf(t0, EP_B24);
+				break;
 #elif FP_PRIME == 510
 			case AFG16_510:
 				/* x = 2^32-2^26+2^10+2^5. */
@@ -908,7 +920,11 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 508
 	r = fp_param_set(K18_508);
 #elif FP_PRIME == 509
+#ifdef FP_QNRES
 	r = fp_param_set(B24_509);
+#else
+	r = fp_param_set(B24_509S);
+#endif
 #elif FP_PRIME == 510
 	r = fp_param_set(AFG16_510);
 #elif FP_PRIME == 511

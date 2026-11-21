@@ -2502,11 +2502,12 @@ static int prime(void) {
 		} TEST_END;
 
 		TEST_ONCE("chain prime generation is consistent") {
+			/* Chains of three are rarer still, so cap the size. */
+			const size_t len = RLC_MIN(RLC_BN_BITS / 4, 768);
 			for (size_t k = 1; k <= 3; k++) {
-				TEST_ASSERT(bn_gen_prime_chain(p, q, RLC_BN_BITS / 4,
-						k) == RLC_OK, end);
-				TEST_ASSERT(bn_bits(p) == RLC_BN_BITS / 4, end);
-				TEST_ASSERT(bn_get_bit(p, RLC_BN_BITS / 4 - 2) == 1, end);
+				TEST_ASSERT(bn_gen_prime_chain(p, q, len, k) == RLC_OK, end);
+				TEST_ASSERT(bn_bits(p) == len, end);
+				TEST_ASSERT(bn_get_bit(p, len - 2) == 1, end);
 				/* Walk the chain from its first term to its last one. */
 				for (size_t l = 1; l < k; l++) {
 					TEST_ASSERT(bn_is_prime(q) == 1, end);

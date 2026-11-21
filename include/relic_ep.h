@@ -169,6 +169,8 @@ enum {
 	K18_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
+	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
+	B24_P509S,
 	/** New family with embeeding degree 16. */
 	AFG16_P510,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
