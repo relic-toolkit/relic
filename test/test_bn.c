@@ -1570,7 +1570,7 @@ static int square_root(void) {
 	size_t bits;
 	bn_t a, b, c, p;
 	dig_t d;
-	int code = RLC_ERR;
+	int r, code = RLC_ERR;
 
 	bn_null_all(a, b, c, p);
 
@@ -1705,6 +1705,15 @@ static int square_root(void) {
 			bn_set_dig(a, 4);
 			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
 			TEST_ASSERT(bn_cmp_dig(b, 2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("modular square root rejects a square modulus") {
+			/* A square has no non-residue, so the search used not to end. */
+			bn_gen_prime(p, 64);
+			bn_sqr(p, p);
+			bn_set_dig(a, 1);
+			TEST_ERR(r = bn_srt_mod(b, a, p));
+			TEST_ASSERT(r == 0 && err_get_code() == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

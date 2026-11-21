@@ -124,8 +124,15 @@ int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
 					bn_rsh(u, u, 2);
 					bn_mxp(c, t, u, b);
 				} else {
+					/* A prime b has a non-residue below 2 ln(b)^2 under the
+					 * generalized Riemann hypothesis, so below bits(b)^2, but
+					 * a composite b, as a square, may have none. */
 					bn_set_dig(n, 2);
-					while (bn_smb_leg(n, b) != -1) {
+					for (j = 0; bn_smb_leg(n, b) != -1; j++) {
+						if (j == bn_bits(b) * bn_bits(b)) {
+							RLC_THROW(ERR_NO_VALID);
+							break;
+						}
 						bn_add_dig(n, n, 1);
 					}
 					bn_mxp(n, n, e, b);

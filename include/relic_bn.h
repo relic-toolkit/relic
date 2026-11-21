@@ -1343,7 +1343,8 @@ void bn_srt(bn_t c, const bn_t a);
  * @param[in] a				- the integer to extract the root of.
  * @param[in] b				- the odd prime modulus.
  * @return a boolean value indicating whether a square root exists.
- * @throw ERR_NO_VALID		- if the modulus is even, negative or below three.
+ * @throw ERR_NO_VALID		- if the modulus is even, negative or below three, or
+ * 							has no quadratic non-residue where a prime would.
  */
 int bn_srt_mod(bn_t c, const bn_t a, const bn_t b);
 
