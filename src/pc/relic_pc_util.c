@@ -463,6 +463,12 @@ int g2_is_valid(const g2_t a) {
 				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
 		}
+		/* Points of order 2 are never in G_2, which has odd order. The twist
+		 * y^2 = x^3 + ax of the KSS16 curves has (0, 0), where the complete
+		 * formulas for addition fail and both sides of a test above can end
+		 * at infinity, so reject them explicitly. */
+		g2_neg(s, a);
+		r = r && (g2_cmp(s, a) != RLC_EQ);
 	} RLC_CATCH_ANY {
 		r = 0;
 		RLC_THROW(ERR_CAUGHT);

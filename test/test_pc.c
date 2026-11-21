@@ -802,6 +802,24 @@ int util2(void) {
 			}
 		}
 		TEST_END;
+
+		TEST_CASE("reading a point of order two fails") {
+			/* The point (0, 0) is on the twist when it is y^2 = x^3 + ax. */
+			g2_rand(a);
+			l = g2_size_bin(a, 0);
+			memset(bin, 0, l);
+			bin[0] = 4;
+			r = RLC_ERR;
+			TEST_ERR(r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l));
+			err_get_code();
+			if (r == RLC_OK) {
+				TEST_ASSERT(!g2_is_valid(a), end);
+				r = RLC_ERR;
+				TEST_ERR(r = g2_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			}
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
