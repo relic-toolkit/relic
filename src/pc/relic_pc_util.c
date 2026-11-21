@@ -76,10 +76,11 @@ int g1_is_valid(const g1_t a) {
 		g1_new(v);
 		bn_new(d);
 
-		/* Check [p]P == [d]P, which implies [c * r]P = O and thus [r]P = O,
-		 * because the cofactor is coprime to c in p = d + c * r. */
+		/* The endomorphism psi acts as [p] on the whole curve, so checking
+		 * [p]P == [d]P gives [c * r]P = O in p = d + c * r, and thus [r]P = O
+		 * because the cofactor #E/r is coprime to c. */
 		fp_prime_get_par(d);
-		ep4_mul_dig(u, a, d->dp[0]);
+		ep4_mul_basic(u, a, d);
 		ep4_psi(v, a);
 		r = g1_on_curve(a) && (g1_cmp(u, v) == RLC_EQ);
 	} RLC_CATCH_ANY {

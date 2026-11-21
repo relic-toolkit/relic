@@ -324,13 +324,13 @@ static void ep4_mul_cof_ss3(ep4_t r, const ep4_t p) {
 		ep4_mul_naf_imp(t0, p, c);
 		/* t0 = [p^2 + d^2 - 1]t0. */
 		ep4_frb(t1, t0, 2);
-		ep4_mul_dig(t2, t0, d->dp[0]);
-		ep4_mul_dig(t2, t2, d->dp[0]);
+		ep4_mul_basic(t2, t0, d);
+		ep4_mul_basic(t2, t2, d);
 		ep4_add(t1, t1, t2);
 		ep4_sub(t0, t1, t0);
 		/* t0 = [p + d]t0. */
 		ep4_frb(t1, t0, 1);
-		ep4_mul_dig(t2, t0, d->dp[0]);
+		ep4_mul_basic(t2, t0, d);
 		ep4_add(t0, t1, t2);
 		ep4_add(r, t0, p);
 		ep4_norm(r, r);
