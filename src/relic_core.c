@@ -47,6 +47,10 @@
 #include "relic_cp.h"
 #include "relic_pp.h"
 
+#if defined(RLC_MULTI) && !defined(_WIN32)
+#include <pthread.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -67,6 +71,53 @@ static rlc_thread ctx_t *core_own = NULL;
  * Context of the thread for parallel sections, allocated on first use.
  */
 static rlc_thread ctx_t *core_par_ctx = NULL;
+
+#if !defined(_WIN32)
+/**
+ * Flag to clean up the contexts of POSIX threads that exit.
+ */
+#define CORE_EXIT
+
+/**
+ * Key whose destructor runs when a thread with contexts exits.
+ */
+static pthread_key_t core_key;
+
+/**
+ * Flag to create the key once.
+ */
+static pthread_once_t core_once = PTHREAD_ONCE_INIT;
+
+/**
+ * Frees the contexts of a thread that exits without calling core_clean().
+ *
+ * @param[in] arg			- the value of the key, unused.
+ */
+static void core_exit(void *arg) {
+	(void)arg;
+	if (core_own != NULL) {
+		core_ctx = core_own;
+		core_clean();
+	}
+	free(core_par_ctx);
+	core_par_ctx = NULL;
+}
+
+/**
+ * Creates the key whose destructor frees the contexts of exiting threads.
+ */
+static void core_key_new(void) {
+	pthread_key_create(&core_key, core_exit);
+}
+
+/**
+ * Marks the calling thread as having contexts to free when it exits.
+ */
+static void core_key_set(void) {
+	pthread_once(&core_once, core_key_new);
+	pthread_setspecific(core_key, (void *)1);
+}
+#endif
 #else
 /**
  * Default library context.
@@ -96,6 +147,9 @@ int core_init(void) {
 			return RLC_ERR;
 		}
 		core_ctx = core_own;
+#ifdef CORE_EXIT
+		core_key_set();
+#endif
 #else
 		core_ctx = &(first_ctx);
 #endif
@@ -218,6 +272,9 @@ void core_par_enter(core_par_t *s, const ctx_t *ctx) {
 		if (core_par_ctx == NULL) {
 			err_fatal(RLC_FILE, __LINE__, ERR_NO_MEMORY);
 		}
+#ifdef CORE_EXIT
+		core_key_set();
+#endif
 	}
 	own = core_par_ctx;
 

@@ -588,7 +588,9 @@ typedef struct {
  * leaks the state allocated by the previous call when RLC_ALLOC = RLC_DYNAMIC.
  * With multithreading, the context of a thread that has none is allocated
  * with malloc() and freed by core_clean(); to avoid the allocation, set a
- * context with core_set() before calling this function.
+ * context with core_set() before calling this function. A POSIX thread that
+ * exits without calling core_clean() has its contexts freed then; on Windows,
+ * each thread must call core_clean() before it exits.
  *
  * @return RLC_OK if no error occurs, RLC_ERR otherwise.
  */
