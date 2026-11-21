@@ -15,26 +15,37 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 		uint8_t *t, g1_t u[], int n) {
-	int j, k, result = RLC_OK;
+	int i, j, k, result = RLC_OK;
 	gt_t e;
 	uint8_t h[RLC_MD_LEN], buffer[12 * RLC_PC_BYTES];
+	RLC_CAT(RLC_PC_FIELD, t) tab[RLC_PC_TABLE];
 
 	gt_null(e);
+	for (i = 0; i < RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, null)(tab[i]);
+	}
 
 	RLC_TRY {
 		gt_new(e);
+		for (i = 0; i < RLC_PC_TABLE; i++) {
+			RLC_CAT(RLC_PC_FIELD, new)(tab[i]);
+		}
 
 		*len = 0;
 		if (m > 0) {
 			for (k = 0; k < m; k++) {
+				/* Each d_{k+1} is paired n times, so precompute its lines. */
+				pc_map_pre(tab, d[k + 1]);
 				for (j = 0; j < n; j++) {
-					pc_map(e, u[j], d[k + 1]);
+					pc_map_fix(e, u[j], tab);
 					gt_write_bin(buffer, 12 * RLC_PC_BYTES, e, 0);
 					md_map(h, buffer, sizeof(buffer));
 					if (memcmp(h, t + j * RLC_MD_LEN, RLC_MD_LEN) == RLC_EQ &&
 							!gt_is_unity(e)) {
+						/* Report each element once, so that len <= m. */
 						bn_copy(z[*len], x[k]);
 						(*len)++;
+						break;
 					}
 				}
 			}
@@ -45,6 +56,9 @@ static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 	}
 	RLC_FINALLY {
 		gt_free(e);
+		for (i = 0; i < RLC_PC_TABLE; i++) {
+			RLC_CAT(RLC_PC_FIELD, free)(tab[i]);
+		}
 	}
 	return result;
 }
@@ -107,7 +121,7 @@ void *socketThread(void *arg) {
 	send(newSocket, buffer, 4 * RLC_PC_BYTES + 1, 0);
 
 	for (int i = 0; i < N; i++) {
-		recv(newSocket, buffer, RLC_MD_LEN + RLC_PC_BYTES + 1, 0);
+		recv(newSocket, buffer, RLC_MD_LEN + RLC_PC_BYTES + 1, MSG_WAITALL);
 		memcpy(t + i * RLC_MD_LEN, buffer, RLC_MD_LEN);
 		g1_read_bin(u[i], buffer + RLC_MD_LEN, RLC_PC_BYTES + 1);
 	}
