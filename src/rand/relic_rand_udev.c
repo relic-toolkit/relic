@@ -49,9 +49,10 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	ssize_t c;
 	size_t l;
 
+	/* Execution continues past errors, and callers would use or loop on the
+	 * missing bytes, so a device that cannot be read stops the program. */
 	if (!core_get()->seeded || *fd == -1) {
-		RLC_THROW(ERR_NO_RAND);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 	}
 	for (l = 0; l < size; l += c) {
 		c = read(*fd, buf + l, size - l);
@@ -61,8 +62,7 @@ void rand_bytes(uint8_t *buf, size_t size) {
 		}
 		/* An error or the end of the file leaves the output incomplete. */
 		if (c <= 0) {
-			RLC_THROW(ERR_NO_READ);
-			return;
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_READ);
 		}
 	}
 }

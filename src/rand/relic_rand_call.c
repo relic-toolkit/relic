@@ -52,9 +52,10 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 
 	(void)args;
 
+	/* The default callback stops the program when it cannot provide the
+	 * bytes, as the generator does. */
 	if (fd == -1) {
-		RLC_THROW(ERR_NO_FILE);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_FILE);
 	}
 
 	for (l = 0; l < size; l += c) {
@@ -66,8 +67,7 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 		/* An error or the end of the file leaves the output incomplete. */
 		if (c <= 0) {
 			close(fd);
-			RLC_THROW(ERR_NO_READ);
-			return;
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_READ);
 		}
 	}
 	close(fd);
@@ -84,13 +84,14 @@ static void rand_stub(uint8_t *buf, size_t size, void *args) {
 void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 
+	/* Execution continues past errors, and callers would use or loop on the
+	 * missing bytes, so a generator that cannot run stops the program. */
 	if (!ctx->seeded || ctx->rand_call == NULL) {
-		RLC_THROW(ERR_NO_RAND);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 	}
 	ctx->rand_call(buf, size, ctx->rand_args);
 	if (rand_check(buf, size) == RLC_ERR) {
-		RLC_THROW(ERR_NO_RAND);
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 	}
 }
 

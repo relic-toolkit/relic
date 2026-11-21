@@ -146,13 +146,12 @@ void rand_seed(void (*callback)(uint8_t *, size_t, void *), void *arg);
 int rand_check(uint8_t *buf, size_t size);
 
 /**
- * Gathers pseudo-random bytes from the pseudo-random number generator.
+ * Gathers pseudo-random bytes from the pseudo-random number generator. Stops
+ * the program if the generator is not seeded, is stuck, needs reseeding or
+ * cannot read its source, as continuing without the bytes is unsafe.
  *
  * @param[out] buf			- the buffer to write.
  * @param[in] size			- the number of bytes to gather.
- * @throw ERR_NO_VALID		- if the required length is too large.
- * @throw ERR_NO_READ		- it the pseudo-random number generator cannot
- * 							generate the specified number of bytes.
  */
 void rand_bytes(uint8_t *buf, size_t size);
 

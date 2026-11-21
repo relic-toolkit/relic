@@ -34,7 +34,12 @@
 #include "relic.h"
 #include "relic_test.h"
 
-#ifdef RLC_RAND_FORK
+/* Systems where a test can run in a child process. */
+#if RLC_OPSYS == RLC_LINUX || RLC_OPSYS == RLC_MACOSX || \
+		RLC_OPSYS == RLC_FREEBSD || RLC_OPSYS == RLC_NETBSD || \
+		RLC_OPSYS == RLC_DROID
+#define TEST_FORK
+#include <signal.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
@@ -1326,6 +1331,8 @@ static int test(void) {
 
 	code = RLC_OK;
   end:
+	/* Restore the default callback before closing its descriptor. */
+	rand_seed(NULL, NULL);
 	close(fd);
 	return code;
 }
@@ -1372,14 +1379,24 @@ int main(void) {
 	} TEST_END;
 #endif
 
-	TEST_ONCE("using the generator without a seed is an error") {
+#ifdef TEST_FORK
+	TEST_ONCE("using the generator without a seed stops the program") {
 		uint8_t out[16];
-		TEST_ERR(rand_clean(); rand_bytes(out, sizeof(out)));
-		TEST_ASSERT(err_get_code() == RLC_ERR, fail);
-		rand_init();
+		int status;
+		pid_t pid = fork();
+		if (pid == 0) {
+			/* Hide the message of the expected failure. */
+			close(STDERR_FILENO);
+			rand_clean();
+			rand_bytes(out, sizeof(out));
+			_exit(0);
+		}
+		TEST_ASSERT(pid > 0 && waitpid(pid, &status, 0) == pid, fail);
+		TEST_ASSERT(WIFSIGNALED(status) && WTERMSIG(status) == SIGABRT, fail);
 		rand_bytes(out, sizeof(out));
 		TEST_ASSERT(err_get_code() == RLC_OK, fail);
 	} TEST_END;
+#endif
 
 	util_banner("All tests have passed.\n", 0);
 

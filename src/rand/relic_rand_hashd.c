@@ -160,28 +160,29 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
 
+	/* Execution continues past errors, and callers would use or loop on the
+	 * missing bytes, so a generator that cannot run stops the program. */
 	if (!ctx->seeded) {
-		RLC_THROW(ERR_NO_RAND);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 	}
 #ifdef RLC_RAND_FORK
 	/* A forked process instantiates its own generator from fresh entropy. */
 	if (ctx->pid != (long)getpid()) {
 		rand_init();
 		if (!ctx->seeded || ctx->pid != (long)getpid()) {
-			RLC_THROW(ERR_NO_RAND);
-			return;
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 		}
 	}
 #endif
-	if (sizeof(int) > 2 && size > (1 << 16)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
+	/* Requests are limited to 2^16 bytes, so larger ones are split. */
+	while (sizeof(int) > 2 && size > (1 << 16)) {
+		rand_bytes(buf, 1 << 16);
+		buf += 1 << 16;
+		size -= 1 << 16;
 	}
 	/* The generator must be reseeded after 2^48 requests. */
 	if (ctx->counter > ((uint64_t)1 << 48)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
 	}
 
 	/* buf = hash_gen(size) */
