@@ -566,6 +566,20 @@ typedef struct _ctx_t {
 #endif
 } ctx_t;
 
+#if RLC_MULTI == RLC_OPENMP
+/**
+ * State of a thread saved while it runs a parallel section.
+ */
+typedef struct {
+	/** The context the thread was using. */
+	ctx_t *ctx;
+	/** The saved error state of the context private to the thread. */
+	int code, depth, pending, quiet;
+	/** The saved last error of the context private to the thread. */
+	err_t number;
+} core_par_t;
+#endif
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -632,6 +646,29 @@ void core_set(ctx_t *ctx);
  * @param[in] init_ptr a pointer which is passed to the initialized
  */
 void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
+#endif
+
+#if RLC_MULTI == RLC_OPENMP
+/**
+ * Gives the calling thread a context of its own for a parallel section, so
+ * that threads do not share the depth of try-catch blocks. The context private
+ * to the thread is used, with the error state reset and with the error
+ * messages and the instructions chosen by arch_init() of the given context.
+ * Other fields are not set up, so the section can only use integer arithmetic.
+ *
+ * @param[out] s			- the saved state of the thread.
+ * @param[in] ctx			- the context of the thread starting the section.
+ */
+void core_par_enter(core_par_t *s, const ctx_t *ctx);
+
+/**
+ * Restores the context of the calling thread after a parallel section and
+ * returns the error of the section, to be passed on after the section.
+ *
+ * @param[in] s				- the saved state of the thread.
+ * @return the last error thrown in the section, or zero if there was none.
+ */
+err_t core_par_leave(const core_par_t *s);
 #endif
 
 #ifdef __cplusplus

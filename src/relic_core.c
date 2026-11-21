@@ -215,3 +215,50 @@ void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
     core_init_ptr = init_ptr;
 }
 #endif
+
+#if RLC_MULTI == RLC_OPENMP
+void core_par_enter(core_par_t *s, const ctx_t *ctx) {
+	ctx_t *own = &first_ctx;
+
+	s->ctx = core_ctx;
+	s->code = own->code;
+	s->number = own->number;
+	s->depth = own->depth;
+	s->pending = own->pending;
+	s->quiet = own->quiet;
+	own->code = RLC_OK;
+	own->number = 0;
+	own->depth = 0;
+	own->pending = 0;
+	/* Other threads read the given context, so only write it when this
+	 * thread has a context of its own. */
+	if (own != ctx) {
+		own->quiet = ctx->quiet;
+		for (int j = 0; j < ERR_MAX; j++) {
+			own->reason[j] = ctx->reason[j];
+		}
+#if RLC_ARCH == RLC_X86 || RLC_ARCH == RLC_X64 || RLC_ARCH == RLC_A64
+		own->lzcnt_ptr = ctx->lzcnt_ptr;
+		own->tzcnt_ptr = ctx->tzcnt_ptr;
+#endif
+	}
+	core_ctx = own;
+}
+
+err_t core_par_leave(const core_par_t *s) {
+	ctx_t *own = &first_ctx;
+	err_t e = (own->code == RLC_OK ? 0 : own->number);
+
+	/* An error can be recorded without a number, so report it anyway. */
+	if (own->code != RLC_OK && e == 0) {
+		e = ERR_CAUGHT;
+	}
+	own->code = s->code;
+	own->number = s->number;
+	own->depth = s->depth;
+	own->pending = s->pending;
+	own->quiet = s->quiet;
+	core_ctx = s->ctx;
+	return e;
+}
+#endif
