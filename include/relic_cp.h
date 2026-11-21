@@ -2430,7 +2430,8 @@ int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d);
  * Verifies a message signed with ZSS scheme.
  *
  * @param[in] s				- the signature.
- * @param[in] msg			- the signed message.
+ * @param[in] msg			- the signed message, an integer smaller than
+ *						  the group order in big-endian bytes.
  * @param[in] len			- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[out] q			- the first component of the public key.
