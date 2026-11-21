@@ -26,6 +26,20 @@
  *
  * Interface of the error-handling functions.
  *
+ * A thrown error is recorded and execution continues: there is no jump. The
+ * error is returned by err_get_code() and, inside a try-catch block, caught by
+ * the CATCH clause of the innermost block where it was thrown, after the rest
+ * of its TRY clause runs. Running out of memory, a number that does not fit in
+ * its fixed size and a failing pseudo-random number generator stop the program
+ * instead. The model holds as long as:
+ * - a TRY clause is left only by reaching its end, without return, goto, break
+ *   or continue, and is always followed by its CATCH clause, in braces;
+ * - each thread has a context of its own;
+ * - err_get_code() is not called inside a try-catch block, as it forgets the
+ *   errors pending in the blocks around it;
+ * - return codes are checked, as a function may have written part of its
+ *   outputs, or of the context, before failing.
+ *
  * @ingroup relic
  */
 
