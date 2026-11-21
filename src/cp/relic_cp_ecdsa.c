@@ -146,16 +146,16 @@ static int ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 			bn_read_bin(e, msg, len);
 		}
 
-		if (det) {
-			rlen = RLC_CEIL(bn_bits(n), 8);
-			/* K = 00...00, V = 01...01. */
-			memset(kv, 0x00, RLC_MD_LEN);
-			memset(kv + RLC_MD_LEN, 0x01, RLC_MD_LEN);
-			if (rlen > ECDSA_BYTES) {
-				/* Without error checking execution continues, so do not seed
-				 * past the buffer. */
-				RLC_THROW(ERR_NO_BUFFER);
-			} else {
+		rlen = RLC_CEIL(bn_bits(n), 8);
+		if (det && rlen > ECDSA_BYTES) {
+			/* Execution continues past errors, so do not derive a nonce that
+			 * does not fit in the buffers. */
+			RLC_THROW(ERR_NO_BUFFER);
+		} else {
+			if (det) {
+				/* K = 00...00, V = 01...01. */
+				memset(kv, 0x00, RLC_MD_LEN);
+				memset(kv + RLC_MD_LEN, 0x01, RLC_MD_LEN);
 				/* Seed with int2octets(d) || bits2octets(e). */
 				bn_mod(x, d, n);
 				bn_write_bin(seed, rlen, x);
@@ -163,34 +163,34 @@ static int ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 				bn_write_bin(seed + rlen, rlen, x);
 				ecdsa_det_update(kv, seed, 2 * rlen);
 			}
-		}
 
-		do {
 			do {
-				if (det) {
-					ecdsa_det_next(k, kv, n);
-				} else {
-					bn_rand_mod(k, n);
-				}
-				ec_mul_gen(p, k);
-				ec_get_x(x, p);
-				bn_mod(r, x, n);
-			} while (bn_is_zero(r));
+				do {
+					if (det) {
+						ecdsa_det_next(k, kv, n);
+					} else {
+						bn_rand_mod(k, n);
+					}
+					ec_mul_gen(p, k);
+					ec_get_x(x, p);
+					bn_mod(r, x, n);
+				} while (bn_is_zero(r));
 
-			bn_mul(s, d, r);
-			bn_mod(s, s, n);
-			bn_add(s, s, e);
-			bn_mod(s, s, n);
-			/* Blind the secret, as inversion takes variable time. */
-			bn_rand_mod(x, n);
-			bn_mul(k, k, x);
-			bn_mod(k, k, n);
-			bn_mod_inv(k, k, n);
-			bn_mul(k, k, x);
-			bn_mod(k, k, n);
-			bn_mul(s, s, k);
-			bn_mod(s, s, n);
-		} while (bn_is_zero(s));
+				bn_mul(s, d, r);
+				bn_mod(s, s, n);
+				bn_add(s, s, e);
+				bn_mod(s, s, n);
+				/* Blind the secret, as inversion takes variable time. */
+				bn_rand_mod(x, n);
+				bn_mul(k, k, x);
+				bn_mod(k, k, n);
+				bn_mod_inv(k, k, n);
+				bn_mul(k, k, x);
+				bn_mod(k, k, n);
+				bn_mul(s, s, k);
+				bn_mod(s, s, n);
+			} while (bn_is_zero(s));
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
