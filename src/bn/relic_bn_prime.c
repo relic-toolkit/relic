@@ -50,6 +50,18 @@
 #define BN_MAP_TRIES	((uint32_t)1 << 20)
 
 /**
+ * Number of candidates expanded at once when hashing to a prime.
+ */
+#define BN_MAP_BATCH	16
+
+/**
+ * Largest prime size in bits for which Miller-Rabin over the first 13 prime
+ * bases is deterministic, as no composite below 3.3 * 10^24 > 2^81 passes it
+ * (Sorenson and Webster, Math. Comp. 86, 2017).
+ */
+#define BN_MAP_DETER	81
+
+/**
  * Number of consecutive candidates sieved at once when generating primes. The
  * small primes for the sieve are the odd ones below twice this number, at most
  * 2^16 as they are stored in 16 bits.
@@ -391,9 +403,16 @@ int bn_is_prime_basic(const bn_t a) {
 	return result;
 }
 
-int bn_is_prime_rabin(const bn_t a) {
+/**
+ * Runs the Miller-Rabin test with the first few primes as bases.
+ *
+ * @param[in] a				- the number to test.
+ * @param[in] tests			- the number of bases.
+ * @return 1 if a passes the test for all bases, 0 otherwise.
+ */
+static int bn_prime_rabin(const bn_t a, int tests) {
 	bn_t t, n1, y, r;
-	int i, s, j, b, tests = 0, result = bn_prime_small(a);
+	int i, s, j, result = bn_prime_small(a);
 
 	if (result >= 0) {
 		return result;
@@ -403,37 +422,6 @@ int bn_is_prime_rabin(const bn_t a) {
 	bn_null_all(t, n1, y, r);
 
 	RLC_TRY {
-		/*
-		 * These values are taken from Table 4.4 inside Handbook of Applied
-		 * Cryptography.
-		 */
-		b = bn_bits(a);
-		if (b >= 1300) {
-			tests = 2;
-		} else if (b >= 850) {
-			tests = 3;
-		} else if (b >= 650) {
-			tests = 4;
-		} else if (b >= 550) {
-			tests = 5;
-		} else if (b >= 450) {
-			tests = 6;
-		} else if (b >= 400) {
-			tests = 7;
-		} else if (b >= 350) {
-			tests = 8;
-		} else if (b >= 300) {
-			tests = 9;
-		} else if (b >= 250) {
-			tests = 12;
-		} else if (b >= 200) {
-			tests = 15;
-		} else if (b >= 150) {
-			tests = 18;
-		} else {
-			tests = 27;
-		}
-
 		bn_new_all(t, n1, y, r);
 
 		/* r = (n - 1)/2^s. */
@@ -488,6 +476,41 @@ int bn_is_prime_rabin(const bn_t a) {
 		bn_free_all(r, y, n1, t);
 	}
 	return result;
+}
+
+int bn_is_prime_rabin(const bn_t a) {
+	int tests, b = bn_bits(a);
+
+	/*
+	 * These values are taken from Table 4.4 inside Handbook of Applied
+	 * Cryptography.
+	 */
+	if (b >= 1300) {
+		tests = 2;
+	} else if (b >= 850) {
+		tests = 3;
+	} else if (b >= 650) {
+		tests = 4;
+	} else if (b >= 550) {
+		tests = 5;
+	} else if (b >= 450) {
+		tests = 6;
+	} else if (b >= 400) {
+		tests = 7;
+	} else if (b >= 350) {
+		tests = 8;
+	} else if (b >= 300) {
+		tests = 9;
+	} else if (b >= 250) {
+		tests = 12;
+	} else if (b >= 200) {
+		tests = 15;
+	} else if (b >= 150) {
+		tests = 18;
+	} else {
+		tests = 27;
+	}
+	return bn_prime_rabin(a, tests);
 }
 
 int bn_is_prime_solov(const bn_t a) {
@@ -898,13 +921,33 @@ void bn_next_prime(bn_t q, const bn_t p) {
 	}
 }
 
+/**
+ * Tests a candidate when hashing to a prime. Small candidates get a test which
+ * is deterministic, so no composite passes it however the input is chosen.
+ * Larger ones get the Baillie-PSW test, as repeating Miller-Rabin with more
+ * bases adds nothing to it when the Lucas test is run anyway.
+ *
+ * @param[in] p				- the candidate.
+ * @param[in] bits			- the size of the candidate in bits.
+ * @return 1 if the candidate is a (probable) prime, 0 otherwise.
+ */
+static int bn_map_test(const bn_t p, size_t bits) {
+	if (!bn_is_prime_basic(p)) {
+		return 0;
+	}
+	if (bits <= BN_MAP_DETER) {
+		return bn_prime_rabin(p, 13);
+	}
+	return bn_prime_rabin(p, 1) && bn_is_prime_lucas(p);
+}
+
 int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len) {
 	uint8_t seed[RLC_MD_LEN + sizeof(uint32_t)], *out;
 	const uint8_t *tag = dst;
-	size_t i, tl = dst_len, nb = (bits + 7) / 8;
-	uint32_t k = 0, n;
-	int result = RLC_OK;
+	size_t i, tl = dst_len, nb = (bits + 7) / 8, batch;
+	uint32_t k = 0, n, blk = 0;
+	int result = RLC_OK, fresh = 1;
 
 	/* Callers with no tag of their own get the one of the library. */
 	if (tag == NULL) {
@@ -917,7 +960,13 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		return RLC_ERR;
 	}
 
-	out = RLC_ALLOCA(uint8_t, nb);
+	/*
+	 * Each expansion yields a batch of candidates, as most are rejected and
+	 * expanding them one by one would cost more than testing them. The batch
+	 * is bounded by the most that one expansion can produce.
+	 */
+	batch = RLC_MIN(BN_MAP_BATCH, RLC_MAX(255 * RLC_MD_LEN / nb, 1));
+	out = RLC_ALLOCA(uint8_t, batch * nb);
 
 	RLC_TRY {
 		/*
@@ -936,13 +985,19 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		/* Count the attempts apart, since from + BN_MAP_TRIES may wrap. */
 		for (n = 0; n < BN_MAP_TRIES; n++) {
 			k = from + n;
-			/* The counter is written in a fixed byte order, so that the
-			 * prime does not depend on the endianness of the platform. */
-			util_write_uint32(seed + RLC_MD_LEN, k);
-			/* Expand the seed to the whole prime so the output looks uniform. */
-			md_xmd(out, nb, seed, sizeof(seed), tag, tl);
+			/* Candidate k is number k % batch of the expansion of block
+			 * k / batch, so the counter still names a single candidate. */
+			if (fresh || k / batch != blk) {
+				blk = k / batch;
+				fresh = 0;
+				/* The counter is written in a fixed byte order, so that the
+				 * prime does not depend on the endianness of the platform. */
+				util_write_uint32(seed + RLC_MD_LEN, blk);
+				/* Expand the seed to whole primes so the output looks uniform. */
+				md_xmd(out, batch * nb, seed, sizeof(seed), tag, tl);
+			}
 
-			bn_read_bin(p, out, nb);
+			bn_read_bin(p, out + (k % batch) * nb, nb);
 			/* trim to the requested width, then fix the top and bottom bits */
 			for (i = bits; i < 8 * nb; i++) {
 				bn_set_bit(p, i, 0);
@@ -950,7 +1005,7 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 			bn_set_bit(p, bits - 1, 1);
 			bn_set_bit(p, 0, 1);
 
-			if (bn_is_prime(p)) {
+			if (bn_map_test(p, bits)) {
 				if (ctr != NULL) {
 					*ctr = k;
 				}
