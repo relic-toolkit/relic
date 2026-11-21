@@ -523,6 +523,15 @@ int gt_is_valid(const gt_t a) {
 				}
 				r &= fp12_test_cyc((void *)a);
 				break;
+			case EP_SS3:
+				/* Check that a^d = a^p, which gives a^(c * r) = 1 in
+				 * p = d + c * r, and thus a^r = 1 because Phi_12(p)/r is
+				 * coprime to c. */
+				gt_frb(u, a, 1);
+				fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp12_test_cyc((void *)a);
+				break;
 			case EP_B24:
 				/* Check that a^u = a^p. */
 				gt_frb(u, a, 1);
