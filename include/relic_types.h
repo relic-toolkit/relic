@@ -212,6 +212,11 @@ typedef unsigned long long ull_t;
  */
 typedef unsigned long uint_t;
 
+/**
+ * Type that represents an error.
+ */
+typedef int err_t;
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/

@@ -45,7 +45,6 @@ extern "C" {
 #include <string.h>
 #include <ctype.h>
 
-#include "relic_err.h"
 #include "relic_bn.h"
 #include "relic_eb.h"
 #include "relic_epx.h"
@@ -601,12 +600,29 @@ int core_clean(void);
 
 #if defined(RLC_MULTI)
 
+#include "relic_multi.h"
+
 /**
- * Returns a pointer to the current library context.
+ * Returns the context of a thread that has none yet, after calling the
+ * initializer set by core_set_thread_initializer(), if any.
  *
- * @return a pointer to the library context.
+ * @return a pointer to the library context, or NULL if there is none.
  */
-ctx_t *core_get(void);
+ctx_t *core_get_init(void);
+
+/**
+ * Returns a pointer to the current library context, which is private to each
+ * thread. The call is inlined, and only a thread without a context calls its
+ * initializer.
+ *
+ * @return a pointer to the library context, or NULL if there is none.
+ */
+static inline ctx_t *core_get(void) {
+	if (core_ctx == NULL) {
+		return core_get_init();
+	}
+	return core_ctx;
+}
 
 #else
 
@@ -634,32 +650,7 @@ static inline ctx_t *core_get(void) {
  */
 void core_set(ctx_t *ctx);
 
-/**
- * Runs a CATCH clause: leaves the current try-catch block and consumes the
- * errors thrown inside it, which were thrown at its depth or deeper.
- *
- * @param[out] e			- the error caught, or NULL to ignore it.
- * @return 1 if an error was caught, 0 otherwise.
- */
-static inline int err_catch(err_t *e) {
-	ctx_t *ctx = core_get();
-	uint_t inside;
-
-	ctx->depth--;
-	inside = ~(RLC_ERR_BIT(ctx->depth + 1) - 1);
-	if ((ctx->pending & inside) == 0) {
-		return 0;
-	}
-	ctx->pending &= ~inside;
-	if (e != NULL) {
-		*e = ctx->number;
-	}
-	return 1;
-}
-
 #if defined(RLC_MULTI)
-
-#include "relic_multi.h"
 
 /**
  * Set an initializer function which is called when the context
@@ -693,6 +684,8 @@ void core_par_enter(core_par_t *s, const ctx_t *ctx);
  */
 err_t core_par_leave(const core_par_t *s);
 #endif
+
+#include "relic_err.h"
 
 #ifdef __cplusplus
 }

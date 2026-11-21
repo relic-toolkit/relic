@@ -65,6 +65,12 @@
 #endif
 
 /**
+ * Pointer to the active library context of the thread, declared here so that
+ * core_get() can be inlined.
+ */
+extern rlc_thread ctx_t *core_ctx;
+
+/**
  * Make library context private to each thread.
  */
 #if RLC_MULTI == RLC_OPENMP
@@ -72,11 +78,6 @@
  * Active library context, only visible inside the library.
  */
 extern rlc_thread ctx_t first_ctx;
-
-/**
- * Pointer to active library context, only visible inside the library.
- */
-extern rlc_thread ctx_t *core_ctx;
 
 #if !defined(_MSC_VER)
 #pragma omp threadprivate(first_ctx, core_ctx)

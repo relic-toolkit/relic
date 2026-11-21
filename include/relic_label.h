@@ -57,7 +57,7 @@
 
 #undef core_init
 #undef core_clean
-#undef core_get
+#undef core_get_init
 #undef core_set
 #undef core_set_thread_initializer
 #undef core_par_enter
@@ -65,7 +65,7 @@
 
 #define core_init 	RLC_PREFIX(core_init)
 #define core_clean 	RLC_PREFIX(core_clean)
-#define core_get 	RLC_PREFIX(core_get)
+#define core_get_init 	RLC_PREFIX(core_get_init)
 #define core_set 	RLC_PREFIX(core_set)
 #define core_set_thread_initializer 	RLC_PREFIX(core_set_thread_initializer)
 #define core_par_enter 	RLC_PREFIX(core_par_enter)

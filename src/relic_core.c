@@ -167,10 +167,10 @@ int core_clean(void) {
 }
 
 #if defined(RLC_MULTI)
-ctx_t *core_get(void) {
-    if (core_ctx == NULL && core_thread_initializer != NULL) {
-        core_thread_initializer(core_init_ptr);
-    }
+ctx_t *core_get_init(void) {
+	if (core_thread_initializer != NULL) {
+		core_thread_initializer(core_init_ptr);
+	}
 	return core_ctx;
 }
 #endif

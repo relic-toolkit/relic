@@ -104,15 +104,6 @@ enum errors {
 #endif
 
 /*============================================================================*/
-/* Type definitions                                                           */
-/*============================================================================*/
-
-/**
- * Type that represents an error.
- */
-typedef int err_t;
-
-/*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
 
@@ -133,9 +124,10 @@ typedef int err_t;
 /**
  * Implements a TRY clause. The block always runs to the end, and the number of
  * blocks entered is counted so that errors thrown inside them are reported to
- * their CATCH clause.
+ * their CATCH clause. With multithreading, a thread without a context stops
+ * the program.
  */
-#define RLC_TRY					if ((core_get()->depth++, 1))
+#define RLC_TRY					if ((err_try(RLC_STR(__FILE__), __LINE__), 1))
 
 /**
  * Implements a CATCH clause, which runs if an error was thrown in its TRY
@@ -173,6 +165,10 @@ typedef int err_t;
 		ctx_t *_ctx = core_get();											\
 		if ((E) == ERR_NO_MEMORY) {											\
 			err_fatal(RLC_FILE, __LINE__, E);								\
+		}																	\
+		if (_ctx == NULL) {													\
+			/* Without a context, the error cannot be recorded. */			\
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_CONFIG);					\
 		}																	\
 		_ctx->code = RLC_ERR;												\
 		if ((E) != ERR_CAUGHT && (_ctx->pending &							\
@@ -294,5 +290,50 @@ int err_get_code(void);
  * @param[in] quiet			- the flag to disable printing.
  */
 void err_set_quiet(int quiet);
+
+/**
+ * Runs a TRY clause: enters a try-catch block. With multithreading, a thread
+ * without a context stops the program, as there would be nowhere to record an
+ * error; without it, the library is initialized once, before any call.
+ *
+ * @param[in] file			- the source file of the TRY clause.
+ * @param[in] line			- the line of the TRY clause.
+ */
+static inline void err_try(const char *file, int line) {
+	ctx_t *ctx = core_get();
+
+#if defined(RLC_MULTI)
+	if (ctx == NULL) {
+		err_fatal(file, line, ERR_NO_CONFIG);
+	}
+#else
+	(void)file;
+	(void)line;
+#endif
+	ctx->depth++;
+}
+
+/**
+ * Runs a CATCH clause: leaves the current try-catch block and consumes the
+ * errors thrown inside it, which were thrown at its depth or deeper.
+ *
+ * @param[out] e			- the error caught, or NULL to ignore it.
+ * @return 1 if an error was caught, 0 otherwise.
+ */
+static inline int err_catch(err_t *e) {
+	ctx_t *ctx = core_get();
+	uint_t inside;
+
+	ctx->depth--;
+	inside = ~(RLC_ERR_BIT(ctx->depth + 1) - 1);
+	if ((ctx->pending & inside) == 0) {
+		return 0;
+	}
+	ctx->pending &= ~inside;
+	if (e != NULL) {
+		*e = ctx->number;
+	}
+	return 1;
+}
 
 #endif /* !RLC_ERR_H */
