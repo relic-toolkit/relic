@@ -813,6 +813,63 @@ end:
 	return code;
 }
 
+#if EC_CUR == EC_PRIME
+
+/**
+ * Finds a point of small order on the curve, outside the group of prime order.
+ *
+ * @param[out] t			- the point.
+ * @return the order of the point, or 0 if there is none.
+ */
+static int small_order(ep_t t) {
+	bn_t h, k;
+	dig_t r;
+	int result = 0;
+
+	bn_null(h);
+	bn_null(k);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(k);
+
+		ep_curve_get_cof(h);
+		for (int q = 2; q < 256 && result == 0; q++) {
+			bn_mod_dig(&r, h, q);
+			if (r != 0) {
+				continue;
+			}
+			/* Clear all but a factor q of the order of a point of the curve. */
+			ep_curve_get_ord(k);
+			bn_mul(k, k, h);
+			bn_div_dig(k, k, q);
+			for (int i = 0; i < 16 && result == 0; i++) {
+				fp_rand(t->x);
+				fp_zero(t->y);
+				fp_set_dig(t->z, 1);
+				t->coord = EC_AFFIN;
+				if (ep_upk(t, t)) {
+					ep_mul_basic(t, t, k);
+					if (!ep_is_infty(t)) {
+						ep_norm(t, t);
+						result = q;
+					}
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(k);
+	}
+	return result;
+}
+
+#endif
+
 static int smlers(void) {
 	int code = RLC_ERR;
 	ec_t pp, pk[4];
@@ -879,6 +936,34 @@ static int smlers(void) {
 				cp_ers_gen_key(sk[j], pk[j]);
 			}
 		} TEST_END;
+
+#if EC_CUR == EC_PRIME
+		TEST_CASE("same-message linkable ring signature tags are in the group") {
+			/* A tag moved by a point of small order would let the same key
+			 * sign the message again with another tag, without linking. */
+			int q = small_order(pk[1]);
+			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			ec_add(pk[1], pk[1], ring[0]->tau);
+			ec_norm(pk[1], pk[1]);
+			ec_curve_get_gen(pk[2]);
+			ec_map(pk[3], m, 5);
+			for (int j = 0; j < 8 * q; j++) {
+				/* Sign as the scheme does, with a fresh nonce each time. */
+				uint8_t buf[RLC_MD_LEN + 5];
+				ec_copy(ring[0]->tau, pk[1]);
+				rand_bytes(ring[0]->nonce, RLC_MD_LEN);
+				memcpy(buf, ring[0]->nonce, RLC_MD_LEN);
+				memcpy(buf + RLC_MD_LEN, m, 5);
+				TEST_ASSERT(cp_sokeqor_sig(ring[0]->c, ring[0]->r, buf,
+					sizeof(buf), ring[0]->h, pk, pk + 2, sk[0], 0) == RLC_OK,
+					end);
+				TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 5, pp) == 0, end);
+			}
+			for (int j = 1; j < 4; j++) {
+				cp_ers_gen_key(sk[j], pk[j]);
+			}
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
