@@ -563,22 +563,6 @@ typedef struct _ctx_t {
 #endif
 } ctx_t;
 
-#if defined(RLC_MULTI)
-/**
- * State of a thread saved while it runs a parallel section.
- */
-typedef struct {
-	/** The context the thread was using. */
-	ctx_t *ctx;
-	/** The saved error state of the context private to the thread. */
-	int code, depth, quiet;
-	/** The saved pending errors of the context private to the thread. */
-	uint_t pending;
-	/** The saved last error of the context private to the thread. */
-	err_t number;
-} core_par_t;
-#endif
-
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -676,19 +660,19 @@ void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
  * arch_init() of the given context.
  * Other fields are not set up, so the section can only use integer arithmetic.
  *
- * @param[out] s			- the saved state of the thread.
  * @param[in] ctx			- the context of the thread starting the section.
+ * @return the context the calling thread was using.
  */
-void core_par_enter(core_par_t *s, const ctx_t *ctx);
+ctx_t *core_par_enter(const ctx_t *ctx);
 
 /**
  * Restores the context of the calling thread after a parallel section and
  * returns the error of the section, to be passed on after the section.
  *
- * @param[in] s				- the saved state of the thread.
+ * @param[in] prev			- the context returned by core_par_enter().
  * @return the last error thrown in the section, or zero if there was none.
  */
-err_t core_par_leave(const core_par_t *s);
+err_t core_par_leave(ctx_t *prev);
 #endif
 
 #include "relic_err.h"

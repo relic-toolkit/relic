@@ -411,23 +411,21 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 				{
 					#pragma omp section
 					{
-						core_par_t s;
-						core_par_enter(&s, ctx);
+						ctx_t *prev = core_par_enter(ctx);
 #endif
 						/* m1 = a^dP mod p. */
 						bn_mxp(t, a, b, crt->p);
 #if RLC_MULTI == RLC_OPENMP
-						e[0] = core_par_leave(&s);
+						e[0] = core_par_leave(prev);
 					}
 					#pragma omp section
 					{
-						core_par_t s;
-						core_par_enter(&s, ctx);
+						ctx_t *prev = core_par_enter(ctx);
 #endif
 						/* m2 = a^dQ mod q. */
 						bn_mxp(u, a, c, crt->q);
 #if RLC_MULTI == RLC_OPENMP
-						e[1] = core_par_leave(&s);
+						e[1] = core_par_leave(prev);
 					}
 				}
 			}
@@ -441,8 +439,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 				{
 					#pragma omp section
 					{
-						core_par_t s;
-						core_par_enter(&s, ctx);
+						ctx_t *prev = core_par_enter(ctx);
 #endif
 						/* Compute m_p = L(c^(p-1) mod p^2) * dp mod p. */
 						bn_sqr(t, crt->p);
@@ -452,12 +449,11 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 						bn_mul(t, t, crt->dp);
 						bn_mod(t, t, crt->p);
 #if RLC_MULTI == RLC_OPENMP
-						e[0] = core_par_leave(&s);
+						e[0] = core_par_leave(prev);
 					}
 					#pragma omp section
 					{
-						core_par_t s;
-						core_par_enter(&s, ctx);
+						ctx_t *prev = core_par_enter(ctx);
 #endif
 						/* Compute m_q = L(c^(q-1) mod q^2) * dq mod q. */
 						bn_sqr(u, crt->q);
@@ -467,7 +463,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 						bn_mul(u, u, crt->dq);
 						bn_mod(u, u, crt->q);
 #if RLC_MULTI == RLC_OPENMP
-						e[1] = core_par_leave(&s);
+						e[1] = core_par_leave(prev);
 					}
 				}
 			}

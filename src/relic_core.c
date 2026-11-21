@@ -118,24 +118,20 @@ static void core_key_set(void) {
 	pthread_setspecific(core_key, (void *)1);
 }
 #endif
-#else
-/**
- * Default library context.
- */
-static ctx_t first_ctx;
-#endif
 
-#if defined(RLC_MULTI)
 /*
  * Initializer function to call for every thread's context
  */
 void (*core_thread_initializer)(void* init_ptr) = NULL;
 void* core_init_ptr = NULL;
-#endif
 
-#if RLC_MULTI
 rlc_thread ctx_t *core_ctx = NULL;
 #else
+/**
+ * Default library context.
+ */
+static ctx_t first_ctx;
+
 ctx_t *core_ctx = NULL;
 #endif
 
@@ -264,8 +260,8 @@ void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
 #endif
 
 #if defined(RLC_MULTI)
-void core_par_enter(core_par_t *s, const ctx_t *ctx) {
-	ctx_t *own;
+ctx_t *core_par_enter(const ctx_t *ctx) {
+	ctx_t *prev = core_ctx;
 
 	if (core_par_ctx == NULL) {
 		core_par_ctx = (ctx_t *)calloc(1, sizeof(ctx_t));
@@ -276,44 +272,28 @@ void core_par_enter(core_par_t *s, const ctx_t *ctx) {
 		core_key_set();
 #endif
 	}
-	own = core_par_ctx;
-
-	s->ctx = core_ctx;
-	s->code = own->code;
-	s->number = own->number;
-	s->depth = own->depth;
-	s->pending = own->pending;
-	s->quiet = own->quiet;
-	own->code = RLC_OK;
-	own->number = 0;
-	own->depth = 0;
-	own->pending = 0;
-	/* Other threads read the given context, so only write it when this
-	 * thread has a context of its own. */
-	if (own != ctx) {
-		own->quiet = ctx->quiet;
+	/* The section context belongs to this thread, so only reset it. */
+	core_par_ctx->code = RLC_OK;
+	core_par_ctx->number = 0;
+	core_par_ctx->depth = 0;
+	core_par_ctx->pending = 0;
+	core_par_ctx->quiet = ctx->quiet;
 #if RLC_ARCH == RLC_X86 || RLC_ARCH == RLC_X64 || RLC_ARCH == RLC_A64
-		own->lzcnt_ptr = ctx->lzcnt_ptr;
-		own->tzcnt_ptr = ctx->tzcnt_ptr;
+	core_par_ctx->lzcnt_ptr = ctx->lzcnt_ptr;
+	core_par_ctx->tzcnt_ptr = ctx->tzcnt_ptr;
 #endif
-	}
-	core_ctx = own;
+	core_ctx = core_par_ctx;
+	return prev;
 }
 
-err_t core_par_leave(const core_par_t *s) {
-	ctx_t *own = core_par_ctx;
-	err_t e = (own->code == RLC_OK ? 0 : own->number);
+err_t core_par_leave(ctx_t *prev) {
+	err_t e = 0;
 
-	/* An error can be recorded without a number, so report it anyway. */
-	if (own->code != RLC_OK && e == 0) {
-		e = ERR_CAUGHT;
+	if (core_par_ctx->code != RLC_OK) {
+		/* A rethrown error keeps its number, but report one in any case. */
+		e = (core_par_ctx->number != 0 ? core_par_ctx->number : ERR_CAUGHT);
 	}
-	own->code = s->code;
-	own->number = s->number;
-	own->depth = s->depth;
-	own->pending = s->pending;
-	own->quiet = s->quiet;
-	core_ctx = s->ctx;
+	core_ctx = prev;
 	return e;
 }
 #endif
