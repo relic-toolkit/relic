@@ -34,7 +34,7 @@
 
 .text
 
-#ifdef FP2_ASM
+#if defined(FP2_ASM) && defined(FP_QNRES)
 
 .global cdecl(fp2_sqrn_low)
 .global cdecl(fp2_sqrm_low)

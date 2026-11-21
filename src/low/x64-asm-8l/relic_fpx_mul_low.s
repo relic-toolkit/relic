@@ -45,7 +45,7 @@ cdecl(fp2_muln_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$88, %rsp
+	subq	$152, %rsp
 
 	leaq	RLC_DV_STRIDE(%rdi), %rax
 	movq	%rax, 0(%rsp)
@@ -53,7 +53,7 @@ cdecl(fp2_muln_low):
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0, 0(%rsp)
 
-	addq	$88, %rsp
+	addq	$152, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -73,13 +73,13 @@ cdecl(fp2_mulm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$88, %rsp
+	subq	$152, %rsp
 
 	movq	%rdx, %rcx
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1, 0(%rsp)
 
-	addq	$88, %rsp
+	addq	$152, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15
@@ -97,23 +97,23 @@ cdecl(fp2_mulm_low):
 	push	%r15
 	push	%rbx
 	push	%rbp
-	subq	$344, %rsp
+	subq	$408, %rsp
 
 	movq	%rdi, 24(%rsp)
-	leaq	88(%rsp), %rdi
-	leaq	216(%rsp), %rax
+	leaq	152(%rsp), %rdi
+	leaq	280(%rsp), %rax
 	movq	%rax, 0(%rsp)
 	movq	%rdx, %rcx
 
 	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0, 0(%rsp)
 
 	movq	24(%rsp), %rdi
-	FP_RDCN_LOW	88(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, p0(%rip), %r14, %r15, %rdx, %rsi, %rbx, %rbp
+	FP_RDCN_LOW	152(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, p0(%rip), %r14, %r15, %rdx, %rsi, %rbx, %rbp
 	movq	24(%rsp), %rdi
 	addq	$64, %rdi
-	FP_RDCN_LOW	216(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, p0(%rip), %r14, %r15, %rdx, %rsi, %rbx, %rbp
+	FP_RDCN_LOW	280(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, %r14, %r15, p0(%rip), %r14, %r15, %rdx, %rsi, %rbx, %rbp
 
-	addq	$344, %rsp
+	addq	$408, %rsp
 	pop		%rbp
 	pop		%rbx
 	pop		%r15

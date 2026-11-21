@@ -79,6 +79,7 @@
 #define U0	0x000811DFFFFFFFFF
 #define BAR	0xB004F27858F95A86
 #define BARS	60
+#define QNR	5
 #elif FP_PRIME == 510
 #define P0	0xDD5F62C1A3044101
 #define P1	0x393DDECB1D3C5517
@@ -114,6 +115,10 @@
 #define cdecl(S) S
 #endif
 
+#if !defined(FP_QNRES) && defined(QNR)
+#define FP2_QNR	QNR
+#endif
+
 #if P7 < 0x4000000000000000
 #define FP2_MUL_RDC
 #endif
@@ -122,7 +127,7 @@
 #define FP2_SQR_RDC
 #endif
 
-#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
+#if (defined(FP_QNRES) || defined(FP2_QNR)) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 
@@ -693,9 +698,9 @@ ones:	.quad	-1
 .endif
 .endm
 
-.macro FP2_MUL0_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, T0, T1, P, RDC
+.macro FP2_MUL0_LOW A, B, B1, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, T0, T1, P, RDC
 	movq	64+\A, %rdx
-	MULSUB	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, 64+\B
+	MULSUB	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z0, 0(%rdi)
 .else
@@ -710,7 +715,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \T0, \T1, \B
 	movq	72+\A, %rdx
-	MULSUB	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \T0, \T1, 64+\B
+	MULSUB	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z1, 8(%rdi)
 .else
@@ -725,7 +730,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \T0, \T1, \B
 	movq	80+\A, %rdx
-	MULSUB	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \T0, \T1, 64+\B
+	MULSUB	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z2, 16(%rdi)
 .else
@@ -740,7 +745,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \T0, \T1, \B
 	movq	88+\A, %rdx
-	MULSUB	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \T0, \T1, 64+\B
+	MULSUB	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z3, 24(%rdi)
 .else
@@ -755,7 +760,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
 	movq	96+\A, %rdx
-	MULSUB	\Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 64+\B
+	MULSUB	\Z4, \Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z4, 32(%rdi)
 .else
@@ -770,7 +775,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
 	movq	104+\A, %rdx
-	MULSUB	\Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 64+\B
+	MULSUB	\Z5, \Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z5, 40(%rdi)
 .else
@@ -785,7 +790,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B
 	movq	112+\A, %rdx
-	MULSUB	\Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, 64+\B
+	MULSUB	\Z6, \Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z6, 48(%rdi)
 .else
@@ -800,7 +805,7 @@ ones:	.quad	-1
 	xorq	\T1, \T1
 	MULADD	\Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
 	movq	120+\A, %rdx
-	MULSUB	\Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 64+\B
+	MULSUB	\Z7, \Z8, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B1
 .if \RDC != 1
 	movq	\Z7, 56(%rdi)
 .else
@@ -948,9 +953,39 @@ ones:	.quad	-1
 .endm
 
 .macro FP2_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, T0, T1, P, RDC, S
+#ifdef FP2_QNR
+	movq	$FP2_QNR, %rdx
+	mulx	64+\B, \Z0, \Z1
+	mulx	72+\B, \T0, \Z2
+	addq	\T0, \Z1
+	mulx	80+\B, \T0, \Z3
+	adcq	\T0, \Z2
+	mulx	88+\B, \T0, \Z4
+	adcq	\T0, \Z3
+	mulx	96+\B, \T0, \Z5
+	adcq	\T0, \Z4
+	mulx	104+\B, \T0, \Z6
+	adcq	\T0, \Z5
+	mulx	112+\B, \T0, \Z7
+	adcq	\T0, \Z6
+	mulx	120+\B, \T0, \Z8
+	adcq	\T0, \Z7
+	movq	\Z0, 88+\S
+	movq	\Z1, 96+\S
+	movq	\Z2, 104+\S
+	movq	\Z3, 112+\S
+	movq	\Z4, 120+\S
+	movq	\Z5, 128+\S
+	movq	\Z6, 136+\S
+	movq	\Z7, 144+\S
+#endif
 .if \RDC != 1
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
-	FP2_MUL0_LOW	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
+#ifdef FP2_QNR
+	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
+#else
+	FP2_MUL0_LOW	\A, \B, 64+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
+#endif
 	movq	0+\S, %rdi
 	MULM	\A, 64+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
 	FP2_MUL1_LOW	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
@@ -965,7 +1000,11 @@ ones:	.quad	-1
 	movq	16+\S, %rcx
 	movq	0+\S, %rdi
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
-	FP2_MUL0_LOW	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 1
+#ifdef FP2_QNR
+	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 1
+#else
+	FP2_MUL0_LOW	\A, \B, 64+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 1
+#endif
 	movq	24+\S, \Z0
 	movq	32+\S, \Z1
 	movq	40+\S, \Z2

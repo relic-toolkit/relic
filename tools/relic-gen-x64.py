@@ -134,8 +134,16 @@ PRIMES = {
 
 # Primes that are 1 mod 4 with Fp2 in assembly, by FP_PRIME, and q for the
 # quadratic non-residue -q that fp_prime_init() picks, so that u^2 = -q. The
-# others have Fp2 in assembly only with FP_QNRES, where u^2 = -1.
-QNRS = {544: 5}
+# others have Fp2 in assembly only with FP_QNRES, where u^2 = -1, which also
+# selects among primes of the same FP_PRIME, as for B24_509 and B24_509S.
+QNRS = {509: 5, 544: 5}
+
+
+def qnr(e):
+	"""q for u^2 = -q of a PRIMES entry, or None."""
+	if e[0] not in QNRS or (len(e) > 3 and "FP_QNRES" in e[3]):
+		return None
+	return QNRS[e[0]]
 
 
 def names(n, p="Z"):
@@ -396,8 +404,8 @@ def prime_block(n):
 		# all-ones low word, which save two multiplications per step.
 		if u0 == 1:
 			b.append("#define U0_ONE")
-		if e[0] in QNRS:
-			b.append("#define QNR\t%d" % QNRS[e[0]])
+		if qnr(e):
+			b.append("#define QNR\t%d" % qnr(e))
 		if str(e[0]) not in bits:
 			bits.append(str(e[0]))
 	b.append("#else")
@@ -909,8 +917,12 @@ class Backend:
 		# Whether some prime has u^2 = -q for q > 1, chosen at assembly time
 		# by FP2_QNR. Fp2 then multiplies by q x b1, kept in the scratch, and
 		# adds c1 to c0 after squaring, with c0 at %rdi.
-		self.qnr = any(e[0] in QNRS for e in PRIMES[n])
+		self.qnr = any(qnr(e) for e in PRIMES[n])
 		assert not (self.qnr and self.cslot)
+		# Whether Fp2 squaring has u^2 = -q in assembly too, which needs
+		# (3q + 1)p < 2^(64n). Otherwise it stays in C for those primes.
+		self.sqrqnr = all((3 * qnr(e) + 1) * int(e[1], 16) < 1 << (64 * n)
+			for e in PRIMES[n] if qnr(e))
 		if n <= 7:
 			z, t0, t1 = ACC6[:n + 1], ACC6[n + 1], ACC6[n + 2]
 		elif n == 8:
@@ -1605,7 +1617,7 @@ class Backend:
 			z[k]) for k in range(n)]
 		sub += ["\t%s\t%d+\\P, %s" % ("addq" if k == 0 else "adcq", 8 * k,
 			z[k]) for k in range(n)]
-		if self.qnr:
+		if self.qnr and self.sqrqnr:
 			# a0 + q x (p - a1), with the high halves of the products by q in
 			# T0 and T1 in turn.
 			h = ["\\T0", "\\T1"]
@@ -1645,7 +1657,7 @@ class Backend:
 				"\tsubq\t$%d, %%rdi" % (8 * n), ".endif",
 				"\tMULM\t%d+\\S, %d+\\S, %s" % (s0, s1, zz),
 				"\tFP_MUL_LOW\t%d+\\S, %d+\\S, %s" % (s0, s1, zt)]
-		if self.qnr:
+		if self.qnr and self.sqrqnr:
 			# c0 += (q - 1)/2 x c1, at %rdi: the 2n digits for RDC = 0, and
 			# with a final subtraction per addition for RDC = 1.
 			cs = (["\\Z%d" % n, "\\T0", "\\T1"] + self.fixed)[:self.m]
@@ -1962,7 +1974,11 @@ def fpx_sqr_low(g):
 	# RLC_DV_STRIDE bytes from c[0]. fp2_sqrm_low(c, a): c = a^2/R mod p,
 	# coefficient-wise, interleaved under FP2_SQR_RDC and otherwise by
 	# reducing the product of fp2_sqrn_low separately.
-	o = file_head(g) + ["#ifdef FP2_ASM",
+	# Without sqrqnr, only FP_QNRES squares in assembly, as u^2 = -1.
+	guard = "#ifdef FP2_ASM"
+	if g.qnr and not g.sqrqnr:
+		guard = "#if defined(FP2_ASM) && defined(FP_QNRES)"
+	o = file_head(g) + [guard,
 		"", ".global cdecl(fp2_sqrn_low)", ".global cdecl(fp2_sqrm_low)", ""]
 	b = ["\tleaq\tRLC_DV_STRIDE(%rdi), %rax", "\tmovq\t%%rax, %d(%%rsp)" % sp]
 	if g.cslot:
@@ -2005,9 +2021,10 @@ def write(n, out):
 	reduction, whose intermediate values stay below 2^64 x (3p) and must fit
 	n + 1 digits, so it needs 3p < 2^(64n): FP2_SQR_RDC. The Fp2 functions
 	read both coordinates from one contiguous vector, hence FP2_ASM only with
-	ALLOC = AUTO. For u^2 = -q, an unreduced product stays below pR when
-	(3q + 1)p < R, as c0 of a square is below 2(q + 1)p^2 + (q - 1)p^2, and
-	the halving of q - 1 needs q odd."""
+	ALLOC = AUTO. For u^2 = -q, a product keeps q x b1 in n digits when
+	qp < R, and an unreduced square stays below pR when (3q + 1)p < R, as
+	c0 is below 2(q + 1)p^2 + (q - 1)p^2, and the halving of q - 1 needs q
+	odd. Without the latter, squaring stays in C for those primes."""
 	g = Backend(n)
 	# A Montgomery step leaves (z + m x p)/2^64 < 2^(64n - 64) + p, which
 	# stays below 2^(64n) for p < 2^(64n) - 2^(64n - 64). Without the top
@@ -2016,9 +2033,9 @@ def write(n, out):
 		p = int(e[1], 16)
 		assert p < (1 << (64 * n)) - (1 << (64 * n - 64))
 		assert g.wide or p < 1 << (64 * n - 1)
-		if e[0] in QNRS:
-			q = QNRS[e[0]]
-			assert q % 2 == 1 and (3 * q + 1) * p < 1 << (64 * n)
+		if qnr(e):
+			q = qnr(e)
+			assert q % 2 == 1 and q * p < 1 << (64 * n)
 		if n in SS3 and "SS3" in str(e[2]):
 			# fp2_nord_low multiplies by 2 + u, the non-residue that
 			# fp2_field_init() finds when 1 + u is a square or a cube, and
