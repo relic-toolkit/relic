@@ -106,6 +106,7 @@
 #undef err_simple_msg
 #undef err_full_msg
 #undef err_get_msg
+#undef err_reason
 #undef err_fatal
 #undef err_get_code
 #undef err_set_quiet
@@ -113,6 +114,7 @@
 #define err_simple_msg 	RLC_PREFIX(err_simple_msg)
 #define err_full_msg 	RLC_PREFIX(err_full_msg)
 #define err_get_msg 	RLC_PREFIX(err_get_msg)
+#define err_reason 	RLC_PREFIX(err_reason)
 #define err_fatal 	RLC_PREFIX(err_fatal)
 #define err_get_code 	RLC_PREFIX(err_get_code)
 #define err_set_quiet 	RLC_PREFIX(err_set_quiet)

@@ -477,7 +477,9 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 		for (int j = 0; j < 2; j++) {
 			if (e[j] != 0) {
 				/* Pass on the error of a half, printed where it was thrown. */
-				ctx->number = e[j];
+				if (e[j] != ERR_CAUGHT) {
+					ctx->number = e[j];
+				}
 				RLC_THROW(ERR_CAUGHT);
 			}
 		}

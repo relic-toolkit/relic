@@ -100,7 +100,7 @@ int main(void) {
 		dummy();
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == ERR_NO_VALID, end);
-		TEST_ASSERT(msg == core_get()->reason[ERR_NO_VALID], end);
+		TEST_ASSERT(msg == err_reason(ERR_NO_VALID), end);
 		/* Reading the message clears the pending error. */
 		err_get_msg(&e, &msg);
 		TEST_ASSERT(e == 0 && msg == NULL, end);
@@ -195,24 +195,25 @@ int main(void) {
 	TEST_ONCE("a pending error is caught by its own try-catch only") {
 		int inner = 0, outer = 0;
 		err_set_quiet(1);
+		e = 0;
 		RLC_TRY {
 			RLC_THROW(ERR_NO_VALID);
 			/* A block entered after the throw does not catch it. */
 			RLC_TRY {
 				counter = 0;
 			} RLC_CATCH_ANY {
-				inner++;
+				inner += 10;
 			}
-			/* Nor does a block where another error is thrown. */
+			/* A block catches its own error, and the first one stays. */
 			RLC_TRY {
 				RLC_THROW(ERR_NO_BUFFER);
 			} RLC_CATCH_ANY {
 				inner++;
 			}
-		} RLC_CATCH_ANY {
+		} RLC_CATCH(e) {
 			outer++;
 		}
-		TEST_ASSERT(inner == 0 && outer == 1, end);
+		TEST_ASSERT(inner == 1 && outer == 1 && e == ERR_NO_VALID, end);
 		/* An error caught inside is not caught again outside. */
 		inner = outer = 0;
 		RLC_TRY {

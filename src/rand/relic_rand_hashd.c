@@ -159,6 +159,7 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	uint8_t hash[RLC_MD_LEN];
 	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
+	size_t l;
 
 	/* Execution continues past errors, and callers would use or loop on the
 	 * missing bytes, so a generator that cannot run stops the program. */
@@ -175,27 +176,26 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	}
 #endif
 	/* Requests are limited to 2^16 bytes, so larger ones are split. */
-	while (sizeof(int) > 2 && size > (1 << 16)) {
-		rand_bytes(buf, 1 << 16);
-		buf += 1 << 16;
-		size -= 1 << 16;
-	}
-	/* The generator must be reseeded after 2^48 requests. */
-	if (ctx->counter > ((uint64_t)1 << 48)) {
-		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
-	}
-
-	/* buf = hash_gen(size) */
-	rand_gen(buf, size);
-	/* H = hash(03 || V) */
-	ctx->rand[0] = 0x3;
-	md_map(hash, ctx->rand, 1 + len);
-	/* V = V + H + C  + reseed_counter. */
-	rand_add(ctx->rand + 1, ctx->rand + 1 + len, len);
-	carry = rand_add(ctx->rand + 1 + (len - RLC_MD_LEN), hash, RLC_MD_LEN);
-	rand_inc(ctx->rand, len - RLC_MD_LEN + 1, carry);
-	rand_inc(ctx->rand, len + 1, ctx->counter);
-	ctx->counter = ctx->counter + 1;
+	do {
+		l = (size > ((uint32_t)1 << 16) ? (size_t)((uint32_t)1 << 16) : size);
+		/* The generator must be reseeded after 2^48 requests. */
+		if (ctx->counter > ((uint64_t)1 << 48)) {
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
+		}
+		/* buf = hash_gen(l) */
+		rand_gen(buf, l);
+		/* H = hash(03 || V) */
+		ctx->rand[0] = 0x3;
+		md_map(hash, ctx->rand, 1 + len);
+		/* V = V + H + C  + reseed_counter. */
+		rand_add(ctx->rand + 1, ctx->rand + 1 + len, len);
+		carry = rand_add(ctx->rand + 1 + (len - RLC_MD_LEN), hash, RLC_MD_LEN);
+		rand_inc(ctx->rand, len - RLC_MD_LEN + 1, carry);
+		rand_inc(ctx->rand, len + 1, ctx->counter);
+		ctx->counter = ctx->counter + 1;
+		buf += l;
+		size -= l;
+	} while (size > 0);
 	util_zero(hash, sizeof(hash));
 }
 

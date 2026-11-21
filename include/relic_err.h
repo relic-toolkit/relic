@@ -103,6 +103,20 @@ typedef int err_t;
 /*============================================================================*/
 
 /**
+ * Last bit of the errors pending in a context, one per depth.
+ */
+#define RLC_ERR_TOP				((int)(8 * sizeof(uint_t) - 1))
+
+/**
+ * Returns the bit that marks an error pending at a depth of try-catch blocks,
+ * with the deepest blocks sharing the last bit.
+ *
+ * @param[in] D				- the depth, starting from one.
+ */
+#define RLC_ERR_BIT(D)														\
+	((uint_t)1 << ((D) < 1 ? 1 : ((D) < RLC_ERR_TOP ? (D) : RLC_ERR_TOP)))
+
+/**
  * Implements a TRY clause. The block always runs to the end, and the number of
  * blocks entered is counted so that errors thrown inside them are reported to
  * their CATCH clause.
@@ -114,20 +128,16 @@ typedef int err_t;
  * clause and consumes it. An error pending from before the TRY clause is left
  * to the CATCH clause of the block where it was thrown.
  *
- * @param[out] E			- the error caught.
+ * @param[out] E			- the error caught, of type err_t.
  */
-#define RLC_CATCH(E)														\
-	if ((core_get()->depth--, core_get()->pending > core_get()->depth) &&	\
-			(core_get()->pending = 0, (E) = core_get()->number, 1))
+#define RLC_CATCH(E)			if (err_catch(&(E)))
 
 /**
  * Implements a CATCH clause for any possible error, which runs if an error was
  * thrown in its TRY clause and consumes it. An error pending from before the
  * TRY clause is left to the CATCH clause of the block where it was thrown.
  */
-#define RLC_CATCH_ANY														\
-	if ((core_get()->depth--, core_get()->pending > core_get()->depth) &&	\
-			(core_get()->pending = 0, 1))
+#define RLC_CATCH_ANY			if (err_catch(NULL))
 
 /**
  * Implements a FINALLY clause, which always runs.
@@ -138,8 +148,9 @@ typedef int err_t;
  * Implements a THROW clause. The error is recorded in the code returned by
  * err_get_code() and execution continues, so the code after a throw must not
  * depend on what failed; inside a try-catch block, the error is also passed on
- * to its CATCH clause, or to the outermost one if errors are thrown at several
- * depths. Running out of memory is fatal instead.
+ * to its CATCH clause. While a block has an error pending, the errors thrown
+ * later inside it keep its number, as they follow from the first. Running out
+ * of memory is fatal instead.
  *
  * @param[in] E		- the exception being thrown.
  */
@@ -150,12 +161,12 @@ typedef int err_t;
 			err_fatal(RLC_FILE, __LINE__, E);								\
 		}																	\
 		_ctx->code = RLC_ERR;												\
-		if (E != ERR_CAUGHT) {												\
-			_ctx->number = E;												\
+		if ((E) != ERR_CAUGHT && (_ctx->pending &							\
+				((RLC_ERR_BIT(_ctx->depth) << 1) - 1)) == 0) {				\
+			_ctx->number = (E);												\
 		}																	\
-		if (_ctx->depth > 0 &&												\
-				(_ctx->pending == 0 || _ctx->depth < _ctx->pending)) {		\
-			_ctx->pending = _ctx->depth;									\
+		if (_ctx->depth > 0) {												\
+			_ctx->pending |= RLC_ERR_BIT(_ctx->depth);						\
 		}																	\
 		RLC_ERR_PRINT(E);													\
 	} while (0)
@@ -227,12 +238,21 @@ void err_full_msg(const char *function, const char *file,
 
 /**
  * Returns the last error thrown and its message, and forgets it, so that the
- * next call returns 0 and NULL unless another error is thrown.
+ * next call returns 0 and NULL unless another error is thrown. On AVR, the
+ * message is in program memory.
  *
  * @param[out] e			- the error occurred.
  * @param[out] msg			- the error message.
  */
 void err_get_msg(err_t *e, char **msg);
+
+/**
+ * Returns the message of an error. On AVR, the message is in program memory.
+ *
+ * @param[in] error			- the error code.
+ * @return the message.
+ */
+const char *err_reason(int error);
 
 /**
  * Reports an error that cannot be recovered from and aborts: running out of

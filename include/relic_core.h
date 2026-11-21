@@ -150,13 +150,11 @@ typedef struct _ctx_t {
 	/** A flag to indicate if error messages are printed. */
 	int quiet;
 
-	/** The error message respective to each error. */
-	char *reason[ERR_MAX];
 	/** Number of try-catch blocks entered and not yet caught. */
 	int depth;
-	/** The depth of the outermost try-catch block with an error pending, or
-	 * zero if there is none. */
-	int pending;
+	/** The depths of the try-catch blocks with an error pending, one bit per
+	 * depth as given by RLC_ERR_BIT(). */
+	uint_t pending;
 
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
@@ -574,7 +572,9 @@ typedef struct {
 	/** The context the thread was using. */
 	ctx_t *ctx;
 	/** The saved error state of the context private to the thread. */
-	int code, depth, pending, quiet;
+	int code, depth, quiet;
+	/** The saved pending errors of the context private to the thread. */
+	uint_t pending;
 	/** The saved last error of the context private to the thread. */
 	err_t number;
 } core_par_t;
@@ -634,6 +634,29 @@ static inline ctx_t *core_get(void) {
  */
 void core_set(ctx_t *ctx);
 
+/**
+ * Runs a CATCH clause: leaves the current try-catch block and consumes the
+ * errors thrown inside it, which were thrown at its depth or deeper.
+ *
+ * @param[out] e			- the error caught, or NULL to ignore it.
+ * @return 1 if an error was caught, 0 otherwise.
+ */
+static inline int err_catch(err_t *e) {
+	ctx_t *ctx = core_get();
+	uint_t inside;
+
+	ctx->depth--;
+	inside = ~(RLC_ERR_BIT(ctx->depth + 1) - 1);
+	if ((ctx->pending & inside) == 0) {
+		return 0;
+	}
+	ctx->pending &= ~inside;
+	if (e != NULL) {
+		*e = ctx->number;
+	}
+	return 1;
+}
+
 #if defined(RLC_MULTI)
 
 #include "relic_multi.h"
@@ -652,8 +675,8 @@ void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
 /**
  * Gives the calling thread a context of its own for a parallel section, so
  * that threads do not share the depth of try-catch blocks. The context private
- * to the thread is used, with the error state reset and with the error
- * messages and the instructions chosen by arch_init() of the given context.
+ * to the thread is used, with the error state reset and with the quiet flag
+ * and the instructions chosen by arch_init() of the given context.
  * Other fields are not set up, so the section can only use integer arithmetic.
  *
  * @param[out] s			- the saved state of the thread.

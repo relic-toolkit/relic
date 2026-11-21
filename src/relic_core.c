@@ -51,26 +51,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/** Error message respective to ERR_NO_MEMORY. */
-#define MSG_NO_MEMORY 		"not enough memory"
-/** Error message respective to ERR_PRECISION. */
-#define MSG_NO_PRECI 		"insufficient precision"
-/** Error message respective to ERR_NO FILE. */
-#define MSG_NO_FILE			"file not found"
-/** Error message respective to ERR_NO_READ. */
-#define MSG_NO_READ			"can't read bytes from file"
-/** Error message respective to ERR_NO_VALID. */
-#define MSG_NO_VALID		"invalid value passed as input"
-/** Error message respective to ERR_NO_BUFFER. */
-#define MSG_NO_BUFFER		"insufficient buffer capacity"
-/** Error message respective to ERR_NO_FIELD. */
-#define MSG_NO_FIELD		"no finite field supported at this security level"
-/** Error message respective to ERR_NO_CURVE. */
-#define MSG_NO_CURVE		"no curve supported at this security level"
-/** Error message respective to ERR_NO_CONFIG. */
-#define MSG_NO_CONFIG		"invalid library configuration"
-/** Error message respective to ERR_NO_CURVE. */
-#define MSG_NO_RAND			"faulty pseudo-random number generator"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -104,16 +84,6 @@ int core_init(void) {
 		core_ctx = &(first_ctx);
 	}
 
-	core_ctx->reason[ERR_NO_MEMORY] = MSG_NO_MEMORY;
-	core_ctx->reason[ERR_NO_PRECI] = MSG_NO_PRECI;
-	core_ctx->reason[ERR_NO_FILE] = MSG_NO_FILE;
-	core_ctx->reason[ERR_NO_READ] = MSG_NO_READ;
-	core_ctx->reason[ERR_NO_VALID] = MSG_NO_VALID;
-	core_ctx->reason[ERR_NO_BUFFER] = MSG_NO_BUFFER;
-	core_ctx->reason[ERR_NO_FIELD] = MSG_NO_FIELD;
-	core_ctx->reason[ERR_NO_CURVE] = MSG_NO_CURVE;
-	core_ctx->reason[ERR_NO_CONFIG] = MSG_NO_CONFIG;
-	core_ctx->reason[ERR_NO_RAND] = MSG_NO_RAND;
 
 	core_ctx->code = RLC_OK;
 	core_ctx->number = 0;
@@ -234,9 +204,6 @@ void core_par_enter(core_par_t *s, const ctx_t *ctx) {
 	 * thread has a context of its own. */
 	if (own != ctx) {
 		own->quiet = ctx->quiet;
-		for (int j = 0; j < ERR_MAX; j++) {
-			own->reason[j] = ctx->reason[j];
-		}
 #if RLC_ARCH == RLC_X86 || RLC_ARCH == RLC_X64 || RLC_ARCH == RLC_A64
 		own->lzcnt_ptr = ctx->lzcnt_ptr;
 		own->tzcnt_ptr = ctx->tzcnt_ptr;

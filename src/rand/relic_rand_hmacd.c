@@ -89,6 +89,7 @@ static void rand_update(const uint8_t *in, size_t in_len) {
 void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 	uint8_t *k = ctx->rand, *v = ctx->rand + RLC_MD_LEN;
+	size_t l;
 
 	/* Execution continues past errors, and callers would use or loop on the
 	 * missing bytes, so a generator that cannot run stops the program. */
@@ -105,23 +106,22 @@ void rand_bytes(uint8_t *buf, size_t size) {
 	}
 #endif
 	/* Requests are limited to 2^16 bytes, so larger ones are split. */
-	while (sizeof(int) > 2 && size > (1 << 16)) {
-		rand_bytes(buf, 1 << 16);
-		buf += 1 << 16;
-		size -= 1 << 16;
-	}
-	/* The generator must be reseeded after 2^48 requests. */
-	if (ctx->counter > ((uint64_t)1 << 48)) {
-		err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
-	}
-
-	for (size_t i = 0; i < size; i += RLC_MD_LEN) {
-		/* V = HMAC(K, V), temp = temp || V. */
-		md_hmac(v, v, RLC_MD_LEN, k, RLC_MD_LEN);
-		memcpy(buf + i, v, RLC_MIN(RLC_MD_LEN, size - i));
-	}
-	rand_update(NULL, 0);
-	ctx->counter = ctx->counter + 1;
+	do {
+		l = (size > ((uint32_t)1 << 16) ? (size_t)((uint32_t)1 << 16) : size);
+		/* The generator must be reseeded after 2^48 requests. */
+		if (ctx->counter > ((uint64_t)1 << 48)) {
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_RAND);
+		}
+		for (size_t i = 0; i < l; i += RLC_MD_LEN) {
+			/* V = HMAC(K, V), temp = temp || V. */
+			md_hmac(v, v, RLC_MD_LEN, k, RLC_MD_LEN);
+			memcpy(buf + i, v, RLC_MIN(RLC_MD_LEN, l - i));
+		}
+		rand_update(NULL, 0);
+		ctx->counter = ctx->counter + 1;
+		buf += l;
+		size -= l;
+	} while (size > 0);
 }
 
 void rand_seed(uint8_t *buf, size_t size) {
