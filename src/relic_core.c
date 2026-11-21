@@ -56,12 +56,21 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+#if defined(RLC_MULTI)
+/**
+ * Context allocated by core_init() for the thread, freed by core_clean(), as
+ * a context in thread-local storage would take room in every thread.
+ */
+static rlc_thread ctx_t *core_own = NULL;
+
+/**
+ * Context of the thread for parallel sections, allocated on first use.
+ */
+static rlc_thread ctx_t *core_par_ctx = NULL;
+#else
 /**
  * Default library context.
  */
-#if RLC_MULTI
-static rlc_thread ctx_t first_ctx;
-#else
 static ctx_t first_ctx;
 #endif
 
@@ -81,9 +90,16 @@ ctx_t *core_ctx = NULL;
 
 int core_init(void) {
 	if (core_ctx == NULL) {
+#if defined(RLC_MULTI)
+		core_own = (ctx_t *)calloc(1, sizeof(ctx_t));
+		if (core_own == NULL) {
+			return RLC_ERR;
+		}
+		core_ctx = core_own;
+#else
 		core_ctx = &(first_ctx);
+#endif
 	}
-
 
 	core_ctx->code = RLC_OK;
 	core_ctx->number = 0;
@@ -160,6 +176,13 @@ int core_clean(void) {
 
 	if (core_ctx != NULL) {
 		int result = core_ctx->code;
+#if defined(RLC_MULTI)
+		/* Only free the context allocated by core_init(), not one set. */
+		if (core_ctx == core_own) {
+			free(core_own);
+			core_own = NULL;
+		}
+#endif
 		core_ctx = NULL;
 		return result;
 	}
@@ -188,7 +211,15 @@ void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
 
 #if defined(RLC_MULTI)
 void core_par_enter(core_par_t *s, const ctx_t *ctx) {
-	ctx_t *own = &first_ctx;
+	ctx_t *own;
+
+	if (core_par_ctx == NULL) {
+		core_par_ctx = (ctx_t *)calloc(1, sizeof(ctx_t));
+		if (core_par_ctx == NULL) {
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_MEMORY);
+		}
+	}
+	own = core_par_ctx;
 
 	s->ctx = core_ctx;
 	s->code = own->code;
@@ -213,7 +244,7 @@ void core_par_enter(core_par_t *s, const ctx_t *ctx) {
 }
 
 err_t core_par_leave(const core_par_t *s) {
-	ctx_t *own = &first_ctx;
+	ctx_t *own = core_par_ctx;
 	err_t e = (own->code == RLC_OK ? 0 : own->number);
 
 	/* An error can be recorded without a number, so report it anyway. */

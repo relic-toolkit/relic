@@ -586,6 +586,9 @@ typedef struct {
 /**
  * Initializes the library. Calling it again without calling core_clean() first
  * leaks the state allocated by the previous call when RLC_ALLOC = RLC_DYNAMIC.
+ * With multithreading, the context of a thread that has none is allocated
+ * with malloc() and freed by core_clean(); to avoid the allocation, set a
+ * context with core_set() before calling this function.
  *
  * @return RLC_OK if no error occurs, RLC_ERR otherwise.
  */
@@ -665,9 +668,10 @@ void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
 #if defined(RLC_MULTI)
 /**
  * Gives the calling thread a context of its own for a parallel section, so
- * that threads do not share the depth of try-catch blocks. The context private
- * to the thread is used, with the error state reset and with the quiet flag
- * and the instructions chosen by arch_init() of the given context.
+ * that threads do not share the depth of try-catch blocks. A context kept by
+ * each thread for sections is used, allocated on first use, with the error
+ * state reset and with the quiet flag and the instructions chosen by
+ * arch_init() of the given context.
  * Other fields are not set up, so the section can only use integer arithmetic.
  *
  * @param[out] s			- the saved state of the thread.
