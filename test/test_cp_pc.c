@@ -758,19 +758,23 @@ static int bls(void) {
 
 static int bbs(void) {
 	int code = RLC_ERR;
-	bn_t d;
+	bn_t d, n, t;
 	g1_t s;
 	g2_t q;
 	gt_t z;
-	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN], b[RLC_PC_BYTES + 1];
 
 	bn_null(d);
+	bn_null(n);
+	bn_null(t);
 	g1_null(s);
 	g2_null(q);
 	gt_null(z);
 
 	RLC_TRY {
 		bn_new(d);
+		bn_new(n);
+		bn_new(t);
 		g1_new(s);
 		g2_new(q);
 		gt_new(z);
@@ -782,6 +786,17 @@ static int bbs(void) {
 			md_map(h, m, sizeof(m));
 			TEST_ASSERT(cp_bbs_sig(s, m, sizeof(m), 1, d) == RLC_OK, end);
 			TEST_ASSERT(cp_bbs_ver(s, m, sizeof(m), 1, q, z) == 1, end);
+			/* Check that messages are not reduced by the group order. */
+			pc_get_ord(n);
+			bn_read_bin(t, m, sizeof(m));
+			bn_add(t, t, n);
+			bn_write_bin(b, bn_size_bin(t), t);
+			TEST_ASSERT(cp_bbs_ver(s, b, bn_size_bin(t), 1, q, z) == 0, end);
+			bn_write_bin(b, bn_size_bin(n), n);
+			err_set_quiet(1);
+			TEST_ASSERT(cp_bbs_sig(s, b, bn_size_bin(n), 1, d) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 	}
@@ -792,6 +807,8 @@ static int bbs(void) {
 
   end:
 	bn_free(d);
+	bn_free(n);
+	bn_free(t);
 	g1_free(s);
 	g2_free(q);
 	gt_free(z);
@@ -1180,19 +1197,23 @@ static int mpss(void) {
 
 static int zss(void) {
 	int code = RLC_ERR;
-	bn_t d;
+	bn_t d, n, t;
 	g1_t q;
 	g2_t s;
 	gt_t z;
-	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN], b[RLC_PC_BYTES + 1];
 
 	bn_null(d);
+	bn_null(n);
+	bn_null(t);
 	g1_null(q);
 	g2_null(s);
 	gt_null(z);
 
 	RLC_TRY {
 		bn_new(d);
+		bn_new(n);
+		bn_new(t);
 		g1_new(q);
 		g2_new(s);
 		gt_new(z);
@@ -1204,6 +1225,17 @@ static int zss(void) {
 			md_map(h, m, sizeof(m));
 			TEST_ASSERT(cp_zss_sig(s, m, sizeof(m), 1, d) == RLC_OK, end);
 			TEST_ASSERT(cp_zss_ver(s, m, sizeof(m), 1, q, z) == 1, end);
+			/* Check that messages are not reduced by the group order. */
+			pc_get_ord(n);
+			bn_read_bin(t, m, sizeof(m));
+			bn_add(t, t, n);
+			bn_write_bin(b, bn_size_bin(t), t);
+			TEST_ASSERT(cp_zss_ver(s, b, bn_size_bin(t), 1, q, z) == 0, end);
+			bn_write_bin(b, bn_size_bin(n), n);
+			err_set_quiet(1);
+			TEST_ASSERT(cp_zss_sig(s, b, bn_size_bin(n), 1, d) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 	}
@@ -1214,6 +1246,8 @@ static int zss(void) {
 
   end:
 	bn_free(d);
+	bn_free(n);
+	bn_free(t);
 	g1_free(q);
 	g2_free(s);
 	gt_free(z);

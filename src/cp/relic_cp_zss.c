@@ -32,6 +32,44 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Reads a message as an integer modulo n. A message that is not hashed must be
+ * an integer smaller than n, not longer than n, so that each integer has a
+ * single encoding.
+ *
+ * @param[out] m			- the integer, or zero if the message is rejected.
+ * @param[in] msg			- the message.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] n				- the modulus.
+ * @return 1 if the message is accepted, 0 otherwise.
+ */
+static int zss_read(bn_t m, const uint8_t *msg, size_t len, int hash,
+		const bn_t n) {
+	uint8_t h[RLC_MD_LEN];
+
+	bn_zero(m);
+	if (!hash) {
+		md_map(h, msg, len);
+		bn_read_bin(m, h, RLC_MD_LEN);
+		bn_mod(m, m, n);
+		return 1;
+	}
+	if (len > bn_size_bin(n)) {
+		return 0;
+	}
+	bn_read_bin(m, msg, len);
+	if (bn_cmp(m, n) != RLC_LT) {
+		bn_zero(m);
+		return 0;
+	}
+	return 1;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -63,7 +101,6 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 
 int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 	bn_t m, n, r, t;
-	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
 
 	bn_null(m);
@@ -79,27 +116,23 @@ int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 
 		pc_get_ord(n);
 
-		/* m = H(msg). */
-		if (hash) {
-			bn_read_bin(m, msg, len);
+		/* m = H(msg), or msg itself if already hashed. */
+		if (!zss_read(m, msg, len, hash, n)) {
+			RLC_THROW(ERR_NO_VALID);
 		} else {
-			md_map(h, msg, len);
-			bn_read_bin(m, h, RLC_MD_LEN);
+			/* Compute (H(m) + d) and invert. */
+			bn_add(t, m, d);
+			/* Blind the secret, as inversion takes variable time. */
+			bn_rand_mod(r, n);
+			bn_mul(t, t, r);
+			bn_mod(t, t, n);
+			bn_mod_inv(t, t, n);
+			bn_mul(t, t, r);
+			bn_mod(t, t, n);
+
+			/* Compute the signature. */
+			g2_mul_gen(s, t);
 		}
-		bn_mod(m, m, n);
-
-		/* Compute (H(m) + d) and invert. */
-		bn_add(t, m, d);
-		/* Blind the secret, as inversion takes variable time. */
-		bn_rand_mod(r, n);
-		bn_mul(t, t, r);
-		bn_mod(t, t, n);
-		bn_mod_inv(t, t, n);
-		bn_mul(t, t, r);
-		bn_mod(t, t, n);
-
-		/* Compute the signature. */
-		g2_mul_gen(s, t);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -118,7 +151,6 @@ int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
 	bn_t m, n;
 	g1_t g;
 	gt_t e;
-	uint8_t h[RLC_MD_LEN];
 	int result = 0;
 
 	bn_null(m);
@@ -138,23 +170,17 @@ int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
 
 		pc_get_ord(n);
 
-		/* m = H(msg). */
-		if (hash) {
-			bn_read_bin(m, msg, len);
-		} else {
-			md_map(h, msg, len);
-			bn_read_bin(m, h, RLC_MD_LEN);
-		}
-		bn_mod(m, m, n);
+		/* m = H(msg), or msg itself if already hashed. */
+		if (zss_read(m, msg, len, hash, n)) {
+			g1_mul_gen(g, m);
+			g1_add(g, g, q);
+			g1_norm(g, g);
 
-		g1_mul_gen(g, m);
-		g1_add(g, g, q);
-		g1_norm(g, g);
+			pc_map(e, g, s);
 
-		pc_map(e, g, s);
-
-		if (gt_cmp(e, z) == RLC_EQ) {
-			result = 1;
+			if (gt_cmp(e, z) == RLC_EQ) {
+				result = 1;
+			}
 		}
 	}
 	RLC_CATCH_ANY {
