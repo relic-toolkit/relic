@@ -1886,7 +1886,71 @@ def fpx_mul_low(g):
 		o += ["", "#ifdef FP2_NORD_ASM", "", NORD_MACRO.rstrip("\n"), "",
 			".global cdecl(fp2_nord_low)", ""]
 		o += fp2_nord(g) + ["", "#endif"]
+	if g.qnr and n <= 8:
+		o += ["", "#ifdef FP2_NORD_ASM", "", ".global cdecl(fp2_nord_low)", ""]
+		o += fp2_nord_qnr(g) + ["", "#endif"]
 	return o
+
+
+def fp2_nord_qnr(g):
+	"""fp2_nord_low(c, a): c = a x u mod pR for u^2 = -q, so c0 = -q x a1 and
+	c1 = a0, with the coordinates RLC_DV_STRIDE bytes apart. As qp < R and
+	a1 < pR, d = q x a1 fits 2n digits: one mulx chain puts its low half on
+	the stack and its high half H < qp in V = %r8 up. H then drops below p
+	as in mul1: q' = floor(floor(H / 2^(|p| - 1)) x BAR / 2^64) is at most 2
+	below floor(H / p), so H - q' x p < 3p < 2^(64n), and two FINALC bring
+	it below p, leaving it in V. c0 = 0 - d with a borrow chain, adding p to
+	the top half when it borrows, which gives 0 for a1 = 0 and a value in
+	(0, pR) otherwise. c may alias a: a1 is read before c1 is written, and
+	a0 before c0. Needs n <= 8, for V to avoid the mulx registers."""
+	n = g.n
+	m = g.m
+	s = "RLC_DV_STRIDE+"
+	v = ["%%r%d" % i for i in range(8, 16)][:n]
+	cs = ["%rax", "%rcx", "%rdx", "%rsi", "%rbx", "%rbp"][:m]
+	assert n <= 8 and len(cs) == m
+	h = ["%rbx", "%rbp"]
+	# d = q x a1, with the high halves alternating in %rbx and %rbp.
+	o = ["\tmovq\t$FP2_QNR, %rdx"]
+	for k in range(2 * n):
+		lo = "%rax" if k < n else v[k - n]
+		o.append("\tmulx\t%s%d(%%rsi), %s, %s" % (s, 8 * k, lo, h[k % 2]))
+		if k > 0:
+			o.append("\t%s\t%s, %s" % ("addq" if k == 1 else "adcq",
+				h[(k - 1) % 2], lo))
+		if k < n:
+			o.append("\tmovq\t%%rax, %d(%%rsp)" % (8 * k))
+	o.append("")
+	for k in range(2 * n):
+		o += ["\tmovq\t%d(%%rsi), %%rax" % (8 * k),
+			"\tmovq\t%%rax, %s%d(%%rdi)" % (s, 8 * k)]
+	# H - q' x p, as ~(q' x p) + 1 added on CF with q' x p built on OF.
+	o += ["", "\tmovq\t%s, %%rax" % v[n - 1], "\tshrq\t$BARS, %rax",
+		"\tmovq\t$BAR, %rdx", "\tmulxq\t%rax, %rax, %rdx",
+		"\txorq\t%rax, %rax", "\tstc"]
+	for k in range(n):
+		o.append("\tmulxq\tp%d(%%rip), %%rax, %s" % (k, h[k % 2]))
+		if k > 0:
+			o.append("\tadox\t%s, %%rax" % h[(k - 1) % 2])
+		o += ["\tnotq\t%rax", "\tadcx\t%%rax, %s" % v[k]]
+	d = "%d(%%rdi)" % (8 * n)
+	o += [g.finalc_call(v, cs, d), g.finalc_call(v[:n - m] + cs, v[n - m:], d),
+		""]
+	for k in range(n):
+		o += ["\tmovq\t$0, %rax", "\t%s\t%d(%%rsp), %%rax" % ("subq" if k == 0
+			else "sbbq", 8 * k), "\tmovq\t%%rax, %d(%%rdi)" % (8 * k)]
+	for k in range(n):
+		o += ["\tmovq\t$0, %rax", "\tsbbq\t%s, %%rax" % v[k],
+			"\tmovq\t%%rax, %s" % v[k]]
+	# SF marks a borrow, and p goes into the top half through cmovs.
+	o += ["\tsbbq\t%rcx, %rcx", "\ttestq\t%rcx, %rcx"]
+	x = ["%rax", "%rdx"]
+	for k in range(n):
+		o += ["\tmovq\t$0, %s" % x[k % 2], "\tcmovs\tp%d(%%rip), %s" % (k,
+			x[k % 2]), "\tadcx\t%s, %s" % (x[k % 2], v[k]),
+			"\tmovq\t%s, %d(%%rdi)" % (v[k], 8 * (n + k))]
+	used = set(r for r in CALLEE if any(r in line for line in o))
+	return function("fp2_nord_low", used, o, frame=8 * n)
 
 
 # One digit of fp2_nord_low, for digits i to j: %r10 and %r11 carry the top
@@ -2005,7 +2069,52 @@ def fpx_sqr_low(g):
 	o += function("fp2_sqrm_low", used | set(rz + rt + rc),
 		b + mv + ["", call(0), ""] + rdcs(g, f, c0, c1),
 		frame=c1 + 16 * n)
-	return o + ["", "#endif", "", "#endif"]
+	o += ["", "#endif", "", "#endif"]
+	if g.qnr and not g.sqrqnr:
+		o += ["", "#if defined(FP2_ASM) && !defined(FP_QNRES)", "",
+			".global cdecl(fp2_sqrn_low)", ".global cdecl(fp2_sqrm_low)", ""]
+		o += fp2_sqr_qnr(g, 0) + [""] + fp2_sqr_qnr(g, 1) + ["", "#endif"]
+	return o
+
+
+def fp2_sqr_qnr(g, rdc):
+	"""fp2_sqrn_low(c, a) for rdc = 0 and fp2_sqrm_low(c, a) for rdc = 1,
+	with u^2 = -q for the primes without sqrqnr: c0 = a0 x a0 - a1 x (q x
+	a1) through FP2_MUL0_LOW, whose bound qp < 2^(64n) they meet, and c1 =
+	(2 x a0) x a1 through FP_MUL_LOW, as 2p^2 < pR. Three products instead
+	of the two of FP2_SQR_LOW. The scratch holds the pointers to c and a,
+	which FINALC may overwrite, then 2 x a0 and q x a1. c0 goes first, so c
+	may alias a: it overwrites a0 only, and c1 reads 2 x a0 from the scratch
+	and a1, still in place. With rdc = 0, c1 is at RLC_DV_STRIDE bytes from
+	c0, and with rdc = 1 at 8n bytes, reduced."""
+	n = g.n
+	assert not (g.acopy or g.cslot or g.wide)
+	z = g.z
+	t0, t1 = g.t
+	sa, sq = 16, 16 + 8 * n
+	o = ["\tmovq\t%rdi, 0(%rsp)", "\tmovq\t%rsi, 8(%rsp)"]
+	o += ["\tmovq\t%d(%%rsi), %s" % (8 * k, z[k]) for k in range(n)]
+	o += ["\t%s\t%s, %s" % ("addq" if k == 0 else "adcq", z[k], z[k])
+		for k in range(n)]
+	o += ["\tmovq\t%s, %d(%%rsp)" % (z[k], sa + 8 * k) for k in range(n)]
+	# q x a1 in n digits, with the high halves added on the CF chain.
+	o += ["\tmovq\t$FP2_QNR, %rdx",
+		"\tmulx\t%d(%%rsi), %s, %s" % (8 * n, z[0], z[1])]
+	for k in range(1, n):
+		o += ["\tmulx\t%d(%%rsi), %s, %s" % (8 * (n + k), t0, z[k + 1]),
+			"\t%s\t%s, %s" % ("addq" if k == 1 else "adcq", t0, z[k])]
+	o += ["\tmovq\t%s, %d(%%rsp)" % (z[k], sq + 8 * k) for k in range(n)]
+	zz = args(z, t0)
+	zt = args(z, t0, t1, "p0(%rip)", str(rdc))
+	o += ["", "\tMULM\t0(%%rsi), 0(%%rsi), %s" % zz,
+		"\tFP2_MUL0_LOW\t0(%%rsi), 0(%%rsi), %d(%%rsp), %s" % (sq, zt), "",
+		"\tmovq\t0(%rsp), %rdi", "\tmovq\t8(%rsp), %rsi",
+		"\tleaq\t%s(%%rdi), %%rdi" % ("RLC_DV_STRIDE" if rdc == 0 else
+			str(8 * n)),
+		"\tMULM\t%d(%%rsp), %d(%%rsi), %s" % (sa, 8 * n, zz),
+		"\tFP_MUL_LOW\t%d(%%rsp), %d(%%rsi), %s" % (sa, 8 * n, zt)]
+	name = "fp2_sqrm_low" if rdc else "fp2_sqrn_low"
+	return function(name, set(z + g.t), o, frame=16 + 16 * n)
 
 FILES = [("relic_fp_add_low.s", add_low), ("relic_fp_shift_low.s",
 	shift_low), ("relic_fp_mul_low.s", mul_low), ("relic_fp_rdc_low.s",
@@ -2059,6 +2168,9 @@ def write(n, out):
 			"FP2_QNR\tQNR")]
 		guards[-1] = guard % ("(defined(FP_QNRES) || defined(FP2_QNR)) && "
 			"RLC_ALLOC == RLC_AUTO", "FP2_ASM")
+		if n <= 8:
+			guards.append(guard % ("!defined(FP_QNRES) && defined(QNR) && "
+				"RLC_ALLOC == RLC_AUTO", "FP2_NORD_ASM"))
 	# MULRDC1 reads an all-ones word, and at 12 digits a zero word, local to
 	# each object.
 	ones = ["#if defined(__APPLE__)\n.section __TEXT,__const\n#else\n"

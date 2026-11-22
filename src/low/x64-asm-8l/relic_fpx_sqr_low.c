@@ -35,10 +35,10 @@
 
 /*
  * The assembly reads both coordinates from one contiguous vector, which only
- * automatic allocation guarantees. It has u^2 = -1 only, so the 509-bit prime
- * with u^2 = -5 squares in C.
+ * automatic allocation guarantees. It has u^2 = -1 with FP_QNRES, and u^2 = -5
+ * for the 509-bit prime otherwise.
  */
-#if defined(FP_QNRES) && RLC_ALLOC == RLC_AUTO
+#if (defined(FP_QNRES) || FP_PRIME == 509) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 

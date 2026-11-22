@@ -28,7 +28,8 @@
  * checking a new arithmetic backend. Every function of relic_fp_low.h that an
  * x64-asm-Nl backend exports is compared on random and edge-case inputs, and
  * so are the Fp2 functions, with u^2 = -1 when FP_QNRES is defined and with
- * the quadratic non-residue of the prime otherwise.
+ * the quadratic non-residue of the prime otherwise, where fp2_nord_low() is
+ * checked too.
  *
  * Build it against a static library of the backend, for example:
  *   cmake -B build -DARITH=x64-asm-12l -DFP_PRIME=768 -DBN_PRECI=2048 \
@@ -272,6 +273,20 @@ int main(void) {
 		}
 		mpz_fdiv_q_2exp(T, z, 1);
 		fp_hlvd_low(c, a); check("hlvd", c, T, 2 * N);
+		/* With u^2 = -q for q > 1, the non-residue is u: (x + y u) u = -q y
+		 * + x u, exactly mod pR, out of place and in place. */
+		if (q > 1) {
+			dv2_t a2, c2;
+
+			put(a2[0], x, 2 * N); put(a2[1], y, 2 * N);
+			mpz_mul_ui(T, y, q); mpz_neg(T, T); mpz_mod(T, T, PR);
+			fp2_nord_low(c2, a2);
+			check("fp2_nord[0]", c2[0], T, 2 * N);
+			check("fp2_nord[1]", c2[1], x, 2 * N);
+			fp2_nord_low(a2, a2);
+			check("fp2_nord in place[0]", a2[0], T, 2 * N);
+			check("fp2_nord in place[1]", a2[1], x, 2 * N);
+		}
 	}
 	if (q == 0) {
 		printf("FP_QNRES is set but p is not 3 mod 4: Fp2 not checked.\n");

@@ -131,6 +131,10 @@
 #define FP2_ASM
 #endif
 
+#if !defined(FP_QNRES) && defined(QNR) && RLC_ALLOC == RLC_AUTO
+#define FP2_NORD_ASM
+#endif
+
 #if defined(__ELF__)
 .section .note.GNU-stack, "", %progbits
 #endif
