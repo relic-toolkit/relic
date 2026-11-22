@@ -102,7 +102,7 @@ int cp_bgn_enc1(g1_t out[2], const dig_t in, const bgn_t pub) {
 
 		/* Compute c1 = (zm + xr)G. */
 		g1_mul_dig(out[1], pub->gz, in);
-		g1_mul(t, pub->gx, r);
+		g1_mul_sec(t, pub->gx, r);
 		g1_add(out[1], out[1], t);
 		g1_norm(out[1], out[1]);
 	}
@@ -207,7 +207,7 @@ int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub) {
 
 		/* Compute c1 = (zm + xr)G. */
 		g2_mul_dig(out[1], pub->hz, in);
-		g2_mul(t, pub->hx, r);
+		g2_mul_sec(t, pub->hx, r);
 		g2_add(out[1], out[1], t);
 		g2_norm(out[1], out[1]);
 	}
@@ -355,7 +355,7 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		bn_mul(r, r, s);
 		bn_mod(r, r, n);
 		gt_get_gen(t[1]);
-		gt_exp(t[1], t[1], r);
+		gt_exp_sec(t[1], t[1], r);
 
 		gt_copy(t[2], t[1]);
 

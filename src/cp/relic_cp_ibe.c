@@ -117,7 +117,7 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 
 		/* h = H_2(e^r). */
 		bn_rand_mod(r, n);
-		gt_exp(e, e, r);
+		gt_exp_sec(e, e, r);
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
