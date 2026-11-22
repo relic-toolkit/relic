@@ -1229,6 +1229,9 @@ void g2_mul(g2_t r, const g2_t p, const bn_t k);
 
 /**
  * Multiplies the generator of G_1 by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EP_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.
@@ -1237,6 +1240,9 @@ void g1_mul_gen(g1_t r, const bn_t k);
 
 /**
  * Multiplies the generator of G_2 by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EP_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.

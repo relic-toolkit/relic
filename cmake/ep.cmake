@@ -4,7 +4,7 @@ message("   ** Options for the prime elliptic curve module (default = all on):\n
 
 message("      EP_PRECO=[off|on] Build precomputation table for generator.")
 
-message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;BASIC;SSWUM):\n")
+message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;LWREG;SSWUM):\n")
 
 message("      Point representation:")
 message("      EP_METHD=BASIC    Affine coordinates.")
@@ -33,7 +33,7 @@ option(EP_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.
 if (NOT EP_METHD)
-	set(EP_METHD "PROJC;LWNAF;BASIC;SSWUM")
+	set(EP_METHD "PROJC;LWNAF;LWREG;SSWUM")
 endif(NOT EP_METHD)
 list(LENGTH EP_METHD EP_LEN)
 if (NOT EP_LEN EQUAL 4)

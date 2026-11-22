@@ -1081,6 +1081,9 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k);
 
 /**
  * Multiplies the generator of a prime elliptic curve by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EP_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.
