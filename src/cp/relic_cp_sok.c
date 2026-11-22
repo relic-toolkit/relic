@@ -163,63 +163,51 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 
 int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		const ec_t y[2], const ec_t g[2], const bn_t x, int first) {
-	bn_t n, v[2], z;
+	bn_t n, a[2], b[2], z;
 	ec_t u, t[2];
 	uint8_t h[RLC_MD_LEN];
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
-	/* Treat any nonzero flag as one, so that the indices stay in range. */
-	int one = 1 ^ (first != 0);
-	int zero = 0 ^ (first != 0);
+	/* The real branch is the first one if first is nonzero, the second one
+	 * otherwise. Both branches run the same operations, and the values are
+	 * moved between them with swaps that do not reveal which is real. */
+	dig_t swap = (first == 0);
 
-	bn_null(n);
-	bn_null(v[0]);
-	bn_null(v[1]);
-	bn_null(z);
-	ec_null(u);
-	ec_null(t[0]);
-	ec_null(t[1]);
+	bn_null_all(n, a[0], a[1], b[0], b[1], z);
+	ec_null_all(u, t[0], t[1]);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(v[0]);
-		bn_new(v[1]);
-		bn_new(z);
-		ec_new(u);
-		ec_new(t[0]);
-		ec_new(t[1]);
+		bn_new_all(n, a[0], a[1], b[0], b[1], z);
+		ec_new_all(u, t[0], t[1]);
 
 		/* Points at infinity are shorter, so clear the unused bytes. */
 		memset(m, 0, len + 6 * (RLC_FC_BYTES + 1));
 		buf = m;
 		ec_curve_get_ord(n);
-		bn_rand_mod(c[zero], n);
 		memcpy(buf, msg, len);
 		buf += len;
 
-		bn_rand_mod(v[0], n);
-		bn_rand_mod(v[1], n);
-		if (first) {
-			if (g != NULL) {
-				ec_mul(t[0], g[0], v[0]);
-				ec_mul_sim(t[1], g[1], v[1], y[1], c[zero]);
-			} else {
-				ec_mul_gen(t[0], v[0]);
-				ec_mul_sim_gen(t[1], v[1], y[1], c[zero]);
-			}
-		} else {
-			if (g != NULL) {
-				/* T1 = [w]Y1 + [v1]G. */
-				ec_mul_sim(t[0], g[0], v[0], y[0], c[zero]);
-				/* T2 = [v2]G. */
-				ec_mul(t[1], g[1], v[1]);
-			} else {
-				/* T1 = [w]Y1 + [v1]G. */
-				ec_mul_sim_gen(t[0], v[0], y[0], c[zero]);
-				/* T2 = [v2]G. */
-				ec_mul_gen(t[1], v[1]);
-			}
+		/* Index 0 is the real branch and index 1 the simulated one: each
+		 * commitment is T = [a]G + [b]Y, so the real nonce is a + bx and the
+		 * simulated branch has response a and challenge b. */
+		for (int i = 0; i < 2; i++) {
+			bn_rand_mod(a[i], n);
+			bn_rand_mod(b[i], n);
 		}
+		bn_swap_sec(a[0], a[1], swap);
+		bn_swap_sec(b[0], b[1], swap);
+		for (int i = 0; i < 2; i++) {
+			if (g != NULL) {
+				ec_mul_sec(t[i], g[i], a[i]);
+			} else {
+				ec_mul_gen(t[i], a[i]);
+			}
+			ec_mul_sec(u, y[i], b[i]);
+			ec_add(t[i], t[i], u);
+			ec_norm(t[i], t[i]);
+		}
+		bn_swap_sec(a[0], a[1], swap);
+		bn_swap_sec(b[0], b[1], swap);
 
 		ec_curve_get_gen(u);
 		for (int i = 0; i < 2; i++) {
@@ -240,25 +228,25 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		bn_read_bin(z, h, RLC_MD_LEN);
 		bn_mod(z, z, n);
 
-		bn_sub(c[one], z, c[zero]);
-		bn_mod(c[one], c[one], n);
-
-		bn_copy(s[zero], v[zero]);
-		bn_mul(s[one], c[one], x);
-		bn_sub(s[one], v[one], s[one]);
-		bn_mod(s[one], s[one], n);
+		/* The real branch gets the rest of the challenge, c = z - b1, and
+		 * the response a + (b - c)x, so that [s]G + [c]Y is its commitment. */
+		bn_sub(c[0], z, b[1]);
+		bn_mod(c[0], c[0], n);
+		bn_sub(s[0], b[0], c[0]);
+		bn_mul(s[0], s[0], x);
+		bn_add(s[0], s[0], a[0]);
+		bn_mod(s[0], s[0], n);
+		bn_copy(c[1], b[1]);
+		bn_copy(s[1], a[1]);
+		bn_swap_sec(c[0], c[1], swap);
+		bn_swap_sec(s[0], s[1], swap);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(v[0]);
-		bn_free(v[1]);
-		bn_free(z);
-		ec_free(u);
-		ec_free(t[0]);
-		ec_free(t[1]);
+		bn_free_all(n, a[0], a[1], b[0], b[1], z);
+		ec_free_all(u, t[0], t[1]);
 		RLC_FREE(m);
 	}
 	return result;
@@ -355,49 +343,48 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		const ec_t h, const ec_t y[2], const ec_t g[2], const bn_t x,
 		int first) {
-	bn_t n, v[2], z;
+	bn_t n, a[2], b[2], z;
 	ec_t t[3], u;
 	uint8_t d[RLC_MD_LEN];
 	const size_t size = len + 9 * (RLC_FC_BYTES + 1);
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, size);
 	int result = RLC_OK;
-	/* The first branch proves log_G(h), the second log_g0(y0) = log_g1(y1). */
-	int one = (first == 0);
-	int zero = (first != 0);
+	/* The first branch proves log_G(h), the second log_g0(y0) = log_g1(y1).
+	 * The real branch is the first one if first is nonzero, the second one
+	 * otherwise. Both branches run the same operations, and the values are
+	 * moved between them with swaps that do not reveal which is real. */
+	dig_t swap = (first == 0);
 
-	bn_null(n);
-	bn_null(v[0]);
-	bn_null(v[1]);
-	bn_null(z);
-	ec_null(u);
-	for (int i = 0; i < 3; i++) {
-		ec_null(t[i]);
-	}
+	bn_null_all(n, a[0], a[1], b[0], b[1], z);
+	ec_null_all(u, t[0], t[1], t[2]);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(v[0]);
-		bn_new(v[1]);
-		bn_new(z);
-		ec_new(u);
-		for (int i = 0; i < 3; i++) {
-			ec_new(t[i]);
-		}
-
+		bn_new_all(n, a[0], a[1], b[0], b[1], z);
+		ec_new_all(u, t[0], t[1], t[2]);
 		ec_curve_get_ord(n);
-		/* Simulate the branch with no witness for a random challenge. */
-		bn_rand_mod(c[zero], n);
-		bn_rand_mod(v[0], n);
-		bn_rand_mod(v[1], n);
-		if (first) {
-			ec_mul_gen(t[0], v[0]);
-			ec_mul_sim(t[1], g[0], v[1], y[0], c[zero]);
-			ec_mul_sim(t[2], g[1], v[1], y[1], c[zero]);
-		} else {
-			ec_mul_sim_gen(t[0], v[0], h, c[zero]);
-			ec_mul(t[1], g[0], v[1]);
-			ec_mul(t[2], g[1], v[1]);
+
+		/* Index 0 is the real branch and index 1 the simulated one: each
+		 * commitment is [a]G + [b]Y for the bases of its branch, so the real
+		 * nonce is a + bx and the simulated branch has response a and
+		 * challenge b. */
+		for (int i = 0; i < 2; i++) {
+			bn_rand_mod(a[i], n);
+			bn_rand_mod(b[i], n);
 		}
+		bn_swap_sec(a[0], a[1], swap);
+		bn_swap_sec(b[0], b[1], swap);
+		ec_mul_gen(t[0], a[0]);
+		ec_mul_sec(u, h, b[0]);
+		ec_add(t[0], t[0], u);
+		ec_norm(t[0], t[0]);
+		for (int i = 0; i < 2; i++) {
+			ec_mul_sec(t[i + 1], g[i], a[1]);
+			ec_mul_sec(u, y[i], b[1]);
+			ec_add(t[i + 1], t[i + 1], u);
+			ec_norm(t[i + 1], t[i + 1]);
+		}
+		bn_swap_sec(a[0], a[1], swap);
+		bn_swap_sec(b[0], b[1], swap);
 
 		/* Hash a fixed-length encoding, so that short points leave zeros. */
 		memset(m, 0, size);
@@ -425,27 +412,25 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		md_map(d, m, size);
 		bn_read_bin(z, d, RLC_MD_LEN);
 		bn_mod(z, z, n);
-
-		/* The real branch gets the rest of the challenge. */
-		bn_sub(c[one], z, c[zero]);
-		bn_mod(c[one], c[one], n);
-		bn_copy(s[zero], v[zero]);
-		bn_mul(s[one], c[one], x);
-		bn_sub(s[one], v[one], s[one]);
-		bn_mod(s[one], s[one], n);
+		/* The real branch gets the rest of the challenge, c = z - b1, and
+		 * the response a + (b - c)x, so that its commitment verifies. */
+		bn_sub(c[0], z, b[1]);
+		bn_mod(c[0], c[0], n);
+		bn_sub(s[0], b[0], c[0]);
+		bn_mul(s[0], s[0], x);
+		bn_add(s[0], s[0], a[0]);
+		bn_mod(s[0], s[0], n);
+		bn_copy(c[1], b[1]);
+		bn_copy(s[1], a[1]);
+		bn_swap_sec(c[0], c[1], swap);
+		bn_swap_sec(s[0], s[1], swap);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(v[0]);
-		bn_free(v[1]);
-		bn_free(z);
-		ec_free(u);
-		for (int i = 0; i < 3; i++) {
-			ec_free(t[i]);
-		}
+		bn_free_all(n, a[0], a[1], b[0], b[1], z);
+		ec_free_all(u, t[0], t[1], t[2]);
 		RLC_FREE(m);
 	}
 	return result;
