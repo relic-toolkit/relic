@@ -1,0 +1,21 @@
+--- a/src/dudect.h
++++ b/src/dudect.h
+@@ -278,10 +278,18 @@
+ 
+  Also see https://stackoverflow.com/a/12634857
+ */
++#ifdef DUDECT_RDPMC
++/* Count core cycles with rdpmc instead, through a function of the harness. */
++extern int64_t dut_cycles(void);
++static inline int64_t cpucycles(void) {
++  return dut_cycles();
++}
++#else
+ static inline int64_t cpucycles(void) {
+   _mm_mfence();
+   return (int64_t)__rdtsc();
+ }
++#endif
+ 
+ // threshold values for Welch's t-test
+ #define t_threshold_bananas 500 // test failed, with overwhelming probability
