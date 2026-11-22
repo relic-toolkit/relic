@@ -1056,12 +1056,10 @@ void fp_prime_conv_bin(fp_t c, const uint8_t *bin, size_t len) {
 	fp_t t, u;
 	dig_t d;
 
-	fp_null(t);
-	fp_null(u);
+	fp_null_all(t, u);
 
 	RLC_TRY {
-		fp_new(t);
-		fp_new(u);
+		fp_new_all(t, u);
 
 		/* t = 2^RLC_DIG, a public constant. */
 		fp_set_dig(t, (dig_t)1 << (RLC_DIG - 1));
@@ -1092,8 +1090,7 @@ void fp_prime_conv_bin(fp_t c, const uint8_t *bin, size_t len) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t);
-		fp_free(u);
+		fp_free_all(t, u);
 	}
 }
 
