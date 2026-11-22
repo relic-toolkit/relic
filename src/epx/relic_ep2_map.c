@@ -105,10 +105,8 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 
 #define EP2_MAP_CONVERT_BYTES(IDX)											\
 		do {																\
-			bn_read_bin(k, r + 2 * IDX * lpe, lpe);							\
-			fp_prime_conv(t[0], k);											\
-			bn_read_bin(k, r + (2 * IDX + 1) * lpe, lpe);					\
-			fp_prime_conv(t[1], k);											\
+			fp_prime_conv_bin(t[0], r + 2 * IDX * lpe, lpe);				\
+			fp_prime_conv_bin(t[1], r + (2 * IDX + 1) * lpe, lpe);			\
 	    } while (0)
 
 #define EP2_MAP_APPLY_MAP(PT)												\

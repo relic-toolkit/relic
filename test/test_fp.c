@@ -66,7 +66,7 @@ static int util(void) {
 	int r, code = RLC_ERR;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
-	uint8_t bin[RLC_FP_BYTES];
+	uint8_t bin[RLC_FP_BYTES], wide[2 * RLC_FP_BYTES + 8];
 	fp_t a, b;
 	bn_t c, e;
 	dig_t d;
@@ -194,6 +194,23 @@ static int util(void) {
 			fp_prime_conv_dig(a, c->dp[0]);
 			fp_prime_back(e, a);
 			TEST_ASSERT(bn_cmp_dig(e, c->dp[0]) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("converting bytes to a prime field element is correct") {
+			/* Every length up to past two elements, and all ones, against
+			 * the reduction of the same bytes as an integer. */
+			for (size_t l = 0; l <= RLC_MIN(sizeof(wide), RLC_BN_BITS / 8);
+					l++) {
+				rand_bytes(wide, l);
+				for (int k = 0; k < 2; k++) {
+					fp_prime_conv_bin(a, wide, l);
+					bn_read_bin(c, wide, l);
+					fp_prime_conv(b, c);
+					TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+					memset(wide, 0xFF, l);
+				}
+			}
 		}
 		TEST_END;
 

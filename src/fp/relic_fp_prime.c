@@ -1051,6 +1051,52 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 	}
 }
 
+void fp_prime_conv_bin(fp_t c, const uint8_t *bin, size_t len) {
+	const size_t n = RLC_CEIL(len, RLC_DIG / 8);
+	fp_t t, u;
+	dig_t d;
+
+	fp_null(t);
+	fp_null(u);
+
+	RLC_TRY {
+		fp_new(t);
+		fp_new(u);
+
+		/* t = 2^RLC_DIG, a public constant. */
+		fp_set_dig(t, (dig_t)1 << (RLC_DIG - 1));
+		fp_dbl(t, t);
+
+		/* By Horner's rule over the digits, each stored as an element as it
+		 * is, which is below the prime. The stored values then accumulate the
+		 * input, which is converted once at the end, as in fp_prime_conv(). */
+		fp_zero(c);
+		fp_zero(u);
+		for (size_t j = n; j > 0; j--) {
+			d = 0;
+			for (size_t b = RLC_DIG / 8; b > 0; b--) {
+				/* Byte b - 1 of digit j - 1, counted from the end. */
+				size_t k = (j - 1) * (RLC_DIG / 8) + b - 1;
+				d = (dig_t)(d << 8);
+				d |= (k < len ? bin[len - 1 - k] : 0);
+			}
+			u[0] = d;
+			fp_mul(c, c, t);
+			fp_add(c, c, u);
+		}
+#if FP_RDC == FP_MONTY
+		fp_mul(c, c, core_get()->conv);
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free(t);
+		fp_free(u);
+	}
+}
+
 void fp_prime_conv_dig(fp_t c, dig_t a) {
 #if FP_RDC == FP_MONTY
 	ctx_t *ctx = core_get();

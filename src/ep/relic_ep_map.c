@@ -117,7 +117,6 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 
 static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		void (*const map_fn)(ep_t, const fp_t)) {
-	bn_t k;
 	fp_t t;
 	ep_t q;
 	int neg;
@@ -127,19 +126,16 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 	/* The length is fixed by the hash-to-curve method. */
 	(void)len;
 
-	bn_null(k);
 	fp_null(t);
 	ep_null(q);
 
 	RLC_TRY {
-		bn_new(k);
 		fp_new(t);
 		ep_new(q);
 
 #define EP_MAP_CONVERT_BYTES(IDX)											\
     do {																	\
-		bn_read_bin(k, bytes + IDX * elm, elm);						\
-		fp_prime_conv(t, k);												\
+		fp_prime_conv_bin(t, bytes + IDX * elm, elm);						\
     } while (0)
 
 #define EP_MAP_APPLY_MAP(PT)												\
@@ -179,7 +175,6 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(k);
 		fp_free(t);
 		ep_free(q);
 	}
@@ -188,10 +183,8 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_t h[8], t1, t2, v, w, y, x1, x2, x3, d[3];
 	ctx_t *ctx = core_get();
-	bn_t k;
 	uint8_t s;
 
-	bn_null(k);
 	fp_null(v);
 	fp_null(w);
 	fp_null(y);
@@ -208,7 +201,6 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	}
 
 	RLC_TRY {
-		bn_new(k);
 		fp_new(v);
 		fp_new(w);
 		fp_new(y);
@@ -224,10 +216,8 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 			fp_new(h[i]);
 		}
 
-		bn_read_bin(k, random, len / 2);
-		fp_prime_conv(t1, k);
-		bn_read_bin(k, random + len / 2, len / 2);
-		fp_prime_conv(t2, k);
+		fp_prime_conv_bin(t1, random, len / 2);
+		fp_prime_conv_bin(t2, random + len / 2, len / 2);
 		s = random[len - 1] & 1;
 
 		if (ep_curve_opt_b() == RLC_ZERO) {
@@ -409,7 +399,6 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(k);
 		fp_free(v);
 		fp_free(w);
 		fp_free(y);

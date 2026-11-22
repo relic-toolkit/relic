@@ -313,8 +313,7 @@ void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
 
 #define ED_MAP_CONVERT_BYTES(IDX)                                                        \
 	do {                                                                                 \
-		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);            \
-		fp_prime_conv(t, k);                                                             \
+		fp_prime_conv_bin(t, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);      \
 	} while (0)
 
 		/* first map invocation */

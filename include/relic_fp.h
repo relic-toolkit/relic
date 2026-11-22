@@ -689,6 +689,17 @@ void fp_prime_conv(fp_t c, const bn_t a);
 void fp_prime_conv_dig(fp_t c, dig_t a);
 
 /**
+ * Imports a byte vector in big-endian format of any length as a prime field
+ * element, reducing it modulo the prime in constant time, as needed to hash
+ * to the field. Unlike fp_read_bin(), values out of bounds are reduced.
+ *
+ * @param[out] c			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the number of bytes.
+ */
+void fp_prime_conv_bin(fp_t c, const uint8_t *bin, size_t len);
+
+/**
  * Exports a prime field element as a multiple precision integer, doing the
  * necessary conversion.
  *

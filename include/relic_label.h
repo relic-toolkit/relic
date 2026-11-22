@@ -556,6 +556,7 @@
 #undef fp_prime_calc
 #undef fp_prime_conv
 #undef fp_prime_conv_dig
+#undef fp_prime_conv_bin
 #undef fp_prime_back
 #undef fp_param_set
 #undef fp_param_set_any
@@ -676,6 +677,7 @@
 #define fp_prime_calc 	RLC_PREFIX(fp_prime_calc)
 #define fp_prime_conv 	RLC_PREFIX(fp_prime_conv)
 #define fp_prime_conv_dig 	RLC_PREFIX(fp_prime_conv_dig)
+#define fp_prime_conv_bin 	RLC_PREFIX(fp_prime_conv_bin)
 #define fp_prime_back 	RLC_PREFIX(fp_prime_back)
 #define fp_param_set 	RLC_PREFIX(fp_param_set)
 #define fp_param_set_any 	RLC_PREFIX(fp_param_set_any)

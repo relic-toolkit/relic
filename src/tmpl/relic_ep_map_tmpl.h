@@ -351,19 +351,13 @@
 		const int D = (int)(sizeof(F##_t) / sizeof(fp_t));					\
 		const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;			\
 		uint8_t sign = 0, *r = RLC_ALLOCA(uint8_t, 2 * D * elm + 1);		\
-		bn_t k;																\
-																			\
-		bn_null(k);															\
 																			\
 		RLC_TRY {															\
-			bn_new(k);														\
 			md_xmd(r, 2 * D * elm + 1, msg, len,							\
 					(const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));			\
 			for (int i = 0; i < D; i++) {									\
-				bn_read_bin(k, r + 2 * i * elm, elm);						\
-				fp_prime_conv(((fp_t *)u)[i], k);							\
-				bn_read_bin(k, r + (2 * i + 1) * elm, elm);					\
-				fp_prime_conv(((fp_t *)t)[i], k);							\
+				fp_prime_conv_bin(((fp_t *)u)[i], r + 2 * i * elm, elm);	\
+				fp_prime_conv_bin(((fp_t *)t)[i], r + (2 * i + 1) * elm, elm);\
 			}																\
 			sign = r[2 * D * elm] & 1;										\
 		}																	\
@@ -371,7 +365,6 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			bn_free(k);														\
 			RLC_FREE(r);													\
 		}																	\
 		return sign;														\
