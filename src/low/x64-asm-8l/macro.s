@@ -115,10 +115,6 @@
 #define cdecl(S) S
 #endif
 
-#if !defined(FP_QNRES) && defined(QNR)
-#define FP2_QNR	QNR
-#endif
-
 #if P7 < 0x4000000000000000
 #define FP2_MUL_RDC
 #endif
@@ -127,7 +123,7 @@
 #define FP2_SQR_RDC
 #endif
 
-#if (defined(FP_QNRES) || defined(FP2_QNR)) && RLC_ALLOC == RLC_AUTO
+#if (defined(FP_QNRES) || defined(QNR)) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 
@@ -957,8 +953,8 @@ ones:	.quad	-1
 .endm
 
 .macro FP2_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, T0, T1, P, RDC, S
-#ifdef FP2_QNR
-	movq	$FP2_QNR, %rdx
+#ifndef FP_QNRES
+	movq	$QNR, %rdx
 	mulx	64+\B, \Z0, \Z1
 	mulx	72+\B, \T0, \Z2
 	addq	\T0, \Z1
@@ -985,7 +981,7 @@ ones:	.quad	-1
 #endif
 .if \RDC != 1
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
 #else
 	FP2_MUL0_LOW	\A, \B, 64+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 0
@@ -1004,7 +1000,7 @@ ones:	.quad	-1
 	movq	16+\S, %rcx
 	movq	0+\S, %rdi
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 1
 #else
 	FP2_MUL0_LOW	\A, \B, 64+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, 1
@@ -1085,6 +1081,85 @@ ones:	.quad	-1
 	movq	\Z7, \Z8
 	adcq	\Z7, \Z8
 	movq	\Z8, 184+\S
+#ifndef FP_QNRES
+	movq	0+\P, \Z0
+	subq	64+\A, \Z0
+	movq	8+\P, \Z1
+	sbbq	72+\A, \Z1
+	movq	16+\P, \Z2
+	sbbq	80+\A, \Z2
+	movq	24+\P, \Z3
+	sbbq	88+\A, \Z3
+	movq	32+\P, \Z4
+	sbbq	96+\A, \Z4
+	movq	40+\P, \Z5
+	sbbq	104+\A, \Z5
+	movq	48+\P, \Z6
+	sbbq	112+\A, \Z6
+	movq	56+\P, \Z7
+	sbbq	120+\A, \Z7
+	movq	$QNR, %rdx
+	mulx	\Z0, \Z0, \T0
+	mulx	\Z1, \Z1, \T1
+	addq	\T0, \Z1
+	mulx	\Z2, \Z2, \T0
+	adcq	\T1, \Z2
+	mulx	\Z3, \Z3, \T1
+	adcq	\T0, \Z3
+	mulx	\Z4, \Z4, \T0
+	adcq	\T1, \Z4
+	mulx	\Z5, \Z5, \T1
+	adcq	\T0, \Z5
+	mulx	\Z6, \Z6, \T0
+	adcq	\T1, \Z6
+	mulx	\Z7, \Z7, \T1
+	adcq	\T0, \Z7
+	addq	0+\A, \Z0
+	adcq	8+\A, \Z1
+	adcq	16+\A, \Z2
+	adcq	24+\A, \Z3
+	adcq	32+\A, \Z4
+	adcq	40+\A, \Z5
+	adcq	48+\A, \Z6
+	adcq	56+\A, \Z7
+	movq	\Z7, \T0
+	shrq	$BARS, \T0
+	movq	$BAR, %rdx
+	mulxq	\T0, \T0, %rdx
+	xorq	\T0, \T0
+	stc
+	mulxq	0+\P, \T0, \T1
+	notq	\T0
+	adcx	\T0, \Z0
+	mulxq	8+\P, \T0, \Z8
+	adox	\T1, \T0
+	notq	\T0
+	adcx	\T0, \Z1
+	mulxq	16+\P, \T0, \T1
+	adox	\Z8, \T0
+	notq	\T0
+	adcx	\T0, \Z2
+	mulxq	24+\P, \T0, \Z8
+	adox	\T1, \T0
+	notq	\T0
+	adcx	\T0, \Z3
+	mulxq	32+\P, \T0, \T1
+	adox	\Z8, \T0
+	notq	\T0
+	adcx	\T0, \Z4
+	mulxq	40+\P, \T0, \Z8
+	adox	\T1, \T0
+	notq	\T0
+	adcx	\T0, \Z5
+	mulxq	48+\P, \T0, \T1
+	adox	\Z8, \T0
+	notq	\T0
+	adcx	\T0, \Z6
+	mulxq	56+\P, \T0, \Z8
+	adox	\T1, \T0
+	notq	\T0
+	adcx	\T0, \Z7
+#else
 	subq	64+\A, \Z0
 	sbbq	72+\A, \Z1
 	sbbq	80+\A, \Z2
@@ -1101,6 +1176,7 @@ ones:	.quad	-1
 	adcq	40+\P, \Z5
 	adcq	48+\P, \Z6
 	adcq	56+\P, \Z7
+#endif
 	movq	\Z0, 64+\S
 	movq	\Z1, 72+\S
 	movq	\Z2, 80+\S
@@ -1125,4 +1201,56 @@ ones:	.quad	-1
 .endif
 	MULM	0+\S, 64+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0
 	FP_MUL_LOW	0+\S, 64+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, \P, \RDC
+#ifndef FP_QNRES
+.if \RDC != 1
+	movq	192+\S, \T0
+.rept (QNR - 1) / 2
+	movq	0(\T0), \Z0
+	addq	\Z0, 0(%rdi)
+	movq	8(\T0), \Z1
+	adcq	\Z1, 8(%rdi)
+	movq	16(\T0), \Z0
+	adcq	\Z0, 16(%rdi)
+	movq	24(\T0), \Z1
+	adcq	\Z1, 24(%rdi)
+	movq	32(\T0), \Z0
+	adcq	\Z0, 32(%rdi)
+	movq	40(\T0), \Z1
+	adcq	\Z1, 40(%rdi)
+	movq	48(\T0), \Z0
+	adcq	\Z0, 48(%rdi)
+	movq	56(\T0), \Z1
+	adcq	\Z1, 56(%rdi)
+	movq	64(\T0), \Z0
+	adcq	\Z0, 64(%rdi)
+	movq	72(\T0), \Z1
+	adcq	\Z1, 72(%rdi)
+	movq	80(\T0), \Z0
+	adcq	\Z0, 80(%rdi)
+	movq	88(\T0), \Z1
+	adcq	\Z1, 88(%rdi)
+	movq	96(\T0), \Z0
+	adcq	\Z0, 96(%rdi)
+	movq	104(\T0), \Z1
+	adcq	\Z1, 104(%rdi)
+	movq	112(\T0), \Z0
+	adcq	\Z0, 112(%rdi)
+	movq	120(\T0), \Z1
+	adcq	\Z1, 120(%rdi)
+.endr
+.else
+.rept (QNR - 1) / 2
+	movq	0(%rdi), \Z0
+	movq	8(%rdi), \Z1
+	movq	16(%rdi), \Z2
+	movq	24(%rdi), \Z3
+	movq	32(%rdi), \Z4
+	movq	40(%rdi), \Z5
+	movq	48(%rdi), \Z6
+	movq	56(%rdi), \Z7
+	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, 64(%rdi), 72(%rdi), 80(%rdi), 88(%rdi), 96(%rdi), 104(%rdi), 112(%rdi), 120(%rdi)
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, \T1, %rdx, %rsi, %rcx, 0(%rdi)
+.endr
+.endif
+#endif
 .endm

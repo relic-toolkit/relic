@@ -139,7 +139,7 @@ cdecl(fp2_nord_low):
 	push	%rbp
 	subq	$64, %rsp
 
-	movq	$FP2_QNR, %rdx
+	movq	$QNR, %rdx
 	mulx	RLC_DV_STRIDE+0(%rsi), %rax, %rbx
 	movq	%rax, 0(%rsp)
 	mulx	RLC_DV_STRIDE+8(%rsi), %rax, %rbp

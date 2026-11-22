@@ -28,8 +28,8 @@
  * checking a new arithmetic backend. Every function of relic_fp_low.h that an
  * x64-asm-Nl backend exports is compared on random and edge-case inputs, and
  * so are the Fp2 functions, with u^2 = -1 when FP_QNRES is defined and with
- * the quadratic non-residue of the prime otherwise, where fp2_nord_low() is
- * checked too.
+ * the quadratic non-residue of the prime otherwise, where fp2_norm_low() and
+ * fp2_nord_low() are checked too.
  *
  * Build it against a static library of the backend, for example:
  *   cmake -B build -DARITH=x64-asm-12l -DFP_PRIME=768 -DBN_PRECI=2048 \
@@ -244,6 +244,17 @@ int main(void) {
 			check("fp2_sqrm[0]", c2[0], T, N);
 			mpz_mul(T, im, U); mpz_mod(T, T, P);
 			check("fp2_sqrm[1]", c2[1], T, N);
+			/* For q > 1, the non-residue is u: (x + x1 u) u = -q x1 + x u,
+			 * exactly mod p, out of place and then in place. */
+			if (q > 1) {
+				mpz_mul_ui(T, x1, q); mpz_neg(T, T); mpz_mod(T, T, P);
+				fp2_norm_low(c2, a2);
+				check("fp2_norm[0]", c2[0], T, N);
+				check("fp2_norm[1]", c2[1], x, N);
+				fp2_norm_low(a2, a2);
+				check("fp2_norm in place[0]", a2[0], T, N);
+				check("fp2_norm in place[1]", a2[1], x, N);
+			}
 			mpz_clears(x1, y1, re, im, NULL);
 		}
 

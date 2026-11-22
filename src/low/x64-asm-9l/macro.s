@@ -82,10 +82,6 @@
 #define cdecl(S) S
 #endif
 
-#if !defined(FP_QNRES) && defined(QNR)
-#define FP2_QNR	QNR
-#endif
-
 #if P8 < 0x4000000000000000
 #define FP2_MUL_RDC
 #endif
@@ -94,7 +90,7 @@
 #define FP2_SQR_RDC
 #endif
 
-#if (defined(FP_QNRES) || defined(FP2_QNR)) && RLC_ALLOC == RLC_AUTO
+#if (defined(FP_QNRES) || defined(QNR)) && RLC_ALLOC == RLC_AUTO
 #define FP2_ASM
 #endif
 
@@ -1024,8 +1020,8 @@ ones:	.quad	-1
 .endm
 
 .macro FP2_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1, P, RDC, S
-#ifdef FP2_QNR
-	movq	$FP2_QNR, %rdx
+#ifndef FP_QNRES
+	movq	$QNR, %rdx
 	mulx	72+\B, \Z0, \Z1
 	mulx	80+\B, \T0, \Z2
 	addq	\T0, \Z1
@@ -1055,7 +1051,7 @@ ones:	.quad	-1
 #endif
 .if \RDC != 1
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P, 0
 #else
 	FP2_MUL0_LOW	\A, \B, 72+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P, 0
@@ -1072,7 +1068,7 @@ ones:	.quad	-1
 	movq	8+\S, %rcx
 	movq	0+\S, %rdi
 	MULM	\A, \B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 	FP2_MUL0_LOW	\A, \B, 88+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P, 1
 #else
 	FP2_MUL0_LOW	\A, \B, 72+\B, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P, 1
@@ -1162,7 +1158,7 @@ ones:	.quad	-1
 	movq	\Z8, \Z9
 	adcq	\Z8, \Z9
 	movq	\Z9, 208+\S
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 	movq	0+\P, \Z0
 	subq	72+\A, \Z0
 	movq	8+\P, \Z1
@@ -1181,7 +1177,7 @@ ones:	.quad	-1
 	sbbq	128+\A, \Z7
 	movq	64+\P, \Z8
 	sbbq	136+\A, \Z8
-	movq	$FP2_QNR, %rdx
+	movq	$QNR, %rdx
 	mulx	\Z0, \Z0, \T0
 	mulx	\Z1, \Z1, \T1
 	addq	\T0, \Z1
@@ -1253,10 +1249,10 @@ ones:	.quad	-1
 .endif
 	MULM	0+\S, 72+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0
 	FP_MUL_LOW	0+\S, 72+\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, \P, \RDC
-#ifdef FP2_QNR
+#ifndef FP_QNRES
 .if \RDC != 1
 	movq	216+\S, \T0
-.rept (FP2_QNR - 1) / 2
+.rept (QNR - 1) / 2
 	movq	0(\T0), \Z0
 	addq	\Z0, 0(%rdi)
 	movq	8(\T0), \Z1
@@ -1295,7 +1291,7 @@ ones:	.quad	-1
 	adcq	\Z1, 136(%rdi)
 .endr
 .else
-.rept (FP2_QNR - 1) / 2
+.rept (QNR - 1) / 2
 	movq	0(%rdi), \Z0
 	movq	8(%rdi), \Z1
 	movq	16(%rdi), \Z2

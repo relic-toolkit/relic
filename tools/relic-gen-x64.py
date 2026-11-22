@@ -915,13 +915,16 @@ class Backend:
 		# top bit.
 		self.wide = n >= 12
 		# Whether some prime has u^2 = -q for q > 1, chosen at assembly time
-		# by FP2_QNR. Fp2 then multiplies by q x b1, kept in the scratch, and
-		# adds c1 to c0 after squaring, with c0 at %rdi.
+		# by QNR = q without FP_QNRES. Fp2 then multiplies by q x b1, kept in
+		# the scratch, and adds c1 to c0 after squaring, with c0 at %rdi.
 		self.qnr = any(qnr(e) for e in PRIMES[n])
 		assert not (self.qnr and self.cslot)
-		# Whether Fp2 squaring has u^2 = -q in assembly too, which needs
-		# (3q + 1)p < 2^(64n). Otherwise it stays in C for those primes.
-		self.sqrqnr = all((3 * qnr(e) + 1) * int(e[1], 16) < 1 << (64 * n)
+		# Fp2 squaring with u^2 = -q needs (3q + 1)p < 2^(64n), or, with
+		# sqrbar, (q + 5)p < 2^(64n) when a0 + q x (p - a1) first drops
+		# below 3p through one Barrett step.
+		self.sqrbar = not all((3 * qnr(e) + 1) * int(e[1], 16) <
+			1 << (64 * n) for e in PRIMES[n] if qnr(e))
+		assert all((qnr(e) + 5) * int(e[1], 16) < 1 << (64 * n)
 			for e in PRIMES[n] if qnr(e))
 		if n <= 7:
 			z, t0, t1 = ACC6[:n + 1], ACC6[n + 1], ACC6[n + 2]
@@ -1531,12 +1534,13 @@ class Backend:
 		return kept, o
 
 	def fp2_mul_low(self):
-		"""c <- a x b in Fp2 with u^2 = -1, or -q for FP2_QNR = q, for a = 0+A and b = 0+B, with c0 at
-		%rdi, or at the pointer in 8+S with cslot, and, for RDC = 0, c1 at the
-		pointer in 0+S. For RDC = 1, c1 is at 8n bytes from c0, reduced, and c
-		may alias a or b: c1 goes to the scratch space first, since c0 still
-		reads a1 and b1. S is the words of fp2_frame plus n of scratch, and n
-		more for q x b1 with qnr, which fits n words as qp < 2^(64n)."""
+		"""c <- a x b in Fp2 with u^2 = -1, or -q for QNR = q without
+		FP_QNRES, for a = 0+A and b = 0+B, with c0 at %rdi, or at the pointer
+		in 8+S with cslot, and, for RDC = 0, c1 at the pointer in 0+S. For RDC
+		= 1, c1 is at 8n bytes from c0, reduced, and c may alias a or b: c1
+		goes to the scratch space first, since c0 still reads a1 and b1. S is
+		the words of fp2_frame plus n of scratch, and n more for q x b1 with
+		qnr, which fits n words as qp < 2^(64n)."""
 		n = self.n
 		z = refs(names(n + 1))
 		kept, c1 = self.fp2_frame()
@@ -1551,12 +1555,12 @@ class Backend:
 			call = "\tFP2_MUL0_LOW\t\\A, \\B, %s, %s, %d%s"
 			if not self.qnr:
 				return [call.replace("%s, %s", "%s") % (zt, rdc, c0)]
-			return ["#ifdef FP2_QNR", call % ("%d+\\S" % qb, zt, rdc, c0),
+			return ["#ifndef FP_QNRES", call % ("%d+\\S" % qb, zt, rdc, c0),
 				"#else", call % ("%d+\\B" % (8 * n), zt, rdc, c0), "#endif"]
 		b = []
 		if self.qnr:
 			# [qb+S] <- q x b1, with the high halves added on the CF chain.
-			b += ["#ifdef FP2_QNR", "\tmovq\t$FP2_QNR, %rdx",
+			b += ["#ifndef FP_QNRES", "\tmovq\t$QNR, %rdx",
 				"\tmulx\t%d+\\B, \\Z0, \\Z1" % (8 * n)]
 			for k in range(1, n):
 				b += ["\tmulx\t%d+\\B, \\T0, %s" % (8 * (n + k), z[k + 1]),
@@ -1593,8 +1597,11 @@ class Backend:
 		"""c <- a^2 in Fp2 with u^2 = -1, for a = 0+A: c0 = (a0 + a1) x
 		(a0 - a1 + p), c1 = 2 x a0 x a1, with S holding 3n + 2 words: a0 + a1
 		at 0, a0 - a1 + p at 8n, 2 x a0 at 16n and the pointers at 24n. For
-		u^2 = -q with FP2_QNR = q, c0 = (a0 + a1) x (a0 + q x (p - a1)) +
-		(q - 1)/2 x c1, where a0 + q x (p - a1) takes the place at 8n. With
+		u^2 = -q with QNR = q, c0 = (a0 + a1) x (a0 + q x (p - a1)) +
+		(q - 1)/2 x c1, where a0 + q x (p - a1) takes the place at 8n, below
+		3p after a Barrett step with sqrbar, so that c0 stays below (q + 5)p^2
+		before reduction, and a product of operands below 2p and 3p reduces
+		below 2p, as 6p < 2^(64n). With
 		cslot, c0 is at the pointer in 24n+8+S and c1 at the one in 24n+S,
 		which RDC = 1 reduces. Otherwise, RDC = 0 puts c0 at %rdi and c1 at
 		the pointer in 24n+S, and RDC = 1 puts c0 at %rdi and c1 at 8n(%rdi),
@@ -1617,22 +1624,34 @@ class Backend:
 			z[k]) for k in range(n)]
 		sub += ["\t%s\t%d+\\P, %s" % ("addq" if k == 0 else "adcq", 8 * k,
 			z[k]) for k in range(n)]
-		if self.qnr and self.sqrqnr:
+		if self.qnr:
 			# a0 + q x (p - a1), with the high halves of the products by q in
 			# T0 and T1 in turn.
 			h = ["\\T0", "\\T1"]
-			b += ["#ifdef FP2_QNR"]
+			b += ["#ifndef FP_QNRES"]
 			for k in range(n):
 				b += ["\tmovq\t%d+\\P, %s" % (8 * k, z[k]),
 					"\t%s\t%d+\\A, %s" % ("subq" if k == 0 else "sbbq",
 						8 * (n + k), z[k])]
-			b += ["\tmovq\t$FP2_QNR, %rdx", "\tmulx\t\\Z0, \\Z0, \\T0"]
+			b += ["\tmovq\t$QNR, %rdx", "\tmulx\t\\Z0, \\Z0, \\T0"]
 			for k in range(1, n):
 				b += ["\tmulx\t%s, %s, %s" % (z[k], z[k], h[k % 2]),
 					"\t%s\t%s, %s" % ("addq" if k == 1 else "adcq",
 						h[(k - 1) % 2], z[k])]
 			b += ["\t%s\t%d+\\A, %s" % ("addq" if k == 0 else "adcq", 8 * k,
 				z[k]) for k in range(n)]
+			if self.sqrbar:
+				# t = a0 + q x (p - a1) < (q + 1)p drops below 3p as in mul1,
+				# subtracting q' x p as ~(q' x p) + 1 on CF, built on OF.
+				g = ["\\T1", t]
+				b += ["\tmovq\t%s, \\T0" % z[n - 1], "\tshrq\t$BARS, \\T0",
+					"\tmovq\t$BAR, %rdx", "\tmulxq\t\\T0, \\T0, %rdx",
+					"\txorq\t\\T0, \\T0", "\tstc"]
+				for k in range(n):
+					b.append("\tmulxq\t%d+\\P, \\T0, %s" % (8 * k, g[k % 2]))
+					if k > 0:
+						b.append("\tadox\t%s, \\T0" % g[(k - 1) % 2])
+					b += ["\tnotq\t\\T0", "\tadcx\t\\T0, %s" % z[k]]
 			b += ["#else"] + sub + ["#endif"]
 		else:
 			b += sub
@@ -1657,17 +1676,17 @@ class Backend:
 				"\tsubq\t$%d, %%rdi" % (8 * n), ".endif",
 				"\tMULM\t%d+\\S, %d+\\S, %s" % (s0, s1, zz),
 				"\tFP_MUL_LOW\t%d+\\S, %d+\\S, %s" % (s0, s1, zt)]
-		if self.qnr and self.sqrqnr:
+		if self.qnr:
 			# c0 += (q - 1)/2 x c1, at %rdi: the 2n digits for RDC = 0, and
 			# with a final subtraction per addition for RDC = 1.
 			cs = (["\\Z%d" % n, "\\T0", "\\T1"] + self.fixed)[:self.m]
-			b += ["#ifdef FP2_QNR", ".if \\RDC != 1",
-				"\tmovq\t%d+\\S, \\T0" % sp, ".rept (FP2_QNR - 1) / 2"]
+			b += ["#ifndef FP_QNRES", ".if \\RDC != 1",
+				"\tmovq\t%d+\\S, \\T0" % sp, ".rept (QNR - 1) / 2"]
 			for k in range(2 * n):
 				b += ["\tmovq\t%d(\\T0), %s" % (8 * k, z[k % 2]),
 					"\t%s\t%s, %d(%%rdi)" % ("addq" if k == 0 else "adcq",
 						z[k % 2], 8 * k)]
-			b += [".endr", ".else", ".rept (FP2_QNR - 1) / 2"]
+			b += [".endr", ".else", ".rept (QNR - 1) / 2"]
 			b += ["\tmovq\t%d(%%rdi), %s" % (8 * k, z[k]) for k in range(n)]
 			b += ["\tADDH\t%s" % args(z[:n], ["%d(%%rdi)" % (8 * (n + k))
 				for k in range(n)]), self.finalc_call(z[:n], cs), ".endr",
@@ -1911,7 +1930,7 @@ def fp2_nord_qnr(g):
 	assert n <= 8 and len(cs) == m
 	h = ["%rbx", "%rbp"]
 	# d = q x a1, with the high halves alternating in %rbx and %rbp.
-	o = ["\tmovq\t$FP2_QNR, %rdx"]
+	o = ["\tmovq\t$QNR, %rdx"]
 	for k in range(2 * n):
 		lo = "%rax" if k < n else v[k - n]
 		o.append("\tmulx\t%s%d(%%rsi), %s, %s" % (s, 8 * k, lo, h[k % 2]))
@@ -2038,11 +2057,7 @@ def fpx_sqr_low(g):
 	# RLC_DV_STRIDE bytes from c[0]. fp2_sqrm_low(c, a): c = a^2/R mod p,
 	# coefficient-wise, interleaved under FP2_SQR_RDC and otherwise by
 	# reducing the product of fp2_sqrn_low separately.
-	# Without sqrqnr, only FP_QNRES squares in assembly, as u^2 = -1.
-	guard = "#ifdef FP2_ASM"
-	if g.qnr and not g.sqrqnr:
-		guard = "#if defined(FP2_ASM) && defined(FP_QNRES)"
-	o = file_head(g) + [guard,
+	o = file_head(g) + ["#ifdef FP2_ASM",
 		"", ".global cdecl(fp2_sqrn_low)", ".global cdecl(fp2_sqrm_low)", ""]
 	b = ["\tleaq\tRLC_DV_STRIDE(%rdi), %rax", "\tmovq\t%%rax, %d(%%rsp)" % sp]
 	if g.cslot:
@@ -2069,52 +2084,9 @@ def fpx_sqr_low(g):
 	o += function("fp2_sqrm_low", used | set(rz + rt + rc),
 		b + mv + ["", call(0), ""] + rdcs(g, f, c0, c1),
 		frame=c1 + 16 * n)
-	o += ["", "#endif", "", "#endif"]
-	if g.qnr and not g.sqrqnr:
-		o += ["", "#if defined(FP2_ASM) && !defined(FP_QNRES)", "",
-			".global cdecl(fp2_sqrn_low)", ".global cdecl(fp2_sqrm_low)", ""]
-		o += fp2_sqr_qnr(g, 0) + [""] + fp2_sqr_qnr(g, 1) + ["", "#endif"]
-	return o
+	return o + ["", "#endif", "", "#endif"]
 
 
-def fp2_sqr_qnr(g, rdc):
-	"""fp2_sqrn_low(c, a) for rdc = 0 and fp2_sqrm_low(c, a) for rdc = 1,
-	with u^2 = -q for the primes without sqrqnr: c0 = a0 x a0 - a1 x (q x
-	a1) through FP2_MUL0_LOW, whose bound qp < 2^(64n) they meet, and c1 =
-	(2 x a0) x a1 through FP_MUL_LOW, as 2p^2 < pR. Three products instead
-	of the two of FP2_SQR_LOW. The scratch holds the pointers to c and a,
-	which FINALC may overwrite, then 2 x a0 and q x a1. c0 goes first, so c
-	may alias a: it overwrites a0 only, and c1 reads 2 x a0 from the scratch
-	and a1, still in place. With rdc = 0, c1 is at RLC_DV_STRIDE bytes from
-	c0, and with rdc = 1 at 8n bytes, reduced."""
-	n = g.n
-	assert not (g.acopy or g.cslot or g.wide)
-	z = g.z
-	t0, t1 = g.t
-	sa, sq = 16, 16 + 8 * n
-	o = ["\tmovq\t%rdi, 0(%rsp)", "\tmovq\t%rsi, 8(%rsp)"]
-	o += ["\tmovq\t%d(%%rsi), %s" % (8 * k, z[k]) for k in range(n)]
-	o += ["\t%s\t%s, %s" % ("addq" if k == 0 else "adcq", z[k], z[k])
-		for k in range(n)]
-	o += ["\tmovq\t%s, %d(%%rsp)" % (z[k], sa + 8 * k) for k in range(n)]
-	# q x a1 in n digits, with the high halves added on the CF chain.
-	o += ["\tmovq\t$FP2_QNR, %rdx",
-		"\tmulx\t%d(%%rsi), %s, %s" % (8 * n, z[0], z[1])]
-	for k in range(1, n):
-		o += ["\tmulx\t%d(%%rsi), %s, %s" % (8 * (n + k), t0, z[k + 1]),
-			"\t%s\t%s, %s" % ("addq" if k == 1 else "adcq", t0, z[k])]
-	o += ["\tmovq\t%s, %d(%%rsp)" % (z[k], sq + 8 * k) for k in range(n)]
-	zz = args(z, t0)
-	zt = args(z, t0, t1, "p0(%rip)", str(rdc))
-	o += ["", "\tMULM\t0(%%rsi), 0(%%rsi), %s" % zz,
-		"\tFP2_MUL0_LOW\t0(%%rsi), 0(%%rsi), %d(%%rsp), %s" % (sq, zt), "",
-		"\tmovq\t0(%rsp), %rdi", "\tmovq\t8(%rsp), %rsi",
-		"\tleaq\t%s(%%rdi), %%rdi" % ("RLC_DV_STRIDE" if rdc == 0 else
-			str(8 * n)),
-		"\tMULM\t%d(%%rsp), %d(%%rsi), %s" % (sa, 8 * n, zz),
-		"\tFP_MUL_LOW\t%d(%%rsp), %d(%%rsi), %s" % (sa, 8 * n, zt)]
-	name = "fp2_sqrm_low" if rdc else "fp2_sqrn_low"
-	return function(name, set(z + g.t), o, frame=16 + 16 * n)
 
 FILES = [("relic_fp_add_low.s", add_low), ("relic_fp_shift_low.s",
 	shift_low), ("relic_fp_mul_low.s", mul_low), ("relic_fp_rdc_low.s",
@@ -2132,8 +2104,8 @@ def write(n, out):
 	read both coordinates from one contiguous vector, hence FP2_ASM only with
 	ALLOC = AUTO. For u^2 = -q, a product keeps q x b1 in n digits when
 	qp < R, and an unreduced square stays below pR when (3q + 1)p < R, as
-	c0 is below 2(q + 1)p^2 + (q - 1)p^2, and the halving of q - 1 needs q
-	odd. Without the latter, squaring stays in C for those primes."""
+	c0 is below 2(q + 1)p^2 + (q - 1)p^2, or when (q + 5)p < R with a
+	Barrett step (sqrbar), and the halving of q - 1 needs q odd."""
 	g = Backend(n)
 	# A Montgomery step leaves (z + m x p)/2^64 < 2^(64n - 64) + p, which
 	# stays below 2^(64n) for p < 2^(64n) - 2^(64n - 64). Without the top
@@ -2164,9 +2136,7 @@ def write(n, out):
 		guards.append(guard % ("!defined(FP_QNRES) && %s && RLC_ALLOC == "
 			"RLC_AUTO" % SS3[n], "FP2_NORD_ASM"))
 	if g.qnr:
-		guards[0:0] = [guard % ("!defined(FP_QNRES) && defined(QNR)",
-			"FP2_QNR\tQNR")]
-		guards[-1] = guard % ("(defined(FP_QNRES) || defined(FP2_QNR)) && "
+		guards[-1] = guard % ("(defined(FP_QNRES) || defined(QNR)) && "
 			"RLC_ALLOC == RLC_AUTO", "FP2_ASM")
 		if n <= 8:
 			guards.append(guard % ("!defined(FP_QNRES) && defined(QNR) && "
