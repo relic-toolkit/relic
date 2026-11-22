@@ -101,7 +101,7 @@ int cp_bgn_enc1(g1_t out[2], const dig_t in, const bgn_t pub) {
 
 		/* Compute c1 = (zm + xr)G. */
 		g1_mul_dig(out[1], pub->gz, in);
-		g1_mul(t, pub->gx, r);
+		g1_mul_sec(t, pub->gx, r);
 		g1_add(out[1], out[1], t);
 		g1_norm(out[1], out[1]);
 	}
@@ -143,7 +143,7 @@ int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv) {
 
 		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g1_mul(t, in[0], prv->x[0]);
+		g1_mul_sec(t, in[0], prv->x[0]);
 		g1_sub(t, t, in[1]);
 		g1_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
@@ -206,7 +206,7 @@ int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub) {
 
 		/* Compute c1 = (zm + xr)G. */
 		g2_mul_dig(out[1], pub->hz, in);
-		g2_mul(t, pub->hx, r);
+		g2_mul_sec(t, pub->hx, r);
 		g2_add(out[1], out[1], t);
 		g2_norm(out[1], out[1]);
 	}
@@ -248,7 +248,7 @@ int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv) {
 
 		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g2_mul(t, in[0], prv->x[1]);
+		g2_mul_sec(t, in[0], prv->x[1]);
 		g2_sub(t, t, in[1]);
 		g2_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
@@ -332,11 +332,11 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 
 		/* For in[2i + j] = e(c_i, d_j), compute T = e(x_0 c_0 - c_1,
 		 * x_1 d_0 - d_1) = e(G, H)^(m(x_0 y_0 - z_0)(x_1 y_1 - z_1)). */
-		gt_exp(t[0], in[0], prv->x[0]);
-		gt_exp(t[0], t[0], prv->x[1]);
+		gt_exp_sec(t[0], in[0], prv->x[0]);
+		gt_exp_sec(t[0], t[0], prv->x[1]);
 
-		gt_exp(t[1], in[1], prv->x[0]);
-		gt_exp(t[2], in[2], prv->x[1]);
+		gt_exp_sec(t[1], in[1], prv->x[0]);
+		gt_exp_sec(t[2], in[2], prv->x[1]);
 		gt_mul(t[1], t[1], t[2]);
 		gt_inv(t[1], t[1]);
 
@@ -354,7 +354,7 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 		bn_mul(r, r, s);
 		bn_mod(r, r, n);
 		gt_get_gen(t[1]);
-		gt_exp(t[1], t[1], r);
+		gt_exp_sec(t[1], t[1], r);
 
 		gt_copy(t[2], t[1]);
 
