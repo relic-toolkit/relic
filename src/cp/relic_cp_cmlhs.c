@@ -92,7 +92,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		/* Generate elements for n tags. */
 		for (size_t i = 0; i < len; i++) {
 			bn_rand_mod(x[i], n);
-			gt_exp(hs[i], gt, x[i]);
+			gt_exp_sec(hs[i], gt, x[i]);
 		}
 
 		if (bls) {

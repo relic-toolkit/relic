@@ -57,11 +57,14 @@
 static void etrs_evl(ec_t r, const bn_t x, const bn_t *xs, const ec_t *ys,
 		const bn_t *td, const bn_t *w, size_t k, const bn_t n, bn_t *v) {
 	bn_t l, u;
+	ec_t t;
 
 	bn_null_all(l, u);
+	ec_null(t);
 
 	RLC_TRY {
 		bn_new_all(l, u);
+		ec_new(t);
 
 		bn_lag_fix(v, x, xs, w, n, k);
 		if (td != NULL) {
@@ -71,7 +74,11 @@ static void etrs_evl(ec_t r, const bn_t x, const bn_t *xs, const ec_t *ys,
 				bn_add(l, l, u);
 				bn_mod(l, l, n);
 			}
-			ec_mul_sim_gen(r, l, ys[0], v[0]);
+			/* The combination of trapdoors is secret, unlike v[0]. */
+			ec_mul_gen(r, l);
+			ec_mul(t, ys[0], v[0]);
+			ec_add(r, r, t);
+			ec_norm(r, r);
 		} else {
 			ec_mul_sim_lot(r, ys, (const bn_t *)v, k);
 		}
@@ -81,6 +88,7 @@ static void etrs_evl(ec_t r, const bn_t x, const bn_t *xs, const ec_t *ys,
 	}
 	RLC_FINALLY {
 		bn_free_all(l, u);
+		ec_free(t);
 	}
 }
 

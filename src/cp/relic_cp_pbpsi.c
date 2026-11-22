@@ -51,7 +51,7 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m) {
 
 		g2_get_gen(s[0]);
 		for (i = 1; i <= m; i++) {
-			g2_mul(s[i], s[i - 1], sk);
+			g2_mul_sec(s[i], s[i - 1], sk);
 		}
 	}
 	RLC_CATCH_ANY {

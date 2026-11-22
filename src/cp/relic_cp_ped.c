@@ -38,11 +38,14 @@
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x) {
 	int result = RLC_OK;
 	bn_t n;
+	ec_t t;
 
 	bn_null(n);
+	ec_null(t);
 
 	RLC_TRY {
 		bn_new(n);
+		ec_new(t);
 		ec_curve_get_ord(n);
 
 		/* Any message is allowed, but zero randomness does not hide it. */
@@ -51,12 +54,17 @@ int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x) {
 				|| bn_cmp(r, n) != RLC_LT) {
 			result = RLC_ERR;
 		} else {
-			ec_mul_sim_gen(c, x, h, r);
+			/* Both scalars are secret, so multiply in constant time. */
+			ec_mul_gen(c, x);
+			ec_mul_sec(t, h, r);
+			ec_add(c, c, t);
+			ec_norm(c, c);
 		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
 		bn_free(n);
+		ec_free(t);
 	}
 	return result;
 }
