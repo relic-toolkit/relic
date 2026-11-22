@@ -60,6 +60,13 @@
  */
 #define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
+/**
+ * Smallest and largest 2-adicity of p - 1 that take the windowed square root,
+ * with windows of RLC_WIDTH bits.
+ */
+#define RLC_FP_SRT_MIN	16
+#define RLC_FP_SRT_MAX	64
+
 /*
  * Finite field identifiers.
  */

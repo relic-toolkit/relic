@@ -232,8 +232,15 @@ typedef struct _ctx_t {
 	fp_st one;
 	/** Value of R^3 mod p for inversion by jump division steps. */
 	fp_st inv;
-	/** Square root of unity for square root extraction. */
+	/** Root of unity of order 2^f for square root extraction, for 2^f | p - 1
+	 * with f maximal. */
 	fp_st srt;
+	/** Powers z^k for 0 <= k < 2^w of z = srt^(2^(f - w)), for w = RLC_WIDTH,
+	 * which identify the w-bit digits of a discrete logarithm in square
+	 * roots. */
+	fp_st srt_tab[1 << RLC_WIDTH];
+	/** Powers srt^(-2^t) for 0 <= t < f, which remove the digits. */
+	fp_st srt_pow[RLC_FP_SRT_MAX];
 	/** Primitive cube root of unity for cube root extraction. */
 	fp_st crt;
 	/** Primitive cube root of unity that defines the cubic residue symbol. */

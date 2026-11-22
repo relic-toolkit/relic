@@ -463,6 +463,27 @@ static void fp_prime_set(const bn_t p) {
 			}
 			fp_exp(ctx->srt, ctx->srt, t);
 
+			/* The tables of the windowed square root, for z = srt: z^(-2^t)
+			 * for t < f, and the powers of z^(2^(f - w)), of order 2^w. */
+			for (int i = 0; i < RLC_FP_SRT_MAX; i++) {
+				fp_zero(ctx->srt_pow[i]);
+			}
+			for (int k = 0; k < (1 << RLC_WIDTH); k++) {
+				fp_zero(ctx->srt_tab[k]);
+			}
+			if (ctx->mod8 % 4 == 1 && ctx->ad2 >= RLC_FP_SRT_MIN &&
+					ctx->ad2 <= RLC_FP_SRT_MAX) {
+				fp_inv(ctx->srt_pow[0], ctx->srt);
+				for (dig_t i = 1; i < ctx->ad2; i++) {
+					fp_sqr(ctx->srt_pow[i], ctx->srt_pow[i - 1]);
+				}
+				fp_inv(s, ctx->srt_pow[ctx->ad2 - RLC_WIDTH]);
+				fp_set_dig(ctx->srt_tab[0], 1);
+				for (int k = 1; k < (1 << RLC_WIDTH); k++) {
+					fp_mul(ctx->srt_tab[k], ctx->srt_tab[k - 1], s);
+				}
+			}
+
 			/* Write p - 1 as (e * 3^f), with e = 3l \pm 1. */
 			bn_sub_dig(t, p, 1);
 			bn_mod_dig(&rem, t, 3);
