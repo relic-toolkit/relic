@@ -4,7 +4,7 @@ message("   ** Options for the binary elliptic curve module (default = on, w = 4
 
 message("      EB_PRECO=[off|on] Build precomputation table for generator.")
 
-message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;BASIC):\n")
+message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;LWREG):\n")
 
 message("      Point representation:")
 message("      EB_METHD=BASIC    Affine coordinates.")
@@ -29,7 +29,7 @@ option(EB_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.
 if (NOT EB_METHD)
-	set(EB_METHD "PROJC;LWNAF;BASIC")
+	set(EB_METHD "PROJC;LWNAF;LWREG")
 endif(NOT EB_METHD)
 list(LENGTH EB_METHD EB_LEN)
 if (NOT EB_LEN EQUAL 3)

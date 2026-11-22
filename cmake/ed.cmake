@@ -3,7 +3,7 @@ message(STATUS "Elliptic Edwards curve over prime fields arithmetic configuratio
 message("   ** Options for the prime elliptic Edwards curve module (default = all on):")
 message("      ED_PRECO=[off|on] Build precomputation table for generator.")
 
-message("   ** Available prime elliptic Edwards curve methods (default = PROJC;LWNAF;BASIC):")
+message("   ** Available prime elliptic Edwards curve methods (default = PROJC;LWNAF;LWREG):")
 message("      ED_METHD=BASIC    Affine coordinates.")
 message("      ED_METHD=PROJC  	 Simple projective twisted Edwards coordinates.")
 message("      ED_METHD=EXTND 	 Extended projective twisted Edwards coordinates.\n")
@@ -27,7 +27,7 @@ option(ED_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.
 if (NOT ED_METHD)
-	set(ED_METHD "PROJC;LWNAF;BASIC")
+	set(ED_METHD "PROJC;LWNAF;LWREG")
 endif(NOT ED_METHD)
 list(LENGTH ED_METHD ED_LEN)
 if (NOT ED_LEN EQUAL 3)

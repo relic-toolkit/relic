@@ -730,6 +730,9 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k);
 
 /**
  * Multiplies the generator of a binary elliptic curve by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EB_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.
