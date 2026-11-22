@@ -301,7 +301,9 @@ int cp_amore_gen(bn_t s, gt_t e) {
 		bn_new(n);
 		pc_get_ord(n);
 		bn_rand_mod(s, n);
-		gt_exp_gen(e, s);
+		/* The key is long-term, so exponentiate in constant time. */
+		gt_get_gen(e);
+		gt_exp_sec(e, e, s);
 		gt_inv(e, e);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -313,35 +315,37 @@ int cp_amore_gen(bn_t s, gt_t e) {
 
 int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const g1_t *p, const g2_t *q, size_t m) {
-	bn_t n, t, z;
+	bn_t n, t, z, b;
 	g1_t w;
 	int result = RLC_OK;
 	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
 
-	bn_null(n);
-	bn_null(t);
-	bn_null(z);
+	bn_null_all(n, t, z, b);
 	g1_null(w);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(t);
-		bn_new(z);
+		bn_new_all(n, t, z, b);
 		g1_new(w);
 
 		pc_get_ord(n);
 		/* Sample r from Z_q* and compute U = [z]P. */
 		bn_rand_mod(z, n);
 		g1_mul_gen(u, z);
-		/* Compute V = [s/z]Q. */
-		bn_mod_inv(t, z, n);
+		/* Compute V = [s/z]Q, blinding z as inversion takes variable time,
+		 * since z and s/z together reveal the long-term key s. */
+		bn_rand_mod(b, n);
+		bn_mul(t, z, b);
+		bn_mod(t, t, n);
+		bn_mod_inv(t, t, n);
+		bn_mul(t, t, b);
+		bn_mod(t, t, n);
 		bn_mul(t, t, s);
 		bn_mod(t, t, n);
 		g2_mul_gen(v, t);
 
 		if (m == 1) {
 			g1_add(c[0], p[0], u);
-			g1_mul(c[0], c[0], t);
+			g1_mul_sec(c[0], c[0], t);
 			g1_neg(c[0], c[0]);
 			if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
 				bn_rand(r[0], RLC_POS, eps);
@@ -359,7 +363,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 				g2_add(d, d, q[j]);
 			}
 			g2_sub(y, v, d);
-			g2_mul(y, y, z);
+			g2_mul_sec(y, y, z);
 
 			for (size_t i = 0; i < m; i++) {
 				if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
@@ -388,9 +392,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(t);
-		bn_free(z);
+		bn_free_all(n, t, z, b);
 		g1_free(w);
 	}
 	return result;
