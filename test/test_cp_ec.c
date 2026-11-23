@@ -332,10 +332,67 @@ static int ecies(void) {
 
 #endif
 
+#if EC_CUR == EC_PRIME
+
+/**
+ * Finds a point of small order on the curve, outside the group of prime order.
+ *
+ * @param[out] t			- the point.
+ * @return the order of the point, or 0 if there is none.
+ */
+static int small_order(ep_t t) {
+	bn_t h, k;
+	dig_t r;
+	int result = 0;
+
+	bn_null(h);
+	bn_null(k);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(k);
+
+		ep_curve_get_cof(h);
+		for (int q = 2; q < 256 && result == 0; q++) {
+			bn_mod_dig(&r, h, q);
+			if (r != 0) {
+				continue;
+			}
+			/* Clear all but a factor q of the order of a point of the curve. */
+			ep_curve_get_ord(k);
+			bn_mul(k, k, h);
+			bn_div_dig(k, k, q);
+			for (int i = 0; i < 16 && result == 0; i++) {
+				fp_rand(t->x);
+				fp_zero(t->y);
+				fp_set_dig(t->z, 1);
+				t->coord = EC_AFFIN;
+				if (ep_upk(t, t)) {
+					ep_mul_basic(t, t, k);
+					if (!ep_is_infty(t)) {
+						ep_norm(t, t);
+						result = q;
+					}
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(k);
+	}
+	return result;
+}
+
+#endif
+
 static int ecdsa(void) {
 	int code = RLC_ERR;
 	bn_t d, r, s, t, u;
-	ec_t q;
+	ec_t p, q;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
 #if defined(ECDSA_R1)
 	int id;
@@ -346,6 +403,7 @@ static int ecdsa(void) {
 	bn_null(s);
 	bn_null(t);
 	bn_null(u);
+	ec_null(p);
 	ec_null(q);
 
 	RLC_TRY {
@@ -354,6 +412,7 @@ static int ecdsa(void) {
 		bn_new(s);
 		bn_new(t);
 		bn_new(u);
+		ec_new(p);
 		ec_new(q);
 
 		TEST_CASE("ecdsa signature is correct") {
@@ -376,6 +435,33 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
 		}
 		TEST_END;
+
+#if EC_CUR == EC_PRIME
+		TEST_CASE("ecdsa rejects keys outside the group") {
+			/* With u2 = r/s a multiple of the order o of t, a signature
+			 * under q also verifies under q + t. */
+			int o = small_order(p);
+			dig_t rem = 1;
+			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
+			ec_curve_get_ord(t);
+			for (int j = 0; j < 64 * o && rem != 0; j++) {
+				TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK,
+					end);
+				bn_mod_inv(u, s, t);
+				bn_mul(u, u, r);
+				bn_mod(u, u, t);
+				bn_mod_dig(&rem, u, o);
+			}
+			if (o != 0) {
+				TEST_ASSERT(rem == 0, end);
+				TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 1, end);
+				ec_add(q, q, p);
+				ec_norm(q, q);
+				TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
+			}
+		}
+		TEST_END;
+#endif
 
 		TEST_CASE("ecdsa deterministic signature is correct") {
 			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
@@ -431,6 +517,7 @@ static int ecdsa(void) {
 	bn_free(s);
 	bn_free(t);
 	bn_free(u);
+	ec_free(p);
 	ec_free(q);
 	return code;
 }
@@ -438,18 +525,20 @@ static int ecdsa(void) {
 static int ecss(void) {
 	int code = RLC_ERR;
 	bn_t d, r, s;
-	ec_t q;
+	ec_t p, q;
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(d);
 	bn_null(r);
 	bn_null(s);
+	ec_null(p);
 	ec_null(q);
 
 	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		bn_new(s);
+		ec_new(p);
 		ec_new(q);
 
 		TEST_CASE("ecss signature is correct") {
@@ -470,6 +559,28 @@ static int ecss(void) {
 			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
 		}
 		TEST_END;
+
+#if EC_CUR == EC_PRIME
+		TEST_CASE("ecss rejects keys outside the group") {
+			/* With a challenge that is a multiple of the order o of p, a
+			 * signature under q also verifies under q + p. */
+			int o = small_order(p);
+			dig_t rem = 1;
+			TEST_ASSERT(cp_ecss_gen(d, q) == RLC_OK, end);
+			for (int j = 0; j < 64 * o && rem != 0; j++) {
+				TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
+				bn_mod_dig(&rem, r, o);
+			}
+			if (o != 0) {
+				TEST_ASSERT(rem == 0, end);
+				TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 1, end);
+				ec_add(q, q, p);
+				ec_norm(q, q);
+				TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
+			}
+		}
+		TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -480,6 +591,7 @@ static int ecss(void) {
 	bn_free(d);
 	bn_free(r);
 	bn_free(s);
+	ec_free(p);
 	ec_free(q);
 	return code;
 }
@@ -533,6 +645,17 @@ static int vbnn(void) {
 			/* A signature with r at infinity is rejected safely. */
 			ec_set_infty(r);
 			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
+#if EC_CUR == EC_PRIME
+			/* So is one with r outside the group of prime order. */
+			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m),
+				ska, pka) == RLC_OK, end);
+			if (small_order(pkb)) {
+				ec_add(r, r, pkb);
+				ec_norm(r, r);
+				TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m,
+					sizeof(m), mpk) == 0, end);
+			}
+#endif
 		}
 		TEST_END;
 	}
@@ -812,63 +935,6 @@ end:
 	}
 	return code;
 }
-
-#if EC_CUR == EC_PRIME
-
-/**
- * Finds a point of small order on the curve, outside the group of prime order.
- *
- * @param[out] t			- the point.
- * @return the order of the point, or 0 if there is none.
- */
-static int small_order(ep_t t) {
-	bn_t h, k;
-	dig_t r;
-	int result = 0;
-
-	bn_null(h);
-	bn_null(k);
-
-	RLC_TRY {
-		bn_new(h);
-		bn_new(k);
-
-		ep_curve_get_cof(h);
-		for (int q = 2; q < 256 && result == 0; q++) {
-			bn_mod_dig(&r, h, q);
-			if (r != 0) {
-				continue;
-			}
-			/* Clear all but a factor q of the order of a point of the curve. */
-			ep_curve_get_ord(k);
-			bn_mul(k, k, h);
-			bn_div_dig(k, k, q);
-			for (int i = 0; i < 16 && result == 0; i++) {
-				fp_rand(t->x);
-				fp_zero(t->y);
-				fp_set_dig(t->z, 1);
-				t->coord = EC_AFFIN;
-				if (ep_upk(t, t)) {
-					ep_mul_basic(t, t, k);
-					if (!ep_is_infty(t)) {
-						ep_norm(t, t);
-						result = q;
-					}
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-	}
-	RLC_FINALLY {
-		bn_free(h);
-		bn_free(k);
-	}
-	return result;
-}
-
-#endif
 
 static int smlers(void) {
 	int code = RLC_ERR;
