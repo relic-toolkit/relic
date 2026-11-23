@@ -147,7 +147,10 @@ static int ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 		}
 
 		rlen = RLC_CEIL(bn_bits(n), 8);
-		if (det && rlen > ECDSA_BYTES) {
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, n) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
+			result = RLC_ERR;
+		} else if (det && rlen > ECDSA_BYTES) {
 			/* Execution continues past errors, so do not derive a nonce that
 			 * does not fit in the buffers. */
 			RLC_THROW(ERR_NO_BUFFER);

@@ -428,8 +428,17 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
 			memset(h, 0, RLC_MD_LEN);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
-			/* The key at infinity is rejected, even for its own signatures. */
+			/* A private key outside [1, n - 1] is rejected. */
 			bn_zero(d);
+			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_ERR, end);
+			ec_curve_get_ord(d);
+			TEST_ASSERT(cp_ecdsa_sig(r, s, h, RLC_MD_LEN, 1, d) == RLC_ERR, end);
+			TEST_ASSERT(cp_ecdsa_sig_det(r, s, h, RLC_MD_LEN, 1, d) == RLC_ERR,
+				end);
+			bn_add_dig(d, d, 1);
+			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_ERR, end);
+			/* The key at infinity is rejected when verifying. */
+			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK, end);
 			ec_set_infty(q);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
