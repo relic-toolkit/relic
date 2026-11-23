@@ -702,6 +702,10 @@ static int subgroup_paillier(void) {
 				TEST_ASSERT(err_get_code() == RLC_ERR, end);
 				TEST_ASSERT(bn_is_zero(c), end);
 				bn_sub_dig(pub->crt->n, pub->crt->n, 1);
+				/* A message longer than the modulus is rejected. */
+				bn_lsh(a, pub->crt->n, 1);
+				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_ERR, end);
+				TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_ERR, end);
 			}
 			TEST_END;
 

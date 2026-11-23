@@ -999,6 +999,12 @@ static int pss(void) {
 			g1_set_infty(a);
 			g1_set_infty(b);
 			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 0, end);
+			/* A message outside [0, n) is neither signed nor accepted. */
+			TEST_ASSERT(cp_pss_sig(a, b, ms[0], u, v) == RLC_OK, end);
+			bn_add(ms[0], ms[0], n);
+			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 0, end);
+			TEST_ASSERT(cp_pss_sig(a, b, ms[0], u, v) == RLC_ERR, end);
+			bn_sub(ms[0], ms[0], n);
 		}
 		TEST_END;
 
@@ -1006,6 +1012,11 @@ static int pss(void) {
 			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, 5) == 1, end);
+			/* A message outside [0, n) is neither signed nor accepted. */
+			bn_add(ms[4], ms[4], n);
+			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, 5) == 0, end);
+			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, 5) == RLC_ERR, end);
+			bn_sub(ms[4], ms[4], n);
 		}
 		TEST_END;
 	}
@@ -1034,9 +1045,10 @@ static int pss(void) {
 #if defined(WITH_MPC)
 
 static int mpss(void) {
-	int i, j, code = RLC_ERR;
+	int i, j, r, code = RLC_ERR;
 	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
-	g1_t g, s[2];
+	g1_t g, o, s[2];
+	uint8_t bin[2 * RLC_FP_BYTES + 1];
 	g2_t h, x[2], y[2], _y[5][2];
 	gt_t e[2], f[2];
 	mt_t tri[3][2], btri[5][2];
@@ -1044,6 +1056,7 @@ static int mpss(void) {
 
 	bn_null(n);
 	g1_null(g);
+	g1_null(o);
 	g2_null(h);
 	for (i = 0; i < 2; i++) {
 		bn_null(m[i]);
@@ -1071,6 +1084,7 @@ static int mpss(void) {
 	RLC_TRY {
 		bn_new(n);
 		g1_new(g);
+		g1_new(o);
 		g2_new(h);
 		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
@@ -1121,6 +1135,31 @@ static int mpss(void) {
 			TEST_ASSERT(cp_mpss_ver(e[0], g, s, m, h, x[0], y[0], tri[2]) == 1,
 				end);
 			TEST_ASSERT(gt_is_unity(e[0]) == 1, end);
+			/* Torsion added to a share is rejected. Find a point outside the
+			 * subgroup and clear its component of order n, which never works
+			 * for cofactor 1. */
+			g1_set_infty(o);
+			for (int k = 0; k < 16 && g1_is_infty(o); k++) {
+				rand_bytes(bin, g1_size_bin(g, 1));
+				bin[0] = 2;
+				bin[1] = 0;
+				r = RLC_ERR;
+				TEST_ERR(r = ep_read_bin(o, bin, g1_size_bin(g, 1)));
+				err_get_code();
+				if (r == RLC_OK) {
+					ep_mul_basic(o, o, n);
+				} else {
+					g1_set_infty(o);
+				}
+			}
+			if (!g1_is_infty(o)) {
+				g1_add(s[0], s[0], o);
+				g1_norm(s[0], s[0]);
+				TEST_ASSERT(cp_mpss_ver(e[0], g, s, m, h, x[0], y[0],
+					tri[2]) == 0, end);
+				g1_sub(s[0], s[0], o);
+				g1_norm(s[0], s[0]);
+			}
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
@@ -1181,6 +1220,7 @@ static int mpss(void) {
   end:
 	bn_free(n);
 	g1_free(g);
+	g1_free(o);
 	g2_free(h);
 	for (i = 0; i < 2; i++) {
 		bn_free(m[i]);
@@ -1414,6 +1454,14 @@ static int lhs(void) {
 				flen, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
 				y, pk, S, b) == 1, end);
+			/* A result outside [0, n) is rejected. */
+			bn_add(m, m, n);
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b) == 0,
+				end);
+			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
+				y, pk, S, b) == 0, end);
+			bn_sub(m, m, n);
 			/* An aggregate s at infinity is rejected safely. */
 			g2_set_infty(_s);
 			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,

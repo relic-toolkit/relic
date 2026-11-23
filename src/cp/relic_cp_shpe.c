@@ -126,11 +126,13 @@ int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv) {
 		return RLC_ERR;
 	}
 #if RLC_ALLOC != RLC_AUTO
-	if (prv->crt == NULL || prv->crt->n == NULL ||
-			bn_bits(m) > bn_bits(prv->crt->n)) {
+	if (prv->crt == NULL || prv->crt->n == NULL) {
 		return RLC_ERR;
 	}
 #endif
+	if (bn_bits(m) > bn_bits(prv->crt->n)) {
+		return RLC_ERR;
+	}
 
 	RLC_TRY {
 		bn_new(r);
@@ -175,11 +177,13 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 		return RLC_ERR;
 	}
 #if RLC_ALLOC != RLC_AUTO
-	if (pub->crt == NULL || pub->crt->n == NULL ||
-			bn_bits(m) > bn_bits(pub->crt->n)) {
+	if (pub->crt == NULL || pub->crt->n == NULL) {
 		return RLC_ERR;
 	}
 #endif
+	if (bn_bits(m) > bn_bits(pub->crt->n)) {
+		return RLC_ERR;
+	}
 
 	RLC_TRY {
 		bn_new(r);

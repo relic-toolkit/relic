@@ -192,11 +192,12 @@ int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 
 		*len = 0;
 		bn_mxp(f, u, r, n);
-		/* Powers of 0, 1 and -1 do not depend on the elements of the
-		 * receiver, so they would let a sender match all of them. */
-		bn_add_dig(e, f, 1);
-		if (m > 0 && !bn_is_zero(f) && bn_cmp_dig(f, 1) != RLC_EQ &&
-				bn_cmp(e, n) != RLC_EQ) {
+		/* Odd powers of 0 and of the square roots of 1, such as -1, do not
+		 * depend on the elements of the receiver, so they would let a sender
+		 * that knows the factors of n match all of them. */
+		bn_sqr(e, f);
+		bn_mod(e, e, n);
+		if (m > 0 && !bn_is_zero(f) && bn_cmp_dig(e, 1) != RLC_EQ) {
 			for (k = 0; k < m; k++) {
 				bn_copy(e, f);
 				for (i = 0; i < m; i++) {

@@ -277,8 +277,11 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		bn_new(k);
 		bn_new(n);
 
-		/* Torsion added to these elements would not change the pairings. */
-		ok = g1_is_valid(r) && g2_is_valid(s);
+		/* Torsion added to these elements would not change the pairings,
+		 * and a result outside [0, n) would verify as its residue. */
+		pc_get_ord(n);
+		ok = g1_is_valid(r) && g2_is_valid(s) && bn_sign(m) == RLC_POS &&
+				bn_cmp(m, n) == RLC_LT;
 		for (size_t i = 0; ok && i < slen; i++) {
 			ok = g1_is_valid(a[i]) && g1_is_valid(c[i]);
 		}
@@ -402,8 +405,11 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		bn_new(k);
 		bn_new(n);
 
-		/* Torsion added to these elements would not change the pairings. */
-		ok = g1_is_valid(r) && g2_is_valid(s);
+		/* Torsion added to these elements would not change the pairings,
+		 * and a result outside [0, n) would verify as its residue. */
+		pc_get_ord(n);
+		ok = g1_is_valid(r) && g2_is_valid(s) && bn_sign(msg) == RLC_POS &&
+				bn_cmp(msg, n) == RLC_LT;
 		for (size_t i = 0; ok && i < slen; i++) {
 			ok = g1_is_valid(a[i]) && g1_is_valid(c[i]);
 		}

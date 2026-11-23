@@ -72,12 +72,17 @@ int cp_pss_sig(g1_t a, g1_t b, const bn_t m, const bn_t r, const bn_t s) {
 		bn_new(t);
 
 		g1_get_ord(n);
-		bn_mul(t, m, s);
-		bn_mod(t, t, n);
-		bn_add(t, t, r);
-		bn_mod(t, t, n);
-		g1_rand(a);
-		g1_mul_sec(b, a, t);
+		/* A message outside [0, n) would be signed as its residue. */
+		if (bn_sign(m) == RLC_NEG || bn_cmp(m, n) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			bn_mul(t, m, s);
+			bn_mod(t, t, n);
+			bn_add(t, t, r);
+			bn_mod(t, t, n);
+			g1_rand(a);
+			g1_mul_sec(b, a, t);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -93,8 +98,10 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
+	bn_t n;
 	int result = 0;
 
+	bn_null(n);
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(r[0]);
@@ -102,12 +109,14 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 	gt_null(e);
 
 	RLC_TRY {
+		bn_new(n);
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(r[0]);
 		g2_new(r[1]);
 		gt_new(e);
 
+		g1_get_ord(n);
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
 		g2_copy(r[1], g);
@@ -118,7 +127,9 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 		g2_norm(r[0], r[0]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
+		/* A message outside [0, n) would verify as its residue. */
+		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b) &&
+				bn_sign(m) == RLC_POS && bn_cmp(m, n) == RLC_LT) {
 			result = 1;
 		}
 	}
@@ -127,6 +138,7 @@ int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(n);
 		g1_free(p[0]);
 		g1_free(p[1]);
 		g2_free(r[0]);
@@ -184,15 +196,22 @@ int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
 		/* Compute b = a^x+\sum y_im_i. */
 		pc_get_ord(n);
 
-		bn_copy(t, r);
+		/* A message outside [0, n) would be signed as its residue. */
 		for (i = 0; i < l; i++) {
-			bn_mod(m, ms[i], n);
-			bn_mul(m, m, s[i]);
-			bn_mod(m, m, n);
-			bn_add(t, t, m);
-			bn_mod(t, t, n);
+			if (bn_sign(ms[i]) == RLC_NEG || bn_cmp(ms[i], n) != RLC_LT) {
+				result = RLC_ERR;
+			}
 		}
-		g1_mul_sec(b, a, t);
+		if (result == RLC_OK) {
+			bn_copy(t, r);
+			for (i = 0; i < l; i++) {
+				bn_mul(m, ms[i], s[i]);
+				bn_mod(m, m, n);
+				bn_add(t, t, m);
+				bn_mod(t, t, n);
+			}
+			g1_mul_sec(b, a, t);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -243,6 +262,12 @@ int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
 		pc_map_sim(e, p, q, 2);
 		if (gt_is_unity(e) && g1_is_valid(a) && g1_is_valid(b)) {
 			result = 1;
+		}
+		/* A message outside [0, n) would verify as its residue. */
+		for (size_t j = 0; j < l; j++) {
+			if (bn_sign(ms[j]) == RLC_NEG || bn_cmp(ms[j], n) != RLC_LT) {
+				result = 0;
+			}
 		}
 	}
 	RLC_CATCH_ANY {

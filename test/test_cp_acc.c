@@ -176,6 +176,25 @@ static int psi(void) {
 			TEST_ASSERT(l == 0, end);
 		} TEST_END;
 
+		TEST_CASE("size-hiding private set intersection ignores square roots of one") {
+			/* A sender that knows the factors answers w = 1 mod p and -1 mod
+			 * q, whose odd powers do not depend on the elements. */
+			bn_mul_dig(w[0], crt->qi, 2);
+			bn_mod(w[0], w[0], crt->p);
+			bn_mul(w[0], w[0], crt->q);
+			bn_sub_dig(w[0], w[0], 1);
+			bn_write_bin(bin, sizeof(bin), w[0]);
+			md_map(h, bin, sizeof(bin));
+			bn_read_bin(v[0], h, RLC_MD_LEN);
+			do {
+				TEST_ASSERT(cp_shipsi_ask(q, r, p, g, crt->n, x, M) == RLC_OK,
+					end);
+			} while (bn_is_even(r));
+			TEST_ASSERT(cp_shipsi_int(z, &l, r, p, crt->n, x, M, v, w[0],
+				1) == RLC_OK, end);
+			TEST_ASSERT(l == 0, end);
+		} TEST_END;
+
 		if (pc_param_set_any() == RLC_OK) {
 			TEST_CASE("pairing-based laconic private set intersection is correct") {
 				pc_get_ord(q);
