@@ -1198,6 +1198,33 @@ static size_t xof_msg(uint8_t *msg, int j) {
 	}
 }
 
+static int lot(void) {
+	int code = RLC_ERR;
+	uint8_t msg[600], h1[RLC_MD_LEN], h2[RLC_MD_LEN];
+	/* Empty pieces and pieces crossing block boundaries, adding up to 600. */
+	size_t parts[] = { 0, 1, 63, 0, 65, 127, 129, 215 }, off;
+	const uint8_t *in[8];
+
+	TEST_CASE("hashing a message in pieces is correct") {
+		rand_bytes(msg, sizeof(msg));
+		off = 0;
+		for (int j = 0; j < 8; j++) {
+			in[j] = msg + off;
+			off += parts[j];
+		}
+		md_map(h1, msg, off);
+		md_map_lot(h2, in, parts, 8);
+		TEST_ASSERT(memcmp(h1, h2, RLC_MD_LEN) == 0, end);
+		md_map(h1, msg, 0);
+		md_map_lot(h2, in, parts, 0);
+		TEST_ASSERT(memcmp(h1, h2, RLC_MD_LEN) == 0, end);
+	} TEST_END;
+
+	code = RLC_OK;
+  end:
+	return code;
+}
+
 static int xof(void) {
 	int code = RLC_ERR;
 	uint8_t in[32], out1[128], out2[128], buf[256], dst[256], msg[600];
@@ -1675,6 +1702,11 @@ int main(void) {
 	}
 
 	if (kdf() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (lot() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

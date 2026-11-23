@@ -175,7 +175,9 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 	size_t i = max, deg;
 	bn_t n, *b = NULL;
 	ec_t w[2], *ys = NULL;
-	uint8_t *buf;
+	uint8_t buf[RLC_MD_LEN], dig[RLC_MD_LEN];
+	const uint8_t *in[2] = { msg, dig };
+	size_t lens[2] = { len, RLC_MD_LEN };
 	int result = RLC_OK;
 
 	/* The new member joins a signature, taking its degree. */
@@ -204,7 +206,6 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		b = RLC_ALLOCA(bn_t, 3 * k);
 		ys = RLC_ALLOCA(ec_t, k);
 	}
-	buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
 
 	bn_null(n);
 	ec_null_all(w[0], w[1]);
@@ -245,12 +246,13 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 			}
 			ec_copy(p[*size]->pk, pk);
 
-			/* Prove knowledge of either logarithm, signing the commitment. */
-			memcpy(buf, msg, len);
-			etrs_dig(buf + len, com, deg);
+			/* Prove knowledge of either logarithm, signing a digest of the
+			 * message and the commitment. */
+			etrs_dig(dig, com, deg);
+			md_map_lot(buf, in, lens, 2);
 			ec_copy(w[0], p[*size]->h);
 			ec_copy(w[1], p[*size]->pk);
-			if (cp_sokor_sig(p[*size]->c, p[*size]->r, buf, len + RLC_MD_LEN,
+			if (cp_sokor_sig(p[*size]->c, p[*size]->r, buf, RLC_MD_LEN,
 					w, NULL, (sk == NULL ? td[i] : sk), sk == NULL) != RLC_OK) {
 				RLC_THROW(ERR_CAUGHT);
 			} else {
@@ -286,7 +288,6 @@ static int etrs_join(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		}
 		RLC_FREE(b);
 		RLC_FREE(ys);
-		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -301,7 +302,9 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, ec_t *com,
 	const size_t k = max + 1;
 	bn_t n, x, *b = RLC_ALLOCA(bn_t, 3 * k);
 	ec_t w[2], *ys = RLC_ALLOCA(ec_t, k);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
+	uint8_t buf[RLC_MD_LEN], dig[RLC_MD_LEN];
+	const uint8_t *in[2] = { msg, dig };
+	size_t lens[2] = { len, RLC_MD_LEN };
 	int result = RLC_OK;
 
 	bn_null_all(n, x);
@@ -349,12 +352,13 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, ec_t *com,
 			ec_norm(com[i - 1], com[i - 1]);
 		}
 
-		/* Prove knowledge of sk, signing the commitment to the polynomial. */
-		memcpy(buf, msg, len);
-		etrs_dig(buf + len, (const ec_t *)com, max);
+		/* Prove knowledge of sk, signing a digest of the message and the
+		 * commitment to the polynomial. */
+		etrs_dig(dig, (const ec_t *)com, max);
+		md_map_lot(buf, in, lens, 2);
 		ec_copy(w[0], p->h);
 		ec_copy(w[1], p->pk);
-		if (cp_sokor_sig(p->c, p->r, buf, len + RLC_MD_LEN, w, NULL, sk,
+		if (cp_sokor_sig(p->c, p->r, buf, RLC_MD_LEN, w, NULL, sk,
 				0) != RLC_OK) {
 			RLC_THROW(ERR_CAUGHT);
 		}
@@ -373,7 +377,6 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, ec_t *com,
 		}
 		RLC_FREE(b);
 		RLC_FREE(ys);
-		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -385,7 +388,9 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	size_t deg, d, m;
 	bn_t n, u, *b, *xs, *sc, *bx, *w, *v;
 	ec_t t, h[2], *ys;
-	uint8_t *buf;
+	uint8_t buf[RLC_MD_LEN], dig[RLC_MD_LEN];
+	const uint8_t *in[2] = { msg, dig };
+	size_t lens[2] = { len, RLC_MD_LEN };
 	int flag = 1, result = 0;
 
 	/* The threshold must be achievable by the ring. */
@@ -402,7 +407,6 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 	d = deg + 1;
 	b = RLC_ALLOCA(bn_t, 2 * k + 4 * d);
 	ys = RLC_ALLOCA(ec_t, k + d);
-	buf = RLC_ALLOCA(uint8_t, len + RLC_MD_LEN);
 	/* Abscissas, scalars of the final check, base abscissas, weights. */
 	xs = b;
 	sc = b + k;
@@ -483,12 +487,13 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 			ec_mul_sim_lot(t, (const ec_t *)ys, (const bn_t *)sc, m + d);
 			flag &= ec_is_infty(t);
 
-			memcpy(buf, msg, len);
-			etrs_dig(buf + len, com, deg);
+			/* The members signed a digest of the message and commitment. */
+			etrs_dig(dig, com, deg);
+			md_map_lot(buf, in, lens, 2);
 			for (size_t i = 0; i < size; i++) {
 				ec_copy(h[0], s[i]->h);
 				ec_copy(h[1], s[i]->pk);
-				flag &= cp_sokor_ver(s[i]->c, s[i]->r, buf, len + RLC_MD_LEN,
+				flag &= cp_sokor_ver(s[i]->c, s[i]->r, buf, RLC_MD_LEN,
 						h, NULL);
 			}
 		}
@@ -509,7 +514,6 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		}
 		RLC_FREE(b);
 		RLC_FREE(ys);
-		RLC_FREE(buf);
 	}
 	return result;
 }

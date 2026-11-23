@@ -282,6 +282,18 @@ void md_map_s3384(uint8_t *hash, const uint8_t *msg, size_t len);
 void md_map_s3512(uint8_t *hash, const uint8_t *msg, size_t len);
 
 /**
+ * Computes the chosen hash function over the concatenation of several byte
+ * vectors, without copying them into one buffer.
+ *
+ * @param[out] hash				- the digest.
+ * @param[in] msg				- the pieces of the message.
+ * @param[in] len				- the lengths of the pieces in bytes.
+ * @param[in] n					- the number of pieces.
+ */
+void md_map_lot(uint8_t *hash, const uint8_t *const *msg, const size_t *len,
+		size_t n);
+
+/**
  * Computes the SHAKE128 extendable-output function, with an output of any
  * length.
  *

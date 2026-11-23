@@ -4174,6 +4174,7 @@
 #undef md_map_s3256
 #undef md_map_s3384
 #undef md_map_s3512
+#undef md_map_lot
 #undef md_shake128
 #undef md_shake256
 #undef md_xof_sk128
@@ -4208,6 +4209,7 @@
 #define md_map_s3256 	RLC_PREFIX(md_map_s3256)
 #define md_map_s3384 	RLC_PREFIX(md_map_s3384)
 #define md_map_s3512 	RLC_PREFIX(md_map_s3512)
+#define md_map_lot 	RLC_PREFIX(md_map_lot)
 #define md_shake128 	RLC_PREFIX(md_shake128)
 #define md_shake256 	RLC_PREFIX(md_shake256)
 #define md_xof_sk128 	RLC_PREFIX(md_xof_sk128)

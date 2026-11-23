@@ -60,8 +60,9 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	bn_t n, k, x, r;
 	ec_t p;
-	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
+	uint8_t hash[RLC_MD_LEN], buf[RLC_FC_BYTES];
+	const uint8_t *in[2] = { msg, buf };
+	size_t lens[2] = { len, RLC_FC_BYTES };
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -89,9 +90,8 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 				bn_mod(r, x, n);
 			} while (bn_is_zero(r));
 
-			memcpy(m, msg, len);
-			bn_write_bin(m + len, RLC_FC_BYTES, r);
-			md_map(hash, m, len + RLC_FC_BYTES);
+			bn_write_bin(buf, RLC_FC_BYTES, r);
+			md_map_lot(hash, in, lens, 2);
 
 			if (8 * RLC_MD_LEN > bn_bits(n)) {
 				len = RLC_CEIL(bn_bits(n), 8);
@@ -120,7 +120,6 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		bn_free(x);
 		bn_free(r);
 		ec_free(p);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -128,8 +127,9 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	bn_t n, ev, rv;
 	ec_t p;
-	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
+	uint8_t hash[RLC_MD_LEN], buf[RLC_FC_BYTES];
+	const uint8_t *in[2] = { msg, buf };
+	size_t lens[2] = { len, RLC_FC_BYTES };
 	int result = 0;
 
 	bn_null(n);
@@ -155,9 +155,8 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 
 				bn_mod(rv, rv, n);
 
-				memcpy(m, msg, len);
-				bn_write_bin(m + len, RLC_FC_BYTES, rv);
-				md_map(hash, m, len + RLC_FC_BYTES);
+				bn_write_bin(buf, RLC_FC_BYTES, rv);
+				md_map_lot(hash, in, lens, 2);
 
 				if (8 * RLC_MD_LEN > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);
@@ -188,7 +187,6 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		bn_free(ev);
 		bn_free(rv);
 		ec_free(p);
-		RLC_FREE(m);
 	}
 	return result;
 }

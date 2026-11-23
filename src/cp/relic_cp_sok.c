@@ -45,7 +45,9 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 	bn_t n, r;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
+	uint8_t *buf, m[3 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int l, result = RLC_OK;
 
 	bn_null(n);
@@ -58,12 +60,10 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 		ec_new(t);
 
 		/* Points at infinity are shorter, so clear the unused bytes. */
-		memset(m, 0, len + 3 * (RLC_FC_BYTES + 1));
+		memset(m, 0, sizeof(m));
 		buf = m;
 		ec_curve_get_ord(n);
 		ec_curve_get_gen(t);
-		memcpy(buf, msg, len);
-		buf += len;
 		l = ec_size_bin(t, 1);
 		ec_write_bin(buf, l, t, 1);
 		buf += l;
@@ -77,7 +77,7 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 		ec_write_bin(buf, l, t, 1);
 		buf += l;
 
-		md_map(h, m, len + 3 * (RLC_FC_BYTES + 1));
+		md_map_lot(h, in, lens, 2);
 		bn_read_bin(c, h, RLC_MD_LEN);
 		bn_mod(c, c, n);
 
@@ -92,7 +92,6 @@ int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
 		bn_free(n);
 		bn_free(r);
 		ec_free(t);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -102,13 +101,14 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 	bn_t n, v;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
+	uint8_t *buf, m[3 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int l, result = 0;
 
 	/* Points outside the group of prime order are not in the statement,
 	 * except the point at infinity. */
 	if (!ec_is_infty(y) && !ec_is_valid(y)) {
-		RLC_FREE(m);
 		return 0;
 	}
 
@@ -122,12 +122,10 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		ec_new(t);
 
 		/* Points at infinity are shorter, so clear the unused bytes. */
-		memset(m, 0, len + 3 * (RLC_FC_BYTES + 1));
+		memset(m, 0, sizeof(m));
 		buf = m;
 		ec_curve_get_ord(n);
 		ec_curve_get_gen(t);
-		memcpy(buf, msg, len);
-		buf += len;
 		l = ec_size_bin(t, 1);
 		ec_write_bin(buf, l, t, 1);
 		buf += l;
@@ -140,7 +138,7 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		l = ec_size_bin(t, 1);
 		ec_write_bin(buf, l, t, 1);
 
-		md_map(h, m, len + 3 * (RLC_FC_BYTES + 1));
+		md_map_lot(h, in, lens, 2);
 		bn_read_bin(v, h, RLC_MD_LEN);
 		bn_mod(v, v, n);
 
@@ -157,7 +155,6 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 		bn_free(n);
 		bn_free(v);
 		ec_free(t);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -167,7 +164,9 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	bn_t n, a[2], b[2], z;
 	ec_t u, t[2];
 	uint8_t h[RLC_MD_LEN];
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
+	uint8_t *buf, m[6 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int l, result = RLC_OK;
 	/* The real branch is the first one if first is nonzero, the second one
 	 * otherwise. Both branches run the same operations, and the values are
@@ -182,11 +181,9 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		ec_new_all(u, t[0], t[1]);
 
 		/* Points at infinity are shorter, so clear the unused bytes. */
-		memset(m, 0, len + 6 * (RLC_FC_BYTES + 1));
+		memset(m, 0, sizeof(m));
 		buf = m;
 		ec_curve_get_ord(n);
-		memcpy(buf, msg, len);
-		buf += len;
 
 		/* Index 0 is the real branch and index 1 the simulated one: each
 		 * commitment is T = [a]G + [b]Y, so the real nonce is a + bx and the
@@ -225,7 +222,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 			ec_write_bin(buf, l, t[i], 1);
 			buf += l;
 		}
-		md_map(h, m, len + 6 * (RLC_FC_BYTES + 1));
+		md_map_lot(h, in, lens, 2);
 		bn_read_bin(z, h, RLC_MD_LEN);
 		bn_mod(z, z, n);
 
@@ -248,7 +245,6 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	RLC_FINALLY {
 		bn_free_all(n, a[0], a[1], b[0], b[1], z);
 		ec_free_all(u, t[0], t[1]);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -258,7 +254,9 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	bn_t n, v[2], z;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
+	uint8_t *buf, m[6 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int l, result = 0;
 
 	/* Points outside the group of prime order are not in the statements,
@@ -267,7 +265,6 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	if ((!ec_is_infty(y[0]) && !ec_is_valid(y[0])) ||
 			(!ec_is_infty(y[1]) && !ec_is_valid(y[1])) ||
 			(g != NULL && (!ec_is_valid(g[0]) || !ec_is_valid(g[1])))) {
-		RLC_FREE(m);
 		return 0;
 	}
 
@@ -285,11 +282,9 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		ec_new(t);
 
 		/* Points at infinity are shorter, so clear the unused bytes. */
-		memset(m, 0, len + 6 * (RLC_FC_BYTES + 1));
+		memset(m, 0, sizeof(m));
 		buf = m;
 		ec_curve_get_ord(n);
-		memcpy(buf, msg, len);
-		buf += len;
 
 		for (int i = 0; i < 2; i++) {
 			if (g != NULL) {
@@ -312,7 +307,7 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 			ec_write_bin(buf, l, t, 1);
 			buf += l;
 		}
-		md_map(h, m, len + 6 * (RLC_FC_BYTES + 1));
+		md_map_lot(h, in, lens, 2);
 		bn_read_bin(z, h, RLC_MD_LEN);
 		bn_mod(z, z, n);
 
@@ -338,7 +333,6 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		bn_free(v[1]);
 		bn_free(z);
 		ec_free(t);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -349,8 +343,9 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	bn_t n, a[2], b[2], z;
 	ec_t t[3], u;
 	uint8_t d[RLC_MD_LEN];
-	const size_t size = len + 9 * (RLC_FC_BYTES + 1);
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, size);
+	uint8_t *buf, m[9 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int result = RLC_OK;
 	/* The first branch proves log_G(h), the second log_g0(y0) = log_g1(y1).
 	 * The real branch is the first one if first is nonzero, the second one
@@ -390,9 +385,8 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		bn_swap_sec(b[0], b[1], swap);
 
 		/* Hash a fixed-length encoding, so that short points leave zeros. */
-		memset(m, 0, size);
-		memcpy(m, msg, len);
-		buf = m + len;
+		memset(m, 0, sizeof(m));
+		buf = m;
 		ec_curve_get_gen(u);
 		ec_write_bin(buf, ec_size_bin(u, 1), u, 1);
 		buf += RLC_FC_BYTES + 1;
@@ -412,7 +406,7 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 		buf += RLC_FC_BYTES + 1;
 		ec_write_bin(buf, ec_size_bin(t[2], 1), t[2], 1);
 		buf += RLC_FC_BYTES + 1;
-		md_map(d, m, size);
+		md_map_lot(d, in, lens, 2);
 		bn_read_bin(z, d, RLC_MD_LEN);
 		bn_mod(z, z, n);
 		/* The real branch gets the rest of the challenge, c = z - b1, and
@@ -434,7 +428,6 @@ int cp_sokeqor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
 	RLC_FINALLY {
 		bn_free_all(n, a[0], a[1], b[0], b[1], z);
 		ec_free_all(u, t[0], t[1], t[2]);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -444,8 +437,9 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	bn_t n, z;
 	ec_t t[3], u;
 	uint8_t d[RLC_MD_LEN];
-	const size_t size = len + 9 * (RLC_FC_BYTES + 1);
-	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, size);
+	uint8_t *buf, m[9 * (RLC_FC_BYTES + 1)];
+	const uint8_t *in[2] = { msg, m };
+	size_t lens[2] = { len, sizeof(m) };
 	int result = 0;
 
 	/* Points outside the group of prime order are not in the statements,
@@ -454,7 +448,6 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 			(!ec_is_infty(y[0]) && !ec_is_valid(y[0])) ||
 			(!ec_is_infty(y[1]) && !ec_is_valid(y[1])) ||
 			!ec_is_valid(g[0]) || !ec_is_valid(g[1])) {
-		RLC_FREE(m);
 		return 0;
 	}
 
@@ -479,9 +472,8 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		ec_mul_sim(t[1], g[0], s[1], y[0], c[1]);
 		ec_mul_sim(t[2], g[1], s[1], y[1], c[1]);
 
-		memset(m, 0, size);
-		memcpy(m, msg, len);
-		buf = m + len;
+		memset(m, 0, sizeof(m));
+		buf = m;
 		ec_curve_get_gen(u);
 		ec_write_bin(buf, ec_size_bin(u, 1), u, 1);
 		buf += RLC_FC_BYTES + 1;
@@ -501,7 +493,7 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		buf += RLC_FC_BYTES + 1;
 		ec_write_bin(buf, ec_size_bin(t[2], 1), t[2], 1);
 		buf += RLC_FC_BYTES + 1;
-		md_map(d, m, size);
+		md_map_lot(d, in, lens, 2);
 		bn_read_bin(z, d, RLC_MD_LEN);
 		bn_mod(z, z, n);
 
@@ -528,7 +520,6 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 		for (int i = 0; i < 3; i++) {
 			ec_free(t[i]);
 		}
-		RLC_FREE(m);
 	}
 	return result;
 }
