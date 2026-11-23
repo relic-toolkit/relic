@@ -32,22 +32,6 @@
 #include "relic.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Returns 1 if a point of a statement is in the group of prime order, which
- * includes the point at infinity, and 0 otherwise. A point on the curve with
- * a component of small order would pass the checks for some challenges.
- *
- * @param[in] p				- the point.
- * @return 1 if the point is in the group, 0 otherwise.
- */
-static int pok_in_group(const ec_t p) {
-	return ec_is_infty(p) || ec_is_valid(p);
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -109,8 +93,9 @@ int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y) {
 	int l, result = 0;
 	uint8_t *buf, bin[3 * (RLC_FC_BYTES + 1)] = { 0 }, h[RLC_MD_LEN];
 
-	/* Points outside the group are not in the statement. */
-	if (!pok_in_group(y)) {
+	/* Points outside the group of prime order are not in the statement,
+	 * except the point at infinity. */
+	if (!ec_is_infty(y) && !ec_is_valid(y)) {
 		return 0;
 	}
 
@@ -232,8 +217,10 @@ int cp_pokor_ver(const bn_t c[2], const bn_t r[2], const ec_t y[2]) {
 	int l, result = 0;
 	uint8_t *buf, bin[6 * (RLC_FC_BYTES + 1)] = { 0 }, h[RLC_MD_LEN];
 
-	/* Points outside the group are not in the statement. */
-	if (!pok_in_group(y[0]) || !pok_in_group(y[1])) {
+	/* Points outside the group of prime order are not in the statement,
+	 * except the point at infinity. */
+	if ((!ec_is_infty(y[0]) && !ec_is_valid(y[0])) ||
+			(!ec_is_infty(y[1]) && !ec_is_valid(y[1]))) {
 		return 0;
 	}
 

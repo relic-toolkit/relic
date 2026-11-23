@@ -942,7 +942,8 @@ static int smlers(void) {
 			/* A tag moved by a point of small order would let the same key
 			 * sign the message again with another tag, without linking. */
 			int q = small_order(pk[1]);
-			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0],
+				pp) == RLC_OK, end);
 			ec_add(pk[1], pk[1], ring[0]->tau);
 			ec_norm(pk[1], pk[1]);
 			ec_curve_get_gen(pk[2]);

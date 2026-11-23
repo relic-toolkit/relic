@@ -32,22 +32,6 @@
 #include "relic.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Returns 1 if a point of a statement is in the group of prime order, which
- * includes the point at infinity, and 0 otherwise. A point on the curve with
- * a component of small order would pass the checks for some challenges.
- *
- * @param[in] p				- the point.
- * @return 1 if the point is in the group, 0 otherwise.
- */
-static int sok_in_group(const ec_t p) {
-	return ec_is_infty(p) || ec_is_valid(p);
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -121,8 +105,9 @@ int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 3 * (RLC_FC_BYTES + 1));
 	int l, result = 0;
 
-	/* Points outside the group are not in the statement. */
-	if (!sok_in_group(y)) {
+	/* Points outside the group of prime order are not in the statement,
+	 * except the point at infinity. */
+	if (!ec_is_infty(y) && !ec_is_valid(y)) {
 		RLC_FREE(m);
 		return 0;
 	}
@@ -276,10 +261,12 @@ int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = 0;
 
-	/* Points outside the group are not in the statement. Without generators,
-	 * the statements use the generator of the curve. */
-	if (!sok_in_group(y[0]) || !sok_in_group(y[1]) || (g != NULL &&
-			(!sok_in_group(g[0]) || !sok_in_group(g[1])))) {
+	/* Points outside the group of prime order are not in the statements,
+	 * except the point at infinity, and the generators must be in it. Without
+	 * generators, the statements use the generator of the curve. */
+	if ((!ec_is_infty(y[0]) && !ec_is_valid(y[0])) ||
+			(!ec_is_infty(y[1]) && !ec_is_valid(y[1])) ||
+			(g != NULL && (!ec_is_valid(g[0]) || !ec_is_valid(g[1])))) {
 		RLC_FREE(m);
 		return 0;
 	}
@@ -461,9 +448,12 @@ int cp_sokeqor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, size);
 	int result = 0;
 
-	/* Points outside the group are not in the statement. */
-	if (!sok_in_group(h) || !sok_in_group(y[0]) || !sok_in_group(y[1])
-			|| !sok_in_group(g[0]) || !sok_in_group(g[1])) {
+	/* Points outside the group of prime order are not in the statements,
+	 * except the point at infinity, and the generators must be in it. */
+	if ((!ec_is_infty(h) && !ec_is_valid(h)) ||
+			(!ec_is_infty(y[0]) && !ec_is_valid(y[0])) ||
+			(!ec_is_infty(y[1]) && !ec_is_valid(y[1])) ||
+			!ec_is_valid(g[0]) || !ec_is_valid(g[1])) {
 		RLC_FREE(m);
 		return 0;
 	}
