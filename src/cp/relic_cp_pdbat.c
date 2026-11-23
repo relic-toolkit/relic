@@ -315,7 +315,7 @@ int cp_amore_gen(bn_t s, gt_t e) {
 
 int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const g1_t *p, const g2_t *q, size_t m) {
-	bn_t n, t, z, b;
+	bn_t n, t, z, b, *o = NULL;
 	g1_t w;
 	int result = RLC_OK;
 	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
@@ -328,12 +328,26 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		}
 	}
 
+	if (m > 1) {
+		o = RLC_ALLOCA(bn_t, m);
+		if (o == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+			return RLC_ERR;
+		}
+		for (size_t i = 0; i < m; i++) {
+			bn_null(o[i]);
+		}
+	}
+
 	bn_null_all(n, t, z, b);
 	g1_null(w);
 
 	RLC_TRY {
 		bn_new_all(n, t, z, b);
 		g1_new(w);
+		for (size_t i = 0; m > 1 && i < m; i++) {
+			bn_new(o[i]);
+		}
 
 		pc_get_ord(n);
 		/* Sample r from Z_q* and compute U = [z]P. */
@@ -363,13 +377,19 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 			g2_mul(d, q[0], r[0]);
 			g2_sub(d, v, d);
 		} else {
+			/* Blind each C_i = [r_i]P_i + [o_i]W with its own short o_i and
+			 * set D = sum [o_i]Q_i, as a shared W cancels in C_i - C_j and
+			 * lets the server shift results between pairs. Recovering the
+			 * o_i from D is a discrete logarithm in m >= 2 dimensions. */
+			for (size_t i = 0; i < m; i++) {
+				do {
+					bn_rand(o[i], RLC_POS, eps);
+				} while (bn_is_zero(o[i]));
+			}
 			g1_rand(w);
 			g1_sub(x, u, w);
 			g1_norm(x, x);
-			g2_copy(d, q[0]);
-			for (size_t j = 1; j < m; j++) {
-				g2_add(d, d, q[j]);
-			}
+			g2_mul_sim_lot(d, q, o, m);
 			g2_sub(y, v, d);
 			g2_mul_sec(y, y, z);
 
@@ -379,8 +399,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 				} else {
 					bn_rand_frb(r[i], &(core_get()->par), n, eps);
 				}
-				g1_mul(c[i], p[i], r[i]);
-				g1_add(c[i], c[i], w);
+				g1_mul_sim(c[i], p[i], r[i], w, o[i]);
 				if (g1_is_infty(c[i])) {
 					result = RLC_ERR;
 				}
@@ -401,6 +420,10 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	RLC_FINALLY {
 		bn_free_all(n, t, z, b);
 		g1_free(w);
+		for (size_t i = 0; m > 1 && i < m; i++) {
+			bn_free(o[i]);
+		}
+		RLC_FREE(o);
 	}
 	return result;
 }
