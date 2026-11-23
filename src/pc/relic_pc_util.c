@@ -707,6 +707,13 @@ int gt_is_valid(const gt_t a) {
 				}
 				break;
 		}
+		/* G_T has odd order, so it never holds -1, the only element of order
+		 * 2 in the multiplicative group. Some tests above only check that the
+		 * norm is one, which -1 passes, and rely on the family test to reject
+		 * it. The product is generic, as squarings may assume a cyclotomic
+		 * element. */
+		gt_mul(s, a, a);
+		r = r && !gt_is_unity(s);
 	} RLC_CATCH_ANY {
 		r = 0;
 		RLC_THROW(ERR_CAUGHT);
