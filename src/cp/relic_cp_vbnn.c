@@ -198,8 +198,9 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 	ec_t Z, t;
 	int result = 0;
 
-	/* The point r comes from the signature, so it must be a valid point. */
-	if (msg_len < 0 || ec_is_infty(r) || !ec_on_curve(r)) {
+	/* The point r comes from the signature, so it must be in the group of
+	 * prime order. */
+	if (msg_len < 0 || !ec_is_valid(r)) {
 		return 0;
 	}
 

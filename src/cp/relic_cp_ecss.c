@@ -140,9 +140,10 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 
 		ec_curve_get_ord(n);
 
-		/* The key at infinity would let anyone produce valid signatures. */
+		/* The key at infinity would let anyone produce valid signatures, and
+		 * a key outside the group of prime order makes them malleable. */
 		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s) &&
-				!ec_is_infty(q) && ec_on_curve(q)) {
+				ec_is_valid(q)) {
 			if (bn_cmp(e, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				ec_mul_sim_gen(p, s, q, e);
 				ec_get_x(rv, p);

@@ -432,13 +432,14 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		ec_curve_get_ord(n);
 		/* The ring is a set of keys, so a key cannot sign twice. */
 		for (size_t i = 0; i < size; i++) {
-			flag &= (s[i]->deg == deg) && ec_on_curve(s[i]->h);
+			flag &= (s[i]->deg == deg) &&
+					(ec_is_infty(s[i]->h) || ec_is_valid(s[i]->h));
 			for (size_t j = 0; j < i; j++) {
 				flag &= (ec_cmp(s[i]->pk, s[j]->pk) != RLC_EQ);
 			}
 		}
 		for (size_t i = 0; i < deg; i++) {
-			flag &= ec_on_curve(com[i]);
+			flag &= ec_is_infty(com[i]) || ec_is_valid(com[i]);
 		}
 		/* Accept if the trapdoors and members are thres more than deg. */
 		m = etrs_pts(xs, ys, td, y, max, s, size, NULL, n);
