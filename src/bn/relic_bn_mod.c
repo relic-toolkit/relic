@@ -91,6 +91,14 @@ void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 		return;
 	}
 
+	/* The constant needs twice the digits of m, so leave it zero, which the
+	 * reduction rejects, when they do not fit. */
+	if (2 * m->used >= RLC_BN_SIZE) {
+		bn_zero(u);
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+
 	bn_set_2b(u, m->used * 2 * RLC_DIG);
 	bn_div(u, u, m);
 }
@@ -114,7 +122,10 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		return;
 	}
 
-	if (a->used > 2 * m->used) {
+	/* The constant has one or two digits more than m, and anything else
+	 * would make the products below overflow, so reduce without it. */
+	if (a->used > 2 * m->used || u->used < m->used + 1 ||
+			u->used > m->used + 2) {
 		bn_mod(c, a, m);
 		return;
 	}

@@ -1206,6 +1206,19 @@ static int reduction(void) {
 			}
 		}
 		TEST_END;
+
+		TEST_CASE("barrett reduction is correct without its constant") {
+			/* The constant of a modulus this large does not fit, so the
+			 * reduction must fall back to division, as for any wrong one. */
+			bn_rand(b, RLC_POS, RLC_BN_BITS + RLC_DIG);
+			bn_rand(a, RLC_POS, 2 * bn_bits(b) - RLC_DIG);
+			TEST_ERR(bn_mod_pre_barrt(c, b));
+			TEST_ASSERT(bn_is_zero(c), end);
+			bn_mod_barrt(e, a, b, c);
+			bn_mod_basic(d, a, b);
+			TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+		}
+		TEST_END;
 #endif
 
 		TEST_CASE("reduction modulo a power of 2 is correct") {
