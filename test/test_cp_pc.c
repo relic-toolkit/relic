@@ -403,6 +403,15 @@ static int pdbat(void) {
 				pc_map(e, p[j], q[j]);
 				TEST_ASSERT(gt_cmp(e, g[j]) == RLC_EQ, end);
 			}
+			/* Arguments at infinity are rejected, as they reveal the key. */
+			g1_set_infty(p[0]);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
+			g1_rand(p[0]);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
+			g2_rand(q[0]);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);

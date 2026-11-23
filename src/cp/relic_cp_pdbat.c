@@ -320,6 +320,14 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	int result = RLC_OK;
 	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
 
+	/* A single argument at infinity would put -[s]P in the request or let
+	 * the answer reveal e, so reject such arguments before using the key. */
+	for (size_t i = 0; i < m; i++) {
+		if (g1_is_infty(p[i]) || g2_is_infty(q[i])) {
+			return RLC_ERR;
+		}
+	}
+
 	bn_null_all(n, t, z, b);
 	g1_null(w);
 
@@ -373,8 +381,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 				}
 				g1_mul(c[i], p[i], r[i]);
 				g1_add(c[i], c[i], w);
-				if (g1_is_infty(p[i]) || g2_is_infty(q[i]) ||
-						g1_is_infty(c[i])) {
+				if (g1_is_infty(c[i])) {
 					result = RLC_ERR;
 				}
 			}
