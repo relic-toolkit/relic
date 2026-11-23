@@ -212,11 +212,20 @@ int eb_is_valid(const eb_t p) {
 		result = 1;
 		eb_curve_get_cof(h);
 		if (bn_cmp_dig(h, 1) != RLC_EQ) {
-			/* With a cofactor, the point must also have prime order n. The
-			 * basic method is used because it does not reduce the scalar. */
-			eb_curve_get_ord(n);
-			eb_mul_basic(t, p, n);
-			result = eb_is_infty(t);
+			/* The order n is odd, so no point of order 2 has it. Such a point
+			 * is its own negation and has abscissa zero, which affine formulas
+			 * would divide by, so reject it before the multiplication. */
+			eb_neg(t, p);
+			if (eb_cmp(t, p) == RLC_EQ) {
+				result = 0;
+			} else {
+				/* With a cofactor, the point must also have prime order n.
+				 * The basic method is used because it does not reduce the
+				 * scalar. */
+				eb_curve_get_ord(n);
+				eb_mul_basic(t, p, n);
+				result = eb_is_infty(t);
+			}
 		}
 	}
 	RLC_CATCH_ANY {

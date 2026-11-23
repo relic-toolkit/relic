@@ -145,6 +145,17 @@ static int util(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("points of order two are not valid") {
+			/* The point (0, sqrt(b)) has order 2 on every binary curve. */
+			fb_zero(a->x);
+			fb_srt(a->y, eb_curve_get_b());
+			fb_set_dig(a->z, 1);
+			a->coord = EC_AFFIN;
+			TEST_ASSERT(eb_on_curve(a), end);
+			TEST_ASSERT(!eb_is_valid(a), end);
+		}
+		TEST_END;
+
 		TEST_CASE("blinding is consistent") {
 			eb_rand(a);
 			eb_blind(a, a);
