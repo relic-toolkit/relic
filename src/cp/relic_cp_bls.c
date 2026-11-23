@@ -134,20 +134,30 @@ int cp_bls_gen(bn_t d, g2_t q) {
 }
 
 int cp_bls_sig(g1_t s, const uint8_t *msg, size_t len, const bn_t d) {
+	bn_t n;
 	g1_t p;
 	int result = RLC_OK;
 
+	bn_null(n);
 	g1_null(p);
 
 	RLC_TRY {
+		bn_new(n);
 		g1_new(p);
-		g1_map(p, msg, len);
-		g1_mul_sec(s, p, d);
+		pc_get_ord(n);
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, n) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
+			result = RLC_ERR;
+		} else {
+			g1_map(p, msg, len);
+			g1_mul_sec(s, p, d);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		bn_free(n);
 		g1_free(p);
 	}
 	return result;

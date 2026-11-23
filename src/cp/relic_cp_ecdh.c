@@ -79,20 +79,26 @@ int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 		bn_new(x);
 		bn_new(h);
 
-		ec_curve_get_cof(h);
-		if (bn_bits(h) < RLC_DIG) {
-			ec_mul_dig(p, q, h->dp[0]);
-		} else {
-			ec_mul(p, q, h);
-		}
-		ec_mul_sec(p, p, d);
-		if (ec_is_infty(p)) {
+		ec_curve_get_ord(x);
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, x) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
 			result = RLC_ERR;
 		} else {
-			ec_get_x(x, p);
-			l = bn_size_bin(x);
-			bn_write_bin(_x, l, x);
-			md_kdf(key, key_len, _x, l);
+			ec_curve_get_cof(h);
+			if (bn_bits(h) < RLC_DIG) {
+				ec_mul_dig(p, q, h->dp[0]);
+			} else {
+				ec_mul(p, q, h);
+			}
+			ec_mul_sec(p, p, d);
+			if (ec_is_infty(p)) {
+				result = RLC_ERR;
+			} else {
+				ec_get_x(x, p);
+				l = bn_size_bin(x);
+				bn_write_bin(_x, l, x);
+				md_kdf(key, key_len, _x, l);
+			}
 		}
 	}
 	RLC_CATCH_ANY {

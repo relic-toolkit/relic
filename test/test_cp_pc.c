@@ -677,6 +677,11 @@ static int bls(void) {
 			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_sig(s[0], m, sizeof(m), d) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
+			/* A private key outside [1, r - 1] is rejected. */
+			bn_zero(d);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_ERR, end);
+			pc_get_ord(d);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_ERR, end);
 			/* Check adversarial signature. */
 			memset(m, 0, sizeof(m));
 			g2_set_infty(q[0]);

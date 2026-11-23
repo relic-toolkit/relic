@@ -111,6 +111,11 @@ static int ecdh(void) {
 			TEST_ASSERT(cp_ecdh_key(k1, RLC_MD_LEN, d_b, qa) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdh_key(k2, RLC_MD_LEN, da, q_b) == RLC_OK, end);
 			TEST_ASSERT(memcmp(k1, k2, RLC_MD_LEN) == 0, end);
+			/* A private key outside [1, n - 1] is rejected. */
+			bn_zero(d_b);
+			TEST_ASSERT(cp_ecdh_key(k1, RLC_MD_LEN, d_b, qa) == RLC_ERR, end);
+			ec_curve_get_ord(d_b);
+			TEST_ASSERT(cp_ecdh_key(k1, RLC_MD_LEN, d_b, qa) == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -163,6 +168,13 @@ static int ecmqv(void) {
 			TEST_ASSERT(cp_ecmqv_key(key2, RLC_MD_LEN, d1a, d2a, q2a, q1_b,
 							q2_b) == RLC_OK, end);
 			TEST_ASSERT(memcmp(key1, key2, RLC_MD_LEN) == 0, end);
+			/* Private keys outside [1, n - 1] are rejected. */
+			ec_curve_get_ord(d1_b);
+			TEST_ASSERT(cp_ecmqv_key(key1, RLC_MD_LEN, d1_b, d2_b, q2_b, q1a,
+							q2a) == RLC_ERR, end);
+			bn_zero(d2a);
+			TEST_ASSERT(cp_ecmqv_key(key2, RLC_MD_LEN, d1a, d2a, q2a, q1_b,
+							q2_b) == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -221,6 +233,14 @@ static int ecies(void) {
 			TEST_ASSERT(cp_ecies_dec(out, &out_len, r, out, out_len, da)
 					== RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
+			/* A private key outside [1, n - 1] is rejected. */
+			out_len = RLC_BC_LEN + RLC_MD_LEN;
+			TEST_ASSERT(cp_ecies_enc(r, out, &out_len, in, in_len, qa)
+					== RLC_OK, end);
+			ec_curve_get_ord(da);
+			l = out_len;
+			TEST_ASSERT(cp_ecies_dec(out, &l, r, out, out_len, da)
+					== RLC_ERR, end);
 		}
 		TEST_END;
 #if MD_MAP == MD_SH256
