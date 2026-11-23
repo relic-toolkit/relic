@@ -117,7 +117,7 @@ int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 
 	size = bn_size_bin(pub->n);
 
-	if (in >= pub->t) {
+	if (in >= pub->t || size > *out_len) {
 		return RLC_ERR;
 	}
 
@@ -132,19 +132,16 @@ int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 		bn_mxp_dig(u, u, pub->t, pub->n);
 		bn_mul(m, m, u);
 		bn_mod(m, m, pub->n);
-
-		if (size <= *out_len) {
-			*out_len = size;
-			memset(out, 0, *out_len);
-			bn_write_bin(out, size, m);
-		} else {
-			result = RLC_ERR;
-		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		/* Write only on success, so a failure leaves no plaintext behind. */
+		if (result == RLC_OK) {
+			*out_len = size;
+			bn_write_bin(out, size, m);
+		}
 		bn_free(m);
 		bn_free(u);
 	}

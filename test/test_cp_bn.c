@@ -155,6 +155,18 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv, oaepp) == RLC_OK,
 				end);
 			TEST_ASSERT(ol == il && memcmp(in, out, ol) == 0, end);
+			/* An even modulus fails without writing the output. */
+			bn_add_dig(pub->crt->n, pub->crt->n, 1);
+			ol = RLC_BN_BITS / 8 + 1;
+			memset(out, 0, sizeof(out));
+			err_set_quiet(1);
+			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			for (int j = 0; j < RLC_BN_BITS / 8 + 1; j++) {
+				TEST_ASSERT(out[j] == 0, end);
+			}
+			bn_sub_dig(pub->crt->n, pub->crt->n, 1);
 		} TEST_END;
 
 		TEST_CASE("rsa signature/verification is correct") {
@@ -487,6 +499,17 @@ static int benaloh(void) {
 			/* Plaintexts must be smaller than the block size. */
 			len = RLC_BN_BITS / 8 + 1;
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, prime, pub) == RLC_ERR, end);
+			/* An even modulus fails without writing the output. */
+			bn_add_dig(pub->n, pub->n, 1);
+			memset(buf, 0, sizeof(buf));
+			err_set_quiet(1);
+			TEST_ASSERT(cp_bdpe_enc(buf, &len, 1, pub) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			for (int j = 0; j < RLC_BN_BITS / 8 + 1; j++) {
+				TEST_ASSERT(buf[j] == 0, end);
+			}
+			bn_sub_dig(pub->n, pub->n, 1);
 			/* Block sizes must be odd primes, or no key exists. */
 			result = RLC_OK;
 			TEST_ERR(result = cp_bdpe_gen(pub, prv, 2, RLC_BN_BITS));
@@ -536,6 +559,15 @@ static int paillier(void) {
 			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_phpe_dec(b, c, prv) == RLC_OK, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* An even modulus fails without writing the output. */
+			bn_add_dig(pub, pub, 1);
+			bn_zero(c);
+			err_set_quiet(1);
+			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ASSERT(bn_is_zero(c), end);
+			bn_sub_dig(pub, pub, 1);
 		}
 		TEST_END;
 
@@ -591,11 +623,21 @@ static int paillier(void) {
 			TEST_END;
 		}
 
-		TEST_CASE("general paillier rejects a modulus below 2") {
-			/* No randomness can be drawn modulo 1, which would loop. */
+		TEST_CASE("general paillier rejects invalid moduli") {
+			/* No randomness can be drawn modulo 1, which would loop, and an
+			 * even modulus would leave the message in the output. */
 			bn_set_dig(pub, 1);
 			bn_zero(a);
 			TEST_ASSERT(cp_ghpe_enc(c, a, pub, 1) == RLC_ERR, end);
+			bn_set_dig(pub, 1);
+			bn_lsh(pub, pub, RLC_BN_BITS / 2);
+			bn_set_dig(a, 1);
+			bn_zero(c);
+			err_set_quiet(1);
+			TEST_ASSERT(cp_ghpe_enc(c, a, pub, 1) == RLC_ERR, end);
+			err_set_quiet(0);
+			TEST_ASSERT(err_get_code() == RLC_ERR, end);
+			TEST_ASSERT(bn_is_zero(c), end);
 		}
 		TEST_END;
 	}
@@ -651,6 +693,15 @@ static int subgroup_paillier(void) {
 				TEST_ASSERT(bn_cmp(c, d) != RLC_EQ, end);
 				TEST_ASSERT(cp_shpe_dec(b, d, prv) == RLC_OK, end);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* An even modulus fails without writing the output. */
+				bn_add_dig(pub->crt->n, pub->crt->n, 1);
+				bn_zero(c);
+				err_set_quiet(1);
+				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_ERR, end);
+				err_set_quiet(0);
+				TEST_ASSERT(err_get_code() == RLC_ERR, end);
+				TEST_ASSERT(bn_is_zero(c), end);
+				bn_sub_dig(pub->crt->n, pub->crt->n, 1);
 			}
 			TEST_END;
 

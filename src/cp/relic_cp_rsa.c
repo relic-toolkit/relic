@@ -659,8 +659,6 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 		if (pad(em, k, in, in_len) == RLC_OK) {
 			bn_read_bin(m, em, k);
 			bn_mxp(m, m, pub->e, pub->crt->n);
-			bn_write_bin(out, k, m);
-			*out_len = k;
 		} else {
 			result = RLC_ERR;
 		}
@@ -669,6 +667,11 @@ static int rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		/* Write only on success, so a failure leaves no plaintext behind. */
+		if (result == RLC_OK) {
+			bn_write_bin(out, k, m);
+			*out_len = k;
+		}
 		bn_free(m);
 		RLC_FREE(em);
 	}

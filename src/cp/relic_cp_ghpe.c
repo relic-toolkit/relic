@@ -118,19 +118,23 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 
 			/* Compute c = (g^m)(r^(n^s)) mod n^(s + 1). */
 			bn_add_dig(g, pub, 1);
-			bn_mxp(c, g, m, t);
+			bn_mxp(g, g, m, t);
 			for (size_t j = 0; j < s; j++) {
 				bn_mxp(r, r, pub, t);
 			}
 
-			bn_mul(c, c, r);
-			bn_mod(c, c, t);
+			bn_mul(g, g, r);
+			bn_mod(g, g, t);
 		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		/* Write only on success, so a failure leaves no plaintext behind. */
+		if (result == RLC_OK) {
+			bn_copy(c, g);
+		}
 		bn_free(g);
 		bn_free(r);
 		bn_free(t);

@@ -100,43 +100,46 @@ int cp_phpe_add(bn_t r, const bn_t c, const bn_t d, const bn_t pub) {
 }
 
 int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub) {
-	bn_t g, r, s;
+	bn_t r, s, t;
 	int result = RLC_OK;
 
-	bn_null(g);
 	bn_null(r);
 	bn_null(s);
+	bn_null(t);
 
 	if (pub == NULL || bn_bits(m) > bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
 	RLC_TRY {
-		bn_new(g);
 		bn_new(r);
 		bn_new(s);
+		bn_new(t);
 
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
 		/* Compute c = (g^m)(r^n) mod n^2.
 		 * With g=1+n, this is also (1 + n*m) * r^n mod n^2.
 		 */
-		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
-		bn_mul(c, pub, m);
-		bn_add_dig(c, c, 1);
-		bn_mod(c, c, s);
+		bn_mul(t, pub, m);
+		bn_add_dig(t, t, 1);
+		bn_mod(t, t, s);
 		bn_mxp(r, r, pub, s);
-		bn_mul(c, c, r);
-		bn_mod(c, c, s);
+		bn_mul(t, t, r);
+		bn_mod(t, t, s);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(g);
+		/* Write only on success, so a failure leaves no plaintext behind. */
+		if (result == RLC_OK) {
+			bn_copy(c, t);
+		}
 		bn_free(r);
 		bn_free(s);
+		bn_free(t);
 	}
 
 	return result;

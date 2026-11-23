@@ -164,11 +164,12 @@ int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv) {
 }
 
 int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
-	bn_t r, s;
+	bn_t r, s, t;
 	int result = RLC_OK;
 
 	bn_null(r);
 	bn_null(s);
+	bn_null(t);
 
 	if (pub == NULL) {
 		return RLC_ERR;
@@ -183,23 +184,28 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 	RLC_TRY {
 		bn_new(r);
 		bn_new(s);
+		bn_new(t);
 
 		/* Generate r without knowing the order of h. */
 		bn_rand_mod(r, pub->crt->n);
 		/* For G=(1+n)^b, compute c = (G^m)(h^r) mod n^2. */
 		bn_sqr(s, pub->crt->n);
 		bn_mxp(r, pub->gn, r, s);	// h^r mod n^2
-		bn_mxp(c, pub->g, m, s);	// G^m mod n^2
-		bn_mul(c, c, r);
-		bn_mod(c, c, s);
-
+		bn_mxp(t, pub->g, m, s);	// G^m mod n^2
+		bn_mul(t, t, r);
+		bn_mod(t, t, s);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		/* Write only on success, so a failure leaves no plaintext behind. */
+		if (result == RLC_OK) {
+			bn_copy(c, t);
+		}
 		bn_free(r);
 		bn_free(s);
+		bn_free(t);
 	}
 
 	return result;
