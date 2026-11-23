@@ -561,8 +561,13 @@ static int ecss(void) {
 			bn_zero(r);
 			bn_set_dig(s, 1);
 			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);
-			/* The key at infinity is rejected, even for its own signatures. */
+			/* A private key outside [1, n - 1] is rejected. */
 			bn_zero(d);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_ERR, end);
+			ec_curve_get_ord(d);
+			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_ERR, end);
+			/* The key at infinity is rejected when verifying. */
+			TEST_ASSERT(cp_ecss_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_ecss_sig(r, s, m, sizeof(m), d) == RLC_OK, end);
 			ec_set_infty(q);
 			TEST_ASSERT(cp_ecss_ver(r, s, m, sizeof(m), q) == 0, end);

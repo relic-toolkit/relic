@@ -87,7 +87,9 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 	bn_null(r);
 	bn_null(t);
 
+	/* A modulus below 2 leaves no randomness to draw. */
 	if (pub == NULL || s == 0 || bn_sign(m) == RLC_NEG ||
+			bn_sign(pub) == RLC_NEG || bn_bits(pub) < 2 ||
 			bn_bits(m) > s * bn_bits(pub)) {
 		return RLC_ERR;
 	}

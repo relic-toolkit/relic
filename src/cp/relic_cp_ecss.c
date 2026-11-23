@@ -78,33 +78,38 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		ec_new(p);
 
 		ec_curve_get_ord(n);
-		do {
-			bn_rand_mod(k, n);
-			ec_mul_gen(p, k);
-			ec_get_x(x, p);
-			bn_mod(r, x, n);
-		} while (bn_is_zero(r));
-
-		memcpy(m, msg, len);
-		bn_write_bin(m + len, RLC_FC_BYTES, r);
-		md_map(hash, m, len + RLC_FC_BYTES);
-
-		if (8 * RLC_MD_LEN > bn_bits(n)) {
-			len = RLC_CEIL(bn_bits(n), 8);
-			bn_read_bin(e, hash, len);
-			/* Keep the leftmost bits of the hash, as many as in n. */
-			bn_rsh(e, e, 8 * len - bn_bits(n));
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, n) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
+			result = RLC_ERR;
 		} else {
-			bn_read_bin(e, hash, RLC_MD_LEN);
+			do {
+				bn_rand_mod(k, n);
+				ec_mul_gen(p, k);
+				ec_get_x(x, p);
+				bn_mod(r, x, n);
+			} while (bn_is_zero(r));
+
+			memcpy(m, msg, len);
+			bn_write_bin(m + len, RLC_FC_BYTES, r);
+			md_map(hash, m, len + RLC_FC_BYTES);
+
+			if (8 * RLC_MD_LEN > bn_bits(n)) {
+				len = RLC_CEIL(bn_bits(n), 8);
+				bn_read_bin(e, hash, len);
+				/* Keep the leftmost bits of the hash, as many as in n. */
+				bn_rsh(e, e, 8 * len - bn_bits(n));
+			} else {
+				bn_read_bin(e, hash, RLC_MD_LEN);
+			}
+
+			bn_mod(e, e, n);
+
+			bn_mul(s, d, e);
+			bn_mod(s, s, n);
+			bn_sub(s, n, s);
+			bn_add(s, s, k);
+			bn_mod(s, s, n);
 		}
-
-		bn_mod(e, e, n);
-
-		bn_mul(s, d, e);
-		bn_mod(s, s, n);
-		bn_sub(s, n, s);
-		bn_add(s, s, k);
-		bn_mod(s, s, n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

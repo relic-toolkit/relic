@@ -590,6 +590,14 @@ static int paillier(void) {
 			}
 			TEST_END;
 		}
+
+		TEST_CASE("general paillier rejects a modulus below 2") {
+			/* No randomness can be drawn modulo 1, which would loop. */
+			bn_set_dig(pub, 1);
+			bn_zero(a);
+			TEST_ASSERT(cp_ghpe_enc(c, a, pub, 1) == RLC_ERR, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
