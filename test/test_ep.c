@@ -152,6 +152,18 @@ static int util(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("points of order two are not valid") {
+			/* The point (0, 0) is on the curve when it is y^2 = x^3 + ax. */
+			fp_zero(a->x);
+			fp_zero(a->y);
+			fp_set_dig(a->z, 1);
+			a->coord = EC_AFFIN;
+			if (ep_on_curve(a)) {
+				TEST_ASSERT(!ep_is_valid(a), end);
+			}
+		}
+		TEST_END;
+
 		TEST_CASE("blinding is consistent") {
 			ep_rand(a);
 			ep_rand(b);

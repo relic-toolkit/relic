@@ -377,6 +377,13 @@ int ep_is_valid(const ep_t p) {
 			ep_curve_get_ord(n);
 			ep_mul_basic(t, p, n);
 			result = ep_is_infty(t);
+			/* The order n is odd, so no point of order 2 has it. The test
+			 * above cannot tell: the complete formulas for addition fail on
+			 * such points and the multiple ends at (0 : 0 : 0), which reads
+			 * as the point at infinity. A point of order 2 is its own
+			 * negation. */
+			ep_neg(t, p);
+			result &= (ep_cmp(t, p) != RLC_EQ);
 		}
 	}
 	RLC_CATCH_ANY {
