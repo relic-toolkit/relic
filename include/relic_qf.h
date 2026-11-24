@@ -267,6 +267,24 @@ void qf_set_dig(qf_t f, dig_t a, dig_t b, dig_t c);
 void qf_set_int(qf_t f, int a, int b, int c);
 
 /**
+ * Sets the coefficients of a quadratic form to zero.
+ *
+ * @param[out] f			- the quadratic form to set.
+ */
+void qf_zero(qf_t f);
+
+/**
+ * Sets a quadratic form to (a, b, c).
+ *
+ * @param[out] f			- the quadratic form to set.
+ * @param[in] a				- the first coefficient.
+ * @param[in] b				- the second coefficient.
+ * @param[in] c				- the third coefficient.
+ * @throw ERR_NO_VALID		- if the discriminant b^2 - 4ac is not negative.
+ */
+void qf_set(qf_t f, const bn_t a, const bn_t b, const bn_t c);
+
+/**
  * Sets a quadratic form to the identity class.
  *
  * The identity form is constructed for the specified discriminant.

@@ -528,6 +528,89 @@
 #define bn_gcdh_low 	RLC_PREFIX(bn_gcdh_low)
 #define bn_mxpn_low 	RLC_PREFIX(bn_mxpn_low)
 
+#undef qf_st
+#undef qf_t
+#define qf_st     	RLC_PREFIX(qf_st)
+#define qf_t      	RLC_PREFIX(qf_t)
+
+#undef qf_group_init
+#undef qf_group_clean
+#undef qf_group_gen
+#undef qf_group_set_cond
+#undef qf_group_set_both
+#undef qf_group_set_comp
+#undef qf_copy
+#undef qf_neg
+#undef qf_cmp
+#undef qf_is_one
+#undef qf_set_dig
+#undef qf_set_int
+#undef qf_zero
+#undef qf_set
+#undef qf_set_one
+#undef qf_set_dsc
+#undef qf_get_dsc
+#undef qf_has_dsc
+#undef qf_is_prim
+#undef qf_rand
+#undef qf_print
+#undef qf_com
+#undef qf_dup
+#undef qf_norm
+#undef qf_lift
+#undef qf_prime
+#undef qf_copa
+#undef qf_phi
+#undef qf_psi
+#undef qf_kern
+#undef qf_kern_quick
+#undef qf_rdc
+#undef qf_class
+#undef qf_exp
+#undef qf_exp_sim
+#undef qf_exp_fix
+#undef qf_map
+#undef qf_map_bqf
+
+#define qf_group_init 	RLC_PREFIX(qf_group_init)
+#define qf_group_clean 	RLC_PREFIX(qf_group_clean)
+#define qf_group_gen 	RLC_PREFIX(qf_group_gen)
+#define qf_group_set_cond 	RLC_PREFIX(qf_group_set_cond)
+#define qf_group_set_both 	RLC_PREFIX(qf_group_set_both)
+#define qf_group_set_comp 	RLC_PREFIX(qf_group_set_comp)
+#define qf_copy 	RLC_PREFIX(qf_copy)
+#define qf_neg 	RLC_PREFIX(qf_neg)
+#define qf_cmp 	RLC_PREFIX(qf_cmp)
+#define qf_is_one 	RLC_PREFIX(qf_is_one)
+#define qf_set_dig 	RLC_PREFIX(qf_set_dig)
+#define qf_set_int 	RLC_PREFIX(qf_set_int)
+#define qf_zero 	RLC_PREFIX(qf_zero)
+#define qf_set 	RLC_PREFIX(qf_set)
+#define qf_set_one 	RLC_PREFIX(qf_set_one)
+#define qf_set_dsc 	RLC_PREFIX(qf_set_dsc)
+#define qf_get_dsc 	RLC_PREFIX(qf_get_dsc)
+#define qf_has_dsc 	RLC_PREFIX(qf_has_dsc)
+#define qf_is_prim 	RLC_PREFIX(qf_is_prim)
+#define qf_rand 	RLC_PREFIX(qf_rand)
+#define qf_print 	RLC_PREFIX(qf_print)
+#define qf_com 	RLC_PREFIX(qf_com)
+#define qf_dup 	RLC_PREFIX(qf_dup)
+#define qf_norm 	RLC_PREFIX(qf_norm)
+#define qf_lift 	RLC_PREFIX(qf_lift)
+#define qf_prime 	RLC_PREFIX(qf_prime)
+#define qf_copa 	RLC_PREFIX(qf_copa)
+#define qf_phi 	RLC_PREFIX(qf_phi)
+#define qf_psi 	RLC_PREFIX(qf_psi)
+#define qf_kern 	RLC_PREFIX(qf_kern)
+#define qf_kern_quick 	RLC_PREFIX(qf_kern_quick)
+#define qf_rdc 	RLC_PREFIX(qf_rdc)
+#define qf_class 	RLC_PREFIX(qf_class)
+#define qf_exp 	RLC_PREFIX(qf_exp)
+#define qf_exp_sim 	RLC_PREFIX(qf_exp_sim)
+#define qf_exp_fix 	RLC_PREFIX(qf_exp_fix)
+#define qf_map 	RLC_PREFIX(qf_map)
+#define qf_map_bqf 	RLC_PREFIX(qf_map_bqf)
+
 #undef fp_st
 #undef fp_t
 #define fp_st			RLC_PREFIX(fp_st)
@@ -3832,6 +3915,33 @@
 #undef cp_ghpe_gen
 #undef cp_ghpe_enc
 #undef cp_ghpe_dec
+#undef cp_clhe_set
+#undef cp_clhe_gen
+#undef cp_clhe_enc
+#undef cp_clhe_dec
+#undef cp_clhe_add
+#undef cp_clhe_mul
+#undef cp_clvdf_set
+#undef cp_clvdf_evl
+#undef cp_clvdf_dec
+#undef cp_clvdf_dec_opt
+#undef cp_clvdf_ver
+#undef cp_tds_gen
+#undef cp_tds_sign
+#undef cp_tds_ver
+#undef cp_tds_alt
+#undef cp_tds_write_sig
+#undef cp_tds_read_sig
+#undef cp_clhe_bnd
+#undef cp_clhe_powf
+#undef cp_clthe_gen
+#undef cp_clthe_dec
+#undef cp_clrsa_set
+#undef cp_clrsa_cmt
+#undef cp_clrsa_rsp
+#undef cp_clrsa_chk
+#undef cp_clrsa_sig
+#undef cp_clrsa_ver
 #undef cp_ecdh_gen
 #undef cp_ecdh_key
 #undef cp_ecmqv_gen
@@ -4013,6 +4123,33 @@
 #define cp_ghpe_gen 	RLC_PREFIX(cp_ghpe_gen)
 #define cp_ghpe_enc 	RLC_PREFIX(cp_ghpe_enc)
 #define cp_ghpe_dec 	RLC_PREFIX(cp_ghpe_dec)
+#define cp_clhe_set 	RLC_PREFIX(cp_clhe_set)
+#define cp_clhe_gen 	RLC_PREFIX(cp_clhe_gen)
+#define cp_clhe_enc 	RLC_PREFIX(cp_clhe_enc)
+#define cp_clhe_dec 	RLC_PREFIX(cp_clhe_dec)
+#define cp_clhe_add 	RLC_PREFIX(cp_clhe_add)
+#define cp_clhe_mul 	RLC_PREFIX(cp_clhe_mul)
+#define cp_clvdf_set 	RLC_PREFIX(cp_clvdf_set)
+#define cp_clvdf_evl 	RLC_PREFIX(cp_clvdf_evl)
+#define cp_clvdf_dec 	RLC_PREFIX(cp_clvdf_dec)
+#define cp_clvdf_dec_opt 	RLC_PREFIX(cp_clvdf_dec_opt)
+#define cp_clvdf_ver 	RLC_PREFIX(cp_clvdf_ver)
+#define cp_tds_gen 	RLC_PREFIX(cp_tds_gen)
+#define cp_tds_sign 	RLC_PREFIX(cp_tds_sign)
+#define cp_tds_ver 	RLC_PREFIX(cp_tds_ver)
+#define cp_tds_alt 	RLC_PREFIX(cp_tds_alt)
+#define cp_tds_write_sig 	RLC_PREFIX(cp_tds_write_sig)
+#define cp_tds_read_sig 	RLC_PREFIX(cp_tds_read_sig)
+#define cp_clhe_bnd 	RLC_PREFIX(cp_clhe_bnd)
+#define cp_clhe_powf 	RLC_PREFIX(cp_clhe_powf)
+#define cp_clthe_gen 	RLC_PREFIX(cp_clthe_gen)
+#define cp_clthe_dec 	RLC_PREFIX(cp_clthe_dec)
+#define cp_clrsa_set 	RLC_PREFIX(cp_clrsa_set)
+#define cp_clrsa_cmt 	RLC_PREFIX(cp_clrsa_cmt)
+#define cp_clrsa_rsp 	RLC_PREFIX(cp_clrsa_rsp)
+#define cp_clrsa_chk 	RLC_PREFIX(cp_clrsa_chk)
+#define cp_clrsa_sig 	RLC_PREFIX(cp_clrsa_sig)
+#define cp_clrsa_ver 	RLC_PREFIX(cp_clrsa_ver)
 #define cp_ecdh_gen 	RLC_PREFIX(cp_ecdh_gen)
 #define cp_ecdh_key 	RLC_PREFIX(cp_ecdh_key)
 #define cp_ecmqv_gen 	RLC_PREFIX(cp_ecmqv_gen)

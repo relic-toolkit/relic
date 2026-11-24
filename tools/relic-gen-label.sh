@@ -117,6 +117,13 @@ echo
 REDEF bn
 REDEF_LOW bn
 
+echo "#undef qf_st"
+echo "#undef qf_t"
+echo "#define qf_st     	RLC_PREFIX(qf_st)"
+echo "#define qf_t      	RLC_PREFIX(qf_t)"
+echo
+REDEF qf
+
 echo "#undef fp_st"
 echo "#undef fp_t"
 echo "#define fp_st			RLC_PREFIX(fp_st)"
