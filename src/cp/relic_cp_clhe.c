@@ -408,11 +408,14 @@ int cp_clthe_dec(bn_t m, const clhe_t c, const qf_t c1, const qf_t c2,
 		size_t t) {
 	int result = RLC_OK;
 	qf_t fm;
+	bn_t k;
 
 	qf_null(fm);
+	bn_null(k);
 
 	RLC_TRY {
 		qf_new(fm);
+		bn_new(k);
 
 		/*
 		 * Rebuild the mask without a secret key:
@@ -423,13 +426,27 @@ int cp_clthe_dec(bn_t m, const clhe_t c, const qf_t c1, const qf_t c2,
 			qf_psi(fm, fm, &(core_get()->qf_d), &(core_get()->qf_b));
 		}
 		qf_com(fm, c2, fm, 1, &(core_get()->qf_b));
+		/*
+		 * Decode from fm^(2^k) and divide by 2^k modulo the odd conductor,
+		 * with 2^k above the class number bound used for d, so that the
+		 * party who built c2 cannot hide an element of 2-power order in it,
+		 * such as the class of order 2 that the factors of N give.
+		 */
+		clhe_square(fm, fm, 2 * c->d, &(core_get()->qf_b));
 		result = clhe_dlog_in_f(m, c, fm);
+		if (result == RLC_OK) {
+			bn_set_2b(k, 2 * c->d);
+			bn_mod_inv(k, k, &(core_get()->qf_q));
+			bn_mul(m, m, k);
+			bn_mod(m, m, &(core_get()->qf_q));
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		qf_free(fm);
+		bn_free(k);
 	}
 	return result;
 }
