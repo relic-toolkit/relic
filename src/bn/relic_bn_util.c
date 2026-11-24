@@ -66,7 +66,7 @@ void bn_swap(bn_t a, bn_t b) {
 	if (a == b) {
 		return;
 	}
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	/*
 	 * The digits live behind a pointer, so exchanging the headers exchanges the
 	 * values: dp travels with the alloc that describes it.
@@ -110,7 +110,6 @@ void bn_swap_sec(bn_t a, bn_t b, dig_t bit) {
 	a->sign ^= st;
 	b->sign ^= st;
 }
- 
 
 void bn_abs(bn_t c, const bn_t a) {
 	if (c->dp != a->dp) {
@@ -180,7 +179,7 @@ int bn_get_bit(const bn_t a, uint_t bit) {
 
 	RLC_RIP(bit, d, bit);
 
-	if (d >= a->used) {
+	if ((size_t)d >= a->used) {
 		return 0;
 	} else {
 		return (a->dp[d] >> bit) & (dig_t)1;
@@ -192,23 +191,34 @@ void bn_set_bit(bn_t a, uint_t bit, int value) {
 
 	RLC_RIP(bit, d, bit);
 
-	bn_grow(a, d);
+	if ((size_t)d >= a->used && value != 1) {
+		/* The bit is already zero. */
+		return;
+	}
 
-	if (value == 1) {
-		a->dp[d] |= ((dig_t)1 << bit);
-		if ((d + 1) > a->used) {
-			a->used = d + 1;
+	RLC_TRY {
+		bn_grow(a, d + 1);
+
+		if (value == 1) {
+			if ((size_t)d >= a->used) {
+				/* Clear the digits between the old and the new top. */
+				dv_zero(a->dp + a->used, d + 1 - a->used);
+				a->used = d + 1;
+			}
+			a->dp[d] |= ((dig_t)1 << bit);
+		} else {
+			a->dp[d] &= ~((dig_t)1 << bit);
+			bn_trim(a);
 		}
-	} else {
-		a->dp[d] &= ~((dig_t)1 << bit);
-		bn_trim(a);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
 }
 
 uint_t bn_ham(const bn_t a) {
 	int c = 0;
 
-	for (int i = 0; i < bn_bits(a); i++) {
+	for (size_t i = 0; i < bn_bits(a); i++) {
 		c += bn_get_bit(a, i);
 	}
 
@@ -292,6 +302,12 @@ void bn_rand_mod(bn_t a, const bn_t b) {
 
 	bn_null(t);
 
+	if (bn_bits(b) <= 1) {
+		/* There is no nonzero integer below |b|. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(t);
 
@@ -311,12 +327,10 @@ void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
 	size_t i, dim = RLC_CEIL(bn_bits(order), bn_bits(x));
 	bn_t t, u;
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bits = RLC_CEIL(bits, dim);
 
@@ -331,8 +345,7 @@ void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 
@@ -345,7 +358,7 @@ void bn_print(const bn_t a) {
 	if (a->used == 0) {
 		util_print("0\n");
 	} else {
-#if WSIZE == 64
+#if RLC_WSIZE == 64
 		util_print_dig(a->dp[a->used - 1], 0);
 		for (i = a->used - 2; i >= 0; i--) {
 			util_print_dig(a->dp[i], 1);
@@ -396,6 +409,7 @@ size_t bn_size_str(const bn_t a, uint_t radix) {
 			digits++;
 		}
 	} RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(t);
@@ -405,7 +419,8 @@ size_t bn_size_str(const bn_t a, uint_t radix) {
 }
 
 void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
-	int sign, i, j;
+	int sign;
+	size_t i, j;
 	char c;
 
 	bn_zero(a);
@@ -416,7 +431,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 	}
 
 	j = 0;
-	if (str[0] == '-') {
+	if (len > 0 && str[0] == '-') {
 		j++;
 		sign = RLC_NEG;
 	} else {
@@ -424,25 +439,37 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 	}
 
 	RLC_TRY {
-		bn_grow(a, RLC_CEIL(len * util_bits_dig(radix), RLC_DIG));
+		bn_grow(a, RLC_MIN(RLC_CEIL(len * util_bits_dig(radix - 1), RLC_DIG),
+				RLC_BN_SIZE));
 
 		while (j < len) {
 			if (str[j] == 0) {
 				break;
 			}
-			c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
+			c = (char)((radix <= 36) ? RLC_UPP(str[j]) : str[j]);
 			for (i = 0; i < 64; i++) {
 				if (c == util_conv_char(i)) {
 					break;
 				}
 			}
 
-			if (i < radix) {
-				bn_mul_dig(a, a, (dig_t)radix);
-				bn_add_dig(a, a, (dig_t)i);
-			} else {
+			if (i >= radix) {
+				/* Reject invalid digits instead of reading a prefix. */
+				bn_zero(a);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 			}
+#if RLC_ALLOC == RLC_AUTO
+			/* Reject values that do not fit, as bn_mul_dig() would write past
+			 * the digits when it cannot grow them and errors are not checked. */
+			if (a->used >= RLC_BN_SIZE) {
+				bn_zero(a);
+				RLC_THROW(ERR_NO_PRECI);
+				break;
+			}
+#endif
+			bn_mul_dig(a, a, (dig_t)radix);
+			bn_add_dig(a, a, (dig_t)i);
 			j++;
 		}
 
@@ -456,7 +483,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 void bn_write_str(char *str, size_t len, const bn_t a, uint_t radix) {
 	bn_t t;
 	dig_t d;
-	int l, i, j;
+	size_t l, i, j;
 	char c;
 
 	bn_null(t);
@@ -538,9 +565,22 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	dig_t d = (RLC_DIG / 8);
 	int digs = (len % d == 0 ? len / d : len / d + 1);
 
-	bn_grow(a, digs);
 	bn_zero(a);
 	if (len == 0) {
+		return;
+	}
+#if RLC_ALLOC == RLC_AUTO
+	/* Reject inputs that do not fit, as growing past the digits is fatal. */
+	if ((size_t)digs > RLC_BN_SIZE) {
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+#endif
+
+	RLC_TRY {
+		bn_grow(a, digs);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 		return;
 	}
 
@@ -554,7 +594,7 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	}
 	d = 0;
 	for (j = (RLC_DIG / 8) - 1; j >= 0; j--) {
-		if ((int)(i * (RLC_DIG / 8) + j) < len) {
+		if ((size_t)(i * (RLC_DIG / 8) + j) < len) {
 			d = d << 8;
 			d |= bin[len - 1 - (i * (RLC_DIG / 8) + j)];
 		}
@@ -577,7 +617,7 @@ void bn_write_bin(uint8_t *bin, size_t len, const bn_t a) {
 	}
 
 	k = 0;
-	for (int i = 0; i < a->used - 1; i++) {
+	for (size_t i = 0; i < a->used - 1; i++) {
 		d = a->dp[i];
 		for (int j = 0; j < (int)(RLC_DIG / 8); j++) {
 			bin[len - 1 - k++] = d & 0xFF;
@@ -601,31 +641,52 @@ size_t bn_size_raw(const bn_t a) {
 }
 
 void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
+	size_t used = 0;
+	dig_t nz;
+
+	if (len == 0) {
+		bn_zero(a);
+		return;
+	}
+#if RLC_ALLOC == RLC_AUTO
+	/* Reject inputs that do not fit, as growing past the digits is fatal. */
+	if (len > RLC_BN_SIZE) {
+		bn_zero(a);
+		RLC_THROW(ERR_NO_PRECI);
+		return;
+	}
+#endif
+
 	RLC_TRY {
 		bn_grow(a, len);
-		a->used = len;
-		a->sign = RLC_POS;
-		dv_copy(a->dp, raw, len);
-		bn_trim(a);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
+		return;
 	}
+
+	dv_copy(a->dp, raw, len);
+	/* Find the length with masks, so that it takes the same time for
+	 * every value of len digits. */
+	for (size_t i = 0; i < len; i++) {
+		nz = (dig_t)(raw[i] | (0 - raw[i])) >> (RLC_DIG - 1);
+		used ^= (used ^ (i + 1)) & (0 - (size_t)nz);
+	}
+	/* Zero has length one. */
+	a->used = used + (size_t)(used == 0);
+	a->sign = RLC_POS;
 }
 
 void bn_write_raw(dig_t *raw, size_t len, const bn_t a) {
-	int i, size;
-
-	size = a->used;
+	size_t size = a->used;
 
 	if (len < size) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
-	for (i = 0; i < size; i++) {
-		raw[i] = a->dp[i];
-	}
-	for (; i < len; i++) {
-		raw[i] = 0;
+	/* Copy with masks, so that it takes the same time for every length of
+	 * the integer up to len digits. */
+	for (size_t i = 0; i < len; i++) {
+		raw[i] = (i < a->alloc ? a->dp[i] : 0) & (0 - (dig_t)(i < size));
 	}
 }

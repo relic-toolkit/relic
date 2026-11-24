@@ -50,15 +50,19 @@ void fp_zero(fp_t a) {
 
 int fp_is_zero(const fp_t a) {
 	const dig_t *p = fp_prime_get();
-	dig_t t = 0, u = 0;
+	dig_t t = 0, u = 0, v = 0, c = 0;
 
+	/* Lazily reduced values may also represent zero as p or 2p. */
 	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
 		t |= a[i];
 		u |= a[i] ^ p[i];
+		v |= a[i] ^ ((p[i] << 1) | c);
+		c = p[i] >> (RLC_DIG - 1);
 	}
 
-	/* Both tests are evaluated, so that neither zero is told apart by time. */
-	return (!t) | (!u);
+	/* All tests are evaluated, so that no zero is told apart by time. When 2p
+	 * does not fit the digits (c is set), a cannot be equal to it. */
+	return (!t) | (!u) | ((!v) & (!c));
 }
 
 int fp_is_even(const fp_t a) {
@@ -73,6 +77,7 @@ int fp_is_even(const fp_t a) {
 		fp_prime_back(t, a);
 		r = bn_is_even(t);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -151,7 +156,7 @@ void fp_print(const fp_t a) {
 	RLC_TRY {
 		bn_new(t);
 
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 		if (a != fp_prime_get()) {
 			fp_prime_back(t, a);
 		} else {
@@ -164,7 +169,7 @@ void fp_print(const fp_t a) {
 #endif
 
 		for (i = RLC_FP_DIGS - 1; i > 0; i--) {
-			if (i >= t->used) {
+			if ((size_t)i >= t->used) {
 				util_print_dig(0, 1);
 			} else {
 				util_print_dig(t->dp[i], 1);
@@ -195,6 +200,7 @@ size_t fp_size_str(const fp_t a, uint_t radix) {
 
 		digits = bn_size_str(t, radix);
 	} RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -252,47 +258,55 @@ void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix) {
 	}
 }
 
-void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
-	bn_t t;
+int fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
+	int result = RLC_ERR;
+	fp_t t;
 
-	bn_null(t);
+	fp_null(t);
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
 	RLC_TRY {
-		bn_new(t);
-		bn_read_bin(t, bin, len);
+		fp_new(t);
 
-		/* Reject values out of bounds. */
-		if (bn_sign(t) == RLC_NEG || bn_cmp(t, &core_get()->prime) != RLC_LT) {
+		/* Load the bytes in constant time, the last one first. */
+		fp_zero(t);
+		for (size_t k = 0; k < len; k++) {
+			t[k / (RLC_DIG / 8)] |=
+					(dig_t)bin[len - 1 - k] << (8 * (k % (RLC_DIG / 8)));
+		}
+
+		/* Reject values out of bounds, which only reveals that the encoding
+		 * is invalid, and convert the others with one multiplication. */
+		if (dv_cmp_sec(t, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
 			RLC_THROW(ERR_NO_VALID);
 		} else {
-			if (bn_is_zero(t)) {
-				fp_zero(a);
-			} else {
-				if (t->used == 1) {
-					fp_prime_conv_dig(a, t->dp[0]);
-				} else {
-					fp_prime_conv(a, t);
-				}
-			}
+#if FP_RDC == FP_MONTY
+			fp_mul(a, t, core_get()->conv);
+#else
+			fp_copy(a, t);
+#endif
+			result = RLC_OK;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
+		fp_free(t);
 	}
+	return result;
 }
 
 void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {
-	bn_t t;
+	fp_t t, u;
+	dig_t b;
 
-	bn_null(t);
+	fp_null_all(t, u);
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
@@ -300,14 +314,32 @@ void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(t);
+		fp_new_all(t, u);
 
-		fp_prime_back(t, a);
-		bn_write_bin(bin, len, t);
+		/* Recover the integer, multiplying by 1 to leave Montgomery form. */
+#if FP_RDC == FP_MONTY
+		fp_zero(u);
+		u[0] = 1;
+		fp_mul(t, a, u);
+#else
+		fp_copy(t, a);
+#endif
+		/* Reduce it below the prime in constant time, as backends with
+		 * unreduced elements, as x64-hacl-25519, keep them below 3p. */
+		for (int j = 0; j < 2; j++) {
+			b = fp_subn_low(u, t, fp_prime_get());
+			dv_copy_sec(t, u, RLC_FP_DIGS, b ^ 1);
+		}
+
+		/* Store the bytes in constant time, the last one first. */
+		for (size_t k = 0; k < len; k++) {
+			dig_t d = t[k / (RLC_DIG / 8)];
+			bin[len - 1 - k] = (uint8_t)(d >> (8 * (k % (RLC_DIG / 8))));
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
+		fp_free_all(t, u);
 	}
 }

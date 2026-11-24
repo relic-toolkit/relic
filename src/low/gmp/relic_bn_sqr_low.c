@@ -53,5 +53,5 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size) {
-	mpn_mul_n(c, a, a, size);
+	mpn_sqr(c, a, size);
 }

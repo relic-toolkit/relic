@@ -36,28 +36,23 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_srt(bn_t c, bn_t a) {
+void bn_srt(bn_t c, const bn_t a) {
 	bn_t h, l, m, t;
 	size_t bits;
 	int cmp;
 
 	if (bn_sign(a) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	bits = bn_bits(a);
 	bits += (bits % 2);
 
-	bn_null(h);
-	bn_null(l);
-	bn_null(m);
-	bn_null(t);
+	bn_null_all(h, l, m, t);
 
 	RLC_TRY {
-		bn_new(h);
-		bn_new(l);
-		bn_new(m);
-		bn_new(t);
+		bn_new_all(h, l, m, t);
 
 		bn_zero(l);
 		bn_set_2b(h, bits >> 1);
@@ -86,10 +81,7 @@ void bn_srt(bn_t c, bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(h);
-		bn_free(l);
-		bn_free(m);
-		bn_free(t);
+		bn_free_all(h, l, m, t);
 	}
 }
 
@@ -103,18 +95,10 @@ int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
 		return 0;
 	}
 
-	bn_null(e);
-	bn_null(n);
-	bn_null(t);
-	bn_null(u);
-	bn_null(w);
+	bn_null_all(e, n, t, u, w);
 
 	RLC_TRY {
-		bn_new(e);
-		bn_new(n);
-		bn_new(t);
-		bn_new(u);
-		bn_new(w);
+		bn_new_all(e, n, t, u, w);
 
 		bn_mod(t, a, b);
 		if (bn_is_zero(t)) {
@@ -140,8 +124,15 @@ int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
 					bn_rsh(u, u, 2);
 					bn_mxp(c, t, u, b);
 				} else {
+					/* A prime b has a non-residue below 2 ln(b)^2 under the
+					 * generalized Riemann hypothesis, so below bits(b)^2, but
+					 * a composite b, as a square, may have none. */
 					bn_set_dig(n, 2);
-					while (bn_smb_leg(n, b) != -1) {
+					for (j = 0; bn_smb_leg(n, b) != -1; j++) {
+						if (j == bn_bits(b) * bn_bits(b)) {
+							RLC_THROW(ERR_NO_VALID);
+							break;
+						}
 						bn_add_dig(n, n, 1);
 					}
 					bn_mxp(n, n, e, b);
@@ -185,14 +176,11 @@ int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(e);
-		bn_free(n);
-		bn_free(t);
-		bn_free(u);
-		bn_free(w);
+		bn_free_all(e, n, t, u, w);
 	}
 	return result;
 }

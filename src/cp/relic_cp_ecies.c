@@ -62,9 +62,17 @@ int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const ec_t q) {
 	bn_t k, n, x;
 	ec_t p;
-	int l, result = RLC_OK, size = RLC_CEIL(RLC_MAX(128, ec_param_level()), 8);
+	size_t l;
+	/* AES takes keys of 16, 24 or 32 bytes, at least the security level. */
+	int result = RLC_OK, size = (ec_param_level() <= 128 ? 16 :
+			(ec_param_level() <= 192 ? 24 : 32));
 	uint8_t _x[RLC_FC_BYTES + 1], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
+
+	/* An invalid key, such as infinity, would not hide the message. */
+	if (!ec_is_valid(q)) {
+		return RLC_ERR;
+	}
 
 	bn_null(k);
 	bn_null(n);
@@ -81,7 +89,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
 		bn_rand_mod(k, n);
 
 		ec_mul_gen(r, k);
-		ec_mul(p, q, k);
+		ec_mul_sec(p, q, k);
 		ec_get_x(x, p);
 		l = bn_size_bin(x);
 		if (bn_bits(x) % 8 == 0) {
@@ -117,9 +125,17 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 	ec_t p;
 	bn_t x;
 
-	int l, result = RLC_OK, size = RLC_CEIL(RLC_MAX(128, ec_param_level()), 8);
+	/* AES takes keys of 16, 24 or 32 bytes, at least the security level. */
+	int l, result = RLC_OK, size = (ec_param_level() <= 128 ? 16 :
+			(ec_param_level() <= 192 ? 24 : 32));
 	uint8_t _x[RLC_FC_BYTES + 1], h[RLC_MD_LEN], iv[RLC_BC_LEN] = { 0 };
 	uint8_t key[2 * 8 * (RLC_FC_BYTES + 1)];
+
+	/* The ephemeral key must be a valid point of prime order, or
+	 * invalid-curve and small-subgroup points could leak the private key. */
+	if (in_len < RLC_MD_LEN || !ec_is_valid(r)) {
+		return RLC_ERR;
+	}
 
 	bn_null(x);
 	ec_null(p);
@@ -128,22 +144,28 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 		bn_new(x);
 		ec_new(p);
 
-		ec_mul(p, r, d);
-		ec_get_x(x, p);
-		l = bn_size_bin(x);
-		if (bn_bits(x) % 8 == 0) {
-			/* Compatibility with BouncyCastle. */
-			l = l + 1;
-		}
-		bn_write_bin(_x, l, x);
-		md_kdf(key, 2 * size, _x, l);
-		md_hmac(h, in, in_len - RLC_MD_LEN, key + size, size);
-		if (util_cmp_sec(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
+		ec_curve_get_ord(x);
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, x) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
 			result = RLC_ERR;
 		} else {
-			if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN,
-						key, size, iv) != RLC_OK) {
+			ec_mul_sec(p, r, d);
+			ec_get_x(x, p);
+			l = bn_size_bin(x);
+			if (bn_bits(x) % 8 == 0) {
+				/* Compatibility with BouncyCastle. */
+				l = l + 1;
+			}
+			bn_write_bin(_x, l, x);
+			md_kdf(key, 2 * size, _x, l);
+			md_hmac(h, in, in_len - RLC_MD_LEN, key + size, size);
+			if (util_cmp_sec(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
 				result = RLC_ERR;
+			} else {
+				if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN,
+							key, size, iv) != RLC_OK) {
+					result = RLC_ERR;
+				}
 			}
 		}
 	}

@@ -50,8 +50,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 	bn_st *pq, *pr;
 	int sign;
 
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(q, r);
 
 	/* If |a| < |b|, we're done. */
 	if (bn_cmp_abs(a, b) == RLC_LT) {
@@ -148,18 +147,19 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 				bn_copy(d, pr);
 			}
 		} else if (ceil) {
-			if (c != NULL) {
-				bn_add_dig(c, pq, 1);
-			}
+			/* The remainder reads b, which c may alias, so it comes first. */
 			if (d != NULL) {
 				bn_sub(d, pr, b);
 			}
-		} else {
 			if (c != NULL) {
-				bn_sub_dig(c, pq, 1);
+				bn_add_dig(c, pq, 1);
 			}
+		} else {
 			if (d != NULL) {
 				bn_add(d, pr, b);
+			}
+			if (c != NULL) {
+				bn_sub_dig(c, pq, 1);
 			}
 		}
 	}
@@ -167,8 +167,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(q, r);
 	}
 }
 

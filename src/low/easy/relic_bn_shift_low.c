@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	int i;
+	size_t i;
 	dig_t r, carry;
 
 	carry = 0;
@@ -54,10 +54,10 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	int i;
+	size_t i;
 	dig_t r, carry, shift, mask;
 
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	mask = RLC_MASK(bits);
 	for (i = 0; i < size; i++, a++, c++) {
@@ -106,22 +106,6 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 		/* Shift left the operand. */
 		*c = ((*a) >> bits) | (carry << shift);
 		/* Update the carry. */
-		carry = r;
-	}
-	return carry;
-}
-
-dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	dig_t r, carry, shift, mask;
-
-	/* Prepare the bit mask. */
-	shift = (RLC_DIG - bits) % RLC_DIG;
-	mask = RLC_MASK(bits);
-	carry = a[size - 1] & mask;
-	c[size - 1] = (dis_t)a[size - 1] >> bits;
-	for (int i = size - 2; i >= 0; i--) {
-		r = a[i] & mask;
-		c[i] = (a[i] >> bits) | (carry << shift);
 		carry = r;
 	}
 	return carry;

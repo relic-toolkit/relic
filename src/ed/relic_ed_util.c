@@ -26,7 +26,6 @@
  *
  * Implementation of the Edwards elliptic curve utilities.
  *
- * @version $Id$
  * @ingroup ed
  */
 
@@ -36,17 +35,16 @@
 #include "relic_label.h"
 #include "relic_md.h"
 
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 int ed_is_infty(const ed_t p) {
-	if (p->coord == BASIC) {
+	if (p->coord == EC_AFFIN) {
 		return (fp_is_zero(p->x) && (fp_cmp_dig(p->y, 1) == RLC_EQ));
 	}
 
-	if (p->coord != BASIC) {
+	if (p->coord != EC_AFFIN) {
 		return (fp_is_zero(p->x) && (fp_cmp(p->y, p->z) == RLC_EQ));
 	}
 
@@ -62,32 +60,40 @@ void ed_set_infty(ed_t p) {
 	fp_zero(p->x);
 	fp_set_dig(p->y, 1);
 	fp_set_dig(p->z, 1);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_zero(p->t);
 #endif
-	p->coord = PROJC;
+	p->coord = EC_PROJC;
 }
 
 void ed_copy(ed_t r, const ed_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_copy(r->t, p->t);
 #endif
 
 	r->coord = p->coord;
 }
 
+void ed_copy_sec(ed_t r, const ed_t p, dig_t bit) {
+	/* Copy all coordinates and the coordinate system at once. */
+	dv_copy_sec((dig_t *)r, (const dig_t *)p, sizeof(ed_st) / sizeof(dig_t),
+		bit);
+}
+
+void ed_swap_sec(ed_t p, ed_t q, dig_t bit) {
+	dv_swap_sec((dig_t *)p, (dig_t *)q, sizeof(ed_st) / sizeof(dig_t), bit);
+}
+
 void ed_rand(ed_t p) {
 	bn_t n, k;
 
-	bn_null(k);
-	bn_null(n);
+	bn_null_all(k, n);
 
 	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
+		bn_new_all(k, n);
 
 		ed_curve_get_ord(n);
 		bn_rand_mod(k, n);
@@ -96,8 +102,7 @@ void ed_rand(ed_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
+		bn_free_all(k, n);
 	}
 }
 
@@ -109,16 +114,16 @@ void ed_blind(ed_t r, const ed_t p) {
 	RLC_TRY {
 		fp_new(rand);
 		fp_rand(rand);
-#if ED_ADD == BASIC
+#if ED_ADD == ED_BASIC
 		(void)rand;
 		ed_copy(r, p);
-#elif ED_ADD == PROJC || ED_ADD == EXTND
+#elif ED_ADD == ED_PROJC || ED_ADD == ED_EXTND
 		fp_mul(r->x, p->x, rand);
 		fp_mul(r->y, p->y, rand);
 		fp_mul(r->z, p->z, rand);
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 #endif
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(r->t, p->t, rand);
 #endif
 	} RLC_CATCH_ANY {
@@ -150,7 +155,7 @@ int ed_on_curve(const ed_t p) {
 		ed_norm(t, p);
 
 		/* Compute y^2 * (d * x^2 - 1) */
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 		fp_mul(t->z, t->x, t->y);
 		r &= (fp_cmp(t->z, t->t) == RLC_EQ);
 #endif
@@ -164,6 +169,7 @@ int ed_on_curve(const ed_t p) {
 		r |= ed_is_infty(p);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -172,27 +178,63 @@ int ed_on_curve(const ed_t p) {
 	return r;
 }
 
-void ed_tab(ed_t * t, const ed_t p, int w) {
+int ed_is_valid(const ed_t p) {
+	bn_t h, n;
+	ed_t t;
+	int result = 0;
+
+	if (ed_is_infty(p) || !ed_on_curve(p)) {
+		return 0;
+	}
+
+	bn_null(h);
+	bn_null(n);
+	ed_null(t);
+
+	RLC_TRY {
+		bn_new(h);
+		bn_new(n);
+		ed_new(t);
+
+		result = 1;
+		ed_curve_get_cof(h);
+		if (bn_cmp_dig(h, 1) != RLC_EQ) {
+			/* With a cofactor, the point must also have prime order n. The
+			 * basic method is used because it does not reduce the scalar. */
+			ed_curve_get_ord(n);
+			ed_mul_basic(t, p, n);
+			result = ed_is_infty(t);
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(h);
+		bn_free(n);
+		ed_free(t);
+	}
+	return result;
+}
+
+void ed_tab(ed_t *t, const ed_t p, int w) {
 	if (w > 2) {
 		ed_dbl(t[0], p);
-#if defined(ED_MIXED)
 		ed_norm(t[0], t[0]);
-#endif
-		ed_add(t[1], t[0], p);
+		ed_add(t[1], p, t[0]);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ed_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(ED_MIXED)
 		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
-	ed_copy(t[0], p);
+	ed_norm(t[0], p);
 }
 
 void ed_print(const ed_t p) {
 	fp_print(p->x);
 	fp_print(p->y);
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_print(p->t);
 #endif
 	fp_print(p->z);
@@ -213,25 +255,27 @@ size_t ed_size_bin(const ed_t a, int pack) {
 	return size;
 }
 
-void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
+int ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ed_set_infty(a);
-			return;
+			return RLC_OK;
 		} else {
 			RLC_THROW(ERR_NO_BUFFER);
-			return;
+			return RLC_ERR;
 		}
 	}
 
 	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
-		return;
+		return RLC_ERR;
 	}
 
-	a->coord = BASIC;
+	a->coord = EC_AFFIN;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->y, bin + 1, RLC_FP_BYTES);
+	if (fp_read_bin(a->y, bin + 1, RLC_FP_BYTES) != RLC_OK) {
+		return RLC_ERR;
+	}
 	if (len == RLC_FP_BYTES + 1) {
 		switch (bin[0]) {
 			case 2:
@@ -243,20 +287,36 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 				break;
 			default:
 				RLC_THROW(ERR_NO_VALID);
-				break;
+				return RLC_ERR;
 		}
-		ed_upk(a, a);
+		if (!ed_upk(a, a)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
+		/* A set sign bit has no meaning for x = 0, so it is not canonical. */
+		if (bin[0] == 3 && fp_is_zero(a->x)) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
+		}
 	}
 
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
+			if (fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES)
+					!= RLC_OK) {
+				return RLC_ERR;
+			}
 		} else {
 			RLC_THROW(ERR_NO_VALID);
-			return;
+			return RLC_ERR;
+		}
+		/* The identity is only encoded as a single zero byte. */
+		if (fp_is_zero(a->x) && fp_cmp_dig(a->y, 1) == RLC_EQ) {
+			RLC_THROW(ERR_NO_VALID);
+			return RLC_ERR;
 		}
 	}
-#if ED_ADD == EXTND
+#if ED_ADD == ED_EXTND
 	fp_mul(a->t, a->x, a->y);
 	fp_mul(a->x, a->x, a->z);
 	fp_mul(a->y, a->y, a->z);
@@ -265,7 +325,9 @@ void ed_read_bin(ed_t a, const uint8_t *bin, size_t len) {
 
 	if (!ed_on_curve(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
 	}
+	return RLC_OK;
 }
 
 void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack) {
@@ -276,7 +338,8 @@ void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack) {
 	memset(bin, 0, len);
 
 	if (ed_is_infty(a)) {
-		if (len < 1) {
+		/* Infinity is encoded in one byte, as read_bin expects. */
+		if (len != 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {

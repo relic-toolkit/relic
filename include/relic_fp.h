@@ -60,6 +60,13 @@
  */
 #define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
+/**
+ * Smallest and largest 2-adicity of p - 1 that take the windowed square root,
+ * with windows of RLC_WIDTH bits.
+ */
+#define RLC_FP_SRT_MIN	16
+#define RLC_FP_SRT_MAX	64
+
 /*
  * Finite field identifiers.
  */
@@ -116,7 +123,7 @@ enum {
 	BN_158,
 	/** 254-bit prime provided in Nogami et al. for BN curves. */
 	BN_254,
-	/** 256-bit prime provided in Barreto et al. for BN curves. */
+	/** 256-bit prime provided in Pereira et al. for BN curves. */
 	BN_256,
 	/** 256-bit prime provided for BN curve standardized in China. */
 	SM9_256,
@@ -124,6 +131,8 @@ enum {
 	B24_315,
 	/** 317-bit prime for BLS curve of embedding degree 24 (SNARKs). */
 	B24_317,
+	/** 318-bit prime for supersingular curve over Fp^4 with k = 3. */
+	SS3_318,
 	/** 330-bit prime for KSS curve with embedding degree 16. */
 	K16_330,
 	/** 381-bit prime for BLS curve of embedding degree 12 (SNARKs). */
@@ -132,6 +141,8 @@ enum {
 	K18_354,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
 	B12_381,
+	/** 381-bit prime for supersingular curve over Fp^4 with k = 3. */
+	SS3_381,
 	/** 382-bit prime provided by Barreto for BN curve. */
 	BN_382,
 	/** 383-bit prime for GT-strong BLS curve of embedding degree 12. */
@@ -144,12 +155,14 @@ enum {
 	B12_455,
 	/** 508-bit prime for KSS16 curve. */
 	K18_508,
-	/** 477-bit prime for BLS curve of embedding degree 24. */
+	/** 509-bit prime for BLS curve of embedding degree 24. */
 	B24_509,
+	/** 509-bit prime for BLS curve of embedding degree 24 (SNARK curve). */
+	B24_509S,
 	/** 510-bit prime for new family with embedding degree 16. */
 	AFG16_510,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
-	GMT8_544,
+	CP8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */
 	SG54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
@@ -162,6 +175,8 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
+	/** Random 672-bit prime for Cocks-Pinch curve with embedding degree 6. */
+	CP6_672,
 	/** 765-bit prime for FM curve with embedding degree 16. */
 	FM16_765,
 	/** 766-bit prime for KSS curve with embedding degree 16. */
@@ -188,8 +203,8 @@ enum {
  * Constant used to indicate that there's some room left in the storage of
  * prime field elements. This can be used to avoid carries.
  */
-#if ((FP_PRIME % WSIZE) != 0) && ((FP_PRIME % WSIZE) <= (WSIZE - 2))
-#if ((2 * FP_PRIME % WSIZE) != 0) && ((2 * FP_PRIME % WSIZE) <= (WSIZE - 2))
+#if ((FP_PRIME % RLC_WSIZE) != 0) && ((FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
+#if ((2 * FP_PRIME % RLC_WSIZE) != 0) && ((2 * FP_PRIME % RLC_WSIZE) <= (RLC_WSIZE - 2))
 #define RLC_FP_ROOM
 #else
 #undef RLC_FP_ROOM
@@ -209,7 +224,7 @@ enum {
  * in little-endian format, that is, the least significant digits are
  * stored in the first positions of the vector.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef rlc_align dig_t fp_t[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *fp_t;
@@ -229,7 +244,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define fp_null(A)			/* empty */
 #else
 #define fp_null(A)			A = NULL;
@@ -240,9 +255,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the new prime field element.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_new(A)			/* empty */
 #endif
 
@@ -251,11 +266,23 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  *
  * @param[out] A			- the prime field element to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define fp_free(A)			/* empty */
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen prime field elements at once,
+ * in order.
+ *
+ * @param[in,out] ...		- the prime field elements.
+ */
+/** @{ */
+#define fp_null_all(...)	RLC_EACH(fp_null, __VA_ARGS__)
+#define fp_new_all(...)		RLC_EACH(fp_new, __VA_ARGS__)
+#define fp_free_all(...)	RLC_EACH(fp_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Adds two prime field elements. Computes c = a + b.
@@ -264,9 +291,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the first prime field element.
  * @param[in] B				- the second prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_add(C, A, B)		fp_add_basic(C, A, B)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_add(C, A, B)		fp_add_integ(C, A, B)
 #endif
 
@@ -277,9 +304,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the first prime field element.
  * @param[in] B				- the second prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_sub(C, A, B)		fp_sub_basic(C, A, B)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_sub(C, A, B)		fp_sub_integ(C, A, B)
 #endif
 
@@ -289,9 +316,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the prime field element to negate.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_neg(C, A)		fp_neg_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_neg(C, A)		fp_neg_integ(C, A)
 #endif
 
@@ -301,9 +328,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the first prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_dbl(C, A)		fp_dbl_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_dbl(C, A)		fp_dbl_integ(C, A)
 #endif
 
@@ -313,9 +340,9 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the first prime field element.
  */
-#if FP_ADD == BASIC
+#if FP_ADD == FP_BASIC
 #define fp_hlv(C, A)		fp_hlv_basic(C, A)
-#elif FP_ADD == INTEG
+#elif FP_ADD == FP_INTEG
 #define fp_hlv(C, A)		fp_hlv_integ(C, A)
 #endif
 
@@ -328,11 +355,11 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_KARAT > 0
 #define fp_mul(C, A, B)		fp_mul_karat(C, A, B)
-#elif FP_MUL == BASIC
+#elif FP_MUL == FP_BASIC
 #define fp_mul(C, A, B)		fp_mul_basic(C, A, B)
-#elif FP_MUL == COMBA
+#elif FP_MUL == FP_COMBA
 #define fp_mul(C, A, B)		fp_mul_comba(C, A, B)
-#elif FP_MUL == INTEG
+#elif FP_MUL == FP_INTEG
 #define fp_mul(C, A, B)		fp_mul_integ(C, A, B)
 #endif
 
@@ -344,13 +371,13 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_KARAT > 0
 #define fp_sqr(C, A)		fp_sqr_karat(C, A)
-#elif FP_SQR == BASIC
+#elif FP_SQR == FP_BASIC
 #define fp_sqr(C, A)		fp_sqr_basic(C, A)
-#elif FP_SQR == COMBA
+#elif FP_SQR == FP_COMBA
 #define fp_sqr(C, A)		fp_sqr_comba(C, A)
-#elif FP_SQR == MULTP
+#elif FP_SQR == FP_MULTP
 #define fp_sqr(C, A)		fp_mul(C, A, A)
-#elif FP_SQR == INTEG
+#elif FP_SQR == FP_INTEG
 #define fp_sqr(C, A)		fp_sqr_integ(C, A)
 #endif
 
@@ -361,12 +388,14 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the multiplication result to reduce.
  */
-#if FP_RDC == BASIC
+#if FP_RDC == FP_BASIC
 #define fp_rdc(C, A)		fp_rdc_basic(C, A)
-#elif FP_RDC == MONTY
+#elif FP_RDC == FP_MONTY
 #define fp_rdc(C, A)		fp_rdc_monty(C, A)
-#elif FP_RDC == QUICK
+#elif FP_RDC == FP_QUICK
 #define fp_rdc(C, A)		fp_rdc_quick(C, A)
+#elif FP_RDC == FP_LOWER
+#define fp_rdc(C, A)		fp_rdc_lower(C, A)
 #endif
 
 /**
@@ -376,7 +405,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the multiplication result to reduce.
  */
-#if FP_MUL == BASIC
+#if FP_MUL == FP_BASIC
 #define fp_rdc_monty(C, A)	fp_rdc_monty_basic(C, A)
 #else
 #define fp_rdc_monty(C, A)	fp_rdc_monty_comba(C, A)
@@ -388,38 +417,83 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[out] C			- the result.
  * @param[in] A				- the prime field element to invert.
  */
-#if FP_INV == BASIC
+#if FP_INV == FP_BASIC
 #define fp_inv(C, A)	fp_inv_basic(C, A)
-#elif FP_INV == BINAR
+#elif FP_INV == FP_BINAR
 #define fp_inv(C, A)	fp_inv_binar(C, A)
-#elif FP_INV == MONTY
+#elif FP_INV == FP_MONTY
 #define fp_inv(C, A)	fp_inv_monty(C, A)
-#elif FP_INV == EXGCD
+#elif FP_INV == FP_EXGCD
 #define fp_inv(C, A)	fp_inv_exgcd(C, A)
-#elif FP_INV == DIVST
+#elif FP_INV == FP_DIVST
 #define fp_inv(C, A)	fp_inv_divst(C, A)
-#elif FP_INV == JMPDS
+#elif FP_INV == FP_JMPDS
 #define fp_inv(C, A)	fp_inv_jmpds(C, A)
-#elif FP_INV == LOWER
+#elif FP_INV == FP_LOWER
 #define fp_inv(C, A)	fp_inv_lower(C, A)
 #endif
 
 /**
- * Computes the Legendre symbol of a prime field element. Computes C = (A|P).
+ * Computes the Legendre symbol (A|P) of a prime field element.
  *
- * @param[out] C			- the result.
  * @param[in] A				- the prime field element to compute.
+ * @return 1 or -1, or 0 if the element is zero.
  */
-#if FP_SMB == BASIC
-#define fp_smb(A)		fp_smb_basic(A)
-#elif FP_SMB == BINAR
-#define fp_smb(A)		fp_smb_binar(A)
-#elif FP_SMB == DIVST
-#define fp_smb(A)		fp_smb_divst(A)
-#elif FP_SMB == JMPDS
-#define fp_smb(A)		fp_smb_jmpds(A)
-#elif FP_SMB == LOWER
-#define fp_smb(A)		fp_smb_lower(A)
+#if FP_SMB == FP_BASIC
+#define fp_smb2(A)		fp_smb2_basic(A)
+#elif FP_SMB == FP_BINAR
+#define fp_smb2(A)		fp_smb2_binar(A)
+#elif FP_SMB == FP_DIVST
+#define fp_smb2(A)		fp_smb2_divst(A)
+#elif FP_SMB == FP_JMPDS
+#define fp_smb2(A)		fp_smb2_jmpds(A)
+#elif FP_SMB == FP_LOWER
+#define fp_smb2(A)		fp_smb2_lower(A)
+#elif FP_SMB == FP_JMPVT
+#define fp_smb2(A)		fp_smb2_jmpvt(A)
+#endif
+
+/**
+ * Computes the cubic residue symbol of a prime field element, the k such that
+ * A^((p - 1)/3) = z^k for the cube root of unity z = fp_prime_get_cub().
+ *
+ * @param[in] A				- the prime field element to compute.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+#if FP_SMB == FP_BASIC
+#define fp_smb3(A)		fp_smb3_basic(A)
+#elif FP_SMB == FP_BINAR
+#define fp_smb3(A)		fp_smb3_binar(A)
+#elif FP_SMB == FP_DIVST
+#define fp_smb3(A)		fp_smb3_divst(A)
+#elif FP_SMB == FP_JMPDS
+#define fp_smb3(A)		fp_smb3_jmpds(A)
+#elif FP_SMB == FP_LOWER
+#define fp_smb3(A)		fp_smb3_lower(A)
+#elif FP_SMB == FP_JMPVT
+#define fp_smb3(A)		fp_smb3_jmpvt(A)
+#endif
+
+/**
+ * Computes the quartic residue symbol of a prime field element, the k such that
+ * A^((p - 1)/4) = z^k for the fourth root of unity z = fp_prime_get_qrt(), or
+ * for p = 3 mod 4, k = 0 for squares and k = 2 otherwise.
+ *
+ * @param[in] A				- the prime field element to compute.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+#if FP_SMB == FP_BASIC
+#define fp_smb4(A)		fp_smb4_basic(A)
+#elif FP_SMB == FP_BINAR
+#define fp_smb4(A)		fp_smb4_binar(A)
+#elif FP_SMB == FP_DIVST
+#define fp_smb4(A)		fp_smb4_divst(A)
+#elif FP_SMB == FP_JMPDS
+#define fp_smb4(A)		fp_smb4_jmpds(A)
+#elif FP_SMB == FP_LOWER
+#define fp_smb4(A)		fp_smb4_lower(A)
+#elif FP_SMB == FP_JMPVT
+#define fp_smb4(A)		fp_smb4_jmpvt(A)
 #endif
 
 /**
@@ -429,11 +503,11 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  * @param[in] A				- the basis.
  * @param[in] B				- the exponent.
  */
-#if FP_EXP == BASIC
+#if FP_EXP == FP_BASIC
 #define fp_exp(C, A, B)		fp_exp_basic(C, A, B)
-#elif FP_EXP == SLIDE
+#elif FP_EXP == FP_SLIDE
 #define fp_exp(C, A, B)		fp_exp_slide(C, A, B)
-#elif FP_EXP == MONTY
+#elif FP_EXP == FP_MONTY
 #define fp_exp(C, A, B)		fp_exp_monty(C, A, B)
 #endif
 
@@ -466,6 +540,14 @@ const dig_t *fp_prime_get(void);
 const dig_t *fp_prime_get_rdc(void);
 
 /**
+ * Returns the additional value used for multiplying by a digit with modular
+ * reduction.
+ *
+ * @return the additional value used for multiplying by a digit.
+ */
+const dig_t *fp_prime_get_rdc1(void);
+
+/**
  * Returns the additional value used for conversion from multiple precision
  * integer to prime field element.
  *
@@ -488,6 +570,24 @@ const dig_t *fp_prime_get_srt(void);
  * @return the root of unity.
  */
 const dig_t *fp_prime_get_crt(void);
+
+/**
+ * Returns the primitive cube root of unity that defines the cubic residue
+ * symbol, congruent to w modulo the primary prime of norm p in the Eisenstein
+ * integers Z[w], or zero if p = 2 mod 3.
+ *
+ * @return the cube root of unity.
+ */
+const dig_t *fp_prime_get_cub(void);
+
+/**
+ * Returns the primitive fourth root of unity that defines the quartic residue
+ * symbol, congruent to i modulo the primary prime of norm p in the Gaussian
+ * integers Z[i], or zero if p = 3 mod 4.
+ *
+ * @return the fourth root of unity.
+ */
+const dig_t *fp_prime_get_qrt(void);
 
 /**
  * Returns the result of prime order mod 8.
@@ -545,6 +645,8 @@ int fp_param_get(void);
  * Assigns the prime field modulus to a non-sparse prime.
  *
  * @param[in] p			- the new prime field modulus.
+ * @throw ERR_NO_VALID		- if p does not have FP_PRIME bits or is not a
+ * 							probable prime by a Fermat test to base 2.
  */
 void fp_prime_set_dense(const bn_t p);
 
@@ -587,6 +689,17 @@ void fp_prime_conv(fp_t c, const bn_t a);
 void fp_prime_conv_dig(fp_t c, dig_t a);
 
 /**
+ * Imports a byte vector in big-endian format of any length as a prime field
+ * element, reducing it modulo the prime in constant time, as needed to hash
+ * to the field. Unlike fp_read_bin(), values out of bounds are reduced.
+ *
+ * @param[out] c			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the number of bytes.
+ */
+void fp_prime_conv_bin(fp_t c, const uint8_t *bin, size_t len);
+
+/**
  * Exports a prime field element as a multiple precision integer, doing the
  * necessary conversion.
  *
@@ -597,8 +710,12 @@ void fp_prime_back(bn_t c, const fp_t a);
 
 /**
  * Assigns a prime modulus based on its identifier.
+ *
+ * @param[in] param			- the identifier of the prime.
+ * @return RLC_OK if the prime was assigned, RLC_ERR otherwise, as when the
+ * configured reduction cannot use it.
  */
-void fp_param_set(int param);
+int fp_param_set(int param);
 
 /**
  * Assigns any pre-defined parameter as the prime modulus.
@@ -809,9 +926,11 @@ void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
-void fp_read_bin(fp_t a, const uint8_t *bin, size_t len);
+int fp_read_bin(fp_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime field element to a byte vector in big-endian format.
@@ -1090,6 +1209,15 @@ void fp_rdc_monty_comba(fp_t c, dv_t a);
 void fp_rdc_quick(fp_t c, dv_t a);
 
 /**
+ * Reduces a multiplication result modulo the prime field modulo using
+ * the implementation provided by the lower layer.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiplication result to reduce.
+ */
+void fp_rdc_lower(fp_t c, dv_t a);
+
+/**
  * Inverts a prime field element using Fermat's Little Theorem.
  *
  * @param[out] c			- the result.
@@ -1099,7 +1227,8 @@ void fp_rdc_quick(fp_t c, dv_t a);
 void fp_inv_basic(fp_t c, const fp_t a);
 
 /**
- * Inverts a prime field element using the binary method.
+ * Inverts a prime field element in constant time using the optimized binary
+ * GCD of Pornin, on approximations of the operands.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
@@ -1164,47 +1293,206 @@ void fp_inv_lower(fp_t c, const fp_t a);
 void fp_inv_sim(fp_t *c, const fp_t *a, int n);
 
 /**
- * Computes Legendre symbol of a prime field element using exponentiation.
+ * Computes the Legendre symbol of a prime field element using exponentiation.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_basic(const fp_t a);
+int fp_smb2_basic(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the binary method.
+ * Computes the Legendre symbol of a prime field element using the binary
+ * method.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_binar(const fp_t a);
+int fp_smb2_binar(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the constant-time
+ * Computes the Legendre symbol of a prime field element using the constant-time
  * division step approach by Bernstein and Bo-Yin Yang.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_divst(const fp_t a);
+int fp_smb2_divst(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the constant-time
+ * Computes the Legendre symbol of a prime field element using the constant-time
  * jump division step approach by Bernstein and Bo-Yin Yang.
  *
  * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_jmpds(const fp_t a);
+int fp_smb2_jmpds(const fp_t a);
 
 /**
- * Computes Legendre symbol a prime field element using a direct call to the
- * lower layer.
+ * Computes the Legendre symbol of a prime field element as fp_smb2_jmpds()
+ * does, in variable time, stopping once done.
  *
- * @param[in] a				- the prime field element to invert.
+ * @param[in] a				- the prime field element to compute.
  * @return the result.
  */
-int fp_smb_lower(const fp_t a);
+int fp_smb2_jmpvt(const fp_t a);
+
+/**
+ * Computes the Legendre symbol of a prime field element using a direct call
+ * to the lower layer.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb2_lower(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element using Euler's
+ * criterion. For p = 1 mod 3, the symbol is w^k for the k such that
+ * a^((p - 1)/3) = z^k, where z is the cube root of unity returned by
+ * fp_prime_get_cub(); for p = 2 mod 3, every element is a cube and k = 0.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_basic(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_basic() does, in variable time, by the binary algorithm of Damgard
+ * and Frandsen in the Eisenstein integers: if 1 - w divides g, divide it, and
+ * otherwise make g primary with a unit u and replace the one of f and u * g
+ * with the larger norm by (u * g - f) / (1 - w)^2, until g is 0. The norms are
+ * compared from the top bits of the coordinates.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_binar(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_basic() does, in constant time, by a number of division steps in
+ * the Eisenstein integers that only depends on the size of the prime.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_divst(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_divst() does, by jumps of division steps on their residues.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_jmpds(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element as
+ * fp_smb3_jmpds() does, in variable time, stopping once done.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_jmpvt(const fp_t a);
+
+/**
+ * Computes the cubic residue symbol of a prime field element using a direct
+ * call to the lower layer.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2}, or -1 if the element is zero.
+ */
+int fp_smb3_lower(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element using Euler's
+ * criterion. For p = 1 mod 4, the symbol is i^k for the k such that
+ * a^((p - 1)/4) = z^k, where z is the fourth root of unity returned by
+ * fp_prime_get_qrt(); for p = 3 mod 4, it is the character of order 2, with
+ * k = 0 for squares and k = 2 otherwise.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_basic(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_basic() does, in variable time, by a binary algorithm in the
+ * Gaussian integers: if 1 + i divides g, divide it, and otherwise make g
+ * primary with a unit u and replace the one of f and u * g with the larger
+ * norm by (u * g - f) / (1 + i)^3, until g is 0. The norms are compared from
+ * the top bits of the coordinates.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_binar(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_basic() does, in constant time, by a number of division steps in
+ * the Gaussian integers that only depends on the size of the prime.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_divst(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_divst() does, by jumps of division steps on their residues.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_jmpds(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element as
+ * fp_smb4_jmpds() does, in variable time, stopping once done.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_jmpvt(const fp_t a);
+
+/**
+ * Computes the quartic residue symbol of a prime field element using a direct
+ * call to the lower layer.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, 1, 2, 3}, or -1 if the element is zero.
+ */
+int fp_smb4_lower(const fp_t a);
+
+/**
+ * Computes the sextic residue symbol of a prime field element, the k such that
+ * a^((p - 1)/6) = z^k for the sixth root of unity z = -w^2, where w is the cube
+ * root of unity returned by fp_prime_get_cub(), from the quadratic and cubic
+ * symbols and by their configured methods. For p = 2 mod 3, it is the character
+ * of order 2, with k = 0 for squares and k = 3 otherwise.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, ..., 5}, or -1 if the element is zero.
+ */
+int fp_smb6(const fp_t a);
+
+/**
+ * Computes the residue symbol of order 12 of a prime field element, the k such
+ * that a^((p - 1)/12) = z^k for the twelfth root of unity z = -w * i, where w
+ * and i are the roots of unity returned by fp_prime_get_cub() and
+ * fp_prime_get_qrt(), from the cubic and quartic symbols and by their
+ * configured methods. If 12 does not divide p - 1, it is the character of order
+ * g = gcd(12, p - 1) written with z^(12/g) as its root of unity, that is,
+ * a^((p - 1)/g) = (z^(12/g))^(k g / 12), where z^3 = i and z^2 = -w^2.
+ *
+ * @param[in] a				- the prime field element.
+ * @return k in {0, ..., 11}, or -1 if the element is zero.
+ */
+int fp_smb12(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary
@@ -1245,10 +1533,21 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
 void fp_exp_dig(fp_t c, const fp_t a, dig_t b);
 
 /**
+ * Computes the term of index b of the Lucas sequence V with parameters (a, 1),
+ * defined by V_0 = 2, V_1 = a and V_{k + 1} = a * V_k - V_{k - 1}. For
+ * a = x + 1/x, this computes x^b + x^(-b).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the parameter of the sequence.
+ * @param[in] b				- the index of the term.
+ */
+void fp_luc(fp_t c, const fp_t a, const bn_t b);
+
+/**
  * Tests if a prime field element is a quadratic residue.
  *
  * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp_is_sqr(const fp_t a);
 
@@ -1266,7 +1565,7 @@ int fp_srt(fp_t c, const fp_t a);
  * Tests if a prime field element is a cubic residue.
  *
  * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @return 1 if the argument is a cube, 0 otherwise.
  */
 int fp_is_cub(const fp_t a);
 

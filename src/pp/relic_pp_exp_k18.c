@@ -43,7 +43,7 @@
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-static void pp_exp_kss(fp18_t c, fp18_t a) {
+static void pp_exp_kss18(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3, t4, t5;
 	const int *b;
 	bn_t x;
@@ -168,7 +168,7 @@ static void pp_exp_kss(fp18_t c, fp18_t a) {
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-void pp_exp_sg(fp18_t c, fp18_t a) {
+static void pp_exp_sg(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3;
 	const int *b;
 	bn_t x;
@@ -264,7 +264,7 @@ void pp_exp_sg(fp18_t c, fp18_t a) {
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-void pp_exp_fm(fp18_t c, fp18_t a) {
+static void pp_exp_fm(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3, t4;
 	const int *b;
 	bn_t x;
@@ -326,16 +326,12 @@ void pp_exp_fm(fp18_t c, fp18_t a) {
 
 		bn_sub_dig(x, x, 1);
 		bn_abs(x, x);
-		/* Trick that only works when param is negative and last power is -1. */
+		/* Exponentiate by the parameter without its two lowest terms, then
+		 * correct for them with a squaring and a multiplication. */
 		fp18_exp_cyc_sps(t2, t0, b+2, l-2, RLC_POS);
-		if (bn_sign(x) == RLC_NEG) {
-			fp18_sqr_cyc(t3, t2);
-			fp18_mul(t3, t3, t0);
-		} else {
-			fp18_inv_cyc(t3, t2);
-			fp18_sqr_cyc(t3, t3);
-			fp18_mul(t3, t3, t0);
-		}
+		fp18_inv_cyc(t3, t2);
+		fp18_sqr_cyc(t3, t3);
+		fp18_mul(t3, t3, t0);
 
 		bn_div_dig(x, x, 3);
 		fp18_exp_cyc(t2, t2, x);
@@ -376,7 +372,7 @@ void pp_exp_fm(fp18_t c, fp18_t a) {
 void pp_exp_k18(fp18_t c, fp18_t a) {
 	switch (ep_curve_is_pairf()) {
 		case EP_K18:
-			pp_exp_kss(c, a);
+			pp_exp_kss18(c, a);
 			break;
 		case EP_SG18:
 			pp_exp_sg(c, a);

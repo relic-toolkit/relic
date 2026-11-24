@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory2(void) {
-	fb2_t a[BENCH];
+	fb2_t a[RLC_BENCH];
 
 	BENCH_FEW("fb2_null", fb2_null(a[i]), 1);
 
 	BENCH_FEW("fb2_new", fb2_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fb2_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		fb2_new(a[i]);
 	}
 	BENCH_FEW("fb2_free", fb2_free(a[i]), 1);

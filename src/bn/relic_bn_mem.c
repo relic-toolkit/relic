@@ -31,7 +31,7 @@
 
 #include <errno.h>
 
-#if ALLOC != AUTO
+#if RLC_ALLOC != RLC_AUTO && RLC_OPSYS == RLC_WINDOWS
 #include <malloc.h>
 #endif
 
@@ -42,44 +42,47 @@
 /*============================================================================*/
 
 void bn_make(bn_t a, size_t digits) {
-	if (digits < 0) {
-		RLC_THROW(ERR_NO_VALID);
-	}
 	/* Allocate at least one digit. */
 	digits = RLC_MAX(digits, 1);
 
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	if (digits % RLC_BN_SIZE != 0) {
 		/* Pad the number of digits to a multiple of the block. */
 		digits += (RLC_BN_SIZE - digits % RLC_BN_SIZE);
 	}
 
-	if (a != NULL) {
-		a->dp = NULL;
-#if ALIGN == 1
-		a->dp = (dig_t *)malloc(digits * sizeof(dig_t));
-#elif OPSYS == WINDOWS
-		a->dp = _aligned_malloc(digits * sizeof(dig_t), ALIGN);
-#else
-		int r = posix_memalign((void **)&a->dp, ALIGN, digits * sizeof(dig_t));
-		if (r == ENOMEM) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		if (r == EINVAL) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-#endif /* ALIGN */
+	if (a == NULL) {
+		return;
 	}
 
+	a->dp = NULL;
+#if RLC_ALIGN == 1
+	a->dp = (dig_t *)malloc(digits * sizeof(dig_t));
+#elif RLC_OPSYS == RLC_WINDOWS
+	a->dp = _aligned_malloc(digits * sizeof(dig_t), RLC_ALIGN);
+#else
+	int r = posix_memalign((void **)&a->dp, RLC_ALIGN, digits * sizeof(dig_t));
+	if (r != 0) {
+		/* The pointer is left undefined when the allocation fails. */
+		a->dp = NULL;
+		if (r == EINVAL) {
+			RLC_THROW(ERR_NO_VALID);
+			return;
+		}
+	}
+#endif /* RLC_ALIGN */
+
 	if (a->dp == NULL) {
-		free((void *)a);
+		/* The caller still owns a, and bn_free() handles the null digits. */
+		a->alloc = 0;
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 #else
-	/* Verify if the number of digits is sane. */
+	/* Verify if the number of digits is sane. A number that cannot hold its
+	 * value is fatal, as the caller would write past its digits. */
 	if (digits > RLC_BN_SIZE) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_PRECI);
 	} else {
 		digits = RLC_BN_SIZE;
 	}
@@ -93,10 +96,10 @@ void bn_make(bn_t a, size_t digits) {
 }
 
 void bn_clean(bn_t a) {
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	if (a != NULL) {
 		if (a->dp != NULL) {
-#if OPSYS == WINDOWS && ALIGN > 1
+#if RLC_OPSYS == RLC_WINDOWS && RLC_ALIGN > 1
 			_aligned_free(a->dp);
 #else
 			free(a->dp);
@@ -113,7 +116,7 @@ void bn_clean(bn_t a) {
 }
 
 void bn_grow(bn_t a, size_t digits) {
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	dig_t *t = NULL;
 
 	if (a->alloc < digits) {
@@ -125,7 +128,27 @@ void bn_grow(bn_t a, size_t digits) {
         }
 		/* At least add RLC_BN_SIZE more digits. */
 		digits += pad;
+#if RLC_ALIGN == 1
 		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
+#else
+		/* The realloc() function does not keep the alignment of the memory
+		 * allocated in bn_make(), so allocate, copy and free instead. */
+#if RLC_OPSYS == RLC_WINDOWS
+		t = _aligned_malloc(digits * sizeof(dig_t), RLC_ALIGN);
+#else
+		if (posix_memalign((void **)&t, RLC_ALIGN, digits * sizeof(dig_t)) != 0) {
+			t = NULL;
+		}
+#endif
+		if (t != NULL && a->dp != NULL) {
+			dv_copy(t, a->dp, a->alloc);
+#if RLC_OPSYS == RLC_WINDOWS
+			_aligned_free(a->dp);
+#else
+			free(a->dp);
+#endif
+		}
+#endif
 		if (t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 			return;
@@ -133,10 +156,11 @@ void bn_grow(bn_t a, size_t digits) {
 		a->dp = t;
 		a->alloc = digits;
 	}
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
+	/* Fatal, as the caller would write the result past the digits, and inputs
+	 * that are too long are rejected when they are read. */
 	if (digits > RLC_BN_SIZE) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
+		err_fatal(RLC_FILE, __LINE__, ERR_NO_PRECI);
 	}
 	(void)a;
 #endif

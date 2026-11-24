@@ -37,11 +37,11 @@
 
 #include "relic_conf.h"
 
-#if ARITH == GMP || ARITH == GMP_SEC
+#if RLC_ARITH == RLC_GMP || RLC_ARITH == RLC_GMP_SEC
 #include <gmp.h>
 #endif
 
-#if defined(_MSC_VER) && WSIZE == 64
+#if defined(_MSC_VER) && RLC_WSIZE == 64
 #include <intrin.h>
 #endif
 
@@ -52,7 +52,7 @@
 /**
  * Size in bits of a digit.
  */
-#define RLC_DIG			(WSIZE)
+#define RLC_DIG			(RLC_WSIZE)
 
 /**
  * Logarithm of the digit size in bits in base two.
@@ -67,6 +67,18 @@
 #define RLC_DIG_LOG		6
 #endif
 
+/**
+ * Coordinate systems of elliptic curve points. Jacobian, extended and halving
+ * coordinates belong to different families of curves, so they share a value.
+ */
+/** @{ */
+#define EC_AFFIN		1
+#define EC_PROJC		2
+#define EC_JACOB		3
+#define EC_EXTND		3
+#define EC_HALVE		3
+/** @} */
+
 /*============================================================================*/
 /* Type definitions                                                           */
 /*============================================================================*/
@@ -77,28 +89,28 @@
  * Each digit is represented as an unsigned long to use the biggest native
  * type that potentially supports native instructions.
  */
-#if ARITH == GMP
+#if RLC_ARITH == RLC_GMP
 typedef mp_limb_t dig_t;
-#elif WSIZE == 8
+#elif RLC_WSIZE == 8
 typedef uint8_t dig_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef uint16_t dig_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef uint32_t dig_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 typedef uint64_t dig_t;
 #endif
 
 /**
  * Represents a signed digit.
  */
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 typedef int8_t dis_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef int16_t dis_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef int32_t dis_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 typedef int64_t dis_t;
 #endif
 
@@ -107,13 +119,13 @@ typedef int64_t dis_t;
  *
  * This is useful to store a result from a multiplication of two digits.
  */
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 typedef uint16_t dbl_t;
-#elif WSIZE == 16
+#elif RLC_WSIZE == 16
 typedef uint32_t dbl_t;
-#elif WSIZE == 32
+#elif RLC_WSIZE == 32
 typedef uint64_t dbl_t;
-#elif WSIZE == 64
+#elif RLC_WSIZE == 64
 #ifdef _MSC_VER
 /** MSVS does not support 128-bit type. */
 #define RLC_CONF_NODBL
@@ -133,11 +145,34 @@ typedef __uint128_t dbl_t;
 #ifdef RLC_CONF_NODBL
 #define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H))
 #else
+/* One product for both halves, which some compilers do not merge from two. */
 #define RLC_MUL_DIG(H, L, A, B)												\
-	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
-	L = (A) * (B);															\
+	do {																	\
+		dbl_t _p = (dbl_t)(A) * (dbl_t)(B);									\
+		H = (dig_t)(_p >> RLC_DIG);											\
+		L = (dig_t)_p;														\
+	} while (0)
 
 #endif
+
+/**
+ * Accumulates the product of a signed digit and a digit into a signed double
+ * digit, correcting the unsigned high half of the product for both signs.
+ *
+ * @param[in,out] C1		- most significant word of the accumulator.
+ * @param[in,out] C0		- least significant word of the accumulator.
+ * @param[in] A				- the signed digit.
+ * @param[in] B				- the digit.
+ * @param[in] SB			- the sign mask of B, zero if it is unsigned.
+ */
+#define RLC_MAC_DIG(C1, C0, A, B, SB)										\
+	do {																	\
+		dig_t _h, _l;														\
+		RLC_MUL_DIG(_h, _l, (dig_t)(A), (B));								\
+		_h -= ((B) & -RLC_SIGN(A)) + ((dig_t)(A) & (SB));					\
+		(C0) += _l;															\
+		(C1) += _h + ((C0) < _l);											\
+	} while (0)
 
 /**
  * Divides a double-digit by a digit, setting quotient and remainder.
@@ -158,6 +193,15 @@ typedef __uint128_t dbl_t;
 
 #endif
 
+/**
+ * Multiplies two digits modulo 2^RLC_DIG. The product is taken in at least
+ * unsigned int, since narrow digits are promoted to int and could overflow.
+ *
+ * @param[in] A			- the first digit to multiply.
+ * @param[in] B			- the second digit to multiply.
+ */
+#define RLC_MLO_DIG(A, B)	((dig_t)((A) * 1U * (B)))
+
 /*
  * Represents the unsigned integer with maximum precision.
  */
@@ -168,6 +212,11 @@ typedef unsigned long long ull_t;
  */
 typedef unsigned long uint_t;
 
+/**
+ * Type that represents an error.
+ */
+typedef int err_t;
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -175,8 +224,8 @@ typedef unsigned long uint_t;
 /**
  * Specification for aligned variables.
  */
-#if ALIGN > 1
-#define rlc_align 		__attribute__ ((aligned (ALIGN)))
+#if RLC_ALIGN > 1
+#define rlc_align 		__attribute__ ((aligned (RLC_ALIGN)))
 #else
 #define rlc_align 		/* empty */
 #endif
@@ -184,29 +233,10 @@ typedef unsigned long uint_t;
 /**
  * Size of padding to be added so that digit vectors are aligned.
  */
-#if ALIGN > 1
-#define RLC_PAD(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
+#if RLC_ALIGN > 1
+#define RLC_PAD(A)		((A) % RLC_ALIGN == 0 ? 0 : RLC_ALIGN - ((A) % RLC_ALIGN))
 #else
 #define RLC_PAD(A)		(0)
-#endif
-
-/**
- * Align digit vector pointer to specified byte-boundary.
- *
- * @param[in,out] A		- the pointer to align.
- */
-#if ALIGN > 1
-#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
-#define RLC_ALIGN(A)														\
-	((unsigned int)(A) + RLC_PAD((unsigned int)(A)));						\
-
-#elif ARCH  == X64
-#define RLC_ALIGN(A)														\
-	((unsigned long)(A) + RLC_PAD((unsigned long)(A)));						\
-
-#endif
-#else
-#define RLC_ALIGN(A)		(A)
 #endif
 
 #endif /* !RLC_TYPES_H */

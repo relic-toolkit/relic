@@ -51,8 +51,8 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 
 	/*
 	 * Not (mp_size_t *)sd: mpn_gcdext writes an mp_size_t, which is a long,
-	 * while dis_t tracks WSIZE. The two coincide only for a 64-bit WSIZE on
-	 * LP64. With a 32-bit WSIZE the callee writes eight bytes into a four-byte
+	 * while dis_t tracks RLC_WSIZE. The two coincide only for a 64-bit RLC_WSIZE on
+	 * LP64. With a 32-bit RLC_WSIZE the callee writes eight bytes into a four-byte
 	 * object, and under LLP64 it writes four into eight and leaves the rest
 	 * indeterminate, which breaks the sign of the cofactor.
 	 */
@@ -84,7 +84,7 @@ __GMP_DECLSPEC mp_size_t __gmpn_hgcd_mul_matrix1_vector(
 		mp_size_t _i; \
 		for (_i = 0; _i < (mp_size_t)(n); _i++) (d)[_i] = (s)[_i]; \
 	} while (0)
-#define GP_CLZ(c, x)	((c) = __builtin_clzll((unsigned long long)(x)))
+#define GP_CLZ(c, x)	((c) = __builtin_clzll((unsigned long long)(x)) - (64 - GMP_NUMB_BITS))
 
 /* rp <- rp + qp * sp, returning the new limb count. */
 static mp_size_t gcdh_addmul(mp_ptr rp, mp_srcptr qp, mp_size_t qn,
@@ -141,7 +141,7 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 	mp_ptr ap = (mp_ptr)a, bp = (mp_ptr)b;
 	mp_ptr v00 = (mp_ptr)u00, v01 = (mp_ptr)u01;
 	mp_ptr v10 = (mp_ptr)u10, v11 = (mp_ptr)u11;
-	mp_ptr t0 = RLC_ALLOCA(dig_t, 4 * (size + 2));
+	mp_ptr t0 = RLC_ALLOCA(mp_limb_t, 4 * (size + 2));
 	mp_ptr t1 = t0 + 2 * (size + 2), t2 = t1 + size + 2;
 
 	dv_zero((dig_t *)v00, size + 1);
@@ -252,5 +252,6 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 		un = mx;
 	}
 	*sm = (size_t)un;
+	RLC_FREE(t0);
 	return (size_t)n;
 }

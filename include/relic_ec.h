@@ -51,66 +51,66 @@
 /**
  * Prefix for mappings of functions.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_LOWER			ep_
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_LOWER			eb_
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_LOWER      		ed_
 #endif
 
 /**
  * Prefix for mappings of constant definitions.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_UPPER			EP_
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_UPPER			EB_
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_UPPER      		ED_
 #endif
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_EC_TABLE			RLC_EP_TABLE
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_EC_TABLE			RLC_EB_TABLE
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_EC_TABLE			RLC_ED_TABLE
 #endif
 
 /**
  * Size of a field element in words.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_DIGS				RLC_FP_DIGS
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_DIGS				RLC_FB_DIGS
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_DIGS				RLC_FP_DIGS
 #endif
 
 /**
  * Size of a field element in bits.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_BITS				RLC_FP_BITS
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_BITS				RLC_FB_BITS
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_BITS				RLC_FP_BITS
 #endif
 
 /**
  * Size of a field element in bytes.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define RLC_FC_BYTES			RLC_FP_BYTES
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #define RLC_FC_BYTES			RLC_FB_BYTES
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define RLC_FC_BYTES			RLC_FP_BYTES
 #endif
 
@@ -150,6 +150,17 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_free(A)				RLC_CAT(RLC_EC_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen points at once, in order.
+ *
+ * @param[in,out] ...		- the points.
+ */
+/** @{ */
+#define ec_null_all(...)		RLC_EACH(ec_null, __VA_ARGS__)
+#define ec_new_all(...)			RLC_EACH(ec_new, __VA_ARGS__)
+#define ec_free_all(...)		RLC_EACH(ec_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group of points in the elliptic curve.
  *
  * @param[out] G				- the returned generator.
@@ -180,19 +191,19 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #if defined(EC_ENDOM)
 #define ec_param_set_any()		ep_param_set_any_endom()
 #else
 #define ec_param_set_any()		ep_param_set_any()
 #endif
-#elif EC_CUR == CHAR2
+#elif EC_CUR == EC_CHAR2
 #if defined(EC_ENDOM)
 #define ec_param_set_any()		eb_param_set_any_kbltz()
 #else
 #define ec_param_set_any()		eb_param_set_any()
 #endif
-#elif EC_CUR == EDDIE
+#elif EC_CUR == EC_EDDIE
 #define ec_param_set_any()  	ed_param_set_any()
 #endif
 
@@ -265,6 +276,14 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_on_curve(P)			RLC_CAT(RLC_EC_LOWER, on_curve)(P)
 
 /**
+ * Tests if a point is valid for use in protocols: in the curve, not the point
+ * at infinity, and in the subgroup of prime order.
+ *
+ * @param[in] P					- the point to test.
+ */
+#define ec_is_valid(P)			RLC_CAT(RLC_EC_LOWER, is_valid)(P)
+
+/**
  * Returns the number of bytes necessary to store an elliptic curve point with
  * optional point compression.
  *
@@ -279,6 +298,9 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[out] A				- the result.
  * @param[in] B					- the byte vector.
  * @param[in] L					- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID			- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER			- if the buffer capacity is invalid.
  */
 #define ec_read_bin(A, B, L)	RLC_CAT(RLC_EC_LOWER, read_bin)(A, B, L)
 
@@ -342,6 +364,20 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[in] K					- the integer.
  */
 #define ec_mul(R, P, K)			RLC_CAT(RLC_EC_LOWER, mul)(R, P, K)
+
+/**
+ * Multiplies an elliptic curve point by a secret integer in constant time.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the secret integer.
+ */
+#if EC_CUR == EC_CHAR2
+#define ec_mul_sec(R, P, K)		eb_mul_lodah(R, P, K)
+#else
+#define ec_mul_sec(R, P, K)		RLC_CAT(RLC_EC_LOWER, mul_lwreg)(R, P, K)
+#endif
 
 /**
  * Multiplies the generator of a prime elliptic curve by an integer.
@@ -452,7 +488,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  * @param[out] X				- the x-coordinate.
  * @param[in] P					- the point to read.
  */
-#if EC_CUR == PRIME || EC_CUR == EDDIE
+#if EC_CUR == EC_PRIME || EC_CUR == EC_EDDIE
 #define ec_get_x(X, P)			fp_prime_back(X, P->x)
 #else
 #define ec_get_x(X, P)			bn_read_raw(X, P->x, RLC_FC_DIGS)
@@ -465,7 +501,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 * @param[out] Y					- the y-coordinate.
 * @param[in] P					- the point to read.
 */
-#if EC_CUR == PRIME || EC_CUR == EDDIE
+#if EC_CUR == EC_PRIME || EC_CUR == EC_EDDIE
 #define ec_get_y(Y, P)			fp_prime_back(Y, (P)->y)
 #else
 #define ec_get_y(Y, P)			bn_read_raw(Y, (P)->y, RLC_FC_DIGS)

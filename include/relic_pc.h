@@ -51,10 +51,22 @@
  * Prefix for function mappings.
  */
 /** @{ */
-#if FP_PRIME < 1536
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+/* Symmetric pairing on a supersingular curve over Fp^4. */
+#define RLC_G1_LOWER			ep4_
+#define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A[0][0]
+#define RLC_G2_LOWER			ep4_
+#define RLC_G2_UPPER			EP
+#define RLC_G2_BASEF(A)			A[0][0]
+#define RLC_GT_LOWER			fp12_
+#define RLC_GT_EMBED      		12
+
+#elif FP_PRIME < 1536
 
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A
 
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
@@ -65,6 +77,9 @@
 #elif FP_PRIME == 354 || FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_G2_LOWER			ep3_
 #define RLC_G2_BASEF(A)			A[0]
+#elif FP_PRIME == 569
+#define RLC_G2_LOWER			ep9_
+#define RLC_G2_BASEF(A)			A[0][0]
 #else
 #define RLC_G2_LOWER			ep2_
 #define RLC_G2_BASEF(A)			A[0]
@@ -87,6 +102,9 @@
 #elif FP_PRIME == 544
 #define RLC_GT_LOWER			fp8_
 #define RLC_GT_EMBED      		8
+#elif FP_PRIME == 569
+#define RLC_GT_LOWER			fp54_
+#define RLC_GT_EMBED      		54
 #else
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
@@ -95,6 +113,7 @@
 #else /* FP_PRIME >= 1536*/
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
+#define RLC_G1_BASEF(A)			A
 #define RLC_G2_LOWER			ep_
 #define RLC_G2_UPPER			EP
 #define RLC_G2_BASEF(A)			A
@@ -114,6 +133,15 @@
 #define RLC_PC_BYTES			RLC_FP_BYTES
 
 /**
+ * Represents the size in bytes of a G_1 element in uncompressed form.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define RLC_G1_BYTES			(8 * RLC_FP_BYTES + 1)
+#else
+#define RLC_G1_BYTES			(2 * RLC_FP_BYTES + 1)
+#endif
+
+/**
  * Represents a G_1 precomputed table.
  */
 #define RLC_G1_TABLE			RLC_CAT(RLC_CAT(RLC_, RLC_G1_UPPER), _TABLE)
@@ -122,6 +150,55 @@
  * Represents a G_2 precomputed table.
  */
 #define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, RLC_G2_UPPER), _TABLE)
+
+/**
+ * Indicates that the pairing supports a fixed argument of G_2, which the SS3
+ * curves do, the curves with embedding degree 1 and 2 unless the Weil pairing
+ * is computed, and the curves with quartic and sextic twists when the
+ * optimal ate pairing is the one computed.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define RLC_PC_FIX
+#elif PP_MAP != PP_WEILP && (RLC_GT_EMBED == 1 || RLC_GT_EMBED == 2)
+#define RLC_PC_FIX
+#elif PP_MAP == PP_OATEP && (RLC_GT_EMBED == 8 || RLC_GT_EMBED == 12 ||	\
+	RLC_GT_EMBED == 16 || RLC_GT_EMBED == 18 || RLC_GT_EMBED == 24 ||		\
+	RLC_GT_EMBED == 48 || RLC_GT_EMBED == 54)
+#define RLC_PC_FIX
+#endif
+
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+/**
+ * Represents the field of the coordinates of G_2 and the number of its
+ * elements in the table of a fixed argument of G_2, for the SS3 curves.
+ */
+/** @{ */
+#define RLC_PC_FIELD			fp4_
+#define RLC_PC_TABLE			RLC_PP_TABLE_K3
+/** @} */
+#elif defined(RLC_PC_FIX)
+/**
+ * Represents the field of the coordinates of G_2, for each embedding degree.
+ */
+/** @{ */
+#define RLC_PC_FIELD_1			fp_
+#define RLC_PC_FIELD_2			fp_
+#define RLC_PC_FIELD_8			fp2_
+#define RLC_PC_FIELD_12			fp2_
+#define RLC_PC_FIELD_16			fp4_
+#define RLC_PC_FIELD_18			fp3_
+#define RLC_PC_FIELD_24			fp4_
+#define RLC_PC_FIELD_48			fp8_
+#define RLC_PC_FIELD_54			fp9_
+#define RLC_PC_FIELD			RLC_CAT(RLC_PC_FIELD_, RLC_GT_EMBED)
+/** @} */
+
+/**
+ * Represents the number of field elements in the table of a fixed argument
+ * of G_2.
+ */
+#define RLC_PC_TABLE			RLC_CAT(RLC_PP_TABLE_K, RLC_GT_EMBED)
+#endif
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -223,6 +300,23 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_free(A)			RLC_CAT(RLC_GT_LOWER, free)(A)
 
 /**
+ * Initializes, allocates or frees up to sixteen elements at once, in order.
+ *
+ * @param[in,out] ...		- the elements.
+ */
+/** @{ */
+#define g1_null_all(...)	RLC_EACH(g1_null, __VA_ARGS__)
+#define g1_new_all(...)		RLC_EACH(g1_new, __VA_ARGS__)
+#define g1_free_all(...)	RLC_EACH(g1_free, __VA_ARGS__)
+#define g2_null_all(...)	RLC_EACH(g2_null, __VA_ARGS__)
+#define g2_new_all(...)		RLC_EACH(g2_new, __VA_ARGS__)
+#define g2_free_all(...)	RLC_EACH(g2_free, __VA_ARGS__)
+#define gt_null_all(...)	RLC_EACH(gt_null, __VA_ARGS__)
+#define gt_new_all(...)		RLC_EACH(gt_new, __VA_ARGS__)
+#define gt_free_all(...)	RLC_EACH(gt_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Returns the generator of the group G_1.
  *
  * @param[out] G			- the returned generator.
@@ -254,7 +348,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
-#if EC_CUR == PRIME
+#if EC_CUR == EC_PRIME
 #define pc_param_set_any()	ep_param_set_any_pairf()
 #else
 #define pc_param_set_any()	RLC_ERR
@@ -274,6 +368,9 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #if FP_PRIME == 3072
 #undef pc_map_is_typea
 #define pc_map_is_typea()	(1)
+#elif FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#undef pc_map_is_type1
+#define pc_map_is_type1()	(1)
 #elif FP_PRIME < 1536
 #undef pc_map_is_type3
 #define pc_map_is_type3()	(1)
@@ -288,12 +385,20 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Prints the current configured binary elliptic curve.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_param_print()	ep_param_print()
+#else
 #define pc_param_print()	RLC_CAT(RLC_G1_LOWER, param_print)()
+#endif
 
 /*
  * Returns the current security level.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_param_level()	ep_param_level()
+#else
 #define pc_param_level()	RLC_CAT(RLC_G1_LOWER, param_level)()
+#endif
 
 /**
  * Tests if a G_1 element is on the curve.
@@ -355,10 +460,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] P			- the element to assign.
  * @param[out] Q			- the G_2 element storing the coordinates.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define g1_set_g2(P, Q)			ep4_copy(P, Q)
+#else
 #define g1_set_g2(P, Q)																								\
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
 	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
 	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+	(P)->coord = (Q)->coord;																						\
+
+#endif
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -366,10 +477,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] Q			- the element to assign.
  * @param[out] P			- the G_1 element storing the coordinates.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define g2_set_g1(Q, P)			ep4_copy(Q, P)
+#else
 #define g2_set_g1(Q, P)																								\
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
 	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
 	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
+	(Q)->coord = (P)->coord;																						\
+
+#endif
 
 /**
  * Assigns a G_T element to zero.
@@ -534,36 +651,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #endif
 
 /**
- * Reads a G_1 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g1_read_bin(P, B, L) 	RLC_CAT(RLC_G1_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_2 element from a byte vector in big-endian format.
- *
- * @param[out] P			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define g2_read_bin(P, B, L) 	RLC_CAT(RLC_G2_LOWER, read_bin)(P, B, L)
-
-/**
- * Reads a G_T element from a byte vector in big-endian format.
- *
- * @param[out] A			- the result.
- * @param[in] B				- the byte vector.
- * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
- */
-#define gt_read_bin(A, B, L) 	RLC_CAT(RLC_GT_LOWER, read_bin)(A, B, L)
-
-/**
  * Writes an optionally compressed G_1 element to a byte vector in big-endian
  * format.
  *
@@ -693,12 +780,18 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_dbl(R, P)		RLC_CAT(RLC_G2_LOWER, dbl)(R, P)
 
 /**
- * Squares a G_T element. Computes C = A^2.
+ * Squares a G_T element. Computes C = A^2. Elements of G_T lie in the
+ * cyclotomic subgroup, so the cheaper cyclotomic squaring is used when the
+ * extension field has one.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the element to square.
  */
+#if FP_PRIME <= 1536
+#define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr_cyc)(C, A)
+#else
 #define gt_sqr(C, A)		RLC_CAT(RLC_GT_LOWER, sqr)(C, A)
+#endif
 
 /**
  * Normalizes an element of G_1.
@@ -771,6 +864,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] K					- the scalar.
  */
 #define g2_mul_any(R, P, K)		RLC_CAT(RLC_G2_LOWER, mul_basic)(R, P, K)
+
+/**
+ * Exponentiates an element from a larger group containing G_T by an integer.
+ * Computes C = A^B.
+ *
+ * @param[out] C				- the result.
+ * @param[in] A					- the element to exponentiate.
+ * @param[in] B					- the integer exponent.
+ */
+#define gt_exp_any(C, A, B)		RLC_CAT(RLC_GT_LOWER, exp)(C, A, B)
 
 /**
  * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
@@ -960,7 +1063,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P				- the first element.
  * @param[in] Q				- the second element.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map(R, P, Q)	  pp_map_k3(R, P, Q)
+#else
 #define pc_map(R, P, Q)	  RLC_CAT(pp_map_k, RLC_GT_EMBED)(R, P, Q)
+#endif
 
 /**
  * Computes the multi-pairing of G_1 elements and G_2 elements. Computes
@@ -971,7 +1078,73 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairing arguments.
  */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_sim(R, P, Q, M)  pp_map_sim_k3(R, P, Q, M)
+#else
 #define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
+#endif
+
+/**
+ * Indicates that the library context keeps the table of the generator of G_2,
+ * so that pairings with it use pc_map_fix(). The table is built only with
+ * PC_PRECO, and curves with embedding degree 1 and 2 leave it out, as their
+ * tables are large.
+ */
+#if defined(PC_PRECO) && defined(RLC_PC_FIX) && RLC_GT_EMBED > 2
+#define RLC_PC_GEN
+#endif
+
+#ifdef RLC_PC_FIX
+/**
+ * Precomputes the lines of a fixed argument of G_2 for pc_map_fix().
+ *
+ * @param[out] T			- the table of RLC_PC_TABLE field elements.
+ * @param[in] Q				- the fixed element of G_2.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_pre(T, Q)	pp_map_pre_k3(T, Q)
+#else
+#define pc_map_pre(T, Q)	RLC_CAT(pp_map_pre_k, RLC_GT_EMBED)(T, Q)
+#endif
+
+/**
+ * Computes the bilinear pairing of a G_1 element and a fixed G_2 element,
+ * given by the table of pc_map_pre(). Computes R = e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element of G_1.
+ * @param[in] T				- the table of the fixed element of G_2.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_fix(R, P, T)	pp_map_fix_k3(R, P, (const fp4_t *)T)
+#else
+#define pc_map_fix(R, P, T)													\
+	RLC_CAT(pp_map_fix_k, RLC_GT_EMBED)(R, P, (const RLC_CAT(RLC_PC_FIELD,	\
+		t) *)T)
+#endif
+
+/**
+ * Computes the multi-pairing of G_1 elements and G_2 elements, where the
+ * G_2 elements of the last N pairs are fixed by pc_map_pre(). Computes
+ * R = \prod e(P_i, Q_i) * \prod e(S_j, Q'_j), where T[j] is the table of Q'_j.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the G_1 elements of the other pairs.
+ * @param[in] Q				- the G_2 elements of the other pairs.
+ * @param[in] M				- the number of other pairs.
+ * @param[in] S				- the G_1 elements of the fixed pairs.
+ * @param[in] T				- the tables of the fixed G_2 elements.
+ * @param[in] N				- the number of fixed pairs.
+ */
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_map_sim_fix(R, P, Q, M, S, T, N)									\
+	pp_map_sim_fix_k3(R, P, Q, M, S, (const fp4_t **)T, N)
+#else
+#define pc_map_sim_fix(R, P, Q, M, S, T, N)									\
+	RLC_CAT(pp_map_sim_fix_k, RLC_GT_EMBED)(R, P, Q, M, S,					\
+		(const RLC_CAT(RLC_PC_FIELD, t) **)T, N)
+#endif
+#endif
 
 /**
  * Computes the final exponentiation of the pairing.
@@ -979,7 +1152,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the field element to exponentiate.
  */
-#define pc_exp(C, A);			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+#define pc_exp(C, A)			pp_exp_k3(C, A)
+#else
+#define pc_exp(C, A)			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
+#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -1000,6 +1177,30 @@ void pc_core_calc(void);
  */
 void pc_core_clean(void);
 
+/**
+ * Computes the bilinear pairing of a G_1 element and the generator of G_2,
+ * with the table of the generator when the context keeps it. Computes
+ * R = e(P, G).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the element of G_1.
+ */
+void pc_map_gen(gt_t r, const g1_t p);
+
+/**
+ * Computes the multi-pairing of G_1 elements and G_2 elements times the
+ * pairing of a G_1 element and the generator of G_2, with the table of the
+ * generator when the context keeps it. Computes
+ * R = \prod e(P_i, Q_i) * e(S, G).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the G_1 elements of the other pairs.
+ * @param[in] q				- the G_2 elements of the other pairs.
+ * @param[in] m				- the number of other pairs.
+ * @param[in] s				- the G_1 element paired with the generator.
+ */
+void pc_map_sim_gen(gt_t r, const g1_t *p, const g2_t *q, int m,
+		const g1_t s);
 
 /**
  * Assigns a random value to an element from G_T.
@@ -1028,6 +1229,9 @@ void g2_mul(g2_t r, const g2_t p, const bn_t k);
 
 /**
  * Multiplies the generator of G_1 by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EP_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.
@@ -1036,6 +1240,9 @@ void g1_mul_gen(g1_t r, const bn_t k);
 
 /**
  * Multiplies the generator of G_2 by an integer.
+ * Runs in constant time for integers below the group order when the
+ * fixed-point multiplication is the regular comb (EP_METHD with LWREG, the
+ * default).
  *
  * @param[out] r			- the result.
  * @param[in] k				- the integer.
@@ -1082,6 +1289,17 @@ void gt_exp_dig(gt_t c, const gt_t a, const dig_t b);
 void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d);
 
 /**
+ * Exponentiates several elements from G_T simultaneously and multiplies the
+ * results.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the integer exponents.
+ * @param[in] m				- the number of elements.
+ */
+void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m);
+
+/**
  * Exponentiates a generator from G_T by an integer. Computes c = a^b.
  *
  * @param[out] c			- the result.
@@ -1116,5 +1334,44 @@ int g2_is_valid(const g2_t a);
  * @param[in] a             - the element to check.
  */
 int gt_is_valid(const gt_t a);
+
+/**
+ * Reads a G_1 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_2 element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Reads a G_T element from a byte vector in big-endian format, checking that
+ * it lies in the subgroup of prime order.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
+ */
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len);
 
 #endif /* !RLC_PC_H */

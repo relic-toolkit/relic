@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, v size) {
+dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	int i;
 	register dig_t carry, r0;
 
@@ -64,6 +64,17 @@ dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	}
 	for (; i < size; i++, a++, c++) {
 		(*c) = (*a);
+	}
+	return carry;
+}
+
+dig_t bn_sneg_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
+	dig_t carry = sa & 1;
+
+	sa = -sa;
+	for (size_t i = 0; i < size; i++) {
+		c[i] = (a[i] ^ sa) + carry;
+		carry = (c[i] < carry);
 	}
 	return carry;
 }

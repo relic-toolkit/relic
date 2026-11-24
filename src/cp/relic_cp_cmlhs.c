@@ -32,37 +32,57 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Indicates that signing keys can be ECDSA keys, which are points in G_1 and
+ * need an ordinary curve over a prime field.
+ */
+#if EC_CUR == EC_PRIME && \
+	!(FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER)))
+#define CMLHS_ECDSA
+#endif
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 int cp_cmlhs_init(g1_t h) {
-	g1_rand(h);
-	return RLC_OK;
+	int result = RLC_OK;
+
+	RLC_TRY {
+		g1_rand(h);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	return result;
 }
 
 int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls) {
-	g1_t g1;
-	g2_t g2;
 	gt_t gt;
 	bn_t n;
 	int result = RLC_OK;
+#ifdef CMLHS_ECDSA
+	/* An ECDSA key is a point in G_1. */
+	g1_t g1;
 
 	g1_null(g1);
-	g2_null(g2);
+#endif
+
 	gt_null(gt);
 	bn_null(n);
 
 	RLC_TRY {
 		bn_new(n);
+#ifdef CMLHS_ECDSA
 		g1_new(g1);
-		g2_new(g2);
+#endif
 		gt_new(gt);
 
 		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-		pc_map(gt, g1, g2);
+		gt_get_gen(gt);
 
 		rand_bytes(prf, plen);
 
@@ -70,27 +90,33 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		g2_mul_gen(y, d);
 
 		/* Generate elements for n tags. */
-		for (int i = 0; i < len; i++) {
+		for (size_t i = 0; i < len; i++) {
 			bn_rand_mod(x[i], n);
-			gt_exp(hs[i], gt, x[i]);
+			gt_exp_sec(hs[i], gt, x[i]);
 		}
 
 		if (bls) {
 			result = cp_bls_gen(sk, pk);
 		} else {
+#ifdef CMLHS_ECDSA
 			if (cp_ecdsa_gen(sk, g1) == RLC_OK) {
 				g2_set_g1(pk, g1);
 			} else {
 				result = RLC_ERR;
 			}
+#else
+			/* ECDSA keys must be points in G1 over a prime field. */
+			result = RLC_ERR;
+#endif
 		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+#ifdef CMLHS_ECDSA
 		g1_free(g1);
-		g2_free(g2);
+#endif
 		gt_free(gt);
 		bn_free(n);
 	}
@@ -98,14 +124,16 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 }
 
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
-		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk,
-		int bls) {
+		const bn_t msg, const char *data, int label, const bn_t x[],
+		const g1_t h, const uint8_t prf[], size_t plen, const bn_t d,
+		const bn_t sk, int bls) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 16 * RLC_PC_BYTES + dlen);
+	/* Room for the point z in uncompressed form, whatever it is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(z->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
 	int result = RLC_OK;
 
 	bn_null(k);
@@ -118,9 +146,6 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		bn_new(m);
 		bn_new(n);
 		g1_new(t);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		pc_get_ord(n);
 		/* Generate r and s. */
@@ -139,12 +164,12 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g1_mul_gen(r, m);
 
 		/* Compute A = g1^(x + r) * \prod H_j^(y * m_j). */
-		bn_add(k, x, k);
+		bn_add(k, x[label], k);
 		bn_mod(k, k, n);
 		g1_mul_gen(a, k);
 		bn_mul(k, d, msg);
 		bn_mod(k, k, n);
-		g1_mul(t, h, k);
+		g1_mul_sec(t, h, k);
 		g1_add(a, a, t);
 		g1_norm(a, a);
 		/* Compute z = F_K(delta), Z = g2^z, A = A^(1/z). */
@@ -152,25 +177,37 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		bn_read_bin(k, mac, RLC_MD_LEN);
 		bn_mod(k, k, n);
 		g2_mul_gen(z, k);
+		/* Blind the secret, as inversion takes variable time. */
+		bn_rand_mod(m, n);
+		bn_mul(k, k, m);
+		bn_mod(k, k, n);
 		bn_mod_inv(k, k, n);
-		g1_mul(a, a, k);
+		bn_mul(k, k, m);
+		bn_mod(k, k, n);
+		g1_mul_sec(a, a, k);
 
 		/* Compute C = C * sum H_j^m_j. */
 		bn_mod(k, msg, n);
-		g1_mul(t, h, k);
+		g1_mul_sec(t, h, k);
 		g1_add(c, c, t);
 		g1_norm(c, c);
 
+		/* Sign Z || data. */
 		len = g2_size_bin(z, 0);
 		g2_write_bin(buf, len, z, 0);
 		memcpy(buf + len, data, dlen);
 		if (bls) {
-			cp_bls_sig(sig, buf, len + dlen, sk);
+			result = cp_bls_sig(sig, buf, len + dlen, sk);
 		} else {
-			cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
+#ifdef CMLHS_ECDSA
+			result = cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
 			fp_prime_conv(sig->x, m);
 			fp_prime_conv(sig->y, n);
 			fp_set_dig(sig->z, 1);
+#else
+			/* ECDSA keys must be points in G1 over a prime field. */
+			result = RLC_ERR;
+#endif
 		}
 	}
 	RLC_CATCH_ANY {
@@ -211,16 +248,19 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const g1_t h, const int *label, const gt_t *hs[], const dig_t *f[],
 		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
 		int bls) {
-	g1_t g1;
-	g2_t g2;
+	g1_t g1, p[1];
+	g2_t q[1];
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
-	int result = 1;
+	/* Room for any point z[i] in uncompressed form, whatever s is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(s->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
+	int ok, result = 0;
 
 	g1_null(g1);
-	g2_null(g2);
+	g1_null(p[0]);
+	g2_null(q[0]);
 	gt_null(e);
 	gt_null(u);
 	gt_null(v);
@@ -229,71 +269,78 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 
 	RLC_TRY {
 		g1_new(g1);
-		g2_new(g2);
+		g1_new(p[0]);
+		g2_new(q[0]);
 		gt_new(e);
 		gt_new(u);
 		gt_new(v);
 		bn_new(k);
 		bn_new(n);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
-		for (int i = 0; i < slen; i++) {
+		/* Torsion added to these elements would not change the pairings,
+		 * and a result outside [0, n) would verify as its residue. */
+		pc_get_ord(n);
+		ok = g1_is_valid(r) && g2_is_valid(s) && bn_sign(m) == RLC_POS &&
+				bn_cmp(m, n) == RLC_LT;
+		for (size_t i = 0; ok && i < slen; i++) {
+			ok = g1_is_valid(a[i]) && g1_is_valid(c[i]);
+		}
+		for (size_t i = 0; ok && i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
 			if (bls) {
-				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
+#ifdef CMLHS_ECDSA
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
-				fp_set_dig(g1->z, 1);
-				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+#else
+				/* ECDSA keys must be points in G1 over a prime field. */
+				ok = 0;
+#endif
 			}
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
+		if (ok) {
+			pc_map_sim(e, a, z, slen);
+			pc_map_sim_gen(u, c, y, slen, r);
 
-		pc_map_sim(e, a, z, slen);
-		pc_map_sim(u, c, y, slen);
-		pc_map(v, r, g2);
-		gt_mul(u, u, v);
-
-		for (int i = 0; i < slen; i++) {
-			for (int j = 0; j < flen[i]; j++) {
-				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
-				gt_mul(u, u, v);
+			for (size_t i = 0; i < slen; i++) {
+				for (size_t j = 0; j < flen[i]; j++) {
+					gt_exp_dig(v, hs[i][label[j]], f[i][j]);
+					gt_mul(u, u, v);
+				}
 			}
-		}
-		if (gt_cmp(e, u) != RLC_EQ) {
-			result = 0;
+			ok = (gt_cmp(e, u) == RLC_EQ);
 		}
 
-		pc_map(e, g1, s);
-		g1_set_infty(g1);
-		for (int i = 0; i < slen; i++) {
-			g1_add(g1, g1, c[i]);
+		if (ok) {
+			/* Check that e(G_1, s) * e(sum c_i - m * h, G_2) = 1. */
+			g1_get_gen(p[0]);
+			g2_copy(q[0], s);
+			g1_mul(g1, h, m);
+			g1_neg(g1, g1);
+			for (size_t i = 0; i < slen; i++) {
+				g1_add(g1, g1, c[i]);
+			}
+			g1_norm(g1, g1);
+			pc_map_sim_gen(e, p, q, 1, g1);
+			ok = gt_is_unity(e);
 		}
-		g1_norm(g1, g1);
-		pc_map(u, g1, g2);
-		gt_mul(e, e, u);
 
-		g1_mul(g1, h, m);
-		pc_map(v, g1, g2);
-		if (gt_cmp(e, v) != RLC_EQ) {
-			result = 0;
-		}
+		result = ok;
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		g1_free(g1);
-		g2_free(g2);
+		g1_free(p[0]);
+		g2_free(q[0]);
 		gt_free(e);
 		gt_free(u);
 		gt_free(v);
@@ -304,7 +351,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	return result;
 }
 
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+void cp_cmlhs_off(gt_t vk, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
 
@@ -314,8 +361,8 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 		gt_new(v);
 
 		gt_set_unity(vk);
-		for (int i = 0; i < slen; i++) {
-			for (int j = 0; j < flen[i]; j++) {
+		for (size_t i = 0; i < slen; i++) {
+			for (size_t j = 0; j < flen[i]; j++) {
 				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
 				gt_mul(vk, vk, v);
 			}
@@ -331,84 +378,91 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
 		size_t slen, int bls) {
-	g1_t g1;
-	g2_t g2;
-	gt_t e, u, v;
+	g1_t g1, p[1];
+	g2_t q[1];
+	gt_t e, u;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
-	int result = 1;
+	/* Room for any point z[i] in uncompressed form, whatever s is. */
+	uint8_t *buf = RLC_ALLOCA(uint8_t,
+			1 + 2 * (sizeof(s->x) / (sizeof(fp_t))) * RLC_FP_BYTES + dlen);
+	int ok, result = 0;
 
 	g1_null(g1);
-	g2_null(g2);
+	g1_null(p[0]);
+	g2_null(q[0]);
 	gt_null(e);
 	gt_null(u);
-	gt_null(v);
 	bn_null(k);
 	bn_null(n);
 
 	RLC_TRY {
 		g1_new(g1);
-		g2_new(g2);
+		g1_new(p[0]);
+		g2_new(q[0]);
 		gt_new(e);
 		gt_new(u);
-		gt_new(v);
 		bn_new(k);
 		bn_new(n);
-		if (buf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
-		for (int i = 0; i < slen; i++) {
+		/* Torsion added to these elements would not change the pairings,
+		 * and a result outside [0, n) would verify as its residue. */
+		pc_get_ord(n);
+		ok = g1_is_valid(r) && g2_is_valid(s) && bn_sign(msg) == RLC_POS &&
+				bn_cmp(msg, n) == RLC_LT;
+		for (size_t i = 0; ok && i < slen; i++) {
+			ok = g1_is_valid(a[i]) && g1_is_valid(c[i]);
+		}
+		for (size_t i = 0; ok && i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
 			if (bls) {
-				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+				ok = cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
 			} else {
+#ifdef CMLHS_ECDSA
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
 				g1_set_g2(g1, pk[i]);
-				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+				ok = cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
+#else
+				/* ECDSA keys must be points in G1 over a prime field. */
+				ok = 0;
+#endif
 			}
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-
-		pc_map_sim(e, a, z, slen);
-		pc_map_sim(u, c, y, slen);
-		pc_map(v, r, g2);
-		gt_mul(u, u, v);
-		gt_mul(u, u, vk);
-
-		if (gt_cmp(e, u) != RLC_EQ) {
-			result = 0;
+		if (ok) {
+			pc_map_sim(e, a, z, slen);
+			pc_map_sim_gen(u, c, y, slen, r);
+			gt_mul(u, u, vk);
+			ok = (gt_cmp(e, u) == RLC_EQ);
 		}
 
-		pc_map(e, g1, s);
-		g1_set_infty(g1);
-		for (int i = 0; i < slen; i++) {
-			g1_add(g1, g1, c[i]);
+		if (ok) {
+			/* Check that e(G_1, s) * e(sum c_i - m * h, G_2) = 1. */
+			g1_get_gen(p[0]);
+			g2_copy(q[0], s);
+			g1_mul(g1, h, msg);
+			g1_neg(g1, g1);
+			for (size_t i = 0; i < slen; i++) {
+				g1_add(g1, g1, c[i]);
+			}
+			g1_norm(g1, g1);
+			pc_map_sim_gen(e, p, q, 1, g1);
+			ok = gt_is_unity(e);
 		}
-		g1_norm(g1, g1);
-		pc_map(u, g1, g2);
-		gt_mul(e, e, u);
 
-		g1_mul(g1, h, msg);
-		pc_map(v, g1, g2);
-		if (gt_cmp(e, v) != RLC_EQ) {
-			result = 0;
-		}
+		result = ok;
 	} RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		g1_free(g1);
-		g2_free(g2);
+		g1_free(p[0]);
+		g2_free(q[0]);
 		gt_free(e);
 		gt_free(u);
-		gt_free(v);
 		bn_free(k);
 		bn_free(n);
 		RLC_FREE(buf);

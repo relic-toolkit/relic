@@ -86,7 +86,7 @@ void *clientThread(void *arg) {
 	connect(clientSocket, (struct sockaddr *)&serverAddr, addr_size);
 
 	//Read the message from the server into the buffer
-	if (recv(clientSocket, buffer, strlen("Hello"), 0) < 0) {
+	if (recv(clientSocket, buffer, strlen("Hello"), MSG_WAITALL) < 0) {
 		printf("Receive failed\n");
 	}
 
@@ -94,7 +94,7 @@ void *clientThread(void *arg) {
 	bench_before();
 
 	//Read the message from the server into the buffer
-	if (recv(clientSocket, buffer, 4 * RLC_PC_BYTES + 1, 0) < 0) {
+	if (recv(clientSocket, buffer, 4 * RLC_PC_BYTES + 1, MSG_WAITALL) < 0) {
 		printf("Receive failed\n");
 	}
 	g2_read_bin(d, buffer, 4 * RLC_PC_BYTES + 1);

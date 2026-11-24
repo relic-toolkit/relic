@@ -38,6 +38,7 @@
 #include "relic_util.h"
 #include <stddef.h>
 #include "relic_dv.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -216,13 +217,12 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	/*
 	 * A and B are the cofactors of the first working value, C and D those of
 	 * the second, and a0, b0 are the operands with the common power of two
-	 * removed, which the halving rule below refers to. Held on the stack at
-	 * fixed width so that the signed arithmetic needs no length bookkeeping;
-	 * that costs 6 * (RLC_BN_SIZE + 1) digits of frame.
+	 * removed, which the halving rule below refers to. Held at the fixed width
+	 * of cap + 1 digits, for cap one more than the larger operand, so that the
+	 * signed arithmetic needs no length bookkeeping; the operands may exceed
+	 * the precision with dynamic allocation.
 	 */
-	dig_t A[RLC_BN_SIZE + 2], B[RLC_BN_SIZE + 2];
-	dig_t C[RLC_BN_SIZE + 2], D[RLC_BN_SIZE + 2];
-	dig_t a0[RLC_BN_SIZE + 2], b0[RLC_BN_SIZE + 2];
+	dig_t *A, *B, *C, *D, *a0, *b0, *t;
 	int sgA, sgB, sgC, sgD;
 	size_t cap, shift, sx, sy, sg, sb0, sm, sc;
 	uint_t rem;
@@ -264,6 +264,13 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	 * carried here, because the halving rule branches on their parity.
 	 */
 	cap = RLC_MAX(sa, sb) + 1;
+	t = RLC_ALLOCA(dig_t, 6 * (cap + 1));
+	A = t;
+	B = A + cap + 1;
+	C = B + cap + 1;
+	D = C + cap + 1;
+	a0 = D + cap + 1;
+	b0 = a0 + cap + 1;
 	shift = RLC_MIN(bn_ctz_low(a, sa), bn_ctz_low(b, sb));
 	sx = bn_rsh_low(a, sa, shift);
 	sy = bn_rsh_low(b, sb, shift);
@@ -390,6 +397,7 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	sg = sy + shift;
 	dv_copy(d, C, sc);
 	*sd = (sgC == RLC_NEG ? -sc : sc);
+	RLC_FREE(t);
 	return sg;
 }
 

@@ -2,13 +2,13 @@
  * RELIC is an Efficient LIbrary for Cryptography
  * Copyright (c) 2021 RELIC Authors
  *
- * This file is part of RELIC. RELIC is legal property of its developsmlers,
+ * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
  * RELIC is free software; you can redistribute it and/or modify it under the
- * terms of the vsmlersion 2.1 (or later) of the GNU Lesser General Public License
- * as published by the Free Software Foundation; or vsmlersion 2.0 of the Apache
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
  * License as published by the Apache Software Foundation. See the LICENSE files
  * for more details.
  *
@@ -24,7 +24,10 @@
 /**
  * @file
  *
- * Implementation of extendable ring signatures.
+ * Implementation of same-message linkable extendable ring signatures, from
+ * "Count Me In! Extendability for Threshold Ring Signatures" by Aranha,
+ * Hall-Andersen, Nitulescu, Pagnin and Yakoubov (PKC 2022):
+ * https://eprint.iacr.org/2021/1240.
  *
  * @ingroup cp
  */
@@ -37,34 +40,57 @@
 
 int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		const bn_t sk, const ec_t pk, const ec_t pp) {
+	bn_t n;
 	ec_t g[2], y[2];
+	uint8_t buf[RLC_MD_LEN];
+	const uint8_t *in[2] = { NULL, msg };
+	size_t lens[2] = { RLC_MD_LEN, len };
 	int result = RLC_OK;
 
+	bn_null(n);
 	ec_null(g[0]);
 	ec_null(g[1]);
 	ec_null(y[0]);
 	ec_null(y[1]);
 
 	RLC_TRY {
+		bn_new(n);
 		ec_new(g[0]);
 		ec_new(g[1]);
 		ec_new(y[0]);
 		ec_new(y[1]);
 
+		/* Compute h = pp - [td]G, so that the signer does not know log(h). */
+		ec_curve_get_ord(n);
+		bn_rand_mod(td, n);
+		ec_mul_gen(p->h, td);
+		ec_sub(p->h, pp, p->h);
+		ec_norm(p->h, p->h);
+		ec_copy(p->pk, pk);
+
+		/* Compute the linkability tag tau = [sk]H(m). */
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
-		ec_mul(p->tau, g[1], sk);
+		ec_mul_sec(p->tau, g[1], sk);
 
-		cp_ers_sig(td, p->sig, msg, len, sk, pk, pp);
-
-		ec_copy(y[0], p->sig->h);
+		/* Prove the relation h = [x]G or (pk = [x]G and tau = [x]H(m)),
+		 * signing a digest of the message and of a fresh nonce shared by the
+		 * signature. */
+		rand_bytes(p->nonce, RLC_MD_LEN);
+		in[0] = p->nonce;
+		md_map_lot(buf, in, lens, 2);
+		ec_copy(y[0], p->pk);
 		ec_copy(y[1], p->tau);
-		cp_sokor_sig(p->c, p->r, msg, len, y, g, sk, 0);
+		if (cp_sokeqor_sig(p->c, p->r, buf, RLC_MD_LEN, p->h, y, g, sk,
+				0) != RLC_OK) {
+			RLC_THROW(ERR_CAUGHT);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		bn_free(n);
 		ec_free(g[0]);
 		ec_free(g[1]);
 		ec_free(y[0]);
@@ -75,11 +101,16 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 
 int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp) {
-	bn_t n;
 	ec_t t, g[2], y[2];
+	uint8_t buf[RLC_MD_LEN];
+	const uint8_t *in[2] = { NULL, msg };
+	size_t lens[2] = { RLC_MD_LEN, len };
 	int flag = 0, result = 0;
 
-	bn_null(n);
+	if (size == 0) {
+		return 0;
+	}
+
 	ec_null(t);
 	ec_null(g[0]);
 	ec_null(g[1]);
@@ -87,39 +118,41 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 	ec_null(y[1]);
 
 	RLC_TRY {
-		bn_new(n);
 		ec_new(t);
 		ec_new(g[0]);
 		ec_new(g[1]);
 		ec_new(y[0]);
 		ec_new(y[1]);
 
-		ec_curve_get_ord(n);
 		ec_mul_gen(t, td);
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
 
-		for (int i = 0; i < size; i++) {
-			ec_add(t, t, s[i]->sig->h);
+		for (size_t i = 0; i < size; i++) {
+			ec_add(t, t, s[i]->h);
 		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
-			for (int i = 0; i < size; i++) {
-				ec_copy(y[0], s[i]->sig->h);
-				ec_copy(y[1], s[i]->sig->pk);
-				flag &= cp_sokor_ver(s[i]->sig->c, s[i]->sig->r, msg, len, y,
-						NULL);
+			/* The members signed a digest of the nonce and the message. */
+			in[0] = s[0]->nonce;
+			md_map_lot(buf, in, lens, 2);
+			for (size_t i = 0; i < size; i++) {
+				/* All members carry the nonce and tag of the same signer. */
+				flag &= (memcmp(s[i]->nonce, s[0]->nonce, RLC_MD_LEN) == 0);
+				flag &= (ec_cmp(s[i]->tau, s[0]->tau) == RLC_EQ);
+				ec_copy(y[0], s[i]->pk);
 				ec_copy(y[1], s[i]->tau);
-				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, g);
+				flag &= cp_sokeqor_ver(s[i]->c, s[i]->r, buf, RLC_MD_LEN,
+						s[i]->h, y, g);
 			}
-      result = flag;
+			result = flag;
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
 		ec_free(t);
 		ec_free(g[0]);
 		ec_free(g[1]);
@@ -130,10 +163,24 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 }
 
 int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
-		size_t len, const ec_t pk, const ec_t pp) {
+		size_t len, const ec_t pk) {
 	bn_t n, r;
 	ec_t g[2], y[2];
+	uint8_t buf[RLC_MD_LEN];
+	const uint8_t *in[2] = { NULL, msg };
+	size_t lens[2] = { RLC_MD_LEN, len };
 	int result = RLC_OK;
+
+	/* The new member takes its nonce and tag from the last one in the ring. */
+	if (*size == 0) {
+		return RLC_ERR;
+	}
+
+	for (size_t i = 0; i < *size; i++) {
+		if (ec_cmp(pk, p[i]->pk) == RLC_EQ) {
+			return RLC_ERR;
+		}
+	}
 
 	bn_null(n);
 	bn_null(r);
@@ -141,12 +188,6 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 	ec_null(g[1]);
 	ec_null(y[0]);
 	ec_null(y[1]);
-
-	for (int i = 0; i < *size; i++) {
-		if (ec_cmp(pk, p[i]->sig->pk) == RLC_EQ) {
-			return RLC_ERR;
-		}
-	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -156,24 +197,42 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		ec_new(y[0]);
 		ec_new(y[1]);
 
+		/* Compute h = [r]G for a fresh trapdoor r. */
 		ec_curve_get_ord(n);
 		bn_rand_mod(r, n);
-		bn_sub(td, td, r);
-		bn_mod(td, td, n);
-		ec_mul_gen(p[*size]->sig->h, r);
+		ec_mul_gen(p[*size]->h, r);
+		ec_copy(p[*size]->pk, pk);
+		ec_copy(p[*size]->tau, p[*size - 1]->tau);
+		memcpy(p[*size]->nonce, p[*size - 1]->nonce, RLC_MD_LEN);
+
+		/* Prove the same relation, using the trapdoor r as the witness. */
 		ec_curve_get_gen(g[0]);
 		ec_map(g[1], msg, len);
-
-		ec_copy(p[*size]->sig->pk, pk);
-		ec_copy(y[0], p[*size]->sig->h);
-		ec_copy(y[1], p[*size]->sig->pk);
-		cp_sokor_sig(p[*size]->sig->c, p[*size]->sig->r,
-			msg, len, y, NULL, r, 1);
-		ec_copy(p[*size]->tau, p[*size - 1]->tau);
+		/* Sign a digest of the nonce and the message. */
+		in[0] = p[*size]->nonce;
+		md_map_lot(buf, in, lens, 2);
+		ec_copy(y[0], p[*size]->pk);
 		ec_copy(y[1], p[*size]->tau);
-		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, y, g, r, 1);
-		(*size)++;
-		result = RLC_OK;
+		if (cp_sokeqor_sig(p[*size]->c, p[*size]->r, buf, RLC_MD_LEN,
+				p[*size]->h, y, g, r, 1) != RLC_OK) {
+			RLC_THROW(ERR_CAUGHT);
+		} else {
+			/* Update the trapdoor only once the member was added. */
+			bn_sub(td, td, r);
+			bn_mod(td, td, n);
+			(*size)++;
+			/* Move the new member to a random position of the ring. */
+			{
+				uint32_t j;
+				smlers_st t;
+				rand_bytes((uint8_t *)&j, sizeof(j));
+				j %= (uint32_t)*size;
+				t = *p[j];
+				*p[j] = *p[*size - 1];
+				*p[*size - 1] = t;
+			}
+			result = RLC_OK;
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

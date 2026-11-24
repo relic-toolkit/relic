@@ -24,12 +24,14 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 54.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 54.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
 #include "relic_util.h"
 
@@ -37,159 +39,187 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
-		const bn_t a) {
+TMPL_PP_MIL(54, ep9);
+
+TMPL_PP_MIL_LIT(54, ep9);
+
+/**
+ * Multiplies the result of the Miller loop over the parameter by the final
+ * lines of the optimal ate pairing, so that it becomes
+ * f_{a,Q}^3 * l_{T,T} * l_{T,2T} * l_{Frob^10(Q),Frob(Q)}, all evaluated at P.
+ *
+ * @param[in,out] r			- the result.
+ * @param[in] t				- the points aQ produced by the loop.
+ * @param[in] q				- the vector of affine points in G_2.
+ * @param[in] p				- the vector of affine points in G_1.
+ * @param[in] m				- the number of pairings to evaluate.
+ */
+static void pp_fin_k54(fp54_t r, ep9_t *t, ep9_t *q, ep_t *p, int m) {
 	fp54_t l;
+	ep9_t s, u;
 	ep_t _p;
-	fp9_t rx, ry, rz, sx, sy, sz, qn;
-	size_t len = bn_bits(a) + 1;
-	int i;
-	int8_t s[RLC_FP_BITS + 1];
+	int j;
 
 	fp54_null(l);
+	ep9_null_all(s, u);
 	ep_null(_p);
-	fp9_null(rx);
-	fp9_null(ry);
-	fp9_null(rz);
-	fp9_null(sx);
-	fp9_null(sy);
-	fp9_null(sz);
 
 	RLC_TRY {
 		fp54_new(l);
+		ep9_new_all(s, u);
 		ep_new(_p);
-		fp9_new(rx);
-		fp9_new(ry);
-		fp9_new(rz);
-		fp9_new(sx);
-		fp9_new(sy);
-		fp9_new(sz);
-		fp9_new(qn);
 
-		fp54_zero(l);
-		fp9_copy(rx, qx);
-		fp9_copy(ry, qy);
-		fp9_set_dig(rz, 1);
-#if EP_ADD == BASIC
-		ep_neg(_p, p);
-#else
-		fp_add(_p->x, p->x, p->x);
-		fp_add(_p->x, _p->x, p->x);
-		fp_neg(_p->y, p->y);
-#endif
-		fp9_neg(qn, qy);
-
-		bn_rec_naf(s, &len, a, 2);
-		for (i = len - 2; i >= 0; i--) {
-			fp54_sqr(r, r);
-			pp_dbl_k54(l, rx, ry, rz, _p);
-			fp54_mul_dxs(r, r, l);
-			if (s[i] > 0) {
-				pp_add_k54(l, rx, ry, rz, qx, qy, p);
-				fp54_mul_dxs(r, r, l);
-			}
-			if (s[i] < 0) {
-				pp_add_k54(l, rx, ry, rz, qx, qn, p);
-				fp54_mul_dxs(r, r, l);
-			}
-		}
 		/* Compute f^3. */
 		fp54_sqr(l, r);
 		fp54_mul(r, r, l);
 
-		fp54_zero(l);
-		fp9_copy(sx, rx);
-		fp9_copy(sy, ry);
-		fp9_copy(sz, rz);
-		pp_dbl_k54(l, sx, sy, sz, _p);
-		fp54_mul_dxs(r, r, l);
-#if EP_ADD == PROJC
-		fp9_inv(sz, sz);
-		fp9_mul(sx, sx, sz);
-		fp9_mul(sy, sy, sz);
-#endif
-		pp_add_k54(l, rx, ry, rz, sx, sy, p);
-		fp54_mul_dxs(r, r, l);
-		fp9_frb(rx, qx, 1);
-		fp9_frb(ry, qy, 1);
-		fp9_zero(sz);
-		fp3_set_dig(sz[1], 1);
-		fp9_inv(sz, sz);
-		fp_copy(sz[0][0], sz[2][2]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p0[1]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[3][0]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[0][0]);
-		fp3_mul_nor(sz[0], sz[0]);
-		fp3_mul_nor(sz[0], sz[0]);
-		fp3_mul_nor(sz[0], sz[0]);
-		fp_mul(sz[1][0], sz[0][0], core_get()->fp3_p2[1][0]);
+		for (j = 0; j < m; j++) {
+			/* Multiply by the lines through T and 2T. */
+			TMPL_PP_MIL_P_54(_p, p[j])
+			fp54_zero(l);
+			pp_dbl_k54(l, s, t[j], _p);
+			fp54_mul_dxs(r, r, l);
+			pp_norm_k54(s, s);
+			pp_add_k54(l, t[j], s, p[j]);
+			fp54_mul_dxs(r, r, l);
 
-		for (int i = 0; i < 3; i++) {
-			fp3_mul(ry[i], ry[i], sz[0]);
-			fp3_mul(rx[i], rx[i], sz[1]);
+			/* Multiply by the line through Frob^10(Q) and Frob(Q). */
+			ep9_frb(u, q[j], 1);
+			ep9_frb(s, q[j], 10);
+			pp_add_k54(l, s, u, p[j]);
+			fp54_mul_dxs(r, r, l);
 		}
-
-		fp9_frb(sx, qx, 10);
-		fp9_frb(sy, qy, 10);
-		for (int j = 0; j < 10; j++) {
-			for (int i = 0; i < 3; i++) {
-				fp3_mul(sy[i], sy[i], sz[0]);
-				fp3_mul(sx[i], sx[i], sz[1]);
-			}
-		}
-		fp9_set_dig(sz, 1);
-
-		pp_add_k54(l, sx, sy, sz, rx, ry, p);
-		fp54_mul_dxs(r, r, l);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		fp54_free(l);
+		ep9_free_all(s, u);
 		ep_free(_p);
-		fp9_free(rx);
-		fp9_free(ry);
-		fp9_free(rz);
-		fp9_free(sx);
-		fp9_free(sy);
-		fp9_free(sz);
-		fp9_free(qn);
 	}
 }
+
+TMPL_PP_LIN(54, fp9);
+
+/**
+ * Records the final lines of the optimal ate pairing over SG54 curves at the
+ * point (1, 1), as pp_fin_k54() computes them: the lines through T and T and
+ * through T and 2T, and then the one through Frob^10(Q) and Frob(Q).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k54(fp9_t *t, fp9_t *y, int *j, fp54_t l, ep9_t r,
+		const ep9_t q, const ep_t e) {
+	ep9_t s, u;
+
+	ep9_null_all(s, u);
+
+	RLC_TRY {
+		ep9_new_all(s, u);
+
+		fp54_zero(l);
+		pp_dbl_k54(l, s, r, e);
+		pp_rec_k54(t, y, j, l);
+		pp_norm_k54(s, s);
+		fp54_zero(l);
+		pp_add_k54(l, r, s, e);
+		pp_rec_k54(t, y, j, l);
+		ep9_frb(u, q, 1);
+		ep9_frb(s, q, 10);
+		fp54_zero(l);
+		pp_add_k54(l, s, u, e);
+		pp_rec_k54(t, y, j, l);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep9_free_all(s, u);
+	}
+}
+
+/**
+ * Multiplies the result by the final lines of the optimal ate pairing over
+ * SG54 curves, stored by pp_pre_fin_k54(), as pp_fin_k54() does. If g is set,
+ * first cubes the result, which a product of pairings does only once.
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
+ */
+static void pp_fix_fin_k54(fp54_t r, fp54_t l, const fp9_t *t, int *j,
+		const ep_t p, const ep_t d, int g) {
+	if (g) {
+		/* Compute f^3, with l as scratch, zeroed again for the lines. */
+		fp54_sqr(l, r);
+		fp54_mul(r, r, l);
+		fp54_zero(l);
+	}
+	pp_lin_k54(l, t, j, d);
+	fp54_mul_dxs(r, r, l);
+	pp_lin_k54(l, t, j, p);
+	fp54_mul_dxs(r, r, l);
+	pp_lin_k54(l, t, j, p);
+	fp54_mul_dxs(r, r, l);
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, followed by the final lines of SG54 curves.
+ */
+/** @{ */
+#define TMPL_PP_PAR_54(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_54(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k54(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_54(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k54(R, L, T, J, P, D, G);
+/** @} */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy) {
-	bn_t a;
+TMPL_PP_ADD_BASIC(54, ep9, fp9);
 
-	bn_null(a);
+TMPL_PP_ADD_PROJC(54, ep9, fp9);
 
-	RLC_TRY {
-		bn_new(a);
+TMPL_PP_ADD_LAZYR(54, ep9, fp9, dv9);
 
-		fp_prime_get_par(a);
-		fp54_set_dig(r, 1);
+TMPL_PP_ADD_LIT(54, ep9, fp9);
 
-		if (!ep_is_infty(p) && !(fp9_is_zero(qx) && fp9_is_zero(qy))) {
-			switch (ep_curve_is_pairf()) {
-				case EP_SG54:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k54(r, qx, qy, p, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp54_inv_cyc(r, r);
-					}
-					pp_exp_k54(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-	}
-}
+TMPL_PP_DBL_BASIC(54, ep9, fp9);
+
+TMPL_PP_DBL_PROJC(54, ep9, fp9);
+
+TMPL_PP_DBL_LAZYR(54, ep9, fp9, dv9);
+
+TMPL_PP_DBL_LIT(54, ep9, fp9);
+
+TMPL_PP_NORM(54, ep9, fp9);
+
+TMPL_PP_MAP_TATEP(54, ep9);
+
+TMPL_PP_MAP_SIM_TATEP(54, ep9);
+
+TMPL_PP_MAP_WEILP(54, ep9);
+
+TMPL_PP_MAP_SIM_WEILP(54, ep9);
+
+TMPL_PP_MAP_OATEP(54, ep9);
+
+TMPL_PP_MAP_SIM_OATEP(54, ep9);
+
+TMPL_PP_MAP_PRE(54, ep9, fp9);
+
+TMPL_PP_MAP_FIX(54, fp9);
+
+TMPL_PP_MAP_SIM_FIX(54, ep9, fp9);

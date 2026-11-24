@@ -150,19 +150,19 @@ int util(void) {
 				ec_set_infty(a);
 				l = ec_size_bin(a, j);
 				ec_write_bin(bin, l, a, j);
-				ec_read_bin(b, bin, l);
+				TEST_ASSERT(ec_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 				ec_rand(a);
 				l = ec_size_bin(a, j);
 				ec_write_bin(bin, l, a, j);
-				ec_read_bin(b, bin, l);
+				TEST_ASSERT(ec_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 				ec_rand(a);
 				ec_dbl(a, a);
 				l = ec_size_bin(a, j);
 				ec_norm(a, a);
 				ec_write_bin(bin, l, a, j);
-				ec_read_bin(b, bin, l);
+				TEST_ASSERT(ec_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 			}
 		}

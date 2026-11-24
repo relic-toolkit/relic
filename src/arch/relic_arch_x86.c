@@ -38,6 +38,11 @@
 #include "lzcnt.inc"
 #include "tzcnt.inc"
 
+/**
+ * Renames the inline assembly macro to a prettier name.
+ */
+#define asm					__asm__ volatile
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -53,19 +58,18 @@ void arch_clean(void) {
 }
 
 ull_t arch_cycles(void) {
-	uint32_t hi, lo;
-	asm (
-		"cpuid\n\t"/*serialize*/
-		"rdtsc\n\t"/*read the clock*/
-		"mov %%edx, %0\n\t"
-		"mov %%eax, %1\n\t"
-		: "=r" (hi), "=r" (lo):: "%rax", "%rbx", "%rcx", "%rdx"
-	);
+	uint32_t hi, lo, a = 0, b, c = 0, d;
+
+	/* Serialize with cpuid, which overwrites all four registers. */
+	asm("cpuid" : "+a" (a), "=b" (b), "+c" (c), "=d" (d));
+	asm("rdtsc" : "=a" (lo), "=d" (hi));
+	(void)b;
+	(void)d;
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
 }
 
 uint_t arch_lzcnt(dig_t x) {
-	return core_get()->lzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - WSIZE);
+	return core_get()->lzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - RLC_WSIZE);
 }
 
 uint_t arch_tzcnt(dig_t x) {

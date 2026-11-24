@@ -39,12 +39,15 @@
 void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t, u;
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
+
+	if (bn_sign(b) == RLC_NEG || bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bn_mod(t, a, b);
 		bn_copy(u, b);
@@ -59,28 +62,29 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
-	int i;
-	bn_t u, *t = RLC_ALLOCA(bn_t, n);
+	size_t i;
+	bn_t u, *t = NULL;
 
 	if (n == 0) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
 
+	/* Allocate after the early return, so that it does not leak. */
+	t = RLC_ALLOCA(bn_t, n);
+
 	bn_null(u);
+	for (i = 0; i < n; i++) {
+		bn_null(t[i]);
+	}
 
 	RLC_TRY {
-		if (t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		for (i = 0; i < n; i++) {
-			bn_null(t[i]);
 			bn_new(t[i]);
 		}
 		bn_new(u);
@@ -113,5 +117,35 @@ void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 		}
 		bn_free(u);
 		RLC_FREE(t);
+	}
+}
+
+void bn_mod_inv_crt(bn_t c, const bn_t a, const crt_t crt) {
+	bn_t t, u;
+
+	bn_null(t);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+
+		bn_mod(t, a, crt->p);
+		bn_mod_inv(t, t, crt->p);
+		bn_mod(u, a, crt->q);
+		bn_mod_inv(u, u, crt->q);
+		/* c = u + q * ((t - u) * qInv mod p) by Garner's formula. */
+		bn_sub(t, t, u);
+		bn_mul(t, t, crt->qi);
+		bn_mod(t, t, crt->p);
+		bn_mul(t, t, crt->q);
+		bn_add(c, t, u);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
 	}
 }

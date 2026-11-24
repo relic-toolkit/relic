@@ -1,0 +1,11 @@
+name: "RELIC CodeQL configuration"
+
+queries:
+  - uses: security-and-quality
+
+query-filters:
+  # RLC_TRY records the address of its local setjmp buffer in the library
+  # context, and RLC_CATCH restores the previous one before the block ends, so
+  # the stack address never outlives its frame. No TRY block exits early.
+  - exclude:
+      id: cpp/stack-address-escape

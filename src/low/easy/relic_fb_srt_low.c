@@ -61,7 +61,7 @@ static void fb_srtt_low(dig_t *c, const dig_t *a, int fa) {
 	RLC_RIP(la, sa, (fa + 1) >> 1);
 	ra = RLC_DIG - la;
 
-	for (i = 0; i < RLC_FB_DIGS; i++) {
+	for (i = 0; (size_t)i < RLC_FB_DIGS; i++) {
 		n = i >> 1;
 		d = a[i];
 
@@ -179,7 +179,7 @@ static void fb_sqrt_low(dig_t *c, const dig_t *a) {
 
 	sh = 1 + (RLC_FB_BITS >> RLC_DIG_LOG);
 
-	for (i = 0; i < RLC_FB_DIGS; i++) {
+	for (i = 0; (size_t)i < RLC_FB_DIGS; i++) {
 		n = i >> 1;
 		d = a[i];
 
@@ -191,7 +191,7 @@ static void fb_sqrt_low(dig_t *c, const dig_t *a) {
 		}
 
 		i++;
-		if (i < sh && i < RLC_FB_DIGS) {
+		if (i < sh && (size_t)i < RLC_FB_DIGS) {
 			d = a[i];
 
 			for (j = RLC_DIG / 2; j < RLC_DIG; j += 4) {

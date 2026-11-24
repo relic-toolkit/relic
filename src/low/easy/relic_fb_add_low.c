@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 void fb_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	int i;
+	size_t i;
 
 	(*c) = (*a) ^ digit;
 	c++;
@@ -49,7 +49,7 @@ void fb_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 void fb_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
+	size_t i;
 
 	for (i = 0; i < RLC_FB_DIGS; i++, a++, b++, c++) {
 		(*c) = (*a) ^ (*b);
@@ -57,7 +57,7 @@ void fb_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	int i;
+	size_t i;
 
 	for (i = 0; i < size; i++, a++, b++, c++) {
 		(*c) = (*a) ^ (*b);

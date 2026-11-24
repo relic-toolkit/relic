@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory(void) {
-	ec_t a[BENCH];
+	ec_t a[RLC_BENCH];
 
 	BENCH_FEW("ec_null", ec_null(a[i]), 1);
 
 	BENCH_FEW("ec_new", ec_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		ec_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		ec_new(a[i]);
 	}
 	BENCH_FEW("ec_free", ec_free(a[i]), 1);

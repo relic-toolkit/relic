@@ -40,6 +40,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "relic_util.h"
 #include "rijndael-alg-fst.h"
 #include "rijndael-api-fst.h"
 
@@ -142,6 +143,7 @@ int makeKey2(keyInstance * key, BYTE direction, int keyLen, char *keyMaterial) {
 		key->Nr = rijndaelKeySetupDec(key->rk, cipherKey, keyLen);
 	}
 	rijndaelKeySetupEnc(key->ek, cipherKey, keyLen);
+	util_zero(cipherKey, sizeof(cipherKey));
 	return TRUE;
 }
 

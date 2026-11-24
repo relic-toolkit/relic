@@ -42,8 +42,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_SQR == BASIC || !defined(STRIP)
-
 void fb_sqr_basic(fb_t c, const fb_t a) {
 	dv_t t;
 
@@ -61,10 +59,6 @@ void fb_sqr_basic(fb_t c, const fb_t a) {
 		dv_free(t);
 	}
 }
-
-#endif
-
-#if FB_SQR == QUICK || !defined(STRIP)
 
 void fb_sqr_quick(fb_t c, const fb_t a) {
 	dv_t t;
@@ -84,12 +78,6 @@ void fb_sqr_quick(fb_t c, const fb_t a) {
 	}
 }
 
-#endif
-
-#if FB_SQR == INTEG || !defined(STRIP)
-
 void fb_sqr_integ(fb_t c, const fb_t a) {
 	fb_sqrm_low(c, a);
 }
-
-#endif

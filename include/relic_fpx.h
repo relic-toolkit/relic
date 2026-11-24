@@ -223,12 +223,22 @@ typedef dv8_t dv24_t[3];
 typedef fp24_t fp48_t[2];
 
 /**
+ * Represents a double-precision 48-degree extension field element.
+ */
+typedef dv24_t dv48_t[2];
+
+/**
  * Represents a 54-degree extension field element.
  *
  * This extension is constructed with the basis {1, u, u^2}, where u^3 = t is an
  * adjoined root in the underlying octdecic extension.
  */
 typedef fp18_t fp54_t[3];
+
+/**
+ * Represents a double-precision 54-degree extension field element.
+ */
+typedef dv18_t dv54_t[3];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -241,7 +251,6 @@ typedef fp18_t fp54_t[3];
  */
 #define dv2_null(A)															\
 		dv_null(A[0]); dv_null(A[1]);										\
-
 
 /**
  * Allocates a double-precision quadratic extension field element.
@@ -284,15 +293,30 @@ typedef fp18_t fp54_t[3];
 		fp_free(A[0]); fp_free(A[1]); 										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv2_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv2_null_all(...)	RLC_EACH(dv2_null, __VA_ARGS__)
+#define dv2_new_all(...)		RLC_EACH(dv2_new, __VA_ARGS__)
+#define dv2_free_all(...)	RLC_EACH(dv2_free, __VA_ARGS__)
+#define fp2_null_all(...)	RLC_EACH(fp2_null, __VA_ARGS__)
+#define fp2_new_all(...)		RLC_EACH(fp2_new, __VA_ARGS__)
+#define fp2_free_all(...)	RLC_EACH(fp2_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two quadratic extension field elements. Computes C = A + B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_add(C, A, B)	fp2_add_basic(C, A, B)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_add(C, A, B)	fp2_add_integ(C, A, B)
 #endif
 
@@ -304,9 +328,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_sub(C, A, B)	fp2_sub_basic(C, A, B)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_sub(C, A, B)	fp2_sub_integ(C, A, B)
 #endif
 
@@ -316,9 +340,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the quadratic extension field element.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_dbl(C, A)		fp2_dbl_basic(C, A)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_dbl(C, A)		fp2_dbl_integ(C, A)
 #endif
 
@@ -329,9 +353,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_mul(C, A, B)	fp2_mul_basic(C, A, B)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_mul(C, A, B)	fp2_mul_integ(C, A, B)
 #endif
 
@@ -343,9 +367,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the quadratic extension field element to multiply.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_mul_nor(C, A)	fp2_mul_nor_basic(C, A)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_mul_nor(C, A)	fp2_mul_nor_integ(C, A)
 #endif
 
@@ -355,9 +379,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the quadratic extension field element to square.
  */
-#if FPX_QDR == BASIC
+#if FPX_QDR == FPX_BASIC
 #define fp2_sqr(C, A)		fp2_sqr_basic(C, A)
-#elif FPX_QDR == INTEG
+#elif FPX_QDR == FPX_INTEG
 #define fp2_sqr(C, A)		fp2_sqr_integ(C, A)
 #endif
 
@@ -411,15 +435,30 @@ typedef fp18_t fp54_t[3];
 		fp_free(A[0]); fp_free(A[1]); fp_free(A[2]);						\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv3_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv3_null_all(...)	RLC_EACH(dv3_null, __VA_ARGS__)
+#define dv3_new_all(...)		RLC_EACH(dv3_new, __VA_ARGS__)
+#define dv3_free_all(...)	RLC_EACH(dv3_free, __VA_ARGS__)
+#define fp3_null_all(...)	RLC_EACH(fp3_null, __VA_ARGS__)
+#define fp3_new_all(...)		RLC_EACH(fp3_new, __VA_ARGS__)
+#define fp3_free_all(...)	RLC_EACH(fp3_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two cubic extension field elements. Computes C = A + B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first cubic extension field element.
  * @param[in] B				- the second cubic extension field element.
  */
-#if FPX_CBC == BASIC
+#if FPX_CBC == FPX_BASIC
 #define fp3_add(C, A, B)	fp3_add_basic(C, A, B)
-#elif FPX_CBC == INTEG
+#elif FPX_CBC == FPX_INTEG
 #define fp3_add(C, A, B)	fp3_add_integ(C, A, B)
 #endif
 
@@ -431,9 +470,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the first cubic extension field element.
  * @param[in] B				- the second cubic extension field element.
  */
-#if FPX_CBC == BASIC
+#if FPX_CBC == FPX_BASIC
 #define fp3_sub(C, A, B)	fp3_sub_basic(C, A, B)
-#elif FPX_CBC == INTEG
+#elif FPX_CBC == FPX_INTEG
 #define fp3_sub(C, A, B)	fp3_sub_integ(C, A, B)
 #endif
 
@@ -443,9 +482,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the cubic extension field element.
  */
-#if FPX_CBC == BASIC
+#if FPX_CBC == FPX_BASIC
 #define fp3_dbl(C, A)		fp3_dbl_basic(C, A)
-#elif FPX_CBC == INTEG
+#elif FPX_CBC == FPX_INTEG
 #define fp3_dbl(C, A)		fp3_dbl_integ(C, A)
 #endif
 
@@ -456,9 +495,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the first cubic extension field element.
  * @param[in] B				- the second cubic extension field element.
  */
-#if FPX_CBC == BASIC
+#if FPX_CBC == FPX_BASIC
 #define fp3_mul(C, A, B)	fp3_mul_basic(C, A, B)
-#elif FPX_CBC == INTEG
+#elif FPX_CBC == FPX_INTEG
 #define fp3_mul(C, A, B)	fp3_mul_integ(C, A, B)
 #endif
 
@@ -468,9 +507,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the cubic extension field element to square.
  */
-#if FPX_CBC == BASIC
+#if FPX_CBC == FPX_BASIC
 #define fp3_sqr(C, A)		fp3_sqr_basic(C, A)
-#elif FPX_CBC == INTEG
+#elif FPX_CBC == FPX_INTEG
 #define fp3_sqr(C, A)		fp3_sqr_integ(C, A)
 #endif
 
@@ -523,15 +562,30 @@ typedef fp18_t fp54_t[3];
 		fp2_free(A[0]); fp2_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv4_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv4_null_all(...)	RLC_EACH(dv4_null, __VA_ARGS__)
+#define dv4_new_all(...)		RLC_EACH(dv4_new, __VA_ARGS__)
+#define dv4_free_all(...)	RLC_EACH(dv4_free, __VA_ARGS__)
+#define fp4_null_all(...)	RLC_EACH(fp4_null, __VA_ARGS__)
+#define fp4_new_all(...)		RLC_EACH(fp4_new, __VA_ARGS__)
+#define fp4_free_all(...)	RLC_EACH(fp4_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two quartic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first quartic extension field element.
  * @param[in] B				- the second quartic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp4_mul(C, A, B)	fp4_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp4_mul(C, A, B)	fp4_mul_lazyr(C, A, B)
 #endif
 
@@ -541,9 +595,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the quartic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp4_sqr(C, A)		fp4_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp4_sqr(C, A)		fp4_sqr_lazyr(C, A)
 #endif
 
@@ -596,15 +650,30 @@ typedef fp18_t fp54_t[3];
 		fp2_free(A[0]); fp2_free(A[1]); fp2_free(A[2]); 					\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv6_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv6_null_all(...)	RLC_EACH(dv6_null, __VA_ARGS__)
+#define dv6_new_all(...)		RLC_EACH(dv6_new, __VA_ARGS__)
+#define dv6_free_all(...)	RLC_EACH(dv6_free, __VA_ARGS__)
+#define fp6_null_all(...)	RLC_EACH(fp6_null, __VA_ARGS__)
+#define fp6_new_all(...)		RLC_EACH(fp6_new, __VA_ARGS__)
+#define fp6_free_all(...)	RLC_EACH(fp6_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two sextic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first sextic extension field element.
  * @param[in] B				- the second sextic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp6_mul(C, A, B)	fp6_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp6_mul(C, A, B)	fp6_mul_lazyr(C, A, B)
 #endif
 
@@ -614,9 +683,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the sextic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp6_sqr(C, A)		fp6_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp6_sqr(C, A)		fp6_sqr_lazyr(C, A)
 #endif
 
@@ -669,15 +738,30 @@ typedef fp18_t fp54_t[3];
 		fp4_free(A[0]); fp4_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv8_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv8_null_all(...)	RLC_EACH(dv8_null, __VA_ARGS__)
+#define dv8_new_all(...)		RLC_EACH(dv8_new, __VA_ARGS__)
+#define dv8_free_all(...)	RLC_EACH(dv8_free, __VA_ARGS__)
+#define fp8_null_all(...)	RLC_EACH(fp8_null, __VA_ARGS__)
+#define fp8_new_all(...)		RLC_EACH(fp8_new, __VA_ARGS__)
+#define fp8_free_all(...)	RLC_EACH(fp8_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two octic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first octic extension field element.
  * @param[in] B				- the second octic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp8_mul(C, A, B)	fp8_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp8_mul(C, A, B)	fp8_mul_lazyr(C, A, B)
 #endif
 
@@ -687,9 +771,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the octic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp8_sqr(C, A)		fp8_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp8_sqr(C, A)		fp8_sqr_lazyr(C, A)
 #endif
 
@@ -742,15 +826,30 @@ typedef fp18_t fp54_t[3];
 		fp3_free(A[0]); fp3_free(A[1]); fp3_free(A[2]);						\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv9_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv9_null_all(...)	RLC_EACH(dv9_null, __VA_ARGS__)
+#define dv9_new_all(...)		RLC_EACH(dv9_new, __VA_ARGS__)
+#define dv9_free_all(...)	RLC_EACH(dv9_free, __VA_ARGS__)
+#define fp9_null_all(...)	RLC_EACH(fp9_null, __VA_ARGS__)
+#define fp9_new_all(...)		RLC_EACH(fp9_new, __VA_ARGS__)
+#define fp9_free_all(...)	RLC_EACH(fp9_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two nonic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first nonic extension field element.
  * @param[in] B				- the second nonic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp9_mul(C, A, B)	fp9_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp9_mul(C, A, B)	fp9_mul_lazyr(C, A, B)
 #endif
 
@@ -760,9 +859,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the nonic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp9_sqr(C, A)		fp9_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp9_sqr(C, A)		fp9_sqr_lazyr(C, A)
 #endif
 
@@ -815,15 +914,30 @@ typedef fp18_t fp54_t[3];
 		fp6_free(A[0]); fp6_free(A[1]); 									\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv12_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv12_null_all(...)	RLC_EACH(dv12_null, __VA_ARGS__)
+#define dv12_new_all(...)		RLC_EACH(dv12_new, __VA_ARGS__)
+#define dv12_free_all(...)	RLC_EACH(dv12_free, __VA_ARGS__)
+#define fp12_null_all(...)	RLC_EACH(fp12_null, __VA_ARGS__)
+#define fp12_new_all(...)		RLC_EACH(fp12_new, __VA_ARGS__)
+#define fp12_free_all(...)	RLC_EACH(fp12_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two dodecic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first dodecic extension field element.
  * @param[in] B				- the second dodecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp12_mul(C, A, B)		fp12_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp12_mul(C, A, B)		fp12_mul_lazyr(C, A, B)
 #endif
 
@@ -835,9 +949,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the dense dodecic extension field element.
  * @param[in] B				- the sparse dodecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp12_mul_dxs(C, A, B)	fp12_mul_dxs_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp12_mul_dxs(C, A, B)	fp12_mul_dxs_lazyr(C, A, B)
 #endif
 
@@ -847,9 +961,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the dodecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp12_sqr(C, A)			fp12_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp12_sqr(C, A)			fp12_sqr_lazyr(C, A)
 #endif
 
@@ -860,10 +974,23 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the dodecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp12_sqr_cyc(C, A)		fp12_sqr_cyc_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp12_sqr_cyc(C, A)		fp12_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Cubes a dodecic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dodecic extension field element to cube.
+ */
+#if FPX_RDC == FPX_BASIC
+#define fp12_cub_cyc(C, A)		fp12_cub_cyc_basic(C, A)
+#elif FPX_RDC == FPX_LAZYR
+#define fp12_cub_cyc(C, A)		fp12_cub_cyc_lazyr(C, A)
 #endif
 
 /**
@@ -873,9 +1000,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the dodecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp12_sqr_pck(C, A)		fp12_sqr_pck_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp12_sqr_pck(C, A)		fp12_sqr_pck_lazyr(C, A)
 #endif
 
@@ -928,29 +1055,44 @@ typedef fp18_t fp54_t[3];
 		fp8_free(A[0]); fp8_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv16_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv16_null_all(...)	RLC_EACH(dv16_null, __VA_ARGS__)
+#define dv16_new_all(...)		RLC_EACH(dv16_new, __VA_ARGS__)
+#define dv16_free_all(...)	RLC_EACH(dv16_free, __VA_ARGS__)
+#define fp16_null_all(...)	RLC_EACH(fp16_null, __VA_ARGS__)
+#define fp16_new_all(...)		RLC_EACH(fp16_new, __VA_ARGS__)
+#define fp16_free_all(...)	RLC_EACH(fp16_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two sextadecic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first sextadecic extension field element.
  * @param[in] B				- the second sextadecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp16_mul(C, A, B)	fp16_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp16_mul(C, A, B)	fp16_mul_lazyr(C, A, B)
 #endif
 
 /**
- * Multiplies a dense and a sparse sextic extension field elements. Computes
+ * Multiplies a dense and a sparse sextadecic extension field elements. Computes
  * C = A * B.
  *
  * @param[out] C			- the result.
- * @param[in] A				- the dense dodecic extension field element.
- * @param[in] B				- the sparse dodecic extension field element.
+ * @param[in] A				- the dense sextadecic extension field element.
+ * @param[in] B				- the sparse sextadecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_lazyr(C, A, B)
 #endif
 
@@ -960,9 +1102,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the sextadecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp16_sqr(C, A)		fp16_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp16_sqr(C, A)		fp16_sqr_lazyr(C, A)
 #endif
 
@@ -1015,15 +1157,30 @@ typedef fp18_t fp54_t[3];
 		fp9_free(A[0]); fp9_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv18_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv18_null_all(...)	RLC_EACH(dv18_null, __VA_ARGS__)
+#define dv18_new_all(...)		RLC_EACH(dv18_new, __VA_ARGS__)
+#define dv18_free_all(...)	RLC_EACH(dv18_free, __VA_ARGS__)
+#define fp18_null_all(...)	RLC_EACH(fp18_null, __VA_ARGS__)
+#define fp18_new_all(...)		RLC_EACH(fp18_new, __VA_ARGS__)
+#define fp18_free_all(...)	RLC_EACH(fp18_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two octdecic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first octdecic extension field element.
  * @param[in] B				- the second octdecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp18_mul(C, A, B)		fp18_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp18_mul(C, A, B)		fp18_mul_lazyr(C, A, B)
 #endif
 
@@ -1035,9 +1192,9 @@ typedef fp18_t fp54_t[3];
  * @param[in] A				- the dense octdecic extension field element.
  * @param[in] B				- the sparse octdecic extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp18_mul_dxs(C, A, B)	fp18_mul_dxs_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp18_mul_dxs(C, A, B)	fp18_mul_dxs_lazyr(C, A, B)
 #endif
 
@@ -1047,9 +1204,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the octdecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp18_sqr(C, A)			fp18_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp18_sqr(C, A)			fp18_sqr_lazyr(C, A)
 #endif
 
@@ -1060,10 +1217,23 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the an octdecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp18_sqr_cyc(C, A)		fp18_sqr_cyc_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp18_sqr_cyc(C, A)		fp18_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Cubes a octdecic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the octdecic extension field element to cube.
+ */
+#if FPX_RDC == FPX_BASIC
+#define fp18_cub_cyc(C, A)		fp18_cub_cyc_basic(C, A)
+#elif FPX_RDC == FPX_LAZYR
+#define fp18_cub_cyc(C, A)		fp18_cub_cyc_lazyr(C, A)
 #endif
 
 /**
@@ -1073,9 +1243,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the octdecic extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp18_sqr_pck(C, A)		fp18_sqr_pck_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp18_sqr_pck(C, A)		fp18_sqr_pck_lazyr(C, A)
 #endif
 
@@ -1128,16 +1298,45 @@ typedef fp18_t fp54_t[3];
 		fp8_free(A[0]); fp8_free(A[1]); fp8_free(A[2]); 					\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv24_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv24_null_all(...)	RLC_EACH(dv24_null, __VA_ARGS__)
+#define dv24_new_all(...)		RLC_EACH(dv24_new, __VA_ARGS__)
+#define dv24_free_all(...)	RLC_EACH(dv24_free, __VA_ARGS__)
+#define fp24_null_all(...)	RLC_EACH(fp24_null, __VA_ARGS__)
+#define fp24_new_all(...)		RLC_EACH(fp24_new, __VA_ARGS__)
+#define fp24_free_all(...)	RLC_EACH(fp24_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two 24-degree extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first 24-degree extension field element.
  * @param[in] B				- the second 24-degree extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp24_mul(C, A, B)		fp24_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp24_mul(C, A, B)		fp24_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Multiplies a dense and a sparse 24-degree extension field element. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense 24-degree extension field element.
+ * @param[in] B				- the sparse 24-degree extension field element.
+ */
+#if FPX_RDC == FPX_BASIC
+#define fp24_mul_dxs(C, A, B)	fp24_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == FPX_LAZYR
+#define fp24_mul_dxs(C, A, B)	fp24_mul_dxs_lazyr(C, A, B)
 #endif
 
 /**
@@ -1146,9 +1345,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 24-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp24_sqr(C, A)			fp24_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp24_sqr(C, A)			fp24_sqr_lazyr(C, A)
 #endif
 
@@ -1159,9 +1358,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 24-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp24_sqr_cyc(C, A)		fp24_sqr_cyc_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp24_sqr_cyc(C, A)		fp24_sqr_cyc_lazyr(C, A)
 #endif
 
@@ -1172,9 +1371,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 24-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp24_sqr_pck(C, A)		fp24_sqr_pck_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp24_sqr_pck(C, A)		fp24_sqr_pck_lazyr(C, A)
 #endif
 
@@ -1227,16 +1426,45 @@ typedef fp18_t fp54_t[3];
 		fp24_free(A[0]); fp24_free(A[1]); 									\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv48_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv48_null_all(...)	RLC_EACH(dv48_null, __VA_ARGS__)
+#define dv48_new_all(...)		RLC_EACH(dv48_new, __VA_ARGS__)
+#define dv48_free_all(...)	RLC_EACH(dv48_free, __VA_ARGS__)
+#define fp48_null_all(...)	RLC_EACH(fp48_null, __VA_ARGS__)
+#define fp48_new_all(...)		RLC_EACH(fp48_new, __VA_ARGS__)
+#define fp48_free_all(...)	RLC_EACH(fp48_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two 48-degree extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first 48-degree extension field element.
  * @param[in] B				- the second 48-degree extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp48_mul(C, A, B)		fp48_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp48_mul(C, A, B)		fp48_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Multiplies a dense and a sparse 48-extension extension field element. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense 48-extension extension field element.
+ * @param[in] B				- the sparse 48-extension extension field element.
+ */
+#if FPX_RDC == FPX_BASIC
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == FPX_LAZYR
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_lazyr(C, A, B)
 #endif
 
 /**
@@ -1245,9 +1473,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 48-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp48_sqr(C, A)			fp48_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp48_sqr(C, A)			fp48_sqr_lazyr(C, A)
 #endif
 
@@ -1258,10 +1486,23 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 48-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Cubes a octaeicosic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the octaeicosic extension field element to cube.
+ */
+#if FPX_RDC == FPX_BASIC
+#define fp48_cub_cyc(C, A)		fp48_cub_cyc_basic(C, A)
+#elif FPX_RDC == FPX_LAZYR
+#define fp48_cub_cyc(C, A)		fp48_cub_cyc_lazyr(C, A)
 #endif
 
 /**
@@ -1271,9 +1512,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 48-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp48_sqr_pck(C, A)		fp48_sqr_pck_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp48_sqr_pck(C, A)		fp48_sqr_pck_lazyr(C, A)
 #endif
 
@@ -1326,15 +1567,30 @@ typedef fp18_t fp54_t[3];
 		fp18_free(A[0]); fp18_free(A[1]); fp18_free(A[2]);					\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv54_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv54_null_all(...)	RLC_EACH(dv54_null, __VA_ARGS__)
+#define dv54_new_all(...)		RLC_EACH(dv54_new, __VA_ARGS__)
+#define dv54_free_all(...)	RLC_EACH(dv54_free, __VA_ARGS__)
+#define fp54_null_all(...)	RLC_EACH(fp54_null, __VA_ARGS__)
+#define fp54_new_all(...)		RLC_EACH(fp54_new, __VA_ARGS__)
+#define fp54_free_all(...)	RLC_EACH(fp54_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two 54-degree extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the first 54-degree extension field element.
  * @param[in] B				- the second 54-degree extension field element.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp54_mul(C, A, B)		fp54_mul_basic(C, A, B)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp54_mul(C, A, B)		fp54_mul_lazyr(C, A, B)
 #endif
 
@@ -1344,9 +1600,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 54-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp54_sqr(C, A)			fp54_sqr_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp54_sqr(C, A)			fp54_sqr_lazyr(C, A)
 #endif
 
@@ -1357,9 +1613,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 54-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp54_sqr_cyc(C, A)		fp54_sqr_cyc_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp54_sqr_cyc(C, A)		fp54_sqr_cyc_lazyr(C, A)
 #endif
 
@@ -1370,9 +1626,9 @@ typedef fp18_t fp54_t[3];
  * @param[out] C			- the result.
  * @param[in] A				- the 54-degree extension field element to square.
  */
-#if FPX_RDC == BASIC
+#if FPX_RDC == FPX_BASIC
 #define fp54_sqr_pck(C, A)		fp54_sqr_pck_basic(C, A)
-#elif FPX_RDC == LAZYR
+#elif FPX_RDC == FPX_LAZYR
 #define fp54_sqr_pck(C, A)		fp54_sqr_pck_lazyr(C, A)
 #endif
 
@@ -1453,9 +1709,11 @@ int fp2_size_bin(const fp2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len);
+int fp2_read_bin(fp2_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a quadratic extension field element to a byte vector in big-endian
@@ -1647,6 +1905,15 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j);
 void fp2_mul_dig(fp2_t c, const fp2_t a, dig_t b);
 
 /**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp2_mul_fp(fp2_t c, const fp2_t a, const fp_t b);
+
+/**
  * Computes the square of a quadratic extension field element using basic
  * arithmetic.
  *
@@ -1679,6 +1946,14 @@ void fp2_inv(fp2_t c, const fp2_t a);
  * @param[in] a				- the quadratic extension field element to invert.
  */
 void fp2_inv_cyc(fp2_t c, const fp2_t a);
+
+/**
+ * Computes the square of a cyclotomic quadratic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp2_sqr_cyc(fp2_t c, const fp2_t a);
 
 /**
  * Inverts multiple quadratic extension field elements simultaneously.
@@ -1759,8 +2034,8 @@ void fp2_frb(fp2_t c, const fp2_t a, int i);
 /**
  * Tests if a quadratic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quadratic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp2_is_sqr(const fp2_t a);
 
@@ -1778,8 +2053,8 @@ int fp2_crt(fp2_t c, const fp2_t a);
 /**
  * Tests if a quadratic extension field element is a cubic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quadratic extension field element to test.
+ * @return 1 if the argument is a cube, 0 otherwise.
  */
 int fp2_is_cub(const fp2_t a);
 
@@ -1871,10 +2146,11 @@ void fp3_print(const fp3_t a);
  * Returns the number of bytes necessary to store a cubic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp3_size_bin(const fp3_t a);
+int fp3_size_bin(const fp3_t a, int pack);
 
 /**
  * Reads a cubic extension field element from a byte vector in big-endian
@@ -1883,9 +2159,11 @@ int fp3_size_bin(const fp3_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
+int fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a cubic extension field element to a byte vector in big-endian
@@ -1894,9 +2172,10 @@ void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a);
+void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack);
 
 /**
  * Returns the result of a comparison between two cubic extension field
@@ -2066,6 +2345,15 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j);
 void fp3_mul_dig(fp3_t c, const fp3_t a, dig_t b);
 
 /**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp3_mul_fp(fp3_t c, const fp3_t a, const fp_t b);
+
+/**
  * Computes the square of a cubic extension field element using basic
  * arithmetic.
  *
@@ -2121,10 +2409,18 @@ void fp3_frb(fp3_t c, const fp3_t a, int i);
 /**
  * Tests if a cubic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the cubic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp3_is_sqr(const fp3_t a);
+
+/**
+ * Tests if a cubic extension field element is a cubic residue.
+ *
+ * @param[in] a				- the cubic extension field element to test.
+ * @return 1 if the argument is a cube, and 0 otherwise.
+ */
+int fp3_is_cub(const fp3_t a);
 
 /**
  * Extracts the square root of a cubic extension field element. Computes
@@ -2192,10 +2488,11 @@ void fp4_print(const fp4_t a);
  * Returns the number of bytes necessary to store a quartic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp4_size_bin(const fp4_t a);
+int fp4_size_bin(const fp4_t a, int pack);
 
 /**
  * Reads a quartic extension field element from a byte vector in big-endian
@@ -2204,9 +2501,11 @@ int fp4_size_bin(const fp4_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
+int fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a quartic extension field element to a byte vector in big-endian
@@ -2215,9 +2514,10 @@ void fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a);
+void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a, int pack);
 
 /**
  * Returns the result of a comparison between two quartic extension field
@@ -2358,13 +2658,13 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j);
 void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b);
 
 /**
- * Multiples a dense quartic extension field element by a sparse element.
+ * Multiplies an element of an extension field by a prime field element.
  *
  * @param[out] c			- the result.
- * @param[in] a				- a quartic extension field element.
- * @param[in] b				- a sparse quartic extension field element.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
  */
-void fp4_mul_dxs(fp4_t c, const fp4_t a, const fp4_t b);
+void fp4_mul_fp(fp4_t c, const fp4_t a, const fp_t b);
 
 /**
  * Computes the square of a quartic extension field element without performing
@@ -2442,8 +2742,8 @@ void fp4_frb(fp4_t c, const fp4_t a, int i);
 /**
  * Tests if a quartic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the quartic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp4_is_sqr(const fp4_t a);
 
@@ -2465,7 +2765,6 @@ int fp4_srt(fp4_t c, const fp4_t a);
  * @param[in] a				- the sextic extension field element to copy.
  */
 void fp6_copy(fp6_t c, const fp6_t a);
-
 
 /**
  * Conditionally copies the second argument to the first argument.
@@ -2509,10 +2808,11 @@ void fp6_print(const fp6_t a);
  * Returns the number of bytes necessary to store a quadratic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp6_size_bin(const fp6_t a);
+int fp6_size_bin(const fp6_t a, int pack);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -2521,9 +2821,11 @@ int fp6_size_bin(const fp6_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
+int fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a sextic extension field element to a byte vector in big-endian
@@ -2532,9 +2834,10 @@ void fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a);
+void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a, int pack);
 
 /**
  * Returns the result of a comparison between two sextic extension field
@@ -2765,9 +3068,11 @@ int fp8_size_bin(const fp8_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len);
+int fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an octic extension field element to a byte vector in big-endian
@@ -2819,6 +3124,15 @@ void fp8_set_dig(fp8_t a, const dig_t b);
 void fp8_add(fp8_t c, const fp8_t a, const fp8_t b);
 
 /**
+ * Adds an octic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp8_add_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
  * Subtracts an octic extension field element from another. Computes
  * c = a - b.
  *
@@ -2827,6 +3141,15 @@ void fp8_add(fp8_t c, const fp8_t a, const fp8_t b);
  * @param[in] b				- the octic extension field element.
  */
 void fp8_sub(fp8_t c, const fp8_t a, const fp8_t b);
+
+/**
+ * Subtracts an octic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp8_sub_dig(fp8_t c, const fp8_t a, dig_t b);
 
 /**
  * Negates an octic extension field element. Computes c = -a.
@@ -2900,6 +3223,15 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j);
  * @param[in] b				- the digit to multiply.
  */
 void fp8_mul_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp8_mul_fp(fp8_t c, const fp8_t a, const fp_t b);
 
 /**
  * Multiples a dense octic extension field element by a sparse element.
@@ -3029,6 +3361,24 @@ void fp8_exp_cyc_sim(fp8_t e, const fp8_t a, const bn_t b, const fp8_t c,
 		const bn_t d);
 
 /**
+ * Compresses an octic extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ * @throw ERR_NO_VALID		- if the element is -1, which cannot be compressed.
+ */
+void fp8_pck_max(fp8_t c, const fp8_t a);
+
+/**
+ * Decompresses an octic extension field element compressed at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp8_upk_max(fp8_t c, const fp8_t a);
+
+/**
  * Computes a power of the Frobenius endomorphism of an octic extension field
  * element. Computes c = a^p^i.
  *
@@ -3041,8 +3391,8 @@ void fp8_frb(fp8_t c, const fp8_t a, int i);
 /**
  * Tests if an octic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the octic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp8_is_sqr(const fp8_t a);
 
@@ -3107,10 +3457,11 @@ void fp9_print(const fp9_t a);
  * Returns the number of bytes necessary to store a quadratic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp9_size_bin(const fp9_t a);
+int fp9_size_bin(const fp9_t a, int pack);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -3119,9 +3470,11 @@ int fp9_size_bin(const fp9_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
+int fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a nonic extension field element to a byte vector in big-endian
@@ -3130,9 +3483,10 @@ void fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a);
+void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a, int pack);
 
 /**
  * Returns the result of a comparison between two nonic extension field
@@ -3172,6 +3526,15 @@ void fp9_set_dig(fp9_t a, const dig_t b);
 void fp9_add(fp9_t c, const fp9_t a, const fp9_t b);
 
 /**
+ * Adds a nonic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp9_add_dig(fp9_t c, const fp9_t a, dig_t b);
+
+/**
  * Subtracts a nonic extension field element from another. Computes
  * c = a - b.
  *
@@ -3180,6 +3543,15 @@ void fp9_add(fp9_t c, const fp9_t a, const fp9_t b);
  * @param[in] b				- the nonic extension field element.
  */
 void fp9_sub(fp9_t c, const fp9_t a, const fp9_t b);
+
+/**
+ * Subtracts a nonic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp9_sub_dig(fp9_t c, const fp9_t a, dig_t b);
 
 /**
  * Negates a nonic extension field element. Computes c = -a.
@@ -3196,6 +3568,24 @@ void fp9_neg(fp9_t c, const fp9_t a);
  * @param[in] a				- the nonic extension field element to double.
  */
 void fp9_dbl(fp9_t c, const fp9_t a);
+
+/**
+ * Multiplies a nonic extension field element by a digit. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp9_mul_dig(fp9_t c, const fp9_t a, dig_t b);
+
+/**
+ * Multiplies an element of an extension field by a prime field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @param[in] b				- the prime field element.
+ */
+void fp9_mul_fp(fp9_t c, const fp9_t a, const fp_t b);
 
 /**
  * Multiples two nonic extension field elements without performing modular
@@ -3305,6 +3695,25 @@ void fp9_exp(fp9_t c, const fp9_t a, const bn_t b);
 void fp9_frb(fp9_t c, const fp9_t a, int i);
 
 /**
+ * Tests if a nonic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the nonic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
+ */
+int fp9_is_sqr(const fp9_t a);
+
+/**
+ * Extracts the square root of a nonic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp9_srt(fp9_t c, const fp9_t a);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -3367,9 +3776,11 @@ int fp12_size_bin(const fp12_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp12_read_bin(fp12_t a, const uint8_t *bin, size_t len);
+int fp12_read_bin(fp12_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a dodecic extension field element to a byte vector in big-endian
@@ -3565,6 +3976,24 @@ void fp12_sqr_pck_basic(fp12_t c, const fp12_t a);
 void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a);
 
 /**
+ * Computes the cube of a cyclotomic dodecic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp12_cub_cyc_basic(fp12_t c, const fp12_t a);
+
+/**
+ * Computes the cube of a cyclotomic dodecic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp12_cub_cyc_lazyr(fp12_t c, const fp12_t a);
+
+/**
  * Tests if a dodecic extension field element belongs to the cyclotomic
  * subgroup.
  *
@@ -3659,16 +4088,6 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b);
 void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic dodecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp12_exp_cyc_gls(fp12_t c, const fp12_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic dodecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -3694,16 +4113,16 @@ void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, size_t l, int s);
 /**
  * Compresses a dodecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to compress.
  */
 void fp12_pck(fp12_t c, const fp12_t a);
 
 /**
  * Decompresses a dodecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp12_upk(fp12_t c, const fp12_t a);
@@ -3711,16 +4130,16 @@ int fp12_upk(fp12_t c, const fp12_t a);
 /**
  * Compresses a dodecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to compress.
  */
 void fp12_pck_max(fp12_t c, const fp12_t a);
 
 /**
  * Decompresses a dodecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp12_upk_max(fp12_t c, const fp12_t a);
@@ -3793,9 +4212,11 @@ int fp16_size_bin(const fp16_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
+int fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an sextadecic extension field element to a byte vector in big-endian
@@ -3920,13 +4341,24 @@ void fp16_mul_art(fp16_t c, const fp16_t a);
 void fp16_mul_frb(fp16_t c, const fp16_t a, int i, int j);
 
 /**
- * Multiples a dense sextadecic extension field element by a sparse element.
+ * Multiples a dense sextadecic extension field element by a sparse element
+ * using basic arithmetic.
  *
  * @param[out] c			- the result.
- * @param[in] a				- an sextadecic extension field element.
- * @param[in] b				- a sparse sextadecic extension field element.
+ * @param[in] a				- the dense sextadecic extension field element.
+ * @param[in] b				- the sparse sextadecic extension field element.
  */
-void fp16_mul_dxs(fp16_t c, const fp16_t a, const fp16_t b);
+void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Multiples a dense sextadecic extension field element by a sparse element
+ * using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense sextadecic extension field element.
+ * @param[in] b				- the sparse sextadecic extension field element.
+ */
+void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b);
 
 /**
  * Computes the square of an sextadecic extension field element without
@@ -4037,16 +4469,6 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b);
 void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic sextadecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp16_exp_cyc_gls(fp16_t c, const fp16_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic sextadecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -4057,6 +4479,25 @@ void fp16_exp_cyc_gls(fp16_t c, const fp16_t a, const bn_t b);
  */
 void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
 		const bn_t d);
+
+/**
+ * Compresses a sextadecic extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ * @throw ERR_NO_VALID		- if the element is -1, which cannot be compressed.
+ */
+void fp16_pck_max(fp16_t c, const fp16_t a);
+
+/**
+ * Decompresses a sextadecic extension field element compressed at the maximum
+ * rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp16_upk_max(fp16_t c, const fp16_t a);
 
 /**
  * Computes a power of the Frobenius endomorphism of an sextadecic extension
@@ -4071,8 +4512,8 @@ void fp16_frb(fp16_t c, const fp16_t a, int i);
 /**
  * Tests if an sextadecic extension field element is a quadratic residue.
  *
- * @param[in] a				- the prime field element to test.
- * @return 1 if the argument is even, 0 otherwise.
+ * @param[in] a				- the sextadecic extension field element to test.
+ * @return 1 if the argument is a square, 0 otherwise.
  */
 int fp16_is_sqr(const fp16_t a);
 
@@ -4150,9 +4591,11 @@ int fp18_size_bin(const fp18_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len);
+int fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a octdecic extension field element to a byte vector in big-endian
@@ -4348,6 +4791,24 @@ void fp18_sqr_pck_basic(fp18_t c, const fp18_t a);
 void fp18_sqr_pck_lazyr(fp18_t c, const fp18_t a);
 
 /**
+ * Computes the cube of a cyclotomic octdecic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp18_cub_cyc_basic(fp18_t c, const fp18_t a);
+
+/**
+ * Computes the cube of a cyclotomic octdecic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp18_cub_cyc_lazyr(fp18_t c, const fp18_t a);
+
+/**
  * Tests if an octdecic extension field element belongs to the cyclotomic
  * subgroup.
  *
@@ -4442,16 +4903,6 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b);
 void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic octdecic extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp18_exp_cyc_gls(fp18_t c, const fp18_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic octdecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -4472,21 +4923,21 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c,
  * @param[in] l				- the length of the exponent in sparse form.
  * @param[in] s				- the sign of the exponent.
  */
-void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, int l, int s);
+void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, size_t l, int s);
 
 /**
  * Compresses a octdecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to compress.
  */
 void fp18_pck(fp18_t c, const fp18_t a);
 
 /**
  * Decompresses a octdecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp18_upk(fp18_t c, const fp18_t a);
@@ -4494,16 +4945,16 @@ int fp18_upk(fp18_t c, const fp18_t a);
 /**
  * Compresses a octdecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to compress.
  */
 void fp18_pck_max(fp18_t c, const fp18_t a);
 
 /**
  * Decompresses a octdecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp18_upk_max(fp18_t c, const fp18_t a);
@@ -4571,9 +5022,11 @@ int fp24_size_bin(const fp24_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp24_read_bin(fp24_t a, const uint8_t *bin, size_t len);
+int fp24_read_bin(fp24_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 24-degree extension field element to a byte vector in big-endian
@@ -4687,13 +5140,34 @@ void fp24_mul_lazyr(fp24_t c, const fp24_t a, const fp24_t b);
 void fp24_mul_art(fp24_t c, const fp24_t a);
 
 /**
- * Multiples a dense 24-degree extension field element by a sparse element.
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, using basic arithmetic.
  *
  * @param[out] c			- the result.
- * @param[in] a				- a 24-degree extension field element.
- * @param[in] b				- a 24-degree quartic extension field element.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
  */
-void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b);
+void fp24_mul_dxs_basic(fp24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, without performing modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_unr(dv24_t c, const fp24_t a, const fp24_t b);
+
+/**
+ * Multiplies a dense 24-degree extension field element by a sparse element
+ * with zero coefficient of w or w^2, using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 24-degree extension field element.
+ * @param[in] b				- the sparse 24-degree extension field element.
+ */
+void fp24_mul_dxs_lazyr(fp24_t c, const fp24_t a, const fp24_t b);
 
 /**
  * Computes the square of a 24-degree extension field element without performing
@@ -4852,16 +5326,6 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b);
 void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic 24-extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp24_exp_cyc_gls(fp24_t c, const fp24_t a, const bn_t b);
-
-/**
  * Computes a power of two cyclotomic dodecic extension field elements.
  *
  * @param[out] e			- the result.
@@ -4963,9 +5427,11 @@ int fp48_size_bin(const fp48_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp48_read_bin(fp48_t a, const uint8_t *bin, size_t len);
+int fp48_read_bin(fp48_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 48-extension field element to a byte vector in big-endian
@@ -5043,6 +5509,16 @@ void fp48_neg(fp48_t c, const fp48_t a);
 void fp48_dbl(fp48_t c, const fp48_t a);
 
 /**
+ * Multiples two 48-degree extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-degree extension field element.
+ * @param[in] b				- the 48-degree extension field element.
+ */
+void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b);
+
+/**
  * Multiples two 48-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -5069,14 +5545,33 @@ void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b);
 void fp48_mul_art(fp48_t c, const fp48_t a);
 
 /**
- * Multiples a dense 48-extension field element by a sparse element using
+ * Multiplies a dense 48-extension field element by a sparse element using
  * basic arithmetic. Computes C = A * B.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the dense 48-extension field element.
  * @param[in] b				- the sparse 48-extension field element.
  */
-void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b);
+void fp48_mul_dxs_basic(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Multiplies a dense 48-extension field element by a sparse element using
+ * lazy reduction. Computes C = A * B.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48-extension field element.
+ * @param[in] b				- the sparse 48-extension field element.
+ */
+void fp48_mul_dxs_lazyr(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Computes the square of a 48-degree extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-degree extension field element to square.
+ */
+void fp48_sqr_unr(dv48_t c, const fp48_t a);
 
 /**
  * Computes the square of a 48-extension field element using basic
@@ -5130,6 +5625,24 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a);
  * @param[in] a				- the cyclotomic extension element to square.
  */
 void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a);
+
+/**
+ * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp48_cub_cyc_basic(fp48_t c, const fp48_t a);
+
+/**
+ * Computes the cube of a cyclotomic octaeicosic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to cube.
+ */
+void fp48_cub_cyc_lazyr(fp48_t c, const fp48_t a);
 
 /**
  * Tests if a 48-extension field element belongs to the cyclotomic
@@ -5227,16 +5740,6 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b);
 void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic 48-extension field element in the
- * prime-order subgroup.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp48_exp_cyc_gls(fp48_t c, const fp48_t a, const bn_t b);
-
-/**
  * Computes a power of a cyclotomic 48-extension field element.
  *
  * @param[out] c			- the result.
@@ -5275,6 +5778,23 @@ void fp48_pck(fp48_t c, const fp48_t a);
  * @return if the decompression was successful
  */
 int fp48_upk(fp48_t c, const fp48_t a);
+
+/**
+ * Compresses a 48-extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ */
+void fp48_pck_max(fp48_t c, const fp48_t a);
+
+/**
+ * Decompresses a 48-extension field element compressed at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp48_upk_max(fp48_t c, const fp48_t a);
 
 /**
  * Copies the second argument to the first argument.
@@ -5339,9 +5859,11 @@ int fp54_size_bin(const fp54_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @throw ERR_NO_VALID		- if the encoded element is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp54_read_bin(fp54_t a, const uint8_t *bin, size_t len);
+int fp54_read_bin(fp54_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a 54-extension field element to a byte vector in big-endian
@@ -5419,6 +5941,16 @@ void fp54_neg(fp54_t c, const fp54_t a);
 void fp54_dbl(fp54_t c, const fp54_t a);
 
 /**
+ * Multiples two 54-degree extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-degree extension field element.
+ * @param[in] b				- the 54-degree extension field element.
+ */
+void fp54_mul_unr(dv54_t c, const fp54_t a, const fp54_t b);
+
+/**
  * Multiples two 54-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -5453,6 +5985,15 @@ void fp54_mul_art(fp54_t c, const fp54_t a);
  * @param[in] b				- the sparse 54-extension field element.
  */
 void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b);
+
+/**
+ * Computes the square of a 54-degree extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-degree extension field element to square.
+ */
+void fp54_sqr_unr(dv54_t c, const fp54_t a);
 
 /**
  * Computes the square of a 54-extension field element using basic
@@ -5612,6 +6153,18 @@ void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b);
  * @param[in] s				- the sign of the exponent.
  */
 void fp54_exp_cyc_sps(fp54_t c, const fp54_t a, const int *b, size_t l, int s);
+
+/**
+ * Computes a power of two cyclotomic 54-extension field elements.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp54_exp_cyc_sim(fp54_t e, const fp54_t a, const bn_t b, const fp54_t c,
+		const bn_t d);
 
 /**
  * Compresses a 54-extension field element.

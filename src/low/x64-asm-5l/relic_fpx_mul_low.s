@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2025 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level quadratic extension field multiplication.
  *
  * @ingroup fpx
  */
@@ -33,87 +33,155 @@
 #include "macro.s"
 
 .text
-.global fp2_muln_c0
-.global fp2_muln_c1
-.global fp2_mulm_c0
-.global fp2_mulm_c1
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application to Bilinear Pairings" by
- * Longa at TCHES'23.
- */
+#ifdef FP2_ASM
 
-fp2_muln_c0:
+.global cdecl(fp2_muln_low)
+
+cdecl(fp2_muln_low):
 	push	%r12
-	push	%r13 
-	push	%r14    
-	push	%rbx
-	push	%rbp
-	movq	%rdx, %rbp
+	push	%r13
+	push	%r14
+	push	%r15
+	subq	$48, %rsp
 
-	MULM	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14
-	FP2_MUL0_LOW 0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 0
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 0(%rsp)
+	movq	%rdx, %rcx
 
-	popq	%rbp
-    popq	%rbx
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 0, 0(%rsp)
 
-fp2_mulm_c0:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
+	addq	$48, %rsp
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
 
-	MULM	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14
-	FP2_MUL0_LOW 0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 1
+.global cdecl(fp2_mulm_low)
 
-    popq	%rbp
-    popq	%rbx
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+#ifdef FP2_MUL_RDC
 
-fp2_muln_c1:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
-    
-    // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rbp), 40(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14
-	FP2_MUL1_LOW	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 0
+cdecl(fp2_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	subq	$48, %rsp
 
-    popq	%rbp
-    popq	%rbx
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+	movq	%rdx, %rcx
 
-fp2_mulm_c1:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
-    
-    // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rbp), 40(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14
-	FP2_MUL1_LOW	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 1
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 1, 0(%rsp)
 
-    popq	%rbp
-    popq	%rbx
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+	addq	$48, %rsp
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#else
+
+cdecl(fp2_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	subq	$208, %rsp
+
+	movq	%rdi, 8(%rsp)
+	leaq	48(%rsp), %rdi
+	leaq	128(%rsp), %rax
+	movq	%rax, 0(%rsp)
+	movq	%rdx, %rcx
+
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, p0(%rip), 0, 0(%rsp)
+
+	movq	8(%rsp), %rdi
+	FP_RDCN_LOW	48(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, p0(%rip), %rcx, %r12, %rdx, %rsi, %r13
+	movq	8(%rsp), %rdi
+	addq	$40, %rdi
+	FP_RDCN_LOW	128(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, p0(%rip), %rcx, %r12, %rdx, %rsi, %r13
+
+	addq	$208, %rsp
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif
+
+#endif
+
+#ifdef FP2_NORD_ASM
+
+.macro NORD i j
+	movq	8*\i(%rsi), %r8
+	movq	RLC_DV_STRIDE+8*\i(%rsi), %r9
+	leaq	(%r10,%r8,2), %rax
+	shrxq	%rcx, %r8, %r10
+	leaq	(%r11,%r9,2), %rdx
+	shrxq	%rcx, %r9, %r11
+	notq	%r9
+	adcx	%r9, %rax
+	adox	%r8, %rdx
+	movq	%rax, 8*\i(%rdi)
+	movq	%rdx, RLC_DV_STRIDE+8*\i(%rdi)
+	.if \i - \j
+		NORD "(\i + 1)" \j
+	.endif
+.endm
+
+.global cdecl(fp2_nord_low)
+
+cdecl(fp2_nord_low):
+	push	%r12
+	push	%r13
+	push	%r14
+
+	movq	$63, %rcx
+	xorl	%r10d, %r10d
+	xorl	%r11d, %r11d
+	stc
+	NORD	0 9
+
+	sbbq	%rcx, %rcx
+	notq	%rcx
+	testq	%rcx, %rcx
+	movq	40(%rdi), %r8
+	movq	48(%rdi), %r9
+	movq	56(%rdi), %r10
+	movq	64(%rdi), %r11
+	movq	72(%rdi), %rax
+	movq	$0, %rdx
+	cmovs	p0(%rip), %rdx
+	adcx	%rdx, %r8
+	movq	$0, %rsi
+	cmovs	p1(%rip), %rsi
+	adcx	%rsi, %r9
+	movq	$0, %rdx
+	cmovs	p2(%rip), %rdx
+	adcx	%rdx, %r10
+	movq	$0, %rsi
+	cmovs	p3(%rip), %rsi
+	adcx	%rsi, %r11
+	movq	$0, %rdx
+	cmovs	p4(%rip), %rdx
+	adcx	%rdx, %rax
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, 40(%rdi)
+
+	movq	RLC_DV_STRIDE+40(%rdi), %r8
+	movq	RLC_DV_STRIDE+48(%rdi), %r9
+	movq	RLC_DV_STRIDE+56(%rdi), %r10
+	movq	RLC_DV_STRIDE+64(%rdi), %r11
+	movq	RLC_DV_STRIDE+72(%rdi), %rax
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, RLC_DV_STRIDE+40(%rdi)
+	FINALC	%rdx, %rsi, %r12, %r13, %r14, %r8, %r9, %r10, %r11, %rax, RLC_DV_STRIDE+40(%rdi)
+
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif

@@ -255,5 +255,6 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 
 	_mm_store_si128((__m128i *) c + 0, m0);
 	_mm_store_si128((__m128i *) c + 1, m1);
-	_mm_store_si128((__m128i *) c + 2, m2);
+	/* The product has RLC_FB_DIGS + 1 digits, so store only the low half. */
+	_mm_storel_epi64((__m128i *) c + 2, m2);
 }

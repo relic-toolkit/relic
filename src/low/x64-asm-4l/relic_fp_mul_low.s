@@ -21,31 +21,113 @@
  * or <https://www.apache.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Implementation of the low-level prime field multiplication functions.
+ *
+ * @ingroup fp
+ */
+
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
+
+.global cdecl(fp_mul1_low)
 .global cdecl(fp_muln_low)
 .global cdecl(fp_mulm_low)
 
-cdecl(fp_mulm_low):
-	push %r12
-	push %r13
-	push %r14
-	subq $64, %rsp
+cdecl(fp_mul1_low):
+	push	%r12
+	push	%r13
+	subq	$8, %rsp
 
-	movq %rdx,%rcx
+	movq	%rdi, 0(%rsp)
+	mulxq	0(%rsi), %r8, %rax
+	mulxq	8(%rsi), %r9, %rdi
+	addq	%rax, %r9
+	mulxq	16(%rsi), %r10, %rax
+	adcq	%rdi, %r10
+	mulxq	24(%rsi), %r11, %rcx
+	adcq	%rax, %r11
+	adcq	$0, %rcx
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, 0(%rsi), 8(%rsi), 16(%rsi), 24(%rsi), 0(%rcx), 8(%rcx), 16(%rcx), 24(%rcx)
+	movq	%r11, %rax
+	shrdq	$BARS, %rcx, %rax
+	movq	$BAR, %rdx
+	mulxq	%rax, %rax, %rdx
 
-	FP_RDCN_LOW %rdi, %rsp
+	mulxq	p0(%rip), %rax, %rdi
+	subq	%rax, %r8
+	mulxq	p1(%rip), %rax, %rsi
+	sbbq	%rax, %r9
+	mulxq	p2(%rip), %rax, %r12
+	sbbq	%rax, %r10
+	mulxq	p3(%rip), %rax, %r13
+	sbbq	%rax, %r11
+	sbbq	$0, %rcx
 
-	addq $64, %rsp
-	pop %r14
-	pop	%r13
-	pop	%r12
+	subq	%rdi, %r9
+	sbbq	%rsi, %r10
+	sbbq	%r12, %r11
+	sbbq	%r13, %rcx
+
+	.rept 2
+	movq	%r8, %r12
+	subq	p0(%rip), %r12
+	movq	%r9, %rdi
+	sbbq	p1(%rip), %rdi
+	movq	%r10, %rsi
+	sbbq	p2(%rip), %rsi
+	movq	%r11, %rdx
+	sbbq	p3(%rip), %rdx
+	movq	%rcx, %rax
+	sbbq	$0, %rax
+	cmovnc	%r12, %r8
+	cmovnc	%rdi, %r9
+	cmovnc	%rsi, %r10
+	cmovnc	%rdx, %r11
+	cmovnc	%rax, %rcx
+	.endr
+	movq	0(%rsp), %rax
+
+	movq	%r8, 0(%rax)
+	movq	%r9, 8(%rax)
+	movq	%r10, 16(%rax)
+	movq	%r11, 24(%rax)
+
+	addq	$8, %rsp
+	pop		%r13
+	pop		%r12
 	ret
 
 cdecl(fp_muln_low):
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, 0(%rsi), 8(%rsi), 16(%rsi), 24(%rsi), 0(%rcx), 8(%rcx), 16(%rcx), 24(%rcx)
+	push	%r12
+	push	%r13
+	push	%r14
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 0
+
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+cdecl(fp_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, p0(%rip), 1
+
+	pop		%r14
+	pop		%r13
+	pop		%r12
 	ret

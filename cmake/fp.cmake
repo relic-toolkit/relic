@@ -4,7 +4,6 @@ message("   ** Arithmetic precision of the prime field module (default = 256,0,o
 
 message("      FP_PRIME=n        The prime modulus size in bits.")
 message("      FP_KARAT=n        The number of Karatsuba levels.")
-message("      FP_PMERS=[off|on] Prefer Pseudo-Mersenne primes over random primes.")
 message("      FP_QNRES=[off|on] Use -1 as quadratic non-residue (make sure that p = 3 mod 8).")
 
 message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;JMPDS;JMPDS;SLIDE):")
@@ -27,7 +26,8 @@ message("      FP_METHD=MULTP    Reuse multiplication for squaring.\n")
 message("      Modular reduction:")
 message("      FP_METHD=BASIC    Division-based reduction.")
 message("      FP_METHD=QUICK    Fast reduction modulo special form prime (2^t - c, c > 0).")
-message("      FP_METHD=MONTY    Montgomery modular reduction.\n")
+message("      FP_METHD=MONTY    Montgomery modular reduction.")
+message("      FP_METHD=LOWER    Pass reduction to the lower level.\n")
 
 message("      Field inversion:")
 message("      FP_METHD=BASIC    Inversion by Fermat's Little Theorem.")
@@ -37,10 +37,12 @@ message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm."
 message("      FP_METHD=DIVST    Constant-time inversion by division steps.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 
-message("      Legendre symbol:")
-message("      FP_METHD=BASIC    Computation by Fermat's Little Theorem.")
+message("      Quadratic, cubic and quartic residue symbols:")
+message("      FP_METHD=BASIC    Computation by Euler's criterion.")
+message("      FP_METHD=BINAR    Binary method.")
 message("      FP_METHD=DIVST    Constant-time method by division steps.")
 message("      FP_METHD=JMPDS    Constant-time method by jump division steps.")
+message("      FP_METHD=JMPVT    Variable-time method by jump division steps.")
 message("      FP_METHD=LOWER    Pass call to the lower level.\n")
 
 message("      Field exponentiation:")
@@ -60,7 +62,6 @@ if (NOT FP_KARAT)
 endif(NOT FP_KARAT)
 set(FP_KARAT ${FP_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
-option(FP_PMERS "Prefer special form primes over random primes." off)
 option(FP_QNRES "Use -1 as quadratic non-residue." off)
 
 # Choose the arithmetic methods.
@@ -68,9 +69,9 @@ if (NOT FP_METHD)
 	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;JMPDS;JMPDS;SLIDE")
 endif(NOT FP_METHD)
 list(LENGTH FP_METHD FP_LEN)
-if (FP_LEN LESS 7)
-	message(FATAL_ERROR "Incomplete FP_METHD specification: ${FP_METHD}")
-endif(FP_LEN LESS 7)
+if (NOT FP_LEN EQUAL 7)
+	message(FATAL_ERROR "FP_METHD needs 7 entries: ${FP_METHD}")
+endif()
 
 list(GET FP_METHD 0 FP_ADD)
 list(GET FP_METHD 1 FP_MUL)

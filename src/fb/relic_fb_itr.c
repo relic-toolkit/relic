@@ -57,7 +57,8 @@ void fb_itr_basic(fb_t c, const fb_t a, int b) {
 }
 
 void fb_itr_pre_quick(fb_st *t, int b) {
-	int i, j, k;
+	size_t i;
+	int j, k;
 	fb_t r;
 
 	fb_null(r);

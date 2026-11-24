@@ -35,7 +35,7 @@
 #include "relic_bench.h"
 
 static void hash(void) {
-	uint8_t hash[RLC_MD_LEN], buf[256];
+	uint8_t hash[RLC_MD_LEN], buf[256], out[64];
 	const uint8_t *dst = (const uint8_t *)"RELIC";
 
 	BENCH_RUN("md_map (256)") {
@@ -46,6 +46,26 @@ static void hash(void) {
 	BENCH_RUN("md_xmd (256)") {
 		rand_bytes(buf, sizeof(buf));
 		BENCH_ADD(md_xmd(buf, sizeof(buf), buf, sizeof(buf), dst, 5));
+	} BENCH_END;
+
+	BENCH_RUN("md_map_s3256 (256)") {
+		rand_bytes(buf, sizeof(buf));
+		BENCH_ADD(md_map_s3256(out, buf, sizeof(buf)));
+	} BENCH_END;
+
+	BENCH_RUN("md_xof (256)") {
+		rand_bytes(buf, sizeof(buf));
+		BENCH_ADD(md_xof(buf, sizeof(buf), buf, sizeof(buf), dst, 5));
+	} BENCH_END;
+
+	BENCH_RUN("md_shake128 (256, 32)") {
+		rand_bytes(buf, sizeof(buf));
+		BENCH_ADD(md_shake128(out, 32, buf, sizeof(buf)));
+	} BENCH_END;
+
+	BENCH_RUN("md_shake256 (256, 64)") {
+		rand_bytes(buf, sizeof(buf));
+		BENCH_ADD(md_shake256(out, 64, buf, sizeof(buf)));
 	} BENCH_END;
 }
 

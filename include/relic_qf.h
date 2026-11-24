@@ -93,14 +93,10 @@ typedef struct {
 /**
  * Pointer to a binary quadratic form structure.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef qf_st qf_t[1];
-#elif ALLOC == DYNAMIC
-#ifdef CHECK
-typedef qf_st *volatile qf_t;
-#else
+#elif RLC_ALLOC == RLC_DYNAMIC
 typedef qf_st *qf_t;
-#endif
 #endif
 
 /*============================================================================*/
@@ -119,7 +115,7 @@ typedef qf_st *qf_t;
  *
  * @param[out] A			- the new quadratic form.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define qf_new(A)															\
 	A = (qf_t)calloc(1, sizeof(qf_st));										\
 	if (A == NULL) {														\
@@ -129,7 +125,7 @@ typedef qf_st *qf_t;
 	bn_new((A)->b);															\
 	bn_new((A)->c);
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define qf_new(A)															\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
@@ -142,7 +138,7 @@ typedef qf_st *qf_t;
  *
  * @param[out] A			- the quadratic form to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define qf_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->a);													\
@@ -152,7 +148,7 @@ typedef qf_st *qf_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define qf_free(A)				/* empty */
 
 #endif

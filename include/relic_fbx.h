@@ -173,7 +173,7 @@ void fb2_mul(fb2_t c, const fb2_t a, const fb2_t b);
   * @param[in] a				- the quadratic extension binary field element.
   * @param[in] b				- the quadratic extension binary field element.
   */
- void fb2_mul_nor(fb2_t c, const fb2_t a);
+void fb2_mul_nor(fb2_t c, const fb2_t a);
 
 /**
  * Computes the square of a quadratic extension field element. Computes

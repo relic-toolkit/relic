@@ -24,170 +24,26 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 18.
+ * Implementation of the line functions and pairings for curves with embedding
+ * degree 18.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
+#include "relic_pp_tmpl.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
+#include "relic_fpx_low.h"
 #include "relic_util.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/**
- * Compute the Miller loop for pairings of type G_2 x G_1 over the bits of a
- * given parameter represented in sparse form.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] q				- the vector of first arguments in affine coordinates.
- * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
-	fp18_t l;
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
-	int i, j;
-	size_t len = bn_bits(a) + 1;
-	int8_t s[RLC_FP_BITS + 1];
+TMPL_PP_MIL(18, ep3);
 
-	if (m == 0) {
-		return;
-	}
-
-	fp18_null(l);
-
-	RLC_TRY {
-		fp18_new(l);
-		if (_p == NULL || _q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (j = 0; j < m; j++) {
-			ep_null(_p[j]);
-			ep3_null(_q[j]);
-			ep_new(_p[j]);
-			ep3_new(_q[j]);
-			ep3_copy(t[j], q[j]);
-			ep3_neg(_q[j], q[j]);
-#if EP_ADD == BASIC
-			ep_neg(_p[j], p[j]);
-#else
-			fp_add(_p[j]->x, p[j]->x, p[j]->x);
-			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
-			fp_neg(_p[j]->y, p[j]->y);
-#endif
-		}
-
-		fp18_zero(l);
-		bn_rec_naf(s, &len, a, 2);
-		pp_dbl_k18(r, t[0], t[0], _p[0]);
-		for (j = 1; j < m; j++) {
-			pp_dbl_k18(l, t[j], t[j], _p[j]);
-			fp18_mul_dxs(r, r, l);
-		}
-		if (s[len - 2] > 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k18(l, t[j], q[j], p[j]);
-				fp18_mul_dxs(r, r, l);
-			}
-		}
-		if (s[len - 2] < 0) {
-			for (j = 0; j < m; j++) {
-				pp_add_k18(l, t[j], _q[j], p[j]);
-				fp18_mul_dxs(r, r, l);
-			}
-		}
-
-		for (i = len - 3; i >= 0; i--) {
-			fp18_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_k18(l, t[j], t[j], _p[j]);
-				fp18_mul_dxs(r, r, l);
-				if (s[i] > 0) {
-					pp_add_k18(l, t[j], q[j], p[j]);
-					fp18_mul_dxs(r, r, l);
-				}
-				if (s[i] < 0) {
-					pp_add_k18(l, t[j], _q[j], p[j]);
-					fp18_mul_dxs(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp18_free(l);
-		for (j = 0; j < m; j++) {
-			ep_free(_p[j]);
-			ep3_free(_q[j]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-	}
-}
-
-/**
- * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
- * given parameter.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] p				- the first pairing argument in affine coordinates.
- * @param[in] q				- the second pairing argument in affine coordinates.
- * @param[in] n 			- the number of pairings to evaluate.
- * @param[in] a				- the loop parameter.
- */
-static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) {
-	fp18_t l;
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
-	int j;
-
-	fp18_null(l);
-
-	RLC_TRY {
-		if (_q == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		fp18_new(l);
-
-		for (j = 0; j < m; j++) {
-			ep3_null(_q[j]);
-			ep3_new(_q[j]);
-			ep_copy(t[j], p[j]);
-			ep3_neg(_q[j], q[j]);
-		}
-
-		fp18_zero(l);
-		for (int i = bn_bits(a) - 2; i >= 0; i--) {
-			fp18_sqr(r, r);
-			for (j = 0; j < m; j++) {
-				pp_dbl_lit_k18(l, t[j], t[j], _q[j]);
-				fp18_mul(r, r, l);
-				if (bn_get_bit(a, i)) {
-					pp_add_lit_k18(l, t[j], p[j], q[j]);
-					fp18_mul(r, r, l);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp18_free(l);
-		for (j = 0; j < m; j++) {
-			ep3_free(_q[j]);
-		}
-		RLC_FREE(_q);
-	}
-}
+TMPL_PP_MIL_LIT(18, ep3);
 
 /**
  * Compute the final lines for optimal ate pairings.
@@ -221,13 +77,7 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
 
 		switch (ep_curve_is_pairf()) {
 			case EP_K18:
-#if EP_ADD == BASIC
-				ep_neg(_p, p);
-#else
-				fp_add(_p->x, p->x, p->x);
-				fp_add(_p->x, _p->x, p->x);
-				fp_neg(_p->y, p->y);
-#endif
+				TMPL_PP_MIL_P_18(_p, p)
 				/* _q = 3*p*Q. */
 		        pp_dbl_k18(u, _q, q, _p);
 		        pp_add_k18(v, _q, q, p);
@@ -260,411 +110,183 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
     }
 }
 
+/**
+ * Multiplies by the final lines of the optimal ate pairing over
+ * KSS and SG curves for m pairs, after the Miller loop of pp_mil_k18().
+ *
+ * @param[in,out] r			- the result.
+ * @param[in,out] t			- the resulting points.
+ * @param[in] q				- the points of G_2.
+ * @param[in] p				- the points of G_1.
+ * @param[in] m				- the number of pairs.
+ */
+static void pp_fin_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m) {
+	for (int i = 0; i < m; i++) {
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				pp_fin_k18_oatep(r, t[i], q[i], p[i], 0);
+				break;
+			case EP_SG18:
+				/* Apply Frobenius only once. */
+				pp_fin_k18_oatep(r, t[i], q[i], p[i], i == 0);
+				break;
+		}
+	}
+}
+
+TMPL_PP_LIN(18, fp3);
+
+/**
+ * Records the final lines of the optimal ate pairing over KSS and SG curves
+ * at the point (1, 1), as pp_fin_k18_oatep() computes them: for KSS curves,
+ * the lines through Q and Q and through 2Q and Q, and then the one through T
+ * and Frob(3Q); for SG curves, the line through Frob^3(T) and Frob^2(Q).
+ *
+ * @param[out] t			- the table of lines.
+ * @param[out] y			- the coefficients of y_P.
+ * @param[in,out] j			- the number of lines in the table.
+ * @param[out] l			- a scratch line.
+ * @param[in,out] r			- the point T, the multiple of Q.
+ * @param[in] q				- the fixed point of G_2.
+ * @param[in] e				- the point (1, 1).
+ */
+static void pp_pre_fin_k18(fp3_t *t, fp3_t *y, int *j, fp18_t l, ep3_t r,
+		const ep3_t q, const ep_t e) {
+	ep3_t s;
+
+	ep3_null(s);
+
+	RLC_TRY {
+		ep3_new(s);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				fp18_zero(l);
+				pp_dbl_k18(l, s, q, e);
+				pp_rec_k18(t, y, j, l);
+				fp18_zero(l);
+				pp_add_k18(l, s, q, e);
+				pp_rec_k18(t, y, j, l);
+				pp_norm_k18(s, s);
+				ep3_frb(s, s, 1);
+				fp18_zero(l);
+				pp_add_k18(l, r, s, e);
+				pp_rec_k18(t, y, j, l);
+				break;
+			case EP_SG18:
+				ep3_frb(r, r, 3);
+				ep3_frb(s, q, 2);
+				fp18_zero(l);
+				pp_add_k18(l, r, s, e);
+				pp_rec_k18(t, y, j, l);
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep3_free(s);
+	}
+}
+
+/**
+ * Multiplies by the final lines of the optimal ate pairing over KSS and SG
+ * curves, stored by pp_pre_fin_k18(), as pp_fin_k18_oatep() does. If g is
+ * set, SG18 curves first multiply the result by its Frobenius, which a product
+ * of pairings does only once.
+ *
+ * @param[in,out] r			- the result.
+ * @param[out] l			- a scratch line.
+ * @param[in] t				- the table of lines.
+ * @param[in,out] j			- the next line in the table.
+ * @param[in] p				- the point of G_1.
+ * @param[in] d				- the point of G_1 prepared for doubling lines.
+ * @param[in] g				- the flag to take the step on the whole result.
+ */
+static void pp_fix_fin_k18(fp18_t r, fp18_t l, const fp3_t *t, int *j,
+		const ep_t p, const ep_t d, int g) {
+	fp18_t u;
+
+	fp18_null(u);
+
+	RLC_TRY {
+		fp18_new(u);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				pp_lin_k18(l, t, j, d);
+				fp18_copy(u, l);
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(u, u, l);
+				fp18_frb(u, u, 1);
+				fp18_mul(r, r, u);
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(r, r, l);
+				break;
+			case EP_SG18:
+				if (g) {
+					fp18_frb(u, r, 3);
+					fp18_mul(r, r, u);
+				}
+				pp_lin_k18(l, t, j, p);
+				fp18_mul_dxs(r, r, l);
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp18_free(u);
+	}
+}
+
+/**
+ * Hooks of the pairing with a fixed argument: the loop runs over the
+ * parameter itself, followed by the final lines of KSS and SG curves.
+ */
+/** @{ */
+#define TMPL_PP_FIN_18(R, T, Q, P, M)	pp_fin_k18(R, T, Q, P, M);
+#define TMPL_PP_PAR_18(A)			/* No change of the parameter. */
+#define TMPL_PP_PRE_FIN_18(T, Y, J, L, R, Q, E)								\
+	pp_pre_fin_k18(T, Y, J, L, R, Q, E);
+#define TMPL_PP_FIX_FIN_18(R, L, T, J, P, D, G)							\
+	pp_fix_fin_k18(R, L, T, J, P, D, G);
+/** @} */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_MAP == TATEP || !defined(STRIP)
+TMPL_PP_ADD_BASIC(18, ep3, fp3);
 
-void pp_map_tatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
-	ep_t _p[1], t[1];
-	ep3_t _q[1];
-	bn_t n;
+TMPL_PP_ADD_PROJC(18, ep3, fp3);
 
-	ep_null(_p[0]);
-	ep_null(t[0]);
-	ep3_null(_q[0]);
-	bn_null(n);
+TMPL_PP_ADD_LAZYR(18, ep3, fp3, dv3);
 
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep_new(t[0]);
-		ep3_new(_q[0]);
-		bn_new(n);
+TMPL_PP_ADD_LIT(18, ep3, fp3);
 
-		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
-		fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-		fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
-		ep_curve_get_ord(n);
-		fp18_set_dig(r, 1);
+TMPL_PP_DBL_BASIC(18, ep3, fp3);
 
-		if (!ep_is_infty(p) && !ep3_is_infty(q)) {
-			pp_mil_lit_k18(r, t, _p, _q, 1, n);
-			pp_exp_k18(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep_free(t[0]);
-		ep3_free(_q[0]);
-		bn_free(n);
-	}
-}
+TMPL_PP_DBL_PROJC(18, ep3, fp3);
 
-void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
-	bn_t n;
-	int i, j;
+TMPL_PP_DBL_LAZYR(18, ep3, fp3, dv3);
 
-	bn_null(n);
+TMPL_PP_DBL_LIT(18, ep3, fp3);
 
-	RLC_TRY {
-		bn_new(n);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t[i]);
-			ep3_null(_q[i]);
-			ep_new(_p[i]);
-			ep_new(t[i]);
-			ep3_new(_q[i]);
-		}
+TMPL_PP_NORM(18, ep3, fp3);
 
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j], q[i]);
-				fp3_mul(_q[j]->x, _q[j]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[j]->y, _q[j]->y, core_get()->ep3_frb[2]);
-				j++;
-			}
-		}
+TMPL_PP_MAP_TATEP(18, ep3);
 
-		ep_curve_get_ord(n);
-		fp18_set_dig(r, 1);
-		if (j > 0) {
-			pp_mil_lit_k18(r, t, _p, _q, j, n);
-			pp_exp_k18(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep_free(t[i]);
-			ep3_free(_q[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(t);
-		RLC_FREE(_q);
-	}
-}
+TMPL_PP_MAP_SIM_TATEP(18, ep3);
 
-#endif
+TMPL_PP_MAP_WEILP(18, ep3);
 
-#if PP_MAP == WEILP || !defined(STRIP)
+TMPL_PP_MAP_SIM_WEILP(18, ep3);
 
-void pp_map_weilp_k18(fp18_t r, const ep_t p, const ep3_t q) {
-	ep_t _p[1], t0[1];
-	ep3_t _q[1], t1[1];
-	fp18_t r0, r1;
-	bn_t n;
+TMPL_PP_MAP_OATEP(18, ep3);
 
-	ep_null(_p[0]);
-	ep_null(t0[0]);
-	ep3_null(_q[0]);
-	ep3_null(t1[0]);
-	fp18_null(r0);
-	fp18_null(r1);
-	bn_null(n);
+TMPL_PP_MAP_SIM_OATEP(18, ep3);
 
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep_new(t0[0]);
-		ep3_new(_q[0]);
-		ep3_new(t1[0]);
-		fp18_new(r0);
-		fp18_new(r1);
-		bn_new(n);
+TMPL_PP_MAP_PRE(18, ep3, fp3);
 
-		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
+TMPL_PP_MAP_FIX(18, fp3);
 
-		ep_curve_get_ord(n);
-		bn_sub_dig(n, n, 1);
-		fp18_set_dig(r0, 1);
-		fp18_set_dig(r1, 1);
-
-		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
-			pp_mil_k18(r1, t1, _q, _p, 1, n);
-			fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-			fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
-			pp_mil_lit_k18(r0, t0, _p, _q, 1, n);
-			fp18_inv(r1, r1);
-			fp18_mul(r0, r0, r1);
-			fp18_inv(r1, r0);
-			fp18_inv_cyc(r0, r0);
-		}
-		fp18_mul(r, r0, r1);
-		fp18_sqr(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep_free(t0[0]);
-		ep3_free(_q[0]);
-		ep3_free(t1[0]);
-		fp18_free(r0);
-		fp18_free(r1);
-		bn_free(n);
-	}
-}
-
-void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m), *t0 = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m), *t1 = RLC_ALLOCA(ep3_t, m);
-	fp18_t r0, r1;
-	bn_t n;
-	int i, j;
-
-	fp18_null(r0);
-	fp18_null(r1);
-	bn_null(n);
-
-	RLC_TRY {
-		fp18_new(r0);
-		fp18_new(r1);
-		bn_new(n);
-		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep_null(t0[i]);
-			ep3_null(_q[i]);
-			ep3_null(t1[i]);
-			ep_new(_p[i]);
-			ep_new(t0[i]);
-			ep3_new(_q[i]);
-			ep3_new(t1[i]);
-		}
-
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j++], q[i]);
-			}
-		}
-
-		ep_curve_get_ord(n);
-		bn_sub_dig(n, n, 1);
-		fp18_set_dig(r0, 1);
-		fp18_set_dig(r1, 1);
-
-		if (j > 0) {
-			pp_mil_k18(r1, t1, _q, _p, j, n);
-			for (i = 0; i < j; i++) {
-				fp3_mul(_q[i]->x, _q[i]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[i]->y, _q[i]->y, core_get()->ep3_frb[2]);
-			}
-			pp_mil_lit_k18(r0, t0, _p, _q, j, n);
-			fp18_inv(r1, r1);
-			fp18_mul(r0, r0, r1);
-			fp18_inv(r1, r0);
-			fp18_inv_cyc(r0, r0);
-		}
-		fp18_mul(r, r0, r1);
-		fp18_sqr(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp18_free(r0);
-		fp18_free(r1);
-		bn_free(n);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep_free(t0[i]);
-			ep3_free(_q[i]);
-			ep3_free(t1[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t0);
-		RLC_FREE(t1);
-	}
-}
-
-#endif
-
-#if PP_MAP == OATEP || !defined(STRIP)
-
-void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
-	ep_t _p[1];
-	ep3_t t[1], _q[1];
-	bn_t a;
-
-	ep_null(_p[0]);
-	ep3_null(_q[0]);
-	ep3_null(t[0]);
-	bn_null(a);
-
-	RLC_TRY {
-		ep_new(_p[0]);
-		ep3_new(_q[0]);
-		ep3_new(t[0]);
-		bn_new(a);
-
-		fp_prime_get_par(a);
-		fp18_set_dig(r, 1);
-
-		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
-
-		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
-			switch (ep_curve_is_pairf()) {
-				case EP_K18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-						ep3_neg(t[0], t[0]);
-					}
-					pp_fin_k18_oatep(r, t[0], _q[0], _p[0], 0);
-					pp_exp_k18(r, r);
-					break;
-				case EP_SG18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-						ep3_neg(t[0], t[0]);
-					}
-					pp_fin_k18_oatep(r, t[0], _q[0], _p[0], 1);
-					pp_exp_k18(r, r);
-					break;
-				case EP_FM18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-						ep3_neg(t[0], t[0]);
-					}
-					pp_exp_k18(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(_p[0]);
-		ep3_free(_q[0]);
-		ep3_free(t[0]);
-		bn_free(a);
-	}
-}
-
-void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep3_t *t = RLC_ALLOCA(ep3_t, m), *_q = RLC_ALLOCA(ep3_t, m);
-	bn_t a;
-	int i, j;
-
-	RLC_TRY {
-		bn_null(a);
-		bn_new(a);
-		if (_p == NULL || _q == NULL || t == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			ep_null(_p[i]);
-			ep3_null(_q[i]);
-			ep3_null(t[i]);
-			ep_new(_p[i]);
-			ep3_new(_q[i]);
-			ep3_new(t[i]);
-		}
-
-		j = 0;
-		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
-				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j++], q[i]);
-			}
-		}
-
-		fp_prime_get_par(a);
-		fp18_set_dig(r, 1);
-
-		if (j > 0) {
-			switch (ep_curve_is_pairf()) {
-				case EP_K18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-					}
-					for (i = 0; i < j; i++) {
-						if (bn_sign(a) == RLC_NEG) {
-							ep3_neg(t[i], t[i]);
-						}
-						pp_fin_k18_oatep(r, t[i], _q[i], _p[i], 0);
-					}
-					pp_exp_k18(r, r);
-					break;
-				case EP_SG18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-					}
-					for (i = 0; i < j; i++) {
-						if (bn_sign(a) == RLC_NEG) {
-							ep3_neg(t[i], t[i]);
-						}
-						/* Apply Frobenius only once. */
-						pp_fin_k18_oatep(r, t[i], _q[i], _p[i], i == 0);
-					}
-					pp_exp_k18(r, r);
-					break;
-				case EP_FM18:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp18_inv_cyc(r, r);
-					}
-					pp_exp_k18(r, r);
-					break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(a);
-		for (i = 0; i < m; i++) {
-			ep_free(_p[i]);
-			ep3_free(_q[i]);
-			ep3_free(t[i]);
-		}
-		RLC_FREE(_p);
-		RLC_FREE(_q);
-		RLC_FREE(t);
-	}
-}
-
-#endif
+TMPL_PP_MAP_SIM_FIX(18, ep3, fp3);

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level prime field squaring.
+ * Implementation of the low-level quadratic extension field multiplication.
  *
  * @ingroup fpx
  */
@@ -33,87 +33,170 @@
 #include "macro.s"
 
 .text
-.global fp2_muln_c0
-.global fp2_muln_c1
-.global fp2_mulm_c0
-.global fp2_mulm_c1
 
-/*
- * Techniques and code heavily inspired from "Efficient Algorithms for Large
- * Prime Characteristic Fields and Their Application toBilinear Pairings" by
- * Longa at TCHES'23.
- */
+#ifdef FP2_ASM
 
-fp2_muln_c0:
+.global cdecl(fp2_muln_low)
+
+cdecl(fp2_muln_low):
 	push	%r12
-	push	%r13 
-	push	%r14  
-	push	%r15  
+	push	%r13
+	push	%r14
+	push	%r15
 	push	%rbx
+	subq	$64, %rsp
+
+	leaq	RLC_DV_STRIDE(%rdi), %rax
+	movq	%rax, 0(%rsp)
 	movq	%rdx, %rcx
 
-	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL0_LOW 0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0, 0(%rsp)
 
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+	addq	$64, %rsp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
 
-fp2_mulm_c0:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%r15  
-    push	%rbx
-    movq	%rdx, %rcx
+.global cdecl(fp2_mulm_low)
 
-	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL0_LOW 0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+#ifdef FP2_MUL_RDC
 
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+cdecl(fp2_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	subq	$64, %rsp
 
-fp2_muln_c1:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%r15  
-    push	%rbx
-    movq	%rdx, %rcx
-    
-    // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rcx), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	movq	%rdx, %rcx
 
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1, 0(%rsp)
 
-fp2_mulm_c1:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%r15  
-    push	%rbx
-    movq	%rdx, %rcx
-    
-    // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rcx), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+	addq	$64, %rsp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
 
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-	popq	%r12
-    ret
+#else
+
+cdecl(fp2_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	subq	$256, %rsp
+
+	movq	%rdi, 16(%rsp)
+	leaq	64(%rsp), %rdi
+	leaq	160(%rsp), %rax
+	movq	%rax, 0(%rsp)
+	movq	%rdx, %rcx
+
+	FP2_MUL_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0, 0(%rsp)
+
+	movq	16(%rsp), %rdi
+	FP_RDCN_LOW	64(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, p0(%rip), %r12, %r13, %rdx, %rsi, %r14, %r15
+	movq	16(%rsp), %rdi
+	addq	$48, %rdi
+	FP_RDCN_LOW	160(%rsp), %r8, %r9, %r10, %r11, %rax, %rcx, %r12, %r13, p0(%rip), %r12, %r13, %rdx, %rsi, %r14, %r15
+
+	addq	$256, %rsp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif
+
+#endif
+
+#ifdef FP2_NORD_ASM
+
+.macro NORD i j
+	movq	8*\i(%rsi), %r8
+	movq	RLC_DV_STRIDE+8*\i(%rsi), %r9
+	leaq	(%r10,%r8,2), %rax
+	shrxq	%rcx, %r8, %r10
+	leaq	(%r11,%r9,2), %rdx
+	shrxq	%rcx, %r9, %r11
+	notq	%r9
+	adcx	%r9, %rax
+	adox	%r8, %rdx
+	movq	%rax, 8*\i(%rdi)
+	movq	%rdx, RLC_DV_STRIDE+8*\i(%rdi)
+	.if \i - \j
+		NORD "(\i + 1)" \j
+	.endif
+.endm
+
+.global cdecl(fp2_nord_low)
+
+cdecl(fp2_nord_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+
+	movq	$63, %rcx
+	xorl	%r10d, %r10d
+	xorl	%r11d, %r11d
+	stc
+	NORD	0 11
+
+	sbbq	%rcx, %rcx
+	notq	%rcx
+	testq	%rcx, %rcx
+	movq	48(%rdi), %r8
+	movq	56(%rdi), %r9
+	movq	64(%rdi), %r10
+	movq	72(%rdi), %r11
+	movq	80(%rdi), %rax
+	movq	88(%rdi), %rdx
+	movq	$0, %rsi
+	cmovs	p0(%rip), %rsi
+	adcx	%rsi, %r8
+	movq	$0, %r12
+	cmovs	p1(%rip), %r12
+	adcx	%r12, %r9
+	movq	$0, %rsi
+	cmovs	p2(%rip), %rsi
+	adcx	%rsi, %r10
+	movq	$0, %r12
+	cmovs	p3(%rip), %r12
+	adcx	%r12, %r11
+	movq	$0, %rsi
+	cmovs	p4(%rip), %rsi
+	adcx	%rsi, %rax
+	movq	$0, %r12
+	cmovs	p5(%rip), %r12
+	adcx	%r12, %rdx
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, %r15, %rbx, 48(%rdi)
+
+	movq	RLC_DV_STRIDE+48(%rdi), %r8
+	movq	RLC_DV_STRIDE+56(%rdi), %r9
+	movq	RLC_DV_STRIDE+64(%rdi), %r10
+	movq	RLC_DV_STRIDE+72(%rdi), %r11
+	movq	RLC_DV_STRIDE+80(%rdi), %rax
+	movq	RLC_DV_STRIDE+88(%rdi), %rdx
+	FINALC	%r8, %r9, %r10, %r11, %rax, %rdx, %rsi, %r12, %r13, %r14, %r15, %rbx, RLC_DV_STRIDE+48(%rdi)
+	FINALC	%rsi, %r12, %r13, %r14, %r15, %rbx, %r8, %r9, %r10, %r11, %rax, %rdx, RLC_DV_STRIDE+48(%rdi)
+
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+#endif

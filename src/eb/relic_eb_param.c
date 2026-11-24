@@ -39,7 +39,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EB_PLAIN) && FB_POLYN == 163
+#if FB_POLYN == 163
 /**
  * Parameters for the NIST B-163 binary elliptic curve.
  */
@@ -53,7 +53,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 163
+#if FB_POLYN == 163
 /**
  * Parameters for the NIST K-163 binary elliptic curve.
  */
@@ -67,7 +67,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 233
+#if FB_POLYN == 233
 /**
  * Parameters for the NIST B-233 binary elliptic curve.
  */
@@ -81,7 +81,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 233
+#if FB_POLYN == 233
 /**
  * Parameters for the NIST K-233 binary elliptic curve.
  */
@@ -95,7 +95,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 239
+#if FB_POLYN == 239
 /**
  * Parameters for the SECG K-239 binary elliptic curve.
  */
@@ -109,7 +109,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 251
+#if FB_POLYN == 251
 /**
  * Parameters for the eBATS B-251 binary elliptic curve.
  */
@@ -123,7 +123,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 257
+#if FB_POLYN == 257
 /**
  * Parameters for a curve over GF(2^257) which is really nice for halving.
  */
@@ -137,7 +137,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 283
+#if FB_POLYN == 283
 /**
  * Parameters for the NIST B-283 binary elliptic curve.
  */
@@ -151,7 +151,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 283
+#if FB_POLYN == 283
 /**
  * Parameters for the NIST K-283 binary elliptic curve.
  */
@@ -165,7 +165,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 409
+#if FB_POLYN == 409
 /**
  * Parameters for the NIST B-409 binary elliptic curve.
  */
@@ -179,7 +179,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 409
+#if FB_POLYN == 409
 /**
  * Parameters for the NIST K-409 binary elliptic curve.
  */
@@ -193,7 +193,7 @@
 /** @} */
 #endif
 
-#if defined(EB_PLAIN) && FB_POLYN == 571
+#if FB_POLYN == 571
 /**
  * Parameters for the NIST B-571 binary elliptic curve.
  */
@@ -207,7 +207,7 @@
 /** @} */
 #endif
 
-#if defined(EB_KBLTZ) && FB_POLYN == 571
+#if FB_POLYN == 571
 /**
  * Parameters for the NIST K-571 binary elliptic curve.
  */
@@ -227,8 +227,13 @@
  * @param[in] CURVE		- the curve parameters to assign.
  * @param[in] FIELD		- the finite field identifier.
  */
-#define ASSIGN(CURVE, FIELD)												\
-	fb_param_set(FIELD);													\
+#define EB_ASSIGN(CURVE, FIELD)												\
+	if (fb_param_set(FIELD) != RLC_OK) {									\
+		/* Leave the switch, as the curve would be set over the wrong		\
+		 * field, and report the error returned. */							\
+		code = RLC_ERR;														\
+		break;																\
+	}																		\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fb_read_str(a, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
@@ -250,116 +255,117 @@ int eb_param_get(void) {
 	return core_get()->eb_id;
 }
 
-void eb_param_set(int param) {
+int eb_param_set(int param) {
 	char str[2 * RLC_FB_BYTES + 1];
+	int code = RLC_OK;
 	fb_t a, b;
 	eb_t g;
 	bn_t r;
 	bn_t h;
 
-	fb_null(a);
-	fb_null(b);
+	fb_null_all(a, b);
 	eb_null(g);
-	bn_null(r);
-	bn_null(h);
+	bn_null_all(r, h);
 
 	RLC_TRY {
-		fb_new(a);
-		fb_new(b);
+		fb_new_all(a, b);
 		eb_new(g);
-		bn_new(r);
-		bn_new(h);
+		bn_new_all(r, h);
 
 		core_get()->eb_id = 0;
 
 		switch (param) {
-#if defined(EB_PLAIN) && FB_POLYN == 163
+#if FB_POLYN == 163
 			case NIST_B163:
-				ASSIGN(NIST_B163, NIST_163);
+				EB_ASSIGN(NIST_B163, NIST_163);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 163
+#if FB_POLYN == 163
 			case NIST_K163:
-				ASSIGN(NIST_K163, NIST_163);
+				EB_ASSIGN(NIST_K163, NIST_163);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 233
+#if FB_POLYN == 233
 			case NIST_B233:
-				ASSIGN(NIST_B233, NIST_233);
+				EB_ASSIGN(NIST_B233, NIST_233);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 233
+#if FB_POLYN == 233
 			case NIST_K233:
-				ASSIGN(NIST_K233, NIST_233);
+				EB_ASSIGN(NIST_K233, NIST_233);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 239
+#if FB_POLYN == 239
 			case SECG_K239:
-				ASSIGN(SECG_K239, SECG_239);
+				EB_ASSIGN(SECG_K239, SECG_239);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 251
+#if FB_POLYN == 251
 			case EBACS_B251:
-				ASSIGN(EBACS_B251, PENTA_251);
+				EB_ASSIGN(EBACS_B251, PENTA_251);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 257
+#if FB_POLYN == 257
 			case HALVE_B257:
-				ASSIGN(HALVE_B257, TRINO_257);
+				EB_ASSIGN(HALVE_B257, TRINO_257);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 283
+#if FB_POLYN == 283
 			case NIST_B283:
-				ASSIGN(NIST_B283, NIST_283);
+				EB_ASSIGN(NIST_B283, NIST_283);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 283
+#if FB_POLYN == 283
 			case NIST_K283:
-				ASSIGN(NIST_K283, NIST_283);
+				EB_ASSIGN(NIST_K283, NIST_283);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 409
+#if FB_POLYN == 409
 			case NIST_B409:
-				ASSIGN(NIST_B409, NIST_409);
+				EB_ASSIGN(NIST_B409, NIST_409);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 409
+#if FB_POLYN == 409
 			case NIST_K409:
-				ASSIGN(NIST_K409, NIST_409);
+				EB_ASSIGN(NIST_K409, NIST_409);
 				break;
 #endif
-#if defined(EB_PLAIN) && FB_POLYN == 571
+#if FB_POLYN == 571
 			case NIST_B571:
-				ASSIGN(NIST_B571, NIST_571);
+				EB_ASSIGN(NIST_B571, NIST_571);
 				break;
 #endif
-#if defined(EB_KBLTZ) && FB_POLYN == 571
+#if FB_POLYN == 571
 			case NIST_K571:
-				ASSIGN(NIST_K571, NIST_571);
+				EB_ASSIGN(NIST_K571, NIST_571);
 				break;
 #endif
 			default:
 				(void)str;
+				code = RLC_ERR;
 				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
-		fb_zero(g->z);
-		fb_set_bit(g->z, 0, 1);
-		g->coord = BASIC;
+		/* Only set a curve whose parameters were all read. */
+		if (code == RLC_OK) {
+			fb_zero(g->z);
+			fb_set_bit(g->z, 0, 1);
+			g->coord = EC_AFFIN;
 
-		eb_curve_set(a, b, g, r, h);
-		core_get()->eb_id = param;
+			eb_curve_set(a, b, g, r, h);
+			core_get()->eb_id = param;
+		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		/* The error is reported by the code returned, not thrown again. */
+		code = RLC_ERR;
 	}
 	RLC_FINALLY {
-		fb_free(a);
-		fb_free(b);
+		fb_free_all(a, b);
 		eb_free(g);
-		bn_free(r);
-		bn_free(h);
+		bn_free_all(r, h);
 	}
+	return code;
 }
 
 int eb_param_set_any(void) {
@@ -375,24 +381,20 @@ int eb_param_set_any(void) {
 
 int eb_param_set_any_plain(void) {
 	int r = RLC_OK;
-#if defined(EB_PLAIN)
 #if FB_POLYN == 163
-	eb_param_set(NIST_B163);
+	r = eb_param_set(NIST_B163);
 #elif FB_POLYN == 233
-	eb_param_set(NIST_B233);
+	r = eb_param_set(NIST_B233);
 #elif FB_POLYN == 251
-	eb_param_set(EBACS_B251);
+	r = eb_param_set(EBACS_B251);
 #elif FB_POLYN == 257
-	eb_param_set(HALVE_B257);
+	r = eb_param_set(HALVE_B257);
 #elif FB_POLYN == 283
-	eb_param_set(NIST_B283);
+	r = eb_param_set(NIST_B283);
 #elif FB_POLYN == 409
-	eb_param_set(NIST_B409);
+	r = eb_param_set(NIST_B409);
 #elif FB_POLYN == 571
-	eb_param_set(NIST_B571);
-#else
-	r = RLC_ERR;
-#endif
+	r = eb_param_set(NIST_B571);
 #else
 	r = RLC_ERR;
 #endif
@@ -401,22 +403,18 @@ int eb_param_set_any_plain(void) {
 
 int eb_param_set_any_kbltz(void) {
 	int r = RLC_OK;
-#if defined(EB_KBLTZ)
 #if FB_POLYN == 163
-	eb_param_set(NIST_K163);
+	r = eb_param_set(NIST_K163);
 #elif FB_POLYN == 233
-	eb_param_set(NIST_K233);
+	r = eb_param_set(NIST_K233);
 #elif FB_POLYN == 239
-	eb_param_set(SECG_K239);
+	r = eb_param_set(SECG_K239);
 #elif FB_POLYN == 283
-	eb_param_set(NIST_K283);
+	r = eb_param_set(NIST_K283);
 #elif FB_POLYN == 409
-	eb_param_set(NIST_K409);
+	r = eb_param_set(NIST_K409);
 #elif FB_POLYN == 571
-	eb_param_set(NIST_K571);
-#else
-	r = RLC_ERR;
-#endif
+	r = eb_param_set(NIST_K571);
 #else
 	r = RLC_ERR;
 #endif

@@ -34,7 +34,6 @@
 #include "relic_core.h"
 
 #ifdef _MSC_VER
-#undef DOUBLE
 #include <Windows.h>
 /**
  * Stores the default color used in the console.
@@ -96,7 +95,7 @@ static void cache_default_color(void) {
  */
 static void fail_font(void) {
     cache_default_color();
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, FAIL_COLOR);
@@ -111,7 +110,7 @@ static void fail_font(void) {
  */
 static void pass_font(void) {
     cache_default_color();
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, PASS_COLOR);
@@ -125,7 +124,7 @@ static void pass_font(void) {
  * Resets font to default.
  */
 static void reset_font(void) {
-#ifdef COLOR
+#ifdef RLC_COLOR
 #ifdef _MSC_VER
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(m_hConsole, default_color);
@@ -139,10 +138,11 @@ static void reset_font(void) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void test_fail(void) {
+void test_fail(const char *file, int line) {
 	fail_font();
 	util_print("[FAIL]\n");
 	reset_font();
+	util_print("(at %s:%d)\n", file, line);
 }
 
 void test_pass(void) {

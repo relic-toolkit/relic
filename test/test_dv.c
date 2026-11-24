@@ -105,6 +105,32 @@ static int copy(void) {
 			TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time comparisons agree with the others") {
+			size_t j;
+
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) ==
+				dv_cmp(a, b, RLC_DV_DIGS), end);
+			TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) ==
+				dv_equ(a, b, RLC_DV_DIGS), end);
+			/* Make the vectors differ in a single digit, at either end. */
+			for (j = 0; j < RLC_DV_DIGS; j += RLC_DV_DIGS - 1) {
+				dv_copy(b, a, RLC_DV_DIGS);
+				b[j] ^= 1;
+				TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) ==
+					dv_cmp(a, b, RLC_DV_DIGS), end);
+				TEST_ASSERT(dv_cmp_sec(b, a, RLC_DV_DIGS) ==
+					dv_cmp(b, a, RLC_DV_DIGS), end);
+				TEST_ASSERT(dv_equ_sec(a, b, RLC_DV_DIGS) == RLC_NE, end);
+				TEST_ASSERT(dv_equ(a, b, RLC_DV_DIGS) == RLC_NE, end);
+				if (RLC_DV_DIGS == 1) {
+					break;
+				}
+			}
+		}
+		TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
@@ -232,12 +258,25 @@ static int shifting(void) {
 		dv_new(b);
 		dv_new(c);
 
-		TEST_CASE("shifting by  digit is consistent") {
+		TEST_CASE("shifting by 1 digit is consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			a[RLC_DV_DIGS - 1] = 0;
 			dv_lshd(b, a, RLC_DV_DIGS, 1);
 			dv_rshd(c, b, RLC_DV_DIGS, 1);
 			TEST_ASSERT(dv_cmp(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("shifting by no or all digits is consistent") {
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			dv_lshd(b, a, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_rshd(b, a, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_lshd(b, a, RLC_DV_DIGS, RLC_DV_DIGS);
+			TEST_ASSERT(dv_is_zero(b, RLC_DV_DIGS), end);
+			dv_copy(b, a, RLC_DV_DIGS);
+			dv_rshd(b, a, RLC_DV_DIGS, RLC_DV_DIGS + 1);
+			TEST_ASSERT(dv_is_zero(b, RLC_DV_DIGS), end);
 		} TEST_END;
 
 		if (RLC_DV_DIGS > 1) {

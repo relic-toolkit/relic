@@ -26,6 +26,20 @@
  *
  * Interface of the error-handling functions.
  *
+ * A thrown error is recorded and execution continues: there is no jump. The
+ * error is returned by err_get_code() and, inside a try-catch block, caught by
+ * the CATCH clause of the innermost block where it was thrown, after the rest
+ * of its TRY clause runs. Running out of memory, a number that does not fit in
+ * its fixed size and a failing pseudo-random number generator stop the program
+ * instead. The model holds as long as:
+ * - a TRY clause is left only by reaching its end, without return, goto, break
+ *   or continue, and is always followed by its CATCH clause, in braces;
+ * - each thread has a context of its own;
+ * - err_get_code() is not called inside a try-catch block, as it forgets the
+ *   errors pending in the blocks around it;
+ * - return codes are checked, as a function may have written part of its
+ *   outputs, or of the context, before failing.
+ *
  * @ingroup relic
  */
 
@@ -42,10 +56,6 @@
 #include "relic_util.h"
 #include "relic_label.h"
 
-#ifdef CHECK
-#include <setjmp.h>
-#endif
-
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
@@ -56,7 +66,8 @@
 enum errors {
 	/** Constant to indicate the first an error already catched. */
 	ERR_CAUGHT = 1,
-	/** Occurs when memory-allocating functions fail. */
+	/** Occurs when memory-allocating functions fail, which is fatal: throwing
+	 * it reports the error and stops the program instead of being caught. */
 	ERR_NO_MEMORY,
 	/** Occcurs when the library precision is not sufficient. */
 	ERR_NO_PRECI,
@@ -80,39 +91,16 @@ enum errors {
 	ERR_MAX
 };
 
-/** Truncate file name if verbosity is turned off. */
-#ifdef VERBS
+/**
+ * Truncate file name if verbosity is turned off. On AVR the name is kept in
+ * program memory, where it cannot be searched with strrchr().
+ */
+#if defined(RLC_VERBS) || RLC_ARCH == RLC_AVR
 #define RLC_FILE	RLC_STR(__FILE__)
 #else
-#define RLC_FILE															\
-	((strrchr(RLC_STR(__FILE__), '/') ? : RLC_STR(__FILE__) - 1) + 1)
-#endif
-
-/*============================================================================*/
-/* Type definitions                                                           */
-/*============================================================================*/
-
-/**
- * Type that represents an error.
- */
-typedef int err_t;
-
-
-#ifdef CHECK
-
-/**
- * Type that describes an error status, including the error code and the program
- * location where the error occurred.
- */
-typedef struct _sts_t {
-	/** Error occurred. */
-	err_t *error;
-	/** Pointer to the program location where the error occurred. */
-	jmp_buf addr;
-	/** Flag to tell if there is a surrounding try-catch block. */
-	int block;
-} sts_t;
-
+#define RLC_FILE														\
+	(strrchr(RLC_STR(__FILE__), '/') ?									\
+		strrchr(RLC_STR(__FILE__), '/') + 1 : RLC_STR(__FILE__))
 #endif
 
 /*============================================================================*/
@@ -120,160 +108,78 @@ typedef struct _sts_t {
 /*============================================================================*/
 
 /**
- * Implements the TRY clause of the error-handling routines.
- *
- * This macro copies the last error from the current library context to
- * a temporary variable and handles the current error. The loop is used so
- * the CATCH facility is called first to store the address of the error
- * being caught. The setjmp() function is then called to store the current
- * program location in the current error field. The program block can now be
- * executed. If an error is thrown inside the program block, the setjmp()
- * function is called again and the return value is non-zero.
+ * Last bit of the errors pending in a context, one per depth.
  */
-#define RLC_ERR_TRY														\
-	{																	\
-		sts_t *_last, _this;											\
-		ctx_t *_ctx = core_get();										\
-		_last = _ctx->last; 											\
-		_this.block = 1;												\
-		_ctx->last = &_this; 											\
-		for (int _z = 0; ; _z = 1) 										\
-			if (_z) { 													\
-				if (setjmp(_this.addr) == 0) { 							\
-					if (1)												\
+#define RLC_ERR_TOP				((int)(8 * sizeof(uint_t) - 1))
 
 /**
- * Implements the CATCH clause of the error-handling routines.
+ * Returns the bit that marks an error pending at a depth of try-catch blocks,
+ * with the deepest blocks sharing the last bit.
  *
- * First, the address of the error is stored and the execution resumes
- * on the RLC_ERR_TRY macro. If an error is thrown inside the program block,
- * the caught flag is updated and the last error is restored. If some error
- * was caught, the execution is resumed inside the RLC_CATCH block.
- *
- * @param[in] ADDR	- the address of the exception being caught
+ * @param[in] D				- the depth, starting from one.
  */
-#define RLC_ERR_CATCH(ADDR)												\
-					else { } 											\
-					_ctx->caught = 0; 									\
-				} else {												\
-					_ctx->caught = 1; 									\
-				}														\
-				_ctx->last = _last;										\
-				break; 													\
-			} else {													\
-				_this.error = ADDR; 									\
-			}															\
-	} 																	\
-	for (int _z = 0; _z < 2; _z++) 										\
-		if (_z == 1 && core_get()->caught) 								\
+#define RLC_ERR_BIT(D)														\
+	((uint_t)1 << ((D) < 1 ? 1 : ((D) < RLC_ERR_TOP ? (D) : RLC_ERR_TOP)))
 
 /**
- * Implements the THROW clause of the error-handling routines.
- *
- * First we make sure that the error pointer is NULL (new exception) or
- * there is a surrounding try-catch block (block = 1). If this is not the case,
- * then it is the second exception thrown in sequence without handling.
- *
- * If the error pointer is NULL, the error was thrown outside of a TRY-CATCH
- * block. An error message is printed and the function returns.
- *
- * If the error pointer is valid, the longjmp() function is called to return to
- * the program location where setjmp() was last called. An error message
- * respective to the error is then printed and the current error pointer is
- * updated to store the error.
- *
- * @param[in] E		- the exception being caught.
+ * Implements a TRY clause. The block always runs to the end, and the number of
+ * blocks entered is counted so that errors thrown inside them are reported to
+ * their CATCH clause. With multithreading, a thread without a context stops
+ * the program.
  */
-#define RLC_ERR_THROW(E)												\
-	{																	\
-		ctx_t *_ctx = core_get();										\
-		_ctx->code = RLC_ERR;											\
-		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
-			if (_ctx->last == NULL) {									\
-				_ctx->last = &(_ctx->error);							\
-				_ctx->error.error = &(_ctx->number);					\
-				_ctx->error.block = 0;									\
-				_ctx->number = E;										\
-				RLC_ERR_PRINT(E);										\
-			} else {													\
-				for (; ; longjmp(_ctx->last->addr, 1)) {				\
-					RLC_ERR_PRINT(E);									\
-					if (_ctx->last->error) {							\
-						if (E != ERR_CAUGHT) {							\
-							*(_ctx->last->error) = E;					\
-						}												\
-					}													\
-				}														\
-			}															\
-		}																\
-	}																	\
+#define RLC_TRY					if ((err_try(RLC_STR(__FILE__), __LINE__), 1))
 
-#ifdef CHECK
 /**
- * Implements a TRY clause.
- */
-#define RLC_TRY					RLC_ERR_TRY
-#else
-/**
- * Stub for the TRY clause.
- */
-#define RLC_TRY					if (1)
-#endif
-
-#ifdef CHECK
-/**
- * Implements a CATCH clause.
- */
-#define RLC_CATCH(E)			RLC_ERR_CATCH(&(E))
-#else
-/**
- * Stub for the CATCH clause.
- */
-#define RLC_CATCH(E)			else
-#endif
-
-#ifdef CHECK
-/**
- * Implements a CATCH clause for any possible error.
+ * Implements a CATCH clause, which runs if an error was thrown in its TRY
+ * clause and consumes it. An error pending from before the TRY clause is left
+ * to the CATCH clause of the block where it was thrown.
  *
- * If this macro is used the error type is not available inside the CATCH
- * block.
+ * @param[out] E			- the error caught, of type err_t.
  */
-#define RLC_CATCH_ANY			RLC_ERR_CATCH(NULL)
-#else
-/**
- * Stub for the RLC_CATCH_ANY clause.
- */
-#define RLC_CATCH_ANY			if (0)
-#endif
+#define RLC_CATCH(E)			if (err_catch(&(E)))
 
-#ifdef CHECK
 /**
- * Implements the RLC_FINALLY clause.
+ * Implements a CATCH clause for any possible error, which runs if an error was
+ * thrown in its TRY clause and consumes it. An error pending from before the
+ * TRY clause is left to the CATCH clause of the block where it was thrown.
  */
-#define RLC_FINALLY				else if (_z == 0)
-#else
+#define RLC_CATCH_ANY			if (err_catch(NULL))
+
+/**
+ * Implements a FINALLY clause, which always runs.
+ */
 #define RLC_FINALLY				if (1)
-#endif
 
-#ifdef CHECK
 /**
- * Implements a THROW clause.
+ * Implements a THROW clause. The error is recorded in the code returned by
+ * err_get_code() and execution continues, so the code after a throw must not
+ * depend on what failed; inside a try-catch block, the error is also passed on
+ * to its CATCH clause. While a block has an error pending, the errors thrown
+ * later inside it keep its number, as they follow from the first. Running out
+ * of memory is fatal instead.
+ *
+ * @param[in] E		- the exception being thrown.
  */
-#define RLC_THROW				RLC_ERR_THROW
-#else
-/**
- * Stub for the THROW clause.
- */
-#ifdef QUIET
-#define RLC_THROW(E)			core_get()->code = RLC_ERR;
-#else
 #define RLC_THROW(E)														\
-	core_get()->code = RLC_ERR; 											\
-	util_print("ERROR THROWN in %s:%d\n", RLC_FILE, __LINE__);				\
-
-#endif
-#endif
+	do {																	\
+		ctx_t *_ctx = core_get();											\
+		if ((E) == ERR_NO_MEMORY) {											\
+			err_fatal(RLC_FILE, __LINE__, E);								\
+		}																	\
+		if (_ctx == NULL) {													\
+			/* Without a context, the error cannot be recorded. */			\
+			err_fatal(RLC_FILE, __LINE__, ERR_NO_CONFIG);					\
+		}																	\
+		_ctx->code = RLC_ERR;												\
+		if ((E) != ERR_CAUGHT && (_ctx->pending &							\
+				((RLC_ERR_BIT(_ctx->depth) << 1) - 1)) == 0) {				\
+			_ctx->number = (E);												\
+		}																	\
+		if (_ctx->depth > 0) {												\
+			_ctx->pending |= RLC_ERR_BIT(_ctx->depth);						\
+		}																	\
+		RLC_ERR_PRINT(E);													\
+	} while (0)
 
 /**
  * Treats an error jumping to the argument.
@@ -282,7 +188,7 @@ typedef struct _sts_t {
  */
 #define RLC_ERROR(LABEL)		goto LABEL
 
-#ifdef QUIET
+#ifdef RLC_QUIET
 
 /**
  * Stub for the error printing function.
@@ -293,7 +199,7 @@ typedef struct _sts_t {
 
 #else
 
-#ifdef VERBS
+#ifdef RLC_VERBS
 
 /**
  * Prints the current error message in a complete format.
@@ -303,31 +209,31 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_full_msg(__func__, RLC_FILE, __LINE__, ERROR)						\
 
-#else /* VERBS */
+#else /* RLC_VERBS */
 
 /**
- * Prints the current error message.
+ * Prints the current error message with its location.
  *
  * @param[in] ERROR			- the error code.
  */
 #define RLC_ERR_PRINT(ERROR)												\
-	err_simple_msg(ERROR)													\
+	err_simple_msg(RLC_FILE, __LINE__, ERROR)								\
 
-#endif /* VERBS */
-#endif /* QUIET */
+#endif /* RLC_VERBS */
+#endif /* RLC_QUIET */
 
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
 
-#ifdef CHECK
-
 /**
- * Prints the error message with little information.
+ * Prints the error message with its location.
  *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
  * @param[in] error    		- the error code.
  */
-void err_simple_msg(int error);
+void err_simple_msg(const char *file, int line, int error);
 
 /**
  * Prints the error message with detailed information.
@@ -341,21 +247,93 @@ void err_full_msg(const char *function, const char *file,
 		int line, int error);
 
 /**
- * Prints the error message respective to an error code.
+ * Returns the last error thrown and its message, and forgets it, so that the
+ * next call returns 0 and NULL unless another error is thrown. On AVR, the
+ * message is in program memory.
  *
  * @param[out] e			- the error occurred.
  * @param[out] msg			- the error message.
  */
 void err_get_msg(err_t *e, char **msg);
 
-#endif
+/**
+ * Returns the message of an error. On AVR, the message is in program memory.
+ *
+ * @param[in] error			- the error code.
+ * @return the message.
+ */
+const char *err_reason(int error);
+
+/**
+ * Reports an error that cannot be recovered from and aborts: running out of
+ * memory, or a result that does not fit in a number of fixed size, as execution
+ * continues past a throw and callers would use the missing memory.
+ *
+ * @param[in] file      	- the source file where the error occurred.
+ * @param[in] line      	- the line in the file where the error occurred.
+ * @param[in] error			- the error code.
+ */
+void err_fatal(const char *file, int line, int error);
 
 /**
  * Returns the code returned by the last function call and resets the current
- * code.
+ * code and the last error.
  *
  * @returns ERR_OK if no errors occurred in the function, ERR_ERR otherwise.
  */
 int err_get_code(void);
+
+/**
+ * Enables or disables printing of error messages at runtime, for errors that
+ * are expected. Errors are still recorded and caught as usual.
+ *
+ * @param[in] quiet			- the flag to disable printing.
+ */
+void err_set_quiet(int quiet);
+
+/**
+ * Runs a TRY clause: enters a try-catch block. With multithreading, a thread
+ * without a context stops the program, as there would be nowhere to record an
+ * error; without it, the library is initialized once, before any call.
+ *
+ * @param[in] file			- the source file of the TRY clause.
+ * @param[in] line			- the line of the TRY clause.
+ */
+static inline void err_try(const char *file, int line) {
+	ctx_t *ctx = core_get();
+
+#if defined(RLC_MULTI)
+	if (ctx == NULL) {
+		err_fatal(file, line, ERR_NO_CONFIG);
+	}
+#else
+	(void)file;
+	(void)line;
+#endif
+	ctx->depth++;
+}
+
+/**
+ * Runs a CATCH clause: leaves the current try-catch block and consumes the
+ * errors thrown inside it, which were thrown at its depth or deeper.
+ *
+ * @param[out] e			- the error caught, or NULL to ignore it.
+ * @return 1 if an error was caught, 0 otherwise.
+ */
+static inline int err_catch(err_t *e) {
+	ctx_t *ctx = core_get();
+	uint_t inside;
+
+	ctx->depth--;
+	inside = ~(RLC_ERR_BIT(ctx->depth + 1) - 1);
+	if ((ctx->pending & inside) == 0) {
+		return 0;
+	}
+	ctx->pending &= ~inside;
+	if (e != NULL) {
+		*e = ctx->number;
+	}
+	return 1;
+}
 
 #endif /* !RLC_ERR_H */

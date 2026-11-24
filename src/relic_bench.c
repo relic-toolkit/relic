@@ -29,7 +29,9 @@
  * @ingroup relic
  */
 
-#if TIMER == PERF
+#include "relic_conf.h"
+
+#if RLC_TIMER == RLC_PERF
 #define _GNU_SOURCE
 #include <sys/syscall.h>      /* Definition of SYS_* constants */
 #include <unistd.h>
@@ -39,9 +41,8 @@
 #include <string.h>
 
 #include "relic_core.h"
-#include "relic_conf.h"
 
-#if OPSYS == DUINO && TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 /*
  * Prototype for Arduino timing function.
  *
@@ -54,27 +55,14 @@ uint32_t micros();
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(OVERH) && defined(TIMER) && BENCH > 1
-
-/**
- * Dummy function for measuring benchmarking overhead.
- *
- * @param a				- the dummy parameter.
- */
-static void empty(int *a) {
-	(*a)++;
-}
-
-#endif /* OVER && TIMER && BENCH > 1 */
-
 /**
  * Shared parameter for these timer.
  */
-#if TIMER == HREAL
-#define CLOCK			CLOCK_REALTIME
-#elif TIMER == HPROC
+#if RLC_TIMER == RLC_HREAL
+#define CLOCK			CLOCK_MONOTONIC
+#elif RLC_TIMER == RLC_HPROC
 #define CLOCK			CLOCK_PROCESS_CPUTIME_ID
-#elif TIMER == HTHRD
+#elif RLC_TIMER == RLC_HTHRD
 #define CLOCK			CLOCK_THREAD_CPUTIME_ID
 #else
 #define CLOCK			NULL
@@ -84,63 +72,10 @@ static void empty(int *a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(OVERH) && defined(TIMER) && BENCH > 1
-
-void bench_overhead(void) {
-	ctx_t *ctx = core_get();
-	int a[BENCH + 1];
-	int *tmpa;
-
-	do {
-		ctx->over = 0;
-		for (int l = 0; l < BENCH; l++) {
-			bench_reset();
-			/* Measure the cost of (n^2 + over). */
-			bench_before();
-			for (int i = 0; i < BENCH; i++) {
-				tmpa = a;
-				for (int j = 0; j < BENCH; j++) {
-					empty(tmpa++);
-				}
-			}
-			bench_after();
-			/* Add the cost of (n^2 + over). */
-			ctx->over += ctx->total;
-		}
-		/* Overhead stores the cost of n*(n^2 + over) = n^3 + n*over. */
-		bench_reset();
-		/* Measure the cost of (n^3 + over). */
-		bench_before();
-		for (int i = 0; i < BENCH; i++) {
-			for (int k = 0; k < BENCH; k++) {
-				tmpa = a;
-				for (int j = 0; j < BENCH; j++) {
-					empty(tmpa++);
-				}
-			}
-		}
-		bench_after();
-		/* Subtract the cost of (n^3 + over). */
-		ctx->over -= ctx->total;
-		/* Now overhead stores (n - 1)*over, so take the average to obtain the
-		 * overhead to execute BENCH operations inside a benchmark. */
-		ctx->over /= (BENCH - 1);
-		/* Divide to obtain the overhead of one operation pair. */
-		ctx->over /= BENCH;
-	} while (ctx->over < 0);
-	ctx->total = ctx->over;
-	bench_print();
-}
-
-#endif /* OVER && TIMER && BENCH > 1 */
-
 void bench_init(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
-#ifdef OVERH
-		ctx->over = 0;
-#endif
-#if TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 		static struct perf_event_attr attr;
 		attr.type = PERF_TYPE_HARDWARE;
 		attr.config = PERF_COUNT_HW_CPU_CYCLES;
@@ -159,21 +94,19 @@ void bench_init(void) {
 }
 
 void bench_reset(void) {
-#ifdef TIMER
+#ifdef RLC_TIMER
 	core_get()->total = 0;
 #endif
 }
 
 void bench_before(void) {
-#if OPSYS == DUINO && TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 	core_get()->before = micros();
-#elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
+#elif RLC_TIMER == RLC_HREAL || RLC_TIMER == RLC_HPROC || RLC_TIMER == RLC_HTHRD
 	clock_gettime(CLOCK, &(core_get()->before));
-#elif TIMER == ANSI
+#elif RLC_TIMER == RLC_ANSI
 	core_get()->before = clock();
-#elif TIMER == POSIX
-	gettimeofday(&(core_get()->before), NULL);
-#elif TIMER == CYCLE || TIMER == PERF
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	core_get()->before = arch_cycles();
 #endif
 }
@@ -182,26 +115,22 @@ void bench_after(void) {
 	ctx_t *ctx = core_get();
 	long long result;
 
-#if OPSYS == DUINO && TIMER == HREAL
+#if RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL
 	core_get()->after = micros();
 	result = (ctx->after - ctx->before);
-#elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
+#elif RLC_TIMER == RLC_HREAL || RLC_TIMER == RLC_HPROC || RLC_TIMER == RLC_HTHRD
 	clock_gettime(CLOCK, &(ctx->after));
-	result = ((long)ctx->after.tv_sec - (long)ctx->before.tv_sec) * 1000000000;
+	result = ((long long)ctx->after.tv_sec - ctx->before.tv_sec) * 1000000000;
 	result += (ctx->after.tv_nsec - ctx->before.tv_nsec);
-#elif TIMER == ANSI
+#elif RLC_TIMER == RLC_ANSI
 	ctx->after = clock();
-	result = (ctx->after - ctx->before) * 1000000 / CLOCKS_PER_SEC;
-#elif TIMER == POSIX
-	gettimeofday(&(ctx->after), NULL);
-	result = ((long)ctx->after.tv_sec - (long)ctx->before.tv_sec) * 1000000;
-	result += (ctx->after.tv_usec - ctx->before.tv_usec);
-#elif TIMER == CYCLE || TIMER == PERF
+	result = (long long)(ctx->after - ctx->before) * 1000000 / CLOCKS_PER_SEC;
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	ctx->after = arch_cycles();
   	result = (ctx->after - ctx->before);
 #endif
 
-#ifdef TIMER
+#ifdef RLC_TIMER
 	ctx->total += result;
 #else
 	(void)result;
@@ -211,29 +140,26 @@ void bench_after(void) {
 
 void bench_compute(int benches) {
 	ctx_t *ctx = core_get();
-#ifdef TIMER
+#ifdef RLC_TIMER
 	ctx->total = ctx->total / benches;
-#ifdef OVERH
-	ctx->total = ctx->total - ctx->over;
-#endif /* OVERH */
 #else
 	(void)benches;
 	(void)ctx;
-#endif /* TIMER */
+#endif /* RLC_TIMER */
 }
 
 void bench_print(void) {
 	ctx_t *ctx = core_get();
 
-#if TIMER == POSIX || TIMER == ANSI || (OPSYS == DUINO && TIMER == HREAL)
+#if RLC_TIMER == RLC_ANSI || (RLC_OPSYS == RLC_DUINO && RLC_TIMER == RLC_HREAL)
 	util_print("%lld microsec", ctx->total);
-#elif TIMER == CYCLE || TIMER == PERF
+#elif RLC_TIMER == RLC_CYCLE || RLC_TIMER == RLC_PERF
 	util_print("%lld cycles", ctx->total);
 #else
 	util_print("%lld nanosec", ctx->total);
 #endif
-	if (ctx->total < 0) {
-		util_print(" (overflow or bad overhead estimation)\n");
+	if ((long long)ctx->total < 0) {
+		util_print(" (overflow)\n");
 	} else {
 		util_print("\n");
 	}
@@ -244,11 +170,11 @@ ull_t bench_total(void) {
 }
 
 void bench_clean(void) {
-#if TIMER == PERF
+#if RLC_TIMER == RLC_PERF
 	ctx_t *ctx = core_get();
-	if (ctx != NULL) {
+	if (ctx != NULL && ctx->perf_fd != -1) {
 		close(ctx->perf_fd);
-		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE)),
+		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE));
 		ctx->perf_fd = -1;
 		ctx->perf_buf = NULL;
 	}

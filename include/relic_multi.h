@@ -36,53 +36,37 @@
 #ifndef RLC_MULTI_H
 #define RLC_MULTI_H
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 #include <math.h>
-#if MULTI == OPENMP
+#if RLC_MULTI == RLC_OPENMP
 #include <omp.h>
-#elif MULTI == PTHREAD
+#elif RLC_MULTI == RLC_PTHREAD
 #include <pthread.h>
-#endif /* OPENMP */
-#endif /* MULTI */
+#endif /* RLC_OPENMP */
+#endif /* RLC_MULTI */
 
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
 
-#if defined(MULTI)
+#if defined(RLC_MULTI)
 
 /**
- * If multi-threading is enabled, assigns each thread a local copy of the data.
+ * If multi-threading is enabled, assigns each thread a local copy of the data,
+ * with the same storage for OpenMP and POSIX threads.
  */
-#if MULTI == PTHREAD
-#define rlc_thread 	__thread
-#else
 #if defined(_MSC_VER)
 #define rlc_thread 	__declspec(thread)
 #else
-#define rlc_thread 	/* */
-#endif
+#define rlc_thread 	__thread
 #endif
 
 /**
- * Make library context private to each thread.
- */
-#if MULTI == OPENMP
-/**
- * Active library context, only visible inside the library.
- */
-extern rlc_thread ctx_t first_ctx;
-
-/**
- * Pointer to active library context, only visible inside the library.
+ * Pointer to the active library context of the thread, declared here so that
+ * core_get() can be inlined.
  */
 extern rlc_thread ctx_t *core_ctx;
 
-#if !defined(_MSC_VER)
-#pragma omp threadprivate(first_ctx, core_ctx)
-#endif
-#endif
-
-#endif /* MULTI */
+#endif /* RLC_MULTI */
 
 #endif /* !RLC_MULTI_H */

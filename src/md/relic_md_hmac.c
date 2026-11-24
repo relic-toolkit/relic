@@ -35,44 +35,46 @@
 #include "relic_core.h"
 #include "relic_util.h"
 #include "relic_md.h"
+#include "relic_md_hash.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void md_hmac(uint8_t *mac, const uint8_t *in, size_t in_len, const uint8_t *key,
-    size_t key_len) {
-#if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == B2S160 || MD_MAP == B2S256
-  #define BLOCK_SIZE 64
-#elif MD_MAP == SH384 || MD_MAP == SH512
-  #define BLOCK_SIZE  128
-#endif
-    uint8_t opad[BLOCK_SIZE + RLC_MD_LEN];
-    uint8_t *ipad = RLC_ALLOCA(uint8_t, BLOCK_SIZE + in_len);
-	uint8_t _key[RLC_MAX(RLC_MD_LEN, BLOCK_SIZE)];
+		size_t key_len) {
+	uint8_t pad[MD_BLOCK], _key[MD_BLOCK], h[RLC_MD_LEN];
+	MD_CTX ctx;
 
-    if (ipad == NULL) {
-        RLC_THROW(ERR_NO_MEMORY);
-		return;
-    }
-
-	if (key_len > BLOCK_SIZE) {
+	if (key_len > MD_BLOCK) {
 		md_map(_key, key, key_len);
-		key = _key;
 		key_len = RLC_MD_LEN;
-	}
-	if (key_len <= BLOCK_SIZE) {
+	} else {
 		memcpy(_key, key, key_len);
-		memset(_key + key_len, 0, BLOCK_SIZE - key_len);
-		key = _key;
 	}
-	for (int i = 0; i < BLOCK_SIZE; i++) {
-		opad[i] = 0x5C ^ key[i];
-		ipad[i] = 0x36 ^ key[i];
-	}
-	memcpy(ipad + BLOCK_SIZE, in, in_len);
-	md_map(opad + BLOCK_SIZE, ipad, BLOCK_SIZE + in_len);
-	md_map(mac, opad, BLOCK_SIZE + RLC_MD_LEN);
+	memset(_key + key_len, 0, MD_BLOCK - key_len);
 
-    RLC_FREE(ipad);
+	/* h = H((K XOR ipad) || m), absorbing the message in place. */
+	for (size_t i = 0; i < MD_BLOCK; i++) {
+		pad[i] = 0x36 ^ _key[i];
+	}
+	if (MD_RESET(&ctx) != 0 || MD_INPUT(&ctx, pad, MD_BLOCK) != 0 ||
+			md_input(&ctx, in, in_len) != 0 || MD_RESULT(&ctx, h) != 0) {
+		RLC_THROW(ERR_NO_VALID);
+	} else {
+		/* mac = H((K XOR opad) || h). */
+		for (size_t i = 0; i < MD_BLOCK; i++) {
+			pad[i] = 0x5C ^ _key[i];
+		}
+		if (MD_RESET(&ctx) != 0 || MD_INPUT(&ctx, pad, MD_BLOCK) != 0 ||
+				MD_INPUT(&ctx, h, RLC_MD_LEN) != 0 ||
+				MD_RESULT(&ctx, mac) != 0) {
+			RLC_THROW(ERR_NO_VALID);
+		}
+	}
+
+	util_zero(_key, sizeof(_key));
+	util_zero(pad, sizeof(pad));
+	util_zero(h, sizeof(h));
+	util_zero(&ctx, sizeof(ctx));
 }

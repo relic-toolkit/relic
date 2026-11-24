@@ -40,23 +40,25 @@ int bn_factor(bn_t c, const bn_t a) {
 	int result;
 	uint_t i, tests;
 
-	bn_null(t0);
-	bn_null(t1);
+	bn_null_all(t0, t1);
 
 	result = 1;
 
 	if (bn_is_even(a)) {
-		bn_set_dig(c, 2);
-		return 1;
+		/* A factor must be smaller than a, as in the odd case. */
+		if (bn_cmp_dig(a, 2) == RLC_GT) {
+			bn_set_dig(c, 2);
+			return 1;
+		}
+		return 0;
 	}
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
+		bn_new_all(t0, t1);
 
 		bn_set_dig(t0, 2);
 
-#if WSIZE == 8
+#if RLC_WSIZE == 8
 		tests = 255;
 #else
 		tests = 65535;
@@ -74,10 +76,10 @@ int bn_factor(bn_t c, const bn_t a) {
 			result = 0;
 		}
 	} RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
+		bn_free_all(t0, t1);
 	}
 	return result;
 }
@@ -89,6 +91,10 @@ int bn_is_factor(bn_t c, const bn_t a) {
 	bn_null(t);
 	result = 1;
 
+	if (bn_is_zero(c)) {
+		return 0;
+	}
+
 	RLC_TRY {
 		bn_new(t);
 
@@ -98,6 +104,7 @@ int bn_is_factor(bn_t c, const bn_t a) {
 			result = 0;
 		}
 	} RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(t);

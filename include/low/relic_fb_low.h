@@ -44,10 +44,10 @@
 #include "relic_conf.h"
 
 #undef RLC_FB_DIGS
-#if (FB_POLYN % WSIZE) > 0
-#define RLC_FB_DIGS		(FB_POLYN/WSIZE + 1)
+#if (FB_POLYN % RLC_WSIZE) > 0
+#define RLC_FB_DIGS		(FB_POLYN/RLC_WSIZE + 1)
 #else
-#define RLC_FB_DIGS		(FB_POLYN/WSIZE)
+#define RLC_FB_DIGS		(FB_POLYN/RLC_WSIZE)
 #endif
 
 #else

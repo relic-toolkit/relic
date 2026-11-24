@@ -30,6 +30,7 @@
  *
  * @ingroup fp
  */
+
 #if FP_PRIME == 768
 #define P0	0x591ADE1200800001
 #define P1	0xACE2A12843C534B1
@@ -41,26 +42,12 @@
 #define P7	0x6A6D9D80470079AE
 #define P8	0xBA1AF14A9BC88DBA
 #define P9	0x172EC88A91CFC7D2
-#define P10 0x3290395E476657BA
-#define P11 0xFFFFFFE4FF400142
+#define P10	0x3290395E476657BA
+#define P11	0xFFFFFFE4FF400142
 #define U0	0x471A9E12007FFFFF
+#define BAR	0x8000000D806000CB
+#define BARS	63
 #elif FP_PRIME == 766
-/* KSS16-P766
-#define P0	0xB955C8905EF99F8D
-#define P1	0x7D1C278139EFCE97
-#define P2	0xB72041F5E8174021
-#define P3	0xBC0E3DEC45049335
-#define P4	0xB2CBF189D4D4B3CB
-#define P5	0x941663A5AAF69407
-#define P6	0x74C81A64B9FAAE0C
-#define P7	0xB691EBF6CC4A8A9B
-#define P8	0x24FB15165CCAB927
-#define P9	0x91D2481C864D19F7
-#define P10 0xD1F39E5F37AEACB3
-#define P11 0x3C410B7E6EC19106
-#define U0	0xC18CA908C52344BB
-*/
-/* AFG16-766 */
 #define P0	0xF45D1E791E054605
 #define P1	0xFCBC4220020A6592
 #define P2	0x211730168CD3106C
@@ -71,11 +58,12 @@
 #define P7	0xDC0F8D8300A6748A
 #define P8	0x67D35D389C7BD43C
 #define P9	0x89F38FC6E7249EF1
-#define P10 0xC2E122127943E41E
-#define P11 0x3FFFB8002607F379
+#define P10	0xC2E122127943E41E
+#define P11	0x3FFFB8002607F379
 #define U0	0xF282381A203F6933
+#define BAR	0x8000900055F02428
+#define BARS	61
 #elif FP_PRIME == 765
-/* FM16-765 */
 #define P0	0x1000EFC080000001
 #define P1	0x0000000038223FF0
 #define P2	0x0000000000000000
@@ -89,315 +77,879 @@
 #define P10	0xBC5664C6F237BCB4
 #define P11	0x166A30BEAF4CE221
 #define U0	0xD000EFC07FFFFFFF
+#define BAR	0xB6BC81C39E9E28BA
+#define BARS	60
+#else
+#error "x64-asm-12l supports only FP_PRIME = 765, 766 or 768."
 #endif
 
 #if defined(__APPLE__)
-#define cdecl(S) _PREFIX(,S)
+#define cdecl(S) _cdecl(S)
+#define _cdecl(S) _ ## S
 #else
 #define cdecl(S) S
 #endif
 
+#if defined(__ELF__)
+.section .note.GNU-stack, "", %progbits
+#endif
+
+#if defined(__APPLE__)
+.section __TEXT,__const
+#else
+.section .rodata
+#endif
+.p2align 3
+ones:	.quad	-1
+zero:	.quad	0
+
 .text
 
-.macro ADD1 i, j
+.macro ADD1 i j
 	movq	8*\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\i(%rdi)
 	.if \i - \j
-		ADD1 "(\i + 1)", \j
+		ADD1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro ADDN i, j
+.macro ADDN i j
 	movq	8*\i(%rdx), %r11
 	adcq	8*\i(%rsi), %r11
 	movq	%r11, 8*\i(%rdi)
 	.if \i - \j
-		ADDN "(\i + 1)", \j
+		ADDN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUB1 i, j
+.macro SUB1 i j
 	movq	8*\i(%rsi),%r10
 	sbbq	$0, %r10
 	movq	%r10,8*\i(%rdi)
 	.if \i - \j
-		SUB1 "(\i + 1)", \j
+		SUB1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUBN i, j
+.macro SUBN i j
 	movq	8*\i(%rsi), %r8
 	sbbq	8*\i(%rdx), %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		SUBN "(\i + 1)", \j
+		SUBN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro DBLN i, j
+.macro DBLN i j
 	movq	8*\i(%rsi), %r8
 	adcq	%r8, %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		DBLN "(\i + 1)", \j
+		DBLN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro MULN i, j, k, C, R0, R1, R2, A, B
-	.if \j > \k
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-		MULN	"(\i + 1)", "(\j - 1)", \k, \C, \R0, \R1, \R2, \A, \B
-	.else
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		movq	\R0     , 8*(\i+\j)(\C)
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-	.endif
+.macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13
+	movq	0+\A, %rdx
+	mulx	0+\B, \Z0, \Z1
+	mulx	8+\B, \Z13, \Z2
+	addq	\Z13, \Z1
+	mulx	16+\B, \Z13, \Z3
+	adcq	\Z13, \Z2
+	mulx	24+\B, \Z13, \Z4
+	adcq	\Z13, \Z3
+	mulx	32+\B, \Z13, \Z5
+	adcq	\Z13, \Z4
+	mulx	40+\B, \Z13, \Z6
+	adcq	\Z13, \Z5
+	mulx	48+\B, \Z13, \Z7
+	adcq	\Z13, \Z6
+	mulx	56+\B, \Z13, \Z8
+	adcq	\Z13, \Z7
+	mulx	64+\B, \Z13, \Z9
+	adcq	\Z13, \Z8
+	mulx	72+\B, \Z13, \Z10
+	adcq	\Z13, \Z9
+	mulx	80+\B, \Z13, \Z11
+	adcq	\Z13, \Z10
+	mulx	88+\B, \Z13, \Z12
+	adcq	\Z13, \Z11
+	adcq	$0, \Z12
 .endm
 
-.macro FP_MULN_LOW C, R0, R1, R2, A, B
-	movq 	0(\A),%rax
-	mulq 	0(\B)
-	movq 	%rax ,0(\C)
-	movq 	%rdx ,\R0
-
-	xorq 	\R1,\R1
-	xorq 	\R2,\R2
-	MULN 	0, 1, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 2, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 3, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0, 4, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 5, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 6, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0, 7, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 8, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 9, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0,10, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0,11, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	1,11, 1, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	2,11, 2, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	3,11, 3, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	4,11, 4, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	5,11, 5, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	6,11, 6, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	7,11, 7, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	8,11, 8, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	9,11, 9, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	10,11,10, \C, \R2, \R0, \R1, \A, \B
-
-	movq	88(\A),%rax
-	mulq	88(\B)
-	addq	%rax  ,\R0
-	movq	\R0   ,176(\C)
-	adcq	%rdx  ,\R1
-	movq	\R1   ,184(\C)
-.endm
-
-.macro _RDCN0 i, j, k, R0, R1, R2 A, P
-	movq	8*\i(\A), %rax
-#if U0 == 0xFFFFFFFFFFFFFF
-	.if \j != 2
-		mulq	8*\j(\P)
-		addq	%rax, \R0
-		adcq	%rdx, \R1
-		adcq	$0, \R2
-	.endif
-#else
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-#endif
-	.if \j > 1
-		_RDCN0 "(\i + 1)", "(\j - 1)", \k, \R0, \R1, \R2, \A, \P
-	.else
-#if U0 == 0xFFFFFFFFFFFFFFFF
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		negq	\R0
-		movq	\R0, 8*\k(\A)
-		adcq	$0, \R1
-		adcq	$0, \R2
-#else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, %rax
-		mulq	%rcx
-		movq	%rax, 8*\k(\A)
-		mulq	0(\P)
-		addq	%rax , \R0
-		adcq	%rdx , \R1
-		adcq	$0   , \R2
-#endif
-		xorq	\R0, \R0
-	.endif
-.endm
-
-.macro RDCN0 i, j, R0, R1, R2, A, P
-	_RDCN0	\i, \j, \j, \R0, \R1, \R2, \A, \P
-.endm
-
-.macro _RDCN1 i, j, k, l, R0, R1, R2 A, P
-#if U0 == 0xFFFFFFFFFFFFFF
-	.if \j != 2
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\P)
-		addq	%rax, \R0
-		adcq	%rdx, \R1
-		adcq	$0, \R2
-	.endif
-#else
-	movq	8*\i(\A), %rax
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-#endif
-	.if \j > \l
-		_RDCN1 "(\i + 1)", "(\j - 1)", \k, \l, \R0, \R1, \R2, \A, \P
-	.else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, 8*\k(\A)
-		xorq	\R0, \R0
-	.endif
-.endm
-
-.macro RDCN1 i, j, R0, R1, R2, A, P
-	_RDCN1	\i, \j, "(\i + \j)", \i, \R0, \R1, \R2, \A, \P
-.endm
-
-// r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
-.macro FP_RDCN_LOW C, R0, R1, R2, A, P
-	xorq	\R1, \R1
-#if U0 == 0xFFFFFFFFFFFFFFFF
-	movq	0(\A), \R0
-	negq	\R0
-	movq	\R0 , 0(\A)
-	adcq	$0   , \R1
-#else
-	movq	$U0, %rcx
-
-	movq	0(\A), \R0
-	movq	\R0  , %rax
-	mulq	%rcx
-	movq	%rax , 0(\A)
-	mulq	0(\P)
-	addq	%rax , \R0
-	adcq	%rdx , \R1
-#endif
-	xorq    \R2  , \R2
-	xorq    \R0  , \R0
-	RDCN0	0, 1, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 2, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 3, \R0, \R1, \R2, \A, \P
-	RDCN0	0, 4, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 5, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 6, \R0, \R1, \R2, \A, \P
-	RDCN0	0, 7, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 8, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 9, \R0, \R1, \R2, \A, \P
-	RDCN0	0,10, \R1, \R2, \R0, \A, \P
-	RDCN0	0,11, \R2, \R0, \R1, \A, \P
-	RDCN1	1,11, \R0, \R1, \R2, \A, \P
-	RDCN1	2,11, \R1, \R2, \R0, \A, \P
-	RDCN1	3,11, \R2, \R0, \R1, \A, \P
-	RDCN1	4,11, \R0, \R1, \R2, \A, \P
-	RDCN1	5,11, \R1, \R2, \R0, \A, \P
-	RDCN1	6,11, \R2, \R0, \R1, \A, \P
-	RDCN1	7,11, \R0, \R1, \R2, \A, \P
-	RDCN1	8,11, \R1, \R2, \R0, \A, \P
-	RDCN1	9,11, \R2, \R0, \R1, \A, \P
-	RDCN1	10,11,\R0, \R1, \R2, \A, \P
-	RDCN1	11,11,\R1, \R2, \R0, \A, \P
-	addq	184(\A), \R2
-	movq	\R2, 184(\A)
+.macro MULADD1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, X, T, ZR, M, K
+	mulx	0+\M, \T, \X
+	adox	\T, \Z0
+	adox	\X, \Z1
+	mulx	8+\M, \T, \X
+	adcx	\T, \Z1
+	adox	\X, \Z2
+	mulx	16+\M, \T, \X
+	adcx	\T, \Z2
+	adox	\X, \Z3
+	mulx	24+\M, \T, \X
+	adcx	\T, \Z3
+	adox	\X, \Z4
+	mulx	32+\M, \T, \X
+	adcx	\T, \Z4
+	adox	\X, \Z5
+	mulx	40+\M, \T, \X
+	adcx	\T, \Z5
+	adox	\X, \Z6
+	mulx	48+\M, \T, \X
+	adcx	\T, \Z6
+	adox	\X, \Z7
+	mulx	56+\M, \T, \X
+	adcx	\T, \Z7
+	adox	\X, \Z8
+	mulx	64+\M, \T, \X
+	adcx	\T, \Z8
+	adox	\X, \Z9
+	mulx	72+\M, \T, \X
+	adcx	\T, \Z9
+	adox	\X, \Z10
+	mulx	80+\M, \T, \X
+	adcx	\T, \Z10
+	adox	\X, \Z11
+	mulx	88+\M, \T, \X
+	adcx	\T, \Z11
+	adox	\ZR, \X
 #if FP_PRIME == 768
-	movq	$0, 192(\A)
-	adcq	$0, 192(\A)
+	adcx	\K, \X
+#else
+	adcx	\ZR, \X
 #endif
+.endm
 
-	movq	96(\A), %r11
-	movq	104(\A), %r12
-	movq	112(\A), %r13
-	movq	120(\A), %r14
-	movq	128(\A), %r15
-	movq	136(\A), %rcx
-	movq	144(\A), %rbp
-	movq	152(\A), %rdx
-	movq	160(\A), %r8
-	movq	168(\A), %r9
-	movq	176(\A), %r10
-	movq	184(\A), %rax
-
-	subq	p0(%rip), %r11
-	sbbq	p1(%rip), %r12
-	sbbq	p2(%rip), %r13
-	sbbq	p3(%rip), %r14
-	sbbq	p4(%rip), %r15
-	sbbq	p5(%rip), %rcx
-	sbbq	p6(%rip), %rbp
-	sbbq	p7(%rip), %rdx
-	sbbq	p8(%rip), %r8
-	sbbq	p9(%rip), %r9
-	sbbq	p10(%rip), %r10
-	sbbq	p11(%rip), %rax
+.macro MULRDC1 Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T, ZR, P
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T
+	mulx	0+\P, \T, \T
+	adcx	ones(%rip), \Z0
+	adox	\T, \Z1
+	mulx	8+\P, \T, \Z0
+	adcx	\T, \Z1
+	adox	\Z0, \Z2
+	mulx	16+\P, \T, \Z0
+	adcx	\T, \Z2
+	adox	\Z0, \Z3
+	mulx	24+\P, \T, \Z0
+	adcx	\T, \Z3
+	adox	\Z0, \Z4
+	mulx	32+\P, \T, \Z0
+	adcx	\T, \Z4
+	adox	\Z0, \Z5
+	mulx	40+\P, \T, \Z0
+	adcx	\T, \Z5
+	adox	\Z0, \Z6
+	mulx	48+\P, \T, \Z0
+	adcx	\T, \Z6
+	adox	\Z0, \Z7
+	mulx	56+\P, \T, \Z0
+	adcx	\T, \Z7
+	adox	\Z0, \Z8
+	mulx	64+\P, \T, \Z0
+	adcx	\T, \Z8
+	adox	\Z0, \Z9
+	mulx	72+\P, \T, \Z0
+	adcx	\T, \Z9
+	adox	\Z0, \Z10
+	mulx	80+\P, \T, \Z0
+	adcx	\T, \Z10
+	adox	\Z0, \Z11
+	mulx	88+\P, \T, \Z0
+	adcx	\T, \Z11
+	adox	\Z0, \Z12
+	adcx	\ZR, \Z12
 #if FP_PRIME == 768
-	sbbq	$0, 192(\A)
+	movq	$0, \Z0
+	adox	\ZR, \Z0
+	adcx	\ZR, \Z0
 #endif
+.endm
 
-	cmovc	96(\A), %r11
-	cmovc	104(\A), %r12
-	cmovc	112(\A), %r13
-	cmovc	120(\A), %r14
-	cmovc	128(\A), %r15
-	cmovc	136(\A), %rcx
-	cmovc	144(\A), %rbp
-	cmovc	152(\A), %rdx
-	cmovc	160(\A), %r8
-	cmovc	168(\A), %r9
-	cmovc	176(\A), %r10
-	cmovc	184(\A), %rax
-	movq	%r11,0(\C)
-	movq	%r12,8(\C)
-	movq	%r13,16(\C)
-	movq	%r14,24(\C)
-	movq	%r15,32(\C)
-	movq	%rcx,40(\C)
-	movq	%rbp,48(\C)
-	movq	%rdx,56(\C)
-	movq	%r8,64(\C)
-	movq	%r9,72(\C)
-	movq	%r10,80(\C)
-	movq	%rax,88(\C)
+.macro FINALC V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, C0, D, H
+	movq	\V0, 0+\D
+	movq	\V1, 8+\D
+	movq	\V2, 16+\D
+	movq	\V3, 24+\D
+	movq	\V4, 32+\D
+	movq	\V5, 40+\D
+	movq	\V6, 48+\D
+	movq	\V7, 56+\D
+	movq	\V8, 64+\D
+	movq	\V9, 72+\D
+	movq	\V10, 80+\D
+	movq	\V11, \C0
+	subq	p0(%rip), \V0
+	sbbq	p1(%rip), \V1
+	sbbq	p2(%rip), \V2
+	sbbq	p3(%rip), \V3
+	sbbq	p4(%rip), \V4
+	sbbq	p5(%rip), \V5
+	sbbq	p6(%rip), \V6
+	sbbq	p7(%rip), \V7
+	sbbq	p8(%rip), \V8
+	sbbq	p9(%rip), \V9
+	sbbq	p10(%rip), \V10
+	sbbq	p11(%rip), \C0
+#if FP_PRIME == 768
+	sbbq	$0, \H
+#endif
+	cmovc	0+\D, \V0
+	cmovc	8+\D, \V1
+	cmovc	16+\D, \V2
+	cmovc	24+\D, \V3
+	cmovc	32+\D, \V4
+	cmovc	40+\D, \V5
+	cmovc	48+\D, \V6
+	cmovc	56+\D, \V7
+	cmovc	64+\D, \V8
+	cmovc	72+\D, \V9
+	cmovc	80+\D, \V10
+	cmovc	\V11, \C0
+	movq	\V0, 0+\D
+	movq	\V1, 8+\D
+	movq	\V2, 16+\D
+	movq	\V3, 24+\D
+	movq	\V4, 32+\D
+	movq	\V5, 40+\D
+	movq	\V6, 48+\D
+	movq	\V7, 56+\D
+	movq	\V8, 64+\D
+	movq	\V9, 72+\D
+	movq	\V10, 80+\D
+	movq	\C0, 88+\D
+.endm
+
+.macro RDCSTEP Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T, ZR, P
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, \T
+	mulx	0+\P, \T, \T
+	adcx	ones(%rip), \Z0
+	adox	\T, \Z1
+	mulx	8+\P, \T, \Z0
+	adcx	\T, \Z1
+	adox	\Z0, \Z2
+	mulx	16+\P, \T, \Z0
+	adcx	\T, \Z2
+	adox	\Z0, \Z3
+	mulx	24+\P, \T, \Z0
+	adcx	\T, \Z3
+	adox	\Z0, \Z4
+	mulx	32+\P, \T, \Z0
+	adcx	\T, \Z4
+	adox	\Z0, \Z5
+	mulx	40+\P, \T, \Z0
+	adcx	\T, \Z5
+	adox	\Z0, \Z6
+	mulx	48+\P, \T, \Z0
+	adcx	\T, \Z6
+	adox	\Z0, \Z7
+	mulx	56+\P, \T, \Z0
+	adcx	\T, \Z7
+	adox	\Z0, \Z8
+	mulx	64+\P, \T, \Z0
+	adcx	\T, \Z8
+	adox	\Z0, \Z9
+	mulx	72+\P, \T, \Z0
+	adcx	\T, \Z9
+	adox	\Z0, \Z10
+	mulx	80+\P, \T, \Z0
+	adcx	\T, \Z10
+	adox	\Z0, \Z11
+	mulx	88+\P, \T, \Z0
+	adcx	\T, \Z11
+	adox	\ZR, \Z0
+	adcx	\ZR, \Z0
+.endm
+
+.macro RDCN Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, P
+	RDCSTEP	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, zero(%rip), \P
+	RDCSTEP	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \T0, zero(%rip), \P
+	RDCSTEP	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \T0, zero(%rip), \P
+	RDCSTEP	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \T0, zero(%rip), \P
+	RDCSTEP	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \P
+	RDCSTEP	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \P
+	RDCSTEP	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \P
+	RDCSTEP	\Z7, \Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \P
+	RDCSTEP	\Z8, \Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \P
+	RDCSTEP	\Z9, \Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \P
+	RDCSTEP	\Z10, \Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \P
+	RDCSTEP	\Z11, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \P
+.endm
+
+.macro ADDH Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, H0, H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11
+	addq	\H0, \Z0
+	adcq	\H1, \Z1
+	adcq	\H2, \Z2
+	adcq	\H3, \Z3
+	adcq	\H4, \Z4
+	adcq	\H5, \Z5
+	adcq	\H6, \Z6
+	adcq	\H7, \Z7
+	adcq	\H8, \Z8
+	adcq	\H9, \Z9
+	adcq	\H10, \Z10
+	adcq	\H11, \Z11
+.endm
+
+.macro FP_RDCN_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, T0, P, C0, CP, H
+	movq	0+\A, \Z0
+	movq	8+\A, \Z1
+	movq	16+\A, \Z2
+	movq	24+\A, \Z3
+	movq	32+\A, \Z4
+	movq	40+\A, \Z5
+	movq	48+\A, \Z6
+	movq	56+\A, \Z7
+	movq	64+\A, \Z8
+	movq	72+\A, \Z9
+	movq	80+\A, \Z10
+	movq	88+\A, \Z11
+	xorq	\T0, \T0
+	RDCN	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \T0, \P
+	ADDH	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, 96+\A, 104+\A, 112+\A, 120+\A, 128+\A, 136+\A, 144+\A, 152+\A, 160+\A, 168+\A, 176+\A, 184+\A
+#if FP_PRIME == 768
+	movq	$0, \H
+	adcq	$0, \H
+#endif
+	movq	\CP, \T0
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \C0, 0(\T0), \H
+.endm
+
+.macro SQRN A, O, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1
+	movq	0+\A, %rdx
+	mulx	8+\A, \Z0, \Z1
+	movq	\Z0, 8+\O
+	mulx	16+\A, \T0, \Z2
+	addq	\T0, \Z1
+	movq	\Z1, 16+\O
+	mulx	24+\A, \T0, \Z3
+	adcq	\T0, \Z2
+	mulx	32+\A, \T0, \Z4
+	adcq	\T0, \Z3
+	mulx	40+\A, \T0, \Z5
+	adcq	\T0, \Z4
+	mulx	48+\A, \T0, \Z6
+	adcq	\T0, \Z5
+	mulx	56+\A, \T0, \Z7
+	adcq	\T0, \Z6
+	mulx	64+\A, \T0, \Z8
+	adcq	\T0, \Z7
+	mulx	72+\A, \T0, \Z9
+	adcq	\T0, \Z8
+	mulx	80+\A, \T0, \Z0
+	adcq	\T0, \Z9
+	mulx	88+\A, \T0, \Z1
+	adcq	\T0, \Z0
+	adcq	$0, \Z1
+
+	movq	8+\A, %rdx
+	xorq	\T0, \T0
+	mulx	16+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	movq	\Z2, 24+\O
+	movq	$0, \Z2
+	mulx	24+\A, \T0, \T1
+	adcx	\T0, \Z3
+	adox	\T1, \Z4
+	mulx	32+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	adcq	$0, \Z2
+	movq	\Z3, 32+\O
+
+	movq	16+\A, %rdx
+	xorq	\Z3, \Z3
+	mulx	24+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	32+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	adcq	$0, \Z3
+	movq	\Z4, 40+\O
+	movq	\Z5, 48+\O
+
+	movq	24+\A, %rdx
+	xorq	\Z4, \Z4
+	mulx	32+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z3
+	adox	\T1, \Z4
+	adcq	$0, \Z4
+	movq	\Z6, 56+\O
+	movq	\Z7, 64+\O
+
+	movq	32+\A, %rdx
+	xorq	\Z5, \Z5
+	mulx	40+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z3
+	adox	\T1, \Z4
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	adcq	$0, \Z5
+	movq	\Z8, 72+\O
+	movq	\Z9, 80+\O
+
+	movq	40+\A, %rdx
+	xorq	\Z6, \Z6
+	mulx	48+\A, \T0, \T1
+	adcx	\T0, \Z0
+	adox	\T1, \Z1
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z1
+	adox	\T1, \Z2
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z3
+	adox	\T1, \Z4
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	adcq	$0, \Z6
+	movq	\Z0, 88+\O
+	movq	\Z1, 96+\O
+
+	movq	48+\A, %rdx
+	xorq	\Z7, \Z7
+	mulx	56+\A, \T0, \T1
+	adcx	\T0, \Z2
+	adox	\T1, \Z3
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z3
+	adox	\T1, \Z4
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	adcq	$0, \Z7
+
+	movq	56+\A, %rdx
+	xorq	\Z8, \Z8
+	mulx	64+\A, \T0, \T1
+	adcx	\T0, \Z4
+	adox	\T1, \Z5
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z5
+	adox	\T1, \Z6
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	adcq	$0, \Z8
+
+	movq	64+\A, %rdx
+	xorq	\Z9, \Z9
+	mulx	72+\A, \T0, \T1
+	adcx	\T0, \Z6
+	adox	\T1, \Z7
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z7
+	adox	\T1, \Z8
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	adcq	$0, \Z9
+
+	movq	72+\A, %rdx
+	xorq	\Z0, \Z0
+	mulx	80+\A, \T0, \T1
+	adcx	\T0, \Z8
+	adox	\T1, \Z9
+	mulx	88+\A, \T0, \T1
+	adcx	\T0, \Z9
+	adox	\T1, \Z0
+	adcq	$0, \Z0
+
+	movq	80+\A, %rdx
+	mulx	88+\A, \T0, \Z1
+	addq	\T0, \Z0
+	adcq	$0, \Z1
+
+	movq	0+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	\T0, 0+\O
+	xorq	\T0, \T0
+	movq	8+\O, \T0
+	adcx	\T0, \T0
+	adox	\T1, \T0
+	movq	\T0, 8+\O
+	movq	8+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	16+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 16+\O
+	movq	24+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 24+\O
+	movq	16+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	32+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 32+\O
+	movq	40+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 40+\O
+	movq	24+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	48+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 48+\O
+	movq	56+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 56+\O
+	movq	32+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	64+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 64+\O
+	movq	72+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 72+\O
+	movq	40+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	80+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 80+\O
+	movq	88+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 88+\O
+	movq	48+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	movq	96+\O, %rdx
+	adcx	%rdx, %rdx
+	adox	\T0, %rdx
+	movq	%rdx, 96+\O
+	adcx	\Z2, \Z2
+	adox	\T1, \Z2
+	movq	\Z2, 104+\O
+	movq	56+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	adcx	\Z3, \Z3
+	adox	\T0, \Z3
+	movq	\Z3, 112+\O
+	adcx	\Z4, \Z4
+	adox	\T1, \Z4
+	movq	\Z4, 120+\O
+	movq	64+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	adcx	\Z5, \Z5
+	adox	\T0, \Z5
+	movq	\Z5, 128+\O
+	adcx	\Z6, \Z6
+	adox	\T1, \Z6
+	movq	\Z6, 136+\O
+	movq	72+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	adcx	\Z7, \Z7
+	adox	\T0, \Z7
+	movq	\Z7, 144+\O
+	adcx	\Z8, \Z8
+	adox	\T1, \Z8
+	movq	\Z8, 152+\O
+	movq	80+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	adcx	\Z9, \Z9
+	adox	\T0, \Z9
+	movq	\Z9, 160+\O
+	adcx	\Z0, \Z0
+	adox	\T1, \Z0
+	movq	\Z0, 168+\O
+	movq	88+\A, %rdx
+	mulx	%rdx, \T0, \T1
+	adcx	\Z1, \Z1
+	adox	\T0, \Z1
+	movq	\Z1, 176+\O
+	movq	$0, %rdx
+	adcx	%rdx, %rdx
+	adox	\T1, %rdx
+	movq	%rdx, 184+\O
+.endm
+
+.macro FP_SQR_LOW A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, T0, T1, P, RDC, S, C
+.if \RDC != 1
+	SQRN	\A, 0(%rdi), \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1
+.else
+	SQRN	\A, \S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1
+	FP_RDCN_LOW	\S, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, \T1, %rsi, \P, %rdx, \C, %rdi
+.endif
+.endm
+
+.macro FP_MUL_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, T0, P, RDC, C, K
+#if FP_PRIME == 768
+	movq	$0, \K
+#endif
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z0, 0(\T0)
+.else
+	xorq	\T0, \T0
+	MULRDC1	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z0, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	8+\A, %rdx
+	MULADD1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z1, 8(\T0)
+.else
+	MULRDC1	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z1, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	16+\A, %rdx
+	MULADD1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z2, 16(\T0)
+.else
+	MULRDC1	\Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z2, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	24+\A, %rdx
+	MULADD1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z3, 24(\T0)
+.else
+	MULRDC1	\Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z3, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	32+\A, %rdx
+	MULADD1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z4, 32(\T0)
+.else
+	MULRDC1	\Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z4, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	40+\A, %rdx
+	MULADD1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z5, 40(\T0)
+.else
+	MULRDC1	\Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z5, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	48+\A, %rdx
+	MULADD1	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z6, 48(\T0)
+.else
+	MULRDC1	\Z6, \Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z6, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	56+\A, %rdx
+	MULADD1	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z7, 56(\T0)
+.else
+	MULRDC1	\Z7, \Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z7, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	64+\A, %rdx
+	MULADD1	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z8, 64(\T0)
+.else
+	MULRDC1	\Z8, \Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z8, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	72+\A, %rdx
+	MULADD1	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z9, 72(\T0)
+.else
+	MULRDC1	\Z9, \Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z9, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	80+\A, %rdx
+	MULADD1	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z10, 80(\T0)
+.else
+	MULRDC1	\Z10, \Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \T0, zero(%rip), \P
+#if FP_PRIME == 768
+	movq	\Z10, \K
+#endif
+.endif
+
+	xorq	\T0, \T0
+	movq	88+\A, %rdx
+	MULADD1	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \B, \K
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z11, 88(\T0)
+.else
+	MULRDC1	\Z11, \Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, \T0, zero(%rip), \P
+.endif
+
+.if \RDC != 1
+	movq	\C, \T0
+	movq	\Z12, 96(\T0)
+	movq	\Z0, 104(\T0)
+	movq	\Z1, 112(\T0)
+	movq	\Z2, 120(\T0)
+	movq	\Z3, 128(\T0)
+	movq	\Z4, 136(\T0)
+	movq	\Z5, 144(\T0)
+	movq	\Z6, 152(\T0)
+	movq	\Z7, 160(\T0)
+	movq	\Z8, 168(\T0)
+	movq	\Z9, 176(\T0)
+	movq	\Z10, 184(\T0)
+.else
+	movq	\C, \T0
+	FINALC	\Z12, \Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z7, \Z8, \Z9, \Z10, %rdx, 0(\T0), \Z11
+.endif
 .endm

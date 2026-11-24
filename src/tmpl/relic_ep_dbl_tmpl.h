@@ -36,23 +36,26 @@
 /*============================================================================*/
 
 /**
- * Defines a template for point doubling in affine coordinates.
+ * Defines a template for point doubling in affine coordinates, with and
+ * without returning the slope.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_BASIC_IMP(C, F)											\
-	static void C##_dbl_basic_imp(C##_t r, F##_t s, const C##_t p) {		\
+#define TMPL_EP_DBL_BASIC(C, F)												\
+	void C##_dbl_slp_basic(C##_t r, F##_t s, const C##_t p) {				\
+		/* Points of order two double to infinity, with a vertical tangent. */\
+		if (C##_is_infty(p) || F##_is_zero(p->y)) {							\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2;													\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
+		F##_null_all(t0, t1, t2);											\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
+			F##_new_all(t0, t1, t2);										\
 																			\
 			/* t0 = 1/(2 * y1). */											\
 			F##_dbl(t0, p->y);												\
@@ -87,18 +90,21 @@
 			F##_copy(r->x, t0);												\
 			F##_copy(r->z, p->z);											\
 																			\
-			r->coord = BASIC;												\
+			r->coord = EC_AFFIN;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
+			F##_free_all(t0, t1, t2);										\
 		}																	\
 	}																		\
+																			\
+																			\
+	void C##_dbl_basic(C##_t r, const C##_t p) {							\
+		C##_dbl_slp_basic(r, NULL, p);										\
+	}
 
 /**
- * Defines a template for point tripling in projective coordinates.
+ * Defines a template for point doubling in projective coordinates.
  *
  * Formulas for point doubling from
  * "Complete addition formulas for prime order elliptic curves"
@@ -108,31 +114,23 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_PROJC_IMP(C, F)											\
-	static void C##_dbl_projc_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_DBL_PROJC(C, F)												\
+	void C##_dbl_projc(C##_t r, const C##_t p) {							\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			if (C##_curve_opt_a() == RLC_ZERO) {							\
 				/* Cost of 6M + 2S + 1m_3b + 9a. */							\
 				F##_sqr(t0, p->y);											\
 				F##_mul(t3, p->x, p->y);									\
 																			\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					/* Save 1M + 1S + 1m_b3 if z1 = 1. */					\
 					F##_copy(t1, p->y);										\
 					F##_dbl(t2, C##_curve_get_b());							\
@@ -166,7 +164,7 @@
 																			\
 				if (C##_curve_opt_a() == RLC_MIN3) {						\
 					/* Cost of 8M + 3S + 2mb + 21a. */						\
-					if (p->coord == BASIC) {								\
+					if (p->coord == EC_AFFIN) {								\
 						/* Save 1S + 1m_b + 2a if z1 = 1. */				\
 						F##_set_dig(t2, 3);									\
 						F##_copy(r->y, C##_curve_get_b());					\
@@ -195,7 +193,7 @@
 					F##_sub(t0, t0, t2);									\
 				} else {													\
 					/* Common cost of 8M + 3S + 3m_a + 2m_3b + 15a. */		\
-					if (p->coord == BASIC) {								\
+					if (p->coord == EC_AFFIN) {								\
 						/* Save 1S + 1m_b + 1m_a if z1 = 1. */				\
 						F##_dbl(r->y, C##_curve_get_b());					\
 						F##_add(r->y, r->y, C##_curve_get_b());				\
@@ -235,16 +233,11 @@
 				F##_dbl(r->z, r->z);										\
 				F##_dbl(r->z, r->z);										\
 			}																\
-			r->coord = PROJC;												\
+			r->coord = EC_PROJC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -256,25 +249,21 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_DBL_JACOB_IMP(C, F)											\
-	static void C##_dbl_jacob_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_DBL_JACOB(C, F)												\
+	void C##_dbl_jacob(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
-			if (p->coord != BASIC && C##_curve_opt_a() == RLC_MIN3) {		\
+			if (p->coord != EC_AFFIN && C##_curve_opt_a() == RLC_MIN3) {		\
 				/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */	\
 																			\
 				/* t0 = delta = z1^2. */									\
@@ -362,7 +351,7 @@
 				F##_sqr(t1, p->y);											\
 				F##_sqr(t2, t1);											\
 																			\
-				if (p->coord != BASIC) {									\
+				if (p->coord != EC_AFFIN) {									\
 					/* t3 = z1^2. */										\
 					F##_sqr(t3, p->z);										\
 																			\
@@ -392,7 +381,7 @@
 				/* t5 = M = 3 * x1^2 + a * z1^4. */							\
 				F##_dbl(t5, t0);											\
 				F##_add(t5, t5, t0);										\
-				if (p->coord != BASIC) {									\
+				if (p->coord != EC_AFFIN) {									\
 					F##_sqr(t3, t3);										\
 					C##_curve_mul_a(t1, t3);								\
 					F##_add(t5, t5, t1);									\
@@ -413,18 +402,12 @@
 				F##_sub(r->y, t5, t2);										\
 			}																\
 																			\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\
 		}																	\
 		RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
-	}																		\
-
+	}

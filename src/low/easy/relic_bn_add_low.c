@@ -92,7 +92,7 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	for (size_t i = 0; i < size; i++, a++, b++, c++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
+		carry = ((*a) < (*b)) | (diff < carry);
 		(*c) = r0;
 	}
 	return carry;

@@ -70,10 +70,10 @@
  */
 #ifdef KARATSUBA
 #define T_LINE 16
-#elif (POLY_M4 % WSIZE) > 0
-#define T_LINE	(POLY_M4/WSIZE + 1)
+#elif (POLY_M4 % RLC_WSIZE) > 0
+#define T_LINE	(POLY_M4/RLC_WSIZE + 1)
 #else
-#define T_LINE	(POLY_M4/WSIZE)
+#define T_LINE	(POLY_M4/RLC_WSIZE)
 #endif
 
 /*

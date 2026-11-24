@@ -49,32 +49,53 @@
 
 void gt_rand(gt_t a) {
 	gt_rand_imp(a);
-#if FP_PRIME < 1536
-#if FP_PRIME == 575
-	pp_exp_k48(a, a);
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
-	pp_exp_k24(a, a);
-#elif FP_PRIME == 330 || FP_PRIME == 510 || FP_PRIME == 765 || FP_PRIME == 766
-	pp_exp_k16(a, a);
-#elif FP_PRIME == 354 || FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
-	pp_exp_k18(a, a);
-#elif FP_PRIME == 544
-	pp_exp_k8(a, a);
-#else
-	pp_exp_k12(a, a);
-#endif
-#else
-#if FP_PRIME == 1536
-	pp_exp_k2(a, a);
-#else
-	pp_exp_k1(a, a);
-#endif
-#endif
+	pc_exp(a, a);
 }
 
 void gt_get_gen(gt_t g) {
     gt_copy(g, core_get()->gt_g);
 }
+
+#if FP_PRIME == 318 || (FP_PRIME == 381 && defined(EC_SUPER))
+
+int g1_is_valid(const g1_t a) {
+	g1_t u, v;
+	bn_t d;
+	int r = 0;
+
+	if (g1_is_infty(a)) {
+		return 0;
+	}
+
+	g1_null(u);
+	g1_null(v);
+	bn_null(d);
+
+	RLC_TRY {
+		g1_new(u);
+		g1_new(v);
+		bn_new(d);
+
+		/* The endomorphism psi acts as [p] on the whole curve, so checking
+		 * [p]P == [d]P gives [c * r]P = O in p = d + c * r, and thus [r]P = O
+		 * because the cofactor #E/r is coprime to c. */
+		fp_prime_get_par(d);
+		ep4_mul_basic(u, a, d);
+		ep4_psi(v, a);
+		r = g1_on_curve(a) && (g1_cmp(u, v) == RLC_EQ);
+	} RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		g1_free(u);
+		g1_free(v);
+		bn_free(d);
+	}
+
+	return r;
+}
+
+#else
 
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
@@ -106,7 +127,6 @@ int g1_is_valid(const g1_t a) {
 		} else {
 			fp_prime_get_par(n);
 			switch (ep_curve_is_pairf()) {
-#if defined(EP_ENDOM)
 				/* Formulas from "Co-factor clearing and subgroup membership
 				 * testing on pairing-friendly curves" by El Housni, Guillevic,
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
@@ -242,7 +262,6 @@ int g1_is_valid(const g1_t a) {
 					g1_neg(v, v);
 					r = g1_on_curve(a) && (g1_cmp(a, v) == RLC_EQ);
 					break;
-#endif
 				default:
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
@@ -254,6 +273,7 @@ int g1_is_valid(const g1_t a) {
 			}
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -266,8 +286,11 @@ int g1_is_valid(const g1_t a) {
 	return r;
 }
 
+#endif
+
 int g2_is_valid(const g2_t a) {
-#if FP_PRIME >= 1536
+#if FP_PRIME >= 1536 || FP_PRIME == 318 || \
+	(FP_PRIME == 381 && defined(EC_SUPER))
 	return g1_is_valid(a);
 #else
 	g2_t s, t, u, v, w;
@@ -296,25 +319,16 @@ int g2_is_valid(const g2_t a) {
 
 		fp_prime_get_par(n);
 		switch (ep_curve_is_pairf()) {
-#if defined(EP_ENDOM)
 			/* Formulas from "Co-factor clearing and subgroup membership
 			* testing on pairing-friendly curves" by El Housni, Guillevic,
 			* Piellard. https://eprint.iacr.org/2022/352.pdf */
 			case EP_B12:
 			case EP_B24:
 			case EP_B48:
-				if (core_get()->ep_id == B12_P383) {
-					/* Since p mod n = r, we can check instead that
-					* psi^4(P) + P == \psi^2(P). */
-					g2_frb(u, a, 4);
-					g2_add(u, u, a);
-					g2_frb(v, a, 2);
-				} else {
 				/* Check \psi(P) == [z]P. */
-					fp_prime_get_par(n);
-					g2_mul_any(u, a, n);
-					g2_frb(v, a, 1);
-				}
+				fp_prime_get_par(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, a, 1);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
@@ -432,7 +446,14 @@ int g2_is_valid(const g2_t a) {
 				g2_frb(v, a, 5);
 				r &= g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
-#endif
+			case EP_SG54:
+				/* Check that \psi^11(P) == [3u^2]P, whose kernel in the
+				 * twist over Fp^9 is exactly the subgroup of order r. */
+				ep_curve_frbase(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, a, 11);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
 			default:
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);
@@ -442,7 +463,14 @@ int g2_is_valid(const g2_t a) {
 				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
 		}
+		/* Points of order 2 are never in G_2, which has odd order. The twist
+		 * y^2 = x^3 + ax of the KSS16 curves has (0, 0), where the complete
+		 * formulas for addition fail and both sides of a test above can end
+		 * at infinity, so reject them explicitly. */
+		g2_neg(s, a);
+		r = r && (g2_cmp(s, a) != RLC_EQ);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -499,6 +527,15 @@ int gt_is_valid(const gt_t a) {
 					fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
 				}
+				r &= fp12_test_cyc((void *)a);
+				break;
+			case EP_SS3:
+				/* Check that a^d = a^p, which gives a^(c * r) = 1 in
+				 * p = d + c * r, and thus a^r = 1 because Phi_12(p)/r is
+				 * coprime to c. */
+				gt_frb(u, a, 1);
+				fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp12_test_cyc((void *)a);
 				break;
 			case EP_B24:
@@ -624,26 +661,61 @@ int gt_is_valid(const gt_t a) {
 				r &= fp18_test_cyc((void *)a);
 				break;
 			case EP_SG18:
-				/* Check that 3u*P + 2\psi^2(P) == \psi^5P] and [3]P \eq O. */
+				/* Check that a^(3u) * \psi^2(a)^2 == \psi^5(a). */
 				fp_prime_get_par(n);
 				bn_mul_dig(n, n, 3);
-				gt_exp(u, a, n);
-				r = gt_is_unity(a) == 0;
+				fp18_exp_cyc((void *)u, (void *)a, n);
 				gt_frb(v, a, 2);
 				gt_mul(u, u, v);
 				gt_mul(u, u, v);
 				gt_frb(v, a, 5);
+				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp18_test_cyc((void *)a);
+				break;
+			case EP_SG54:
+				/* Check that a^(3u) * \psi(a) * \psi^10(a) == 1, since
+				 * p^10 + p + 3u = 0 mod r and the gcd of p^10 + p + 3u and
+				 * Phi_54(p) is r. */
+				fp_prime_get_par(n);
+				bn_mul_dig(n, n, 3);
+				fp54_exp_cyc((void *)u, (void *)a, n);
+				gt_frb(v, a, 1);
+				gt_mul(u, u, v);
+				gt_frb(v, v, 9);
+				gt_mul(u, u, v);
+				r = gt_is_unity(u);
+				r &= fp54_test_cyc((void *)a);
+				break;
 			default:
-				/* Common case. */
+				/* Common case. The exponentiation and the inversion assume
+				 * that a is in the cyclotomic subgroup, so test it too. */
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);
 				gt_exp(u, a, n);
 				gt_inv(u, u);
 				r = (gt_cmp(u, a) == RLC_EQ);
+				switch (ep_curve_embed()) {
+					case 2:
+						r &= fp2_test_cyc((void *)a);
+						break;
+					case 8:
+						r &= fp8_test_cyc((void *)a);
+						break;
+					case 12:
+						r &= fp12_test_cyc((void *)a);
+						break;
+				}
 				break;
 		}
+		/* G_T has odd order, so it never holds -1, the only element of order
+		 * 2 in the multiplicative group. Some tests above only check that the
+		 * norm is one, which -1 passes, and rely on the family test to reject
+		 * it. The product is generic, as squarings may assume a cyclotomic
+		 * element. */
+		gt_mul(s, a, a);
+		r = r && !gt_is_unity(s);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
@@ -655,4 +727,40 @@ int gt_is_valid(const gt_t a) {
 	}
 
 	return r;
+}
+
+int g1_read_bin(g1_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Points on the curve may lie outside the subgroup of prime order. */
+	if (!g1_is_infty(a) && !g1_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
+}
+
+int g2_read_bin(g2_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Points on the curve may lie outside the subgroup of prime order. */
+	if (!g2_is_infty(a) && !g2_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
+}
+
+int gt_read_bin(gt_t a, const uint8_t *bin, size_t len) {
+	if (RLC_CAT(RLC_GT_LOWER, read_bin)(a, bin, len) != RLC_OK) {
+		return RLC_ERR;
+	}
+	/* Field elements may lie outside the subgroup of prime order. */
+	if (!gt_is_unity(a) && !gt_is_valid(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+	return RLC_OK;
 }

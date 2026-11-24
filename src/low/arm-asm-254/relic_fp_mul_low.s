@@ -24,9 +24,9 @@
 #include "relic_fp_low.h"
 
 .syntax unified
-.arch armv7e-m
 
 .global fp_muln_low
+.type fp_muln_low, %function
 
 /*============================================================================*/
 /* Uso dos registradores                                                      */
@@ -631,4 +631,4 @@ ADC r3, r3, #0
     STR r5, [r0, #(4*15)]
 
     LDMIA sp!, {r4-r12, r14}
-    MOV pc, lr
+    BX lr

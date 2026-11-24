@@ -24,7 +24,6 @@
 #include "relic_fp_low.h"
 
 .syntax unified
-.arch armv7e-m
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -33,6 +32,7 @@
 .text
 
 .global fp_rdcn_low
+.type fp_rdcn_low, %function
 
 /********************************************************** FP_RDCN_LOW ***********************************************************************/
 
@@ -852,6 +852,6 @@ GREATER_THAN_OR_EQUAL:
 LESS_THAN:
 
 	LDMIA sp!, {r4-r12, r14}
-	MOV pc, lr
+	BX lr
 
 .end

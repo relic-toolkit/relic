@@ -29,35 +29,150 @@
  * @ingroup bn
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .text
 
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_mul1_low)
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
-fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
-	ret
-
-fp_mulm_low:
+cdecl(fp_mul1_low):
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
-	push 	%rbx
+	push	%rbx
 	push	%rbp
-	subq 	$128, %rsp
+	subq	$8, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdi, 0(%rsp)
+	mulxq	0(%rsi), %r8, %rax
+	mulxq	8(%rsi), %r9, %r14
+	addq	%rax, %r9
+	mulxq	16(%rsi), %r10, %rax
+	adcq	%r14, %r10
+	mulxq	24(%rsi), %r11, %r14
+	adcq	%rax, %r11
+	mulxq	32(%rsi), %rcx, %rax
+	adcq	%r14, %rcx
+	mulxq	40(%rsi), %rdi, %r14
+	adcq	%rax, %rdi
+	mulxq	48(%rsi), %r12, %r13
+	adcq	%r14, %r12
+	adcq	$0, %r13
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	movq	%r12, %rax
+	shrdq	$BARS, %r13, %rax
+	movq	$BAR, %rdx
+	mulxq	%rax, %rax, %rdx
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
+	xorq	%rax, %rax
+	stc
+	mulxq	p0(%rip), %rax, %r14
+	notq	%rax
+	adcx	%rax, %r8
+	mulxq	p1(%rip), %rax, %rsi
+	adox	%r14, %rax
+	notq	%rax
+	adcx	%rax, %r9
+	mulxq	p2(%rip), %rax, %r14
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %r10
+	mulxq	p3(%rip), %rax, %rsi
+	adox	%r14, %rax
+	notq	%rax
+	adcx	%rax, %r11
+	mulxq	p4(%rip), %rax, %r14
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %rcx
+	mulxq	p5(%rip), %rax, %rsi
+	adox	%r14, %rax
+	notq	%rax
+	adcx	%rax, %rdi
+	mulxq	p6(%rip), %rax, %r14
+	adox	%rsi, %rax
+	notq	%rax
+	adcx	%rax, %r12
 
-	addq	$128, %rsp
+	.rept 2
+	movq	%r8, %rbp
+	subq	p0(%rip), %rbp
+	movq	%r9, %rbx
+	sbbq	p1(%rip), %rbx
+	movq	%r10, %r15
+	sbbq	p2(%rip), %r15
+	movq	%r11, %r14
+	sbbq	p3(%rip), %r14
+	movq	%rcx, %rsi
+	sbbq	p4(%rip), %rsi
+	movq	%rdi, %rdx
+	sbbq	p5(%rip), %rdx
+	movq	%r12, %rax
+	sbbq	p6(%rip), %rax
+	cmovnc	%rbp, %r8
+	cmovnc	%rbx, %r9
+	cmovnc	%r15, %r10
+	cmovnc	%r14, %r11
+	cmovnc	%rsi, %rcx
+	cmovnc	%rdx, %rdi
+	cmovnc	%rax, %r12
+	.endr
+	movq	0(%rsp), %rax
+
+	movq	%r8, 0(%rax)
+	movq	%r9, 8(%rax)
+	movq	%r10, 16(%rax)
+	movq	%r11, 24(%rax)
+	movq	%rcx, 32(%rax)
+	movq	%rdi, 40(%rax)
+	movq	%r12, 48(%rax)
+
+	addq	$8, %rsp
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+cdecl(fp_muln_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 0
+
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret
+
+cdecl(fp_mulm_low):
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push	%rbx
+	push	%rbp
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MUL_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, p0(%rip), 1
 
 	pop		%rbp
 	pop		%rbx

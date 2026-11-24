@@ -38,8 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
 /**
  * Adds two points represented in affine coordinates on an ordinary binary
  * elliptic curve.
@@ -51,14 +49,10 @@
 static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 	fb_t t0, t1, t2;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
+	fb_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
+		fb_new_all(t0, t1, t2);
 
 		/* t0 = (y1 + y2). */
 		fb_add(t0, p->y, q->y);
@@ -109,24 +103,16 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 			fb_copy(r->x, t2);
 			fb_copy(r->z, p->z);
 
-			r->coord = BASIC;
+			r->coord = EC_AFFIN;
 		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
+		fb_free_all(t0, t1, t2);
 	}
 }
-
-#endif /* EB_ADD == BASIC */
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
-#if defined(EB_MIXED) || !defined(STRIP)
 
 /**
  * Adds a point represented in affine coordinates to a point represented in
@@ -139,25 +125,15 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 	fb_t t0, t1, t2, t3, t4, t5;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
-	fb_null(t3);
-	fb_null(t4);
-	fb_null(t5);
+	fb_null_all(t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
-		fb_new(t3);
-		fb_new(t4);
-		fb_new(t5);
+		fb_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* madd-2005-dl formulas: 7M + 4S + 9add + 1*4 + 3*2. */
 		/* http://www.hyperelliptic.org/EFD/g12o/auto-shortw-lopezdahab-1.html#addition-madd-2005-dl */
 
-		if (p->coord != BASIC) {
+		if (p->coord != EC_AFFIN) {
 			/* A = y1 + y2 * z1^2. */
 			fb_sqr(t0, p->z);
 			fb_mul(t0, t0, q->y);
@@ -181,7 +157,7 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 				eb_set_infty(r);
 			}
 		} else {
-			if (p->coord != BASIC) {
+			if (p->coord != EC_AFFIN) {
 				/* t2 = C = B * z1. */
 				fb_mul(t2, p->z, t1);
 				/* z3 = C^2. */
@@ -247,22 +223,15 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 			fb_add(r->y, r->y, t0);
 		}
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
-		fb_free(t3);
-		fb_free(t4);
-		fb_free(t5);
+		fb_free_all(t0, t1, t2, t3, t4, t5);
 	}
 }
-
-#endif /* EB_MIXED */
 
 /**
  * Adds two points represented in projective coordinates on an ordinary binary
@@ -273,38 +242,18 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
  * @param[in] q					- the second point to add.
  */
 static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
-#if defined(EB_MIXED) && defined(STRIP)
-	/* If code size is a problem, leave only the mixed version. */
-	eb_add_projc_mix(r, p, q);
-#else /* General addition. */
 
-#if defined(EB_MIXED) || !defined(STRIP)
 	/* Test if z2 = 1 only if mixed coordinates are turned on. */
-	if (q->coord == BASIC) {
+	if (q->coord == EC_AFFIN) {
 		eb_add_projc_mix(r, p, q);
 		return;
 	}
-#endif
 	fb_t t0, t1, t2, t3, t4, t5, t6, t7;
 
-	fb_null(t0);
-	fb_null(t1);
-	fb_null(t2);
-	fb_null(t3);
-	fb_null(t4);
-	fb_null(t5);
-	fb_null(t6);
-	fb_null(t7);
+	fb_null_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
-		fb_new(t2);
-		fb_new(t3);
-		fb_new(t4);
-		fb_new(t5);
-		fb_new(t6);
-		fb_new(t7);
+		fb_new_all(t0, t1, t2, t3, t4, t5, t6, t7);
 
 		/* t0 = B = x2 * z1. */
 		fb_mul(t0, q->x, p->z);
@@ -373,31 +322,19 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 			fb_add(r->y, r->y, t7);
 		}
 
-		r->coord = PROJC;
+		r->coord = EC_PROJC;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
-		fb_free(t2);
-		fb_free(t3);
-		fb_free(t4);
-		fb_free(t5);
-		fb_free(t6);
-		fb_free(t7);
+		fb_free_all(t0, t1, t2, t3, t4, t5, t6, t7);
 	}
-#endif
 }
-
-#endif /* EB_ADD == PROJC */
 
 /*============================================================================*/
 	/* Public definitions                                                         */
 /*============================================================================*/
-
-#if EB_ADD == BASIC || !defined(STRIP)
 
 void eb_add_basic(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
@@ -429,7 +366,7 @@ void eb_sub_basic(eb_t r, const eb_t p, const eb_t q) {
 		eb_neg_basic(t, q);
 		eb_add_basic(r, p, t);
 
-		r->coord = BASIC;
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -438,10 +375,6 @@ void eb_sub_basic(eb_t r, const eb_t p, const eb_t q) {
 		eb_free(t);
 	}
 }
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
 
 void eb_add_projc(eb_t r, const eb_t p, const eb_t q) {
 	if (eb_is_infty(p)) {
@@ -480,5 +413,3 @@ void eb_sub_projc(eb_t r, const eb_t p, const eb_t q) {
 		eb_free(t);
 	}
 }
-
-#endif

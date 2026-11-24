@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 void fp2_rdcn_low(fp2_t c, dv2_t a) {
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	fp_rdcn_low(c[0], a[0]);
 	fp_rdcn_low(c[1], a[1]);
 #else
@@ -48,7 +48,7 @@ void fp2_rdcn_low(fp2_t c, dv2_t a) {
 }
 
 void fp3_rdcn_low(fp3_t c, dv3_t a) {
-#if FP_RDC == MONTY
+#if FP_RDC == FP_MONTY
 	fp_rdcn_low(c[0], a[0]);
 	fp_rdcn_low(c[1], a[1]);
 	fp_rdcn_low(c[2], a[2]);

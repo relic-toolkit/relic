@@ -32,6 +32,62 @@
 #include "relic_core.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Multiplies c by z^(-e/2) for y = z^e, where z is the root of unity of order
+ * 2^f, as in "Computing square roots faster than the Tonelli-Shanks/Bernstein
+ * algorithm" by Sarkar, with windows of w = RLC_WIDTH bits from the bottom.
+ * Window i has y = z^(e_i * 2^(wi) + ...), so y^(2^(f - w(i + 1))) is the
+ * e_i-th power of z^(2^(f - w)), found by scanning its powers in constant
+ * time. Each bit t of e_i * 2^(wi) then multiplies c by z^(-2^(t - 1)) and y
+ * by z^(-2^t), which removes it. A last window of w' < w bits finds its digit
+ * times 2^(w - w'). Bit 0 is zero for a square, and a non-square gives a wrong
+ * c that the caller rejects.
+ *
+ * @param[in,out] c			- the element to correct.
+ * @param[in,out] y			- the power of z, destroyed.
+ * @param[in] f				- the 2-adicity of p - 1.
+ */
+static void fp_srt_win(fp_t c, fp_t y, int f) {
+	ctx_t *ctx = core_get();
+	fp_t t;
+
+	fp_null(t);
+
+	RLC_TRY {
+		fp_new(t);
+
+		for (int i = 0; i < f; i += RLC_WIDTH) {
+			int bits = RLC_MIN(RLC_WIDTH, f - i);
+			dig_t k = 0;
+
+			fp_copy(t, y);
+			for (int j = 0; j < f - i - bits; j++) {
+				fp_sqr(t, t);
+			}
+			/* dv_equ_sec() gives RLC_EQ = 0 on a match, and RLC_NE else. */
+			for (dig_t j = 0; j < (1 << RLC_WIDTH); j++) {
+				k |= j & ((dig_t)(dv_equ_sec(t, ctx->srt_tab[j],
+					RLC_FP_DIGS) / RLC_NE) - 1);
+			}
+			k >>= RLC_WIDTH - bits;
+			for (int j = (i == 0); j < bits; j++) {
+				fp_mul(t, c, ctx->srt_pow[i + j - 1]);
+				fp_copy_sec(c, t, (k >> j) & 1);
+				fp_mul(t, y, ctx->srt_pow[i + j]);
+				fp_copy_sec(y, t, (k >> j) & 1);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(t);
+	}
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -40,24 +96,21 @@ int fp_is_sqr(const fp_t a) {
 		return 1;
 	}
 	
-	return (fp_smb(a) == 1);
+	return (fp_smb2(a) == 1);
 }
 
 int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
 	fp_t t0, t1, t2, t3;
 	int f = 0, r = 0;
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 	const dig_t *srt = (const dig_t *)fp_prime_get_srt();
 #else
 	const fp_t srt = (fp_t)fp_prime_get_srt();
 #endif
 
 	bn_null(e);
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
+	fp_null_all(t0, t1, t2, t3);
 
 	if (fp_is_zero(a)) {
 		fp_zero(c);
@@ -66,10 +119,7 @@ int fp_srt(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		bn_new(e);
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
+		fp_new_all(t0, t1, t2, t3);
 
 		/* Make e = p. */
 		e->used = RLC_FP_DIGS;
@@ -103,12 +153,19 @@ int fp_srt(fp_t c, const fp_t a) {
 				bn_rsh(e, e, 1);
 				fp_exp(t0, a, e);
 
-				/* Recover 2^f-root of unity, and continue algorithm. */
-				fp_copy(t3, srt);
-
 				fp_sqr(t1, t0);
 				fp_mul(t1, t1, a);
 				fp_mul(c, t0, a);
+				if (f >= RLC_FP_SRT_MIN && f <= RLC_FP_SRT_MAX) {
+					fp_srt_win(c, t1, f);
+					fp_neg(t0, c);
+					fp_copy_sec(c, t0, fp_is_even(c) == 0);
+					break;
+				}
+
+				/* Recover 2^f-root of unity, and continue algorithm. */
+				fp_copy(t3, srt);
+
 				for (int j = f; j > 1; j--) {
 					fp_copy(t2, t1);
 					for (int i = 1; i < j - 1; i++) {
@@ -127,14 +184,12 @@ int fp_srt(fp_t c, const fp_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(e);
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
+		fp_free_all(t0, t1, t2, t3);
 	}
 	return r;
 }

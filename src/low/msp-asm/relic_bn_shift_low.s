@@ -31,8 +31,10 @@ back:
     dec r13
     jmp back
 skip:
+    /* Return the bit shifted out, kept in the top of r10. */
+    clr r15
     rla r10
-    rlc r10
+    rlc r15
     pop r11
     pop r10
     ret

@@ -35,16 +35,16 @@
 #include "relic_bench.h"
 
 static void memory1(void) {
-	g1_t a[BENCH];
+	g1_t a[RLC_BENCH];
 
 	BENCH_FEW("g1_null", g1_null(a[i]), 1);
 
 	BENCH_FEW("g1_new", g1_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g1_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g1_new(a[i]);
 	}
 	BENCH_FEW("g1_free", g1_free(a[i]), 1);
@@ -54,7 +54,7 @@ static void memory1(void) {
 
 static void util1(void) {
 	g1_t p, q;
-	uint8_t bin[2 * RLC_PC_BYTES + 1];
+	uint8_t bin[RLC_G1_BYTES];
 	int l;
 
 	g1_null(p);
@@ -148,6 +148,9 @@ static void util1(void) {
 		g1_write_bin(bin, l, p, 1);
 		BENCH_ADD(g1_read_bin(p, bin, l));
 	} BENCH_END;
+
+	g1_free(p);
+	g1_free(q);
 }
 
 static void arith1(void) {
@@ -283,6 +286,7 @@ static void arith1(void) {
 
 	g1_free(p);
 	g1_free(q);
+	g1_free(r);
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
@@ -292,16 +296,16 @@ static void arith1(void) {
 }
 
 static void memory2(void) {
-	g2_t a[BENCH];
+	g2_t a[RLC_BENCH];
 
 	BENCH_FEW("g2_null", g2_null(a[i]), 1);
 
 	BENCH_FEW("g2_new", g2_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g2_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		g2_new(a[i]);
 	}
 	BENCH_FEW("g2_free", g2_free(a[i]), 1);
@@ -311,7 +315,7 @@ static void memory2(void) {
 
 static void util2(void) {
 	g2_t p, q;
-	uint8_t bin[16 * RLC_PC_BYTES + 1];
+	uint8_t bin[18 * RLC_PC_BYTES + 1];
 	int l;
 
 	g2_null(p);
@@ -551,6 +555,7 @@ static void arith2(void) {
 
 	g2_free(p);
 	g2_free(q);
+	g2_free(r);
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
@@ -560,16 +565,16 @@ static void arith2(void) {
 }
 
 static void memory(void) {
-	gt_t a[BENCH];
+	gt_t a[RLC_BENCH];
 
 	BENCH_FEW("gt_null", gt_null(a[i]), 1);
 
 	BENCH_FEW("gt_new", gt_new(a[i]), 1);
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		gt_free(a[i]);
 	}
 
-	for (int i = 0; i < BENCH; i++) {
+	for (int i = 0; i < RLC_BENCH; i++) {
 		gt_new(a[i]);
 	}
 	BENCH_FEW("gt_free", gt_free(a[i]), 1);
@@ -579,7 +584,7 @@ static void memory(void) {
 
 static void util(void) {
 	gt_t a, b;
-	uint8_t bin[48 * RLC_PC_BYTES];
+	uint8_t bin[54 * RLC_PC_BYTES];
 	int l;
 
 	gt_null(a);
@@ -761,6 +766,14 @@ static void pairing(void) {
 	g1_t p[AGGS];
 	g2_t q[AGGS];
 	gt_t r;
+#ifdef RLC_PC_FIX
+	RLC_CAT(RLC_PC_FIELD, t) t[2 * RLC_PC_TABLE];
+
+	for (size_t i = 0; i < 2 * RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, null)(t[i]);
+		RLC_CAT(RLC_PC_FIELD, new)(t[i]);
+	}
+#endif
 
 	for (size_t i = 0; i < AGGS; i++) {
 		g1_null(p[i]);
@@ -791,6 +804,60 @@ static void pairing(void) {
 		BENCH_ADD(pc_map_sim(r, p, q, AGGS));
 	}
 	BENCH_END;
+
+#ifdef RLC_PC_FIX
+	BENCH_RUN("pc_map_pre") {
+		g2_rand(q[0]);
+		BENCH_ADD(pc_map_pre(t, q[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_fix") {
+		g2_rand(q[0]);
+		pc_map_pre(t, q[0]);
+		g1_rand(p[0]);
+		BENCH_ADD(pc_map_fix(r, p[0], t));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_sim (2)") {
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		BENCH_ADD(pc_map_sim(r, p, q, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_sim_fix (1 + 1)") {
+		RLC_CAT(RLC_PC_FIELD, t) *u[1] = { t };
+
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		pc_map_pre(t, q[1]);
+		BENCH_ADD(pc_map_sim_fix(r, p, q, 1, p + 1, u, 1));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pc_map_sim_fix (0 + 2)") {
+		RLC_CAT(RLC_PC_FIELD, t) *u[2] = { t, t + RLC_PC_TABLE };
+
+		for (size_t i = 0; i < 2; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		pc_map_pre(t, q[0]);
+		pc_map_pre(t + RLC_PC_TABLE, q[1]);
+		BENCH_ADD(pc_map_sim_fix(r, NULL, NULL, 0, p, u, 2));
+	}
+	BENCH_END;
+
+	for (size_t i = 0; i < 2 * RLC_PC_TABLE; i++) {
+		RLC_CAT(RLC_PC_FIELD, free)(t[i]);
+	}
+#endif
 
 	for (size_t i = 0; i < AGGS; i++) {
 		g1_free(p[i]);

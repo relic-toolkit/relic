@@ -54,28 +54,31 @@
 /*============================================================================*/
 
 /**
- * Encrypts with AES in CBC mode.
+ * Encrypts with AES in CBC mode and PKCS#7 padding. The ciphertext has
+ * (in_len / RLC_BC_LEN + 1) * RLC_BC_LEN bytes.
  *
  * @param[out] out			- the resulting ciphertext.
  * @param[in,out] out_len	- the buffer capacity and number of bytes written.
  * @param[in] in			- the bytes to be encrypted.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] key			- the key.
- * @param[in] key_len		- the key size in bytes.
+ * @param[in] key_len		- the key size in bytes, 16, 24 or 32.
+ * @param[in] iv			- the initialization vector of RLC_BC_LEN bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int bc_aes_cbc_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
 		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv);
 
 /**
- * Decrypts with AES in CBC mode.
+ * Decrypts with AES in CBC mode and PKCS#7 padding.
  *
  * @param[out] out			- the resulting plaintext.
  * @param[in,out] out_len	- the buffer capacity and number of bytes written.
  * @param[in] in			- the bytes to be decrypted.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] key			- the key.
- * @param[in] key_len		- the key size in bytes.
+ * @param[in] key_len		- the key size in bytes, 16, 24 or 32.
+ * @param[in] iv			- the initialization vector of RLC_BC_LEN bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int bc_aes_cbc_dec(uint8_t *out, size_t *out_len, const uint8_t *in,

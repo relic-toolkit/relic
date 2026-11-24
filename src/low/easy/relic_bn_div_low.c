@@ -40,7 +40,8 @@
 
 void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
 		size_t sb) {
-	int norm, i, n, t, sd;
+	int norm, i, n, t;
+	size_t sd;
 	dig_t carry, t1[3], t2[3];
 	/* Make backup copies of operands and adjust pointers. */
 	dig_t *x = RLC_ALLOCA(dig_t, sa + 1), *y = RLC_ALLOCA(dig_t, sa + 1);
@@ -86,7 +87,7 @@ void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
-		if (i > sa) {
+		if ((size_t)i > sa) {
 			continue;
 		}
 

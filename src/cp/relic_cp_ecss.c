@@ -60,8 +60,9 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	bn_t n, k, x, r;
 	ec_t p;
-	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
+	uint8_t hash[RLC_MD_LEN], buf[RLC_FC_BYTES];
+	const uint8_t *in[2] = { msg, buf };
+	size_t lens[2] = { len, RLC_FC_BYTES };
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -76,37 +77,39 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		bn_new(x);
 		bn_new(r);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
-		do {
-			bn_rand_mod(k, n);
-			ec_mul_gen(p, k);
-			ec_get_x(x, p);
-			bn_mod(r, x, n);
-		} while (bn_is_zero(r));
-
-		memcpy(m, msg, len);
-		bn_write_bin(m + len, RLC_FC_BYTES, r);
-		md_map(hash, m, len + RLC_FC_BYTES);
-
-		if (8 * RLC_MD_LEN > bn_bits(n)) {
-			len = RLC_CEIL(bn_bits(n), 8);
-			bn_read_bin(e, hash, len);
-			bn_rsh(e, e, 8 * RLC_MD_LEN - bn_bits(n));
+		if (bn_sign(d) == RLC_NEG || bn_is_zero(d) || bn_cmp(d, n) != RLC_LT) {
+			/* The private key must be in [1, n - 1]. */
+			result = RLC_ERR;
 		} else {
-			bn_read_bin(e, hash, RLC_MD_LEN);
+			do {
+				bn_rand_mod(k, n);
+				ec_mul_gen(p, k);
+				ec_get_x(x, p);
+				bn_mod(r, x, n);
+			} while (bn_is_zero(r));
+
+			bn_write_bin(buf, RLC_FC_BYTES, r);
+			md_map_lot(hash, in, lens, 2);
+
+			if (8 * RLC_MD_LEN > bn_bits(n)) {
+				len = RLC_CEIL(bn_bits(n), 8);
+				bn_read_bin(e, hash, len);
+				/* Keep the leftmost bits of the hash, as many as in n. */
+				bn_rsh(e, e, 8 * len - bn_bits(n));
+			} else {
+				bn_read_bin(e, hash, RLC_MD_LEN);
+			}
+
+			bn_mod(e, e, n);
+
+			bn_mul(s, d, e);
+			bn_mod(s, s, n);
+			bn_sub(s, n, s);
+			bn_add(s, s, k);
+			bn_mod(s, s, n);
 		}
-
-		bn_mod(e, e, n);
-
-		bn_mul(s, d, e);
-		bn_mod(s, s, n);
-		bn_sub(s, n, s);
-		bn_add(s, s, k);
-		bn_mod(s, s, n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -117,7 +120,6 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 		bn_free(x);
 		bn_free(r);
 		ec_free(p);
-		RLC_FREE(m);
 	}
 	return result;
 }
@@ -125,8 +127,9 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	bn_t n, ev, rv;
 	ec_t p;
-	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
+	uint8_t hash[RLC_MD_LEN], buf[RLC_FC_BYTES];
+	const uint8_t *in[2] = { msg, buf };
+	size_t lens[2] = { len, RLC_FC_BYTES };
 	int result = 0;
 
 	bn_null(n);
@@ -139,27 +142,27 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		bn_new(ev);
 		bn_new(rv);
 		ec_new(p);
-		if (m == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 
 		ec_curve_get_ord(n);
 
-		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s)) {
+		/* The key at infinity would let anyone produce valid signatures, and
+		 * a key outside the group of prime order makes them malleable. */
+		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s) &&
+				ec_is_valid(q)) {
 			if (bn_cmp(e, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				ec_mul_sim_gen(p, s, q, e);
 				ec_get_x(rv, p);
 
 				bn_mod(rv, rv, n);
 
-				memcpy(m, msg, len);
-				bn_write_bin(m + len, RLC_FC_BYTES, rv);
-				md_map(hash, m, len + RLC_FC_BYTES);
+				bn_write_bin(buf, RLC_FC_BYTES, rv);
+				md_map_lot(hash, in, lens, 2);
 
 				if (8 * RLC_MD_LEN > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(ev, hash, len);
-					bn_rsh(ev, ev, 8 * RLC_MD_LEN - bn_bits(n));
+					/* Keep the leftmost bits of the hash, as many as in n. */
+					bn_rsh(ev, ev, 8 * len - bn_bits(n));
 				} else {
 					bn_read_bin(ev, hash, RLC_MD_LEN);
 				}
@@ -176,6 +179,7 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -183,7 +187,6 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 		bn_free(ev);
 		bn_free(rv);
 		ec_free(p);
-		RLC_FREE(m);
 	}
 	return result;
 }

@@ -43,20 +43,21 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 	uint8_t digest[RLC_MD_LEN];
 
 	bn_null(k);
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	RLC_TRY {
 		bn_new(k);
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, RLC_MD_LEN));
+		/* Longer digests fill more bits than the field has. */
+		bn_mod_2b(k, k, RLC_FB_BITS);
 		fb_set_dig(p->z, 1);
 
 		while (1) {
-			dv_copy(p->x, k->dp, RLC_FB_DIGS);
+			fb_zero(p->x);
+			dv_copy(p->x, k->dp, RLC_MIN(k->used, RLC_FB_DIGS));
 
 			eb_rhs(t1, p->x);
 
@@ -75,7 +76,7 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 				fb_mul(p->y, t1, p->x);
 				fb_set_dig(p->z, 1);
 
-				p->coord = BASIC;
+				p->coord = EC_AFFIN;
 				break;
 			}
 		}
@@ -92,7 +93,6 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 	}
 	RLC_FINALLY {
 		bn_free(k);
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }

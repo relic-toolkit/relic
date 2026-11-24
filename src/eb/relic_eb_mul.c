@@ -31,677 +31,107 @@
 
 #include "relic_core.h"
 #include "relic_fb_low.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_MUL == LWNAF || !defined(STRIP)
-
-#if defined(EB_KBLTZ)
-
 /**
- * Multiplies a binary elliptic curve point by an integer using the w-TNAF
- * method.
+ * Combines the accumulators of a right-to-left w-NAF method, computing
+ * R = sum_i (2i + 1) * T[i] as T[0] + 2 * sum_{i >= 1} S[i], where
+ * S[i] = sum_{j >= i} T[j]. The accumulators are overwritten.
  *
  * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
+ * @param[in,out] t				- the accumulators.
  */
-static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t tnaf[RLC_FB_BITS + 8], u;
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
+static void eb_mul_odd_sum(eb_t r, eb_t *t) {
+	int i;
 
-	if (eb_curve_opt_a() == RLC_ZERO) {
-		u = -1;
-	} else {
-		u = 1;
+	eb_set_infty(r);
+	for (i = (1 << (RLC_WIDTH - 2)) - 1; i > 0; i--) {
+		eb_add(t[i - 1], t[i - 1], t[i]);
+		eb_add(r, r, t[i]);
 	}
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		eb_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-TNAF representation of k. */
-		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
-
-		n = tnaf[l - 1];
-		if (n > 0) {
-			eb_copy(r, t[n / 2]);
-		} else {
-			eb_neg(r, t[-n / 2]);
-		}
-
-		for (i = l - 2; i >= 0; i--) {
-			eb_frb(r, r);
-
-			n = tnaf[i];
-			if (n > 0) {
-				eb_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				eb_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
+	eb_dbl(r, r);
+	eb_add(r, r, t[0]);
 }
 
-#endif
-
-#if defined(EB_PLAIN)
-
 /**
- * Multiplies a binary elliptic curve point by an integer using the
- * left-to-right w-NAF method.
+ * Multiplies a point on a Koblitz curve by a small element
+ * alpha = b + g * tau of Z[tau], using the tau-adic NAF of alpha.
  *
  * @param[out] r 				- the result.
  * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
+ * @param[in] b					- the integer part of alpha.
+ * @param[in] g					- the coefficient of tau in alpha.
+ * @param[in] u					- the parameter mu of the curve.
  */
-static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
+static void eb_mul_alpha(eb_t r, const eb_t p, int b, int g, int u) {
+	int8_t d[2 * RLC_WIDTH + 4];
+	int c, l = 0;
 
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-			fb_set_dig(t[i]->z, 1);
-			t[i]->coord = BASIC;
+	/* Compute the tau-adic NAF of alpha, least significant digit first. */
+	while (b != 0 || g != 0) {
+		d[l] = 0;
+		if (b & 1) {
+			d[l] = 2 - ((b - 2 * g) & 3);
+			b -= d[l];
 		}
-
-		/* Compute the precomputation table. */
-		eb_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		n = naf[l - 1];
-		if (n > 0) {
-			eb_copy(r, t[n / 2]);
-		}
-
-		for (i = l - 2; i >= 0; i--) {
-			eb_dbl(r, r);
-
-			n = naf[i];
-			if (n > 0) {
-				eb_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				eb_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-#endif /* EB_PLAIN */
-#endif /* EB_MUL == LWNAF */
-
-#if EB_MUL == RWNAF || !defined(STRIP)
-
-#if defined(EB_KBLTZ)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-TNAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t tnaf[RLC_FB_BITS + 8], u;
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	if (eb_curve_opt_a() == RLC_ZERO) {
-		u = -1;
-	} else {
-		u = 1;
+		/* Divide by tau, using tau^2 = mu * tau - 2. */
+		c = b / 2;
+		b = g + u * c;
+		g = -c;
+		l++;
 	}
 
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-		}
-
-		/* Compute the w-TNAF representation of k. */
-		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
-
+	/* Evaluate the expansion with Horner's rule. */
+	if (d[l - 1] > 0) {
 		eb_copy(r, p);
-		for (i = 0; i < l; i++) {
-			n = tnaf[i];
-			if (n > 0) {
-				eb_add(t[n / 2], t[n / 2], r);
-			}
-			if (n < 0) {
-				eb_sub(t[-n / 2], t[-n / 2], r);
-			}
-
-			/* We can avoid a function call here. */
-			fb_sqr(r->x, r->x);
-			fb_sqr(r->y, r->y);
-		}
-
-		eb_copy(r, t[0]);
-
-#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
-#endif
-
-#if RLC_WIDTH == 3
-		eb_frb(t[0], t[1]);
-		if (u == 1) {
-			eb_sub(t[1], t[1], t[0]);
-		} else {
-			eb_add(t[1], t[1], t[0]);
-		}
-#endif
-
-#if RLC_WIDTH == 4
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-#endif
-
-#if RLC_WIDTH == 5
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		eb_frb(t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == 1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[4], t[0], t[4]);
-
-		eb_frb(t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_sub(t[5], t[0], t[5]);
-
-		eb_frb(t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		eb_frb(t[0], t[7]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-#endif
-
-#if RLC_WIDTH == 6
-		eb_frb(t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[1]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[1], t[0], t[1]);
-
-		eb_frb(t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[2]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		eb_frb(t[0], t[3]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[3]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[3], t[0], t[3]);
-
-		eb_frb(t[0], t[4]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[4]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[4], t[0], t[4]);
-
-		eb_frb(t[0], t[5]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[5], t[0], t[5]);
-
-		eb_frb(t[0], t[6]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[6]);
-		eb_neg(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		eb_frb(t[0], t[7]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-
-		eb_frb(t[0], t[8]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[8], t[0], t[8]);
-
-		eb_frb(t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[0], t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_sub(t[0], t[0], t[9]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[9]);
-		eb_neg(t[9], t[0]);
-
-		eb_frb(t[0], t[10]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[0], t[0], t[10]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[10], t[0], t[10]);
-
-		eb_frb(t[0], t[11]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[11], t[0], t[11]);
-
-		eb_frb(t[0], t[12]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_add(t[12], t[0], t[12]);
-
-		eb_frb(t[0], t[13]);
-		eb_frb(t[0], t[0]);
-		eb_add(t[0], t[0], t[13]);
-		eb_neg(t[13], t[0]);
-
-		eb_frb(t[0], t[14]);
-		eb_frb(t[0], t[0]);
-		eb_neg(t[0], t[0]);
-		eb_add(t[14], t[0], t[14]);
-
-		eb_frb(t[0], t[15]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		eb_frb(t[0], t[0]);
-		if (u == -1) {
-			eb_neg(t[0], t[0]);
-		}
-		eb_sub(t[15], t[0], t[15]);
-#endif
-
-#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
-#endif
-
-		/* Add accumulators */
-		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
-			if (r->coord == BASIC) {
-				eb_add(r, t[i], r);
-			} else {
-				eb_add(r, r, t[i]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
+	} else {
+		eb_neg(r, p);
 	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
+	for (l -= 2; l >= 0; l--) {
+		eb_frb(r, r);
+		if (d[l] > 0) {
+			eb_add(r, r, p);
+		}
+		if (d[l] < 0) {
+			eb_sub(r, r, p);
 		}
 	}
 }
-
-#endif /* EB_KBLTZ */
-
-#if defined(EB_PLAIN)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the
- * right-to-left w-NAF method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (RLC_WIDTH - 2)];
-	size_t l;
-
-	RLC_TRY {
-		/* Prepare the accumulator table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_null(t[i]);
-			eb_new(t[i]);
-			eb_set_infty(t[i]);
-		}
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		eb_copy(r, p);
-		for (i = 0; i < l; i++) {
-			n = naf[i];
-			if (n > 0) {
-				eb_add(t[n / 2], t[n / 2], r);
-			}
-			if (n < 0) {
-				eb_sub(t[-n / 2], t[-n / 2], r);
-			}
-
-			eb_dbl(r, r);
-		}
-
-		eb_copy(r, t[0]);
-
-#if RLC_WIDTH >= 3
-		/* Compute 3 * T[1]. */
-		eb_dbl(t[0], t[1]);
-		eb_add(t[1], t[0], t[1]);
-#endif
-#if RLC_WIDTH >= 4
-		/* Compute 5 * T[2]. */
-		eb_dbl(t[0], t[2]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[2], t[0], t[2]);
-
-		/* Compute 7 * T[3]. */
-		eb_dbl(t[0], t[3]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[3], t[0], t[3]);
-#endif
-#if RLC_WIDTH >= 5
-		/* Compute 9 * T[4]. */
-		eb_dbl(t[0], t[4]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[4], t[0], t[4]);
-
-		/* Compute 11 * T[5]. */
-		eb_dbl(t[0], t[5]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[0], t[0], t[5]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[5], t[0], t[5]);
-
-		/* Compute 13 * T[6]. */
-		eb_dbl(t[0], t[6]);
-		eb_add(t[0], t[0], t[6]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_add(t[6], t[0], t[6]);
-
-		/* Compute 15 * T[7]. */
-		eb_dbl(t[0], t[7]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[7], t[0], t[7]);
-#endif
-#if RLC_WIDTH == 6
-		for (i = 8; i < 15; i++) {
-			eb_mul_dig(t[i], t[i], 2 * i + 1);
-		}
-		eb_dbl(t[0], t[15]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_dbl(t[0], t[0]);
-		eb_sub(t[15], t[0], t[15]);
-#endif
-
-		/* Add accumulators */
-		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
-			if (r->coord == BASIC) {
-				eb_add(r, t[i], r);
-			} else {
-				eb_add(r, r, t[i]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		eb_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the accumulator table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_free(t[i]);
-		}
-	}
-}
-
-#endif /* EB_PLAIN */
-#endif /* EB_MUL == RWNAF */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EB_MUL == BASIC || !defined(STRIP)
-
-void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
-	eb_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
-	size_t l;
-
-	eb_null(t);
-
-	if (bn_is_zero(k) || eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		eb_new(t);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_BUFFER);
-		}
-
-		l = bn_bits(k) + 1;
-		bn_rec_naf(naf, &l, k, 2);
-		eb_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
-			eb_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				eb_add(t, t, p);
-			} else if (u < 0) {
-				eb_sub(t, t, p);
-			}
-		}
-
-		eb_norm(r, t);
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-		RLC_FREE(naf);
-	}
-}
-
-#endif
-
-#if EB_MUL == LODAH || !defined(STRIP)
+TMPL_EC_MUL_BASIC(eb);
 
 void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
 	bn_t t, n;
 	size_t bits;
+	eb_t q;
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-	bn_null(n);
-	bn_null(t);
-	dv_null(x1);
-	dv_null(z1);
-	dv_null(x2);
-	dv_null(z2);
-	dv_null(r1);
-	dv_null(r2);
-	dv_null(r3);
-	dv_null(r4);
-	dv_null(r5);
+	eb_null(q);
+	bn_null_all(n, t);
+	dv_null_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(t);
-		dv_new(x1);
-		dv_new(z1);
-		dv_new(x2);
-		dv_new(z2);
-		dv_new(r1);
-		dv_new(r2);
-		dv_new(r3);
-		dv_new(r4);
-		dv_new(r5);
+		/* The ladder needs the input point in affine coordinates. */
+		eb_new(q);
+		eb_norm(q, p);
+		bn_new_all(n, t);
+		dv_new_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 
-		fb_sqr(z2, p->x);
+		fb_sqr(z2, q->x);
 		fb_sqr(x2, z2);
 		dv_zero(r5, 2 * RLC_FB_DIGS);
 
@@ -709,7 +139,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		eb_curve_get_ord(n);
 		bits = bn_bits(n);
 
-		bn_abs(t, k);
+		bn_mod(t, k, n);
 		bn_add(t, t, n);
 		bn_add(n, t, n);
 		dv_swap_sec(t->dp, n->dp, RLC_MAX(t->used, n->used),
@@ -732,7 +162,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Blind both points indebendently. */
 		fb_rand(z1);
-		fb_mul(x1, z1, p->x);
+		fb_mul(x1, z1, q->x);
 		fb_rand(r1);
 		fb_mul(z2, z2, r1);
 		fb_mul(x2, x2, r1);
@@ -746,7 +176,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			dv_swap_sec(x1, x2, RLC_FB_DIGS, j ^ 1);
 			dv_swap_sec(z1, z2, RLC_FB_DIGS, j ^ 1);
 			fb_sqr(z1, r3);
-			fb_muln_low(r1, z1, p->x);
+			fb_muln_low(r1, z1, q->x);
 			fb_addd_low(x1, r1, r4, 2 * RLC_FB_DIGS);
 			fb_rdcn_low(x1, x1);
 			fb_sqr(r1, z2);
@@ -784,17 +214,17 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			eb_set_infty(r);
 		} else {
 			if (fb_is_zero(z2)) {
-				fb_copy(r->x, p->x);
-				fb_add(r->y, p->x, p->y);
+				fb_copy(r->x, q->x);
+				fb_add(r->y, q->x, q->y);
 				fb_set_dig(r->z, 1);
 			} else {
 				/* r3 = z1 * z2. */
 				fb_mul(r3, z1, z2);
 				/* z1 = (x1 + x * z1). */
-				fb_mul(z1, z1, p->x);
+				fb_mul(z1, z1, q->x);
 				fb_add(z1, z1, x1);
 				/* z2 = x * z2. */
-				fb_mul(z2, z2, p->x);
+				fb_mul(z2, z2, q->x);
 				/* x1 = x1 * z2. */
 				fb_mul(x1, x1, z2);
 				/* z2 = (x2 + x * z2)(x1 + x * z1). */
@@ -802,24 +232,24 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				fb_mul(z2, z2, z1);
 
 				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1). */
-				fb_sqr(r4, p->x);
-				fb_add(r4, r4, p->y);
+				fb_sqr(r4, q->x);
+				fb_add(r4, r4, q->y);
 				fb_mul(r4, r4, r3);
 				fb_add(r4, r4, z2);
 
 				/* r3 = (z1 * z2 * x)^{-1}. */
-				fb_mul(r3, r3, p->x);
+				fb_mul(r3, r3, q->x);
 				fb_inv(r3, r3);
 				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1) * r3. */
 				fb_mul(r4, r4, r3);
 				/* x2 = x1 * x * z2 * (z1 * z2 * x)^{-1} = x1/z1. */
 				fb_mul(x2, x1, r3);
 				/* z2 = x + x1/z1. */
-				fb_add(z2, x2, p->x);
+				fb_add(z2, x2, q->x);
 
 				/* z2 = z2 * r4 + y. */
 				fb_mul(z2, z2, r4);
-				fb_add(z2, z2, p->y);
+				fb_add(z2, z2, q->y);
 
 				fb_copy(r->x, x2);
 				fb_copy(r->y, z2);
@@ -827,87 +257,184 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-		r->coord = BASIC;
-		if (bn_sign(k) == RLC_NEG) {
-			eb_neg(r, r);
-		}
+		r->coord = EC_AFFIN;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(t);
-		dv_free(x1);
-		dv_free(z1);
-		dv_free(x2);
-		dv_free(z2);
-		dv_free(r1);
-		dv_free(r2);
-		dv_free(r3);
-		dv_free(r4);
-		dv_free(r5);
+		eb_free(q);
+		bn_free_all(n, t);
+		dv_free_all(x1, z1, x2, z2, r1, r2, r3, r4, r5);
 	}
 }
-
-#endif /* EB_MUL == LODAH */
-
-#if EB_MUL == LWNAF || !defined(STRIP)
 
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
+	int i, d, kbltz = eb_curve_is_kbltz();
+	int8_t u, naf[RLC_FB_BITS + 8];
+	eb_t t[1 << (RLC_WIDTH - 2)];
+	bn_t n, _k;
+	size_t l;
+
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-#if defined(EB_KBLTZ)
-	if (eb_curve_is_kbltz()) {
-		eb_mul_ltnaf_imp(r, p, k);
-		return;
+	bn_null_all(n, _k);
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		eb_null(t[i]);
 	}
-#endif
 
-#if defined(EB_PLAIN)
-	eb_mul_lnaf_imp(r, p, k);
-#endif
+	RLC_TRY {
+		bn_new_all(n, _k);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_new(t[i]);
+		}
+
+		/* Reduce the scalar to bound the length of its recoding. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		/* Compute the precomputation table. */
+		eb_tab(t, p, RLC_WIDTH);
+
+		/* Compute the w-TNAF or w-NAF representation of k. */
+		l = sizeof(naf);
+		if (kbltz) {
+			u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+			bn_rec_tnaf(naf, &l, _k, u, RLC_FB_BITS, RLC_WIDTH);
+		} else {
+			bn_rec_naf(naf, &l, _k, RLC_WIDTH);
+		}
+
+		eb_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			/* The Frobenius map replaces doubling on Koblitz curves. */
+			if (kbltz) {
+				eb_frb(r, r);
+			} else {
+				eb_dbl(r, r);
+			}
+
+			d = naf[i];
+			if (d > 0) {
+				eb_add(r, r, t[d / 2]);
+			}
+			if (d < 0) {
+				eb_sub(r, r, t[-d / 2]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		eb_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_free(t[i]);
+		}
+	}
 }
-
-#endif
-
-#if EB_MUL == RWNAF || !defined(STRIP)
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
+	size_t i;
+	int d, kbltz = eb_curve_is_kbltz();
+	int8_t u, naf[RLC_FB_BITS + 8];
+	int8_t beta[1 << (RLC_WIDTH - 2)], gama[1 << (RLC_WIDTH - 2)];
+	uint8_t t_w;
+	eb_t t[1 << (RLC_WIDTH - 2)];
+	bn_t n, _k;
+	size_t l;
+
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-#if defined(EB_KBLTZ)
-	if (eb_curve_is_kbltz()) {
-		eb_mul_rtnaf_imp(r, p, k);
-		return;
+	bn_null_all(n, _k);
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		eb_null(t[i]);
 	}
-#endif
 
-#if defined(EB_PLAIN)
-#if defined(EB_MIXED) && defined(STRIP)
-	/* It is impossible to run a right-to-left algorithm using ordinary curves
-	 * and only mixed additions. */
-	RLC_THROW(ERR_NO_CONFIG);
-#else
-	eb_mul_rnaf_imp(r, p, k);
-#endif
-#endif
+	RLC_TRY {
+		bn_new_all(n, _k);
+		/* Prepare the accumulator table. */
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_new(t[i]);
+			eb_set_infty(t[i]);
+		}
+
+		/* Reduce the scalar to bound the length of its recoding. */
+		eb_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		/* Compute the w-TNAF or w-NAF representation of k. */
+		u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
+		l = sizeof(naf);
+		if (kbltz) {
+			bn_rec_tnaf(naf, &l, _k, u, RLC_FB_BITS, RLC_WIDTH);
+		} else {
+			bn_rec_naf(naf, &l, _k, RLC_WIDTH);
+		}
+
+		/* The method needs the input point in affine coordinates. */
+		eb_norm(r, p);
+		for (i = 0; i < l; i++) {
+			d = naf[i];
+			if (d > 0) {
+				eb_add(t[d / 2], t[d / 2], r);
+			}
+			if (d < 0) {
+				eb_sub(t[-d / 2], t[-d / 2], r);
+			}
+
+			/* The Frobenius map replaces doubling on Koblitz curves, and
+			 * only squares the coordinates of an affine point. */
+			if (kbltz) {
+				fb_sqr(r->x, r->x);
+				fb_sqr(r->y, r->y);
+			} else {
+				eb_dbl(r, r);
+			}
+		}
+
+		if (kbltz) {
+			/* Multiply each accumulator by its representative alpha. */
+			bn_rec_tnaf_get(&t_w, beta, gama, u, RLC_WIDTH);
+			for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
+				eb_copy(r, t[i]);
+				eb_mul_alpha(t[i], r, beta[i], gama[i], u);
+			}
+			/* Add the accumulators. */
+			eb_copy(r, t[0]);
+			for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
+				eb_add(r, r, t[i]);
+			}
+		} else {
+			eb_mul_odd_sum(r, t);
+		}
+		/* Convert r to affine coordinates. */
+		eb_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, _k);
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			eb_free(t[i]);
+		}
+	}
 }
 
-#endif
-
-#if EB_MUL == HALVE || !defined(STRIP)
-
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
-	int i, j, trc, cof;
+	int i, j, cof;
+	dig_t trc;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
-	eb_t q, s, t[1 << (RLC_WIDTH - 2)];
+	eb_t a, q, s, t[1 << (RLC_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
 	size_t l;
@@ -917,27 +444,20 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
-	bn_null(m);
-	bn_null(n);
-	eb_null(q);
-	eb_null(s);
+	bn_null_all(m, n);
+	eb_null_all(a, q, s);
 	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t[i]);
 	}
-	fb_null(u);
-	fb_null(v);
-	fb_null(w);
-	fb_null(z);
+	fb_null_all(u, v, w, z);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-		eb_new(q);
-		eb_new(s);
-		fb_new(u);
-		fb_new(v);
-		fb_new(w);
-		fb_new(z);
+		/* The method needs the input point in affine coordinates. */
+		eb_new(a);
+		eb_norm(a, p);
+		bn_new_all(n, m);
+		eb_new_all(q, s);
+		fb_new_all(u, v, w, z);
 
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
@@ -955,12 +475,12 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		bn_rec_naf(naf, &l, m, RLC_WIDTH);
 
 		if (naf[bn_bits(n)] == 1) {
-			eb_dbl(t[0], p);
+			eb_dbl(t[0], a);
 		}
 		l = bn_bits(n);
 		_k = naf + l - 1;
 
-		eb_copy(q, p);
+		eb_copy(q, a);
 		eb_curve_get_cof(n);
 
 		/* Test if curve has a cofactor bigger than 2. */
@@ -1012,7 +532,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 					fb_mul(w, w, z);
 					fb_srt(s->x, w);
 					fb_set_dig(s->z, 1);
-					s->coord = HALVE;
+					s->coord = EC_HALVE;
 				}
 				eb_copy(q, s);
 			}
@@ -1031,22 +551,8 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-#if RLC_WIDTH == 2
-		eb_norm(r, t[0]);
-#else
-		/* Compute Q_i = Q_i + Q_{i+2} for i from 2^{w-1}-3 to 1. */
-		for (i = (1 << (RLC_WIDTH - 1)) - 3; i >= 1; i -= 2) {
-			eb_add(t[i / 2], t[i / 2], t[(i + 2) / 2]);
-		}
-		/* Compute R = Q_1 + 2 * sum_{i != 1}Q_i. */
-		eb_copy(r, t[1]);
-		for (i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
-			eb_add(r, r, t[i]);
-		}
-		eb_dbl(r, r);
-		eb_add(r, r, t[0]);
+		eb_mul_odd_sum(r, t);
 		eb_norm(r, r);
-#endif
 
 		/* We may need to fix an error of a 2-torsion point if the curve has a
 		 * 4-cofactor. */
@@ -1069,68 +575,16 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
-		bn_free(n);
-		bn_free(m);
-		eb_free(q);
-		eb_free(s);
-		fb_free(u);
-		fb_free(v);
-		fb_free(w);
-		fb_free(z);
+		bn_free_all(n, m);
+		eb_free_all(a, q, s);
+		fb_free_all(u, v, w, z);
 	}
 }
 
-#endif
-
-void eb_mul_gen(eb_t r, const bn_t k) {
 #ifdef EB_PRECO
-	eb_mul_fix(r, eb_curve_get_tab(), k);
+TMPL_EC_MUL_GEN(eb, preco);
 #else
-	eb_t g;
-
-	eb_null(g);
-
-	RLC_TRY {
-		eb_new(g);
-		eb_curve_get_gen(g);
-		eb_mul(r, g, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(g);
-	}
+TMPL_EC_MUL_GEN(eb, plain);
 #endif
-}
 
-void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
-	eb_t t;
-
-	if (k == 0 || eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	eb_null(t);
-
-	RLC_TRY {
-		eb_new(t);
-
-		eb_copy(t, p);
-		for (int i = util_bits_dig(k) - 2; i >= 0; i--) {
-			eb_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
-				eb_add(t, t, p);
-			}
-		}
-
-		eb_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		eb_free(t);
-	}
-}
+TMPL_EC_MUL_DIG(eb);

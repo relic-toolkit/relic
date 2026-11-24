@@ -61,15 +61,10 @@
 #define RLC_BN_DIGS		((size_t)RLC_CEIL(BN_PRECI, RLC_DIG))
 
 /**
- * Size in digits of a block sufficient to store a multiple precision integer.
+ * Size in digits of a block sufficient to store a multiple precision integer,
+ * including the result of a multiplication.
  */
-#if BN_MAGNI == DOUBLE
 #define RLC_BN_SIZE		((size_t)(2 * RLC_BN_DIGS + 2))
-#elif BN_MAGNI == CARRY
-#define RLC_BN_SIZE		((size_t)(RLC_BN_DIGS + 1))
-#elif BN_MAGNI == SINGLE
-#define RLC_BN_SIZE		((size_t)RLC_BN_DIGS)
-#endif
 
 /**
  * Positive sign of a multiple precision integer.
@@ -99,10 +94,10 @@ typedef struct {
 	size_t used;
 	/** The sign of this multiple precision integer. */
 	int sign;
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 	/** The sequence of contiguous digits that forms this integer. */
 	rlc_align dig_t dp[RLC_BN_SIZE];
 #endif
@@ -111,14 +106,10 @@ typedef struct {
 /**
  * Pointer to a multiple precision integer structure.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef bn_st bn_t[1];
-#elif ALLOC == DYNAMIC
-#ifdef CHECK
-typedef bn_st *volatile bn_t;
-#else
+#elif RLC_ALLOC == RLC_DYNAMIC
 typedef bn_st *bn_t;
-#endif
 #endif
 
 /**
@@ -139,7 +130,7 @@ typedef struct {
 	bn_t qi;
 } crt_st;
 
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 typedef crt_st crt_t[1];
 #else
 typedef crt_st *crt_t;
@@ -154,9 +145,9 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
-#if ALLOC == AUTO
+#if RLC_ALLOC == RLC_AUTO
 #define bn_null(A)			/* empty */
-#elif ALLOC == DYNAMIC
+#elif RLC_ALLOC == RLC_DYNAMIC
 #define bn_null(A)			A = NULL;
 #endif
 
@@ -166,7 +157,7 @@ typedef crt_st *crt_t;
  * @param[in,out] A			- the multiple precision integer to initialize.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new(A)															\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if ((A) == NULL) {														\
@@ -174,7 +165,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, RLC_BN_SIZE);												\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new(A)															\
 	bn_make(A, RLC_BN_SIZE);												\
 
@@ -190,7 +181,7 @@ typedef crt_st *crt_t;
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  *							by the library.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_new_size(A, D)													\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if (A == NULL) {														\
@@ -198,7 +189,7 @@ typedef crt_st *crt_t;
 	}																		\
 	bn_make(A, D);															\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_new_size(A, D)													\
 	bn_make(A, D);															\
 
@@ -209,7 +200,7 @@ typedef crt_st *crt_t;
  *
  * @param[in,out] A			- the multiple precision integer to free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define bn_free(A)															\
 	if (A != NULL) {														\
 		bn_clean(A);														\
@@ -217,10 +208,22 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define bn_free(A)			/* empty */										\
 
 #endif
+
+/**
+ * Initializes, allocates or frees up to sixteen multiple precision integers
+ * at once, in order.
+ *
+ * @param[in,out] ...		- the multiple precision integers.
+ */
+/** @{ */
+#define bn_null_all(...)	RLC_EACH(bn_null, __VA_ARGS__)
+#define bn_new_all(...)		RLC_EACH(bn_new, __VA_ARGS__)
+#define bn_free_all(...)	RLC_EACH(bn_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Initializes a Chinese Remainder Theorem (CRT) moduli set with a null value.
@@ -234,7 +237,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the new CRT moduli set.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_new(A)															\
 	A = (crt_t)calloc(1, sizeof(crt_st));									\
 	if (A == NULL) {														\
@@ -247,7 +250,7 @@ typedef crt_st *crt_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_new(A)															\
 	bn_new((A)->n);															\
 	bn_new((A)->dp);														\
@@ -263,7 +266,7 @@ typedef crt_st *crt_t;
  *
  * @param[out] A			- the CRT moduli set to clean and free.
  */
-#if ALLOC == DYNAMIC
+#if RLC_ALLOC == RLC_DYNAMIC
 #define crt_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->n);													\
@@ -276,7 +279,7 @@ typedef crt_st *crt_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == AUTO
+#elif RLC_ALLOC == RLC_AUTO
 #define crt_free(A)				/* empty */
 
 #endif
@@ -290,9 +293,9 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_mul(C, A, B)		bn_mul_karat(C, A, B)
-#elif BN_MUL == BASIC
+#elif BN_MUL == BN_BASIC
 #define bn_mul(C, A, B)		bn_mul_basic(C, A, B)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mul(C, A, B)		bn_mul_comba(C, A, B)
 #endif
 
@@ -304,11 +307,11 @@ typedef crt_st *crt_t;
  */
 #if BN_KARAT > 0
 #define bn_sqr(C, A)		bn_sqr_karat(C, A)
-#elif BN_SQR == BASIC
+#elif BN_SQR == BN_BASIC
 #define bn_sqr(C, A)		bn_sqr_basic(C, A)
-#elif BN_SQR == COMBA
+#elif BN_SQR == BN_COMBA
 #define bn_sqr(C, A)		bn_sqr_comba(C, A)
-#elif BN_SQR == MULTP
+#elif BN_SQR == BN_MULTP
 #define bn_sqr(C, A)		bn_mul(C, A, A)
 #endif
 
@@ -319,14 +322,12 @@ typedef crt_st *crt_t;
  * @param[out] U			- the result.
  * @param[in] M				- the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_pre(U, M)	(void)(U), (void)(M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_pre(U, M)	bn_mod_pre_barrt(U, M)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_pre(U, M)	bn_mod_pre_monty(U, M)
-#elif BN_MOD == PMERS
-#define bn_mod_pre(U, M)	bn_mod_pre_pmers(U, M)
 #endif
 
 /**
@@ -352,14 +353,12 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the auxiliar value derived from the modulus.
  */
-#if BN_MOD == BASIC
+#if BN_MOD == BN_BASIC
 #define bn_mod_imp(C, A, M, U)	bn_mod_basic(C, A, M)
-#elif BN_MOD == BARRT
+#elif BN_MOD == BN_BARRT
 #define bn_mod_imp(C, A, M, U)	bn_mod_barrt(C, A, M, U)
-#elif BN_MOD == MONTY
+#elif BN_MOD == BN_MONTY
 #define bn_mod_imp(C, A, M, U)	bn_mod_monty(C, A, M, U)
-#elif BN_MOD == PMERS
-#define bn_mod_imp(C, A, M, U)	bn_mod_pmers(C, A, M, U)
 #endif
 
 /**
@@ -371,9 +370,9 @@ typedef crt_st *crt_t;
  * @param[in] M				- the modulus.
  * @param[in] U				- the reciprocal of the modulus.
  */
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_basic(C, A, M, U)
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 #define bn_mod_monty(C, A, M, U)	bn_mod_monty_comba(C, A, M, U)
 #endif
 
@@ -386,14 +385,15 @@ typedef crt_st *crt_t;
  * @param[in] A				- the basis.
  * @param[in] B				- the exponent.
  * @param[in] M				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
-#if BN_MXP == BASIC
+#if BN_MXP == BN_BASIC
 #define bn_mxp(C, A, B, M)	bn_mxp_basic(C, A, B, M)
-#elif BN_MXP == SLIDE
+#elif BN_MXP == BN_SLIDE
 #define bn_mxp(C, A, B, M)	bn_mxp_slide(C, A, B, M)
-#elif BN_MXP == MONTY
+#elif BN_MXP == BN_MONTY
 #define bn_mxp(C, A, B, M)	bn_mxp_monty(C, A, B, M)
-#elif BN_MXP == LOWER
+#elif BN_MXP == BN_LOWER
 #define bn_mxp(C, A, B, M)	bn_mxp_lower(C, A, B, M)
 #endif
 
@@ -405,13 +405,13 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd(C, A, B)		bn_gcd_basic(C, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd(C, A, B)		bn_gcd_lower(C, A, B)
 #endif
 
@@ -426,29 +426,24 @@ typedef crt_st *crt_t;
  * @param[in] A				- the first multiple precision integer.
  * @param[in] B				- the second multiple precision integer.
  */
-#if BN_GCD == BASIC
+#if BN_GCD == BN_BASIC
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_basic(C, D, E, A, B)
-#elif BN_GCD == LEHME
+#elif BN_GCD == BN_LEHME
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
-#elif BN_GCD == BINAR
+#elif BN_GCD == BN_BINAR
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
-#elif BN_GCD == LOWER
+#elif BN_GCD == BN_LOWER
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lower(C, D, E, A, B)
 #endif
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number. Safe and strong primes have their own
+ * functions, for the callers that need them.
  *
  * @param[out] A			- the result.
  * @param[in] B				- the length of the number in bits.
  */
-#if BN_GEN == BASIC
 #define bn_gen_prime(A, B)	bn_gen_prime_basic(A, B)
-#elif BN_GEN == SAFEP
-#define bn_gen_prime(A, B)	bn_gen_prime_safep(A, B)
-#elif BN_GEN == STRON
-#define bn_gen_prime(A, B)	bn_gen_prime_stron(A, B)
-#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -744,7 +739,8 @@ void bn_write_bin(uint8_t *bin, size_t len, const bn_t a);
 size_t bn_size_raw(const bn_t a);
 
 /**
- * Reads a positive multiple precision integer from a digit vector.
+ * Reads a positive multiple precision integer from a digit vector, in constant
+ * time for a fixed length of the vector.
  *
  * @param[out] a			- the result.
  * @param[in] raw			- the digit vector.
@@ -753,7 +749,8 @@ size_t bn_size_raw(const bn_t a);
 void bn_read_raw(bn_t a, const dig_t *raw, size_t len);
 
 /**
- * Writes a positive multiple precision integer to a byte vector.
+ * Writes the absolute value of a multiple precision integer to a digit vector
+ * of len digits, padded with zeros, in constant time for a fixed len.
  *
  * @param[out] raw			- the digit vector.
  * @param[in] len			- the buffer capacity.
@@ -811,6 +808,15 @@ void bn_add(bn_t c, const bn_t a, const bn_t b);
 void bn_add_dig(bn_t c, const bn_t a, dig_t b);
 
 /**
+ * Adds a signed digit to a multiple precision integer. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer.
+ * @param[in] b				- the signed digit to add.
+ */
+void bn_add_dis(bn_t c, const bn_t a, dis_t b);
+
+/**
  * Subtracts a multiple precision integer from another, that is, computes
  * c = a - b.
  *
@@ -828,6 +834,16 @@ void bn_sub(bn_t c, const bn_t a, const bn_t b);
  * @param[in] b				- the digit to subtract.
  */
 void bn_sub_dig(bn_t c, const bn_t a, const dig_t b);
+
+/**
+ * Subtracts a signed digit from a multiple precision integer.
+ * Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer.
+ * @param[in] b				- the signed digit to subtract.
+ */
+void bn_sub_dis(bn_t c, const bn_t a, dis_t b);
 
 /**
  * Multiplies a multiple precision integer by a digit. Computes c = a * b.
@@ -1054,10 +1070,22 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
  *
  * @param[out] c			- the results.
  * @param[in] a				- the elements to invert.
- * param[in] b				- the modulus.
+ * @param[in] b				- the modulus.
  * @param[in] n				- the number of elements.
  */
 void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
+
+/**
+ * Computes the modular inverse of a multiple precision integer modulo n = pq
+ * from its inverses modulo p and q, which is cheaper than inverting modulo n.
+ * Computes c such that a*c mod n = 1.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to invert.
+ * @param[in] crt			- the modulus and its factors, with qi = q^(-1) mod p.
+ * @throw ERR_NO_VALID		- if the operands are not co-prime.
+ */
+void bn_mod_inv_crt(bn_t c, const bn_t a, const crt_t crt);
 
 /**
  * Reduces a multiple precision integer modulo a power of 2. Computes
@@ -1179,8 +1207,8 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the binary method. The modulus may be even, which the other methods do not
- * accept, as they reduce by an algorithm that needs an odd one.
+ * the binary method. Unlike the other methods, it takes an even modulus, which
+ * it reduces with Barrett reduction.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1191,26 +1219,28 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the sliding window method. An even modulus is handed to bn_mxp_basic, as the
- * window needs a reduction that takes an odd one.
+ * the sliding window method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the constant-time Montgomery powering ladder method. An even modulus is
- * handed to bn_mxp_basic, which is not constant time, as the ladder needs a
- * reduction that takes an odd one.
+ * the Montgomery powering ladder method. With the gmp-sec backend and
+ * Montgomery reduction, it runs in constant time in the exponent, revealing
+ * only its number of digits; other backends have variable-time low-level
+ * arithmetic.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
@@ -1222,6 +1252,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
@@ -1233,6 +1264,7 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
@@ -1258,18 +1290,22 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
  * @param[in] a				- the elements to exponentiate.
  * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 		const bn_t m);
 
 /**
- * Exponentiates simultaneously up to 8 integers modulo a positive integer
- * using generalized Shamir's trick. Computes c = \prod a_i^{b_i} mod m.
+ * Exponentiates simultaneously up to RLC_BASES integers (8 by default) modulo
+ * a positive integer using generalized Shamir's trick. Computes
+ * c = \prod a_i^{b_i} mod m.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the elements to exponentiate.
  * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
+ * @param[in] n				- the number of elements, at most RLC_BASES.
+ * @throw ERR_NO_VALID		- if the modulus is even or n > RLC_BASES.
  */
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n);
@@ -1283,6 +1319,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
  * @param[in] b				- the integer scalars.
  * @param[in] m				- the modulus.
  * @param[in] n				- the number of elements to multiply.
+ * @throw ERR_NO_VALID		- if the modulus is even.
  */
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n);
@@ -1295,7 +1332,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
  *
  * @throw ERR_NO_VALID		- if the argument is negative.
  */
-void bn_srt(bn_t c, bn_t a);
+void bn_srt(bn_t c, const bn_t a);
 
 /**
  * Computes a square root of an integer modulo an odd prime, by the algorithm of
@@ -1306,7 +1343,8 @@ void bn_srt(bn_t c, bn_t a);
  * @param[in] a				- the integer to extract the root of.
  * @param[in] b				- the odd prime modulus.
  * @return a boolean value indicating whether a square root exists.
- * @throw ERR_NO_VALID		- if the modulus is even, negative or below three.
+ * @throw ERR_NO_VALID		- if the modulus is even, negative or below three, or
+ * 							has no quadratic non-residue where a prime would.
  */
 int bn_srt_mod(bn_t c, const bn_t a, const bn_t b);
 
@@ -1516,6 +1554,16 @@ int bn_is_prime_rabin(const bn_t a);
 int bn_is_prime_solov(const bn_t a);
 
 /**
+ * Tests if a number is prime using the Fermat test to base two. A single
+ * exponentiation rejects most composites, but some pass, so a number accepted
+ * by this test should be confirmed by another one.
+ *
+ * @param[in] a				- the number to test.
+ * @return 1 if a is a probable prime, 0 otherwise.
+ */
+int bn_is_prime_fermt(const bn_t a);
+
+/**
  * Tests if a number a > 2 is a strong Lucas probable prime, with the
  * parameters chosen by Selfridge's method A.
  *
@@ -1544,18 +1592,19 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len);
 
 /**
- * Generates a probable prime number.
+ * Generates a probable prime number with the top two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 2.
  */
 void bn_gen_prime_basic(bn_t a, size_t bits);
 
 /**
- * Generates a probable prime number a with (a - 1)/2 also prime.
+ * Generates a probable prime number a with (a - 1)/2 also prime and the top
+ * two bits set.
  *
  * @param[out] a			- the result.
- * @param[in] bits			- the length of the number in bits.
+ * @param[in] bits			- the length of the number in bits, at least 16.
  */
 void bn_gen_prime_safep(bn_t a, size_t bits);
 
@@ -1569,6 +1618,22 @@ void bn_gen_prime_safep(bn_t a, size_t bits);
 void bn_gen_prime_stron(bn_t a, size_t bits);
 
 /**
+ * Generates the probable primes u, 2u + 1, ..., p = 2^(len - 1) * (u + 1) - 1,
+ * a Cunningham chain of the first kind of a given length. The top two bits of
+ * p are set, so that the product of two such primes has exactly the sum of
+ * their lengths. Candidates for u are taken in windows of consecutive odd
+ * integers, those with a term divisible by a small prime are sieved out, and
+ * the terms of the rest pass a Fermat test before the full primality test.
+ *
+ * @param[out] p			- the last term of the chain.
+ * @param[out] u			- the first term of the chain, or NULL.
+ * @param[in] bits			- the length of p in bits, at least 16 when len > 1.
+ * @param[in] len			- the number of primes in the chain, at least one.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int bn_gen_prime_chain(bn_t p, bn_t u, size_t bits, size_t len);
+
+/**
  * Generates a probable prime number b, with (b-1) divisible by a probable large
  * prime a.
  *
@@ -1576,14 +1641,16 @@ void bn_gen_prime_stron(bn_t a, size_t bits);
  * @param[out] b			- the prime result b.
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
 /**
- * Compute the next prime q strictly greater than p.
+ * Computes the smallest probable prime q strictly greater than p, with
+ * consecutive candidates sieved by small primes before they are tested.
  *
  * @param[out] q			- the result.
- * @param[in] p				- the starting prime.
+ * @param[in] p				- the starting integer.
  */
 void bn_next_prime(bn_t q, const bn_t p);
 
@@ -1711,6 +1778,22 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w);
 
 /**
+ * Recodes a nonnegative integer in fixed-length base 2^(w - 1), with each digit
+ * zero or of the sign of the digit at the same position of a regular recoding,
+ * as for sign-aligned multi-scalar multiplication. If a negative integer is
+ * given instead, its absolute value is taken.
+ *
+ * @param[out] b			- the recoded integer.
+ * @param[in] len			- the number of digits, as in the regular recoding.
+ * @param[in] k				- the integer to recode.
+ * @param[in] a				- the regular recoding that gives the signs.
+ * @param[in] w				- the window size in bits.
+ * @throw ERR_NO_VALID		- if the integer does not fit the digits.
+ */
+void bn_rec_aln(int8_t *b, size_t len, const bn_t k, const int8_t *a,
+		size_t w);
+
+/**
  * Recodes of a pair of positive integers in Joint Sparse Form. If negative
  * integers are given instead, takes their absolute value.
  *
@@ -1723,9 +1806,22 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w);
 void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l);
 
 /**
- * Recodes a positive integer into two parts k0,k1 such that k = k0 + phi(k1),
- * where phi is an efficient curve endomorphism. If a negative integer is
- * given instead, its absolute value is taken.
+ * Precomputes the constant for the constant-time divisions by a small m of
+ * integers of the length of n in the Frobenius decomposition modulo n, that
+ * is, floor(2^(2 * d * RLC_DIG + t) / |m|) for n of d digits and m of t bits.
+ *
+ * @param[out] u			- the constant.
+ * @param[in] m				- the divisor.
+ * @param[in] n				- the modulus of the decompositions.
+ * @throw ERR_NO_VALID		- if the divisor is zero.
+ */
+void bn_rec_pre(bn_t u, const bn_t m, const bn_t n);
+
+/**
+ * Recodes an integer into two parts k0,k1 such that k = k0 + phi(k1) modulo
+ * the group order n, where phi is an efficient curve endomorphism. The
+ * recoding runs in constant time for |k| < n, and larger integers are first
+ * reduced modulo n in variable time.
  *
  * @param[out] k0			- the first part of the result.
  * @param[out] k1			- the second part of the result.
@@ -1738,17 +1834,21 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 		const bn_st *v2);
 
 /**
- * Recodes a scalar in subscalars according to Frobenius endomorphism.
+ * Recodes a scalar in subscalars according to Frobenius endomorphism. The
+ * recoding runs in constant time for scalars below the group order n in
+ * absolute value, and larger scalars are first reduced modulo n in variable
+ * time.
  *
  * @param[out] ki			- the recoded subscalars.
  * @param[in] sub			- the number of subscalars.
  * @param[in] k				- the scalar to recode.
  * @param[in] x				- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
+ * @param[in] u				- the constant from bn_rec_pre() for x and n.
  * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  */
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
-	int cof);
+	const bn_st *u, int cof);
 
 /**
  * Recodes subscalars in the signed aligned column representation..
@@ -1779,15 +1879,43 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
- * Evaluates an interpolated n-degree polynomial over a value in a modular way,
- * given the (n+1) coefficients of the polynomial and the modulus.
- * Computes c = a(x) mod q.
+ * Precomputes the barycentric weights of a set of distinct abscissas for
+ * Lagrange interpolation modulo a prime.
+ * Computes w_j = 1 / \prod_{m != j}(a_j - a_m) mod b.
+ *
+ * @param[out] w			- the weights.
+ * @param[in] a				- the abscissas.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of abscissas.
+ * @throw ERR_NO_VALID		- if two abscissas are equal modulo b.
+ */
+void bn_lag_pre(bn_t *w, const bn_t *a, const bn_t b, size_t n);
+
+/**
+ * Computes the Lagrange coefficients at a point from precomputed barycentric
+ * weights, so that the polynomial through (a_j, y_j) evaluates at x to
+ * \sum_j c_j y_j. Computes c_j = w_j \prod_{m != j}(x - a_m) mod b.
+ *
+ * @param[out] c			- the coefficients, distinct from a and w.
+ * @param[in] x				- the point of evaluation.
+ * @param[in] a				- the abscissas.
+ * @param[in] w				- the weights of the abscissas.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of abscissas.
+ */
+void bn_lag_fix(bn_t *c, const bn_t x, const bn_t *a, const bn_t *w,
+		const bn_t b, size_t n);
+
+/**
+ * Evaluates a polynomial at a value in a modular way, given its n
+ * coefficients and the modulus.
+ * Computes c = a(x) mod b.
  *
  * @param[out] c			- the result of the evaluation.
- * @param[in] a			- the coefficients of the polynomial.
+ * @param[in] a				- the coefficients of the polynomial.
  * @param[in] x				- the value to evaluate.
  * @param[in] b				- the modulus.
- * @param[in] n				- the degree of the polynomial.
+ * @param[in] n				- the number of coefficients.
  */
 void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n);
 	

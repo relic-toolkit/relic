@@ -43,8 +43,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FB_TRC == QUICK || !defined(STRIP)
-
 /**
  * Find non-zero bits for fast trace computation.
  *
@@ -56,21 +54,19 @@ static void find_trace(void) {
 	int counter;
 	ctx_t *ctx = core_get();
 
-	fb_null(t0);
-	fb_null(t1);
+	fb_null_all(t0, t1);
 
 	ctx->fb_ta = ctx->fb_tb = ctx->fb_tc = -1;
 
 	RLC_TRY {
-		fb_new(t0);
-		fb_new(t1);
+		fb_new_all(t0, t1);
 
 		counter = 0;
-		for (int i = 0; i < RLC_FB_BITS; i++) {
+		for (size_t i = 0; i < RLC_FB_BITS; i++) {
 			fb_zero(t0);
 			fb_set_bit(t0, i, 1);
 			fb_copy(t1, t0);
-			for (int j = 1; j < RLC_FB_BITS; j++) {
+			for (size_t j = 1; j < RLC_FB_BITS; j++) {
 				fb_sqr(t1, t1);
 				fb_add(t0, t0, t1);
 			}
@@ -99,14 +95,11 @@ static void find_trace(void) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t0);
-		fb_free(t1);
+		fb_free_all(t0, t1);
 	}
 }
 
-#endif
-
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 
 /**
  * Precomputes half-traces for z^i with odd i.
@@ -114,7 +107,8 @@ static void find_trace(void) {
  * @throw ERR_NO_MEMORY if there is no available memory.
  */
 static void find_solve(void) {
-	int i, j, k, l;
+	size_t i, k;
+	int j, l;
 	fb_t t0;
 	ctx_t *ctx = core_get();
 
@@ -139,7 +133,6 @@ static void find_solve(void) {
 					fb_add(ctx->fb_half[l][j], ctx->fb_half[l][j], t0);
 				}
 			}
-			fb_rsh(ctx->fb_half[l][j], ctx->fb_half[l][j], 1);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -152,8 +145,6 @@ static void find_solve(void) {
 
 #endif
 
-#if FB_SRT == QUICK || !defined(STRIP)
-
 /**
  * Precomputes the square root of z.
  */
@@ -162,7 +153,7 @@ static void find_srz(void) {
 
 	fb_set_dig(ctx->fb_srz, 2);
 
-	for (int i = 1; i < RLC_FB_BITS; i++) {
+	for (size_t i = 1; i < RLC_FB_BITS; i++) {
 		fb_sqr(ctx->fb_srz, ctx->fb_srz);
 	}
 
@@ -172,10 +163,6 @@ static void find_srz(void) {
 	}
 #endif
 }
-
-#endif
-
-#if FB_INV == ITOHT || !defined(STRIP)
 
 /**
  * Finds an addition chain for (RLC_FB_BITS - 1).
@@ -267,6 +254,12 @@ static void find_chain(void) {
 			break;
 	}
 
+	if (ctx->chain_len >= RLC_TERMS) {
+		/* The chain does not fit in the context. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	u[0] = 1;
 	u[1] = 2;
 	for (i = 2; i <= ctx->chain_len; i++) {
@@ -279,12 +272,19 @@ static void find_chain(void) {
 		}
 	}
 
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
+	if (ctx->chain_len >= (int)RLC_FB_CHAIN) {
+		/* The tables have one row per element of the chain. */
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 	for (i = 0; i <= ctx->chain_len; i++) {
 		fb_itr_pre((fb_st *)fb_poly_tab_sqr(i), u[i]);
 	}
-}
-
+#else
+	(void)u;
 #endif
+}
 
 /**
  * Configures the irreducible polynomial of the binary field.
@@ -293,18 +293,12 @@ static void find_chain(void) {
  */
 static void fb_poly_set(const fb_t f) {
 	fb_copy(core_get()->fb_poly, f);
-#if FB_TRC == QUICK || !defined(STRIP)
 	find_trace();
-#endif
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	find_solve();
 #endif
-#if FB_SRT == QUICK || !defined(STRIP)
 	find_srz();
-#endif
-#if FB_INV == ITOHT || !defined(STRIP)
 	find_chain();
-#endif
 }
 
 /*============================================================================*/
@@ -423,24 +417,20 @@ void fb_poly_set_penta(int a, int b, int c) {
 }
 
 dig_t *fb_poly_get_srz(void) {
-#if FB_SRT == QUICK || !defined(STRIP)
 	return core_get()->fb_srz;
-#else
-	return NULL;
-#endif
 }
 
 const fb_st *fb_poly_tab_sqr(int i) {
-#if FB_INV == ITOHT || !defined(STRIP)
+#if FB_INV == FB_ITOHT || FB_INV == FB_LOWER || !defined(RLC_STRIP)
 	/* If ITOHT inversion is used and tables are precomputed, return them. */
 	return (const fb_st *)core_get()->fb_tab_sqr[i];
 #else
+	(void)i;
 	return NULL;
 #endif
 }
 
 const dig_t *fb_poly_tab_srz(int i) {
-#if FB_SRT == QUICK || !defined(STRIP)
 
 #ifdef FB_PRECO
 	return core_get()->fb_tab_srz[i];
@@ -448,20 +438,13 @@ const dig_t *fb_poly_tab_srz(int i) {
 	return NULL;
 #endif
 
-#else
-	return NULL;
-#endif
 }
 
 void fb_poly_get_trc(int *a, int *b, int *c) {
-#if FB_TRC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	*a = ctx->fb_ta;
 	*b = ctx->fb_tb;
 	*c = ctx->fb_tc;
-#else
-	*a = *b = *c = -1;
-#endif
 }
 
 void fb_poly_get_rdc(int *a, int *b, int *c) {
@@ -472,7 +455,7 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 }
 
 const dig_t *fb_poly_get_slv(void) {
-#if FB_SLV == QUICK || !defined(STRIP)
+#if FB_SLV == FB_QUICK || !defined(RLC_STRIP)
 	return (dig_t *)&(core_get()->fb_half);
 #else
 	return NULL;
@@ -480,7 +463,6 @@ const dig_t *fb_poly_get_slv(void) {
 }
 
 const int *fb_poly_get_chain(int *len) {
-#if FB_INV == ITOHT || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	if (ctx->chain_len > 0 && ctx->chain_len < RLC_TERMS) {
 		if (len != NULL) {
@@ -493,7 +475,4 @@ const int *fb_poly_get_chain(int *len) {
 		}
 		return NULL;
 	}
-#else
-	return NULL;
-#endif
 }

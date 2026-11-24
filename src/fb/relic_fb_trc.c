@@ -41,16 +41,14 @@ dig_t fb_trc_basic(const fb_t a) {
 	int r = 0;
 	fb_t t, u;
 
-	fb_null(t);
-	fb_null(u);
+	fb_null_all(t, u);
 
 	RLC_TRY {
-		fb_new(t);
-		fb_new(u);
+		fb_new_all(t, u);
 
 		fb_copy(t, a);
 		fb_copy(u, a);
-		for (int i = 1; i < RLC_FB_BITS; i++) {
+		for (size_t i = 1; i < RLC_FB_BITS; i++) {
 			fb_sqr(t, t);
 			fb_add(u, u, t);
 		}
@@ -58,11 +56,11 @@ dig_t fb_trc_basic(const fb_t a) {
 		r = u[0] & 1;
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t);
-		fb_free(u);
+		fb_free_all(t, u);
 	}
 
 	return r;

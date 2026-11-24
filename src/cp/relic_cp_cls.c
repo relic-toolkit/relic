@@ -32,6 +32,78 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Reads a message as an integer modulo n, accepting only messages that are not
+ * longer than n and smaller than n, so that each integer has a single encoding.
+ *
+ * @param[out] m			- the integer, or zero if the message is rejected.
+ * @param[in] msg			- the message.
+ * @param[in] len			- the length of the message in bytes.
+ * @param[in] n				- the modulus.
+ * @return 1 if the message is accepted, 0 otherwise.
+ */
+static int cls_read(bn_t m, const uint8_t *msg, size_t len, const bn_t n) {
+	bn_zero(m);
+	if (len > bn_size_bin(n)) {
+		return 0;
+	}
+	bn_read_bin(m, msg, len);
+	if (bn_cmp(m, n) != RLC_LT) {
+		bn_zero(m);
+		return 0;
+	}
+	return 1;
+}
+
+/**
+ * Checks that e(p, q) = e(s, g), or that e(p, q)e(-s, g) = 1, where g is the
+ * generator of G_2.
+ *
+ * @param[in] p				- the G_1 element of the first pairing.
+ * @param[in] q				- the G_2 element of the first pairing.
+ * @param[in] s				- the G_1 element of the second pairing.
+ * @return 1 if the pairings are equal, 0 otherwise.
+ */
+static int cls_pair(const g1_t p, const g2_t q, const g1_t s) {
+	g1_t t[1], u;
+	g2_t r[1];
+	gt_t e;
+	int result = 0;
+
+	g1_null(t[0]);
+	g1_null(u);
+	g2_null(r[0]);
+	gt_null(e);
+
+	RLC_TRY {
+		g1_new(t[0]);
+		g1_new(u);
+		g2_new(r[0]);
+		gt_new(e);
+
+		g1_copy(t[0], p);
+		g1_neg(u, s);
+		g2_copy(r[0], q);
+		pc_map_sim_gen(e, t, r, 1, u);
+		result = gt_is_unity(e);
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		g1_free(t[0]);
+		g1_free(u);
+		g2_free(r[0]);
+		gt_free(e);
+	}
+	return result;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -75,16 +147,17 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 		pc_get_ord(n);
 		bn_mul(m, r, s);
 		bn_mod(m, m, n);
-		g1_mul(b, a, s);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
+		g1_mul_sec(b, a, s);
+		if (!cls_read(m, msg, len, n)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
 		bn_mul(m, m, s);
 		bn_mod(m, m, n);
 		bn_mul(m, m, r);
 		bn_mod(m, m, n);
 		bn_add(m, m, r);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -98,67 +171,35 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 
 int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
 		size_t len, const g2_t x, const g2_t y) {
-	g1_t p[2];
-	g2_t r[2];
-	gt_t e;
+	g1_t p;
 	bn_t m, n;
-	int result = 1;
+	int result = 0;
 
-	g1_null(p[0]);
-	g1_null(p[1]);
-	g2_null(r[0]);
-	g2_null(r[1]);
-	gt_null(e);
+	g1_null(p);
 	bn_null(m);
 	bn_null(n);
 
 	RLC_TRY {
-		g1_new(p[0]);
-		g1_new(p[1]);
-		g2_new(r[0]);
-		g2_new(r[1]);
-		gt_new(e);
+		g1_new(p);
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(b) || g1_is_infty(c)) {
-			result = 0;
-		}
-
-		g1_copy(p[0], a);
-		g1_copy(p[1], b);
-		g2_copy(r[0], y);
-		g2_get_gen(r[1]);
-		g2_neg(r[1], r[1]);
-
-		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-
 		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
-		g1_mul(p[0], b, m);
-		g1_add(p[0], p[0], a);
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(r[0], x);
-
-		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (g1_is_valid(a) && g1_is_valid(b) && g1_is_valid(c) &&
+				cls_read(m, msg, len, n)) {
+			g1_mul(p, b, m);
+			g1_add(p, p, a);
+			g1_norm(p, p);
+			/* Check that e(a, Y) = e(b, g) and e(a + [m]b, X) = e(c, g). */
+			result = cls_pair(a, y, b) && cls_pair(p, x, c);
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		g1_free(p[0]);
-		g1_free(p[1]);
-		g2_free(r[0]);
-		g2_free(r[1]);
-		gt_free(e);
+		g1_free(p);
 		bn_free(m);
 		bn_free(n);
 	}
@@ -206,28 +247,29 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		/* Choose random a in G1. */
 		g1_rand(a);
 		/* Compute A = a^z, B = A^y. */
-		g1_mul(A, a, v);
-		g1_mul(b, a, u);
-		g1_mul(B, A, u);
+		g1_mul_sec(A, a, v);
+		g1_mul_sec(b, a, u);
+		g1_mul_sec(B, A, u);
 		/* Compute c = A^(xyr) = B^{xr}. */
 		pc_get_ord(n);
 		bn_mul(m, t, r);
 		bn_mod(m, m, n);
-		g1_mul(b, B, m);
+		g1_mul_sec(b, B, m);
 		/* Compute c = a^{x+xym}A^(xyr). */
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
+		if (!cls_read(m, msg, len, n)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
 		bn_mul(m, m, t);
 		bn_mod(m, m, n);
 		bn_mul(m, m, u);
 		bn_mod(m, m, n);
 		bn_add(m, m, t);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 		g1_add(c, c, b);
 		g1_norm(c, c);
 		/* Compute b = a^y. */
-		g1_mul(b, a, u);
+		g1_mul_sec(b, a, u);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -241,84 +283,37 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 
 int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 		size_t len, const bn_t r, const g2_t x, const g2_t y, const g2_t z) {
-	g1_t p[2];
-	g2_t q[2];
-	gt_t e;
+	g1_t p;
 	bn_t m, n;
-	int result = 1;
+	int result = 0;
 
-	g1_null(p[0]);
-	g1_null(p[1]);
-	g2_null(q[0]);
-	g2_null(q[1]);
-	gt_null(e);
+	g1_null(p);
 	bn_null(m);
 	bn_null(n);
 
 	RLC_TRY {
-		g1_new(p[0]);
-		g1_new(p[1]);
-		g2_new(q[0]);
-		g2_new(q[1]);
-		gt_new(e);
+		g1_new(p);
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(A)) {
-			result = 0;
-		}
-		if (g1_is_infty(b) || g1_is_infty(B) || g1_is_infty(c)) {
-			result = 0;
-		}
-
-		/* Check that e(a, Z) = e(A, g) or that e(a, Z)e(A, -g) = 1. */
-		g1_copy(p[0], a);
-		g1_copy(p[1], A);
-		g2_copy(q[0], z);
-		g2_get_gen(q[1]);
-		g2_neg(q[1], q[1]);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-
-		/* Check e(a, Y) = e(b, g) and e(A, Y) = e(B, g) using same trick. */
-		g1_copy(p[1], b);
-		g2_copy(q[0], y);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-		g1_copy(p[0], A);
-		g1_copy(p[1], B);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-
-		/* Check that e(a, X)e(mb, X)e(rB, X) = e(c, g). */
 		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
-		g1_mul_sim(p[0], b, m, B, r);
-		g1_add(p[0], p[0], a);
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(q[0], x);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (g1_is_valid(a) && g1_is_valid(A) && g1_is_valid(b) &&
+				g1_is_valid(B) && g1_is_valid(c) && cls_read(m, msg, len, n)) {
+			g1_mul_sim(p, b, m, B, r);
+			g1_add(p, p, a);
+			g1_norm(p, p);
+			/* Check that e(a, Z) = e(A, g), e(a, Y) = e(b, g), e(A, Y) = e(B, g)
+			 * and e(a + [m]b + [r]B, X) = e(c, g). */
+			result = cls_pair(a, z, A) && cls_pair(a, y, b) &&
+					cls_pair(A, y, B) && cls_pair(p, x, c);
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		g1_free(p[0]);
-		g1_free(p[1]);
-		g2_free(q[1]);
-		g2_free(q[0]);
-		gt_free(e);
+		g1_free(p);
 		bn_free(m);
 		bn_free(n);
 	}
@@ -327,7 +322,8 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
 
 int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l) {
 	bn_t n;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(n);
 
@@ -357,7 +353,8 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 		const size_t ls[], const bn_t t, const bn_t u, const bn_t v[],
 		size_t l) {
 	bn_t m, n;
-	int i, result = RLC_OK;
+	int result = RLC_OK;
+	size_t i;
 
 	bn_null(m);
 	bn_null(n);
@@ -370,31 +367,33 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 		g1_rand(a);
 		/* Compute A_i = a^z_i, B_i = A_i^y. */
 		for (i = 1; i < l; i++) {
-			g1_mul(A[i - 1], a, v[i - 1]);
-			g1_mul(B[i - 1], A[i - 1], u);
+			g1_mul_sec(A[i - 1], a, v[i - 1]);
+			g1_mul_sec(B[i - 1], A[i - 1], u);
 		}
 		/* Compute c = a^(x+xym_0)\prod A_i^(xym_i) = B_i^(xm_i). */
 		pc_get_ord(n);
-		bn_read_bin(m, ms[0], ls[0]);
-		bn_mod(m, m, n);
+		if (!cls_read(m, ms[0], ls[0], n)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
 		bn_mul(m, m, t);
 		bn_mod(m, m, n);
 		bn_mul(m, m, u);
 		bn_add(m, m, t);
 		bn_mod(m, m, n);
-		g1_mul(c, a, m);
+		g1_mul_sec(c, a, m);
 		/* This can be made faster with more interleaving. */
 		for (i = 1; i < l; i++) {
-			bn_read_bin(m, ms[i], ls[i]);
-			bn_mod(m, m, n);
+			if (!cls_read(m, ms[i], ls[i], n)) {
+				RLC_THROW(ERR_NO_VALID);
+			}
 			bn_mul(m, m, t);
 			bn_mod(m, m, n);
-			g1_mul(b, B[i - 1], m);
+			g1_mul_sec(b, B[i - 1], m);
 			g1_add(c, c, b);
 		}
 		g1_norm(c, c);
 		/* Compute b = a^y. */
-		g1_mul(b, a, u);
+		g1_mul_sec(b, a, u);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -409,96 +408,50 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
 		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
 		const g2_t y, const g2_t z[], size_t l) {
-	g1_t p[2];
-	g2_t q[2];
-	gt_t e;
+	g1_t p, t;
 	bn_t m, n;
-	int i, result = 1;
+	int result = 0;
+	size_t i;
 
-	g1_null(p[0]);
-	g1_null(p[1]);
-	g2_null(q[0]);
-	g2_null(q[1]);
-	gt_null(e);
+	g1_null(p);
+	g1_null(t);
 	bn_null(m);
 	bn_null(n);
 
 	RLC_TRY {
-		g1_new(p[0]);
-		g1_new(p[1]);
-		g2_new(q[0]);
-		g2_new(q[1]);
-		gt_new(e);
+		g1_new(p);
+		g1_new(t);
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a) || g1_is_infty(b) || g1_is_infty(c)) {
-			result = 0;
-		}
-		for (i = 1; i < l; i++) {
-			if (g1_is_infty(A[i - 1]) || g1_is_infty(B[i - 1])) {
-				result = 0;
-			}
-		}
-
-		/* Check that e(a, Z_i) = e(A_i, g) or that e(a, Z_i)e(A_i, -g) = 1. */
-		g1_copy(p[0], a);
-		g2_get_gen(q[1]);
-		g2_neg(q[1], q[1]);
-		for (i = 1; i < l; i++) {
-			g1_copy(p[1], A[i - 1]);
-			g2_copy(q[0], z[i - 1]);
-			pc_map_sim(e, p, q, 2);
-			if (!gt_is_unity(e)) {
-				result = 0;
-			}
-		}
-
-		/* Check e(a, Y) = e(b, g) and e(A_i, Y) = e(B_i, g) using the trick. */
-		g1_copy(p[1], b);
-		g2_copy(q[0], y);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
-		}
-		for (i = 1; i < l; i++) {
-			g1_copy(p[0], A[i - 1]);
-			g1_copy(p[1], B[i - 1]);
-			pc_map_sim(e, p, q, 2);
-			if (!gt_is_unity(e)) {
-				result = 0;
-			}
-		}
-
-		/* Check that e(a, X)e(m_0b, X)\prod e(m_iB, X) = e(c, g). */
 		pc_get_ord(n);
-		bn_read_bin(m, ms[0], ls[0]);
-		bn_mod(m, m, n);
-		g1_mul(p[0], b, m);
-		g1_add(p[0], p[0], a);
-		for (i = 1; i < l; i++) {
-			bn_read_bin(m, ms[i], ls[i]);
-			bn_mod(m, m, n);
-			g1_mul(p[1], B[i - 1], m);
-			g1_add(p[0], p[0], p[1]);
+		/* Check that e(a, Y) = e(b, g). */
+		result = g1_is_valid(a) && g1_is_valid(b) && g1_is_valid(c) &&
+				cls_read(m, ms[0], ls[0], n) && cls_pair(a, y, b);
+		g1_mul(p, b, m);
+		g1_add(p, p, a);
+		for (i = 1; result && i < l; i++) {
+			/* Check that e(a, Z_i) = e(A_i, g) and e(A_i, Y) = e(B_i, g). */
+			result = g1_is_valid(A[i - 1]) && g1_is_valid(B[i - 1]) &&
+					cls_read(m, ms[i], ls[i], n) &&
+					cls_pair(a, z[i - 1], A[i - 1]) &&
+					cls_pair(A[i - 1], y, B[i - 1]);
+			g1_mul(t, B[i - 1], m);
+			g1_add(p, p, t);
 		}
-		g1_norm(p[0], p[0]);
-		g1_copy(p[1], c);
-		g2_copy(q[0], x);
-		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (result) {
+			/* Check that e(a + [m_0]b + \sum [m_i]B_i, X) = e(c, g). */
+			g1_norm(p, p);
+			result = cls_pair(p, x, c);
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		g1_free(p[0]);
-		g1_free(p[1]);
-		g2_free(q[0]);
-		g2_free(q[1]);
-		gt_free(e);
+		g1_free(p);
+		g1_free(t);
 		bn_free(m);
 		bn_free(n);
 	}

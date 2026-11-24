@@ -61,9 +61,9 @@ static int memory1(void) {
 }
 
 int util1(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	g1_t a, b, c;
-	uint8_t bin[2 * RLC_PC_BYTES + 1];
+	uint8_t bin[RLC_G1_BYTES];
 
 	g1_null(a);
 	g1_null(b);
@@ -141,20 +141,44 @@ int util1(void) {
 				g1_set_infty(a);
 				l = g1_size_bin(a, j);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 				g1_rand(a);
 				l = g1_size_bin(a, j);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 				g1_rand(a);
 				g1_dbl(a, a);
 				l = g1_size_bin(a, j);
 				g1_norm(a, a);
 				g1_write_bin(bin, l, a, j);
-				g1_read_bin(b, bin, l);
+				TEST_ASSERT(g1_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading a point outside the subgroup fails") {
+			/* Decode random x-coordinates until one is on the curve but
+			 * outside the subgroup, which never happens for cofactor 1. */
+			r = RLC_ERR;
+			for (int k = 0; k < 16 && (r != RLC_OK || g1_is_valid(a)); k++) {
+				g1_rand(a);
+				l = g1_size_bin(a, 1);
+				rand_bytes(bin, l);
+				bin[0] = 2;
+				for (int j = 1; j < l; j += RLC_PC_BYTES) {
+					bin[j] = 0;
+				}
+				r = RLC_ERR;
+				TEST_ERR(r = RLC_CAT(RLC_G1_LOWER, read_bin)(a, bin, l));
+				err_get_code();
+			}
+			if (r == RLC_OK && !g1_is_valid(a)) {
+				r = RLC_ERR;
+				TEST_ERR(r = g1_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -342,7 +366,7 @@ static int multiplication1(void) {
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			g1_mul(r, p, n);
+			g1_mul_any(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -365,7 +389,7 @@ static int multiplication1(void) {
 
 		TEST_CASE("random element has the right order") {
 			g1_rand(p);
-			g1_mul(r, p, n);
+			g1_mul_any(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -595,15 +619,17 @@ static int validity1(void) {
 
 static int hashing1(void) {
 	int code = RLC_ERR;
-	g1_t a;
+	g1_t a, b;
 	bn_t n;
 	uint8_t msg[5];
 
 	g1_null(a);
+	g1_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		g1_new(a);
+		g1_new(b);
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -612,6 +638,8 @@ static int hashing1(void) {
 			rand_bytes(msg, sizeof(msg));
 			g1_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g1_is_valid(a), end);
+			g1_mul_any(b, a, n);
+			TEST_ASSERT(g1_is_infty(b), end);
 		}
 		TEST_END;
 
@@ -622,6 +650,7 @@ static int hashing1(void) {
 	code = RLC_OK;
   end:
 	g1_free(a);
+	g1_free(b);
 	bn_free(n);
 	return code;
 }
@@ -653,9 +682,9 @@ static int memory2(void) {
 }
 
 int util2(void) {
-	int l, code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	g2_t a, b, c;
-	uint8_t bin[16 * RLC_PC_BYTES + 1];
+	uint8_t bin[18 * RLC_PC_BYTES + 1];
 
 	g2_null(a);
 	g2_null(b);
@@ -732,20 +761,62 @@ int util2(void) {
 				g2_set_infty(a);
 				l = g2_size_bin(a, j);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 				g2_rand(a);
 				l = g2_size_bin(a, j);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 				g2_rand(a);
 				g2_dbl(a, a);
 				l = g2_size_bin(a, j);
 				g2_norm(a, a);
 				g2_write_bin(bin, l, a, j);
-				g2_read_bin(b, bin, l);
+				TEST_ASSERT(g2_read_bin(b, bin, l) == RLC_OK, end);
 				TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading a point outside the subgroup fails") {
+			/* Decode random x-coordinates until one is on the curve but
+			 * outside the subgroup, which never happens for cofactor 1. */
+			r = RLC_ERR;
+			for (int k = 0; k < 16 && (r != RLC_OK || g2_is_valid(a)); k++) {
+				g2_rand(a);
+				l = g2_size_bin(a, 1);
+				rand_bytes(bin, l);
+				bin[0] = 2;
+				for (int j = 1; j < l; j += RLC_PC_BYTES) {
+					bin[j] = 0;
+				}
+				r = RLC_ERR;
+				TEST_ERR(r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l));
+				err_get_code();
+			}
+			if (r == RLC_OK && !g2_is_valid(a)) {
+				r = RLC_ERR;
+				TEST_ERR(r = g2_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading a point of order two fails") {
+			/* The point (0, 0) is on the twist when it is y^2 = x^3 + ax. */
+			g2_rand(a);
+			l = g2_size_bin(a, 0);
+			memset(bin, 0, l);
+			bin[0] = 4;
+			r = RLC_ERR;
+			TEST_ERR(r = RLC_CAT(RLC_G2_LOWER, read_bin)(a, bin, l));
+			err_get_code();
+			if (r == RLC_OK) {
+				TEST_ASSERT(!g2_is_valid(a), end);
+				r = RLC_ERR;
+				TEST_ERR(r = g2_read_bin(b, bin, l));
+				TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 			}
 		}
 		TEST_END;
@@ -933,7 +1004,7 @@ static int multiplication2(void) {
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			g2_mul(r, p, n);
+			g2_mul_any(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
 
@@ -956,8 +1027,18 @@ static int multiplication2(void) {
 
 		TEST_CASE("random element has the right order") {
 			g2_rand(p);
-			g2_mul(r, p, n);
+			g2_mul_any(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by the order minus one is negation") {
+			/* It is |x|^s on curves with n = |x|^s + 1, such as AFG16. */
+			bn_sub_dig(k, n, 1);
+			g2_neg(q, p);
+			g2_mul(r, p, k);
+			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
+			g2_mul_sec(r, p, k);
+			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("point multiplication by digit is correct") {
@@ -1186,15 +1267,17 @@ static int validity2(void) {
 
 static int hashing2(void) {
 	int code = RLC_ERR;
-	g2_t a;
+	g2_t a, b;
 	bn_t n;
 	uint8_t msg[5];
 
 	g2_null(a);
+	g2_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		g2_new(a);
+		g2_new(b);
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -1203,6 +1286,8 @@ static int hashing2(void) {
 			rand_bytes(msg, sizeof(msg));
 			g2_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g2_is_valid(a), end);
+			g2_mul_any(b, a, n);
+			TEST_ASSERT(g2_is_infty(b), end);
 		}
 		TEST_END;
 
@@ -1213,6 +1298,7 @@ static int hashing2(void) {
 	code = RLC_OK;
   end:
 	g2_free(a);
+	g2_free(b);
 	bn_free(n);
 	return code;
 }
@@ -1244,8 +1330,9 @@ static int memory(void) {
 }
 
 int util(void) {
-	int code = RLC_ERR;
+	int l, r, code = RLC_ERR;
 	gt_t a, b, c;
+	uint8_t bin[54 * RLC_PC_BYTES];
 
 	gt_null(a);
 	gt_null(b);
@@ -1298,6 +1385,40 @@ int util(void) {
 		TEST_CASE("assignment to unity and unity test are consistent") {
 			gt_set_unity(a);
 			TEST_ASSERT(gt_is_unity(a), end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading and writing an element are consistent") {
+			for (int j = 0; j < 2; j++) {
+				gt_set_unity(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				TEST_ASSERT(gt_read_bin(b, bin, l) == RLC_OK, end);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+				gt_rand(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				TEST_ASSERT(gt_read_bin(b, bin, l) == RLC_OK, end);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("reading an element outside the subgroup fails") {
+			/* Small elements of the base field are not in G_T. */
+			RLC_CAT(RLC_GT_LOWER, set_dig)(a, 2);
+			l = gt_size_bin(a, 0);
+			gt_write_bin(bin, l, a, 0);
+			r = RLC_ERR;
+			TEST_ERR(r = gt_read_bin(b, bin, l));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
+			/* Neither is zero. */
+			gt_zero(a);
+			l = gt_size_bin(a, 0);
+			gt_write_bin(bin, l, a, 0);
+			r = RLC_ERR;
+			TEST_ERR(r = gt_read_bin(b, bin, l));
+			TEST_ASSERT(r == RLC_ERR && err_get_code() == RLC_ERR, end);
 		}
 		TEST_END;
 	}
@@ -1434,9 +1555,13 @@ static int inversion(void) {
 
 int exponentiation(void) {
 	int code = RLC_ERR;
-	gt_t a, b, c;
-	bn_t n, d, e;
+	gt_t a, b, c, g[5];
+	bn_t n, d, e, k[5];
 
+	for (int j = 0; j < 5; j++) {
+		gt_null(g[j]);
+		bn_null(k[j]);
+	}
 	gt_null(a);
 	gt_null(b);
 	gt_null(c);
@@ -1451,12 +1576,16 @@ int exponentiation(void) {
 		bn_new(d);
 		bn_new(e);
 		bn_new(n);
+		for (int j = 0; j < 5; j++) {
+			gt_new(g[j]);
+			bn_new(k[j]);
+		}
 
 		gt_get_gen(a);
 		pc_get_ord(n);
 
 		TEST_CASE("generator has the right order") {
-			gt_exp(c, a, n);
+			gt_exp_any(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
@@ -1482,8 +1611,17 @@ int exponentiation(void) {
 
 		TEST_CASE("random element has the right order") {
 			gt_rand(a);
-			gt_exp(c, a, n);
+			gt_exp_any(c, a, n);
 			TEST_ASSERT(gt_is_unity(c) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("exponentiation by the order minus one is inversion") {
+			bn_sub_dig(d, n, 1);
+			gt_inv(b, a);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			gt_exp_sec(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation is correct") {
@@ -1495,7 +1633,7 @@ int exponentiation(void) {
 			gt_exp(b, a, d);
 			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand_mod(d, n);
-			RLC_CAT(RLC_GT_LOWER, exp)(b, a, d);
+			gt_exp_any(b, a, d);
 			gt_exp(c, a, d);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			bn_rand_mod(d, n);
@@ -1517,6 +1655,40 @@ int exponentiation(void) {
 			gt_exp(b, a, d);
 			gt_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			/* Exponents beyond the order, of the same length or longer, are
+			 * reduced first. */
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			for (int j = 0; j < 2; j++) {
+				bn_lsh(e, n, j * RLC_DIG);
+				bn_add(e, e, d);
+				gt_exp(c, a, e);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+				bn_neg(e, e);
+				gt_exp(c, a, e);
+				gt_inv(c, c);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("simultaneous exponentiation of many elements is correct") {
+			for (int j = 0; j < 5; j++) {
+				gt_rand(g[j]);
+				bn_rand_mod(k[j], n);
+			}
+			/* A zero, a negative and a Frobenius-friendly short exponent. */
+			bn_zero(k[1]);
+			bn_neg(k[2], k[2]);
+			bn_rand_frb(k[3], &(core_get()->par), n, 89);
+			for (int m = 0; m <= 5; m++) {
+				gt_set_unity(b);
+				for (int j = 0; j < m; j++) {
+					gt_exp(c, g[j], k[j]);
+					gt_mul(b, b, c);
+				}
+				gt_exp_sim_lot(c, (const gt_t *)g, k, m);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1525,6 +1697,10 @@ int exponentiation(void) {
 	}
 	code = RLC_OK;
   end:
+	for (int j = 0; j < 5; j++) {
+		gt_free(g[j]);
+		bn_free(k[j]);
+	}
 	gt_free(a);
 	gt_free(b);
 	gt_free(c);
@@ -1537,17 +1713,39 @@ int exponentiation(void) {
 static int validity(void) {
 	int code = RLC_ERR;
 	gt_t a;
+	bn_t n;
 
 	gt_null(a);
+	bn_null(n);
 
 	RLC_TRY {
 		gt_new(a);
+		bn_new(n);
+
+		pc_get_ord(n);
 
 		TEST_CASE("validity check is correct") {
 			gt_set_unity(a);
 			TEST_ASSERT(!gt_is_valid(a), end);
 			gt_rand(a);
 			TEST_ASSERT(gt_is_valid(a), end);
+			/* Small elements of the base field are not in G_T. */
+			RLC_CAT(RLC_GT_LOWER, set_dig)(a, 2);
+			TEST_ASSERT(!gt_is_valid(a), end);
+			gt_set_unity(a);
+			RLC_CAT(RLC_GT_LOWER, neg)(a, a);
+			TEST_ASSERT(!gt_is_valid(a), end);
+#if RLC_GT_EMBED > 1
+			/* Cyclotomic elements of order coprime to r are not in G_T,
+			 * except on GT-strong curves, which test only for the
+			 * cyclotomic subgroup. */
+			RLC_CAT(RLC_GT_LOWER, rand)(a);
+			RLC_CAT(RLC_GT_LOWER, conv_cyc)(a, a);
+			gt_exp_any(a, a, n);
+			if (core_get()->ep_id != B12_P383) {
+				TEST_ASSERT(gt_is_unity(a) || !gt_is_valid(a), end);
+			}
+#endif
 		}
 		TEST_END;
 	}
@@ -1557,6 +1755,7 @@ static int validity(void) {
 	code = RLC_OK;
   end:
 	gt_free(a);
+	bn_free(n);
 	return code;
 }
 
@@ -1566,11 +1765,23 @@ static int pairing(void) {
 	g2_t q[2];
 	gt_t e1, e2;
 	bn_t k, n;
+#ifdef RLC_PC_FIX
+	RLC_CAT(RLC_PC_FIELD, t) t[2 * RLC_PC_TABLE];
+#endif
 
 	gt_null(e1);
 	gt_null(e2);
 	bn_null(k);
 	bn_null(n);
+	for (j = 0; j < 2; j++) {
+		g1_null(p[j]);
+		g2_null(q[j]);
+	}
+#ifdef RLC_PC_FIX
+	for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+		RLC_CAT(RLC_PC_FIELD, null)(t[j]);
+	}
+#endif
 
 	RLC_TRY {
 		gt_new(e1);
@@ -1579,11 +1790,14 @@ static int pairing(void) {
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
-			g1_null(p[j]);
-			g2_null(q[j]);
 			g1_new(p[j]);
 			g2_new(q[j]);
 		}
+#ifdef RLC_PC_FIX
+		for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+			RLC_CAT(RLC_PC_FIELD, new)(t[j]);
+		}
+#endif
 
 		pc_get_ord(n);
 
@@ -1652,6 +1866,79 @@ static int pairing(void) {
 			pc_map_sim(e1, p, q, 2);
 			TEST_ASSERT(gt_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
+
+#ifdef RLC_PC_FIX
+		TEST_CASE("pairing with fixed argument is correct") {
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			pc_map(e1, p[0], q[0]);
+			pc_map_pre(t, q[0]);
+			pc_map_fix(e2, p[0], t);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_rand(p[1]);
+			pc_map(e1, p[1], q[0]);
+			pc_map_fix(e2, p[1], t);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_set_infty(p[1]);
+			pc_map_fix(e2, p[1], t);
+			TEST_ASSERT(gt_is_unity(e2), end);
+			g2_set_infty(q[1]);
+			pc_map_pre(t, q[1]);
+			pc_map_fix(e2, p[0], t);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing with fixed arguments is correct") {
+			RLC_CAT(RLC_PC_FIELD, t) *u[2] = { t, t + RLC_PC_TABLE };
+
+			g1_rand(p[0]);
+			g1_rand(p[1]);
+			g2_rand(q[0]);
+			g2_rand(q[1]);
+			pc_map_pre(t, q[0]);
+			pc_map_pre(t + RLC_PC_TABLE, q[1]);
+			pc_map_sim(e1, p, q, 2);
+			pc_map_sim_fix(e2, NULL, NULL, 0, p, u, 2);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			pc_map_sim_fix(e2, p, q, 1, p + 1, u + 1, 1);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_get_gen(q[0]);
+			pc_map(e1, p[0], q[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_get_gen(p[0]);
+			gt_get_gen(e1);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_set_infty(p[0]);
+			pc_map_gen(e2, p[0]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing with the generator of G_2 is correct") {
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			g1_rand(p[1]);
+			g2_get_gen(q[1]);
+			pc_map_sim(e1, p, q, 2);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			pc_map_gen(e1, p[1]);
+			pc_map_sim_gen(e2, NULL, NULL, 0, p[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			/* e(P, kG) * e(-kP, G) = 1. */
+			bn_rand_mod(k, n);
+			g2_mul_gen(q[0], k);
+			g1_mul(p[1], p[0], k);
+			g1_neg(p[1], p[1]);
+			pc_map_sim_gen(e2, p, q, 1, p[1]);
+			TEST_ASSERT(gt_is_unity(e2), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1667,6 +1954,11 @@ static int pairing(void) {
 		g1_free(p[j]);
 		g2_free(q[j]);
 	}
+#ifdef RLC_PC_FIX
+	for (j = 0; j < 2 * RLC_PC_TABLE; j++) {
+		RLC_CAT(RLC_PC_FIELD, free)(t[j]);
+	}
+#endif
 	return code;
 }
 

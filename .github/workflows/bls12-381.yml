@@ -65,7 +65,7 @@ jobs:
           mkdir build
           cd build
           cmake -G "MinGW Makefiles" ..
-          cmake -DSEED= -DBENCH=0 -DSTBIN=off -DRAND=HASHD ..
+          cmake -DSEED=NONE -DBENCH=0 -DSTBIN=off -DRAND=HASHD ..
           ../preset/x64-pbc-bls12-381.sh ..
 
       - name: Run CMake (standard)
@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED=NONE -DBENCH=0 ..
           ../preset/x64-pbc-bls12-381.sh ..
 
       - name: CMake Build

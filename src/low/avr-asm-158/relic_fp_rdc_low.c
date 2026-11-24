@@ -35,18 +35,23 @@
 #include "relic_bn_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Montgomery reduction without the final subtraction, in assembly.
+ */
+dig_t fp_rdci_low(dig_t *c, dig_t *a);
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {
-	dig_t r1, *m, *tmpc;
+	const dig_t *m = fp_prime_get();
+	dig_t r1 = fp_rdci_low(c, a);
 
-	m = fp_prime_get();
-	tmpc = c;
-
-	r1 = fp_rdci_low(c, a);
-
-	if (r1 || fp_cmp(c, m) != RLC_LT) {
+	if (r1 || dv_cmp(c, m, RLC_FP_DIGS) != RLC_LT) {
 		fp_subn_low(c, c, m);
 	}
 }

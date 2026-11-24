@@ -36,8 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if BN_KARAT > 0 || !defined(STRIP)
-
 /**
  * Multiplies two multiple precision integers using recursive Karatsuba
  * multiplication.
@@ -53,13 +51,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 	/* Compute half the digits of a or b. */
 	int h = RLC_MIN(a->used, b->used) >> 1;
 
-	bn_null(a0);
-	bn_null(a1);
-	bn_null(b0);
-	bn_null(b1);
-	bn_null(a0b0);
-	bn_null(a1b1);
-	bn_null(t);
+	bn_null_all(a0, a1, b0, b1, a0b0, a1b1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
@@ -67,9 +59,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		bn_new_size(b0, h);
 		bn_new_size(a1, a->used - h);
 		bn_new_size(b1, b->used - h);
-		bn_new(a0b0);
-		bn_new(a1b1);
-		bn_new(t);
+		bn_new_all(a0b0, a1b1, t);
 
 		/* a = a1 || a0, b = b1 || b0 */
 		a0->used = b0->used = h;
@@ -86,10 +76,10 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(a0b0, a0, b0);
 			bn_mul_basic(a1b1, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(a0b0, a0, b0);
 			bn_mul_comba(a1b1, a1, b1);
 #endif
@@ -105,9 +95,9 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 
 		/* t = (a1 + a0)*(b1 + b0) */
 		if (level <= 1) {
-#if BN_MUL == BASIC
+#if BN_MUL == BN_BASIC
 			bn_mul_basic(t, a1, b1);
-#elif BN_MUL == COMBA
+#elif BN_MUL == BN_COMBA
 			bn_mul_comba(t, a1, b1);
 #endif
 		} else {
@@ -139,17 +129,9 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(a0);
-		bn_free(a1);
-		bn_free(b0);
-		bn_free(b1);
-		bn_free(a0b0);
-		bn_free(a1b1);
-		bn_free(t);
+		bn_free_all(a0, a1, b0, b1, a0b0, a1b1, t);
 	}
 }
-
-#endif
 
 /*
  * c = c + a * b when sub is zero, c = c - a * b otherwise, computed in place.
@@ -288,10 +270,8 @@ void bn_mul_dis(bn_t t, const bn_t x, dis_t b) {
 	}
 }
 
-#if BN_MUL == BASIC || !defined(STRIP)
-
 void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
-	int i;
+	size_t i;
 	bn_t t;
 	dig_t carry;
 
@@ -320,10 +300,6 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 		bn_free(t);
 	}
 }
-
-#endif
-
-#if BN_MUL == COMBA || !defined(STRIP)
 
 void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t;
@@ -370,12 +346,6 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-#endif
-
-#if BN_KARAT > 0 || !defined(STRIP)
-
 void bn_mul_karat(bn_t c, const bn_t a, const bn_t b) {
 	bn_mul_karat_imp(c, a, b, BN_KARAT);
 }
-
-#endif

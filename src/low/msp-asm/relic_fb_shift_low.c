@@ -67,7 +67,7 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	dig_t r, carry, mask, shift;
 
 	/* Prepare the bit mask. */
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	mask = RLC_MASK(bits);
 	for (i = 0; i < RLC_FB_DIGS; i++, a++, c++) {
@@ -107,7 +107,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	c += RLC_FB_DIGS - 1;
 	a += RLC_FB_DIGS - 1;
 	/* Prepare the bit mask. */
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	mask = RLC_MASK(bits);
 	for (i = RLC_FB_DIGS - 1; i >= 0; i--, a--, c--) {

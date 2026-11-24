@@ -1,4 +1,4 @@
-fp_rdcs_low:
+fp_rdcs_k1_low:
 
     push r4
     push r5
@@ -162,9 +162,9 @@ fp_rdcs_low:
     adc r12
 
     /* q2 = high(q1.c) = 0 */
-subtract1:
+subtract1_k1:
     tst r12
-    jz skip1
+    jz skip1_k1
     sub #0xAC73,0*2(r15)
     subc #0xFFFF,1*2(r15)
     subc #0xFFFE,2*2(r15)
@@ -176,41 +176,41 @@ subtract1:
     subc #0xFFFF,8*2(r15)
     subc #0xFFFF,9*2(r15)
     sbc r12
-    jmp subtract1
-skip1:
+    jmp subtract1_k1
+skip1_k1:
 
     cmp #0xFFFF,2*9(r15)
-    jlo skip2 /* m > z, jmp to DO NOT subtract */
-    jne subtract2 /* m < z, jmp to subtract */
+    jlo skip2_k1 /* m > z, jmp to DO NOT subtract */
+    jne subtract2_k1 /* m < z, jmp to subtract */
     cmp #0xFFFF,2*8(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*7(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*6(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*5(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*4(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*3(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFE,2*2(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xFFFF,2*1(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     cmp #0xAC73,2*0(r15)
-    jlo skip2
-    jne subtract2
+    jlo skip2_k1
+    jne subtract2_k1
     /* subtract */
-subtract2:
+subtract2_k1:
     /*** DECREMENT ***/
     sub #0xAC73,0*2(r15)
     subc #0xFFFF,1*2(r15)
@@ -222,7 +222,7 @@ subtract2:
     subc #0xFFFF,7*2(r15)
     subc #0xFFFF,8*2(r15)
     subc #0xFFFF,9*2(r15)
-skip2:
+skip2_k1:
     pop r11
     pop r10
     pop r9

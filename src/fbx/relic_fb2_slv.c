@@ -37,15 +37,18 @@
 /*============================================================================*/
 
 void fb2_slv(fb2_t c, const fb2_t a) {
+	int t;
+
 	/* Compute c_0 = a_0 + a_1. */
 	fb_add(c[0], a[0], a[1]);
 	/* Compute c_1^2 + c_1 = a_1. */
 	fb_slv(c[1], a[1]);
-	/* Compute c_0 = a_0 + a_1 + c_1 + Tr(c_1). */
+	/* Compute c_0 = a_0 + a_1 + c_1, which must have trace zero. Otherwise,
+	 * replace c_1 by the other solution c_1 + 1, as Tr(1) = 1 for odd m. */
 	fb_add(c[0], c[0], c[1]);
-	fb_add_dig(c[0], c[0], fb_trc(c[1]));
-	/* Make Tr(c_0) = 0. */
+	t = fb_trc(c[0]);
+	fb_add_dig(c[0], c[0], t);
+	fb_add_dig(c[1], c[1], t);
+	/* Compute c_0^2 + c_0 = a_0 + a_1 + c_1. */
 	fb_slv(c[0], c[0]);
-	/* Compute c_0^2 + c_0 = c_0. */
-	fb_add_dig(c[1], c[1], fb_trc(c[1]));
 }

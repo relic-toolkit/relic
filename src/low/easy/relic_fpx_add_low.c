@@ -32,17 +32,18 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_bn_low.h"
+#include "relic_fpx_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_addn_low(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_addn_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);
 }
 
-void fp2_addm_low(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_addm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_addm_low(c[0], a[0], b[0]);
 	fp_addm_low(c[1], a[1], b[1]);
 }
@@ -57,12 +58,12 @@ void fp2_addc_low(dv2_t c, dv2_t a, dv2_t b) {
 	fp_addc_low(c[1], a[1], b[1]);
 }
 
-void fp2_subn_low(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_subn_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_subn_low(c[0], a[0], b[0]);
 	fp_subn_low(c[1], a[1], b[1]);
 }
 
-void fp2_subm_low(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_subm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp_subm_low(c[0], a[0], b[0]);
 	fp_subm_low(c[1], a[1], b[1]);
 }
@@ -77,18 +78,18 @@ void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b) {
 	fp_subc_low(c[1], a[1], b[1]);
 }
 
-void fp2_dbln_low(fp2_t c, fp2_t a) {
+void fp2_dbln_low(fp2_t c, const fp2_t a) {
 	/* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
 	fp_dbln_low(c[0], a[0]);
 	fp_dbln_low(c[1], a[1]);
 }
 
-void fp2_dblm_low(fp2_t c, fp2_t a) {
+void fp2_dblm_low(fp2_t c, const fp2_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
 }
 
-void fp2_norm_low(fp2_t c, fp2_t a) {
+void fp2_norm_low(fp2_t c, const fp2_t a) {
 	fp2_t t;
 
 	fp2_null(t);
@@ -116,16 +117,19 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 					fp_sub(c[0], a[0], t[0]);
 					break;
 				}
-				/* Otherwise, fall back to next one. */
+				/* Fall through - otherwise use the next one. */
 			case 7:
-				/* If p = 7 mod 8, we choose (2^k + i) as QNR/CNR. */
-				fp2_mul_art(t, a);
-				fp2_copy(c, a);
-				while (qnr > 1) {
-					fp2_dbl(c, c);
-					qnr = qnr >> 1;
+				/* If p = 7 mod 8, we choose (2^k + i) as QNR/CNR, and
+				 * (a_0 + a_1 * i) * (2^k + i) = (2^k * a_0 - a_1) +
+				 * (2^k * a_1 + a_0) * i, for k >= 1. */
+				fp_dbl(t[0], a[0]);
+				fp_dbl(t[1], a[1]);
+				for (qnr = qnr >> 1; qnr > 1; qnr = qnr >> 1) {
+					fp2_dbl(t, t);
 				}
-				fp2_add(c, c, t);
+				fp_sub(t[0], t[0], a[1]);
+				fp_add(c[1], t[1], a[0]);
+				fp_copy(c[0], t[0]);
 				break;
 		}
 #endif
@@ -137,6 +141,9 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 		fp2_free(t);
 	}
 }
+
+/* Defining FP2_NORD_ASM leaves out fp2_nord_low(), so it can be replaced. */
+#ifndef FP2_NORD_ASM
 
 void fp2_nord_low(dv2_t c, dv2_t a) {
 #ifdef FP_QNRES
@@ -158,13 +165,17 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 		switch (fp_prime_get_mod8()) {
 			case 1:
 			case 5:
-				/* If p = 1,5 mod 8, (i) is a QNR. */
+				/* If p = 1,5 mod 8, (i) is a QNR, with i^2 < 0. */
 				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_zero(t[1], RLC_FP_DIGS);
-				dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-				fp_subc_low(c[0], t[1], a[1]);
-				for (int i = -1; i > fp_prime_get_qnr(); i--) {
-					fp_subc_low(c[0], c[0], a[1]);
+				/* Subtracting from zero keeps -a_1 * |i^2| below pR, also for
+				 * a_1 = 0. */
+				if (fp_prime_get_qnr() == -1) {
+					dv_zero(t[1], 2 * RLC_FP_DIGS);
+					fp_subc_low(c[0], t[1], a[1]);
+				} else {
+					fp2_mul1_low(t[1], a[1], -fp_prime_get_qnr());
+					dv_zero(c[0], 2 * RLC_FP_DIGS);
+					fp_subc_low(c[0], c[0], t[1]);
 				}
 				dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
 				break;
@@ -177,17 +188,18 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 					fp_subc_low(c[0], a[0], t[0]);
 					break;
 				}
-				/* Otherwise, fall back to next one. */
+				/* Fall through - otherwise use the next one. */
 			case 7:
-				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR.   */
-				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_copy(t[1], a[1], 2 * RLC_FP_DIGS);
-				while (qnr > 1) {
+				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR, for k >= 1. */
+				fp_addc_low(t[0], a[0], a[0]);
+				fp_addc_low(t[1], a[1], a[1]);
+				for (qnr = qnr >> 1; qnr > 1; qnr = qnr >> 1) {
 					fp2_addc_low(t, t, t);
-					qnr = qnr >> 1;
 				}
+				/* Read a before writing c, as c may alias a. */
+				fp_addc_low(t[1], t[1], a[0]);
 				fp_subc_low(c[0], t[0], a[1]);
-				fp_addc_low(c[1], t[1], a[0]);
+				dv_copy(c[1], t[1], 2 * RLC_FP_DIGS);
 				break;
 		}
 	}
@@ -199,13 +211,15 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 #endif
 }
 
-void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b) {
+#endif
+
+void fp3_addn_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);
 	fp_addn_low(c[2], a[2], b[2]);
 }
 
-void fp3_addm_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_addm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_addm_low(c[0], a[0], b[0]);
 	fp_addm_low(c[1], a[1], b[1]);
 	fp_addm_low(c[2], a[2], b[2]);
@@ -223,13 +237,13 @@ void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b) {
 	fp_addc_low(c[2], a[2], b[2]);
 }
 
-void fp3_subn_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_subn_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_subn_low(c[0], a[0], b[0]);
 	fp_subn_low(c[1], a[1], b[1]);
 	fp_subn_low(c[2], a[2], b[2]);
 }
 
-void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_subm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp_subm_low(c[0], a[0], b[0]);
 	fp_subm_low(c[1], a[1], b[1]);
 	fp_subm_low(c[2], a[2], b[2]);
@@ -247,13 +261,13 @@ void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
 	fp_subc_low(c[2], a[2], b[2]);
 }
 
-void fp3_dbln_low(fp3_t c, fp3_t a) {
+void fp3_dbln_low(fp3_t c, const fp3_t a) {
 	fp_dbln_low(c[0], a[0]);
 	fp_dbln_low(c[1], a[1]);
 	fp_dbln_low(c[2], a[2]);
 }
 
-void fp3_dblm_low(fp3_t c, fp3_t a) {
+void fp3_dblm_low(fp3_t c, const fp3_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
 	fp_dblm_low(c[2], a[2]);

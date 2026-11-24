@@ -37,8 +37,6 @@
 /*============================================================================*/
 
 void dv_print(const dig_t *a, size_t digits) {
-	/* Suppress possible unused parameter warning. */
-	(void)a;
 	for (size_t i = digits; i > 0; i--) {
 		util_print_dig(a[i-1], 1);
 	}
@@ -48,12 +46,6 @@ void dv_print(const dig_t *a, size_t digits) {
 }
 
 void dv_zero(dig_t *a, size_t digits) {
-#if ALLOC != DYNAMIC
-	if (digits > RLC_DV_DIGS) {
-		RLC_THROW(ERR_NO_PRECI);
-		return;
-	}
-#endif
 	memset(a, 0, digits * sizeof(dig_t));
 }
 
@@ -91,7 +83,7 @@ void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 	}
 }
 
- int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
+int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
 	for (size_t i = size; i > 0; i--) {
 		if (a[i - 1] != b[i - 1]) {
 			return (a[i - 1] > b[i - 1] ? RLC_GT : RLC_LT);
@@ -107,7 +99,10 @@ int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
 		borrow = (dig_t)(a[i] < b[i]) | ((dig_t)(a[i] == b[i]) & borrow);
 		diff |= a[i] ^ b[i];
 	}
-	return (borrow ? RLC_LT : (diff == 0 ? RLC_EQ : RLC_GT));
+	/* Compute RLC_GT = 1 if different, minus 2 if less, from the nonzero bit
+	 * of diff, without comparisons that compilers may turn into branches. */
+	diff = (dig_t)(diff | -diff) >> (RLC_DIG - 1);
+	return (int)diff - 2 * (int)borrow;
 }
 
 int dv_equ(const dig_t *a, const dig_t *b, size_t size) {
@@ -126,14 +121,21 @@ int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size) {
 	for (size_t i = 0; i < size; i++) {
 		r |= a[i] ^ b[i];
 	}
-
-	return (r == 0 ? RLC_EQ : RLC_NE);
+	/* The nonzero bit of r, without comparisons that compilers may turn into
+	 * branches. */
+	r = (dig_t)(r | -r) >> (RLC_DIG - 1);
+	return RLC_NE * (int)r;
 }
 
 void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	const dig_t *top;
 	dig_t *bot;
 	size_t i;
+
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
 
 	top = a + digits;
 	bot = c;
@@ -150,6 +152,11 @@ void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits) {
 	dig_t *top;
 	const dig_t *bot;
 	size_t i;
+
+	if (digits >= size) {
+		dv_zero(c, size);
+		return;
+	}
 
 	top = c + size - 1;
 	bot = a + size - 1 - digits;

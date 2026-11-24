@@ -42,7 +42,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 /**
  * Multiplies two binary field elements using shift-and-add multiplication.
  *
@@ -83,9 +83,8 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
 		dv_free(s);
 	}
 }
-#endif /* FB_MUL == BASIC */
+#endif /* FB_MUL == FB_BASIC */
 
-#if FB_KARAT > 0 || !defined(STRIP)
 /**
  * Multiplies two binary field elements using recursive Karatsuba
  * multiplication.
@@ -98,13 +97,12 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
  */
 static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 		uint_t level) {
-	int i, h, h1;
+	size_t i;
+	int h, h1;
 	dv_t a1, b1, ab;
 	dig_t *a0b0, *a1b1;
 
-	dv_null(a1);
-	dv_null(b1);
-	dv_null(ab);
+	dv_null_all(a1, b1, ab);
 
 	/* Compute half the digits of a or b. */
 	h = size >> 1;
@@ -112,18 +110,16 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		dv_new(a1);
-		dv_new(b1);
-		dv_new(ab);
+		dv_new_all(a1, b1, ab);
 		a0b0 = ab;
 		a1b1 = ab + 2 * h;
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 			fb_mul_basic_imp(a0b0, a, b, h);
 			fb_mul_basic_imp(a1b1, a + h, b + h, h1);
-#elif FB_MUL == INTEG || FB_MUL == LODAH
+#elif FB_MUL == FB_INTEG || FB_MUL == FB_LODAH
 			fb_muld_low(a0b0, a, b, h);
 			fb_muld_low(a1b1, a + h, b + h, h1);
 #endif
@@ -155,9 +151,9 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 
 		if (level <= 1) {
 			/* a1b1 = (a1 + a0)*(b1 + b0) */
-#if FB_MUL == BASIC
+#if FB_MUL == FB_BASIC
 			fb_mul_basic_imp(a1b1, a1, b1, h1);
-#elif FB_MUL == INTEG || FB_MUL == LODAH
+#elif FB_MUL == FB_INTEG || FB_MUL == FB_LODAH
 			fb_muld_low(a1b1, a1, b1, h1);
 #endif
 		} else {
@@ -171,22 +167,16 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(a1);
-		dv_free(b1);
-		dv_free(ab);
+		dv_free_all(a1, b1, ab);
 	}
 }
-
-#endif /* FB_KARAT > 0 || !defined(STRIP) */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_MUL == BASIC || !defined(STRIP)
-
 void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
-	int i;
+	size_t i;
 	dv_t s;
 	fb_t t;
 
@@ -224,22 +214,13 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(t);
-		fb_free(s);
+		fb_free_all(t, s);
 	}
 }
-
-#endif
-
-#if FB_MUL == INTEG || !defined(STRIP)
 
 void fb_mul_integ(fb_t c, const fb_t a, const fb_t b) {
 	fb_mulm_low(c, a, b);
 }
-
-#endif
-
-#if FB_MUL == LODAH || !defined(STRIP)
 
 void fb_mul_lodah(fb_t c, const fb_t a, const fb_t b) {
 	dv_t t;
@@ -259,10 +240,6 @@ void fb_mul_lodah(fb_t c, const fb_t a, const fb_t b) {
 		dv_free(t);
 	}
 }
-
-#endif
-
-#if FB_KARAT > 0 || !defined(STRIP)
 
 void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 	dv_t t;
@@ -284,8 +261,6 @@ void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 		dv_free(t);
 	}
 }
-
-#endif
 
 void fb_mul_dig(fb_t c, const fb_t a, dig_t b) {
 	dv_t t;

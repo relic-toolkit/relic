@@ -45,8 +45,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FB_RDC == BASIC || !defined(STRIP)
-
 void fb_rdc_basic(fb_t c, dv_t a) {
 	int j, k;
 	dig_t *tmpa;
@@ -62,7 +60,7 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 		/* First reduce the high part. */
 		for (int i = fb_bits(tmpa) - 1; i >= 0; i--) {
 			if (fb_get_bit(tmpa, i)) {
-				RLC_RIP(k, j, i - RLC_FB_BITS);
+				RLC_RIP(k, j, i - (int)RLC_FB_BITS);
 				if (k <= 0) {
 					fb_addd_low(tmpa + j, tmpa + j, fb_poly_get(), RLC_FB_DIGS);
 				} else {
@@ -71,9 +69,9 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 				}
 			}
 		}
-		for (int i = fb_bits(a) - 1; i >= RLC_FB_BITS; i--) {
+		for (int i = fb_bits(a) - 1; i >= (int)RLC_FB_BITS; i--) {
 			if (fb_get_bit(a, i)) {
-				RLC_RIP(k, j, i - RLC_FB_BITS);
+				RLC_RIP(k, j, i - (int)RLC_FB_BITS);
 				if (k == 0) {
 					fb_addd_low(a + j, a + j, fb_poly_get(), RLC_FB_DIGS);
 				} else {
@@ -89,16 +87,10 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fb_free(r);
+		dv_free(r);
 	}
 }
-
-#endif
-
-#if FB_RDC == QUICK || !defined(STRIP)
 
 void fb_rdc_quick(fb_t c, dv_t a) {
 	fb_rdcn_low(c, a);
 }
-
-#endif

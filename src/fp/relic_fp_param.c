@@ -48,6 +48,18 @@
  */
 #define STR_P256	"A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
 
+#elif FP_PRIME == 318
+/**
+ * Cofactor c of the SS3 prime p = d + c * r, with r = d^4 - d^2 + 1.
+ */
+#define STR_SS3_C	"2F8FE0400001FC07F"
+
+#elif FP_PRIME == 381
+/**
+ * Cofactor c of the SS3 prime p = d + c * r, with r = d^4 - d^2 + 1.
+ */
+#define STR_SS3_C	"10D3CCD80D53632AF7EBD0C10FFFBEFBF"
+
 #elif FP_PRIME == 511
 /**
  * CTIDH prime with 511 bits.
@@ -59,6 +71,10 @@
  * Random prime modulus for the Cocks-Pinch curve of embedding degree 8.
  */
 #define STR_P544	"BB9DFD549299F1C803DDD5D7C05E7CC0373D9B1AC15B47AA5AA84626F33E58FE66943943049031AE4CA1D2719B3A84FA363BCD2539A5CD02C6F4B6B645A58C1085E14411"
+
+#elif FP_PRIME == 672
+
+#define STR_P672	"9401FF90F28BFFB0C610FB10BF9E0FEFD59211629A7991563C5E468D43EC9CFE1549FD59C20AB5B9A7CDA7F27A0067B8303EEB4B31555CF4F24050ED155555CD7FA7A5F8AAAAAAAD47EDE1A6AAAAAAAAB69E6DCB"
 
 #elif FP_PRIME == 1024
 /**
@@ -100,23 +116,17 @@ int fp_param_get(void) {
 	return core_get()->fp_id;
 }
 
-void fp_param_set(int param) {
+int fp_param_set(int param) {
 	bn_t t0, t1, t2, p;
-	int f[10] = { 0 };
+	int f[10] = { 0 }, code = RLC_OK;
 
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(p);
+	bn_null_all(t0, t1, t2, p);
 
 	/* Suppress possible unused parameter warning. */
 	(void) f;
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(p);
+		bn_new_all(t0, t1, t2, p);
 
 		core_get()->fp_id = param;
 
@@ -329,6 +339,22 @@ void fp_param_set(int param) {
 				bn_set_bit(t0, 15, 1);
 				fp_prime_set_pairf(t0, EP_B24);
 				break;
+#elif FP_PRIME == 318
+			case SS3_318:
+				/* d = 2^63 + 2^59 - 2^7 and p = d + c * (d^4 - d^2 + 1). */
+				bn_set_2b(t0, 63);
+				bn_set_bit(t0, 59, 1);
+				bn_sub_dig(t0, t0, 128);
+				bn_sqr(p, t0);
+				bn_sqr(t1, p);
+				bn_sub(p, t1, p);
+				bn_add_dig(p, p, 1);
+				bn_read_str(t1, STR_SS3_C, strlen(STR_SS3_C), 16);
+				bn_mul(p, p, t1);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_SS3);
+				break;
 #elif FP_PRIME == 330
 			case K16_330:
 				/* x = 2^34-2^30+2^26+2^23+2^14-2^5+1. */
@@ -375,6 +401,21 @@ void fp_param_set(int param) {
 				bn_set_bit(t0, 16, 1);
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B12);
+				break;
+			case SS3_381:
+				/* d = 2^63 + 2^43 + 2^6 and p = d + c * (d^4 - d^2 + 1). */
+				bn_set_2b(t0, 63);
+				bn_set_bit(t0, 43, 1);
+				bn_set_bit(t0, 6, 1);
+				bn_sqr(p, t0);
+				bn_sqr(t1, p);
+				bn_sub(p, t1, p);
+				bn_add_dig(p, p, 1);
+				bn_read_str(t1, STR_SS3_C, strlen(STR_SS3_C), 16);
+				bn_mul(p, p, t1);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_SS3);
 				break;
 #elif FP_PRIME == 382
 			case PRIME_382105:
@@ -441,7 +482,7 @@ void fp_param_set(int param) {
 				break;
 #elif FP_PRIME == 448
 			case PRIME_448:
-				/* p = 2^448 - 2^224 + 1. */
+				/* p = 2^448 - 2^224 - 1. */
 				f[0] = -1;
 				f[1] = -224;
 				f[2] = 448;
@@ -481,6 +522,18 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B24);
 				break;
+			case B24_509S:
+				/* x = 2^51 + 2^44 + 2^41 - 2^37 + 1. */
+				bn_set_2b(t0, 51);
+				bn_set_2b(t1, 44);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 41);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 37);
+				bn_sub(t0, t0, t1);
+				bn_add_dig(t0, t0, 1);
+				fp_prime_set_pairf(t0, EP_B24);
+				break;
 #elif FP_PRIME == 510
 			case AFG16_510:
 				/* x = 2^32-2^26+2^10+2^5. */
@@ -510,7 +563,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pmers(f, 2);
 				break;
 #elif FP_PRIME == 544
-			case GMT8_544:
+			case CP8_544:
 				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
 				/* T = 2^64 - 2^54 + 2^37 + 2^32 - 4 */
 				bn_set_2b(t0, 64);
@@ -521,7 +574,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t1, 32);
 				bn_add(t0, t0, t1);
 				bn_sub_dig(t0, t0, 4);
-				fp_prime_set_pairf(t0, EP_GMT8);
+				fp_prime_set_pairf(t0, EP_CP8);
 				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 569
@@ -595,6 +648,18 @@ void fp_param_set(int param) {
 				bn_add(t0, t0, t1);
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_SG18);
+				break;
+#elif FP_PRIME == 672
+			case CP6_672:
+				bn_read_str(p, STR_P672, strlen(STR_P672), 16);
+				/* T = 2^128 - 2^124 - 2^69 */
+				bn_set_2b(t0, 128);
+				bn_set_2b(t1, 124);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 69);
+				bn_sub(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_CP6);
+				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 765
 			case FM16_765:
@@ -707,21 +772,22 @@ void fp_param_set(int param) {
 				break;
 #else
 			default:
-				fp_param_set_any_dense();
+				if (fp_param_set_any_dense() != RLC_OK) {
+					code = RLC_ERR;
+				}
 				core_get()->fp_id = 0;
 				break;
 #endif
 		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		/* The error is reported by the code returned, not thrown again. */
+		code = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(p);
+		bn_free_all(t0, t1, t2, p);
 	}
+	return code;
 }
 
 int fp_param_set_any(void) {
@@ -763,7 +829,8 @@ int fp_param_set_any_dense(void) {
 		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		/* The error is reported by the code returned, not thrown again. */
+		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(p);
@@ -772,118 +839,136 @@ int fp_param_set_any_dense(void) {
 }
 
 int fp_param_set_any_pmers(void) {
+	int r = RLC_OK;
+
 #if FP_PRIME == 127
-	fp_param_set(MP_127);
+	r = fp_param_set(MP_127);
 #elif FP_PRIME == 160
-	fp_param_set(SECG_160);
+	r = fp_param_set(SECG_160);
 #elif FP_PRIME == 192
-	fp_param_set(NIST_192);
+	r = fp_param_set(NIST_192);
 #elif FP_PRIME == 224
-	fp_param_set(NIST_224);
+	r = fp_param_set(NIST_224);
 #elif FP_PRIME == 251
-	fp_param_set(SQI_251);
+	r = fp_param_set(SQI_251);
 #elif FP_PRIME == 255
-	fp_param_set(PRIME_25519);
+	r = fp_param_set(PRIME_25519);
 #elif FP_PRIME == 256
-	fp_param_set(NIST_256);
+	r = fp_param_set(NIST_256);
 #elif FP_PRIME == 384
-	fp_param_set(NIST_384);
+	r = fp_param_set(NIST_384);
 #elif FP_PRIME == 448
-	fp_param_set(PRIME_448);
+	r = fp_param_set(PRIME_448);
 #elif FP_PRIME == 521
-	fp_param_set(NIST_521);
+	r = fp_param_set(NIST_521);
 #else
 	return RLC_ERR;
 #endif
-	return RLC_OK;
+	return r;
 }
 
 int fp_param_set_any_h2adc(void) {
+	int r = RLC_OK;
+
 #if FP_PRIME == 255
-	fp_param_set(PRIME_H2ADC);
+	r = fp_param_set(PRIME_H2ADC);
 #else
 	return RLC_ERR;
 #endif
-	return RLC_OK;
+	return r;
 }
 
 int fp_param_set_any_tower(void) {
+	int r = RLC_OK;
+
 #if FP_PRIME == 158
-	fp_param_set(BN_158);
+	r = fp_param_set(BN_158);
 #elif FP_PRIME == 254
-	fp_param_set(BN_254);
+	r = fp_param_set(BN_254);
 #elif FP_PRIME == 256
-	fp_param_set(BN_256);
+	r = fp_param_set(BN_256);
 #elif FP_PRIME == 315
-	fp_param_set(B24_315);
+	r = fp_param_set(B24_315);
 #elif FP_PRIME == 317
-	fp_param_set(B24_317);
+	r = fp_param_set(B24_317);
+#elif FP_PRIME == 318
+	r = fp_param_set(SS3_318);
 #elif FP_PRIME == 330
-	fp_param_set(K16_330);
+	r = fp_param_set(K16_330);
 #elif FP_PRIME == 354
-	fp_param_set(K18_354);
+	r = fp_param_set(K18_354);
 #elif FP_PRIME == 377
-	fp_param_set(B12_377);
+	r = fp_param_set(B12_377);
 #elif FP_PRIME == 381
-	fp_param_set(B12_381);
+#ifdef EC_SUPER
+	r = fp_param_set(SS3_381);
+#else
+	r = fp_param_set(B12_381);
+#endif
 #elif FP_PRIME == 382
-	fp_param_set(BN_382);
+	r = fp_param_set(BN_382);
 #elif FP_PRIME == 383
-	fp_param_set(B12_383);
+	r = fp_param_set(B12_383);
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
-	fp_param_set(B12_446);
+	r = fp_param_set(B12_446);
 #else
-	fp_param_set(BN_446);
+	r = fp_param_set(BN_446);
 #endif
 #elif FP_PRIME == 455
-	fp_param_set(B12_455);
+	r = fp_param_set(B12_455);
 #elif FP_PRIME == 508
-	fp_param_set(K18_508);
+	r = fp_param_set(K18_508);
 #elif FP_PRIME == 509
-	fp_param_set(B24_509);
+#ifdef FP_QNRES
+	r = fp_param_set(B24_509);
+#else
+	r = fp_param_set(B24_509S);
+#endif
 #elif FP_PRIME == 510
-	fp_param_set(AFG16_510);
+	r = fp_param_set(AFG16_510);
 #elif FP_PRIME == 511
-	fp_param_set(CTIDH_511);
+	r = fp_param_set(CTIDH_511);
 #elif FP_PRIME == 544
-	fp_param_set(GMT8_544);
+	r = fp_param_set(CP8_544);
 #elif FP_PRIME == 569
-	fp_param_set(SG54_569);
+	r = fp_param_set(SG54_569);
 #elif FP_PRIME == 575
-	fp_param_set(B48_575);
+	r = fp_param_set(B48_575);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
-	fp_param_set(B12_638);
+	r = fp_param_set(B12_638);
 #else
 	//fp_param_set(BN_638);
-	fp_param_set(K18_638);
+	r = fp_param_set(K18_638);
 	//fp_param_set(SG18_638);
 #endif
+#elif FP_PRIME == 672
+	r = fp_param_set(CP6_672);
 #elif FP_PRIME == 765
-	fp_param_set(FM16_765);
+	r = fp_param_set(FM16_765);
 #elif FP_PRIME == 766
-	fp_param_set(AFG16_766);
+	r = fp_param_set(AFG16_766);
 	//fp_param_set(K16_766);
 #elif FP_PRIME == 768
-	fp_param_set(FM18_768);
+	r = fp_param_set(FM18_768);
 #elif FP_PRIME == 1150
-	fp_param_set(B12_1150);
+	r = fp_param_set(B12_1150);
 #elif FP_PRIME == 1536
-	fp_param_set(SS_1536);
+	r = fp_param_set(SS_1536);
 #elif FP_PRIME == 3072
-	fp_param_set(K1_3072);
+	r = fp_param_set(K1_3072);
 #elif FP_PRIME == 4096
-	fp_param_set(SQALE_4096);
+	r = fp_param_set(SQALE_4096);
 #else
 	do {
 		/* Since we have to generate a prime number, pick a nice towering. */
-		fp_param_set_any_dense();
-	} while (fp_prime_get_mod8() == 1 || fp_prime_get_mod8() == 5
-		|| fp_prime_get_mod18() % 3 == 2);
+		r = fp_param_set_any_dense();
+	} while (r == RLC_OK && (fp_prime_get_mod8() == 1 ||
+		fp_prime_get_mod8() == 5 || fp_prime_get_mod18() % 3 == 2));
 #endif
 
-	return RLC_OK;
+	return r;
 }
 
 void fp_param_print(void) {

@@ -41,29 +41,24 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_BASIC_IMP(C, F)											\
-	static void C##_tpl_basic_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_BASIC(C, F)												\
+	void C##_tpl_basic(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5);								\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5);							\
 																			\
 			/* t0 = A = 3x^2 + a */											\
 			F##_sqr(t0, p->x);												\
 			F##_mul_dig(t0, t0, 3);											\
-			F##_add(t0, t0, ep_curve_get_a());								\
+			F##_add(t0, t0, C##_curve_get_a());								\
 			/* t1 = B = 2y */												\
 			F##_dbl(t1, p->y);												\
 			/* t2 = B^2 = 4y^2 */											\
@@ -75,7 +70,7 @@
 			F##_add(t4, t4, t5);	/* t4 = 3xB^2 */						\
 			F##_sub(t3, t3, t4);    /* t3 = D (the denominator) */			\
 			if (F##_is_zero(t3)) {											\
-				ep_set_infty(r);											\
+				C##_set_infty(r);											\
 			} else {														\
 				/* t4 = Single Inversion = 1 / (B * D) */					\
 				F##_mul(t4, t1, t3);										\
@@ -98,18 +93,13 @@
 				F##_mul(t0, t0, t2);										\
 				F##_sub(r->y, t0, p->y);									\
 				F##_copy(r->x, t1);											\
+				F##_copy(r->z, p->z);										\
+				r->coord = EC_AFFIN;											\
 			}																\
-			F##_copy(r->z, p->z);											\
-			r->coord = BASIC;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5);							\
 		}																	\
 	}																		\
 
@@ -119,8 +109,10 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_PROJC_IMP(C, F)											\
-	static void C##_tpl_projc_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_PROJC(C, F)												\
+	void C##_tpl_projc(C##_t r, const C##_t p) {							\
+		/* The formulas are complete, including for the point at infinity	\
+		 * (0 : 1 : 0). */													\
 		C##_t q;															\
 																			\
 		C##_null(q);														\
@@ -145,26 +137,19 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#define TMPL_TPL_JACOB_IMP(C, F)											\
-	static void C##_tpl_jacob_imp(C##_t r, const C##_t p) {					\
+#define TMPL_EP_TPL_JACOB(C, F)												\
+	void C##_tpl_jacob(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
 		F##_t t0, t1, t2, t3, t4, t5, t6;									\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
-		F##_null(t6);														\
+		F##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
-			F##_new(t6);													\
+			F##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
 																			\
 			/* t0 = XX = X1^2 */											\
 			F##_sqr(t0, p->x);												\
@@ -185,7 +170,7 @@
 				F##_sub(t4, t3, t4);										\
 				F##_mul(t4, t4, p->y);										\
 				/* Z3 = 3*XtX1Z1. */										\
-				if (p->coord == BASIC) {									\
+				if (p->coord == EC_AFFIN) {									\
 					F##_mul(t1, p->x, t2);									\
 				} else {													\
 					F##_mul(t1, p->x, p->z);								\
@@ -216,7 +201,7 @@
 				F##_dbl(t4, t0);											\
 				F##_add(t4, t4, t0);										\
 				F##_sqr(t5, t2);											\
-				F##_mul(t5, t5, ep_curve_get_a());							\
+				F##_mul(t5, t5, C##_curve_get_a());							\
 				F##_add(t4, t4, t5);										\
 				/* t5 = MM = M^2 */											\
 				F##_sqr(t5, t4);											\
@@ -249,8 +234,8 @@
 				F##_sub(t3, t3, t2);										\
 				/* X3 = 4*(X1*EE - 4*YY*U) */								\
 				F##_mul(t4, p->x, t0);										\
-				F##_sqr(t5, p->y); 											\
-				F##_dbl(t5, t5); 											\
+				F##_sqr(t5, p->y);											\
+				F##_dbl(t5, t5);											\
 				F##_dbl(t5, t5);											\
 				F##_mul(t5, t5, t3);										\
 				F##_sub(r->x, t4, t5);										\
@@ -266,17 +251,11 @@
 				F##_dbl(r->y, r->y);										\
 				F##_dbl(r->y, r->y);										\
 			}																\
-			r->coord = JACOB;												\
+			r->coord = EC_JACOB;												\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
-			F##_free(t6);													\
+			F##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
 		}																	\
 	}																		\
 

@@ -96,7 +96,7 @@ static int qf_kern_imp(bn_t r, const qf_t f) {
 		}
 
 		if (bn_cmp_dig(ft->a, 1) == RLC_EQ && bn_cmp_dig(ft->b, 1) == RLC_EQ) {
-			bn_gcd_lower(t, x, y);
+			bn_gcd(t, x, y);
 			bn_div(x, x, t);
 			bn_div(y, y, t);
 
