@@ -1685,11 +1685,15 @@ static int validity(void) {
 			RLC_CAT(RLC_GT_LOWER, neg)(a, a);
 			TEST_ASSERT(!gt_is_valid(a), end);
 #if RLC_GT_EMBED > 1
-			/* Cyclotomic elements of order coprime to r are not in G_T. */
+			/* Cyclotomic elements of order coprime to r are not in G_T,
+			 * except on GT-strong curves, which test only for the
+			 * cyclotomic subgroup. */
 			RLC_CAT(RLC_GT_LOWER, rand)(a);
 			RLC_CAT(RLC_GT_LOWER, conv_cyc)(a, a);
 			gt_exp_any(a, a, n);
-			TEST_ASSERT(gt_is_unity(a) || !gt_is_valid(a), end);
+			if (core_get()->ep_id != B12_P383) {
+				TEST_ASSERT(gt_is_unity(a) || !gt_is_valid(a), end);
+			}
 #endif
 		}
 		TEST_END;
