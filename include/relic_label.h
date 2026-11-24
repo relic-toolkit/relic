@@ -4236,6 +4236,12 @@
 #define md_xof_int 	RLC_PREFIX(md_xof_int)
 #define md_xof_bits 	RLC_PREFIX(md_xof_bits)
 
+#undef bc_aes_cbc_enc
+#undef bc_aes_cbc_dec
+
+#define bc_aes_cbc_enc 	RLC_PREFIX(bc_aes_cbc_enc)
+#define bc_aes_cbc_dec 	RLC_PREFIX(bc_aes_cbc_dec)
+
 #endif /* RLC_LABEL */
 
 #endif /* !RLC_LABEL_H */

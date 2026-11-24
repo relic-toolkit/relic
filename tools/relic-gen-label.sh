@@ -295,6 +295,7 @@ echo
 REDEF cp
 
 REDEF md
+REDEF bc
 
 echo "#endif /* RLC_LABEL */"
 echo
