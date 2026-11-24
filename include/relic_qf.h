@@ -308,6 +308,15 @@ void qf_get_dsc(bn_t d, const qf_t f);
 int qf_has_dsc(const qf_t f, const bn_t d);
 
 /**
+ * Tests if a quadratic binary form is primitive, that is, if its coefficients
+ * have no common factor.
+ *
+ * @param[in] f				- the binary quadratic form to test.
+ * @return a boolean value indicating if the form is primitive.
+ */
+int qf_is_prim(const qf_t f);
+
+/**
  * Generates a random element of the group with the given discriminant.
  *
  * @param[out] f			- the generated random element.

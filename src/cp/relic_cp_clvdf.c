@@ -298,6 +298,31 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 }
 
 /**
+ * Tests if a positive definite form is reduced, that is, the unique
+ * representative of its class: |b| <= a <= c, with b >= 0 if |b| = a or a = c.
+ * Other representatives of the same class would hash to other challenges.
+ *
+ * @param[in] f			- the form to test.
+ * @return a boolean value indicating if the form is reduced.
+ */
+static int clvdf_is_rdc(const qf_t f) {
+	int cmp;
+
+	if (bn_sign(f->a) == RLC_NEG || bn_is_zero(f->a)) {
+		return 0;
+	}
+	cmp = bn_cmp_abs(f->b, f->a);
+	if (cmp == RLC_GT || bn_cmp(f->a, f->c) == RLC_GT) {
+		return 0;
+	}
+	if ((cmp == RLC_EQ || bn_cmp(f->a, f->c) == RLC_EQ) &&
+			bn_sign(f->b) == RLC_NEG) {
+		return 0;
+	}
+	return 1;
+}
+
+/**
  * Tests if a class of discriminant -pq is a square, by its genus character for
  * q. As (p/q) = -1, the squares are exactly the classes of odd order, which
  * excludes the ambiguous class of order 2 that anyone can build from p and q.
@@ -537,12 +562,14 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 		bn_new(e);
 		bn_new(two);
 
-		/* u and y must also be squares, or multiplying both by the class of
-		 * order 2 would give a second output that decodes to the same x. */
-		if (qf_has_dsc(u, &(core_get()->qf_dk)) &&
-				qf_has_dsc(y, &(core_get()->qf_dk)) &&
-				qf_has_dsc(z, &(core_get()->qf_d)) &&
-				clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
+		/* All three must be reduced, so that each class has one encoding
+		 * and one challenge, z must be primitive, and u and y must be
+		 * squares, or multiplying both by the class of order 2 would give
+		 * a second output that decodes to the same x. */
+		if (qf_has_dsc(u, &(core_get()->qf_dk)) && clvdf_is_rdc(u) &&
+				qf_has_dsc(y, &(core_get()->qf_dk)) && clvdf_is_rdc(y) &&
+				qf_has_dsc(z, &(core_get()->qf_d)) && clvdf_is_rdc(z) &&
+				qf_is_prim(z) && clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
 			clvdf_map_p(l, t, u, y);
 
 			/* r = 2^t mod l, by exponentiation on the delay rather than on 2^t */
@@ -624,12 +651,14 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 		bn_new(e);
 		bn_new(two);
 
-		/* u and y must also be squares, or multiplying both by the class of
-		 * order 2 would give a second output that decodes to the same x. */
-		if (qf_has_dsc(u, &(core_get()->qf_dk)) &&
-				qf_has_dsc(y, &(core_get()->qf_dk)) &&
-				qf_has_dsc(z, &(core_get()->qf_d)) &&
-				clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
+		/* All three must be reduced, so that each class has one encoding
+		 * and one challenge, z must be primitive, and u and y must be
+		 * squares, or multiplying both by the class of order 2 would give
+		 * a second output that decodes to the same x. */
+		if (qf_has_dsc(u, &(core_get()->qf_dk)) && clvdf_is_rdc(u) &&
+				qf_has_dsc(y, &(core_get()->qf_dk)) && clvdf_is_rdc(y) &&
+				qf_has_dsc(z, &(core_get()->qf_d)) && clvdf_is_rdc(z) &&
+				qf_is_prim(z) && clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
 			clvdf_map_p(l, t, u, y);
 
 			/* r = 2^t mod l, by exponentiation on the delay rather than on 2^t */

@@ -332,7 +332,7 @@ int qf_has_dsc(const qf_t f, const bn_t d) {
 }
 
 
-int qf_is_prime(const qf_t f) {
+int qf_is_prim(const qf_t f) {
 	bn_t t;
 	int result;
 
