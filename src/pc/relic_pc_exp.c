@@ -1035,10 +1035,15 @@ void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) 
 }
 
 void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m) {
-	int gls = 0;
+	int gls = 0, dig = 1, one = 1;
+	size_t l = 0, *_l = RLC_ALLOCA(size_t, m);
+	int8_t u, *naf = RLC_ALLOCA(int8_t, m * (RLC_DIG + 1));
 	gt_t t;
+	bn_t k;
 
 	if (m == 0) {
+		RLC_FREE(_l);
+		RLC_FREE(naf);
 		gt_set_unity(e);
 		return;
 	}
@@ -1046,13 +1051,55 @@ void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m) {
 #if FP_PRIME < 1536 && FP_PRIME != 544
 	gls = (ep_curve_embed() != 18);
 #endif
+	for (size_t i = 0; i < m; i++) {
+		dig &= (bn_bits(b[i]) <= RLC_DIG);
+	}
 
 	gt_null(t);
+	bn_null(k);
 
 	RLC_TRY {
 		gt_new(t);
+		bn_new(k);
 
-		if (gls) {
+		if (dig) {
+			/* Exponents of one digit skip the Frobenius decomposition, whose
+			 * tables cost more than they save at this size, and share one
+			 * chain of squarings over interleaved NAFs instead. */
+			for (size_t i = 0; i < m; i++) {
+				bn_abs(k, b[i]);
+				_l[i] = RLC_DIG + 1;
+				bn_rec_naf(naf + i * (RLC_DIG + 1), &_l[i], k, 2);
+				if (bn_sign(b[i]) == RLC_NEG) {
+					for (size_t j = 0; j < _l[i]; j++) {
+						naf[i * (RLC_DIG + 1) + j] = -naf[i * (RLC_DIG + 1) + j];
+					}
+				}
+				l = RLC_MAX(l, _l[i]);
+			}
+			gt_set_unity(e);
+			for (int j = l - 1; j >= 0; j--) {
+				if (!one) {
+					gt_sqr(e, e);
+				}
+				for (size_t i = 0; i < m; i++) {
+					u = (j < (int)_l[i] ? naf[i * (RLC_DIG + 1) + j] : 0);
+					if (u > 0) {
+						gt_copy(t, a[i]);
+					} else if (u < 0) {
+						gt_inv(t, a[i]);
+					} else {
+						continue;
+					}
+					if (one) {
+						gt_copy(e, t);
+					} else {
+						gt_mul(e, e, t);
+					}
+					one = 0;
+				}
+			}
+		} else if (gls) {
 #if FP_PRIME < 1536 && FP_PRIME != 544
 			/* Interleave as many elements as fit their tables in 1 MiB of
 			 * stack, and multiply the partial results. */
@@ -1077,6 +1124,9 @@ void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		gt_free(t);
+		bn_free(k);
+		RLC_FREE(_l);
+		RLC_FREE(naf);
 	}
 }
 

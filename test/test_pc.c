@@ -1689,6 +1689,23 @@ int exponentiation(void) {
 				gt_exp_sim_lot(c, (const gt_t *)g, k, m);
 				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			}
+			/* Exponents of one digit, including a zero and a negative one,
+			 * take a path without the Frobenius decomposition. */
+			for (int j = 0; j < 5; j++) {
+				bn_rand(k[j], RLC_POS, RLC_DIG);
+			}
+			bn_zero(k[1]);
+			bn_neg(k[2], k[2]);
+			bn_rand(k[3], RLC_POS, 40);
+			for (int m = 0; m <= 5; m++) {
+				gt_set_unity(b);
+				for (int j = 0; j < m; j++) {
+					gt_exp(c, g[j], k[j]);
+					gt_mul(b, b, c);
+				}
+				gt_exp_sim_lot(c, (const gt_t *)g, k, m);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			}
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
