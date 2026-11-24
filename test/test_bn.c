@@ -278,6 +278,26 @@ static int util(void) {
 				bn_div(a, a, b);
 			}
 			TEST_ASSERT(bn_is_zero(a), end);
+			/*
+			 * With n = x^16 there would be 16 digits, so the result has 8
+			 * digits in base x^2 instead, each below 2^(bits / 8).
+			 */
+			bn_rand(b, RLC_POS, 16);
+			bn_set_bit(b, 15, 1);
+			bn_sqr(c, b);
+			bn_sqr(c, c);
+			bn_sqr(c, c);
+			bn_sqr(c, c);
+			bits = 8 * (2 * bn_bits(b) - 2);
+			bn_rand_frb(a, b, c, bits);
+			TEST_ASSERT(bn_sign(a) == RLC_POS && bn_cmp(a, c) == RLC_LT, end);
+			bn_sqr(b, b);
+			for (int k = 0; k < 8; k++) {
+				bn_mod(d, a, b);
+				TEST_ASSERT(bn_bits(d) <= bits / 8, end);
+				bn_div(a, a, b);
+			}
+			TEST_ASSERT(bn_is_zero(a), end);
 		}
 		TEST_END;
 

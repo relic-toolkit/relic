@@ -324,7 +324,7 @@ void bn_rand_mod(bn_t a, const bn_t b) {
 }
 
 void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
-	size_t i, dim = RLC_CEIL(bn_bits(order), bn_bits(x));
+	size_t i, s, dim = RLC_CEIL(bn_bits(order), bn_bits(x));
 	bn_t t, u;
 
 	bn_null_all(t, u);
@@ -332,9 +332,18 @@ void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
 	RLC_TRY {
 		bn_new_all(t, u);
 
+		/* Beyond 8 digits, as with the 16 of embedding degree 48, digits of
+		 * a few bits save fewer squarings than the extra multiplications and
+		 * Frobenius maps cost, so draw at most 8 digits in base |x|^s. */
+		s = RLC_CEIL(dim, 8);
+		dim = RLC_CEIL(dim, s);
 		bits = RLC_CEIL(bits, dim);
 
 		bn_abs(u, x);
+		bn_copy(t, u);
+		for (i = 1; i < s; i++) {
+			bn_mul(u, u, t);
+		}
 		bn_zero(a);
 		for (i = 0; i < dim; i++) {
 			bn_rand(t, RLC_POS, bits);

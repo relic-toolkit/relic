@@ -649,7 +649,9 @@ void bn_rand_mod(bn_t a, const bn_t b);
 
 /**
  * Assigns a random value to a multiple precision integer with absolute value
- * smaller tha a given modulus and encoded in a given basis.
+ * smaller tha a given modulus and encoded in a given basis. The value is drawn
+ * as at most 8 digits in base |b|^s, with s the smallest power that keeps the
+ * number of digits of the modulus in that base within 8.
  *
  * @param[out] a			- the multiple precision integer to assign.
  * @param[in] b				- the basis.
