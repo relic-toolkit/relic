@@ -1103,11 +1103,28 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			if (u->used > d) {
 				dv_copy(mu, u->dp + d, RLC_MIN(u->used - d, d + 1));
 			}
+			/* If |x|^sub < n < 2 * |x|^sub, the sub digits cannot hold |k|
+			 * mod n in [|x|^sub, n), as the quotient left after the last one
+			 * would be lost, but they hold n - |k|. Such |k| is replaced by
+			 * n - |k| in constant time and all digits are negated. */
+			bn_set_dig(l[2], 1);
+			for (int i = 0; i < sub; i++) {
+				bn_mul(l[2], l[2], l[1]);
+			}
+			bn_sub(l[3], n, l[2]);
+			h = 0;
+			if (bn_sign(l[3]) == RLC_POS && bn_cmp(l[3], l[2]) == RLC_LT) {
+				dv_zero(c, d);
+				dv_copy(c, l[2]->dp, l[2]->used);
+				h = bn_subn_low(q, a, c, d) ^ 1;
+				bn_subn_low(r, n->dp, a, d);
+				dv_copy_sec(a, r, d, h);
+			}
 			for (int i = 0; i < sub; i++) {
 				rec_div(q, r, a, m, mu, d, bn_bits(l[1]));
 				bn_read_raw(ki[i], r, d);
 				ki[i]->sign = (((sx == RLC_NEG) && (i % 2 != 0)) ^
-						(sk == RLC_NEG)) &
+						(sk == RLC_NEG) ^ (int)h) &
 						((ki[i]->used > 1) | (ki[i]->dp[0] != 0));
 				dv_copy(a, q, d);
 			}

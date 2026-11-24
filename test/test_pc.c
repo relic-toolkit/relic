@@ -1031,6 +1031,16 @@ static int multiplication2(void) {
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
 
+		TEST_CASE("multiplication by the order minus one is negation") {
+			/* It is |x|^s on curves with n = |x|^s + 1, such as AFG16. */
+			bn_sub_dig(k, n, 1);
+			g2_neg(q, p);
+			g2_mul(r, p, k);
+			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
+			g2_mul_sec(r, p, k);
+			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("point multiplication by digit is correct") {
 			g2_mul_dig(r, p, 0);
 			TEST_ASSERT(g2_is_infty(r), end);
@@ -1595,6 +1605,15 @@ int exponentiation(void) {
 			gt_rand(a);
 			gt_exp_any(c, a, n);
 			TEST_ASSERT(gt_is_unity(c) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("exponentiation by the order minus one is inversion") {
+			bn_sub_dig(d, n, 1);
+			gt_inv(b, a);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			gt_exp_sec(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation is correct") {

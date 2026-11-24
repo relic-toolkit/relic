@@ -70,8 +70,6 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_get_rec(),
 				ep_curve_is_pairf() == EP_BN);
-		even = bn_is_even(_k[0]);
-		bn_add_dig(_k[0], _k[0], even);
 		ep3_norm(q[0], p);
 		for (size_t i = 1; i < 6; i++) {
 			ep3_psi(q[i], q[i - 1]);
@@ -82,6 +80,9 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 			}
 			bn_abs(_k[i], _k[i]);
 		}
+		/* Make it odd after the sign is moved to q[0], which may be -P. */
+		even = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even);
 
 		ep3_copy(t[0], q[0]);
 		for (size_t i = 1; i < (1 << 5); i++) {
