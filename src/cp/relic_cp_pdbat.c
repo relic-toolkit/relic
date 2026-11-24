@@ -313,10 +313,9 @@ int cp_amore_gen(bn_t s, gt_t e) {
 	return result;
 }
 
-int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+int cp_amore_ask(bn_t *r, g1_t *c, g2_t x, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const g1_t *p, const g2_t *q, size_t m) {
 	bn_t n, t, z, b, *o = NULL;
-	g1_t w;
 	int result = RLC_OK;
 	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
 
@@ -340,11 +339,9 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	}
 
 	bn_null_all(n, t, z, b);
-	g1_null(w);
 
 	RLC_TRY {
 		bn_new_all(n, t, z, b);
-		g1_new(w);
 		for (size_t i = 0; m > 1 && i < m; i++) {
 			bn_new(o[i]);
 		}
@@ -377,21 +374,19 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 			g2_mul(d, q[0], r[0]);
 			g2_sub(d, v, d);
 		} else {
-			/* Blind each C_i = [r_i]P_i + [o_i]W with its own short o_i and
-			 * set D = sum [o_i]Q_i, as a shared W cancels in C_i - C_j and
-			 * lets the server shift results between pairs. Recovering the
-			 * o_i from D is a discrete logarithm in m >= 2 dimensions. */
+			/* Mask each C_i = [r_i]P_i + [o_i]U with its own short o_i, and
+			 * set D = sum [o_i]Q_i and X = [z](D - V). A mask shared by all
+			 * C_i cancels in C_i - C_j and lets the server shift results
+			 * between pairs, while recovering the o_i from D is a discrete
+			 * logarithm in m >= 2 dimensions. */
 			for (size_t i = 0; i < m; i++) {
 				do {
 					bn_rand(o[i], RLC_POS, eps);
 				} while (bn_is_zero(o[i]));
 			}
-			g1_rand(w);
-			g1_sub(x, u, w);
-			g1_norm(x, x);
 			g2_mul_sim_lot(d, q, o, m);
-			g2_sub(y, v, d);
-			g2_mul_sec(y, y, z);
+			g2_sub(x, d, v);
+			g2_mul_sec(x, x, z);
 
 			for (size_t i = 0; i < m; i++) {
 				if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
@@ -399,13 +394,14 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 				} else {
 					bn_rand_frb(r[i], &(core_get()->par), n, eps);
 				}
-				g1_mul_sim(c[i], p[i], r[i], w, o[i]);
+				g1_mul_sim(c[i], p[i], r[i], u, o[i]);
 				if (g1_is_infty(c[i])) {
 					result = RLC_ERR;
 				}
 			}
 			g1_norm_sim(c, c, m);
-			if (g1_is_infty(x) || g2_is_infty(y)) {
+			g2_norm(x, x);
+			if (g2_is_infty(x)) {
 				result = RLC_ERR;
 			}
 		}
@@ -419,7 +415,6 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	}
 	RLC_FINALLY {
 		bn_free_all(n, t, z, b);
-		g1_free(w);
 		for (size_t i = 0; m > 1 && i < m; i++) {
 			bn_free(o[i]);
 		}
@@ -428,55 +423,62 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	return result;
 }
 
-int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
-		const g2_t d, const g1_t *p, const g2_t *q, size_t m) {
-	g1_t ps[2];
-	g2_t qs[2];
-	gt_t g;
+int cp_amore_ans(gt_t *gs, const g1_t *c, const g2_t x, const g2_t d,
+		const g1_t *p, const g2_t *q, size_t m) {
+	g1_t *_p = (g1_t *)RLC_ALLOCA(g1_t, m + 1);
+	g2_t *_q = (g2_t *)RLC_ALLOCA(g2_t, m + 1);
 	int result = RLC_OK;
 
-	gt_null(g);
-	for (size_t i = 0; i < 2; i++) {
-		g1_null(ps[i]);
-		g2_null(qs[i]);
+	if (_p == NULL || _q == NULL) {
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	for (size_t i = 0; i <= m; i++) {
+		g1_null(_p[i]);
+		g2_null(_q[i]);
 	}
 
 	RLC_TRY {
-		for (size_t i = 0; i < 2; i++) {
-			g1_new(ps[i]);
-			g2_new(qs[i]);
+		for (size_t i = 0; i <= m; i++) {
+			g1_new(_p[i]);
+			g2_new(_q[i]);
 		}
-		gt_new(g);
 
 		if (m == 1) {
 			/* gs_1 = e(p_0, d) * e(c_0, G_2). */
-			g1_copy(ps[0], p[0]);
-			g2_copy(qs[0], d);
+			g1_copy(_p[0], p[0]);
+			g2_copy(_q[0], d);
 			pc_map(gs[0], p[0], q[0]);
-			pc_map_sim_gen(gs[1], ps, qs, 1, c[0]);
+			pc_map_sim_gen(gs[1], _p, _q, 1, c[0]);
 		} else {
 			for (size_t i = 0; i < m; i++) {
 				pc_map(gs[i], p[i], q[i]);
 			}
 
-			g1_copy(ps[0], x);
-			g2_copy(qs[0], d);
-			g1_get_gen(ps[1]);
-			g2_copy(qs[1], y);
-			
-			pc_map_sim(g, c, q, m);
-			pc_map_sim(gs[m], ps, qs, 2);
-			gt_mul(gs[m], gs[m], g);
+			/* gs_m = prod e(c_i, -q_i) * e(G_1, x), as the inverse of a
+			 * single product of m + 1 pairings. */
+			for (size_t i = 0; i < m; i++) {
+				g1_copy(_p[i], c[i]);
+				g2_copy(_q[i], q[i]);
+			}
+			g1_get_gen(_p[m]);
+			g1_neg(_p[m], _p[m]);
+			g2_copy(_q[m], x);
+			pc_map_sim(gs[m], _p, _q, m + 1);
 			gt_inv(gs[m], gs[m]);
 		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
-		for (size_t i = 0; i < 2; i++) {
-			g1_free(ps[i]);
-			g2_free(qs[i]);
+		for (size_t i = 0; i <= m; i++) {
+			g1_free(_p[i]);
+			g2_free(_q[i]);
 		}
-		gt_free(g);
+		RLC_FREE(_p);
+		RLC_FREE(_q);
 	}
 	return result;
 }

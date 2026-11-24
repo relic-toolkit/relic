@@ -135,14 +135,14 @@ static int pdpub(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, &p, &q, 1) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(&r2, &w1, v2, w2, u1, u2, r1, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, &w1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			/* A modified answer is rejected and gives no result. */
 			gt_rand(f);
 			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 0, end);
 			TEST_ASSERT(gt_is_unity(g[0]), end);
-			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, &w1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
@@ -290,13 +290,12 @@ static int pdprv(void) {
 static int pdbat(void) {
 	int code = RLC_ERR;
 	bn_t r, ls[AGGS], b[AGGS];
-	g1_t p[AGGS], rs[AGGS], u1, v1;
+	g1_t p[AGGS], rs[AGGS], u1;
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2, w2;
 	gt_t e, ts[AGGS + 1], g[AGGS + 1], f;
 
 	bn_null(r);
 	g1_null(u1);
-	g1_null(v1);
 	g2_null(u2);
 	g2_null(v2);
 	g2_null(w2);
@@ -320,7 +319,6 @@ static int pdbat(void) {
 		gt_new(f);
 		bn_new(r);
 		g1_new(u1);
-		g1_new(v1);
 		g2_new(u2);
 		g2_new(v2);
 		g2_new(w2);
@@ -378,26 +376,26 @@ static int pdbat(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v2, w2, p, q, 1) == RLC_OK, end);
 			/* A modified answer is rejected and gives no result. */
 			gt_rand(f);
 			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 0, end);
 			TEST_ASSERT(gt_is_unity(g[0]), end);
-			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v2, w2, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v2, w2, p, q, AGGS) == RLC_OK, end);
 			/* A modified answer is rejected and gives no result. */
 			gt_rand(f);
 			gt_mul(g[0], g[0], f);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 0, end);
 			TEST_ASSERT(gt_is_unity(g[0]), end);
-			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t j = 0; j < AGGS; j++) {
 				pc_map(e, p[j], q[j]);
@@ -405,12 +403,12 @@ static int pdbat(void) {
 			}
 			/* Arguments at infinity are rejected, as they reveal the key. */
 			g1_set_infty(p[0]);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
 			g1_rand(p[0]);
 			g2_set_infty(q[0]);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, 1) == RLC_ERR, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v2, w2, u1, u2, r, p, q, AGGS) == RLC_ERR, end);
 			g2_rand(q[0]);
 		} TEST_END;
 	} RLC_CATCH_ANY {
@@ -421,7 +419,6 @@ static int pdbat(void) {
   end:
 	bn_free(r);
 	g1_free(u1);
-	g1_free(v1);
 	g2_free(u2);
 	g2_free(v2);
 	g2_free(w2);

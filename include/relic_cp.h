@@ -1738,9 +1738,8 @@ int cp_amore_gen(bn_t s, gt_t e);
  *
  * @param[out] r			- the m scalars for the protocol.
  * @param[out] c			- the m points for the protocol.
- * @param[out] x			- the first element in G_1.
- * @param[out] y			- the second element in G_2.
- * @param[out] d			- the addition of G_2 elements.
+ * @param[out] x			- the element in G_2 that cancels the masks.
+ * @param[out] d			- the combination of G_2 elements.
  * @param[out] u			- the mask in G_1 for the pairing delegation.
  * @param[out] v			- the mask in G_2 for the pairing delegation.
  * @param[in] s				- the secret key for the pairing delegation.
@@ -1749,7 +1748,7 @@ int cp_amore_gen(bn_t s, gt_t e);
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+int cp_amore_ask(bn_t *r, g1_t *c, g2_t x, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const g1_t *p, const g2_t *q, size_t m);
 
 /**
@@ -1758,16 +1757,15 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
  *
  * @param[out] gs			- the m + 1 results computed by the server.
  * @param[in] c				- the m points in G_1 for the protocol.
- * @param[in] x				- the first element in G_1.
- * @param[in] y				- the second element in G_2.
- * @param[in] d				- the addition of G_2 elements.
+ * @param[in] x				- the element in G_2 that cancels the masks.
+ * @param[in] d				- the combination of G_2 elements.
  * @param[in] p				- the first argument inputs for the pairings.
  * @param[in] q				- the second argument inputs for the pairings.
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
-		const g2_t d, const g1_t *p, const g2_t *q, size_t m);
+int cp_amore_ans(gt_t *gs, const g1_t *c, const g2_t x, const g2_t d,
+		const g1_t *p, const g2_t *q, size_t m);
 
 /**
  * Verifies the result of the AMORE batch pairing delegation protocol.
