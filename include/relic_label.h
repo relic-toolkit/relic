@@ -3726,6 +3726,7 @@
 #undef gt_exp_sec
 #undef gt_exp_dig
 #undef gt_exp_sim
+#undef gt_exp_sim_lot
 #undef gt_exp_gen
 #undef gt_get_gen
 #undef gt_is_valid
@@ -3736,6 +3737,7 @@
 #define gt_exp_sec 	RLC_PREFIX(gt_exp_sec)
 #define gt_exp_dig 	RLC_PREFIX(gt_exp_dig)
 #define gt_exp_sim 	RLC_PREFIX(gt_exp_sim)
+#define gt_exp_sim_lot 	RLC_PREFIX(gt_exp_sim_lot)
 #define gt_exp_gen 	RLC_PREFIX(gt_exp_gen)
 #define gt_get_gen 	RLC_PREFIX(gt_get_gen)
 #define gt_is_valid 	RLC_PREFIX(gt_is_valid)

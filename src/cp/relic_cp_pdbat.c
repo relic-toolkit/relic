@@ -492,13 +492,13 @@ int cp_amore_ver(gt_t *gs, const bn_t *r, const gt_t e, size_t m) {
 		gt_new(t);
 		gt_new(u);
 
-		gt_copy(t, gs[m]);
 		ok = 1;
 		for (size_t i = 0; i < m; i++) {
-			gt_exp(u, gs[i], r[i]);
-			gt_mul(t, t, u);
 			ok &= gt_is_valid(gs[i]);
 		}
+		/* The exponentiations share one chain of squarings. */
+		gt_exp_sim_lot(u, (const gt_t *)gs, r, m);
+		gt_mul(t, u, gs[m]);
 		ok &= (gt_cmp(t, e) == RLC_EQ);
 
 		if (!ok) {

@@ -1289,6 +1289,17 @@ void gt_exp_dig(gt_t c, const gt_t a, const dig_t b);
 void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d);
 
 /**
+ * Exponentiates several elements from G_T simultaneously and multiplies the
+ * results.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the integer exponents.
+ * @param[in] m				- the number of elements.
+ */
+void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m);
+
+/**
  * Exponentiates a generator from G_T by an integer. Computes c = a^b.
  *
  * @param[out] c			- the result.

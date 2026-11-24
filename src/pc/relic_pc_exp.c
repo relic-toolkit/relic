@@ -117,19 +117,20 @@ static void gt_psi(gt_t c, const gt_t a) {
 #if FP_PRIME < 1536 && FP_PRIME != 544
 
 /**
- * Exponentiates one or two elements from G_T simultaneously, decomposing the
- * exponents with the Frobenius endomorphism and interleaving w-NAF recodings.
+ * Exponentiates elements from G_T simultaneously, decomposing the exponents
+ * with the Frobenius endomorphism and interleaving w-NAF recodings, so that
+ * all of them share the same chain of squarings.
  *
  * @param[out] e			- the result.
- * @param[in] a				- the first element to exponentiate.
- * @param[in] b				- the first exponent.
- * @param[in] c				- the second element to exponentiate, or NULL.
- * @param[in] d				- the second exponent, or NULL.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the exponents.
+ * @param[in] m				- the number of elements.
  * @param[in] f				- the maximum Frobenius power.
  */
-static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
-		const bn_t d, size_t f) {
-	size_t l, m = (c == NULL ? 1 : 2), w = RLC_WIDTH;
+static void gt_exp_gls_naf(gt_t e, const gt_t *a, const bn_t *b, size_t m,
+		size_t f) {
+	size_t l, w = RLC_WIDTH;
+	int zero = 1;
 	int8_t *naf  = RLC_ALLOCA(int8_t, m * f * (RLC_FP_BITS + 1));
 	int8_t n0, *s = RLC_ALLOCA(int8_t, m * f);
 	int one = 1;
@@ -137,7 +138,10 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, m * f);
 	size_t *_l = RLC_ALLOCA(size_t, m * f);
 
-	if (bn_is_zero(b)) {
+	for (size_t k = 0; k < m; k++) {
+		zero &= bn_is_zero(b[k]);
+	}
+	if (zero) {
 		RLC_FREE(naf);
 		RLC_FREE(s);
 		RLC_FREE(t);
@@ -171,9 +175,9 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 		ep_curve_frbase(u);
 		gt_get_ord(n);
 		for (size_t k = 0; k < m; k++) {
-			bn_abs(_b[k * f], (k == 0 ? b : d));
+			bn_abs(_b[k * f], b[k]);
 			bn_mod(_b[k * f], _b[k * f], n);
-			if (bn_sign(k == 0 ? b : d) == RLC_NEG) {
+			if (bn_sign(b[k]) == RLC_NEG) {
 				bn_neg(_b[k * f], _b[k * f]);
 			}
 			bn_rec_frb(_b + k * f, f, _b[k * f], u, n, ep_curve_get_rec(),
@@ -204,7 +208,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 			if (ep_curve_is_pairf() == EP_K16 ||
 					ep_curve_is_pairf() == EP_AFG16 || ep_curve_embed() == 18) {
 				/* The endomorphism is expensive, so apply it once per table. */
-				gt_copy(_t[0], (k == 0 ? a : c));
+				gt_copy(_t[0], a[k]);
 				for (size_t i = 1; i < f; i++) {
 					gt_psi(_t[i * RLC_GT_TABLE], _t[(i - 1) * RLC_GT_TABLE]);
 				}
@@ -225,7 +229,7 @@ static void gt_exp_gls_naf(gt_t e, const gt_t a, const bn_t b, const gt_t c,
 					gt_copy(_t[i * RLC_GT_TABLE], q);
 				}
 			} else {
-				gt_copy(q, (k == 0 ? a : c));
+				gt_copy(q, a[k]);
 				if (_s[0] == RLC_NEG) {
 					gt_inv(q, q);
 				}
@@ -866,7 +870,25 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 		/* A variable-time GLS-SAC is actually faster due to shorter table. */
 		gt_exp_gls_sac(c, a, b, 1, ep_curve_frdim());
 	} else {
-		gt_exp_gls_naf(c, a, b, NULL, NULL, ep_curve_frdim());
+		gt_t _a[1];
+		bn_t _b[1];
+
+		gt_null(_a[0]);
+		bn_null(_b[0]);
+
+		RLC_TRY {
+			gt_new(_a[0]);
+			bn_new(_b[0]);
+			gt_copy(_a[0], a);
+			bn_copy(_b[0], b);
+			gt_exp_gls_naf(c, (const gt_t *)_a, (const bn_t *)_b, 1,
+					ep_curve_frdim());
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			gt_free(_a[0]);
+			bn_free(_b[0]);
+		}
 	}
 #else
 	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
@@ -966,7 +988,33 @@ void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) 
 		bn_free_all(n, _b, _d);
 	}
 #elif FP_PRIME < 1536
-	gt_exp_gls_naf(e, a, b, c, d, ep_curve_frdim());
+	gt_t _a[2];
+	bn_t _b[2];
+
+	for (int i = 0; i < 2; i++) {
+		gt_null(_a[i]);
+		bn_null(_b[i]);
+	}
+
+	RLC_TRY {
+		for (int i = 0; i < 2; i++) {
+			gt_new(_a[i]);
+			bn_new(_b[i]);
+		}
+		gt_copy(_a[0], a);
+		gt_copy(_a[1], c);
+		bn_copy(_b[0], b);
+		bn_copy(_b[1], d);
+		gt_exp_gls_naf(e, (const gt_t *)_a, (const bn_t *)_b, 2,
+				ep_curve_frdim());
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		for (int i = 0; i < 2; i++) {
+			gt_free(_a[i]);
+			bn_free(_b[i]);
+		}
+	}
 #else
 	gt_t t;
 
@@ -984,6 +1032,52 @@ void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) 
 		gt_free(t);
 	}
 #endif
+}
+
+void gt_exp_sim_lot(gt_t e, const gt_t *a, const bn_t *b, size_t m) {
+	int gls = 0;
+	gt_t t;
+
+	if (m == 0) {
+		gt_set_unity(e);
+		return;
+	}
+
+#if FP_PRIME < 1536 && FP_PRIME != 544
+	gls = (ep_curve_embed() != 18);
+#endif
+
+	gt_null(t);
+
+	RLC_TRY {
+		gt_new(t);
+
+		if (gls) {
+#if FP_PRIME < 1536 && FP_PRIME != 544
+			/* Interleave as many elements as fit their tables in 1 MiB of
+			 * stack, and multiply the partial results. */
+			size_t f = ep_curve_frdim();
+			size_t c = (1 << 20) / (f * RLC_GT_TABLE * sizeof(gt_t));
+
+			c = RLC_MAX(c, 1);
+			gt_exp_gls_naf(e, a, b, RLC_MIN(c, m), f);
+			for (size_t i = c; i < m; i += c) {
+				gt_exp_gls_naf(t, a + i, b + i, RLC_MIN(c, m - i), f);
+				gt_mul(e, e, t);
+			}
+#endif
+		} else {
+			gt_exp(e, a[0], b[0]);
+			for (size_t i = 1; i < m; i++) {
+				gt_exp(t, a[i], b[i]);
+				gt_mul(e, e, t);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		gt_free(t);
+	}
 }
 
 void gt_exp_gen(gt_t c, const bn_t b) {

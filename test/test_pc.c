@@ -1555,9 +1555,13 @@ static int inversion(void) {
 
 int exponentiation(void) {
 	int code = RLC_ERR;
-	gt_t a, b, c;
-	bn_t n, d, e;
+	gt_t a, b, c, g[5];
+	bn_t n, d, e, k[5];
 
+	for (int j = 0; j < 5; j++) {
+		gt_null(g[j]);
+		bn_null(k[j]);
+	}
 	gt_null(a);
 	gt_null(b);
 	gt_null(c);
@@ -1572,6 +1576,10 @@ int exponentiation(void) {
 		bn_new(d);
 		bn_new(e);
 		bn_new(n);
+		for (int j = 0; j < 5; j++) {
+			gt_new(g[j]);
+			bn_new(k[j]);
+		}
 
 		gt_get_gen(a);
 		pc_get_ord(n);
@@ -1662,6 +1670,26 @@ int exponentiation(void) {
 				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			}
 		} TEST_END;
+
+		TEST_CASE("simultaneous exponentiation of many elements is correct") {
+			for (int j = 0; j < 5; j++) {
+				gt_rand(g[j]);
+				bn_rand_mod(k[j], n);
+			}
+			/* A zero, a negative and a Frobenius-friendly short exponent. */
+			bn_zero(k[1]);
+			bn_neg(k[2], k[2]);
+			bn_rand_frb(k[3], &(core_get()->par), n, 89);
+			for (int m = 0; m <= 5; m++) {
+				gt_set_unity(b);
+				for (int j = 0; j < m; j++) {
+					gt_exp(c, g[j], k[j]);
+					gt_mul(b, b, c);
+				}
+				gt_exp_sim_lot(c, (const gt_t *)g, k, m);
+				TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			}
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1669,6 +1697,10 @@ int exponentiation(void) {
 	}
 	code = RLC_OK;
   end:
+	for (int j = 0; j < 5; j++) {
+		gt_free(g[j]);
+		bn_free(k[j]);
+	}
 	gt_free(a);
 	gt_free(b);
 	gt_free(c);
