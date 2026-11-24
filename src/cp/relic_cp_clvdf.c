@@ -297,6 +297,39 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	RLC_FREE(bin);
 }
 
+/**
+ * Tests if a class of discriminant -pq is a square, by its genus character for
+ * q. As (p/q) = -1, the squares are exactly the classes of odd order, which
+ * excludes the ambiguous class of order 2 that anyone can build from p and q.
+ *
+ * @param[in] f			- the reduced form to test.
+ * @return a boolean value indicating if the class is a square.
+ */
+static int clvdf_is_sqr(const qf_t f) {
+	bn_t t;
+	int result = 0;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		/* A primitive form cannot have q dividing both a and c. */
+		bn_mod(t, f->a, &(core_get()->qf_q));
+		if (bn_is_zero(t)) {
+			bn_mod(t, f->c, &(core_get()->qf_q));
+		}
+		result = (bn_smb_jac(t, &(core_get()->qf_q)) == 1);
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+	return result;
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -504,9 +537,12 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 		bn_new(e);
 		bn_new(two);
 
+		/* u and y must also be squares, or multiplying both by the class of
+		 * order 2 would give a second output that decodes to the same x. */
 		if (qf_has_dsc(u, &(core_get()->qf_dk)) &&
 				qf_has_dsc(y, &(core_get()->qf_dk)) &&
-				qf_has_dsc(z, &(core_get()->qf_d))) {
+				qf_has_dsc(z, &(core_get()->qf_d)) &&
+				clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
 			clvdf_map_p(l, t, u, y);
 
 			/* r = 2^t mod l, by exponentiation on the delay rather than on 2^t */
@@ -588,9 +624,12 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 		bn_new(e);
 		bn_new(two);
 
+		/* u and y must also be squares, or multiplying both by the class of
+		 * order 2 would give a second output that decodes to the same x. */
 		if (qf_has_dsc(u, &(core_get()->qf_dk)) &&
 				qf_has_dsc(y, &(core_get()->qf_dk)) &&
-				qf_has_dsc(z, &(core_get()->qf_d))) {
+				qf_has_dsc(z, &(core_get()->qf_d)) &&
+				clvdf_is_sqr(u) && clvdf_is_sqr(y)) {
 			clvdf_map_p(l, t, u, y);
 
 			/* r = 2^t mod l, by exponentiation on the delay rather than on 2^t */
