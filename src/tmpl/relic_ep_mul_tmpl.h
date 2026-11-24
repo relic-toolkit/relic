@@ -564,7 +564,8 @@
 																			\
 		bn_null_all(q, x);													\
 																			\
-		if (n <= 10) {														\
+		/* Up to 16 points, interleaving beats small-window buckets. */		\
+		if (n <= 16) {														\
 			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
 																			\
 			for (j = 0; j < S; j++) {										\

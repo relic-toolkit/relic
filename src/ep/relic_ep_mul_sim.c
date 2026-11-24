@@ -223,7 +223,8 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 
 	bn_null(q);
 
-	if (n <= 10) {
+	/* Up to 16 points, interleaving beats buckets with small windows. */
+	if (n <= 16) {
 		ep_t *_p = RLC_ALLOCA(ep_t, 2 * n);
 
 		for (j = 0; j < 2; j++) {
