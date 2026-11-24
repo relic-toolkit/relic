@@ -139,24 +139,21 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 
 int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *b, const gt_t e,
 		size_t m) {
-	gt_t t, u;
+	gt_t u;
 	int ok, result = 0;
 
-	gt_null(t);
 	gt_null(u);
 
 	RLC_TRY {
-		gt_new(t);
 		gt_new(u);
 
-		gt_set_unity(u);
 		ok = gt_is_valid(w[0]);
 		for (size_t i = 0; i < m; i++) {
 			ok &= gt_is_valid(w[i + 1]);
-			gt_exp(t, w[i + 1], b[i]);
-			gt_mul(u, u, t);
 			gt_copy(rs[i], w[i + 1]);
 		}
+		/* The exponentiations share one chain of squarings. */
+		gt_exp_sim_lot(u, w + 1, b, m);
 		gt_mul(u, u, e);
 
 		ok &= (gt_cmp(u, w[0]) == RLC_EQ);
@@ -170,7 +167,6 @@ int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *b, const gt_t e,
 	} RLC_CATCH_ANY {
 		result = 0;
 	} RLC_FINALLY {
-		gt_free(t);
 		gt_free(u);
 	}
 
@@ -266,10 +262,11 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 		pc_map(alpha, u, r);
 		for (size_t i = 0; i < m; i++) {
 			gt_mul(v, v, bs[i]);
-			gt_exp(w, as[i], b[i]);
-			gt_mul(alpha, alpha, w);
 			gt_copy(rs[i], as[i]);
 		}
+		/* The exponentiations share one chain of squarings. */
+		gt_exp_sim_lot(w, as, b, m);
+		gt_mul(alpha, alpha, w);
 
 		ok &= (gt_cmp(v, alpha) == RLC_EQ);
 		if (!ok) {
