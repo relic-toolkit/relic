@@ -44,6 +44,67 @@
 #define CMLHS_ECDSA
 #endif
 
+/**
+ * Computes the product of the hs[i][label[j]]^f[i][j] as one simultaneous
+ * exponentiation.
+ *
+ * @param[out] c			- the result.
+ * @param[in] label			- the integer labels.
+ * @param[in] hs			- the hashes of the labels in G_T.
+ * @param[in] f				- the coefficients of the linear functions.
+ * @param[in] flen			- the number of coefficients of each function.
+ * @param[in] slen			- the number of functions.
+ */
+static void cmlhs_exp(gt_t c, const int label[], const gt_t *hs[],
+		const dig_t *f[], const size_t flen[], size_t slen) {
+	size_t l, m = 0;
+	gt_t *g;
+	bn_t *b;
+
+	for (size_t i = 0; i < slen; i++) {
+		m += flen[i];
+	}
+	if (m == 0) {
+		gt_set_unity(c);
+		return;
+	}
+
+	g = RLC_ALLOCA(gt_t, m);
+	b = RLC_ALLOCA(bn_t, m);
+	if (g == NULL || b == NULL) {
+		RLC_FREE(g);
+		RLC_FREE(b);
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+	for (l = 0; l < m; l++) {
+		gt_null(g[l]);
+		bn_null(b[l]);
+	}
+
+	RLC_TRY {
+		l = 0;
+		for (size_t i = 0; i < slen; i++) {
+			for (size_t j = 0; j < flen[i]; j++, l++) {
+				gt_new(g[l]);
+				bn_new(b[l]);
+				gt_copy(g[l], hs[i][label[j]]);
+				bn_set_dig(b[l], f[i][j]);
+			}
+		}
+		gt_exp_sim_lot(c, (const gt_t *)g, (const bn_t *)b, m);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		for (l = 0; l < m; l++) {
+			gt_free(g[l]);
+			bn_free(b[l]);
+		}
+		RLC_FREE(g);
+		RLC_FREE(b);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -308,12 +369,8 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 			pc_map_sim(e, a, z, slen);
 			pc_map_sim_gen(u, c, y, slen, r);
 
-			for (size_t i = 0; i < slen; i++) {
-				for (size_t j = 0; j < flen[i]; j++) {
-					gt_exp_dig(v, hs[i][label[j]], f[i][j]);
-					gt_mul(u, u, v);
-				}
-			}
+			cmlhs_exp(v, label, hs, f, flen, slen);
+			gt_mul(u, u, v);
 			ok = (gt_cmp(e, u) == RLC_EQ);
 		}
 
@@ -353,25 +410,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 
 void cp_cmlhs_off(gt_t vk, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
-	gt_t v;
-
-	gt_null(v);
-
-	RLC_TRY {
-		gt_new(v);
-
-		gt_set_unity(vk);
-		for (size_t i = 0; i < slen; i++) {
-			for (size_t j = 0; j < flen[i]; j++) {
-				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
-				gt_mul(vk, vk, v);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		gt_free(v);
-	}
+	cmlhs_exp(vk, label, hs, f, flen, slen);
 }
 
 int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
