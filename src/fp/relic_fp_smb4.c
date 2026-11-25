@@ -377,6 +377,16 @@ static inline int smb4_from2(int s) {
  */
 #define SMB4_MOD(E)		((E) & 3)
 
+/**
+ * The quartic symbol has no Euclidean tail and finishes by jumps.
+ */
+static inline int smb4_tail(dig_t w[4][FP_QRT_DIGS], size_t len, int64_t *e) {
+	(void)w;
+	(void)len;
+	(void)e;
+	return 0;
+}
+
 TMPL_FP_SMB(smb4, FP_QRT_DIGS, FP_QRT_ITER, qrt, 0, SMB4_MOD)
 
 /*============================================================================*/
