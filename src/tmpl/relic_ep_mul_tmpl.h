@@ -566,57 +566,103 @@
 																			\
 		/* Up to 16 points, interleaving beats small-window buckets. */		\
 		if (n <= 16) {														\
-			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
+			/* Interleave w-NAFs over tables of odd multiples of each point	\
+			 * and of its endomorphism images, as for two points, with the	\
+			 * same rule for the window and the tables within 1 MiB. */		\
+			size_t e, o, w = RLC_WIDTH, z = 0;								\
+			bn_t *_s = RLC_ALLOCA(bn_t, S * n);								\
+			C##_t v, *t = NULL;												\
 																			\
-			for (j = 0; j < S; j++) {										\
-				bn_null(_k[j]);												\
-				for (i = 0; i < n; i++) {									\
-					C##_null(_p[S*i + j]);									\
-				}															\
+			C##_null(v);													\
+			for (i = 0; i < S * n; i++) {									\
+				bn_null(_s[i]);												\
 			}																\
 																			\
 			RLC_TRY {														\
 				bn_new_all(q, x);											\
-				for (j = 0; j < S; j++) {									\
-					bn_new(_k[j]);											\
-					for (i = 0; i < n; i++) {								\
-						C##_new(_p[S*i + j]);								\
-					}														\
+				C##_new(v);													\
+				for (i = 0; i < S * n; i++) {								\
+					bn_new(_s[i]);											\
 				}															\
 																			\
 				l = 0;														\
 				C##_curve_get_ord(q);										\
 				ep_curve_frbase(x);											\
 				for (i = 0; i < n; i++) {									\
-					C##_norm(_p[S*i], p[i]);								\
-					for (j = 1; j < S; j++) {								\
-						C##_psi(_p[S*i + j], _p[S*i + j - 1]);				\
-					}														\
-																			\
-					bn_mod(_k[0], k[i], q);									\
-					bn_rec_frb(_k, S, _k[0], x, q,							\
+					bn_mod(_s[S * i], k[i], q);								\
+					bn_rec_frb(_s + S * i, S, _s[S * i], x, q,				\
 							ep_curve_get_rec(), flag);						\
 					for (j = 0; j < S; j++) {								\
+						l = RLC_MAX(l, bn_bits(_s[S * i + j]));				\
+					}														\
+				}															\
+				if (l < bn_bits(x) / 2 || ep_curve_is_pairf() == EP_K16 ||	\
+						ep_curve_is_pairf() == EP_AFG16 ||					\
+						ep_curve_embed() == 18) {							\
+					w = 2;													\
+				}															\
+				while (w > 2 &&												\
+						((S * n) << (w - 2)) * sizeof(C##_t) > (1 << 20)) {	\
+					w--;													\
+				}															\
+				e = (1 << (w - 2));											\
+				/* Allocate tables once the window is known. */				\
+				t = RLC_ALLOCA(C##_t, S * n * e);							\
+				if (t == NULL) {											\
+					RLC_THROW(ERR_NO_MEMORY);								\
+				}															\
+				for (z = 0; z < S * n * e; z++) {							\
+					C##_null(t[z]);											\
+					C##_new(t[z]);											\
+				}															\
+																			\
+				/* Tables go by subscalar, so the tables of the points come	\
+				 * first and one inversion makes them affine, which the		\
+				 * endomorphism preserves. */								\
+				for (i = 0; i < n; i++) {									\
+					C##_norm(v, p[i]);										\
+					if (bn_sign(_s[S * i]) == RLC_NEG) {					\
+						C##_neg(v, v);										\
+					}														\
+					TMPL_EC_MUL_TAB(C, t + i * e, v, w);					\
+				}															\
+				C##_norm_sim(t, (const C##_t *)t, n << (w - 2));			\
+				l = 0;														\
+				for (i = 0; i < n; i++) {									\
+					for (j = 0; j < S; j++) {								\
 						_l[j] = len;										\
-						bn_rec_naf(&naf[(S*i + j)*len], &_l[j], _k[j], 2);	\
-						if (bn_sign(_k[j]) == RLC_NEG) {					\
-							C##_neg(_p[S*i + j], _p[S*i + j]);				\
-						}													\
+						bn_rec_naf(&naf[(j * n + i) * len], &_l[j],			\
+								_s[S * i + j], w);							\
 						l = RLC_MAX(l, _l[j]);								\
+					}														\
+					/* Only images up to the last nonzero subscalar. */		\
+					o = S - 1;												\
+					while (o > 0 && bn_is_zero(_s[S * i + o])) {			\
+						o--;												\
+					}														\
+					for (j = 1; j <= o; j++) {								\
+						for (m = 0; m < e; m++) {							\
+							C##_psi(t[(j * n + i) * e + m],					\
+									t[((j - 1) * n + i) * e + m]);			\
+							if (bn_sign(_s[S * i + j]) !=					\
+									bn_sign(_s[S * i + j - 1])) {			\
+								C##_neg(t[(j * n + i) * e + m],				\
+										t[(j * n + i) * e + m]);			\
+							}												\
+						}													\
 					}														\
 				}															\
 																			\
 				C##_set_infty(r);											\
 				for (int b = l - 1; b >= 0; b--) {							\
 					C##_dbl(r, r);											\
-					for (j = 0; j < n; j++) {								\
-						for (m = 0; m < S; m++) {							\
-							if (naf[(S*j + m)*len + b] > 0) {				\
-								C##_add(r, r, _p[S*j + m]);					\
-							}												\
-							if (naf[(S*j + m)*len + b] < 0) {				\
-								C##_sub(r, r, _p[S*j + m]);					\
-							}												\
+					for (j = 0; j < S * n; j++) {							\
+						ptr = naf[j * len + b];								\
+						if (ptr > 0) {										\
+							C##_add(r, r, t[j * e + ptr / 2]);				\
+						}													\
+						if (ptr < 0) {										\
+							C##_sub(r, r, t[j * e - ptr / 2]);				\
 						}													\
 					}														\
 				}															\
@@ -627,13 +673,15 @@
 				RLC_THROW(ERR_CAUGHT);										\
 			} RLC_FINALLY {													\
 				bn_free_all(q, x);											\
-				for (j = 0; j < S; j++) {									\
-					bn_free(_k[j]);											\
-					for (i = 0; i < n; i++) {								\
-						C##_free(_p[S*i + j]);								\
-					}														\
+				C##_free(v);												\
+				for (i = 0; i < S * n; i++) {								\
+					bn_free(_s[i]);											\
 				}															\
-				RLC_FREE(_p);												\
+				for (i = 0; i < z; i++) {									\
+					C##_free(t[i]);											\
+				}															\
+				RLC_FREE(_s);												\
+				RLC_FREE(t);												\
 				RLC_FREE(naf);												\
 			}																\
 		} else {															\

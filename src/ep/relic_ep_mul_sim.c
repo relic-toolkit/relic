@@ -225,29 +225,34 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 
 	/* Up to 16 points, interleaving beats buckets with small windows. */
 	if (n <= 16) {
-		ep_t *_p = RLC_ALLOCA(ep_t, 2 * n);
+		/* Interleave w-NAFs over tables of odd multiples of each point and
+		 * of its endomorphism image, as for two points in ep_mul_sim. */
+		const int e = 1 << (RLC_WIDTH - 2);
+		ep_t v, *t = RLC_ALLOCA(ep_t, 2 * n * e);
 
+		ep_null(v);
 		for (j = 0; j < 2; j++) {
 			bn_null(_k[j]);
 		}
-		for (i = 0; i < 2 * n; i++) {
-			ep_null(_p[i]);
+		for (i = 0; i < 2 * n * e; i++) {
+			ep_null(t[i]);
 		}
 
 		RLC_TRY {
 			bn_new(q);
+			ep_new(v);
 			for (j = 0; j < 2; j++) {
 				bn_new(_k[j]);
 			}
-			for (i = 0; i < 2 * n; i++) {
-				ep_new(_p[i]);
+			for (i = 0; i < 2 * n * e; i++) {
+				ep_new(t[i]);
 			}
 
 			l = 0;
 			ep_curve_get_ord(q);
 			for (i = 0; i < n; i++) {
-				ep_norm(_p[2*i], p[i]);
-				ep_psi(_p[2*i + 1], _p[2*i]);
+				ep_t *_t = t + 2 * i * e;
+
 				bn_mod(_k[0], k[i], q);
 				sk = bn_sign(_k[0]);
 				bn_rec_glv(_k[0], _k[1], _k[0], q,
@@ -256,27 +261,36 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 					bn_neg(_k[0], _k[0]);
 					bn_neg(_k[1], _k[1]);
 				}
+				ep_norm(v, p[i]);
+				if (bn_sign(_k[0]) == RLC_NEG) {
+					ep_neg(v, v);
+				}
+				TMPL_EC_MUL_TAB(ep, _t, v, RLC_WIDTH);
+				for (m = 0; m < e; m++) {
+					ep_psi(_t[e + m], _t[m]);
+					if (bn_sign(_k[1]) != bn_sign(_k[0])) {
+						ep_neg(_t[e + m], _t[e + m]);
+					}
+				}
 				for (j = 0; j < 2; j++) {
 					_l[j] = len;
-					bn_rec_naf(&naf[(2*i + j)*len], &_l[j], _k[j], 2);
-					if (bn_sign(_k[j]) == RLC_NEG) {
-						ep_neg(_p[2*i + j], _p[2*i + j]);
-					}
+					bn_rec_naf(&naf[(2*i + j)*len], &_l[j], _k[j], RLC_WIDTH);
 					l = RLC_MAX(l, _l[j]);
 				}
 			}
+			/* One inversion makes every table entry affine. */
+			ep_norm_sim(t, (const ep_t *)t, 2 * n * e);
 
 			ep_set_infty(r);
 			for (i = l - 1; i >= 0; i--) {
 				ep_dbl(r, r);
-				for (j = 0; j < n; j++) {
-					for (m = 0; m < 2; m++) {
-						if (naf[(2*j + m)*len + i] > 0) {
-							ep_add(r, r, _p[2*j + m]);
-						}
-						if (naf[(2*j + m)*len + i] < 0) {
-							ep_sub(r, r, _p[2*j + m]);
-						}
+				for (j = 0; j < 2 * n; j++) {
+					ptr = naf[j * len + i];
+					if (ptr > 0) {
+						ep_add(r, r, t[j * e + ptr / 2]);
+					}
+					if (ptr < 0) {
+						ep_sub(r, r, t[j * e - ptr / 2]);
 					}
 				}
 			}
@@ -285,10 +299,11 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
 			bn_free_all(q, _k[0], _k[1]);
-			for (i = 0; i < 2 * n; i++) {
-				ep_free(_p[i]);
+			ep_free(v);
+			for (i = 0; i < 2 * n * e; i++) {
+				ep_free(t[i]);
 			}
-			RLC_FREE(_p);
+			RLC_FREE(t);
 			RLC_FREE(naf);
 		}
 	} else {
