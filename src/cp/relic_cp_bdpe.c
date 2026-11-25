@@ -32,6 +32,50 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Exponentiates modulo n = pq by the CRT, as the private key has p and q.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] e				- the exponent.
+ * @param[in] u				- q^(-1) mod p.
+ * @param[in] prv			- the private key.
+ */
+static void bdpe_mxp_crt(bn_t c, const bn_t a, const bn_t e, const bn_t u,
+		const bdpe_t prv) {
+	bn_t x, y, f;
+
+	bn_null_all(x, y, f);
+
+	RLC_TRY {
+		bn_new_all(x, y, f);
+
+		/* x = a^(e mod (p - 1)) mod p and y = a^(e mod (q - 1)) mod q. */
+		bn_sub_dig(f, prv->p, 1);
+		bn_mod(f, e, f);
+		bn_mod(x, a, prv->p);
+		bn_mxp(x, x, f, prv->p);
+		bn_sub_dig(f, prv->q, 1);
+		bn_mod(f, e, f);
+		bn_mod(y, a, prv->q);
+		bn_mxp(y, y, f, prv->q);
+		/* c = y + q((x - y)u mod p). */
+		bn_sub(x, x, y);
+		bn_mul(x, x, u);
+		bn_mod(x, x, prv->p);
+		bn_mul(x, x, prv->q);
+		bn_add(c, x, y);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free_all(x, y, f);
+	}
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -151,7 +195,7 @@ int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 
 int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		const bdpe_t prv) {
-	bn_t m, t, z;
+	bn_t m, t, u, z;
 	size_t size;
 	int eq, found = 0, result = RLC_OK;
 	dig_t i, r = 0;
@@ -163,14 +207,10 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		return RLC_ERR;
 	}
 
-	bn_null(m);
-	bn_null(t);
-	bn_null(z);
+	bn_null_all(m, t, u, z);
 
 	RLC_TRY {
-		bn_new(m);
-		bn_new(t);
-		bn_new(z);
+		bn_new_all(m, t, u, z);
 
 		/* Compute t = (p-1)(q-1)/block. */
 		bn_mul(t, prv->p, prv->q);
@@ -179,8 +219,10 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		bn_add_dig(t, t, 1);
 		bn_div_dig(t, t, prv->t);
 		bn_read_bin(m, in, in_len);
-		bn_mxp(m, m, t, prv->n);
-		bn_mxp(t, prv->y, t, prv->n);
+		/* Both exponentiations run modulo p and q, at a quarter the cost. */
+		bn_mod_inv(u, prv->q, prv->p);
+		bdpe_mxp_crt(m, m, t, u, prv);
+		bdpe_mxp_crt(t, prv->y, t, u, prv);
 
 		/* Try every candidate and select the match without branching, so
 		 * that the time does not depend on the plaintext. */
@@ -204,9 +246,7 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(m);
-		bn_free(t);
-		bn_free(z);
+		bn_free_all(m, t, u, z);
 	}
 
 	return result;
