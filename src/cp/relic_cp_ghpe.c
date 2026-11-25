@@ -80,12 +80,10 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, size_t bits) {
 }
 
 int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
-	bn_t g, r, t;
+	bn_t g, r, t, u, v;
 	int result = RLC_OK;
 
-	bn_null(g);
-	bn_null(r);
-	bn_null(t);
+	bn_null_all(g, r, t, u, v);
 
 	/* A modulus below 2 leaves no randomness to draw. */
 	if (pub == NULL || s == 0 || bn_sign(m) == RLC_NEG ||
@@ -95,9 +93,7 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 	}
 
 	RLC_TRY {
-		bn_new(g);
-		bn_new(r);
-		bn_new(t);
+		bn_new_all(g, r, t, u, v);
 
 		/* t = n^s, which must be larger than the message. */
 		bn_copy(t, pub);
@@ -116,9 +112,24 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 				bn_rand_mod(r, pub);
 			} while (bn_is_zero(r));
 
-			/* Compute c = (g^m)(r^(n^s)) mod n^(s + 1). */
-			bn_add_dig(g, pub, 1);
-			bn_mxp(g, g, m, t);
+			/* Compute c = (g^m)(r^(n^s)) mod n^(s + 1), with g = 1 + n and
+			 * g^m = sum C(m, j) n^j for j <= s, each term the previous one
+			 * times (m - j + 1)n/j, as j <= s is invertible modulo n. */
+			bn_set_dig(g, 1);
+			bn_set_dig(u, 1);
+			for (size_t j = 1; j <= s; j++) {
+				bn_sub_dig(v, m, j - 1);
+				bn_mul(u, u, v);
+				bn_mod(u, u, t);
+				bn_mul(u, u, pub);
+				bn_mod(u, u, t);
+				bn_set_dig(v, j);
+				bn_mod_inv(v, v, t);
+				bn_mul(u, u, v);
+				bn_mod(u, u, t);
+				bn_add(g, g, u);
+			}
+			bn_mod(g, g, t);
 			for (size_t j = 0; j < s; j++) {
 				bn_mxp(r, r, pub, t);
 			}
@@ -135,9 +146,7 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 		if (result == RLC_OK) {
 			bn_copy(c, g);
 		}
-		bn_free(g);
-		bn_free(r);
-		bn_free(t);
+		bn_free_all(g, r, t, u, v);
 	}
 
 	return result;
