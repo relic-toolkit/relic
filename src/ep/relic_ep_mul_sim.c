@@ -49,142 +49,83 @@
  */
 static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m) {
-	int i, sk0, sk1, sl0, sl1;
-	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1, u;
-	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
-	bn_t n, k0, k1, m0, m1;
-	ep_t v;
-	ep_t tab[2 << (RLC_WIDTH - 2)];
-	ep_t *tab0 = tab, *tab1 = tab + (1 << (RLC_WIDTH - 2));
-	size_t l, l0, l1, l2, l3;
+	const int e = 1 << (RLC_WIDTH - 2);
+	int i, j, t, s[4];
+	int8_t naf[4][RLC_FP_BITS + 1], u;
+	bn_t n, _k[4];
+	ep_t tab[4 << (RLC_WIDTH - 2)];
+	size_t l, _l[4];
 
-	bn_null_all(n, k0, k1, m0, m1);
-	ep_null(v);
-
-	for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+	bn_null(n);
+	for (j = 0; j < 4; j++) {
+		bn_null(_k[j]);
+	}
+	for (i = 0; i < (4 << (RLC_WIDTH - 2)); i++) {
 		ep_null(tab[i]);
 	}
 
 	RLC_TRY {
-		bn_new_all(n, k0, k1, m0, m1);
-		ep_new(v);
-
-		ep_curve_get_ord(n);
-		bn_rec_glv(k0, k1, k, n, ep_curve_get_v1(), ep_curve_get_v2());
-		sk0 = bn_sign(k0);
-		sk1 = bn_sign(k1);
-		bn_abs(k0, k0);
-		bn_abs(k1, k1);
-
-		bn_rec_glv(m0, m1, m, n, ep_curve_get_v1(), ep_curve_get_v2());
-		sl0 = bn_sign(m0);
-		sl1 = bn_sign(m1);
-		bn_abs(m0, m0);
-		bn_abs(m1, m1);
-
-		/* Compute the precomputation tables. */
-		for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+		bn_new(n);
+		for (j = 0; j < 4; j++) {
+			bn_new(_k[j]);
+		}
+		for (i = 0; i < (4 << (RLC_WIDTH - 2)); i++) {
 			ep_new(tab[i]);
 		}
-		TMPL_EC_MUL_TAB(ep, tab0, p, RLC_WIDTH);
-		TMPL_EC_MUL_TAB(ep, tab1, q, RLC_WIDTH);
-		/* One inversion normalizes both tables, unless they stay projective. */
+
+		ep_curve_get_ord(n);
+		bn_rec_glv(_k[0], _k[1], k, n, ep_curve_get_v1(), ep_curve_get_v2());
+		bn_rec_glv(_k[2], _k[3], m, n, ep_curve_get_v1(), ep_curve_get_v2());
+		for (j = 0; j < 4; j++) {
+			s[j] = bn_sign(_k[j]);
+			bn_abs(_k[j], _k[j]);
+		}
+
+		/* Compute the precomputation tables of P and Q, normalized with one
+		 * inversion unless they stay projective. */
+		TMPL_EC_MUL_TAB(ep, tab, p, RLC_WIDTH);
+		TMPL_EC_MUL_TAB(ep, tab + e, q, RLC_WIDTH);
 		TMPL_EP_MUL_NORM(ep, tab, 2, RLC_WIDTH);
-
-		/* Compute the w-NAF representations of the subscalars. */
-		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, k0, RLC_WIDTH);
-		bn_rec_naf(naf1, &l1, k1, RLC_WIDTH);
-		bn_rec_naf(naf2, &l2, m0, RLC_WIDTH);
-		bn_rec_naf(naf3, &l3, m1, RLC_WIDTH);
-
-		l = RLC_MAX(RLC_MAX(l0, l1), RLC_MAX(l2, l3));
-		t0 = naf0 + l - 1;
-		t1 = naf1 + l - 1;
-		t2 = naf2 + l - 1;
-		t3 = naf3 + l - 1;
-
-		if (bn_sign(k) == RLC_NEG) {
-			for (size_t j = 0; j < l0; j++) {
-				naf0[j] = -naf0[j];
-			}
-			for (size_t j = 0; j < l1; j++) {
-				naf1[j] = -naf1[j];
+		/* Fold the signs of the subscalars into the tables, and apply the
+		 * endomorphism once per entry instead of once per digit. */
+		for (i = 0; i < e; i++) {
+			for (j = 0; j < 2; j++) {
+				ep_psi(tab[(j + 2) * e + i], tab[j * e + i]);
+				if (s[2 * j + 1] == RLC_NEG) {
+					ep_neg(tab[(j + 2) * e + i], tab[(j + 2) * e + i]);
+				}
+				if (s[2 * j] == RLC_NEG) {
+					ep_neg(tab[j * e + i], tab[j * e + i]);
+				}
 			}
 		}
-		if (bn_sign(m) == RLC_NEG) {
-			for (size_t j = 0; j < l2; j++) {
-				naf2[j] = -naf2[j];
-			}
-			for (size_t j = 0; j < l3; j++) {
-				naf3[j] = -naf3[j];
+
+		/* Compute the w-NAF representations of the subscalars k_0, k_1, m_0
+		 * and m_1, which go with tables 0, 2, 1 and 3. */
+		l = 0;
+		for (j = 0; j < 4; j++) {
+			t = 2 * (j & 1) + (j >> 1);
+			_l[t] = RLC_FP_BITS + 1;
+			bn_rec_naf(naf[t], &_l[t], _k[j], RLC_WIDTH);
+			l = RLC_MAX(l, _l[t]);
+			if (bn_sign(j < 2 ? k : m) == RLC_NEG) {
+				for (i = 0; i < (int)_l[t]; i++) {
+					naf[t][i] = -naf[t][i];
+				}
 			}
 		}
 
 		ep_set_infty(r);
-		for (i = l - 1; i >= 0; i--, t0--, t1--, t2--, t3--) {
+		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
-
-			u = *t0;
-			if (u > 0) {
-				if (sk0 == RLC_POS) {
-					ep_add(r, r, tab0[u / 2]);
-				} else {
-					ep_sub(r, r, tab0[u / 2]);
+			for (j = 0; j < 4; j++) {
+				u = ((size_t)i < _l[j] ? naf[j][i] : 0);
+				if (u > 0) {
+					ep_add(r, r, tab[j * e + u / 2]);
 				}
-			}
-			if (u < 0) {
-				if (sk0 == RLC_POS) {
-					ep_sub(r, r, tab0[-u / 2]);
-				} else {
-					ep_add(r, r, tab0[-u / 2]);
+				if (u < 0) {
+					ep_sub(r, r, tab[j * e - u / 2]);
 				}
-			}
-			u = *t1;
-			if (u > 0) {
-				ep_psi(v, tab0[u / 2]);
-				if (sk1 == RLC_NEG) {
-					ep_neg(v, v);
-				}
-				ep_add(r, r, v);
-			}
-			if (u < 0) {
-				ep_psi(v, tab0[-u / 2]);
-				if (sk1 == RLC_NEG) {
-					ep_neg(v, v);
-				}
-				ep_sub(r, r, v);
-			}
-
-			u = *t2;
-			if (u > 0) {
-				if (sl0 == RLC_POS) {
-					ep_add(r, r, tab1[u / 2]);
-				} else {
-					ep_sub(r, r, tab1[u / 2]);
-				}
-			}
-			if (u < 0) {
-				if (sl0 == RLC_POS) {
-					ep_sub(r, r, tab1[-u / 2]);
-				} else {
-					ep_add(r, r, tab1[-u / 2]);
-				}
-			}
-			u = *t3;
-			if (u > 0) {
-				ep_psi(v, tab1[u / 2]);
-				if (sl1 == RLC_NEG) {
-					ep_neg(v, v);
-				}
-				ep_add(r, r, v);
-			}
-			if (u < 0) {
-				ep_psi(v, tab1[-u / 2]);
-				if (sl1 == RLC_NEG) {
-					ep_neg(v, v);
-				}
-				ep_sub(r, r, v);
 			}
 		}
 		/* Convert r to affine coordinates. */
@@ -194,11 +135,11 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(n, k0, k1, m0, m1);
-		ep_free(v);
-
-		/* Free the precomputation tables. */
-		for (i = 0; i < (2 << (RLC_WIDTH - 2)); i++) {
+		bn_free(n);
+		for (j = 0; j < 4; j++) {
+			bn_free(_k[j]);
+		}
+		for (i = 0; i < (4 << (RLC_WIDTH - 2)); i++) {
 			ep_free(tab[i]);
 		}
 	}
