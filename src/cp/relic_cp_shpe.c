@@ -87,8 +87,10 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 
 			/* Precompute G = (1+n)^b mod n^2. */
 			bn_sqr(prv->crt->qi, prv->crt->n);	// n^2
-			bn_add_dig(pub->g, prv->crt->n, 1);	// 1+n
-			bn_mxp(prv->g, pub->g, prv->b, prv->crt->qi);	// (1+n)^b mod n^2
+			/* (1+n)^b = 1 + (b mod n)n mod n^2, as n^2 divides n^k for k > 1. */
+			bn_mod(prv->g, prv->b, prv->crt->n);
+			bn_mul(prv->g, prv->g, prv->crt->n);
+			bn_add_dig(prv->g, prv->g, 1);	// (1+n)^b mod n^2
 
 			/* As G has order n, G^n = 1 cannot randomize ciphertexts. Instead,
 			 * take h = x^(nb) mod n^2 for random x, so that h^a = 1, as the
@@ -195,7 +197,14 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 		/* For G=(1+n)^b, compute c = (G^m)(h^r) mod n^2. */
 		bn_sqr(s, pub->crt->n);
 		bn_mxp(r, pub->gn, r, s);	// h^r mod n^2
-		bn_mxp(t, pub->g, m, s);	// G^m mod n^2
+		/* G = 1 + bn mod n^2, so G^m = 1 + (bm mod n)n with b = (G-1)/n,
+		 * which needs no exponentiation. */
+		bn_sub_dig(t, pub->g, 1);
+		bn_div(t, t, pub->crt->n);
+		bn_mul(t, t, m);
+		bn_mod(t, t, pub->crt->n);
+		bn_mul(t, t, pub->crt->n);
+		bn_add_dig(t, t, 1);	// G^m mod n^2
 		bn_mul(t, t, r);
 		bn_mod(t, t, s);
 	}
