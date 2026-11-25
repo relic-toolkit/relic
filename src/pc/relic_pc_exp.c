@@ -188,8 +188,10 @@ static void gt_exp_gls_naf(gt_t e, const gt_t *a, const bn_t *b, size_t m,
 		for (size_t i = 0; i < m * f; i++) {
 			l = RLC_MAX(l, bn_bits(_b[i]));
 		}
+		/* Short subscalars amortize a table only when they are long enough,
+		 * as measured on BLS12, BLS24 and BLS48 curves. */
 		if (l < bn_bits(u) / 2) {
-			w = 2;
+			w = RLC_MIN(2 + (l >= 12) + (l >= 20), RLC_WIDTH);
 		}
 
 		l = 0;
