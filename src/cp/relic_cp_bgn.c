@@ -332,8 +332,11 @@ int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 
 		/* For in[2i + j] = e(c_i, d_j), compute T = e(x_0 c_0 - c_1,
 		 * x_1 d_0 - d_1) = e(G, H)^(m(x_0 y_0 - z_0)(x_1 y_1 - z_1)). */
-		gt_exp_sec(t[0], in[0], prv->x[0]);
-		gt_exp_sec(t[0], t[0], prv->x[1]);
+		pc_get_ord(n);
+		/* One exponentiation by x_0 x_1 mod n replaces two in a row. */
+		bn_mul(r, prv->x[0], prv->x[1]);
+		bn_mod(r, r, n);
+		gt_exp_sec(t[0], in[0], r);
 
 		gt_exp_sec(t[1], in[1], prv->x[0]);
 		gt_exp_sec(t[2], in[2], prv->x[1]);
