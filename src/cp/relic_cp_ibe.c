@@ -108,12 +108,13 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		/* q = H_1(ID). */
 		g2_map(q, (uint8_t *)id, strlen(id));
 
-		/* e = e(K_pub, q). */
-		pc_map(e, pub, q);
-
-		/* h = H_2(e^r). */
+		/* e = e(K_pub, q)^r = e([r]K_pub, q), as a multiplication in G_1
+		 * costs less than an exponentiation in G_T. */
 		bn_rand_mod(r, n);
-		gt_exp_sec(e, e, r);
+		g1_mul_sec(p, pub, r);
+		pc_map(e, p, q);
+
+		/* h = H_2(e). */
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
