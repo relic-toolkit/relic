@@ -219,10 +219,10 @@ int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 
 		/* calculate Z */
 		ec_mul_gen(Z, z);
-		ec_mul(t, mpk, c);
-		ec_add(t, t, r);
-		ec_norm(t, t);
-		ec_mul(t, t, h);
+		/* [h]([c]mpk + R) = [hc]mpk + [h]R, in one simultaneous product. */
+		bn_mul(c, c, h);
+		bn_mod(c, c, n);
+		ec_mul_sim(t, mpk, c, r, h);
 		ec_sub(Z, Z, t);
 		ec_norm(Z, Z);
 
