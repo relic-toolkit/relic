@@ -297,6 +297,19 @@ void fp2_mul_art(fp2_t c, const fp2_t a) {
 	}
 }
 
+void fp2_mul_dxs(fp2_t c, const fp2_t a, const fp2_t b) {
+	if (fp_is_zero(b[1])) {
+		fp_mul(c[0], a[0], b[0]);
+		fp_mul(c[1], a[1], b[0]);
+	} else if (fp_is_zero(b[0])) {
+		fp_mul(c[0], a[0], b[1]);
+		fp_mul(c[1], a[1], b[1]);
+		fp2_mul_art(c, c);
+	} else {
+		fp2_mul(c, a, b);
+	}
+}
+
 void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 

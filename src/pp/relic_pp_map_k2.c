@@ -42,12 +42,6 @@
 /*============================================================================*/
 
 /**
- * Multiplies by a line of degree 2, which is dense, where the templates
- * multiply by the sparse lines of the other degrees.
- */
-#define fp2_mul_dxs(C, A, B)	fp2_mul(C, A, B)
-
-/**
  * Hooks of the Tate pairing and of the pairing with a fixed argument: the
  * loop runs over the order of the group minus one, as the points have that
  * order, and there are no final lines.

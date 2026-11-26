@@ -1895,6 +1895,16 @@ void fp2_mul_nor_integ(fp2_t c, const fp2_t a);
 void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j);
 
 /**
+ * Multiplies a dense quadratic extension field element by a sparse element,
+ * which lies in F_p or is a multiple of the adjoined root by an element of F_p.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a quadratic extension field element.
+ * @param[in] b				- a sparse quadratic extension field element.
+ */
+void fp2_mul_dxs(fp2_t c, const fp2_t a, const fp2_t b);
+
+/**
  * Multiplies a quadratic extension field element by a digit.
  * Computes c = a * b.
  *

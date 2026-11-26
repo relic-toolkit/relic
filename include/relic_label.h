@@ -2272,6 +2272,7 @@
 #undef fp2_mul_nor_basic
 #undef fp2_mul_nor_integ
 #undef fp2_mul_frb
+#undef fp2_mul_dxs
 #undef fp2_mul_dig
 #undef fp2_mul_fp
 #undef fp2_sqr_basic
@@ -2323,6 +2324,7 @@
 #define fp2_mul_nor_basic 	RLC_PREFIX(fp2_mul_nor_basic)
 #define fp2_mul_nor_integ 	RLC_PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	RLC_PREFIX(fp2_mul_frb)
+#define fp2_mul_dxs 	RLC_PREFIX(fp2_mul_dxs)
 #define fp2_mul_dig 	RLC_PREFIX(fp2_mul_dig)
 #define fp2_mul_fp 	RLC_PREFIX(fp2_mul_fp)
 #define fp2_sqr_basic 	RLC_PREFIX(fp2_sqr_basic)

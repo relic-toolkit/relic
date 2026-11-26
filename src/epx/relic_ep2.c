@@ -53,8 +53,12 @@ void ep2_frb(ep2_t r, const ep2_t p, int i) {
 		for (; i > 0; i--) {
 			fp2_frb(r->x, r->x, 1);
 			fp2_frb(r->y, r->y, 1);
-			fp2_frb(r->z, r->z, 1);
-			fp2_mul(r->x, r->x, ctx->ep2_frb[0]);
+			/* The z of an affine point is one. */
+			if (r->coord != EC_AFFIN) {
+				fp2_frb(r->z, r->z, 1);
+			}
+			/* The constant of x is sparse on the usual twists. */
+			fp2_mul_dxs(r->x, r->x, ctx->ep2_frb[0]);
 			fp2_mul(r->y, r->y, ctx->ep2_frb[1]);
 		}
 	} else {
