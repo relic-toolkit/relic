@@ -61,14 +61,26 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 	RLC_TRY {
 		fp2_new(t);
 
-		fp_copy(t[0], core_get()->fp4_p1[0]);
-		fp_copy(t[1], core_get()->fp4_p1[1]);
-
 	    if (i == 1) {
-			fp4_copy(c, a);
+			/* Multiply by the j-th power of the constant, which is stored for
+			 * j = 2, 3, with no extension field arithmetic if it lies in F_p. */
+			if (j == 2 || j == 3) {
+				fp2_copy(t, core_get()->fp4_pk[j - 2]);
+			} else {
+				fp2_set_dig(t, 1);
+				for (int k = 0; k < j; k++) {
+					fp2_mul(t, t, core_get()->fp4_p1);
+				}
+			}
+			if (fp_is_zero(t[1])) {
+				for (int k = 0; k < 4; k++) {
+					fp_mul(((fp_t *)c)[k], ((const fp_t *)a)[k], t[0]);
+				}
+			} else {
+				fp2_mul(c[0], a[0], t);
+				fp2_mul(c[1], a[1], t);
+			}
 			for (int k = 0; k < j; k++) {
-	        	fp2_mul(c[0], c[0], t);
-				fp2_mul(c[1], c[1], t);
 				if (ep_curve_is_pairf() == EP_FM16) {
 					/* TODO: fix this ugly hack. */
 					fp4_mul_art(c, c);

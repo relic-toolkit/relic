@@ -515,8 +515,12 @@ typedef struct _ctx_t {
 	fp3_st fp3_p2[2];
 	int frb4;
 	fp2_st fp4_p1;
+	/** The constant fp4_p1 squared and cubed, for fp4_mul_frb(). */
+	fp2_st fp4_pk[2];
 	int frb8;
 	fp2_st fp8_p1;
+	/** The constant fp8_p1 squared and cubed, for fp8_mul_frb(). */
+	fp2_st fp8_pk[2];
 	/** @} */
 #endif /* WITH_PP */
 

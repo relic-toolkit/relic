@@ -56,9 +56,17 @@ void ep4_frb(ep4_t r, const ep4_t p, int i) {
 	for (; i > 0; i--) {
 		fp4_frb(r->x, r->x, e);
 		fp4_frb(r->y, r->y, e);
-		fp4_frb(r->z, r->z, e);
-		fp4_mul(r->x, r->x, ctx->ep4_frb[0]);
-		fp4_mul(r->y, r->y, ctx->ep4_frb[1]);
+		/* The z of an affine point is one. */
+		if (r->coord != EC_AFFIN) {
+			fp4_frb(r->z, r->z, e);
+		}
+		if (ctx->ep4_is_twist) {
+			fp4_mul_frb(r->x, r->x, 1, 2);
+			fp4_mul_frb(r->y, r->y, 1, 3);
+		} else {
+			fp4_mul(r->x, r->x, ctx->ep4_frb[0]);
+			fp4_mul(r->y, r->y, ctx->ep4_frb[1]);
+		}
 	}
 }
 

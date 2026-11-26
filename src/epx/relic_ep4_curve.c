@@ -650,7 +650,10 @@ void ep4_curve_set_twist(int type) {
 			}
 		}
 
-		/* Precompute the constants that multiply the Frobenius coordinates. */
+		/* Precompute the constants that multiply the Frobenius coordinates,
+		 * after the powers of fp4_p1 that fp4_mul_frb() uses. */
+		fp2_sqr(ctx->fp4_pk[0], ctx->fp4_p1);
+		fp2_mul(ctx->fp4_pk[1], ctx->fp4_pk[0], ctx->fp4_p1);
 		fp4_set_dig(a, 1);
 		fp4_mul_frb(ctx->ep4_frb[0], a, 1, 2);
 		fp4_mul_frb(ctx->ep4_frb[1], a, 1, 3);

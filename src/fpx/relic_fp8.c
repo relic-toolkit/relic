@@ -138,20 +138,30 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 	RLC_TRY {
 		fp2_new(t);
 
-		fp_copy(t[0], core_get()->fp8_p1[0]);
-		fp_copy(t[1], core_get()->fp8_p1[1]);
-
 	    if (i == 1) {
-			fp8_copy(c, a);
-			for (int k = 0; k < j; k++) {
-	        	fp2_mul(c[0][0], c[0][0], t);
-				fp2_mul(c[0][1], c[0][1], t);
-				fp2_mul(c[1][0], c[1][0], t);
-				fp2_mul(c[1][1], c[1][1], t);
-				/* If constant in base field, then second component is zero. */
-				if (core_get()->frb8 == 1) {
-					fp8_mul_art(c, c);
+			/* Multiply by the j-th power of the constant, which is stored for
+			 * j = 2, 3, with no extension field arithmetic if it lies in F_p. */
+			if (j == 2 || j == 3) {
+				fp2_copy(t, core_get()->fp8_pk[j - 2]);
+			} else {
+				fp2_set_dig(t, 1);
+				for (int k = 0; k < j; k++) {
+					fp2_mul(t, t, core_get()->fp8_p1);
 				}
+			}
+			if (fp_is_zero(t[1])) {
+				for (int k = 0; k < 8; k++) {
+					fp_mul(((fp_t *)c)[k], ((const fp_t *)a)[k], t[0]);
+				}
+			} else {
+				fp2_mul(c[0][0], a[0][0], t);
+				fp2_mul(c[0][1], a[0][1], t);
+				fp2_mul(c[1][0], a[1][0], t);
+				fp2_mul(c[1][1], a[1][1], t);
+			}
+			/* If constant in base field, then second component is zero. */
+			for (int k = 0; k < j && core_get()->frb8 == 1; k++) {
+				fp8_mul_art(c, c);
 			}
 	    } else {
 			RLC_THROW(ERR_NO_VALID);

@@ -372,7 +372,10 @@ void ep8_curve_set_twist(int type) {
 			fp_copy(ctx->fp8_p1[1], a[1][0][1]);
 		}
 
-		/* Precompute the constants that multiply the Frobenius coordinates. */
+		/* Precompute the constants that multiply the Frobenius coordinates,
+		 * after the powers of fp8_p1 that fp8_mul_frb() uses. */
+		fp2_sqr(ctx->fp8_pk[0], ctx->fp8_p1);
+		fp2_mul(ctx->fp8_pk[1], ctx->fp8_pk[0], ctx->fp8_p1);
 		fp8_set_dig(a, 1);
 		fp8_mul_frb(ctx->ep8_frb[0], a, 1, 2);
 		fp8_mul_frb(ctx->ep8_frb[1], a, 1, 3);
