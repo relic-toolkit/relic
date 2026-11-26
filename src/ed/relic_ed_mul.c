@@ -67,9 +67,9 @@ void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 }
 
 #ifdef ED_PRECO
-TMPL_EC_MUL_GEN(ed, preco);
+TMPL_EC_MUL_GEN(ed, preco, lwreg);
 #else
-TMPL_EC_MUL_GEN(ed, plain);
+TMPL_EC_MUL_GEN(ed, plain, lwreg);
 #endif
 
 TMPL_EC_MUL_DIG(ed);

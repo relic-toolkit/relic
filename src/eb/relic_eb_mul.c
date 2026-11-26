@@ -582,9 +582,9 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 }
 
 #ifdef EB_PRECO
-TMPL_EC_MUL_GEN(eb, preco);
+TMPL_EC_MUL_GEN(eb, preco, lodah);
 #else
-TMPL_EC_MUL_GEN(eb, plain);
+TMPL_EC_MUL_GEN(eb, plain, lodah);
 #endif
 
 TMPL_EC_MUL_DIG(eb);

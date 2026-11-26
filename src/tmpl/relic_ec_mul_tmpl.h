@@ -619,14 +619,17 @@
 
 /**
  * Defines a template for multiplying the generator by an integer, with the
- * precomputed table of the generator (preco) or without one (plain).
+ * precomputed table of the generator (preco) or without one (plain). Without
+ * the table, the multiplication uses the constant-time method M, as the
+ * integer is often secret.
  *
  * @param[in] C			- the curve.
  * @param[in] P			- preco or plain.
+ * @param[in] M			- the constant-time multiplication, lwreg or lodah.
  */
-#define TMPL_EC_MUL_GEN(C, P)	TMPL_EC_MUL_GEN_##P(C)
+#define TMPL_EC_MUL_GEN(C, P, M)	TMPL_EC_MUL_GEN_##P(C, M)
 
-#define TMPL_EC_MUL_GEN_preco(C)													\
+#define TMPL_EC_MUL_GEN_preco(C, M)											\
 	void C##_mul_gen(C##_t r, const bn_t k) {								\
 		if (bn_is_zero(k)) {												\
 			C##_set_infty(r);												\
@@ -636,7 +639,7 @@
 		C##_mul_fix(r, C##_curve_get_tab(), k);								\
 	}
 
-#define TMPL_EC_MUL_GEN_plain(C)													\
+#define TMPL_EC_MUL_GEN_plain(C, M)											\
 	void C##_mul_gen(C##_t r, const bn_t k) {								\
 		if (bn_is_zero(k)) {												\
 			C##_set_infty(r);												\
@@ -650,7 +653,7 @@
 		RLC_TRY {															\
 			C##_new(g);														\
 			C##_curve_get_gen(g);											\
-			C##_mul(r, g, k);												\
+			C##_mul_##M(r, g, k);											\
 		}																	\
 		RLC_CATCH_ANY {														\
 			RLC_THROW(ERR_CAUGHT);											\

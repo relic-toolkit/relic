@@ -805,9 +805,9 @@
 	}
 
 #ifdef EP_PRECO
-#define TMPL_EP_MUL_GEN(C)		TMPL_EC_MUL_GEN(C, preco)
+#define TMPL_EP_MUL_GEN(C)		TMPL_EC_MUL_GEN(C, preco, lwreg)
 #else
-#define TMPL_EP_MUL_GEN(C)		TMPL_EC_MUL_GEN(C, plain)
+#define TMPL_EP_MUL_GEN(C)		TMPL_EC_MUL_GEN(C, plain, lwreg)
 #endif
 
 /**
