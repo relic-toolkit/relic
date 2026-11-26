@@ -164,8 +164,8 @@ static void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[],
 
 	bn_null(q);
 
-	/* Up to 16 points, interleaving beats buckets with small windows. */
-	if (n <= 16) {
+	/* Up to 64 points, interleaving beats buckets with small windows. */
+	if (n <= 64) {
 		/* Interleave w-NAFs over tables of odd multiples of each point and
 		 * of its endomorphism image, as for two points in ep_mul_sim. */
 		const int e = 1 << (RLC_WIDTH - 2);
