@@ -131,22 +131,27 @@ void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {
 TMPL_FPX_MUL_ART_QUAD(fp8, fp4, fp4_mul_art);
 
 void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
-	fp2_t t;
+	fp2_t t, u;
 
 	fp2_null(t);
+	fp2_null(u);
 
 	RLC_TRY {
 		fp2_new(t);
+		fp2_new(u);
 
 	    if (i == 1) {
 			/* Multiply by the j-th power of the constant, which is stored for
 			 * j = 2, 3, with no extension field arithmetic if it lies in F_p. */
 			if (j == 2 || j == 3) {
-				fp2_copy(t, core_get()->fp8_pk[j - 2]);
+				fp_copy(t[0], core_get()->fp8_pk[j - 2][0]);
+				fp_copy(t[1], core_get()->fp8_pk[j - 2][1]);
 			} else {
+				fp_copy(u[0], core_get()->fp8_p1[0]);
+				fp_copy(u[1], core_get()->fp8_p1[1]);
 				fp2_set_dig(t, 1);
 				for (int k = 0; k < j; k++) {
-					fp2_mul(t, t, core_get()->fp8_p1);
+					fp2_mul(t, t, u);
 				}
 			}
 			if (fp_is_zero(t[1])) {
@@ -170,6 +175,7 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
+		fp2_free(u);
 	}
 }
 
