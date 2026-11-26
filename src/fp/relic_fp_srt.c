@@ -38,7 +38,7 @@
 /**
  * Multiplies c by z^(-e/2) for y = z^e, where z is the root of unity of order
  * 2^f, as in "Computing square roots faster than the Tonelli-Shanks/Bernstein
- * algorithm" by Sarkar, with windows of w = RLC_WIDTH bits from the bottom.
+ * algorithm" by Sarkar, with windows of w = RLC_DEPTH bits from the bottom.
  * Window i has y = z^(e_i * 2^(wi) + ...), so y^(2^(f - w(i + 1))) is the
  * e_i-th power of z^(2^(f - w)), found by scanning its powers in constant
  * time. Each bit t of e_i * 2^(wi) then multiplies c by z^(-2^(t - 1)) and y
@@ -59,8 +59,8 @@ static void fp_srt_win(fp_t c, fp_t y, int f) {
 	RLC_TRY {
 		fp_new(t);
 
-		for (int i = 0; i < f; i += RLC_WIDTH) {
-			int bits = RLC_MIN(RLC_WIDTH, f - i);
+		for (int i = 0; i < f; i += RLC_DEPTH) {
+			int bits = RLC_MIN(RLC_DEPTH, f - i);
 			dig_t k = 0;
 
 			fp_copy(t, y);
@@ -68,11 +68,11 @@ static void fp_srt_win(fp_t c, fp_t y, int f) {
 				fp_sqr(t, t);
 			}
 			/* dv_equ_sec() gives RLC_EQ = 0 on a match, and RLC_NE else. */
-			for (dig_t j = 0; j < (1 << RLC_WIDTH); j++) {
+			for (dig_t j = 0; j < (1 << RLC_DEPTH); j++) {
 				k |= j & ((dig_t)(dv_equ_sec(t, ctx->srt_tab[j],
 					RLC_FP_DIGS) / RLC_NE) - 1);
 			}
-			k >>= RLC_WIDTH - bits;
+			k >>= RLC_DEPTH - bits;
 			for (int j = (i == 0); j < bits; j++) {
 				fp_mul(t, c, ctx->srt_pow[i + j - 1]);
 				fp_copy_sec(c, t, (k >> j) & 1);

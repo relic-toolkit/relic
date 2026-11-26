@@ -62,7 +62,7 @@
 
 /**
  * Smallest and largest 2-adicity of p - 1 that take the windowed square root,
- * with windows of RLC_WIDTH bits.
+ * with windows of RLC_DEPTH bits, as the table of z is fixed.
  */
 #define RLC_FP_SRT_MIN	16
 #define RLC_FP_SRT_MAX	64
