@@ -1390,7 +1390,8 @@ int fp_smb3_jmpds(const fp_t a);
 
 /**
  * Computes the cubic residue symbol of a prime field element as
- * fp_smb3_jmpds() does, in variable time, stopping once done.
+ * fp_smb3_jmpds() does, in variable time, stopping once done and finishing by
+ * the Euclidean algorithm on machine words once the coordinates are small.
  *
  * @param[in] a				- the prime field element.
  * @return k in {0, 1, 2}, or -1 if the element is zero.

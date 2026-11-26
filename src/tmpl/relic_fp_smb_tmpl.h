@@ -53,7 +53,10 @@
  *   sign-extended;
  * - P_symbol(a, ct, k), which computes the symbol by jumps of up to k combined
  *   divsteps, a fixed number of them in constant time or until g is 0, with -1
- *   for zero, running P_jump(c, w, d, e, n, len) of the instantiating file.
+ *   for zero, running P_jump(c, w, d, e, n, len) of the instantiating file;
+ *   without constant time, before each jump, P_tail(w, len, e) of that file
+ *   may finish the symbol from small f and g, adding to e and returning 1, or
+ *   return 0 to continue by jumps.
  *
  * @param[in] P			- the prefix of the functions.
  * @param[in] D			- the number of digits of the coordinates.
@@ -193,6 +196,10 @@
 				if (z == 0) {												\
 					break;													\
 				}															\
+			}																\
+			/* Without constant time, finish small f and g otherwise. */	\
+			if (!ct && P##_tail(w, len, &e)) {								\
+				break;														\
 			}																\
 			/* A fixed number of digits in constant time, so that the		\
 			 * compiler can specialize the loops for it. */					\

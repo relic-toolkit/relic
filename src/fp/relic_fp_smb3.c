@@ -421,6 +421,157 @@ static inline void smb3_jump(dig_t c[4][FP_CUB_DIGS],
  */
 #define SMB3_MOD(E)		smb3_c3((uint64_t)((E) + 3))
 
+#if RLC_DIG == 64
+
+/**
+ * Bound on the bits of the coordinates of f and g for the Euclidean tail of the
+ * variable-time symbol: below it, the products in an Euclidean step fit in 64
+ * bits and the quotients computed in double precision are close enough to the
+ * nearest ones for the norm to decrease.
+ */
+#define FP_CUB_TAIL		50
+
+/**
+ * Bound on the Euclidean steps of the tail, far above the at most 2 * 50 /
+ * log2(3) needed for coordinates of 50 bits.
+ */
+#define FP_CUB_TAIL_IT	400
+
+/**
+ * Reduces a signed integer modulo a small positive m, in variable time.
+ *
+ * @param[in] a				- the integer.
+ * @param[in] m				- the modulus.
+ * @return the residue in {0, ..., m - 1}.
+ */
+static inline int64_t smb3_mods(int64_t a, int64_t m) {
+	a %= m;
+	return (a < 0 ? a + m : a);
+}
+
+/**
+ * Rounds a double to the nearest integer, without the math library.
+ *
+ * @param[in] x				- the double.
+ * @return the rounded integer.
+ */
+static inline int64_t smb3_round(double x) {
+	return (int64_t)(x < 0 ? x - 0.5 : x + 0.5);
+}
+
+/**
+ * Finishes the variable-time symbol once all coordinates of f and g fit in
+ * FP_CUB_TAIL bits, by the Euclidean algorithm in the Eisenstein integers on
+ * machine words, as the remaining division steps would need about three jumps.
+ * The symbol is w^e times the symbol of g modulo f, and f = (3m - 1) + 3k * w
+ * is primary. Writing g - q * f = (1 - w)^m * w^n * r for the nearest quotient
+ * q and r primary, the supplementary laws give the symbols of 1 - w and w
+ * modulo f, and cubic reciprocity replaces (f, g) by (r, f), until either is a
+ * unit, whose symbol and modulo which every symbol is 1.
+ *
+ * @param[in] w				- the coordinates of f and g.
+ * @param[in] len			- the number of digits.
+ * @param[in,out] e			- the exponent of the symbol.
+ * @return 1 if the symbol was finished, or 0 to continue by jumps, with e
+ * unchanged.
+ */
+static int smb3_tail(dig_t w[4][FP_CUB_DIGS], size_t len, int64_t *e) {
+	const int64_t lim = (int64_t)1 << FP_CUB_TAIL;
+	int64_t a0, a1, b0, b1, q0, q1, t, r0, r1, m, n, c0, c1, s, z, res = 0;
+	double fa0, fa1, fb0, fb1, inv;
+
+	if (len != 1) {
+		return 0;
+	}
+	/* b = f and a = g, as single digits in two's complement. */
+	b0 = (int64_t)w[0][0];
+	b1 = (int64_t)w[1][0];
+	a0 = (int64_t)w[2][0];
+	a1 = (int64_t)w[3][0];
+	if (b0 <= -lim || b0 >= lim || b1 <= -lim || b1 >= lim ||
+			a0 <= -lim || a0 >= lim || a1 <= -lim || a1 >= lim) {
+		return 0;
+	}
+
+	for (int i = 0; i < FP_CUB_TAIL_IT; i++) {
+		/* A primary unit b is +/-1, and a is a unit or 0 when g was. */
+		if ((a1 == 0 && a0 >= -1 && a0 <= 1) || (b1 == 0 && (b0 == 1 ||
+				b0 == -1))) {
+			*e += res;
+			return 1;
+		}
+		/* q = a * conj(b) / N(b), with conj(b) = (b0 - b1) - b1 * w. */
+		fa0 = (double)a0;
+		fa1 = (double)a1;
+		fb0 = (double)b0;
+		fb1 = (double)b1;
+		inv = 1.0 / (fb0 * fb0 - fb0 * fb1 + fb1 * fb1);
+		q0 = smb3_round((fa0 * fb0 - fa0 * fb1 + fa1 * fb1) * inv);
+		q1 = smb3_round((fa1 * fb0 - fa0 * fb1) * inv);
+		/* r = a - q * b, with (q0 + q1 * w)(b0 + b1 * w) = (q0 b0 - q1 b1) +
+		 * (q0 b1 + q1 b0 - q1 b1) * w. */
+		r0 = a0 - (q0 * b0 - q1 * b1);
+		r1 = a1 - (q0 * b1 + q1 * b0 - q1 * b1);
+		if (r0 == 0 && r1 == 0) {
+			/* Not coprime, which cannot happen for a nonzero element. */
+			return 0;
+		}
+		/* Remove (1 - w)^m, with (x + y * w)/(1 - w) = ((2x - y) + (x + y) *
+		 * w)/3, exact when 3 divides x + y. */
+		for (m = 0; smb3_mods(r0 + r1, 3) == 0; m++) {
+			t = (2 * r0 - r1) / 3;
+			r1 = (r0 + r1) / 3;
+			r0 = t;
+		}
+		/* Make r = +/-1 mod 3 with w^2 * (x + y * w) = (y - x) - x * w for
+		 * n = 1, or w * (x + y * w) = -y + (x - y) * w for n = 2. */
+		n = 0;
+		if (smb3_mods(r0, 3) == 0) {
+			t = r1 - r0;
+			r1 = -r0;
+			r0 = t;
+			n = 1;
+		} else if (smb3_mods(r0 - r1, 3) == 0) {
+			t = -r1;
+			r1 = r0 - r1;
+			r0 = t;
+			n = 2;
+		}
+		/* The supplementary laws for b primary give the exponent
+		 * (m * (1 - b0^2) + n * (b0^2 - b0 * b1 - 1)) / 3 mod 3, from b0 and
+		 * b1 modulo 9. */
+		c0 = smb3_mods(b0, 9);
+		c1 = smb3_mods(b1, 9);
+		s = c0 * c0 % 9;
+		z = (m % 9 * ((10 - s) % 9) + n * ((s + 17 - c0 * c1 % 9) % 9)) % 9;
+		if (z % 3 != 0) {
+			/* b was not primary, which the jumps exclude. */
+			return 0;
+		}
+		res = (res + z / 3) % 3;
+		/* By cubic reciprocity, the symbol of b modulo r. */
+		a0 = b0;
+		a1 = b1;
+		b0 = r0;
+		b1 = r1;
+	}
+	return 0;
+}
+
+#else
+
+/**
+ * Without 64-bit digits, the variable-time symbol finishes by jumps.
+ */
+static inline int smb3_tail(dig_t w[4][FP_CUB_DIGS], size_t len, int64_t *e) {
+	(void)w;
+	(void)len;
+	(void)e;
+	return 0;
+}
+
+#endif
+
 TMPL_FP_SMB(smb3, FP_CUB_DIGS, FP_CUB_ITER, cub, 1, SMB3_MOD)
 
 /*============================================================================*/
