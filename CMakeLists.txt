@@ -149,7 +149,7 @@ if(NOT CORES STREQUAL "1" AND NOT MULTI)
 endif()
 
 # Table sizes for exponentiation methods
-set(DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
+set(DEPTH "6" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
 set(WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
 
 # Choose the arithmetic backend, which must be one of the folders of src/low.
