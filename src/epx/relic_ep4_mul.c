@@ -380,20 +380,20 @@ static void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
 		ep4_mul_basic(t2, t1, z);
 		ep4_mul_basic(t3, t2, z);
 
-		/* Compute t0 = [u - 1]*\psi^3(P). */
-		ep4_frb(t0, t0, 3);
-		/* Compute t2 = [u^2*(u-1)]\psi(P). */
-		ep4_frb(t2, t2, 1);
-		/* Compute t1 = [u*(u-1)]\psi^2(P). */
-		ep4_frb(t1, t1, 2);
 		/* Compute t3 = [u^3(u-1) - 1]P. */
 		ep4_sub(t3, t3, p);
 
+		/* Evaluate [2]psi^4(P) + [u - 1]psi^3(P) + [u(u - 1)]psi^2(P) +
+		 * [u^2(u - 1)]psi(P) + t3 by Horner's rule, which takes 4
+		 * endomorphisms instead of 10. */
 		ep4_dbl(r, p);
-		ep4_frb(r, r, 4);
+		ep4_frb(r, r, 1);
 		ep4_add(r, r, t0);
+		ep4_frb(r, r, 1);
 		ep4_add(r, r, t1);
+		ep4_frb(r, r, 1);
 		ep4_add(r, r, t2);
+		ep4_frb(r, r, 1);
 		ep4_add(r, r, t3);
 
 		ep4_norm(r, r);

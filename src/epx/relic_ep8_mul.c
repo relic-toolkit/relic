@@ -64,37 +64,32 @@ void ep8_mul_cof(ep8_t r, const ep8_t p) {
 
 		ep8_sub(t7, t7, t6);
 		ep8_sub(t7, t7, p);
-
 		ep8_sub(t6, t6, t5);
-		ep8_frb(t6, t6, 1);
-
 		ep8_sub(t5, t5, t4);
-		ep8_frb(t5, t5, 2);
-
 		ep8_sub(t4, t4, t3);
-		ep8_frb(t4, t4, 3);
-
 		ep8_sub(t3, t3, t2);
-		ep8_frb(t3, t3, 4);
-
 		ep8_sub(t2, t2, t1);
-		ep8_frb(t2, t2, 5);
-
 		ep8_sub(t1, t1, t0);
-		ep8_frb(t1, t1, 6);
-
 		ep8_sub(t0, t0, p);
-		ep8_frb(t0, t0, 7);
 
+		/* Evaluate [2]psi^8(P) + sum psi^(7 - i)(t_i) by Horner's rule, which
+		 * takes 8 endomorphisms instead of 36. */
 		ep8_dbl(r, p);
-		ep8_frb(r, r, 8);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t0);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t1);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t2);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t3);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t4);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t5);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t6);
+		ep8_frb(r, r, 1);
 		ep8_add(r, r, t7);
 
 		ep8_norm(r, r);
