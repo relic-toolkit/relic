@@ -141,6 +141,10 @@
 			bn_mod(_k[0], k, n);											\
 			bn_rec_frb(_k, s, _k[0], u, n, ep_curve_get_rec(),				\
 					ep_curve_is_pairf() == EP_BN);							\
+			/* Short scalars need no tables past the last nonzero digit. */	\
+			while (s > 1 && bn_is_zero(_k[s - 1])) {						\
+				s--;														\
+			}																\
 																			\
 			l = 0;															\
 			for (size_t i = 0; i < s; i++) {								\
@@ -390,7 +394,7 @@
 #define TMPL_EP_MUL_SIM_ENDOM_GLS(C, S)										\
 	static void C##_mul_sim_endom(C##_t r, const C##_t p, const bn_t k,		\
 			const C##_t q, const bn_t m) {									\
-		size_t l, _l[S], w = RLC_WIDTH, e;									\
+		size_t l, _l[S], w = RLC_WIDTH, e, s = S;							\
 		bn_t _k[S], _m[S], n, u;											\
 		int8_t naf0[S][RLC_FP_BITS + 1], naf1[S][RLC_FP_BITS + 1];			\
 		C##_t t[2 * S << (RLC_WIDTH - 2)], *_p = t, *_q, v;					\
@@ -424,6 +428,11 @@
 			bn_mod(_m[0], m, n);											\
 			bn_rec_frb(_m, S, _m[0], u, n, ep_curve_get_rec(),				\
 					ep_curve_is_pairf() == EP_BN);							\
+			/* Short scalars need no tables past the last nonzero digit. */	\
+			while (s > 1 && bn_is_zero(_k[s - 1]) &&						\
+					bn_is_zero(_m[s - 1])) {								\
+				s--;														\
+			}																\
 																			\
 			l = 0;															\
 			for (int i = 0; i < S; i++) {									\
@@ -441,7 +450,7 @@
 			_q = t + e;														\
 																			\
 			l = 0;															\
-			for (int i = 0; i < S; i++) {									\
+			for (int i = 0; i < (int)s; i++) {								\
 				_l[i] = RLC_FP_BITS + 1;									\
 				bn_rec_naf(naf0[i], &_l[i], _k[i], w);						\
 				l = RLC_MAX(l, _l[i]);										\
@@ -458,13 +467,13 @@
 			/* Normalize if the endomorphism returns projective points. */	\
 			if (t[2 * e]->coord != EC_AFFIN) {								\
 				C##_norm_sim(t + 2 * e, (const C##_t *)t + 2 * e,			\
-						2 * (S - 1) * e);									\
+						2 * (s - 1) * e);									\
 			}																\
 																			\
 			C##_set_infty(r);												\
 			for (int i = l - 1; i >= 0; i--) {								\
 				C##_dbl(r, r);												\
-				for (int j = 0; j < S; j++) {								\
+				for (int j = 0; j < (int)s; j++) {							\
 					const size_t o = 2 * j * e;								\
 					if (naf0[j][i] > 0) {									\
 						C##_add(r, r, _p[o + naf0[j][i] / 2]);				\
